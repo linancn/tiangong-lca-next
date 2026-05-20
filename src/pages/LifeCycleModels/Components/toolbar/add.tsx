@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
@@ -17,6 +18,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 
 type Props = {
   buttonType: string;
@@ -45,6 +47,20 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const processAllVersionsSearchColumn = `
+    id,
+    json->processDataSet->processInformation->dataSetInformation->name,
+    json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
+    json->processDataSet->processInformation->time->>"common:referenceYear",
+    json->processDataSet->modellingAndValidation->LCIMethodAndAllocation->typeOfDataSet,
+    json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
+    version,
+    modified_at,
+    state_code,
+    team_id,
+    model_id
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -52,6 +68,32 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: ProcessTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    const rowKey = `${row.id}:${row.version}`;
+    setSelectedRowKeys((prevSelectedRowKeys) => [
+      ...prevSelectedRowKeys.filter((key) => key.toString().split(':')[0] !== row.id),
+      rowKey,
+    ]);
+  };
+
+  const renderVersionSelectActions = (row: ProcessTable) => {
+    return [
+      <Space size={'small'} key={0}>
+        <ProcessView
+          id={row.id}
+          version={row.version}
+          buttonType={'icon'}
+          lang={lang}
+          disabled={false}
+        />
+      </Space>,
+    ];
   };
 
   const onTabChange = async (key: string) => {
@@ -173,6 +215,28 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='processes'
+              columns={getAllVersionsColumns(processColumns, 6)}
+              searchColume={processAllVersionsSearchColumn}
+              id={row.id}
+              versionCount={row.versionCount}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) =>
+                renderVersionSelectActions(versionRow as ProcessTable)
+              }
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as ProcessTable)}
+            />
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.modifiedAt' defaultMessage='Updated at' />,
@@ -185,19 +249,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
-      render: (_, row) => {
-        return [
-          <Space size={'small'} key={0}>
-            <ProcessView
-              id={row.id}
-              version={row.version}
-              buttonType={'icon'}
-              lang={lang}
-              disabled={false}
-            />
-          </Space>,
-        ];
-      },
+      render: (_, row) => renderVersionSelectActions(row),
     },
   ];
 
