@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 3ff59ad75dc5b392b9988ba5bf7003a17f06737b
+lastReviewedCommit: f664407567cadfc0773fa7e809674ebc2c3d631d
 ---
 
 # Testing Execution State
@@ -43,7 +43,7 @@ lastReviewedCommit: 3ff59ad75dc5b392b9988ba5bf7003a17f06737b
 - touched code must stay at full closure
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
-- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection; if that list changes, re-check save, validation, navigation, and highlighting flows before treating the baseline as settled
+- file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
 
 ## Reopen Conditions
 

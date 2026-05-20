@@ -52,6 +52,7 @@ module.exports = async () => {
       '!src/pages/Flows/Components/Property/edit.tsx',
       '!src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx',
       '!src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx',
+      '!src/pages/NationalCarbonDashboard/index.tsx',
       '!src/pages/Processes/Components/edit.tsx',
       '!src/pages/Sources/Components/edit.tsx',
       '!src/pages/Unitgroups/Components/edit.tsx',

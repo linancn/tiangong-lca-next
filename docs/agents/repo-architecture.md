@@ -22,7 +22,7 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 3ff59ad75dc5b392b9988ba5bf7003a17f06737b
+lastReviewedCommit: f664407567cadfc0773fa7e809674ebc2c3d631d
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -74,7 +74,7 @@ Rules:
 - lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
 - dataset validation, localized field guidance, and review jump targets: `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/pages/Processes/sdkValidationUi.ts`, `src/pages/Processes/Components/**`, `src/components/ValidationIssueModal/index.tsx`, `src/components/LangTextItem/form.tsx`, `src/pages/Utils/review.tsx`
 - review, team, and system-management flows: `src/pages/Review/**`, `src/pages/ManageSystem/**`, `src/pages/Teams/**`
-- cache-backed static resources: `public/classifications/**`, `public/locations/**`, `public/lciamethods/**`
+- cache-backed static resources: `public/classifications/**`, `public/locations/**`, `public/lciamethods/**`, `public/maps/**`
 
 ## Cross-Repo Boundaries
 
