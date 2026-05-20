@@ -20,8 +20,8 @@ checkPaths:
   - .husky/pre-push
   - package.json
   - .github/workflows/**
-lastReviewedAt: 2026-05-19
-lastReviewedCommit: 4016e60eb90b283596d3ff08a0a66eec112e4e9b
+lastReviewedAt: 2026-05-20
+lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
 ---
 
 # Pre-Push Gate Policy

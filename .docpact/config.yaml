@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-05-19"
-lastReviewedCommit: "4016e60eb90b283596d3ff08a0a66eec112e4e9b"
+lastReviewedAt: "2026-05-20"
+lastReviewedCommit: "6c5d02f5cad6a864e290d16b3ce6d3a62c91247b"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -202,6 +202,7 @@ routing:
         - public/classifications/**
         - public/locations/**
         - public/lciamethods/**
+        - public/maps/**
     data-workflow-fixtures:
       paths:
         - tests/data-workflows/test-api-smoke.cjs
@@ -470,6 +471,8 @@ rules:
       - path: public/locations/**
         kind: static-resource
       - path: public/lciamethods/**
+        kind: static-resource
+      - path: public/maps/**
         kind: static-resource
       - path: docs/agents/public-classifications-gz-usage.md
         kind: domain-doc
