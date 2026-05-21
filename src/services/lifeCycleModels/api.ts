@@ -39,6 +39,55 @@ import {
 import { genLifeCycleModelJsonOrdered } from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
+type LifeCycleModelListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  total_count?: number | string | null;
+};
+
+function normalizeLifeCycleModelTotalCount(row?: LifeCycleModelListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeLifeCycleModelResultTotalCount(
+  resultData: LifeCycleModelListRpcRow[],
+  resultBody?: any,
+): number {
+  return (
+    normalizeLifeCycleModelTotalCount(resultData[0]) ||
+    Number((resultData as any).total_count ?? 0) ||
+    Number(resultBody?.total_count ?? 0) ||
+    0
+  );
+}
+
+function normalizeLifeCycleModelSortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeLifeCycleModelSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+async function getLifeCycleModelTeamFilter(
+  dataSource: string,
+  tid: string,
+): Promise<string | null> {
+  if (dataSource === 'te') {
+    return (await getTeamIdByUserId()) ?? null;
+  }
+  return tid.length > 0 ? tid : null;
+}
+
 function buildMutationError(
   code: string,
   message: string,
@@ -458,63 +507,58 @@ export async function getLifeCycleModelTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->name,
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-    json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
-    version,
-    modified_at,
-    team_id
-  `;
-
-  const tableName = 'lifecyclemodels';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
   }
 
-  const result = await query;
+  const teamId = await getLifeCycleModelTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+    });
+  }
+
+  const rpcResult = await supabase.rpc('get_latest_lifecyclemodel_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session?.data?.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    sort_by: normalizeLifeCycleModelSortBy(sortBy),
+    sort_direction: normalizeLifeCycleModelSortDirection(orderBy),
+  });
+
+  const result = {
+    ...rpcResult,
+    count:
+      normalizeLifeCycleModelTotalCount(rpcResult?.data?.[0]) ||
+      rpcResult?.count ||
+      rpcResult?.data?.length ||
+      0,
+    data: rpcResult?.data?.map((i: LifeCycleModelListRpcRow) => ({
+      id: i.id,
+      name:
+        i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.name ??
+        (i as any).name,
+      'common:class':
+        i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation
+          ?.classificationInformation?.['common:classification']?.['common:class'] ??
+        (i as any)['common:class'],
+      'common:generalComment':
+        i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation?.dataSetInformation?.[
+          'common:generalComment'
+        ] ?? (i as any)['common:generalComment'],
+      version: i.version,
+      modified_at: i.modified_at,
+      team_id: i.team_id,
+    })),
+  };
 
   if (result.error) {
     console.log('error', result.error);
@@ -581,7 +625,7 @@ export async function getLifeCycleModelTableAll(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: result.count,
     });
   }
   return Promise.resolve({
@@ -602,31 +646,43 @@ export async function getLifeCycleModelTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  tid: string = '',
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
+    const teamId = await getLifeCycleModelTeamFilter(dataSource, tid);
+    if (dataSource === 'te' && !teamId) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
     result = await supabase.rpc(
-      'pgroonga_search_lifecyclemodels_v1',
+      'pgroonga_search_lifecyclemodels_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
             filter_condition: filterCondition,
+            order_by: orderBy ?? {},
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            order_by: orderBy,
-            // this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
+            this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: stateCode,
           }
         : {
             query_text: queryText,
             filter_condition: filterCondition,
+            order_by: orderBy ?? {},
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            order_by: orderBy,
-            // this_user_id: session.data.session.user?.id,
+            this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: null,
           },
     );
   }
@@ -640,7 +696,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
         success: true,
       });
     }
-    const totalCount = result.data[0].total_count;
+    const totalCount = normalizeLifeCycleModelTotalCount(result.data[0]) || result.data.length;
 
     let data: any[] = [];
     if (lang === 'zh') {
@@ -712,7 +768,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 
@@ -755,7 +811,7 @@ export async function lifeCycleModel_hybrid_search(
       });
     }
     const resultData = result.data.data;
-    const totalCount = resultData.total_count;
+    const totalCount = normalizeLifeCycleModelResultTotalCount(resultData, result.data);
 
     let data: any[] = [];
     if (lang === 'zh') {
@@ -827,7 +883,7 @@ export async function lifeCycleModel_hybrid_search(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 

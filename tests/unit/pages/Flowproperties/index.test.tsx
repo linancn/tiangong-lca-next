@@ -75,10 +75,14 @@ jest.mock('@/services/general/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ id, addVersionComponent }: any) => (
+  default: ({ id, addVersionComponent, operationRender }: any) => (
     <div data-testid='all-versions'>
       <span>{id}</span>
       {addVersionComponent?.({ newVersion: '02.00.000' })}
+      {(() => {
+        operationRender?.({ id, version: '02.00.000' }, { actionRef: { current: null } });
+        return null;
+      })()}
     </div>
   ),
 }));
@@ -456,6 +460,7 @@ describe('FlowpropertiesPage', () => {
         'climate',
         {},
         '20',
+        'team-1',
       ),
     );
   });
@@ -512,7 +517,7 @@ describe('FlowpropertiesPage', () => {
     };
     mockGetDataSource.mockReturnValue('co');
     mockGetTeamById.mockResolvedValue({ data: [] });
-    mockGetFlowpropertyTableAll.mockResolvedValueOnce({
+    mockGetFlowpropertyTableAll.mockResolvedValue({
       data: [
         {
           id: 'fp-2',
@@ -547,6 +552,19 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByText('Impact category')).toBeInTheDocument();
     expect(screen.getByText('sup:')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'co',
+        'climate',
+        {},
+        'all',
+        '',
+      ),
+    );
   });
 
   it('falls back to empty arrays when list and search requests return no data', async () => {
@@ -569,6 +587,7 @@ describe('FlowpropertiesPage', () => {
         'climate',
         {},
         'all',
+        'team-1',
       ),
     );
     await waitFor(() =>

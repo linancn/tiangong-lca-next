@@ -22,22 +22,26 @@ jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
+  useLocation: () => ({ pathname: '/flows' }),
 }));
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
+  BarsOutlined: () => <span data-testid='icon-bars' />,
   CloseOutlined: () => <span data-testid='icon-close' />,
   DatabaseOutlined: () => <span data-testid='icon-database' />,
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
+  const Badge = ({ children }: any) => <span>{children}</span>;
   const Button = ({ children, onClick, icon }: any) => (
     <button type='button' onClick={onClick}>
       {icon}
       {toText(children)}
     </button>
   );
+  const ConfigProvider = ({ children }: any) => <>{children}</>;
   const Drawer = ({ open, children, extra, footer }: any) =>
     open ? (
       <div data-testid='drawer'>
@@ -82,7 +86,20 @@ jest.mock('antd', () => {
   const Row = ({ children }: any) => <div>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ children }: any) => <>{children}</>;
-  return { __esModule: true, Button, Drawer, Space, Card, Input, Checkbox, Row, Col, Tooltip };
+  return {
+    __esModule: true,
+    Badge,
+    Button,
+    ConfigProvider,
+    Drawer,
+    Space,
+    Card,
+    Input,
+    Checkbox,
+    Row,
+    Col,
+    Tooltip,
+  };
 });
 
 jest.mock('@ant-design/pro-components', () => {
@@ -143,6 +160,21 @@ jest.mock('@/pages/Flows/Components/view', () => ({
   default: () => <div data-testid='flows-view' />,
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({ id, operationRender, operationColumnWidth, onSelectVersion }: any) => (
+    <div data-testid={`all-versions-${id}`} data-operation-width={operationColumnWidth}>
+      {operationRender?.({ id, version: '2.0' })}
+      <button type='button' onClick={() => onSelectVersion?.({ id, version: '2.0' })}>
+        select-version-{id}
+      </button>
+      <button type='button' onClick={() => onSelectVersion?.({})}>
+        select-version-empty-{id}
+      </button>
+    </div>
+  ),
+}));
+
 describe('FlowsSelectDrawer (src/pages/Flows/Components/select/drawer.tsx)', () => {
   beforeEach(() => {
     proTableInstances.length = 0;
@@ -154,6 +186,14 @@ describe('FlowsSelectDrawer (src/pages/Flows/Components/select/drawer.tsx)', () 
 
     fireEvent.click(screen.getByText('Select'));
     expect(screen.getByTestId('drawer')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-row')).toHaveAttribute('data-operation-width', '88');
+
+    fireEvent.click(screen.getByText('select-version-row'));
+    expect(onData).toHaveBeenCalledWith('row', '2.0');
+
+    fireEvent.click(screen.getByText('Select'));
+    fireEvent.click(screen.getByText('select-version-empty-row'));
+    expect(onData).toHaveBeenCalledTimes(1);
 
     const selectButtons = screen.getAllByTestId(/select-row/);
     fireEvent.click(selectButtons[0]);

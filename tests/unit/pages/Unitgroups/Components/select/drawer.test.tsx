@@ -41,6 +41,41 @@ jest.mock('@/pages/Unitgroups/Components/view', () => ({
   default: ({ id, version }: any) => <span>{`view ${id}:${version}`}</span>,
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: function MockAllVersions({
+    addVersionComponent,
+    dataSource,
+    onSelectVersion,
+    operationRender,
+  }: any) {
+    const versionRow = {
+      id: `unit-group-${dataSource}-version`,
+      version: '0.9.0',
+      name: `${dataSource} historical unit group`,
+      refUnitName: 'g',
+      refUnitGeneralComment: 'historical ref comment',
+      classification: 'historical classification',
+      modifiedAt: '2024-01-03',
+    };
+
+    return (
+      <div data-testid='all-versions'>
+        <div data-testid={`all-versions-add-version-${dataSource}`}>
+          {addVersionComponent?.({ newVersion: '01.00.001' })}
+        </div>
+        <div data-testid='all-version-operation-render'>{operationRender?.(versionRow)}</div>
+        <button type='button' onClick={() => onSelectVersion?.(versionRow)}>
+          Select historical version
+        </button>
+        <button type='button' onClick={() => onSelectVersion?.({ id: '', version: '' })}>
+          Invalid Version
+        </button>
+      </div>
+    );
+  },
+}));
+
 const mockGetUnitGroupTableAll = jest.fn(
   async (_params: any, _sort: any, _lang: string, dataSource: string) => ({
     data: [
@@ -386,6 +421,39 @@ describe('UnitgroupsSelectDrawer', () => {
       expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
     );
     expect(onData).not.toHaveBeenCalled();
+  });
+
+  it('selects a concrete version from the all-versions drawer entry', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(allVersionActions).toHaveTextContent('view unit-group-tg-version:0.9.0');
+    expect(screen.getByTestId('all-versions-add-version-tg')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /invalid version/i }));
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: /Selete Unit group/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /select historical version/i }));
+
+    expect(onData).toHaveBeenCalledWith('unit-group-tg-version', '0.9.0');
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+    );
   });
 
   it('falls back to the default icon tooltip text and placeholder reference unit', async () => {

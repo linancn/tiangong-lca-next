@@ -82,6 +82,87 @@ type ProcessTableResponse = {
   error?: unknown;
 };
 
+type ProcessListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  model_id?: string;
+  total_count?: number | string | null;
+};
+
+function normalizeProcessTotalCount(row?: ProcessListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeProcessResultTotalCount(
+  resultData: ProcessListRpcRow[],
+  resultBody?: any,
+): number {
+  return (
+    normalizeProcessTotalCount(resultData[0]) ||
+    Number((resultData as any).total_count ?? 0) ||
+    Number(resultBody?.total_count ?? 0) ||
+    0
+  );
+}
+
+function normalizeProcessSortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeProcessSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function getOptionalTeamId(tid: string | []): string | null {
+  if (typeof tid === 'string' && tid.length > 0) {
+    return tid;
+  }
+  return null;
+}
+
+async function getProcessTeamFilter(dataSource: string, tid: string | []): Promise<string | null> {
+  if (dataSource === 'te') {
+    return (await getTeamIdByUserId()) ?? null;
+  }
+  return getOptionalTeamId(tid);
+}
+
+function toProcessTableSelectRow(row: ProcessListRpcRow): any {
+  const dataInfo = row.json?.processDataSet?.processInformation;
+  return {
+    id: row.id,
+    name: dataInfo?.dataSetInformation?.name ?? (row as any).name,
+    'common:class':
+      dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+        'common:class'
+      ] ?? (row as any)['common:class'],
+    'common:generalComment':
+      dataInfo?.dataSetInformation?.['common:generalComment'] ??
+      (row as any)['common:generalComment'],
+    'common:referenceYear':
+      dataInfo?.time?.['common:referenceYear'] ?? (row as any)['common:referenceYear'],
+    typeOfDataSet:
+      row.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ??
+      (row as any).typeOfDataSet,
+    '@location':
+      dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'] ??
+      (row as any)['@location'],
+    version: row.version,
+    modified_at: row.modified_at,
+    team_id: row.team_id,
+    model_id: row.model_id,
+  };
+}
+
 async function mapProcessTableRows(rawRows: any[], lang: string): Promise<ProcessTable[]> {
   const locations = Array.from(new Set(rawRows.map((item: any) => item['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
@@ -303,53 +384,37 @@ export async function getProcessTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const tableName = 'processes';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr4Table, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (typeOfDataSet && typeOfDataSet !== 'all') {
-    query = query.eq(
-      'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
-      typeOfDataSet,
-    );
-  }
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return { data: [], success: false };
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return { data: [], success: true };
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return { data: [], success: false };
   }
 
-  const result = await query;
+  const teamId = await getProcessTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return { data: [], success: true };
+  }
+
+  const rpcResult = await supabase.rpc('get_latest_process_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session?.data?.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    type_of_data_set_filter: typeOfDataSet ?? 'all',
+    sort_by: normalizeProcessSortBy(sortBy),
+    sort_direction: normalizeProcessSortDirection(orderBy),
+  });
+
+  const result = {
+    ...rpcResult,
+    count:
+      normalizeProcessTotalCount(rpcResult?.data?.[0]) ||
+      rpcResult?.count ||
+      rpcResult?.data?.length ||
+      0,
+    data: rpcResult?.data?.map(toProcessTableSelectRow),
+  };
 
   if (result?.error) {
     console.error('error', result?.error);
@@ -366,7 +431,7 @@ export async function getProcessTableAll(
     data,
     page: params?.current ?? 1,
     success: true,
-    total: result?.count ?? 0,
+    total: result.count,
   };
 }
 
@@ -743,6 +808,7 @@ export async function getProcessTablePgroongaSearch(
   stateCode?: string | number,
   typeOfDataSet?: string,
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  tid: string | [] = [],
 ) {
   // const time_start = new Date();
   const session = await supabase.auth.getSession();
@@ -753,22 +819,26 @@ export async function getProcessTablePgroongaSearch(
       error: 'unauthorized',
     };
   }
+  const teamId = await getProcessTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return {
+      data: [],
+      success: true,
+    };
+  }
   const requestParams: { [key: string]: any } = {
     query_text: queryText,
     filter_condition: filterCondition,
+    order_by: orderBy ?? {},
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
     data_source: dataSource,
-    order_by: orderBy,
-    // this_user_id: session.data.session.user?.id,
+    this_user_id: session.data.session.user?.id,
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    type_of_data_set_filter: typeOfDataSet ?? 'all',
   };
-  if (typeof stateCode === 'number') {
-    requestParams['state_code'] = stateCode;
-  }
-  if (typeOfDataSet && typeOfDataSet !== 'all') {
-    requestParams['type_of_data_set'] = typeOfDataSet;
-  }
-  const result = await supabase.rpc('pgroonga_search_processes_v1', requestParams);
+  const result = await supabase.rpc('pgroonga_search_processes_latest', requestParams);
   if (result.error) {
     console.log('error', result.error);
   }
@@ -1169,7 +1239,7 @@ export async function process_hybrid_search(
       });
     }
     const resultData = result.data.data;
-    const totalCount = resultData.total_count;
+    const totalCount = normalizeProcessResultTotalCount(resultData, result.data);
 
     const locations: string[] = Array.from(
       new Set(
@@ -1287,7 +1357,7 @@ export async function process_hybrid_search(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: totalCount,
     });
   }
 

@@ -163,6 +163,7 @@ const TableList: FC = () => {
                 json->lifeCycleModelDataSet->lifeCycleModelInformation->dataSetInformation->"common:generalComment",
                 version,
                 modified_at,
+                state_code,
                 team_id
               `}
               id={row.id}
@@ -177,6 +178,17 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow) => {
+                const optionColumn = processColumns.find((column) => column.dataIndex === 'option');
+                return optionColumn?.render?.(
+                  null as any,
+                  versionRow,
+                  0,
+                  undefined as any,
+                  {} as any,
+                ) as any;
+              }}
+              operationColumnWidth={isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152}
             ></AllVersionsList>
           </Space>
         );
@@ -438,6 +450,7 @@ const TableList: FC = () => {
                 {},
                 currentStateCode,
                 orderBy,
+                tid ?? '',
               ),
             );
           }

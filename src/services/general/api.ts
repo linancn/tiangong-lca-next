@@ -18,6 +18,7 @@ import {
 import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
 import { getRuntimeLocale } from './runtimeLocale';
+import { sortDataSetVersionRows } from './version';
 
 type InvokeErrorBody = {
   code?: string;
@@ -1212,7 +1213,7 @@ export async function getAllVersions(
   lang: string,
   dataSource: string,
 ) {
-  const sortBy = Object.keys(sort)[0] ?? 'created_at';
+  const sortBy = Object.keys(sort)[0] ?? 'version';
   const orderBy = sort[sortBy] ?? 'descend';
 
   let query = supabase
@@ -1282,6 +1283,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1310,6 +1312,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i.modified_at),
                   teamId: i.team_id,
+                  stateCode: i.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1333,6 +1336,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i.team_id,
+                stateCode: i.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1358,7 +1362,7 @@ export async function getAllVersions(
                 const classificationZH = genClassificationZH(classifications, res?.data);
 
                 return {
-                  key: i.id,
+                  key: i.id + ':' + i.version,
                   id: i.id,
                   name: getLangText(i?.['common:name'], lang),
                   classification: classificationToString(classificationZH),
@@ -1368,6 +1372,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1386,7 +1391,7 @@ export async function getAllVersions(
                 (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
               );
               return {
-                key: i.id,
+                key: i.id + ':' + i.version,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
                 classification: classificationToString(classifications),
@@ -1396,6 +1401,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1426,6 +1432,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1450,6 +1457,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1512,6 +1520,7 @@ export async function getAllVersions(
                   version: i.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1555,6 +1564,7 @@ export async function getAllVersions(
                 version: i.version,
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1601,6 +1611,8 @@ export async function getAllVersions(
                   location: location ?? '-',
                   modifiedAt: new Date(i.modified_at),
                   teamId: i?.team_id,
+                  modelId: i?.model_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1632,6 +1644,8 @@ export async function getAllVersions(
                 location: location,
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
+                modelId: i?.model_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1661,6 +1675,7 @@ export async function getAllVersions(
                   version: i?.version,
                   modifiedAt: new Date(i?.modified_at),
                   teamId: i?.team_id,
+                  stateCode: i?.state_code,
                 };
               } catch (e) {
                 console.error(e);
@@ -1683,6 +1698,7 @@ export async function getAllVersions(
                 version: i?.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
+                stateCode: i?.state_code,
               };
             } catch (e) {
               console.error(e);
@@ -1697,8 +1713,13 @@ export async function getAllVersions(
       }
     }
 
+    const versionSortedData =
+      sortBy === 'version'
+        ? sortDataSetVersionRows(data, orderBy === 'ascend' ? 'asc' : 'desc')
+        : data;
+
     return Promise.resolve({
-      data: data,
+      data: versionSortedData,
       page: params.current ?? 1,
       success: true,
       total: result.count ?? 0,

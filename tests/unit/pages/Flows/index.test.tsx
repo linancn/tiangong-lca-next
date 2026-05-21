@@ -110,12 +110,15 @@ jest.mock('@/components/ImportData', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>
-      all-versions
-      {addVersionComponent?.({ newVersion: '02.00.000' })}
-    </div>
-  ),
+  default: ({ id, addVersionComponent, operationRender }: any) => {
+    operationRender?.({ id, version: '02.00.000' });
+    return (
+      <div data-testid='all-versions'>
+        all-versions
+        {addVersionComponent?.({ newVersion: '02.00.000' })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -521,6 +524,7 @@ describe('FlowsPage', () => {
         { flowType: '' },
         '20',
         undefined,
+        'team-1',
       ),
     );
 
@@ -540,6 +544,7 @@ describe('FlowsPage', () => {
         },
         '20',
         { key: 'baseName', lang: 'en', order: 'asc' },
+        'team-1',
       ),
     );
 
@@ -559,6 +564,7 @@ describe('FlowsPage', () => {
         },
         '20',
         { key: 'baseName', lang: 'en', order: 'desc' },
+        'team-1',
       ),
     );
 
@@ -572,6 +578,7 @@ describe('FlowsPage', () => {
         { flowType: '' },
         '20',
         undefined,
+        'team-1',
       ),
     );
 
@@ -762,6 +769,34 @@ describe('FlowsPage', () => {
           .getAllByTestId('flow-edit')
           .some((node) => node.textContent?.includes('"autoOpen":true')),
       ).toBe(false),
+    );
+  });
+
+  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+    mockLocation = {
+      pathname: '/mydata/flows',
+      search: '',
+    };
+    mockGetTeamById.mockResolvedValueOnce({ data: [undefined] });
+
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith(''));
+    await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+
+    await waitFor(() =>
+      expect(mockGetFlowTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        { flowType: '' },
+        'all',
+        undefined,
+        '',
+      ),
     );
   });
 });

@@ -448,12 +448,14 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   });
 
   describe('getSourceTableAll', () => {
-    it('should fetch sources with pagination and sorting (English)', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
+    const latestSourceRow = (overrides: any = {}) => ({
+      ...mockSource,
+      total_count: 1,
+      ...overrides,
+    });
 
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+    it('should fetch latest source versions with pagination and sorting (English)', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockImplementation((value: any) => {
         if (!value) return '-';
         if (typeof value === 'string') return value;
@@ -470,23 +472,25 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
 
-      expect(supabase.from).toHaveBeenCalledWith('sources');
-      expect(builder.select).toHaveBeenCalled();
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
+      expect(supabase.rpc).toHaveBeenCalledWith('get_latest_source_versions', {
+        page_size: 10,
+        page_current: 1,
+        data_source: 'tg',
+        this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
+        sort_by: 'modified_at',
+        sort_direction: 'desc',
+      });
       expect(result.success).toBe(true);
       expect(result.data[0].id).toBe('source-123');
       expect(result.data[0].classification).toBe('Publication');
+      expect(result.data[0]).not.toHaveProperty('latestVersion');
       expect('total' in result && result.total).toBe(1);
     });
 
     it('should fetch sources with Chinese classification', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockImplementation((value: any) => value?.[1]?.['#text'] ?? '-');
       jsonToList.mockReturnValue(
         mockSource.json.sourceDataSet.sourceInformation.dataSetInformation
@@ -503,55 +507,107 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result.data[0].classification).toBe('出版物');
     });
 
-    it('should filter by team when dataSource is "tg" with team id', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
+    it('should normalize camel-case sort fields for latest source versions', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
+      getLangText.mockReturnValue('Sorted Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
 
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      await getSourceTableAll(mockPaginationParams, { modifiedAt: 'ascend' }, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          sort_by: 'modified_at',
+          sort_direction: 'asc',
+        }),
+      );
+
+      supabase.rpc.mockClear();
+
+      await getSourceTableAll(mockPaginationParams, { createdAt: 'descend' }, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          sort_by: 'created_at',
+          sort_direction: 'desc',
+        }),
+      );
+    });
+
+    it('should filter by team when dataSource is "tg" with team id', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockReturnValue('Test Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('-');
 
       await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', 'team-123');
 
-      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-123');
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          data_source: 'tg',
+          team_id_filter: 'team-123',
+        }),
+      );
+    });
+
+    it('should use an empty user id when the session omits user details', async () => {
+      supabase.auth.getSession.mockResolvedValue({ data: { session: {} } });
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
+      getLangText.mockReturnValue('Anonymous Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('-');
+
+      await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          this_user_id: '',
+        }),
+      );
     });
 
     it('should use collaborative filters and default paging when dataSource is "co"', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockReturnValue('Collaborative Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('-');
 
       const result = await getSourceTableAll({}, {}, 'en', 'co', 'team-co');
 
-      expect(builder.order).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(builder.range).toHaveBeenCalledWith(0, 9);
-      expect(builder.eq).toHaveBeenCalledWith('state_code', 200);
-      expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-co');
+      expect(supabase.rpc).toHaveBeenCalledWith('get_latest_source_versions', {
+        page_size: 10,
+        page_current: 1,
+        data_source: 'co',
+        this_user_id: 'user-123',
+        team_id_filter: 'team-co',
+        state_code_filter: null,
+        sort_by: 'modified_at',
+        sort_direction: 'desc',
+      });
       expect(result).toMatchObject({ page: 1, success: true, total: 1 });
     });
 
     it('should filter by user when dataSource is "my"', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getLangText.mockReturnValue('Test Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('-');
 
       await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'my', [], 100);
 
-      expect(builder.eq).toHaveBeenCalledWith('state_code', 100);
-      expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-123');
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          data_source: 'my',
+          this_user_id: 'user-123',
+          team_id_filter: null,
+          state_code_filter: 100,
+        }),
+      );
     });
 
     it('should return empty array when no session for "my" dataSource', async () => {
@@ -559,6 +615,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'my', []);
 
+      expect(supabase.rpc).not.toHaveBeenCalled();
       expect(result).toEqual({
         data: [],
         success: false,
@@ -566,11 +623,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     });
 
     it('should filter by team when dataSource is "te"', async () => {
-      const mockData = [mockSource];
-      const mockResult = createMockSuccessResponse(mockData, 1);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getTeamIdByUserId.mockResolvedValue('team-123');
       getLangText.mockReturnValue('Test Source');
       jsonToList.mockReturnValue([]);
@@ -579,19 +632,22 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'te', [], 100);
 
       expect(getTeamIdByUserId).toHaveBeenCalled();
-      expect(builder.eq).toHaveBeenCalledWith('team_id', 'team-123');
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'get_latest_source_versions',
+        expect.objectContaining({
+          data_source: 'te',
+          team_id_filter: 'team-123',
+          state_code_filter: 100,
+        }),
+      );
     });
 
     it('should return empty array when no team for "te" dataSource', async () => {
-      const mockData: any[] = [];
-      const mockResult = createMockSuccessResponse(mockData, 0);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
       getTeamIdByUserId.mockResolvedValue(null);
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'te', []);
 
+      expect(supabase.rpc).not.toHaveBeenCalled();
       expect(result).toEqual({
         data: [],
         success: true,
@@ -599,11 +655,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     });
 
     it('should handle empty results', async () => {
-      const mockData: any[] = [];
-      const mockResult = createMockSuccessResponse(mockData, 0);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([]));
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
 
@@ -616,9 +668,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     it('should handle query errors', async () => {
       const mockError = createMockErrorResponse('Query failed');
 
-      const builder = createQueryBuilder(mockError);
-      supabase.from.mockReturnValue(builder);
-
+      supabase.rpc.mockResolvedValue(mockError);
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'en', 'tg', []);
@@ -634,10 +684,10 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
     it('should handle data transformation errors gracefully', async () => {
       const invalidSource = { ...mockSource, json: null };
-      const mockResult = createMockSuccessResponse([invalidSource], 1);
 
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(
+        createMockRpcResponse([latestSourceRow({ ...invalidSource, total_count: 1 })]),
+      );
       getLangText.mockImplementation(() => {
         throw new Error('Transformation error');
       });
@@ -653,10 +703,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     });
 
     it('should fall back to id-only rows when Chinese table mapping throws', async () => {
-      const mockResult = createMockSuccessResponse([mockSource], 1);
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
       jsonToList.mockImplementation(() => {
         throw new Error('Chinese transformation error');
@@ -672,17 +719,8 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('should default total to zero when non-empty table results omit the count', async () => {
-      const mockResult = {
-        data: [mockSource],
-        error: null,
-        count: null,
-        status: 200,
-        statusText: 'OK',
-      };
-
-      const builder = createQueryBuilder(mockResult);
-      supabase.from.mockReturnValue(builder);
+    it('should default total to zero when non-empty RPC results omit total_count', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([mockSource]));
       getLangText.mockReturnValue('Countless Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('-');
@@ -694,10 +732,14 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   });
 
   describe('getSourceTablePgroongaSearch', () => {
-    it('should perform full-text search', async () => {
-      const mockRpcResult = createMockRpcResponse([{ ...mockSource, total_count: 1 }]);
+    const searchSourceRow = (overrides: any = {}) => ({
+      ...mockSource,
+      total_count: 1,
+      ...overrides,
+    });
 
-      supabase.rpc.mockResolvedValue(mockRpcResult);
+    it('should perform full-text search', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
       getLangText.mockReturnValue('Test Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('Publication');
@@ -711,14 +753,17 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
 
       expect(supabase.auth.getSession).toHaveBeenCalled();
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources', {
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
         query_text: 'test query',
         filter_condition: mockFilterCondition,
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
       });
+      expect(result.data[0]).not.toHaveProperty('latestVersion');
       expect(result).toEqual({
         data: expect.any(Array),
         page: 1,
@@ -727,10 +772,8 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       });
     });
 
-    it('should include state_code when provided', async () => {
-      const mockRpcResult = createMockRpcResponse([{ ...mockSource, total_count: 1 }]);
-
-      supabase.rpc.mockResolvedValue(mockRpcResult);
+    it('should include state_code_filter when provided', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
       getLangText.mockReturnValue('Test Source');
       jsonToList.mockReturnValue([]);
       classificationToString.mockReturnValue('Publication');
@@ -745,17 +788,40 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_sources',
+        'pgroonga_search_sources_latest',
         expect.objectContaining({
-          state_code: 100,
+          state_code_filter: 100,
+        }),
+      );
+    });
+
+    it('should include team filters for searchable public and collaborative sources', async () => {
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
+      getLangText.mockReturnValue('Team Source');
+      jsonToList.mockReturnValue([]);
+      classificationToString.mockReturnValue('Publication');
+
+      await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'en',
+        'tg',
+        'team query',
+        mockFilterCondition,
+        undefined,
+        'team-123',
+      );
+
+      expect(supabase.rpc).toHaveBeenCalledWith(
+        'pgroonga_search_sources_latest',
+        expect.objectContaining({
+          data_source: 'tg',
+          team_id_filter: 'team-123',
         }),
       );
     });
 
     it('should handle empty search results', async () => {
-      const mockRpcResult = createMockRpcResponse([]);
-
-      supabase.rpc.mockResolvedValue(mockRpcResult);
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([]));
 
       const result = await getSourceTablePgroongaSearch(
         mockPaginationParams,
@@ -791,7 +857,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     });
 
     it('should map Chinese search rows and use default pagination values', async () => {
-      const rpcRows: any = [{ ...mockSource, total_count: 3 }];
+      const rpcRows: any = [searchSourceRow({ total_count: 3 })];
 
       supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
@@ -805,13 +871,15 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTablePgroongaSearch({}, 'zh', 'tg', '出版物', {});
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources', {
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
         query_text: '出版物',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
       });
       expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'zh', ['all']);
       expect(result).toMatchObject({ page: 1, success: true, total: 3 });
@@ -837,9 +905,24 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result).toEqual({});
     });
 
+    it('should skip team pgroonga searches when no team id is available', async () => {
+      const result = await getSourceTablePgroongaSearch(
+        mockPaginationParams,
+        'en',
+        'te',
+        'team query',
+        mockFilterCondition,
+      );
+
+      expect(supabase.rpc).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        data: [],
+        success: true,
+      });
+    });
+
     it('should fall back to id-only rows when pgroonga row mapping throws', async () => {
-      const rpcRows: any = [{ ...mockSource, total_count: 1 }];
-      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
       getLangText.mockImplementation(() => {
         throw new Error('Transformation error');
       });
@@ -861,8 +944,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     });
 
     it('should fall back to id-only rows when Chinese pgroonga row mapping throws', async () => {
-      const rpcRows: any = [{ ...mockSource, total_count: 1 }];
-      supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
+      supabase.rpc.mockResolvedValue(createMockRpcResponse([searchSourceRow()]));
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
       jsonToList.mockImplementation(() => {
         throw new Error('Chinese pgroonga transformation error');
@@ -914,14 +996,15 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTablePgroongaSearch({}, 'en', 'my', 'sparse', {}, 100);
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources', {
+      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
         query_text: 'sparse',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'my',
         this_user_id: 'user-123',
-        state_code: 100,
+        team_id_filter: null,
+        state_code_filter: 100,
       });
       expect(result).toMatchObject({ page: 1, success: true, total: 0 });
       expect(result.data[0]).toMatchObject({

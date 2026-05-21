@@ -21,6 +21,122 @@ import {
 } from '../general/api';
 import { genUnitGroupJsonOrdered } from './util';
 
+type UnitGroupListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  total_count?: number | string | null;
+};
+
+function normalizeUnitGroupTotalCount(row?: UnitGroupListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeUnitGroupSortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeUnitGroupSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function getOptionalTeamId(tid: string | []): string | null {
+  if (typeof tid === 'string' && tid.length > 0) {
+    return tid;
+  }
+  return null;
+}
+
+async function getUnitGroupTeamFilter(dataSource: string, tid: string | []) {
+  if (dataSource === 'te') {
+    return await getTeamIdByUserId();
+  }
+  if (dataSource === 'tg' || dataSource === 'co') {
+    return getOptionalTeamId(tid);
+  }
+  return null;
+}
+
+async function mapUnitGroupListRows(rows: UnitGroupListRpcRow[], lang: string): Promise<any[]> {
+  if (lang === 'zh') {
+    const classificationData = await getCachedClassificationData('UnitGroup', lang, ['all']);
+    return rows.map((i) => {
+      try {
+        const dataSet = i.json?.unitGroupDataSet;
+        const dataInfo = dataSet?.unitGroupInformation;
+        const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
+        const unitList = jsonToList(dataSet?.units?.unit);
+        const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+        const classifications = jsonToList(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+        );
+        const classificationZH = genClassificationZH(classifications, classificationData);
+
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          name: getLangText(dataInfo?.dataSetInformation?.['common:name'], lang),
+          classification: classificationToString(classificationZH),
+          refUnitId,
+          refUnitName: refUnit?.name ?? '-',
+          refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+          version: i.version,
+          modifiedAt: new Date(i.modified_at ?? ''),
+          teamId: i.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
+  }
+
+  return rows.map((i) => {
+    try {
+      const dataSet = i.json?.unitGroupDataSet;
+      const dataInfo = dataSet?.unitGroupInformation;
+      const classifications = jsonToList(
+        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+          'common:class'
+        ],
+      );
+      const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
+      const unitList = jsonToList(dataSet?.units?.unit);
+      const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
+
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        name: getLangText(dataInfo?.dataSetInformation?.['common:name'], lang),
+        classification: classificationToString(classifications),
+        refUnitId,
+        refUnitName: refUnit?.name ?? '-',
+        refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
+        version: i.version,
+        modifiedAt: new Date(i.modified_at ?? ''),
+        teamId: i.team_id,
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+      };
+    }
+  });
+}
+
 export async function createUnitGroup(
   id: string,
   data: any,
@@ -147,144 +263,52 @@ export async function getUnitGroupTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-        id,
-        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->"common:name",
-        json->unitGroupDataSet->unitGroupInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-        json->unitGroupDataSet->unitGroupInformation->quantitativeReference->>referenceToReferenceUnit,
-        json->unitGroupDataSet->units->unit,
-        version,
-        modified_at,
-        team_id
-    `;
-
-  const tableName = 'unitgroups';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
   }
 
-  const result = await query;
-
-  if (result.error) {
-    console.log('error', result.error);
+  const teamId = await getUnitGroupTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+    });
   }
 
-  if (result.data) {
-    if (result.data.length === 0) {
+  const result = await supabase.rpc('get_latest_unitgroup_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session.data.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    sort_by: normalizeUnitGroupSortBy(sortBy),
+    sort_direction: normalizeUnitGroupSortDirection(orderBy),
+  });
+
+  if (result?.error) {
+    console.log('error', result?.error);
+  }
+
+  if (result?.data) {
+    if (result?.data?.length === 0) {
       return Promise.resolve({
         data: [],
         success: true,
       });
     }
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('UnitGroup', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const unitList = jsonToList(i?.unit);
-            const refUnit = unitList.find(
-              (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
-            );
-
-            const classifications = jsonToList(i?.['common:class']);
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id,
-              id: i.id,
-              name: getLangText(i?.['common:name'], lang),
-              classification: classificationToString(classificationZH),
-              refUnitId: i?.referenceToReferenceUnit ?? '-',
-              refUnitName: refUnit?.name ?? '-',
-              refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const classifications = jsonToList(i?.['common:class']);
-          const unitList = jsonToList(i?.unit);
-          const refUnit = unitList.find(
-            (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
-          );
-          return {
-            key: i.id,
-            id: i.id,
-            name: getLangText(i?.['common:name'], lang),
-            classification: classificationToString(classifications),
-            refUnitId: i?.referenceToReferenceUnit ?? '-',
-            refUnitName: refUnit?.name ?? '-',
-            refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapUnitGroupListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: normalizeUnitGroupTotalCount(result.data[0]),
     });
   }
   return Promise.resolve({
@@ -304,12 +328,21 @@ export async function getUnitGroupTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
+  tid: string | [] = [],
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
   if (session.data.session) {
+    const teamId = await getUnitGroupTeamFilter(dataSource, tid);
+    if (dataSource === 'te' && !teamId) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
     result = await supabase.rpc(
-      'pgroonga_search_unitgroups',
+      'pgroonga_search_unitgroups_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -318,7 +351,8 @@ export async function getUnitGroupTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
+            team_id_filter: teamId,
+            state_code_filter: stateCode,
           }
         : {
             query_text: queryText,
@@ -327,6 +361,8 @@ export async function getUnitGroupTablePgroongaSearch(
             page_current: params.current ?? 1,
             data_source: dataSource,
             this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: null,
           },
     );
   }
@@ -340,85 +376,13 @@ export async function getUnitGroupTablePgroongaSearch(
         success: true,
       });
     }
-    const totalCount = result.data[0].total_count;
-
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('UnitGroup', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
-            const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
-            const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
-            const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-              classification: classificationToString(classificationZH),
-              refUnitId: refUnitId,
-              refUnitName: refUnit?.name ?? '-',
-              refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-              version: i.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.unitGroupDataSet?.unitGroupInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
-          const unitList = jsonToList(i.json?.unitGroupDataSet?.units?.unit);
-          const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-            classification: classificationToString(classifications),
-            refUnitId: refUnitId,
-            refUnitName: refUnit?.name ?? '-',
-            refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = await mapUnitGroupListRows(result.data, lang);
 
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: totalCount ?? 0,
+      total: normalizeUnitGroupTotalCount(result.data[0]),
     });
   }
 

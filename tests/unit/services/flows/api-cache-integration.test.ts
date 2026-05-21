@@ -22,12 +22,19 @@ jest.mock('@/services/locations/cache', () => ({
   getCachedLocationData: jest.fn(),
 }));
 
+jest.mock('@/services/locations/api', () => ({
+  getILCDLocationByValues: jest.fn(),
+}));
+
 jest.mock('@/services/classifications/cache', () => ({
   getCachedFlowCategorizationAll: jest.fn(),
 }));
 
 const { getCachedLocationData: mockGetCachedLocationData } = jest.requireMock(
   '@/services/locations/cache',
+);
+const { getILCDLocationByValues: mockGetILCDLocationByValues } = jest.requireMock(
+  '@/services/locations/api',
 );
 const { getCachedFlowCategorizationAll: mockGetCachedFlowCategorizationAll } = jest.requireMock(
   '@/services/classifications/cache',
@@ -128,9 +135,29 @@ const {
   },
 } = jest.requireMock('@/services/supabase');
 
+const mockLatestFlowVersions = (result: any) => {
+  mockRpc.mockImplementation((functionName: string) => {
+    if (functionName === 'get_latest_flow_versions') {
+      mockFrom('flows');
+      return Promise.resolve(result);
+    }
+    return Promise.resolve({ data: [] });
+  });
+};
+
 describe('Flows API Cache Integration (commit cbe029ea)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'test-token',
+          user: { id: 'user-id' },
+        },
+      },
+      error: null,
+    });
+    mockGetILCDLocationByValues.mockResolvedValue({ data: [] });
   });
 
   describe('getFlowTableAll with caching', () => {
@@ -162,13 +189,12 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         categoryElementaryFlow: [{ id: 'elem-1', label: '自然资源' }],
       };
 
-      // Mock database query
-      const query = new MockQuery({
+      // Mock latest-version RPC
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 1,
       });
-      mockFrom.mockReturnValue(query);
 
       // Mock cache functions
       mockGetCachedLocationData.mockResolvedValue(mockLocationData);
@@ -222,12 +248,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
 
       const mockLocationData = [{ '@value': 'US', '#text': 'United States' }];
 
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 1,
       });
-      mockFrom.mockReturnValue(query);
 
       mockGetCachedLocationData.mockResolvedValue(mockLocationData);
       mockGetCachedFlowCategorizationAll.mockResolvedValue(null);
@@ -285,12 +310,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         { '@value': 'US', '#text': '美国' },
       ];
 
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 3,
       });
-      mockFrom.mockReturnValue(query);
 
       mockGetCachedLocationData.mockResolvedValue(mockLocationData);
       mockGetCachedFlowCategorizationAll.mockResolvedValue(null);
@@ -324,12 +348,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         },
       ];
 
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 1,
       });
-      mockFrom.mockReturnValue(query);
 
       mockGetCachedLocationData.mockResolvedValue([]);
       mockGetCachedFlowCategorizationAll.mockResolvedValue(null);
@@ -352,12 +375,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
 
     it('should handle database errors gracefully', async () => {
       // Arrange
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: null,
         error: { message: 'Database connection failed' },
         count: 0,
       });
-      mockFrom.mockReturnValue(query);
 
       // Act
       const result = await getFlowTableAll(
@@ -595,12 +617,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         },
       ];
 
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 1,
       });
-      mockFrom.mockReturnValue(query);
 
       // Track call order
       const callOrder: string[] = [];
@@ -665,12 +686,11 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         },
       ];
 
-      const query = new MockQuery({
+      mockLatestFlowVersions({
         data: mockFlowData,
         error: null,
         count: 1,
       });
-      mockFrom.mockReturnValue(query);
 
       // Mock cache error
       mockGetCachedLocationData.mockRejectedValue(new Error('Cache error'));

@@ -90,12 +90,15 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>
-      all-versions
-      {addVersionComponent?.({ newVersion: '02.00.000' })}
-    </div>
-  ),
+  default: ({ id, addVersionComponent, operationRender }: any) => {
+    operationRender?.({ id, version: '02.00.000' });
+    return (
+      <div data-testid='all-versions'>
+        all-versions
+        {addVersionComponent?.({ newVersion: '02.00.000' })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -500,6 +503,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         undefined,
+        'team-1',
       ),
     );
 
@@ -513,6 +517,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         { key: 'baseName', lang: 'en', order: 'asc' },
+        'team-1',
       ),
     );
 
@@ -526,6 +531,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         { key: 'baseName', lang: 'en', order: 'desc' },
+        'team-1',
       ),
     );
 
@@ -539,6 +545,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         { key: 'common:class', order: 'desc' },
+        'team-1',
       ),
     );
 
@@ -552,6 +559,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         { key: 'common:class', order: 'asc' },
+        'team-1',
       ),
     );
 
@@ -565,6 +573,7 @@ describe('LifeCycleModelsPage', () => {
         {},
         '20',
         undefined,
+        'team-1',
       ),
     );
 
@@ -737,6 +746,34 @@ describe('LifeCycleModelsPage', () => {
           .queryAllByTestId('lifecycle-view')
           .some((node) => node.textContent?.includes('"autoOpen":true')),
       ).toBe(false),
+    );
+  });
+
+  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+    mockLocation = {
+      pathname: '/mydata/lifecyclemodels',
+      search: '',
+    };
+    mockGetTeamById.mockResolvedValueOnce({ data: [undefined] });
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith(''));
+    await waitFor(() => expect(mockGetLifeCycleModelTableAll).toHaveBeenCalled());
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'steel',
+        {},
+        'all',
+        undefined,
+        '',
+      ),
     );
   });
 });

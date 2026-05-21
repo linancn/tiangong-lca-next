@@ -467,6 +467,7 @@ describe('Contacts workflow', () => {
       'Search Contact',
       {},
       'all',
+      '',
     ]);
 
     await waitFor(() => expect(screen.getByText('Search Result Contact')).toBeInTheDocument());

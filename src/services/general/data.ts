@@ -1,3 +1,5 @@
+import type { Key } from 'react';
+
 export type ListPagination = {
   total: number;
   pageSize: number;
@@ -5,6 +7,15 @@ export type ListPagination = {
 };
 
 export type DataTabKey = 'tg' | 'co' | 'my' | 'te';
+
+export type VersionedDataRow = {
+  key?: Key;
+  id: string;
+  version: string;
+  modifiedAt: Date;
+  stateCode?: number;
+  teamId: string;
+};
 
 export type LangTextEntry = {
   '@xml:lang'?: string;

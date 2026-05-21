@@ -76,9 +76,44 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '02.00.000' })}</div>
-  ),
+  default: function MockAllVersions({
+    addVersionComponent,
+    operationColumnWidth,
+    operationRender,
+  }: any) {
+    const React = require('react');
+    const [showOperation, setShowOperation] = React.useState(false);
+    const allVersionsActionRef = React.useMemo(
+      () => ({
+        current: {
+          reload: () => undefined,
+        },
+      }),
+      [],
+    );
+
+    return (
+      <div data-testid='all-versions' data-operation-column-width={operationColumnWidth}>
+        <button type='button' onClick={() => setShowOperation(true)}>
+          render-all-version-actions
+        </button>
+        {showOperation && (
+          <div data-testid='all-version-operation-render'>
+            {operationRender?.(
+              {
+                id: 'contact-version',
+                version: '0.9.0',
+                teamId: '',
+                stateCode: 10,
+              },
+              { actionRef: allVersionsActionRef },
+            )}
+          </div>
+        )}
+        {addVersionComponent?.({ newVersion: '02.00.000' })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -347,12 +382,43 @@ describe('ContactsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Contact Team' })).toBeInTheDocument();
     expect(await screen.findByTestId('contact-view')).toHaveTextContent('view:contact-1');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute(
+      'data-operation-column-width',
+      '216',
+    );
     expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
     expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
     expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
 
     await userEvent.click(screen.getByRole('button', { name: /close-contact-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-contact-delete/i }));
+  });
+
+  it('renders all-version rows with the same contact actions as the outer list', async () => {
+    renderWithProviders(<ContactsPage />);
+
+    await screen.findByTestId('contact-view');
+    await userEvent.click(screen.getByRole('button', { name: /render-all-version-actions/i }));
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(within(allVersionActions).getByTestId('contact-view')).toHaveTextContent(
+      'view:contact-version',
+    );
+    expect(within(allVersionActions).getByTestId('contact-edit')).toHaveTextContent(
+      'edit:contact-version',
+    );
+    expect(within(allVersionActions).getByTestId('contact-delete')).toHaveTextContent(
+      'delete:contact-version',
+    );
+    expect(within(allVersionActions).getByTestId('export-data')).toHaveTextContent(
+      'export:contact-version:0.9.0',
+    );
+    expect(within(allVersionActions).getByTestId('contact-create')).toHaveTextContent(
+      '"actionType":"copy"',
+    );
+    expect(
+      within(allVersionActions).getByRole('button', { name: /contribute-action/i }),
+    ).toBeInTheDocument();
   });
 
   it('uses compact mobile controls for my data rows', async () => {
@@ -403,6 +469,7 @@ describe('ContactsPage', () => {
         'alice',
         {},
         '20',
+        'team-1',
       ),
     );
   });

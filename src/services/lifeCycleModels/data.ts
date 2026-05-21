@@ -1,16 +1,11 @@
 import type { LifeCycleModel } from '@tiangong-lca/tidas-sdk/types';
-import type { LangTextValue } from '../general/data';
+import type { LangTextValue, VersionedDataRow } from '../general/data';
 import type { ProcessExchangeData, ProcessTable } from '../processes/data';
 
-export type LifeCycleModelTable = {
-  id: string;
+export type LifeCycleModelTable = VersionedDataRow & {
   name: string;
   generalComment: string;
   classification: string;
-  version: string;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
 };
 
 export type Up2DownEdge = {
