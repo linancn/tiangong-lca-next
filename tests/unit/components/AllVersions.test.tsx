@@ -293,7 +293,15 @@ describe('AllVersionsList Component', () => {
       </ConfigProvider>,
     );
 
-    expect(screen.getByText('3').closest('.ant-badge-count')).toBeInTheDocument();
+    const badge = screen.getByText('3').closest('.ant-badge-count');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveStyle({
+      minWidth: '14px',
+      height: '14px',
+      fontSize: '10px',
+      fontWeight: '400',
+      lineHeight: '14px',
+    });
   });
 
   it('should default disabled to false when the prop is omitted', () => {
