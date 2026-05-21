@@ -83,7 +83,7 @@ npm install
 | coverage report + queue summary | `npm run test:coverage:report` |
 | build | `npm run build` |
 | protected-branch parity gate | `npm run prepush:gate` |
-| repo AI-doc lint | `~/.cargo/bin/docpact validate-config --root . --strict && ~/.cargo/bin/docpact lint --root . --base <base> --head <head> --mode enforce` |
+| repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 ## Command Rules
 
