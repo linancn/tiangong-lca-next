@@ -226,7 +226,6 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
               columns={getAllVersionsColumns(processColumns, 6)}
               searchColume={processAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as ProcessTable)

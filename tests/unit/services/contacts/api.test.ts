@@ -389,7 +389,6 @@ describe('Contacts API Service', () => {
       version: '01.00.002',
       modified_at: '2023-01-01T00:00:00Z',
       team_id: 'team-1',
-      version_count: 2,
       total_count: 1,
       json: {
         contactDataSet: {
@@ -440,7 +439,6 @@ describe('Contacts API Service', () => {
         id: 'contact-1',
         shortName: 'Contact 1',
         version: '01.00.002',
-        versionCount: 2,
       });
       expect(result.data[0]).not.toHaveProperty('latestVersion');
     });
@@ -468,7 +466,6 @@ describe('Contacts API Service', () => {
       mockRpc.mockResolvedValue({
         data: [
           latestContactRow({
-            version_count: null,
             modified_at: null,
             json: {
               contactDataSet: {
@@ -497,7 +494,6 @@ describe('Contacts API Service', () => {
 
       expect(result.data[0]).toMatchObject({
         email: '-',
-        versionCount: undefined,
       });
       expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
     });
@@ -656,7 +652,6 @@ describe('Contacts API Service', () => {
         data: [
           latestContactRow({
             id: 'contact-defaults',
-            version_count: null,
             modified_at: null,
             total_count: null,
             json: {
@@ -694,7 +689,6 @@ describe('Contacts API Service', () => {
         id: 'contact-defaults',
         email: '-',
       });
-      expect(result.data[0].versionCount).toBeUndefined();
     });
   });
 
@@ -704,7 +698,6 @@ describe('Contacts API Service', () => {
       version: '01.00.002',
       modified_at: '2023-01-01T00:00:00Z',
       team_id: 'team-1',
-      version_count: 2,
       total_count: 1,
       json: {
         contactDataSet: {
@@ -756,7 +749,6 @@ describe('Contacts API Service', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
-      expect(result.data[0].versionCount).toBe(2);
       expect(result.data[0]).not.toHaveProperty('latestVersion');
     });
 

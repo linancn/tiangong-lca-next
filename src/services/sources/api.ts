@@ -27,17 +27,8 @@ type SourceListRpcRow = {
   version?: string;
   modified_at?: string;
   team_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeSourceVersionCount(row: SourceListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeSourceTotalCount(row?: SourceListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -92,7 +83,6 @@ async function mapSourceListRows(rows: SourceListRpcRow[], lang: string): Promis
           sourceCitation: dataInfo?.sourceCitation ?? '-',
           publicationType: dataInfo?.publicationType ?? '-',
           version: i.version,
-          versionCount: normalizeSourceVersionCount(i),
           modifiedAt: new Date(i.modified_at ?? ''),
           teamId: i.team_id,
         };
@@ -119,7 +109,6 @@ async function mapSourceListRows(rows: SourceListRpcRow[], lang: string): Promis
         sourceCitation: dataInfo?.sourceCitation ?? '-',
         publicationType: dataInfo?.publicationType ?? '-',
         version: i.version,
-        versionCount: normalizeSourceVersionCount(i),
         modifiedAt: new Date(i.modified_at ?? ''),
         teamId: i.team_id,
       };

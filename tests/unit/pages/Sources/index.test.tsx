@@ -31,7 +31,6 @@ const mockGetTeamById = jest.fn();
 const baseSourceRow = {
   id: 'source-1',
   version: '1.0.0',
-  versionCount: 2,
   shortName: 'ISO 14044',
   classification: 'Standard',
   publicationType: 'Monograph',
@@ -79,7 +78,6 @@ jest.mock('@/components/AllVersions', () => ({
   default: function MockAllVersions({
     addVersionComponent,
     operationColumnWidth,
-    versionCount,
     operationRender,
   }: any) {
     const React = require('react');
@@ -94,11 +92,7 @@ jest.mock('@/components/AllVersions', () => ({
     );
 
     return (
-      <div
-        data-testid='all-versions'
-        data-operation-column-width={operationColumnWidth}
-        data-version-count={versionCount}
-      >
+      <div data-testid='all-versions' data-operation-column-width={operationColumnWidth}>
         <button type='button' onClick={() => setShowOperation(true)}>
           render-all-version-actions
         </button>
@@ -394,7 +388,6 @@ describe('SourcesPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Source Team' })).toBeInTheDocument();
     expect(await screen.findByTestId('source-view')).toHaveTextContent('view:source-1');
-    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-version-count', '2');
     expect(screen.getByTestId('all-versions')).toHaveAttribute(
       'data-operation-column-width',
       '216',

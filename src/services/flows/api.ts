@@ -85,17 +85,8 @@ type FlowListRpcRow = {
   version?: string;
   modified_at?: string;
   team_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeFlowVersionCount(row: FlowListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeFlowTotalCount(row?: FlowListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -322,7 +313,6 @@ export async function getFlowTableAll(
       version: i.version,
       modified_at: i.modified_at,
       team_id: i.team_id,
-      version_count: i.version_count,
     })),
   };
 
@@ -380,7 +370,6 @@ export async function getFlowTableAll(
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -418,7 +407,6 @@ export async function getFlowTableAll(
             version: i.version,
             modifiedAt: new Date(i.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -559,7 +547,6 @@ export async function getFlowTablePgroongaSearch(
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -596,7 +583,6 @@ export async function getFlowTablePgroongaSearch(
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -714,7 +700,6 @@ export async function flow_hybrid_search(
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -751,7 +736,6 @@ export async function flow_hybrid_search(
             version: i.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeFlowVersionCount(i),
           };
         } catch (e) {
           console.error(e);

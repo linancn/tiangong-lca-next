@@ -206,7 +206,6 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
               columns={getAllVersionsColumns(contactColumns, 4)}
               searchColume={contactAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as ContactTable)

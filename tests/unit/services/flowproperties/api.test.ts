@@ -413,7 +413,6 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       version: '01.00.001',
       modified_at: '2024-01-01T00:00:00Z',
       team_id: 'team-1',
-      version_count: 2,
       total_count: 7,
       json: {
         flowPropertyDataSet: {
@@ -492,7 +491,6 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
             refUnitGroupId: 'ug-1',
             refUnitGroup: 'Reference unit group',
             version: '01.00.001',
-            versionCount: 2,
             modifiedAt: new Date('2024-01-01T00:00:00Z'),
             teamId: 'team-1',
           },
@@ -759,7 +757,6 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         data: [
           latestFlowpropertyRow({
             id: 'fp-defaults',
-            version_count: null,
             total_count: null,
             json: {
               flowPropertyDataSet: {

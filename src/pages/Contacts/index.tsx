@@ -256,7 +256,6 @@ const TableList: FC = () => {
                 state_code
               `}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <ContactCreate
                   newVersion={newVersion}

@@ -27,17 +27,8 @@ type FlowpropertyListRpcRow = {
   version?: string;
   modified_at?: string;
   team_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeFlowpropertyVersionCount(row: FlowpropertyListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeFlowpropertyTotalCount(row?: FlowpropertyListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -103,7 +94,6 @@ async function mapFlowpropertyListRows(
           refUnitGroupId: referenceUnitGroup?.['@refObjectId'] ?? '-',
           refUnitGroup: getLangText(referenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
           version: i.version,
-          versionCount: normalizeFlowpropertyVersionCount(i),
           modifiedAt: new Date(i.modified_at ?? ''),
           teamId: i.team_id,
         };
@@ -137,7 +127,6 @@ async function mapFlowpropertyListRows(
         refUnitGroupId: referenceUnitGroup?.['@refObjectId'] ?? '-',
         refUnitGroup: getLangText(referenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
         version: i.version,
-        versionCount: normalizeFlowpropertyVersionCount(i),
         modifiedAt: new Date(i.modified_at ?? ''),
         teamId: i.team_id,
       };

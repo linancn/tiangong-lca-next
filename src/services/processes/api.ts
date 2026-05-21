@@ -89,17 +89,8 @@ type ProcessListRpcRow = {
   modified_at?: string;
   team_id?: string;
   model_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeProcessVersionCount(row: ProcessListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeProcessTotalCount(row?: ProcessListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -169,7 +160,6 @@ function toProcessTableSelectRow(row: ProcessListRpcRow): any {
     modified_at: row.modified_at,
     team_id: row.team_id,
     model_id: row.model_id,
-    version_count: row.version_count,
   };
 }
 
@@ -208,7 +198,6 @@ async function mapProcessTableRows(rawRows: any[], lang: string): Promise<Proces
         modifiedAt: new Date(item.modified_at),
         teamId: item.team_id,
         modelId: item.model_id,
-        versionCount: normalizeProcessVersionCount(item),
       };
     } catch (error) {
       console.error(error);
@@ -918,7 +907,6 @@ export async function getProcessTablePgroongaSearch(
               modifiedAt: new Date(i.modified_at),
               teamId: i.team_id,
               modelId: i.model_id,
-              versionCount: normalizeProcessVersionCount(i),
             };
           } catch (e) {
             console.error(e);
@@ -965,7 +953,6 @@ export async function getProcessTablePgroongaSearch(
             modifiedAt: new Date(i.modified_at),
             teamId: i.team_id,
             modelId: i.model_id,
-            versionCount: normalizeProcessVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -1310,7 +1297,6 @@ export async function process_hybrid_search(
               modifiedAt: new Date(i.modified_at),
               teamId: i.team_id,
               modelId: i.model_id,
-              versionCount: normalizeProcessVersionCount(i),
             };
           } catch (e) {
             console.error(e);
@@ -1357,7 +1343,6 @@ export async function process_hybrid_search(
             modifiedAt: new Date(i.modified_at),
             teamId: i.team_id,
             modelId: i.model_id,
-            versionCount: normalizeProcessVersionCount(i),
           };
         } catch (e) {
           console.error(e);

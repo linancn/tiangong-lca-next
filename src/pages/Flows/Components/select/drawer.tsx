@@ -246,7 +246,6 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
               columns={getAllVersionsColumns(FlowsColumns, 5)}
               searchColume={flowAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) => renderVersionSelectActions(versionRow as FlowTable)}
               operationColumnWidth={activeTabKey === 'my' ? 184 : 88}

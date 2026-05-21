@@ -174,7 +174,6 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
               columns={getAllVersionsColumns(FlowsColumns, 5)}
               searchColume={flowAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) => renderVersionSelectActions(versionRow as FlowTable)}
               operationColumnWidth={88}

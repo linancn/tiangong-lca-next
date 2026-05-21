@@ -216,7 +216,6 @@ const TableList: FC = () => {
                 model_id
               `}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <ProcessCreate
                   newVersion={newVersion}

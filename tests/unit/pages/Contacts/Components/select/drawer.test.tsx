@@ -38,7 +38,6 @@ jest.mock('@/components/AllVersions', () => ({
     dataSource,
     onSelectVersion,
     operationRender,
-    versionCount,
   }: any) {
     const React = require('react');
     const [showOperation, setShowOperation] = React.useState(false);
@@ -53,7 +52,7 @@ jest.mock('@/components/AllVersions', () => ({
     };
 
     return (
-      <div data-testid={`all-versions-${dataSource}`} data-version-count={versionCount}>
+      <div data-testid={`all-versions-${dataSource}`}>
         <button type='button' onClick={() => setShowOperation(true)}>
           {`all-versions-${dataSource}`}
         </button>
@@ -110,7 +109,6 @@ const mockGetContactTableAll = jest.fn(
       {
         id: `contact-${dataSource}`,
         version: '1.0.0',
-        versionCount: 2,
         shortName: `${dataSource} contact`,
         name: `${dataSource} contact`,
         classification: 'classification',
@@ -127,7 +125,6 @@ const mockGetContactTablePgroongaSearch = jest.fn(
       {
         id: `contact-${dataSource}-search`,
         version: '2.0.0',
-        versionCount: 2,
         shortName: `${dataSource}:${keyword}`,
         name: `${dataSource}:${keyword}`,
         classification: 'classification',
@@ -372,9 +369,6 @@ describe('ContactSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
     await screen.findByText('view contact-co:1.0.0');
-
-    expect(screen.getByTestId('all-versions-co')).toHaveAttribute('data-version-count', '2');
-
     await userEvent.click(screen.getByRole('button', { name: /all-versions-co/i }));
 
     const allVersionActions = screen.getByTestId('all-version-operation-render');

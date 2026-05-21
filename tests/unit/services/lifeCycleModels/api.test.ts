@@ -380,7 +380,6 @@ describe('getLifeCycleModelTableAll', () => {
             version: sampleVersion,
             modified_at: '2026-03-17T10:00:00.000Z',
             team_id: 'team-1',
-            version_count: '5',
           },
         ],
         error: null,
@@ -407,7 +406,6 @@ describe('getLifeCycleModelTableAll', () => {
           generalComment: 'localized-text',
           version: sampleVersion,
           teamId: 'team-1',
-          versionCount: 5,
         },
       ],
     });

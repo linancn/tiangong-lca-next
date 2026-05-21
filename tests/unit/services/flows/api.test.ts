@@ -540,7 +540,6 @@ describe('getFlowTableAll', () => {
           version: '01.00.001',
           modified_at: '2024-01-01T00:00:00Z',
           team_id: 'team-1',
-          version_count: 3,
           name: {
             baseName: [{ '@xml:lang': 'en', '#text': 'Water' }],
           },
@@ -594,7 +593,6 @@ describe('getFlowTableAll', () => {
           version: '01.00.001',
           modifiedAt: new Date('2024-01-01T00:00:00Z'),
           teamId: 'team-1',
-          versionCount: 3,
         },
       ],
       page: 1,
@@ -1117,7 +1115,6 @@ describe('getFlowTableAll', () => {
           version: '01.00.014',
           modifiedAt: new Date('2024-01-14T00:00:00Z'),
           teamId: undefined,
-          versionCount: undefined,
         },
       ],
       page: 1,

@@ -450,7 +450,6 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   describe('getSourceTableAll', () => {
     const latestSourceRow = (overrides: any = {}) => ({
       ...mockSource,
-      version_count: 2,
       total_count: 1,
       ...overrides,
     });
@@ -486,7 +485,6 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result.success).toBe(true);
       expect(result.data[0].id).toBe('source-123');
       expect(result.data[0].classification).toBe('Publication');
-      expect(result.data[0].versionCount).toBe(2);
       expect(result.data[0]).not.toHaveProperty('latestVersion');
       expect('total' in result && result.total).toBe(1);
     });
@@ -736,7 +734,6 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
   describe('getSourceTablePgroongaSearch', () => {
     const searchSourceRow = (overrides: any = {}) => ({
       ...mockSource,
-      version_count: 2,
       total_count: 1,
       ...overrides,
     });
@@ -766,7 +763,6 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
         team_id_filter: null,
         state_code_filter: null,
       });
-      expect(result.data[0].versionCount).toBe(2);
       expect(result.data[0]).not.toHaveProperty('latestVersion');
       expect(result).toEqual({
         data: expect.any(Array),

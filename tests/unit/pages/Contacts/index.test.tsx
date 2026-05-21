@@ -31,7 +31,6 @@ const mockGetTeamById = jest.fn();
 const baseContactRow = {
   id: 'contact-1',
   version: '1.0.0',
-  versionCount: 2,
   shortName: 'Alice',
   name: 'Alice Team Contact',
   classification: 'Stakeholder',
@@ -81,7 +80,6 @@ jest.mock('@/components/AllVersions', () => ({
     addVersionComponent,
     operationColumnWidth,
     operationRender,
-    versionCount,
   }: any) {
     const React = require('react');
     const [showOperation, setShowOperation] = React.useState(false);
@@ -95,11 +93,7 @@ jest.mock('@/components/AllVersions', () => ({
     );
 
     return (
-      <div
-        data-testid='all-versions'
-        data-operation-column-width={operationColumnWidth}
-        data-version-count={versionCount}
-      >
+      <div data-testid='all-versions' data-operation-column-width={operationColumnWidth}>
         <button type='button' onClick={() => setShowOperation(true)}>
           render-all-version-actions
         </button>
@@ -388,7 +382,6 @@ describe('ContactsPage', () => {
 
     expect(screen.getByRole('heading', { name: 'Contact Team' })).toBeInTheDocument();
     expect(await screen.findByTestId('contact-view')).toHaveTextContent('view:contact-1');
-    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-version-count', '2');
     expect(screen.getByTestId('all-versions')).toHaveAttribute(
       'data-operation-column-width',
       '216',

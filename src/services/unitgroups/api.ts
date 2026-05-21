@@ -27,17 +27,8 @@ type UnitGroupListRpcRow = {
   version?: string;
   modified_at?: string;
   team_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeUnitGroupVersionCount(row: UnitGroupListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeUnitGroupTotalCount(row?: UnitGroupListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -100,7 +91,6 @@ async function mapUnitGroupListRows(rows: UnitGroupListRpcRow[], lang: string): 
           refUnitName: refUnit?.name ?? '-',
           refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
           version: i.version,
-          versionCount: normalizeUnitGroupVersionCount(i),
           modifiedAt: new Date(i.modified_at ?? ''),
           teamId: i.team_id,
         };
@@ -135,7 +125,6 @@ async function mapUnitGroupListRows(rows: UnitGroupListRpcRow[], lang: string): 
         refUnitName: refUnit?.name ?? '-',
         refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
         version: i.version,
-        versionCount: normalizeUnitGroupVersionCount(i),
         modifiedAt: new Date(i.modified_at ?? ''),
         teamId: i.team_id,
       };

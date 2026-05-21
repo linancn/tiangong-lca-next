@@ -12,7 +12,6 @@ export type VersionedDataRow = {
   key?: Key;
   id: string;
   version: string;
-  versionCount?: number;
   modifiedAt: Date;
   stateCode?: number;
   teamId: string;

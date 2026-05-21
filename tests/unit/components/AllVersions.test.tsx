@@ -286,24 +286,6 @@ describe('AllVersionsList Component', () => {
     expect(mockGetDataSource).toHaveBeenCalledWith('/test-path');
   });
 
-  it('should show versionCount on the all-versions action when multiple versions exist', () => {
-    render(
-      <ConfigProvider>
-        <AllVersionsList {...defaultProps} versionCount={3} />
-      </ConfigProvider>,
-    );
-
-    const badge = screen.getByText('3').closest('.ant-badge-count');
-    expect(badge).toBeInTheDocument();
-    expect(badge).toHaveStyle({
-      minWidth: '14px',
-      height: '14px',
-      fontSize: '10px',
-      fontWeight: '400',
-      lineHeight: '14px',
-    });
-  });
-
   it('should default disabled to false when the prop is omitted', () => {
     const propsWithoutDisabled = Object.fromEntries(
       Object.entries(defaultProps).filter(([key]) => key !== 'disabled'),

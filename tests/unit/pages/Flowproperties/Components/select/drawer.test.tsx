@@ -57,9 +57,9 @@ jest.mock('@/pages/Flowproperties/Components/delete', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ id, versionCount, addVersionComponent, operationRender, onSelectVersion }: any) => (
+  default: ({ id, addVersionComponent, operationRender, onSelectVersion }: any) => (
     <div data-testid='all-versions'>
-      <span>{`all versions ${id}:${versionCount ?? 0}`}</span>
+      <span>{`all versions `}</span>
       {addVersionComponent?.({ newVersion: '10.00.000' })}
       <button type='button' onClick={() => onSelectVersion?.({ id })}>
         {`select-invalid-version ${id}`}

@@ -455,7 +455,6 @@ describe('ModelToolbarAddThroughFlow', () => {
         {latestProTableProps.columns[5].render(null, {
           id: 'flow-1',
           version: '01.00.000',
-          versionCount: 2,
         })}
       </>,
     );

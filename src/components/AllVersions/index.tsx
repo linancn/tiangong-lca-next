@@ -11,7 +11,7 @@ import { getDataSource } from '@/services/general/util';
 import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Badge, Button, Card, ConfigProvider, Drawer, Space, Tooltip, theme } from 'antd';
+import { Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key, MutableRefObject, ReactElement, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
@@ -23,7 +23,6 @@ interface AllVersionsListProps {
   lang: string;
   dataSource?: string;
   disabled?: boolean;
-  versionCount?: number;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
   operationRender?: (
     row: any,
@@ -48,7 +47,6 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   lang,
   dataSource: dataSourceOverride,
   disabled = false,
-  versionCount,
   addVersionComponent,
   operationRender,
   operationColumnWidth,
@@ -62,18 +60,6 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
   const tableDataRef = useRef<VersionedDataRow[]>([]);
   const selectable = Boolean(onSelectVersion);
-  const { token } = theme.useToken();
-  const versionCountBadgeStyle = {
-    minWidth: 14,
-    height: 14,
-    padding: '0 4px',
-    color: token.colorTextTertiary,
-    fontSize: 10,
-    fontWeight: 400,
-    lineHeight: '14px',
-    backgroundColor: token.colorBgContainer,
-    boxShadow: `0 0 0 1px ${token.colorBorderSecondary} inset`,
-  };
 
   useEffect(() => {
     if (!showAllVersionsModal) {
@@ -167,11 +153,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       <Tooltip
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
       >
-        <Badge
-          size='small'
-          count={versionCount && versionCount > 1 ? versionCount : 0}
-          style={versionCountBadgeStyle}
-        >
+        <span>
           <Button
             disabled={disabled}
             size='small'
@@ -179,7 +161,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
             icon={<BarsOutlined />}
             onClick={() => setShowAllVersionsModal(true)}
           ></Button>
-        </Badge>
+        </span>
       </Tooltip>
 
       <Drawer

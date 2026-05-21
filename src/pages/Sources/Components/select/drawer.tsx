@@ -182,7 +182,6 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               columns={getAllVersionsColumns(sourceColumns, 4)}
               searchColume={sourceAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as SourceTable)

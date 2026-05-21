@@ -417,7 +417,6 @@ describe('getUnitGroupTableAll', () => {
     version: '01.00.001',
     modified_at: '2024-01-01T00:00:00Z',
     team_id: 'team-1',
-    version_count: 2,
     total_count: 7,
     json: {
       unitGroupDataSet: {
@@ -488,7 +487,6 @@ describe('getUnitGroupTableAll', () => {
           refUnitName: 'Kilogram',
           refUnitGeneralComment: 'Reference unit',
           version: '01.00.001',
-          versionCount: 2,
           modifiedAt: new Date('2024-01-01T00:00:00Z'),
           teamId: 'team-1',
         },
@@ -711,7 +709,6 @@ describe('getUnitGroupTableAll', () => {
         latestUnitGroupRow({
           id: 'ug-e1',
           version: '01.00.000',
-          version_count: null,
           total_count: 1,
           json: {
             unitGroupDataSet: {
@@ -822,7 +819,6 @@ describe('getUnitGroupTableAll', () => {
           version: '02.00.000',
           modified_at: null,
           team_id: 'team-zh-sparse',
-          version_count: null,
           total_count: null,
           json: {
             unitGroupDataSet: {
@@ -920,7 +916,6 @@ describe('getUnitGroupTableAll', () => {
           refUnitName: '-',
           refUnitGeneralComment: '-',
           version: '02.00.001',
-          versionCount: 2,
           modifiedAt: expect.any(Date),
           teamId: 'team-en-sparse',
         },

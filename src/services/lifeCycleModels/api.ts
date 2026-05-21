@@ -45,17 +45,8 @@ type LifeCycleModelListRpcRow = {
   version?: string;
   modified_at?: string;
   team_id?: string;
-  version_count?: number | string | null;
   total_count?: number | string | null;
 };
-
-function normalizeLifeCycleModelVersionCount(row: LifeCycleModelListRpcRow): number | undefined {
-  const versionCount = Number(row.version_count ?? 0);
-  if (!Number.isFinite(versionCount) || versionCount <= 0) {
-    return undefined;
-  }
-  return versionCount;
-}
 
 function normalizeLifeCycleModelTotalCount(row?: LifeCycleModelListRpcRow): number {
   return Number(row?.total_count ?? 0) || 0;
@@ -566,7 +557,6 @@ export async function getLifeCycleModelTableAll(
       version: i.version,
       modified_at: i.modified_at,
       team_id: i.team_id,
-      version_count: i.version_count,
     })),
   };
 
@@ -599,7 +589,6 @@ export async function getLifeCycleModelTableAll(
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
-              versionCount: normalizeLifeCycleModelVersionCount(i),
             };
           } catch (e) {
             console.error(e);
@@ -622,7 +611,6 @@ export async function getLifeCycleModelTableAll(
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeLifeCycleModelVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -736,7 +724,6 @@ export async function getLifeCycleModelTablePgroongaSearch(
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
-              versionCount: normalizeLifeCycleModelVersionCount(i),
             };
           } catch (e) {
             console.error(e);
@@ -767,7 +754,6 @@ export async function getLifeCycleModelTablePgroongaSearch(
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeLifeCycleModelVersionCount(i),
           };
         } catch (e) {
           console.error(e);
@@ -853,7 +839,6 @@ export async function lifeCycleModel_hybrid_search(
               version: i?.version,
               modifiedAt: new Date(i?.modified_at),
               teamId: i?.team_id,
-              versionCount: normalizeLifeCycleModelVersionCount(i),
             };
           } catch (e) {
             console.error(e);
@@ -884,7 +869,6 @@ export async function lifeCycleModel_hybrid_search(
             version: i?.version,
             modifiedAt: new Date(i?.modified_at),
             teamId: i?.team_id,
-            versionCount: normalizeLifeCycleModelVersionCount(i),
           };
         } catch (e) {
           console.error(e);

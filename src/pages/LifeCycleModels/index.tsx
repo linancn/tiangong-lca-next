@@ -167,7 +167,6 @@ const TableList: FC = () => {
                 team_id
               `}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={({ newVersion }) => (
                 <LifeCycleModelCreate
                   newVersion={newVersion}

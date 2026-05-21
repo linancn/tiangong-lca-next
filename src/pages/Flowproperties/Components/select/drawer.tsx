@@ -245,7 +245,6 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               columns={getAllVersionsColumns(FlowpropertyColumns, 4)}
               searchColume={flowpropertyAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as FlowpropertyTable)

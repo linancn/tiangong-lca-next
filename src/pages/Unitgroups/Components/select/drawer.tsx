@@ -195,7 +195,6 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               columns={getAllVersionsColumns(unitGroupColumns, 4)}
               searchColume={unitGroupAllVersionsSearchColumn}
               id={row.id}
-              versionCount={row.versionCount}
               addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as UnitGroupTable)

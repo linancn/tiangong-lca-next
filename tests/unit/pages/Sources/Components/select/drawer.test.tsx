@@ -38,7 +38,6 @@ jest.mock('@/components/AllVersions', () => ({
     dataSource,
     onSelectVersion,
     operationRender,
-    versionCount,
   }: any) {
     const React = require('react');
     const [showOperation, setShowOperation] = React.useState(false);
@@ -52,7 +51,7 @@ jest.mock('@/components/AllVersions', () => ({
     };
 
     return (
-      <div data-testid={`all-versions-${dataSource}`} data-version-count={versionCount}>
+      <div data-testid={`all-versions-${dataSource}`}>
         <button type='button' onClick={() => setShowOperation(true)}>
           {`all-versions-${dataSource}`}
         </button>
@@ -114,7 +113,6 @@ const mockGetSourceTableAll = jest.fn(
         shortName: `${dataSource} source`,
         classification: 'classification',
         publicationType: 'report',
-        versionCount: 2,
       },
     ],
     success: true,
@@ -130,7 +128,6 @@ const mockGetSourceTablePgroongaSearch = jest.fn(
         shortName: `${dataSource}:${keyword}`,
         classification: 'classification',
         publicationType: 'report',
-        versionCount: 2,
       },
     ],
     success: true,
@@ -433,8 +430,6 @@ describe('SourceSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
 
     await waitFor(() => expect(screen.getByTestId('all-versions-tg')).toBeInTheDocument());
-    expect(screen.getByTestId('all-versions-tg')).toHaveAttribute('data-version-count', '2');
-
     await userEvent.click(screen.getByRole('button', { name: 'all-versions-tg' }));
 
     const allVersionActions = screen.getByTestId('all-version-operation-render');
