@@ -76,9 +76,10 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent }: any) => (
-    <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '2.0.0' })}</div>
-  ),
+  default: ({ id, addVersionComponent, operationRender }: any) => {
+    operationRender?.({ id, version: '2.0.0' });
+    return <div data-testid='all-versions'>{addVersionComponent?.({ newVersion: '2.0.0' })}</div>;
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -589,6 +590,7 @@ describe('ProcessesPage', () => {
         '20',
         'gate to gate',
         undefined,
+        'team-1',
       ),
     );
 
@@ -625,6 +627,7 @@ describe('ProcessesPage', () => {
       'all',
       'all',
       { key: 'baseName', lang: 'en', order: 'asc' },
+      'team-1',
     );
 
     await latestRequest({ pageSize: 10, current: 1 }, { name: 'descend' });
@@ -637,6 +640,7 @@ describe('ProcessesPage', () => {
       'all',
       'all',
       { key: 'baseName', lang: 'en', order: 'desc' },
+      'team-1',
     );
 
     await latestRequest({ pageSize: 10, current: 1 }, { classification: 'descend' });
@@ -649,6 +653,7 @@ describe('ProcessesPage', () => {
       'all',
       'all',
       { key: 'common:class', order: 'desc' },
+      'team-1',
     );
 
     await latestRequest({ pageSize: 10, current: 1 }, { classification: 'ascend' });
@@ -661,6 +666,7 @@ describe('ProcessesPage', () => {
       'all',
       'all',
       { key: 'common:class', order: 'asc' },
+      'team-1',
     );
 
     mockLocation = {
@@ -974,6 +980,21 @@ describe('ProcessesPage', () => {
       ),
     );
     expect(screen.getByRole('heading').textContent).toBe('');
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetProcessTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'cement',
+        {},
+        'all',
+        'all',
+        undefined,
+        '',
+      ),
+    );
   });
 
   it('falls back to an empty table result when the process list request returns undefined', async () => {

@@ -79,6 +79,56 @@ type FlowSearchFilters = {
   classification?: FlowClassificationFilter[];
 };
 
+type FlowListRpcRow = {
+  id?: string;
+  json?: any;
+  version?: string;
+  modified_at?: string;
+  team_id?: string;
+  total_count?: number | string | null;
+};
+
+function normalizeFlowTotalCount(row?: FlowListRpcRow): number {
+  return Number(row?.total_count ?? 0) || 0;
+}
+
+function normalizeFlowResultTotalCount(resultData: FlowListRpcRow[], resultBody?: any): number {
+  return (
+    normalizeFlowTotalCount(resultData[0]) ||
+    Number((resultData as any).total_count ?? 0) ||
+    Number(resultBody?.total_count ?? 0) ||
+    0
+  );
+}
+
+function normalizeFlowSortBy(sortBy: string): string {
+  if (sortBy === 'modifiedAt') {
+    return 'modified_at';
+  }
+  if (sortBy === 'createdAt') {
+    return 'created_at';
+  }
+  return sortBy;
+}
+
+function normalizeFlowSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
+  return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function getOptionalTeamId(tid: string | []): string | null {
+  if (typeof tid === 'string' && tid.length > 0) {
+    return tid;
+  }
+  return null;
+}
+
+async function getFlowTeamFilter(dataSource: string, tid: string | []): Promise<string | null> {
+  if (dataSource === 'te') {
+    return (await getTeamIdByUserId()) ?? null;
+  }
+  return getOptionalTeamId(tid);
+}
+
 export async function createFlows(
   id: string,
   data: any,
@@ -205,137 +255,66 @@ export async function getFlowTableAll(
   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
   const orderBy = sort[sortBy] ?? 'descend';
 
-  const selectStr = `
-    id,
-    json->flowDataSet->flowInformation->dataSetInformation->name,
-    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
-    json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
-    json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
-    json->flowDataSet->flowInformation->geography->>locationOfSupply,
-    json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
-    json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
-    version,
-    modified_at,
-    team_id
-  `;
-
-  const tableName = 'flows';
-
-  let query = supabase
-    .from(tableName)
-    .select(selectStr, { count: 'exact' })
-    .order(sortBy, { ascending: orderBy === 'ascend' })
-    .range(
-      ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-      (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-    );
-  if (filters?.flowType) {
-    const flowTypes = filters.flowType.split(',').map((type) => type.trim());
-    if (flowTypes.length > 1) {
-      query = query.in(
-        'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
-        flowTypes,
-      );
-    } else {
-      query = query.eq(
-        'json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet',
-        flowTypes[0],
-      );
-    }
+  const session = await supabase.auth.getSession();
+  if (dataSource === 'my' && !session.data.session) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
   }
 
-  if (Array.isArray(filters?.classification) && filters.classification.length > 0) {
-    const validClassifications = filters.classification.filter(
-      (item): item is FlowClassificationFilter =>
-        !!item?.code && (item.scope === 'elementary' || item.scope === 'classification'),
-    );
-
-    const getClassificationPath = (scope: 'elementary' | 'classification') =>
-      scope === 'elementary'
-        ? 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:elementaryFlowCategorization"->"common:category"'
-        : 'json->flowDataSet->flowInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"';
-
-    const getClassificationMatcher = (
-      scope: 'elementary' | 'classification',
-      code: string,
-    ): string =>
-      JSON.stringify([
-        scope === 'elementary'
-          ? {
-              '@catId': code,
-            }
-          : {
-              '@classId': code,
-            },
-      ]);
-
-    if (validClassifications.length === 1) {
-      const onlyItem = validClassifications[0];
-      query = query.filter(
-        getClassificationPath(onlyItem.scope),
-        'cs',
-        getClassificationMatcher(onlyItem.scope, onlyItem.code),
-      );
-    } else if (validClassifications.length > 1) {
-      const classificationConditions = Array.from(
-        new Set(
-          validClassifications.map((item) => {
-            const path = getClassificationPath(item.scope);
-            const matcher = getClassificationMatcher(item.scope, item.code);
-            return `${path}.cs.${matcher}`;
-          }),
-        ),
-      );
-      if (classificationConditions.length > 0) {
-        query = query.or(classificationConditions.join(','));
-      }
-    }
+  const teamId = await getFlowTeamFilter(dataSource, tid);
+  if (dataSource === 'te' && !teamId) {
+    return Promise.resolve({
+      data: [],
+      success: true,
+    });
   }
 
-  if (filters?.asInput) {
-    query = query.not(
-      'json',
-      'cs',
-      '{"flowDataSet":{"flowInformation":{"dataSetInformation":{"classificationInformation":{"common:elementaryFlowCategorization":{"common:category":[{"#text": "Emissions", "@level": "0"}]}}}}}}',
-    );
-  }
+  const rpcResult = await supabase.rpc('get_latest_flow_versions', {
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+    data_source: dataSource,
+    this_user_id: session.data.session?.user?.id ?? '',
+    team_id_filter: teamId,
+    state_code_filter: typeof stateCode === 'number' ? stateCode : null,
+    filter_condition: filters ?? {},
+    sort_by: normalizeFlowSortBy(sortBy),
+    sort_direction: normalizeFlowSortDirection(orderBy),
+  });
 
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-    if (tid.length > 0) {
-      query = query.eq('team_id', tid);
-    }
-  } else if (dataSource === 'my') {
-    if (typeof stateCode === 'number') {
-      query = query.eq('state_code', stateCode);
-    }
-    const session = await supabase.auth.getSession();
-    if (session.data.session) {
-      query = query.eq('user_id', session?.data?.session?.user?.id);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: false,
-      });
-    }
-  } else if (dataSource === 'te') {
-    const teamId = await getTeamIdByUserId();
-    if (teamId) {
-      query = query.eq('team_id', teamId);
-    } else {
-      return Promise.resolve({
-        data: [],
-        success: true,
-      });
-    }
-  }
-
-  const result = await query;
+  const result = {
+    ...rpcResult,
+    count:
+      normalizeFlowTotalCount(rpcResult.data?.[0]) ||
+      rpcResult.count ||
+      rpcResult.data?.length ||
+      0,
+    data: rpcResult.data?.map((i: FlowListRpcRow) => ({
+      id: i.id,
+      name: i.json?.flowDataSet?.flowInformation?.dataSetInformation?.name ?? (i as any).name,
+      classificationInformation:
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.classificationInformation ??
+        (i as any).classificationInformation,
+      'common:synonyms':
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.['common:synonyms'] ??
+        (i as any)['common:synonyms'],
+      CASNumber:
+        i.json?.flowDataSet?.flowInformation?.dataSetInformation?.CASNumber ?? (i as any).CASNumber,
+      locationOfSupply:
+        i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply ??
+        (i as any).locationOfSupply,
+      typeOfDataSet:
+        i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet ??
+        (i as any).typeOfDataSet,
+      referenceToFlowPropertyDataSet:
+        i.json?.flowDataSet?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet ??
+        (i as any).referenceToFlowPropertyDataSet,
+      version: i.version,
+      modified_at: i.modified_at,
+      team_id: i.team_id,
+    })),
+  };
 
   if (result.error) {
     console.log('error', result.error);
@@ -442,7 +421,7 @@ export async function getFlowTableAll(
       data: data,
       page: params.current ?? 1,
       success: true,
-      total: result.count ?? 0,
+      total: result.count,
     });
   }
   return Promise.resolve({
@@ -463,32 +442,44 @@ export async function getFlowTablePgroongaSearch(
   filter: FlowSearchFilters,
   stateCode?: string | number,
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  tid: string | [] = [],
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
 
   if (session.data.session) {
+    const teamId = await getFlowTeamFilter(dataSource, tid);
+    if (dataSource === 'te' && !teamId) {
+      return Promise.resolve({
+        data: [],
+        success: true,
+      });
+    }
+
     result = await supabase.rpc(
-      'pgroonga_search_flows_v1',
+      'pgroonga_search_flows_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
             filter_condition: filter,
+            order_by: orderBy ?? {},
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            // this_user_id: session.data.session.user?.id,
-            state_code: stateCode,
-            order_by: orderBy,
+            this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: stateCode,
           }
         : {
             query_text: queryText,
             filter_condition: filter,
+            order_by: orderBy ?? {},
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
-            order_by: orderBy,
-            // this_user_id: session.data.session.user?.id,
+            this_user_id: session.data.session.user?.id,
+            team_id_filter: teamId,
+            state_code_filter: null,
           },
     );
   }
@@ -646,7 +637,7 @@ export async function flow_hybrid_search(
   }
   if (Array.isArray(result.data?.data)) {
     const resultData = result.data.data;
-    const totalCount = result.data?.total_count ?? 0;
+    const totalCount = normalizeFlowResultTotalCount(resultData, result.data);
 
     if (resultData.length === 0) {
       return Promise.resolve({

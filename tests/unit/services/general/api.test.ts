@@ -2079,6 +2079,62 @@ describe('Edge Cases and Error Handling', () => {
       expect(result).toBeDefined();
     });
 
+    it('should default all-version rows to version descending order', async () => {
+      const mockData = [
+        { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
+        { id: sampleId, version: '02.00.000', created_at: '2024-02-01', modified_at: '2024-02-01' },
+        { id: sampleId, version: '01.00.010', created_at: '2024-01-10', modified_at: '2024-01-10' },
+      ];
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 3 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('version', { ascending: false });
+      expect(result.data.map((row: { version: string }) => row.version)).toEqual([
+        '02.00.000',
+        '01.00.010',
+        '01.00.000',
+      ]);
+    });
+
+    it('should support ascending all-version sorting', async () => {
+      const mockData = [
+        { id: sampleId, version: '02.00.000', created_at: '2024-02-01', modified_at: '2024-02-01' },
+        { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
+        { id: sampleId, version: '01.00.010', created_at: '2024-01-10', modified_at: '2024-01-10' },
+      ];
+      const builder = createQueryBuilder({ data: mockData, error: null, count: 3 });
+      mockFrom.mockReturnValue(builder);
+      mockGetILCDClassification.mockResolvedValue({ data: [] });
+
+      const result = await generalApi.getAllVersions(
+        'name',
+        'contacts',
+        sampleId,
+        { pageSize: 10, current: 1 },
+        { version: 'ascend' },
+        'en',
+        'tg',
+      );
+
+      expect(builder.order).toHaveBeenCalledWith('version', { ascending: true });
+      expect(result.data.map((row: { version: string }) => row.version)).toEqual([
+        '01.00.000',
+        '01.00.010',
+        '02.00.000',
+      ]);
+    });
+
     it('should fetch versions for my dataSource with session', async () => {
       const mockData = [
         { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },

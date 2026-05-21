@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
@@ -10,6 +11,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 import ContactCreate from '../create';
 import ContactView from '../view';
 
@@ -45,6 +47,17 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const contactAllVersionsSearchColumn = `
+    id,
+    json->contactDataSet->contactInformation->dataSetInformation->"common:shortName",
+    json->contactDataSet->contactInformation->dataSetInformation->"common:name",
+    json->contactDataSet->contactInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->contactDataSet->contactInformation->dataSetInformation->>email,
+    version,
+    modified_at,
+    team_id,
+    state_code
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -52,6 +65,19 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
 
   const onSelectChange = (newSelectedRowKeys: Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: ContactTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData(row.id, row.version);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: ContactTable) => {
+    return <ContactView id={row.id} version={row.version} lang={lang} buttonType='icon' />;
   };
 
   const onTabChange = async (key: string) => {
@@ -169,6 +195,27 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='contacts'
+              columns={getAllVersionsColumns(contactColumns, 4)}
+              searchColume={contactAllVersionsSearchColumn}
+              id={row.id}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) =>
+                renderVersionSelectActions(versionRow as ContactTable)
+              }
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as ContactTable)}
+            />
+          </Space>
+        );
+      },
     },
     {
       title: <FormattedMessage id='pages.table.title.updatedAt' defaultMessage='Updated at' />,

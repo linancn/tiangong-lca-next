@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import FlowsView from '@/pages/Flows/Components/view';
 import {
@@ -15,6 +16,7 @@ import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 
 type Props = {
   buttonType: string;
@@ -40,6 +42,20 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const flowAllVersionsSearchColumn = `
+    id,
+    json->flowDataSet->flowInformation->dataSetInformation->name,
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
+    json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+    json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+    json->flowDataSet->flowInformation->geography->>locationOfSupply,
+    json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
+    json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+    version,
+    modified_at,
+    state_code,
+    team_id
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -47,6 +63,23 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: FlowTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData([`${row.id}:${row.version}`]);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: FlowTable) => {
+    return [
+      <Space size={'small'} key={0}>
+        <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
+      </Space>,
+    ];
   };
 
   const onTabChange = async (key: string) => {
@@ -126,6 +159,31 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       search: false,
     },
     {
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='flows'
+              columns={getAllVersionsColumns(FlowsColumns, 5)}
+              searchColume={flowAllVersionsSearchColumn}
+              id={row.id}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) => renderVersionSelectActions(versionRow as FlowTable)}
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as FlowTable)}
+            />
+          </Space>
+        );
+      },
+    },
+    {
       title: <FormattedMessage id='pages.table.title.createdAt' defaultMessage='Created at' />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
@@ -136,13 +194,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
-      render: (_, row) => {
-        return [
-          <Space size={'small'} key={0}>
-            <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
-          </Space>,
-        ];
-      },
+      render: (_, row) => renderVersionSelectActions(row),
     },
   ];
 
@@ -209,6 +261,13 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             return getFlowTableAll(params, sort, lang, 'tg', []);
           }}
           columns={FlowsColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
         />
       </>
     ),

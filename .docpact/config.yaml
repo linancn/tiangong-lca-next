@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-05-20"
-lastReviewedCommit: "6c5d02f5cad6a864e290d16b3ce6d3a62c91247b"
+lastReviewedAt: '2026-05-20'
+lastReviewedCommit: 'ca4280853d06d12dd6566df5ba0e48cbc3466719'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -52,6 +52,7 @@ ownership:
           - .github/workflows/ci.yml
           - .github/workflows/build.yml
           - .github/workflows/ai-doc-lint.yml
+          - scripts/docpact
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
@@ -93,6 +94,7 @@ coverage:
     - .github/workflows/ai-doc-lint.yml
     - .github/workflows/build.yml
     - .github/workflows/ci.yml
+    - scripts/docpact
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
@@ -135,6 +137,7 @@ routing:
         - .github/workflows/ci.yml
         - .github/workflows/build.yml
         - .github/workflows/ai-doc-lint.yml
+        - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
@@ -169,6 +172,7 @@ routing:
         - .husky/pre-push
         - .github/workflows/ci.yml
         - .github/workflows/build.yml
+        - scripts/docpact
         - scripts/docpact-gate.js
         - tests/**
         - docs/agents/test_todo_list.md
@@ -438,6 +442,8 @@ rules:
         kind: ci
       - path: .github/workflows/build.yml
         kind: ci
+      - path: scripts/docpact
+        kind: local-automation
       - path: scripts/docpact-gate.js
         kind: test-gate
       - path: scripts/test-runner.cjs

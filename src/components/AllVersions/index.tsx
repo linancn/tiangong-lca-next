@@ -6,12 +6,13 @@ import ProcessView from '@/pages/Processes/Components/view';
 import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getAllVersions } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import { ListPagination, VersionedDataRow } from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
+import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Card, ConfigProvider, Drawer, Tooltip } from 'antd';
-import type { FC, ReactElement } from 'react';
+import { Button, Card, ConfigProvider, Drawer, Space, Tooltip } from 'antd';
+import type { FC, Key, MutableRefObject, ReactElement, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
 interface AllVersionsListProps {
@@ -20,11 +21,23 @@ interface AllVersionsListProps {
   id: string;
   columns: ProColumns<any>[];
   lang: string;
+  dataSource?: string;
   disabled?: boolean;
   addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
+  operationRender?: (
+    row: any,
+    context: { actionRef: MutableRefObject<ActionType | undefined> },
+  ) => ReactNode;
+  operationColumnWidth?: number;
+  onSelectVersion?: (row: any) => void;
 }
 
 export const getCreateVersionPopupContainer = () => document.body;
+
+export const getAllVersionsOperationColumnWidth = (
+  operationColumnWidth?: number,
+  hasCustomOperation = false,
+) => operationColumnWidth ?? (hasCustomOperation ? 216 : 88);
 
 const AllVersionsList: FC<AllVersionsListProps> = ({
   searchTableName,
@@ -32,20 +45,46 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   id,
   columns,
   lang,
+  dataSource: dataSourceOverride,
   disabled = false,
   addVersionComponent,
+  operationRender,
+  operationColumnWidth,
+  onSelectVersion,
 }) => {
   const actionRef = useRef<ActionType>();
   const [showAllVersionsModal, setShowAllVersionsModal] = useState(false);
+  const [selectedVersionRowKeys, setSelectedVersionRowKeys] = useState<Key[]>([]);
+  const [selectedVersionRow, setSelectedVersionRow] = useState<VersionedDataRow | null>(null);
   const location = useLocation();
-  const dataSource = getDataSource(location.pathname);
-  const tableDataRef = useRef<any[]>([]);
+  const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
+  const tableDataRef = useRef<VersionedDataRow[]>([]);
+  const selectable = Boolean(onSelectVersion);
 
   useEffect(() => {
-    actionRef.current?.reload();
-  });
+    if (!showAllVersionsModal) {
+      setSelectedVersionRowKeys([]);
+      setSelectedVersionRow(null);
+      return;
+    }
 
-  const allVersionsColumns = [
+    actionRef.current?.reload();
+  }, [showAllVersionsModal]);
+
+  const closeAllVersionsModal = () => {
+    setShowAllVersionsModal(false);
+  };
+
+  const submitSelectedVersion = () => {
+    if (!selectedVersionRow || !onSelectVersion) {
+      return;
+    }
+
+    onSelectVersion(selectedVersionRow);
+    closeAllVersionsModal();
+  };
+
+  const allVersionsColumns: ProColumns<any>[] = [
     ...columns,
 
     {
@@ -54,7 +93,14 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       ),
       dataIndex: 'option',
       search: false,
+      align: 'center',
+      fixed: 'right',
+      width: getAllVersionsOperationColumnWidth(operationColumnWidth, Boolean(operationRender)),
       render: (_: any, row: any) => {
+        if (operationRender) {
+          return operationRender(row, { actionRef });
+        }
+
         switch (searchTableName) {
           case 'lifecyclemodels':
             return (
@@ -99,43 +145,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   ];
 
   const getNewVersion = (): string => {
-    const versions = tableDataRef.current.map((i: any) => i.version);
-    if (!versions || versions.length === 0) {
-      return '00.00.000';
-    }
-
-    const compareVersions = (v1: string, v2: string): number => {
-      const parts1 = v1.split('.').map(Number);
-      const parts2 = v2.split('.').map(Number);
-
-      for (let i = 0; i < 3; i++) {
-        if (parts1[i] > parts2[i]) return 1;
-        if (parts1[i] < parts2[i]) return -1;
-      }
-      return 0;
-    };
-
-    let maxVersion = versions[0];
-    for (let i = 1; i < versions.length; i++) {
-      if (compareVersions(versions[i], maxVersion) > 0) {
-        maxVersion = versions[i];
-      }
-    }
-
-    const parts = maxVersion.split('.').map(Number);
-    parts[2] += 1;
-
-    if (parts[2] > 999) {
-      parts[2] = 0;
-      parts[1] += 1;
-
-      if (parts[1] > 99) {
-        parts[1] = 0;
-        parts[0] += 1;
-      }
-    }
-
-    return `${String(parts[0]).padStart(2, '0')}.${String(parts[1]).padStart(2, '0')}.${String(parts[2]).padStart(3, '0')}`;
+    return getNextDataSetVersionFromRows(tableDataRef.current);
   };
 
   return (
@@ -143,13 +153,15 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
       <Tooltip
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
       >
-        <Button
-          disabled={disabled}
-          size='small'
-          shape='circle'
-          icon={<BarsOutlined />}
-          onClick={() => setShowAllVersionsModal(true)}
-        ></Button>
+        <span>
+          <Button
+            disabled={disabled}
+            size='small'
+            shape='circle'
+            icon={<BarsOutlined />}
+            onClick={() => setShowAllVersionsModal(true)}
+          ></Button>
+        </span>
       </Tooltip>
 
       <Drawer
@@ -157,15 +169,22 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
         width={'90%'}
         open={showAllVersionsModal}
-        onClose={() => setShowAllVersionsModal(false)}
-        footer={null}
+        onClose={closeAllVersionsModal}
+        footer={
+          selectable ? (
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={closeAllVersionsModal}>
+                <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
+              </Button>
+              <Button type='primary' disabled={!selectedVersionRow} onClick={submitSelectedVersion}>
+                <FormattedMessage id='pages.button.submit' defaultMessage='Submit' />
+              </Button>
+            </Space>
+          ) : null
+        }
         closable={false}
         extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setShowAllVersionsModal(false)}
-          />
+          <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeAllVersionsModal} />
         }
         maskClosable={false}
       >
@@ -175,10 +194,25 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
             actionRef={actionRef}
             search={false}
             options={{ fullScreen: true }}
+            scroll={{ x: 'max-content' }}
+            tableLayout='fixed'
             pagination={{
               showSizeChanger: false,
               pageSize: 10,
             }}
+            rowSelection={
+              selectable
+                ? {
+                    type: 'radio',
+                    alwaysShowAlert: true,
+                    selectedRowKeys: selectedVersionRowKeys,
+                    onChange: (newSelectedRowKeys, selectedRows) => {
+                      setSelectedVersionRowKeys(newSelectedRowKeys);
+                      setSelectedVersionRow(selectedRows?.[0] ?? null);
+                    },
+                  }
+                : undefined
+            }
             toolBarRender={() => {
               return [
                 <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
@@ -196,7 +230,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
                 lang,
                 dataSource,
               );
-              tableDataRef.current = result.data;
+              tableDataRef.current = result.data ?? [];
               return result;
             }}
             columns={allVersionsColumns}

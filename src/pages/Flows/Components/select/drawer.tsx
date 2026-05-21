@@ -1,3 +1,4 @@
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import {
   flow_hybrid_search,
@@ -14,6 +15,7 @@ import type { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 import FlowsCreate from '../create';
 import FlowsDelete from '../delete';
 import FlowsEdit from '../edit';
@@ -49,6 +51,20 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const flowAllVersionsSearchColumn = `
+    id,
+    json->flowDataSet->flowInformation->dataSetInformation->name,
+    json->flowDataSet->flowInformation->dataSetInformation->classificationInformation,
+    json->flowDataSet->flowInformation->dataSetInformation->"common:synonyms",
+    json->flowDataSet->flowInformation->dataSetInformation->>CASNumber,
+    json->flowDataSet->flowInformation->geography->>locationOfSupply,
+    json->flowDataSet->modellingAndValidation->LCIMethod->>typeOfDataSet,
+    json->flowDataSet->flowProperties->flowProperty->referenceToFlowPropertyDataSet,
+    version,
+    modified_at,
+    state_code,
+    team_id
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -56,6 +72,47 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: FlowTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData(row.id, row.version);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: FlowTable) => {
+    if (activeTabKey === 'tg') {
+      return [
+        <Space size={'small'} key={0}>
+          <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
+        </Space>,
+      ];
+    }
+    if (activeTabKey === 'my') {
+      return [
+        <Space size={'small'} key={0}>
+          <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
+          <FlowsEdit
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            lang={lang}
+            actionRef={myActionRefSelect}
+          />
+          <FlowsDelete
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={myActionRefSelect}
+            setViewDrawerVisible={() => {}}
+          />
+        </Space>,
+      ];
+    }
+    return [];
   };
 
   const onTabChange = async (key: string) => {
@@ -178,6 +235,25 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       dataIndex: 'version',
       sorter: false,
       search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='flows'
+              columns={getAllVersionsColumns(FlowsColumns, 5)}
+              searchColume={flowAllVersionsSearchColumn}
+              id={row.id}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) => renderVersionSelectActions(versionRow as FlowTable)}
+              operationColumnWidth={activeTabKey === 'my' ? 184 : 88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as FlowTable)}
+            />
+          </Space>
+        );
+      },
     },
     // {
     //   title: <FormattedMessage id="pages.table.title.createdAt" defaultMessage="Created At" />,
@@ -190,35 +266,7 @@ const FlowsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, asInput, o
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
-      render: (_, row) => {
-        if (activeTabKey === 'tg') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowsView id={row.id} version={row.version} lang={lang} buttonType={'icon'} />
-              <FlowsEdit
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                lang={lang}
-                actionRef={myActionRefSelect}
-              />
-              <FlowsDelete
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-            </Space>,
-          ];
-        } else return [];
-      },
+      render: (_, row) => renderVersionSelectActions(row),
     },
   ];
 

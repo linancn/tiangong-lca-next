@@ -20,8 +20,8 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-05-20
-lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
+lastReviewedAt: 2026-05-21
+lastReviewedCommit: 96b56d2b6835dae28bafca4bd5f8287012dda548
 ---
 
 # Testing Execution State
@@ -31,9 +31,9 @@ lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
 ## Current Baseline
 
 - latest verified full run: `npm run prepush:gate`
-- suites: `323`
-- tests: `3907`
-- tracked source files: `338`
+- suites: `331`
+- tests: `4000`
+- tracked source files: `346`
 - coverage: `100%` statements, branches, functions, and lines
 
 ## Current State

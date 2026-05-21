@@ -22,6 +22,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 let mockUnitGroupCreateCalls: any[] = [];
 let mockUnitGroupEditCalls: any[] = [];
 let mockUnitGroupDeleteCalls: any[] = [];
+let mockAllVersionsOperationWidths: Array<number | undefined> = [];
 
 const mockContributeSource = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
@@ -79,12 +80,29 @@ jest.mock('@/components/AlignedNumber', () => ({
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ addVersionComponent, disabled }: any) => (
-    <div data-testid='all-versions'>
-      <span>{`versions-disabled:${String(disabled)}`}</span>
-      {addVersionComponent?.({ newVersion: '02.00.000' })}
-    </div>
-  ),
+  default: ({ addVersionComponent, disabled, operationColumnWidth, operationRender }: any) => {
+    mockAllVersionsOperationWidths.push(operationColumnWidth);
+    operationRender?.(
+      {
+        id: 'ug-version',
+        version: '0.9.0',
+        name: 'Historical unit group',
+        refUnitName: 'cm',
+        refUnitGeneralComment: 'Historical unit',
+        classification: 'Historical',
+        modifiedAt: '2024-01-03',
+        teamId: '',
+      },
+      { actionRef: { current: { reload: jest.fn() } } },
+    );
+
+    return (
+      <div data-testid='all-versions'>
+        <span>{`versions-disabled:${String(disabled)}`}</span>
+        {addVersionComponent?.({ newVersion: '02.00.000' })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ContributeData', () => ({
@@ -329,6 +347,7 @@ describe('UnitgroupsPage', () => {
     mockUnitGroupCreateCalls = [];
     mockUnitGroupEditCalls = [];
     mockUnitGroupDeleteCalls = [];
+    mockAllVersionsOperationWidths = [];
     mockLocation = {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
@@ -421,6 +440,7 @@ describe('UnitgroupsPage', () => {
     expect(screen.getByTestId('unitgroup-edit')).toHaveTextContent('edit:ug-1');
     expect(screen.getByTestId('unitgroup-delete')).toHaveTextContent('delete:ug-1');
     expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"disabled":false');
+    expect(mockAllVersionsOperationWidths).toContain(216);
 
     await userEvent.click(screen.getByRole('button', { name: /table-filter/i }));
     await waitFor(() =>
@@ -443,6 +463,7 @@ describe('UnitgroupsPage', () => {
         'density',
         {},
         '20',
+        'team-1',
       ),
     );
 
@@ -472,6 +493,35 @@ describe('UnitgroupsPage', () => {
     await waitFor(() => expect(mockGetUnitGroupTableAll).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
+    await waitFor(() => expect(mockAllVersionsOperationWidths).toContain(88));
+  });
+
+  it('opens the edit drawer from my-data query parameters', async () => {
+    mockLocation = {
+      pathname: '/mydata/unitgroups',
+      search: '?tid=team-1&id=ug-deep-link&version=01.00.000&required=1',
+    };
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() =>
+      expect(mockUnitGroupEditCalls).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'ug-deep-link',
+            version: '01.00.000',
+            autoOpen: true,
+            autoCheckRequired: true,
+          }),
+        ]),
+      ),
+    );
   });
 
   it('logs contribute errors without showing success when the contribute action fails', async () => {
@@ -589,14 +639,28 @@ describe('UnitgroupsPage', () => {
         .getAllByTestId('unitgroup-create')
         .find((node) => node.textContent?.includes('"actionType":"copy"')),
     ).toHaveTextContent('"actionType":"copy"');
-    expect(screen.getByText('versions-disabled:false')).toBeInTheDocument();
+    expect(screen.getByText('versions-disabled:undefined')).toBeInTheDocument();
     expect(screen.getByTestId('pro-table')).toHaveTextContent('My Data / Unit Groups');
     expect(screen.getByText('super(m3)')).toBeInTheDocument();
     expect(screen.getByText('2.0.0')).toBeInTheDocument();
     expect(screen.getByText('2024-01-02')).toBeInTheDocument();
+    expect(mockAllVersionsOperationWidths).toContain(184);
     expect(screen.getByText('Fallback units').closest('[data-row-key]')).toHaveAttribute(
       'data-row-key',
       'ug-2-2.0.0',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'tg',
+        'density',
+        {},
+        'all',
+        '',
+      ),
     );
   });
 });

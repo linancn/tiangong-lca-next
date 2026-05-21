@@ -209,6 +209,15 @@ jest.mock('@/pages/Flowproperties/Components/view', () => ({
   default: ({ id, version }: any) => <span>{`view ${id}:${version}`}</span>,
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({ id, onSelectVersion }: any) => (
+    <button type='button' onClick={() => onSelectVersion?.({ id, version: '09.00.000' })}>
+      {`all versions ${id}`}
+    </button>
+  ),
+}));
+
 const mockGetFlowpropertyTableAll = jest.fn(async () => ({
   data: [
     {

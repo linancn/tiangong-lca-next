@@ -22,7 +22,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
+lastReviewedCommit: ca4280853d06d12dd6566df5ba0e48cbc3466719
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -66,7 +66,7 @@ npm run prepush:gate
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; `npm run test:ci`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
 | data workflow fixtures or workflow smoke harnesses | `npm run docpact:gate`; `npm run test:data-workflows:unit` | affected live smoke script only when credentials and target environment are part of the task, using `npm run test:workflows -- --<workflow> <workflow-args>`; `npm run test:api:smoke -- <workflow-args>` for broad supported API smoke coverage, then inspect its summary because child workflow failures do not make the command exit non-zero | keep `fixtures/data/**`, `fixtures/result/**`, workflow defaults, and unit path assertions aligned |
-| repo docs only | `docpact lint --root . --files "<csv>" --mode enforce` | `docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
+| repo docs only | `scripts/docpact lint --root . --files "<csv>" --mode enforce` | `scripts/docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
 
 The local `pre-push` hook always runs `npm run docpact:gate` first. Non-main branches then skip the heavy `npm run prepush:gate`; local `main` pushes run both. The docpact gate defaults to `origin/dev` and can be redirected with `DOCPACT_BASE_REF=<ref>` for promote or hotfix branches.
 

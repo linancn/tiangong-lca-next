@@ -1,6 +1,6 @@
 // @ts-nocheck
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, screen, waitFor } from '../../../../../helpers/testUtils';
+import { renderWithProviders, screen, waitFor, within } from '../../../../../helpers/testUtils';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -29,6 +29,62 @@ jest.mock('@ant-design/icons', () => ({
 jest.mock('@/style/custom.less', () => ({
   __esModule: true,
   default: { footer_right: 'footer-right' },
+}));
+
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: function MockAllVersions({
+    addVersionComponent,
+    dataSource,
+    onSelectVersion,
+    operationRender,
+  }: any) {
+    const React = require('react');
+    const [showOperation, setShowOperation] = React.useState(false);
+    const [selectedVersionRow, setSelectedVersionRow] = React.useState<any | null>(null);
+    const versionRow = {
+      id: `source-${dataSource}-version`,
+      version: '0.9.0',
+      shortName: `${dataSource} old source`,
+      classification: 'classification',
+      publicationType: 'report',
+    };
+
+    return (
+      <div data-testid={`all-versions-${dataSource}`}>
+        <button type='button' onClick={() => setShowOperation(true)}>
+          {`all-versions-${dataSource}`}
+        </button>
+        {showOperation && (
+          <div data-testid='all-version-operation-render'>
+            <label>
+              <input
+                aria-label={`select-version-${dataSource}`}
+                checked={selectedVersionRow?.version === versionRow.version}
+                type='radio'
+                onChange={() => setSelectedVersionRow(versionRow)}
+              />
+              {versionRow.version}
+            </label>
+            <div data-testid={`all-versions-add-version-${dataSource}`}>
+              {addVersionComponent?.({ newVersion: '01.00.001' })}
+            </div>
+            {operationRender?.(versionRow)}
+            <button type='button' onClick={() => onSelectVersion?.({ id: '', version: '' })}>
+              Invalid Version
+            </button>
+            <button
+              type='button'
+              disabled={!selectedVersionRow}
+              onClick={() => selectedVersionRow && onSelectVersion?.(selectedVersionRow)}
+            >
+              Submit
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Sources/Components/create', () => ({
@@ -363,6 +419,40 @@ describe('SourceSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
+  });
+
+  it('selects a concrete source version with radio selection from the all-versions drawer entry', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<SourceSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() => expect(screen.getByTestId('all-versions-tg')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: 'all-versions-tg' }));
+
+    const allVersionActions = screen.getByTestId('all-version-operation-render');
+    expect(within(allVersionActions).getByText('view source-tg-version:0.9.0')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-add-version-tg')).toBeInTheDocument();
+
+    await userEvent.click(
+      within(allVersionActions).getByRole('button', { name: /invalid version/i }),
+    );
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Select Source' })).toBeInTheDocument();
+
+    const submitButton = within(allVersionActions).getByRole('button', { name: /^submit$/i });
+    expect(submitButton).toBeDisabled();
+
+    await userEvent.click(
+      within(allVersionActions).getByRole('radio', { name: /select-version-tg/i }),
+    );
+    expect(submitButton).not.toBeDisabled();
+
+    await userEvent.click(submitButton);
+
+    expect(onData).toHaveBeenCalledWith('source-tg-version', '0.9.0');
     expect(screen.queryByRole('dialog', { name: 'Select Source' })).not.toBeInTheDocument();
   });
 

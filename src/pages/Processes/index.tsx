@@ -211,7 +211,9 @@ const TableList: FC = () => {
                 json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
                 version,
                 modified_at,
-                team_id
+                state_code,
+                team_id,
+                model_id
               `}
               id={row.id}
               addVersionComponent={({ newVersion }) => (
@@ -224,6 +226,17 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow) => {
+                const optionColumn = processColumns.find((column) => column.dataIndex === 'option');
+                return optionColumn?.render?.(
+                  null as any,
+                  versionRow,
+                  0,
+                  undefined as any,
+                  {} as any,
+                ) as any;
+              }}
+              operationColumnWidth={isMobileDataList ? 72 : dataSource === 'my' ? 204 : 168}
             ></AllVersionsList>
           </Space>
         );
@@ -675,6 +688,7 @@ const TableList: FC = () => {
                   currentStateCode,
                   currentTypeOfDataSet,
                   orderBy,
+                  tid ?? '',
                 ),
               );
             }

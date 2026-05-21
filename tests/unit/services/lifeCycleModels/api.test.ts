@@ -132,10 +132,10 @@ jest.mock('@/pages/Utils/review', () => ({
 import * as lifeCycleModelsApi from '@/services/lifeCycleModels/api';
 
 import {
+  createQueryBuilder as baseCreateQueryBuilder,
   createMockEdgeFunctionResponse,
   createMockNoSession,
   createMockSession,
-  createQueryBuilder,
 } from '../../../helpers/mockBuilders';
 
 const sampleModelId = '11111111-1111-1111-1111-111111111111';
@@ -143,6 +143,42 @@ const sampleProcessId = '22222222-2222-2222-2222-222222222222';
 const sampleVersion = '01.00.000';
 const sampleUserId = 'user-0001';
 const sampleAccessToken = 'access-token-0001';
+
+const createQueryBuilder = <T>(resolvedValue: T) => {
+  const builder = baseCreateQueryBuilder(resolvedValue);
+  mockRpc.mockImplementation((functionName: string, args: any = {}) => {
+    if (functionName !== 'get_latest_lifecyclemodel_versions') {
+      return Promise.resolve({ data: [] });
+    }
+
+    mockFrom('lifecyclemodels');
+    builder.select();
+    builder.order(args.sort_by ?? 'modified_at', {
+      ascending: args.sort_direction === 'asc',
+    });
+    builder.range(
+      ((args.page_current ?? 1) - 1) * (args.page_size ?? 10),
+      (args.page_current ?? 1) * (args.page_size ?? 10) - 1,
+    );
+    if (args.data_source === 'tg') {
+      builder.eq('state_code', 100);
+    }
+    if (args.data_source === 'co') {
+      builder.eq('state_code', 200);
+    }
+    if (args.state_code_filter !== null && args.state_code_filter !== undefined) {
+      builder.eq('state_code', args.state_code_filter);
+    }
+    if (args.this_user_id) {
+      builder.eq('user_id', args.this_user_id);
+    }
+    if (args.team_id_filter) {
+      builder.eq('team_id', args.team_id_filter);
+    }
+    return Promise.resolve(resolvedValue);
+  });
+  return builder;
+};
 
 const buildProcessDataSet = () => ({
   processInformation: {
@@ -373,6 +409,64 @@ describe('getLifeCycleModelTableAll', () => {
         },
       ],
     });
+  });
+
+  it('normalizes latest-version sort aliases and handles sessions without a user id', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          access_token: 'token-without-user',
+        },
+      },
+    });
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [],
+        error: null,
+        count: 0,
+      }),
+    );
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { modifiedAt: 'ascend' } as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_lifecyclemodel_versions',
+      expect.objectContaining({
+        sort_by: 'modified_at',
+        sort_direction: 'asc',
+        this_user_id: '',
+      }),
+    );
+
+    mockFrom.mockReturnValueOnce(
+      createQueryBuilder({
+        data: [],
+        error: null,
+        count: 0,
+      }),
+    );
+
+    await lifeCycleModelsApi.getLifeCycleModelTableAll(
+      { current: 1, pageSize: 10 },
+      { createdAt: 'descend' } as any,
+      'en',
+      'tg',
+      '',
+    );
+
+    expect(mockRpc).toHaveBeenLastCalledWith(
+      'get_latest_lifecyclemodel_versions',
+      expect.objectContaining({
+        sort_by: 'created_at',
+        sort_direction: 'desc',
+      }),
+    );
   });
 });
 
@@ -1971,7 +2065,7 @@ describe('table/search helpers', () => {
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 
@@ -2027,14 +2121,16 @@ describe('table/search helpers', () => {
       { key: 'baseName', lang: 'en', order: 'desc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_latest', {
       query_text: 'keyword',
       filter_condition: { filter: true },
       page_size: 5,
       page_current: 2,
       data_source: 'my',
       order_by: { key: 'baseName', lang: 'en', order: 'desc' },
-      state_code: 20,
+      state_code_filter: 20,
+      team_id_filter: null,
+      this_user_id: 'user-0001',
     });
     expect(result).toEqual({
       data: [],
@@ -2057,14 +2153,16 @@ describe('table/search helpers', () => {
       20,
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_v1', {
+    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_latest', {
       query_text: 'keyword',
       filter_condition: {},
       page_size: 10,
       page_current: 1,
       data_source: 'my',
-      order_by: undefined,
-      state_code: 20,
+      order_by: {},
+      state_code_filter: 20,
+      team_id_filter: null,
+      this_user_id: 'user-0001',
     });
   });
 
@@ -2089,6 +2187,21 @@ describe('table/search helpers', () => {
       error: { message: 'rpc failed' },
     });
     consoleSpy.mockRestore();
+  });
+
+  it('returns empty success when pgroonga team-data search has no resolved team id', async () => {
+    mockGetTeamIdByUserId.mockResolvedValueOnce(null);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'te',
+      'keyword',
+      {},
+    );
+
+    expect(result).toEqual({ data: [], success: true });
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('maps zh pgroonga search rows when classification lookup succeeds', async () => {
@@ -2318,7 +2431,7 @@ describe('table/search helpers', () => {
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 
@@ -2519,7 +2632,7 @@ describe('table/search helpers', () => {
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 
@@ -2658,7 +2771,7 @@ describe('table/search helpers', () => {
       ],
       page: 1,
       success: true,
-      total: 0,
+      total: 1,
     });
   });
 

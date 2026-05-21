@@ -52,6 +52,14 @@ describe('Contacts API Service', () => {
       functions: { invoke: mockFunctions },
       rpc: mockRpc,
     });
+    mockAuth.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'user-123' },
+        },
+      },
+    });
+    getTeamIdByUserId.mockResolvedValue('team-123');
 
     // Default mock implementations
     genContactJsonOrdered.mockImplementation((id: string, data: any) => ({
@@ -113,6 +121,30 @@ describe('Contacts API Service', () => {
         {
           ruleVerification: true,
         },
+      );
+      expect(result.data).toBeDefined();
+    });
+
+    it('should create a contact when the user has no team id', async () => {
+      const { createContact } = require('@/services/contacts/api');
+      getTeamIdByUserId.mockResolvedValue(null);
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ id: 'contact-no-team', json_ordered: {} }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await createContact('contact-no-team', {});
+
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_create',
+        expect.objectContaining({
+          id: 'contact-no-team',
+          table: 'contacts',
+        }),
+        expect.any(Object),
       );
       expect(result.data).toBeDefined();
     });
@@ -297,6 +329,30 @@ describe('Contacts API Service', () => {
         statusText: 'OK',
       });
     });
+
+    it('should update a contact when the user has no team id', async () => {
+      const { updateContact } = require('@/services/contacts/api');
+      getTeamIdByUserId.mockResolvedValue(null);
+      invokeDatasetCommand.mockResolvedValue({
+        data: [{ success: true, rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await updateContact('contact-no-team', '01.00.000', {});
+
+      expect(invokeDatasetCommand).toHaveBeenCalledWith(
+        'app_dataset_save_draft',
+        expect.objectContaining({
+          id: 'contact-no-team',
+          table: 'contacts',
+        }),
+        expect.any(Object),
+      );
+      expect(result.data).toEqual([{ success: true, rule_verification: true }]);
+    });
   });
 
   describe('deleteContact', () => {
@@ -328,366 +384,255 @@ describe('Contacts API Service', () => {
   });
 
   describe('getContactTableAll', () => {
-    it('should fetch contacts with TG data source', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq.mockResolvedValue({
-        data: [
-          {
-            id: 'contact-1',
-            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
-            'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name 1' }],
-            'common:class': [{ '@level': '0', '#text': 'Category' }],
-            email: 'test@example.com',
-            version: 'v1.0',
-            modified_at: '2023-01-01T00:00:00Z',
-            team_id: 'team-1',
-          },
-        ],
-        count: 1,
-        error: null,
-      });
-
-      getCachedClassificationData.mockResolvedValue([
-        { '@id': 'cat-1', '@level': '0', '#text': 'Category' },
-      ]);
-
-      const result = await getContactTableAll(
-        { current: 1, pageSize: 10 },
-        { modified_at: 'descend' },
-        'en',
-        'tg',
-        [],
-      );
-
-      expect(mockFrom).toHaveBeenCalledWith('contacts');
-      expect(mockEq).toHaveBeenCalledWith('state_code', 100);
-      expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'en', ['all']);
-      expect(result.success).toBe(true);
-      expect(result.data).toHaveLength(1);
-      expect(result.total).toBe(1);
-    });
-
-    it('should apply team filtering for tg data source when team id is provided', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-      const finalEq = jest.fn().mockResolvedValue({
-        data: [],
-        count: 0,
-        error: null,
-      });
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq.mockReturnValueOnce({
-        eq: finalEq,
-      });
-
-      const result = await getContactTableAll(
-        { current: 1, pageSize: 10 },
-        {},
-        'en',
-        'tg',
-        'team-1',
-      );
-
-      expect(mockEq).toHaveBeenCalledWith('state_code', 100);
-      expect(finalEq).toHaveBeenCalledWith('team_id', 'team-1');
-      expect(result.success).toBe(true);
-    });
-
-    it('should apply collaborative filtering for co data source with default paging', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-      const finalEq = jest.fn().mockResolvedValue({
-        data: [],
-        count: 0,
-        error: null,
-      });
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq.mockReturnValueOnce({
-        eq: finalEq,
-      });
-
-      const result = await getContactTableAll({}, {}, 'en', 'co', 'team-co');
-
-      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(mockRange).toHaveBeenCalledWith(0, 9);
-      expect(mockEq).toHaveBeenCalledWith('state_code', 200);
-      expect(finalEq).toHaveBeenCalledWith('team_id', 'team-co');
-      expect(result.success).toBe(true);
-    });
-
-    it('should fetch contacts with MY data source and user session', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
+    const latestContactRow = (overrides: any = {}) => ({
+      id: 'contact-1',
+      version: '01.00.002',
+      modified_at: '2023-01-01T00:00:00Z',
+      team_id: 'team-1',
+      total_count: 1,
+      json: {
+        contactDataSet: {
+          contactInformation: {
+            dataSetInformation: {
+              'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
+              'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name 1' }],
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [{ '@level': '0', '#text': 'Category' }],
+                },
+              },
+              email: 'test@example.com',
+            },
           },
         },
-      });
+      },
+      ...overrides,
+    });
 
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
+    it('should fetch latest contact versions with pagination and sorting', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+      jsonToList.mockReturnValue([{ '@level': '0', '#text': 'Category' }]);
+      classificationToString.mockReturnValue('Category');
 
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
+      const result = await getContactTableAll(
+        { current: 1, pageSize: 10 },
+        { modifiedAt: 'descend' },
+        'en',
+        'tg',
+        [],
+      );
 
-      // Setup chain for two eq calls
-      const finalMock = jest.fn().mockResolvedValue({
-        data: [],
-        count: 0,
+      expect(mockRpc).toHaveBeenCalledWith('get_latest_contact_versions', {
+        page_size: 10,
+        page_current: 1,
+        data_source: 'tg',
+        this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
+        sort_by: 'modified_at',
+        sort_direction: 'desc',
+      });
+      expect(result).toMatchObject({ page: 1, success: true, total: 1 });
+      expect(result.data[0]).toMatchObject({
+        id: 'contact-1',
+        shortName: 'Contact 1',
+        version: '01.00.002',
+      });
+      expect(result.data[0]).not.toHaveProperty('latestVersion');
+    });
+
+    it('should map Chinese classification rows', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-1' }]);
+      genClassificationZH.mockReturnValue(['联系人分类']);
+      classificationToString.mockReturnValue('联系人分类');
+      getLangText.mockReturnValue('联系人');
+
+      const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', []);
+
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'zh', ['all']);
+      expect(genClassificationZH).toHaveBeenCalled();
+      expect(result.data[0]).toMatchObject({
+        shortName: '联系人',
+        classification: '联系人分类',
+      });
+    });
+
+    it('should map sparse Chinese contact rows with default display fields', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({
+        data: [
+          latestContactRow({
+            modified_at: null,
+            json: {
+              contactDataSet: {
+                contactInformation: {
+                  dataSetInformation: {
+                    'common:shortName': [{ '@xml:lang': 'zh', '#text': '稀疏联系人' }],
+                    'common:name': [{ '@xml:lang': 'zh', '#text': '稀疏联系人全称' }],
+                    classificationInformation: {
+                      'common:classification': { 'common:class': [] },
+                    },
+                    email: undefined,
+                  },
+                },
+              },
+            },
+          }),
+        ],
         error: null,
       });
-      mockEq.mockReturnValueOnce({
-        eq: finalMock,
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-1' }]);
+      genClassificationZH.mockReturnValue(['联系人分类']);
+      classificationToString.mockReturnValue('联系人分类');
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+
+      const result = await getContactTableAll({}, {}, 'zh', 'tg', []);
+
+      expect(result.data[0]).toMatchObject({
+        email: '-',
+      });
+      expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
+    });
+
+    it('should normalize createdAt sorting and fall back on Chinese mapping errors', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+      jsonToList.mockImplementation(() => {
+        throw new Error('Chinese contact transformation error');
       });
 
       const result = await getContactTableAll(
         { current: 1, pageSize: 10 },
-        {},
-        'en',
-        'my',
+        { createdAt: 'ascend' },
+        'zh',
+        'tg',
         [],
-        100,
       );
 
-      expect(mockAuth).toHaveBeenCalled();
-      expect(mockEq).toHaveBeenCalledWith('state_code', 100);
-      expect(finalMock).toHaveBeenCalledWith('user_id', 'user-123');
-      expect(result.success).toBe(true);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          sort_by: 'created_at',
+          sort_direction: 'asc',
+        }),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(result.data[0]).toEqual({ id: 'contact-1' });
+
+      consoleErrorSpy.mockRestore();
     });
 
-    it('should return empty data when MY data source has no session', async () => {
+    it('should include team filters for public and collaborative data', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
 
-      mockAuth.mockResolvedValue({
-        data: { session: null },
-      });
+      await getContactTableAll({}, {}, 'en', 'co', 'team-co');
 
-      // Setup the query chain that will be created before session check
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          data_source: 'co',
+          team_id_filter: 'team-co',
+        }),
+      );
+    });
 
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
+    it('should use an empty user id when the session omits user details', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockAuth.mockResolvedValue({ data: { session: {} } });
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+
+      await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', []);
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          this_user_id: '',
+        }),
+      );
+    });
+
+    it('should include owner and state filters for my data', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
+
+      await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'my', [], 100);
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          data_source: 'my',
+          this_user_id: 'user-123',
+          team_id_filter: null,
+          state_code_filter: 100,
+        }),
+      );
+    });
+
+    it('should return empty data when my data has no session', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockAuth.mockResolvedValue({ data: { session: null } });
 
       const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'my', []);
 
-      expect(mockFrom).toHaveBeenCalled(); // Query chain is created
-      expect(mockAuth).toHaveBeenCalled(); // Session is checked
-      expect(result.success).toBe(false); // But returns early with no session
-      expect(result.data).toEqual([]);
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(result).toEqual({ data: [], success: false });
     });
 
-    it('should fetch contacts with TE data source using team ID', async () => {
+    it('should include team filters for team data and skip when no team exists', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
 
-      getTeamIdByUserId.mockResolvedValue('team-123');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq.mockResolvedValue({
-        data: [],
-        count: 0,
-        error: null,
-      });
-
-      getCachedClassificationData.mockResolvedValue([]);
-
-      const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', []);
+      await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', [], 100);
 
       expect(getTeamIdByUserId).toHaveBeenCalled();
-      expect(mockEq).toHaveBeenCalledWith('team_id', 'team-123');
-      expect(result.success).toBe(true);
-    });
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          data_source: 'te',
+          team_id_filter: 'team-123',
+          state_code_filter: 100,
+        }),
+      );
 
-    it('should return empty success when TE data source has no team id', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-
+      mockRpc.mockClear();
       getTeamIdByUserId.mockResolvedValue(null);
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
 
       const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'te', []);
 
-      expect(result).toEqual({
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(result).toEqual({ data: [], success: true });
+    });
+
+    it('should handle empty and error results', async () => {
+      const { getContactTableAll } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValueOnce({ data: [], error: null });
+
+      await expect(
+        getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', []),
+      ).resolves.toEqual({
         data: [],
         success: true,
       });
-    });
-
-    it('should handle database error gracefully', async () => {
-      const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockReturnThis();
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      mockEq.mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      });
 
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'Database error' } });
 
       const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'en', 'tg', []);
 
       expect(consoleLogSpy).toHaveBeenCalledWith('error', { message: 'Database error' });
-      expect(result.success).toBe(false);
-      expect(result.data).toEqual([]);
-
+      expect(result).toEqual({ data: [], success: false });
       consoleLogSpy.mockRestore();
     });
 
     it('should fall back to id-only rows when contact table mapping throws', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({
-        data: [
-          {
-            id: 'contact-1',
-            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact 1' }],
-            'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name 1' }],
-            'common:class': [{ '@level': '0', '#text': 'Category' }],
-            email: 'test@example.com',
-            version: 'v1.0',
-            modified_at: '2023-01-01T00:00:00Z',
-            team_id: 'team-1',
-          },
-        ],
-        count: 1,
-        error: null,
-      });
-
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-      getCachedClassificationData.mockResolvedValue([]);
+      mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
       getLangText.mockImplementation(() => {
         throw new Error('Transform failed');
       });
@@ -698,57 +643,48 @@ describe('Contacts API Service', () => {
 
       expect(consoleErrorSpy).toHaveBeenCalled();
       expect(result.data[0]).toEqual({ id: 'contact-1' });
-
       consoleErrorSpy.mockRestore();
     });
 
-    it('should use default sorting and paging values, and fall back empty contact fields', async () => {
+    it('should use default paging and sparse field fallbacks', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
-
-      const mockSelect = jest.fn().mockReturnThis();
-      const mockOrder = jest.fn().mockReturnThis();
-      const mockRange = jest.fn().mockReturnThis();
-      const mockEq = jest.fn().mockResolvedValue({
+      mockRpc.mockResolvedValue({
         data: [
-          {
+          latestContactRow({
             id: 'contact-defaults',
-            'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact Defaults' }],
-            'common:name': [{ '@xml:lang': 'en', '#text': 'Full Defaults' }],
-            'common:class': [{ '@level': '0', '#text': 'Category' }],
-            email: undefined,
-            version: 'v2.0',
-            modified_at: '2023-01-02T00:00:00Z',
-            team_id: 'team-defaults',
-          },
+            modified_at: null,
+            total_count: null,
+            json: {
+              contactDataSet: {
+                contactInformation: {
+                  dataSetInformation: {
+                    'common:shortName': [{ '@xml:lang': 'en', '#text': 'Contact Defaults' }],
+                    'common:name': [{ '@xml:lang': 'en', '#text': 'Full Defaults' }],
+                    classificationInformation: {
+                      'common:classification': { 'common:class': [] },
+                    },
+                    email: undefined,
+                  },
+                },
+              },
+            },
+          }),
         ],
-        count: null,
         error: null,
       });
 
-      mockFrom.mockReturnValue({
-        select: mockSelect,
-      });
-      mockSelect.mockReturnValue({
-        order: mockOrder,
-      });
-      mockOrder.mockReturnValue({
-        range: mockRange,
-      });
-      mockRange.mockReturnValue({
-        eq: mockEq,
-      });
-
-      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-defaults' }]);
-
       const result = await getContactTableAll({}, {}, 'en', 'tg', []);
 
-      expect(mockOrder).toHaveBeenCalledWith('modified_at', { ascending: false });
-      expect(mockRange).toHaveBeenCalledWith(0, 9);
-      expect(result).toMatchObject({
-        page: 1,
-        total: 0,
-        success: true,
-      });
+      expect(mockRpc).toHaveBeenCalledWith(
+        'get_latest_contact_versions',
+        expect.objectContaining({
+          page_size: 10,
+          page_current: 1,
+          sort_by: 'modified_at',
+          sort_direction: 'desc',
+        }),
+      );
+      expect(result).toMatchObject({ page: 1, total: 0, success: true });
       expect(result.data[0]).toMatchObject({
         id: 'contact-defaults',
         email: '-',
@@ -757,47 +693,37 @@ describe('Contacts API Service', () => {
   });
 
   describe('getContactTablePgroongaSearch', () => {
-    it('should perform full-text search with pgroonga', async () => {
-      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
-
-      mockRpc.mockResolvedValue({
-        data: [
-          {
-            id: 'contact-1',
-            json: {
-              contactDataSet: {
-                contactInformation: {
-                  dataSetInformation: {
-                    'common:shortName': [{ '@xml:lang': 'en', '#text': 'Search Result' }],
-                    'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name' }],
-                    classificationInformation: {
-                      'common:classification': {
-                        'common:class': [{ '@level': '0', '#text': 'Category' }],
-                      },
-                    },
-                    email: 'search@example.com',
-                  },
+    const latestSearchRow = (overrides: any = {}) => ({
+      id: 'contact-1',
+      version: '01.00.002',
+      modified_at: '2023-01-01T00:00:00Z',
+      team_id: 'team-1',
+      total_count: 1,
+      json: {
+        contactDataSet: {
+          contactInformation: {
+            dataSetInformation: {
+              'common:shortName': [{ '@xml:lang': 'en', '#text': 'Search Result' }],
+              'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name' }],
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [{ '@level': '0', '#text': 'Category' }],
                 },
               },
+              email: 'search@example.com',
             },
-            version: 'v1.0',
-            modified_at: '2023-01-01T00:00:00Z',
-            team_id: 'team-1',
-            total_count: 1,
           },
-        ],
-        error: null,
-      });
+        },
+      },
+      ...overrides,
+    });
 
-      getCachedClassificationData.mockResolvedValue([]);
+    it('should perform latest-version full-text search with pgroonga', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestSearchRow()], error: null });
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+      jsonToList.mockReturnValue([{ '@level': '0', '#text': 'Category' }]);
+      classificationToString.mockReturnValue('Category');
 
       const result = await getContactTablePgroongaSearch(
         { current: 1, pageSize: 10 },
@@ -806,33 +732,28 @@ describe('Contacts API Service', () => {
         'test query',
         {},
         100,
+        'team-1',
       );
 
       expect(mockAuth).toHaveBeenCalled();
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
         query_text: 'test query',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
-        state_code: 100,
+        team_id_filter: 'team-1',
+        state_code_filter: 100,
       });
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(result.total).toBe(1);
+      expect(result.data[0]).not.toHaveProperty('latestVersion');
     });
 
     it('should handle empty search results', async () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
 
       mockRpc.mockResolvedValue({
         data: [],
@@ -854,14 +775,6 @@ describe('Contacts API Service', () => {
     it('should search without state_code parameter', async () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
 
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
-
       mockRpc.mockResolvedValue({
         data: [],
         error: null,
@@ -869,13 +782,15 @@ describe('Contacts API Service', () => {
 
       await getContactTablePgroongaSearch({ current: 1, pageSize: 10 }, 'en', 'tg', 'query', {});
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
         query_text: 'query',
         filter_condition: {},
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-123',
+        team_id_filter: null,
+        state_code_filter: null,
       });
     });
 
@@ -900,14 +815,6 @@ describe('Contacts API Service', () => {
 
     it('should log rpc errors and return the raw rpc response', async () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
 
       const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
       mockRpc.mockResolvedValue({
@@ -934,44 +841,7 @@ describe('Contacts API Service', () => {
 
     it('should fall back to id-only rows when pgroonga mapping throws', async () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
-
-      mockAuth.mockResolvedValue({
-        data: {
-          session: {
-            user: { id: 'user-123' },
-          },
-        },
-      });
-
-      mockRpc.mockResolvedValue({
-        data: [
-          {
-            id: 'contact-1',
-            json: {
-              contactDataSet: {
-                contactInformation: {
-                  dataSetInformation: {
-                    'common:shortName': [{ '@xml:lang': 'en', '#text': 'Search Result' }],
-                    'common:name': [{ '@xml:lang': 'en', '#text': 'Full Name' }],
-                    classificationInformation: {
-                      'common:classification': {
-                        'common:class': [{ '@level': '0', '#text': 'Category' }],
-                      },
-                    },
-                    email: 'search@example.com',
-                  },
-                },
-              },
-            },
-            version: 'v1.0',
-            modified_at: '2023-01-01T00:00:00Z',
-            team_id: 'team-1',
-            total_count: 1,
-          },
-        ],
-        error: null,
-      });
-      getCachedClassificationData.mockResolvedValue([]);
+      mockRpc.mockResolvedValue({ data: [latestSearchRow()], error: null });
       getLangText.mockImplementation(() => {
         throw new Error('Transform failed');
       });
@@ -1005,11 +875,8 @@ describe('Contacts API Service', () => {
 
       mockRpc.mockResolvedValue({
         data: [
-          {
+          latestSearchRow({
             id: 'contact-search-defaults',
-            version: 'v2.0',
-            modified_at: '2023-01-02T00:00:00Z',
-            team_id: 'team-defaults',
             total_count: null,
             json: {
               contactDataSet: {
@@ -1027,11 +894,10 @@ describe('Contacts API Service', () => {
                 },
               },
             },
-          },
+          }),
         ],
         error: null,
       });
-      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-search-defaults' }]);
 
       const result = await getContactTablePgroongaSearch(
         {},
@@ -1042,14 +908,15 @@ describe('Contacts API Service', () => {
         0,
       );
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
         query_text: 'defaults',
         filter_condition: { status: 'active' },
         page_size: 10,
         page_current: 1,
         data_source: 'my',
         this_user_id: 'user-defaults',
-        state_code: 0,
+        team_id_filter: null,
+        state_code_filter: 0,
       });
       expect(result).toMatchObject({
         page: 1,
@@ -1080,14 +947,43 @@ describe('Contacts API Service', () => {
 
       await getContactTablePgroongaSearch({}, 'en', 'tg', 'defaults', { level: 1 });
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts', {
+      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
         query_text: 'defaults',
         filter_condition: { level: 1 },
         page_size: 10,
         page_current: 1,
         data_source: 'tg',
         this_user_id: 'user-defaults',
+        team_id_filter: null,
+        state_code_filter: null,
       });
+    });
+
+    it('should map Chinese search rows and skip team data without a team id', async () => {
+      const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({ data: [latestSearchRow({ total_count: 3 })], error: null });
+      getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-zh' }]);
+      genClassificationZH.mockReturnValue(['联系人分类']);
+      classificationToString.mockReturnValue('联系人分类');
+      getLangText.mockReturnValue('联系人');
+
+      const result = await getContactTablePgroongaSearch({}, 'zh', 'tg', '联系人', {});
+
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'zh', ['all']);
+      expect(result).toMatchObject({ page: 1, success: true, total: 3 });
+      expect(result.data[0]).toMatchObject({
+        shortName: '联系人',
+        classification: '联系人分类',
+      });
+
+      mockRpc.mockClear();
+      getTeamIdByUserId.mockResolvedValue(null);
+
+      await expect(getContactTablePgroongaSearch({}, 'en', 'te', 'team', {})).resolves.toEqual({
+        data: [],
+        success: true,
+      });
+      expect(mockRpc).not.toHaveBeenCalled();
     });
   });
 

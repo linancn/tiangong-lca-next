@@ -19,9 +19,11 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
+  - scripts/docpact
+  - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: 6c5d02f5cad6a864e290d16b3ce6d3a62c91247b
+lastReviewedCommit: ca4280853d06d12dd6566df5ba0e48cbc3466719
 ---
 
 # Pre-Push Gate Policy
@@ -37,6 +39,8 @@ Define the intended trigger policy for the existing local docpact gate and `npm 
 ```bash
 npm run docpact:gate
 ```
+
+`npm run docpact:gate` resolves the `docpact` CLI through `scripts/docpact`, so local pushes do not depend on bare `docpact` being available on `PATH`.
 
 ```bash
 npm run prepush:gate

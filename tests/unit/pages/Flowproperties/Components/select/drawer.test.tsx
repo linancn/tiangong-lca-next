@@ -55,6 +55,24 @@ jest.mock('@/pages/Flowproperties/Components/delete', () => ({
   ),
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({ id, addVersionComponent, operationRender, onSelectVersion }: any) => (
+    <div data-testid='all-versions'>
+      <span>{`all versions `}</span>
+      {addVersionComponent?.({ newVersion: '10.00.000' })}
+      <button type='button' onClick={() => onSelectVersion?.({ id })}>
+        {`select-invalid-version ${id}`}
+      </button>
+      <button
+        type='button'
+        onClick={() => onSelectVersion?.({ id, version: '09.00.000' })}
+      >{`select-version ${id}`}</button>
+      {operationRender?.({ id, version: '09.00.000' })}
+    </div>
+  ),
+}));
+
 const mockGetFlowpropertyTableAll = jest.fn(
   async (_params: any, _sort: any, _lang: string, dataSource: string) => ({
     data: [
@@ -321,6 +339,35 @@ describe('FlowpropertySelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).toHaveBeenCalledWith('flowproperty-my-search', '2.0.0');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('selects a concrete version from the all-versions list', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<FlowpropertySelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'select-invalid-version flowproperty-tg' }),
+    );
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Selete Flow property' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'select-version flowproperty-tg' }));
+
+    expect(onData).toHaveBeenCalledWith('flowproperty-tg', '09.00.000');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 

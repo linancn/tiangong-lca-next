@@ -78,10 +78,12 @@ jest.mock('umi', () => ({
   useIntl: () => ({
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
+  useLocation: () => ({ pathname: '/flows' }),
 }));
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
+  BarsOutlined: () => <span>bars-icon</span>,
   CloseOutlined: () => <span>close-icon</span>,
   DatabaseOutlined: () => <span>database-icon</span>,
 }));
@@ -120,9 +122,34 @@ jest.mock('@/pages/Flows/Components/optiondata', () => ({
   flowTypeOptions: [{ value: 'ELEMENTARY_FLOW', label: 'Elementary flow' }],
 }));
 
+jest.mock('@/components/AllVersions', () => ({
+  __esModule: true,
+  default: ({
+    id,
+    addVersionComponent,
+    operationRender,
+    operationColumnWidth,
+    onSelectVersion,
+  }: any) => (
+    <div data-testid={`all-versions-${id}`} data-operation-width={operationColumnWidth}>
+      {addVersionComponent?.({ newVersion: '02.00.000' })}
+      <div data-testid={`all-versions-operation-${id}`}>
+        {operationRender?.({ id, version: '02.00.000' })}
+      </div>
+      <button type='button' onClick={() => onSelectVersion?.({ id, version: '02.00.000' })}>
+        select-version-{id}
+      </button>
+      <button type='button' onClick={() => onSelectVersion?.({ id })}>
+        select-version-missing-version-{id}
+      </button>
+    </div>
+  ),
+}));
+
 jest.mock('antd', () => {
   const React = require('react');
 
+  const Badge = ({ children }: any) => <span>{children}</span>;
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => (
     <button
@@ -218,6 +245,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Badge,
     Button,
     Card,
     Checkbox,
@@ -340,7 +368,18 @@ describe('FlowsSelectDrawer', () => {
     expect(screen.getByText('view flow-my:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('edit flow-my:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('delete flow-my:1.0.0')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-flow-my')).toHaveAttribute(
+      'data-operation-width',
+      '184',
+    );
     await userEvent.click(screen.getByRole('button', { name: 'delete flow-my:1.0.0' }));
+
+    await userEvent.click(screen.getByRole('button', { name: 'select-version-flow-my' }));
+    expect(onData).toHaveBeenCalledWith('flow-my', '02.00.000');
+    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await screen.findByRole('dialog', { name: 'Selete Flow' });
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));

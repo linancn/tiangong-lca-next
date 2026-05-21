@@ -34,7 +34,7 @@ import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { SearchProps } from 'antd/es/input/Search';
-import type { FC } from 'react';
+import type { FC, MutableRefObject } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import SourceCreate from './Components/create';
 import SourceDelete from './Components/delete';
@@ -88,6 +88,110 @@ const TableList: FC = () => {
       setEditDrawerVisible(true);
     }
   }, [dataSource, id, version]);
+
+  const renderSourceActions = (
+    row: SourceTable,
+    listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
+  ) => {
+    const actionDisabled = isDataUnderReview(row.stateCode);
+    if (dataSource === 'my') {
+      return [
+        <ResponsiveDataListActions
+          key={0}
+          isMobile={isMobileDataList}
+          moreMenus={[
+            {
+              key: 'export',
+              name: <ExportData tableName='sources' id={row.id} version={row.version} />,
+            },
+            {
+              key: 'copy',
+              name: (
+                <SourceCreate
+                  actionType='copy'
+                  id={row.id}
+                  version={row.version}
+                  lang={lang}
+                  actionRef={listActionRef}
+                />
+              ),
+            },
+            {
+              key: 'contribute',
+              name: (
+                <ContributeData
+                  onOk={async () => {
+                    const contributeResult = await contributeSource('sources', row.id, row.version);
+                    const contributeError = extractContributeDataError(contributeResult);
+
+                    if (contributeError) {
+                      message.error(getContributeDataErrorMessage(intl, contributeError));
+                      console.log(contributeError);
+                    } else {
+                      message.success(
+                        intl.formatMessage({
+                          id: 'component.contributeData.success',
+                          defaultMessage: 'Contribute successfully',
+                        }),
+                      );
+                      listActionRef.current?.reload();
+                    }
+                  }}
+                  disabled={!!row.teamId}
+                />
+              ),
+            },
+          ]}
+        >
+          <SourceView
+            actionRef={listActionRef}
+            lang={lang}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+          />
+          <SourceEdit
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            lang={lang}
+            buttonType={'icon'}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+          />
+          <SourceDelete
+            disabled={actionDisabled}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={listActionRef}
+            setViewDrawerVisible={() => {}}
+          />
+        </ResponsiveDataListActions>,
+      ];
+    }
+
+    return [
+      <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
+        <SourceView
+          actionRef={listActionRef}
+          lang={lang}
+          id={row.id}
+          version={row.version}
+          buttonType={'icon'}
+        />
+        <SourceCreate
+          actionType='copy'
+          id={row.id}
+          version={row.version}
+          lang={lang}
+          actionRef={listActionRef}
+        />
+        <ExportData tableName='sources' id={row.id} version={row.version} />
+      </ResponsiveDataListActions>,
+    ];
+  };
+
   const sourceColumns: ProColumns<SourceTable>[] = [
     {
       ...dataListIndexColumn<SourceTable>(),
@@ -149,7 +253,8 @@ const TableList: FC = () => {
                 json->sourceDataSet->sourceInformation->dataSetInformation->>publicationType,
                 version,
                 modified_at,
-                team_id
+                team_id,
+                state_code
               `}
               id={row.id}
               addVersionComponent={({ newVersion }) => (
@@ -162,6 +267,10 @@ const TableList: FC = () => {
                   actionRef={actionRef}
                 />
               )}
+              operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
+                renderSourceActions(versionRow as SourceTable, allVersionsActionRef)
+              }
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
             ></AllVersionsList>
           </Space>
         );
@@ -179,108 +288,7 @@ const TableList: FC = () => {
       ...dataListActionColumn<SourceTable>(isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
-      render: (_, row) => {
-        const actionDisabled = isDataUnderReview(row.stateCode);
-        if (dataSource === 'my') {
-          return [
-            <ResponsiveDataListActions
-              key={0}
-              isMobile={isMobileDataList}
-              moreMenus={[
-                {
-                  key: 'export',
-                  name: <ExportData tableName='sources' id={row.id} version={row.version} />,
-                },
-                {
-                  key: 'copy',
-                  name: (
-                    <SourceCreate
-                      actionType='copy'
-                      id={row.id}
-                      version={row.version}
-                      lang={lang}
-                      actionRef={actionRef}
-                    />
-                  ),
-                },
-                {
-                  key: 'contribute',
-                  name: (
-                    <ContributeData
-                      onOk={async () => {
-                        const contributeResult = await contributeSource(
-                          'sources',
-                          row.id,
-                          row.version,
-                        );
-                        const contributeError = extractContributeDataError(contributeResult);
-
-                        if (contributeError) {
-                          message.error(getContributeDataErrorMessage(intl, contributeError));
-                          console.log(contributeError);
-                        } else {
-                          message.success(
-                            intl.formatMessage({
-                              id: 'component.contributeData.success',
-                              defaultMessage: 'Contribute successfully',
-                            }),
-                          );
-                          actionRef.current?.reload();
-                        }
-                      }}
-                      disabled={!!row.teamId}
-                    />
-                  ),
-                },
-              ]}
-            >
-              <SourceView
-                actionRef={actionRef}
-                lang={lang}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-              />
-              <SourceEdit
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                lang={lang}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-              <SourceDelete
-                disabled={actionDisabled}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={actionRef}
-                setViewDrawerVisible={() => {}}
-              />
-            </ResponsiveDataListActions>,
-          ];
-        }
-        return [
-          <ResponsiveDataListActions key={0} isMobile={isMobileDataList}>
-            <SourceView
-              actionRef={actionRef}
-              lang={lang}
-              id={row.id}
-              version={row.version}
-              buttonType={'icon'}
-            />
-            <SourceCreate
-              actionType='copy'
-              id={row.id}
-              version={row.version}
-              lang={lang}
-              actionRef={actionRef}
-            />
-            <ExportData tableName='sources' id={row.id} version={row.version} />
-          </ResponsiveDataListActions>,
-        ];
-      },
+      render: (_, row) => renderSourceActions(row),
     },
   ];
   useEffect(() => {
@@ -375,6 +383,7 @@ const TableList: FC = () => {
                 currentKeyWord,
                 {},
                 currentStateCode,
+                tid ?? '',
               ),
             );
           }

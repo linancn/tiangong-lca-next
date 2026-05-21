@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-05-20
-lastReviewedCommit: fc83731ac4cd02b2a9c44e9ba66f86c4bdbb3405
+lastReviewedCommit: ca4280853d06d12dd6566df5ba0e48cbc3466719
 ---
 
 # Development Bootstrap
@@ -83,7 +83,7 @@ npm install
 | coverage report + queue summary | `npm run test:coverage:report` |
 | build | `npm run build` |
 | protected-branch parity gate | `npm run prepush:gate` |
-| repo AI-doc lint | `~/.cargo/bin/docpact validate-config --root . --strict && ~/.cargo/bin/docpact lint --root . --base <base> --head <head> --mode enforce` |
+| repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 ## Command Rules
 

@@ -1,18 +1,13 @@
-import type { ReferenceItem } from '@/services/general/data';
+import type { ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { Contact } from '@tiangong-lca/tidas-sdk/types';
 
-export type ContactTable = {
+export type ContactTable = VersionedDataRow & {
   key: React.Key;
-  id: string;
-  version: string;
   lang: string;
   shortName: string;
   name: string;
   classification: string;
   email: string;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
 };
 
 export type ContactReference = ReferenceItem | ReferenceItem[];

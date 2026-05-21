@@ -1,4 +1,5 @@
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
+import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import {
   getFlowpropertyTableAll,
@@ -15,6 +16,7 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
+import { getAllVersionsColumns } from '../../../Utils';
 import FlowpropertiesCreate from '../create';
 import FlowpropertiesDelete from '../delete';
 import FlowpropertiesEdit from '../edit';
@@ -46,6 +48,18 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
+  const flowpropertyAllVersionsSearchColumn = `
+    id,
+    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:name",
+    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
+    json->flowPropertyDataSet->flowPropertiesInformation->dataSetInformation->"common:generalComment",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->>"@refObjectId",
+    json->flowPropertyDataSet->flowPropertiesInformation->quantitativeReference->referenceToReferenceUnitGroup->"common:shortDescription",
+    version,
+    modified_at,
+    team_id,
+    state_code
+  `;
 
   const onSelect = () => {
     setDrawerVisible(true);
@@ -53,6 +67,47 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const onSelectVersion = (row: FlowpropertyTable) => {
+    if (!row.id || !row.version) {
+      return;
+    }
+
+    onData(row.id, row.version);
+    setDrawerVisible(false);
+  };
+
+  const renderVersionSelectActions = (row: FlowpropertyTable) => {
+    if (activeTabKey === 'tg') {
+      return [
+        <Space size={'small'} key={0}>
+          <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+        </Space>,
+      ];
+    }
+    if (activeTabKey === 'my') {
+      return [
+        <Space size={'small'} key={0}>
+          <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+          <FlowpropertiesEdit
+            lang={lang}
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={myActionRefSelect}
+          />
+          <FlowpropertiesDelete
+            id={row.id}
+            version={row.version}
+            buttonType={'icon'}
+            actionRef={myActionRefSelect}
+            setViewDrawerVisible={() => {}}
+          />
+        </Space>,
+      ];
+    }
+    return [];
   };
 
   const onTabChange = async (key: string) => {
@@ -175,6 +230,33 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       },
     },
     {
+      title: <FormattedMessage id='pages.table.title.version' defaultMessage='Version' />,
+      dataIndex: 'version',
+      sorter: false,
+      search: false,
+      render: (_, row) => {
+        return (
+          <Space size='small'>
+            {row.version}
+            <AllVersionsList
+              lang={lang}
+              dataSource={activeTabKey}
+              searchTableName='flowproperties'
+              columns={getAllVersionsColumns(FlowpropertyColumns, 4)}
+              searchColume={flowpropertyAllVersionsSearchColumn}
+              id={row.id}
+              addVersionComponent={() => <></>}
+              operationRender={(versionRow) =>
+                renderVersionSelectActions(versionRow as FlowpropertyTable)
+              }
+              operationColumnWidth={88}
+              onSelectVersion={(versionRow) => onSelectVersion(versionRow as FlowpropertyTable)}
+            />
+          </Space>
+        );
+      },
+    },
+    {
       title: <FormattedMessage id='pages.table.title.createdAt' defaultMessage='Created at' />,
       dataIndex: 'created_at',
       valueType: 'dateTime',
@@ -185,35 +267,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
-      render: (_, row) => {
-        if (activeTabKey === 'tg') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
-            </Space>,
-          ];
-        } else if (activeTabKey === 'my') {
-          return [
-            <Space size={'small'} key={0}>
-              <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
-              <FlowpropertiesEdit
-                lang={lang}
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-              />
-              <FlowpropertiesDelete
-                id={row.id}
-                version={row.version}
-                buttonType={'icon'}
-                actionRef={myActionRefSelect}
-                setViewDrawerVisible={() => {}}
-              />
-            </Space>,
-          ];
-        } else return [];
-      },
+      render: (_, row) => renderVersionSelectActions(row),
     },
   ];
 

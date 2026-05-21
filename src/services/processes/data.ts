@@ -1,19 +1,14 @@
-import type { LangTextValue, ReferenceItem } from '@/services/general/data';
+import type { LangTextValue, ReferenceItem, VersionedDataRow } from '@/services/general/data';
 import type { CommonOther, Process } from '@tiangong-lca/tidas-sdk/types';
 
-export type ProcessTable = {
+export type ProcessTable = VersionedDataRow & {
   key: string;
-  id: string;
-  version: string;
   lang: string;
   name: string;
   generalComment: string;
   classification: string;
   referenceYear: string;
   location: string;
-  modifiedAt: Date;
-  stateCode?: number;
-  teamId: string;
   modelId: string;
   typeOfDataSet: string;
 };
