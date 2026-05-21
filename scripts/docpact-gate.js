@@ -36,12 +36,18 @@ function spawn(command, args, options = {}) {
   });
 }
 
-function findDocpact() {
+function findDocpact(repoRoot) {
   const candidates = [];
   if (process.env.DOCPACT_BIN) {
     candidates.push(process.env.DOCPACT_BIN);
   }
+  candidates.push(path.join(repoRoot, 'scripts', 'docpact'));
+  if (process.env.CARGO_HOME) {
+    candidates.push(path.join(process.env.CARGO_HOME, 'bin', 'docpact'));
+  }
   candidates.push(path.join(os.homedir(), '.cargo', 'bin', 'docpact'));
+  candidates.push('/opt/homebrew/bin/docpact');
+  candidates.push('/usr/local/bin/docpact');
   candidates.push('docpact');
 
   for (const candidate of candidates) {
@@ -55,7 +61,7 @@ function findDocpact() {
   }
 
   console.error(
-    'docpact was not found. Install it with `cargo install docpact --version 0.1.4 --force` or set DOCPACT_BIN.',
+    'docpact was not found. Install it with `cargo install docpact --version 0.1.9 --force` or set DOCPACT_BIN.',
   );
   process.exit(127);
 }
@@ -96,10 +102,22 @@ function runDocpact(docpact, args) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const docpact = findDocpact();
+const repoRoot = git(['rev-parse', '--show-toplevel']);
+process.chdir(repoRoot);
+const docpact = findDocpact(repoRoot);
 const base = resolveBase(args.base, args.head);
 const head = git(['rev-parse', args.head]);
 
 console.log(`Running docpact gate: base=${base} head=${head}`);
-runDocpact(docpact, ['validate-config', '--root', '.', '--strict']);
-runDocpact(docpact, ['lint', '--root', '.', '--base', base, '--head', head, '--mode', 'enforce']);
+runDocpact(docpact, ['validate-config', '--root', repoRoot, '--strict']);
+runDocpact(docpact, [
+  'lint',
+  '--root',
+  repoRoot,
+  '--base',
+  base,
+  '--head',
+  head,
+  '--mode',
+  'enforce',
+]);

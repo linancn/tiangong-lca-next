@@ -20,8 +20,8 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-05-20
-lastReviewedCommit: ca4280853d06d12dd6566df5ba0e48cbc3466719
+lastReviewedAt: 2026-05-21
+lastReviewedCommit: 96b56d2b6835dae28bafca4bd5f8287012dda548
 ---
 
 # Testing Execution State
