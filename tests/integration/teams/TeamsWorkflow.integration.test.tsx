@@ -772,8 +772,8 @@ describe('Teams management workflows', () => {
       });
       expect(payload.lightLogo).toEqual('../sys-files/uploaded-logo.png');
       expect(payload.darkLogo).toEqual('../sys-files/uploaded-logo.png');
-      expect(rank).toBeUndefined();
-      expect(isPublic).toBeUndefined();
+      expect(rank).toBe(-1);
+      expect(isPublic).toBe(false);
 
       expect(history.replace).toHaveBeenCalledWith('/team?action=edit');
       expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
