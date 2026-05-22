@@ -420,7 +420,7 @@ jest.mock('@ant-design/pro-components', () => {
     return '';
   };
 
-  const ProForm = ({ formRef, onFinish, submitter, children, disabled }: any) => {
+  const ProForm = ({ formRef, onFinish, submitter, children, disabled, initialValues }: any) => {
     const internalFormRef = React.useRef<any>(null);
 
     React.useEffect(() => {
@@ -450,7 +450,7 @@ jest.mock('@ant-design/pro-components', () => {
     const submitNodes = Array.isArray(renderedSubmitter) ? renderedSubmitter : [renderedSubmitter];
 
     return (
-      <Form ref={internalFormRef}>
+      <Form ref={internalFormRef} initialValues={initialValues}>
         <fieldset disabled={disabled}>{children}</fieldset>
         <div data-testid='pro-form-submitter'>
           {submitNodes.map((node, index) => (
@@ -704,9 +704,11 @@ describe('Team page validations', () => {
         expect.objectContaining({
           title: [{ '#text': 'Created Team', '@xml:lang': 'en' }],
           description: [{ '#text': 'Fresh team description', '@xml:lang': 'en' }],
+          lightLogo: null,
+          darkLogo: null,
         }),
-        undefined,
-        undefined,
+        -1,
+        false,
       );
     });
     expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
@@ -1090,8 +1092,8 @@ describe('Team page validations', () => {
           lightLogo: '../sys-files/uploaded-logo.png',
           darkLogo: '../sys-files/uploaded-logo.png',
         }),
-        undefined,
-        undefined,
+        -1,
+        false,
       );
       expect(reloadSpy).toHaveBeenCalledTimes(1);
     } finally {
