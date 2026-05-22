@@ -52,6 +52,9 @@ import { Children, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
 
+const DEFAULT_CREATE_TEAM_RANK = -1;
+const DEFAULT_CREATE_TEAM_IS_PUBLIC = false;
+
 const Team = () => {
   const { token } = theme.useToken();
   const [activeTabKey, setActiveTabKey] = useState('info');
@@ -234,10 +237,18 @@ const Team = () => {
 
     const createTeamInfo = async (values: any) => {
       const { rank, is_public } = values;
+      const normalizedRank = typeof rank === 'number' ? rank : DEFAULT_CREATE_TEAM_RANK;
+      const normalizedIsPublic =
+        typeof is_public === 'boolean' ? is_public : DEFAULT_CREATE_TEAM_IS_PUBLIC;
       delete values.rank;
       delete values.is_public;
       const params = getParams(values);
-      const error = await createTeamMessage(v4(), { ...params }, rank, is_public);
+      const error = await createTeamMessage(
+        v4(),
+        { ...params },
+        normalizedRank,
+        normalizedIsPublic,
+      );
       if (error) {
         message.error(
           intl.formatMessage({
@@ -327,16 +338,17 @@ const Team = () => {
     const submitTeamInfo = async (values: any) => {
       try {
         if (!lightLogo.length || !darkLogo.length) {
-          if (rank === 0) {
+          const currentRank = typeof values.rank === 'number' ? values.rank : rank;
+          if (currentRank === 0) {
             setLightLogoError(!lightLogo.length);
             setDarkLogoError(!darkLogo.length);
             return;
           } else {
-            if (!lightLogo.length) {
-              handleRemoveLogo('lightLogo');
+            if (!lightLogo.length && beforeLightLogoPath) {
+              await handleRemoveLogo('lightLogo');
             }
-            if (!darkLogo.length) {
-              handleRemoveLogo('darkLogo');
+            if (!darkLogo.length && beforeDarkLogoPath) {
+              await handleRemoveLogo('darkLogo');
             }
           }
         }
@@ -358,9 +370,17 @@ const Team = () => {
           return;
         }
         values.lightLogo =
-          typeof lightLogo[0] === 'string' ? lightLogo[0] : `../sys-files/${lightLogoPath}`;
+          typeof lightLogo[0] === 'string'
+            ? lightLogo[0]
+            : lightLogoPath
+              ? `../sys-files/${lightLogoPath}`
+              : null;
         values.darkLogo =
-          typeof darkLogo[0] === 'string' ? darkLogo[0] : `../sys-files/${darkLogoPath}`;
+          typeof darkLogo[0] === 'string'
+            ? darkLogo[0]
+            : darkLogoPath
+              ? `../sys-files/${darkLogoPath}`
+              : null;
 
         if (action === 'edit') {
           if (!teamId) return;
@@ -393,6 +413,10 @@ const Team = () => {
               ),
             }}
             onFinish={(values) => submitTeamInfo(values)}
+            initialValues={{
+              rank: DEFAULT_CREATE_TEAM_RANK,
+              is_public: DEFAULT_CREATE_TEAM_IS_PUBLIC,
+            }}
           >
             <Form.Item
               label={

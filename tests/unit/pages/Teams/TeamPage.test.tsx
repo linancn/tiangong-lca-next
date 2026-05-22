@@ -420,7 +420,7 @@ jest.mock('@ant-design/pro-components', () => {
     return '';
   };
 
-  const ProForm = ({ formRef, onFinish, submitter, children, disabled }: any) => {
+  const ProForm = ({ formRef, onFinish, submitter, children, disabled, initialValues }: any) => {
     const internalFormRef = React.useRef<any>(null);
 
     React.useEffect(() => {
@@ -450,7 +450,7 @@ jest.mock('@ant-design/pro-components', () => {
     const submitNodes = Array.isArray(renderedSubmitter) ? renderedSubmitter : [renderedSubmitter];
 
     return (
-      <Form ref={internalFormRef}>
+      <Form ref={internalFormRef} initialValues={initialValues}>
         <fieldset disabled={disabled}>{children}</fieldset>
         <div data-testid='pro-form-submitter'>
           {submitNodes.map((node, index) => (
@@ -704,9 +704,11 @@ describe('Team page validations', () => {
         expect.objectContaining({
           title: [{ '#text': 'Created Team', '@xml:lang': 'en' }],
           description: [{ '#text': 'Fresh team description', '@xml:lang': 'en' }],
+          lightLogo: null,
+          darkLogo: null,
         }),
-        undefined,
-        undefined,
+        -1,
+        false,
       );
     });
     expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
@@ -815,6 +817,64 @@ describe('Team page validations', () => {
     expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
   });
 
+  it('removes stored team logos from edit payload and storage when cleared', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          rank: -1,
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Existing Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Existing Description' }],
+            lightLogo: 'logos/light.png',
+            darkLogo: 'logos/dark.png',
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockEditTeamMessage.mockResolvedValueOnce({ error: null } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(2);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'remove-file' })[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'remove-file' })).toHaveLength(1);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'remove-file' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).toHaveBeenCalledWith(
+        'team-123',
+        expect.objectContaining({
+          lightLogo: null,
+          darkLogo: null,
+        }),
+        -1,
+        true,
+      );
+    });
+    expect(mockRemoveLogoApi).toHaveBeenCalledWith(['logos/light.png']);
+    expect(mockRemoveLogoApi).toHaveBeenCalledWith(['logos/dark.png']);
+  });
+
   it('shows a generic error when edit submission fails', async () => {
     setWindowLocation('?action=edit');
     mockGetUserRoles.mockResolvedValueOnce({
@@ -907,6 +967,47 @@ describe('Team page validations', () => {
     expect(screen.getByLabelText('Team Name')).toHaveValue('');
     expect(screen.getByLabelText('Team Description')).toHaveValue('');
     expect(screen.queryByRole('button', { name: 'remove-file' })).not.toBeInTheDocument();
+  });
+
+  it('falls back to rank state when submitted edit values omit rank', async () => {
+    setWindowLocation('?action=edit');
+    mockGetUserRoles.mockResolvedValueOnce({
+      data: [{ team_id: 'team-123', role: 'owner' }],
+      success: true,
+    } as any);
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          is_public: true,
+          json: {
+            title: [{ '@xml:lang': 'en', '#text': 'Rankless Team' }],
+            description: [{ '@xml:lang': 'en', '#text': 'Rankless Description' }],
+          },
+        },
+      ],
+      error: null,
+    } as any);
+    mockEditTeamMessage.mockResolvedValueOnce({ error: null } as any);
+
+    renderWithProviders(<Team />);
+
+    await waitFor(() => {
+      expect(mockGetTeamMessageApi).toHaveBeenCalledWith('team-123');
+    });
+
+    fireEvent.click(screen.getByTestId('pro-form-submit'));
+
+    await waitFor(() => {
+      expect(mockEditTeamMessage).toHaveBeenCalledWith(
+        'team-123',
+        expect.objectContaining({
+          lightLogo: null,
+          darkLogo: null,
+        }),
+        undefined,
+        true,
+      );
+    });
   });
 
   it('returns early when edit mode has no resolved team id', async () => {
@@ -1090,8 +1191,8 @@ describe('Team page validations', () => {
           lightLogo: '../sys-files/uploaded-logo.png',
           darkLogo: '../sys-files/uploaded-logo.png',
         }),
-        undefined,
-        undefined,
+        -1,
+        false,
       );
       expect(reloadSpy).toHaveBeenCalledTimes(1);
     } finally {
