@@ -503,7 +503,7 @@ describe('Process Utility Functions', () => {
       expect(
         result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
           .annualSupplyOrProductionVolume,
-      ).toEqual([{ '@xml:lang': 'en', '#text': '100 1 kg steel' }, { '#text': '200 1 kg steel' }]);
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 unit/year' }, { '#text': '200 unit/year' }]);
     });
 
     it('should preserve a previously resolved annual supply volume unit suffix while saving', () => {
@@ -527,7 +527,7 @@ describe('Process Utility Functions', () => {
         modellingAndValidation: {
           ...mockProcessData.modellingAndValidation,
           dataSourcesTreatmentAndRepresentativeness: {
-            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 kg Steel' }],
+            annualSupplyOrProductionVolume: [{ '@xml:lang': 'en', '#text': '100 kg/year' }],
           },
         },
       };
@@ -537,7 +537,7 @@ describe('Process Utility Functions', () => {
       expect(
         result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
           .annualSupplyOrProductionVolume,
-      ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg/year' }]);
     });
 
     it('should save annual supply volume with a suffix even when no quantitative reference is selected', () => {
@@ -575,7 +575,7 @@ describe('Process Utility Functions', () => {
       expect(
         result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
           .annualSupplyOrProductionVolume,
-      ).toEqual([{ '@xml:lang': 'en', '#text': '100 reference flow' }]);
+      ).toEqual([{ '@xml:lang': 'en', '#text': '100 unit/year' }]);
     });
 
     it('should use resultingAmount if not zero, otherwise use meanAmount', () => {

@@ -7,6 +7,8 @@ import {
   buildAnnualSupplyVolumeUnitLookupRows,
   deriveAnnualSupplyVolumeSuffix,
   getAnnualSupplyVolumeDisplayNumericText,
+  getAnnualSupplyVolumeDisplaySuffixText,
+  isAnnualSupplyVolumeAnnualizedSuffix,
   mergeAnnualSupplyVolumeUnitRows,
 } from '@/services/processes/annualSupplyOrProductionVolume';
 import type { ProcessExchangeData } from '@/services/processes/data';
@@ -64,7 +66,22 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
     (value: string) => suffixByLang[value] ?? suffixByLang.en,
     [suffixByLang],
   );
-  const currentSuffix = getSuffixForLang(lang);
+  const existingSuffixByLang = useMemo(() => {
+    return langOptions.reduce<Record<string, string>>((accumulator, option) => {
+      const suffixText = getAnnualSupplyVolumeDisplaySuffixText(formValues, option.value);
+      accumulator[option.value] = isAnnualSupplyVolumeAnnualizedSuffix(suffixText)
+        ? suffixText
+        : '';
+      return accumulator;
+    }, {});
+  }, [formValues]);
+
+  const getResolvedSuffixForLang = useCallback(
+    (value: string) =>
+      getSuffixForLang(value) || existingSuffixByLang[value] || existingSuffixByLang.en || '',
+    [existingSuffixByLang, getSuffixForLang],
+  );
+  const currentSuffix = getResolvedSuffixForLang(lang);
 
   useEffect(() => {
     setExchangeDataSourceWithUnits(exchangeDataSource);
@@ -96,7 +113,7 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
     const numericText = getAnnualSupplyVolumeDisplayNumericText(formValues, lang);
     const normalizedValues = buildAnnualSupplyVolumeMultiLang(
       numericText,
-      getSuffixForLang,
+      getResolvedSuffixForLang,
       annualSupplyVolumeLangs,
     );
 
@@ -104,7 +121,7 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
       form.setFieldValue(name, normalizedValues);
       onData();
     }
-  }, [form, formValues, getSuffixForLang, hasStoredFormValue, lang, name, onData]);
+  }, [form, formValues, getResolvedSuffixForLang, hasStoredFormValue, lang, name, onData]);
 
   const fieldRules = isRequired
     ? [
@@ -126,13 +143,13 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
 
             const normalizedValues = buildAnnualSupplyVolumeMultiLang(
               numericText,
-              getSuffixForLang,
+              getResolvedSuffixForLang,
               annualSupplyVolumeLangs,
             );
             const isAnnualSupplyVolumeValid =
               normalizedValues.length > 0 &&
               normalizedValues.every((item) => {
-                const pattern = getSuffixForLang(item['@xml:lang']).trim()
+                const pattern = getResolvedSuffixForLang(item['@xml:lang']).trim()
                   ? ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN
                   : ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN;
 
@@ -167,7 +184,11 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
             value: getAnnualSupplyVolumeDisplayNumericText(value, lang),
           })}
           normalize={(value) =>
-            buildAnnualSupplyVolumeMultiLang(value, getSuffixForLang, annualSupplyVolumeLangs)
+            buildAnnualSupplyVolumeMultiLang(
+              value,
+              getResolvedSuffixForLang,
+              annualSupplyVolumeLangs,
+            )
           }
           noStyle
           rules={fieldRules}

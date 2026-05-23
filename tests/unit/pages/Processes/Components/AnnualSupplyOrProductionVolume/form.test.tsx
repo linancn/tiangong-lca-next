@@ -147,17 +147,17 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       expect(form.setFieldValue).toHaveBeenLastCalledWith(
         ['annualSupply'],
         [
-          { '@xml:lang': 'en', '#text': '100 kg Steel' },
-          { '@xml:lang': 'zh', '#text': '100 kg 钢材' },
+          { '@xml:lang': 'en', '#text': '100 kg/year' },
+          { '@xml:lang': 'zh', '#text': '100 kg/年' },
         ],
       );
     });
-    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg 钢材');
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg/年');
     expect(screen.getByLabelText('annual-supply-volume-context')).toBeDisabled();
     expect(screen.queryByLabelText('language')).not.toBeInTheDocument();
   });
 
-  it('falls back to the raw exchange suffix when unit resolution fails', async () => {
+  it('strips raw non-annualized suffixes when unit resolution fails', async () => {
     mockGetUnitData.mockRejectedValueOnce(new Error('unit lookup failed'));
     const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
 
@@ -188,12 +188,12 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       expect(form.setFieldValue).toHaveBeenLastCalledWith(
         ['annualSupply'],
         [
-          { '@xml:lang': 'en', '#text': '100 Steel' },
-          { '@xml:lang': 'zh', '#text': '100 Steel' },
+          { '@xml:lang': 'en', '#text': '100' },
+          { '@xml:lang': 'zh', '#text': '100' },
         ],
       );
     });
-    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('Steel');
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
   });
 
   it('normalizes numeric-only input into multilingual storage and validates required values', async () => {
@@ -224,28 +224,28 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       expect(form.setFieldValue).toHaveBeenCalledWith(
         ['modelling', 'annualSupply'],
         [
-          { '@xml:lang': 'en', '#text': '100 kg Steel' },
-          { '@xml:lang': 'zh', '#text': '100 kg 钢材' },
+          { '@xml:lang': 'en', '#text': '100 kg/year' },
+          { '@xml:lang': 'zh', '#text': '100 kg/年' },
         ],
       );
     });
     expect(onData).toHaveBeenCalled();
-    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg Steel');
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg/year');
 
     const formItem = findFormItem(['modelling', 'annualSupply']);
-    expect(formItem.getValueProps([{ '@xml:lang': 'en', '#text': '123 kg Steel' }])).toEqual({
+    expect(formItem.getValueProps([{ '@xml:lang': 'en', '#text': '123 kg/year' }])).toEqual({
       value: '123',
     });
-    expect(formItem.getValueProps([{ '@xml:lang': 'zh', '#text': '456 kg 钢材' }])).toEqual({
+    expect(formItem.getValueProps([{ '@xml:lang': 'zh', '#text': '456 kg/年' }])).toEqual({
       value: '456',
     });
     expect(formItem.normalize('789')).toEqual([
-      { '@xml:lang': 'en', '#text': '789 kg Steel' },
-      { '@xml:lang': 'zh', '#text': '789 kg 钢材' },
+      { '@xml:lang': 'en', '#text': '789 kg/year' },
+      { '@xml:lang': 'zh', '#text': '789 kg/年' },
     ]);
     expect(formItem.normalize('abc789')).toEqual([
-      { '@xml:lang': 'en', '#text': '789 kg Steel' },
-      { '@xml:lang': 'zh', '#text': '789 kg 钢材' },
+      { '@xml:lang': 'en', '#text': '789 kg/year' },
+      { '@xml:lang': 'zh', '#text': '789 kg/年' },
     ]);
 
     await expect(formItem.rules[0].validator(null, '')).rejects.toThrow(
@@ -378,7 +378,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
   });
 
   it('normalizes single-object form values and uses default required validation copy', async () => {
-    const form = buildForm({ '@xml:lang': 'en', '#text': '321 kg Steel' });
+    const form = buildForm({ '@xml:lang': 'en', '#text': '321 kg/year' });
     const onData = jest.fn();
 
     render(
@@ -397,8 +397,8 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       expect(form.setFieldValue).toHaveBeenCalledWith(
         ['annualSupply'],
         [
-          { '@xml:lang': 'en', '#text': '321 kg Steel' },
-          { '@xml:lang': 'zh', '#text': '321 kg 钢材' },
+          { '@xml:lang': 'en', '#text': '321 kg/year' },
+          { '@xml:lang': 'zh', '#text': '321 kg/年' },
         ],
       );
     });

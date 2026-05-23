@@ -1,6 +1,6 @@
 import type { ProcessExchangeData, ProcessRefUnitDisplay } from './data';
 
-export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'reference flow';
+export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'unit/year';
 const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = ['en', 'zh'];
 
 export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\s+\S.*$/;
@@ -12,6 +12,8 @@ const ANNUAL_SUPPLY_VOLUME_NUMBER_PREFIX_PATTERN =
 const ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_PREFIX_PATTERN =
   /^[+-]?(?:$|\d+(?:\.\d*)?(?:[Ee][+-]?\d*)?|\.\d+(?:[Ee][+-]?\d*)?|\.\d*)$/;
 const ANNUAL_SUPPLY_VOLUME_NUMERIC_INPUT_ALLOWED_PATTERN = /[\d.+\-Ee]/;
+const ANNUAL_SUPPLY_VOLUME_ANNUALIZED_SUFFIX_PATTERN =
+  /(?:\/\s*(?:year|yr|a)\b|\bper\s+(?:year|annum)\b|\/\s*年|每年|年度|年供应|年产)/iu;
 
 type LangTextResolver = (value: unknown, lang: string) => string;
 
@@ -85,6 +87,19 @@ const uniqueNonEmpty = (values: string[]) => {
   });
 };
 
+export const isAnnualSupplyVolumeAnnualizedSuffix = (value: unknown) =>
+  ANNUAL_SUPPLY_VOLUME_ANNUALIZED_SUFFIX_PATTERN.test(normalizeText(value));
+
+const annualizeUnitSuffix = (unitName: string, lang: string) => {
+  const normalizedUnitName = normalizeText(unitName);
+
+  if (!normalizedUnitName || isAnnualSupplyVolumeAnnualizedSuffix(normalizedUnitName)) {
+    return normalizedUnitName;
+  }
+
+  return `${normalizedUnitName}/${lang === 'zh' ? '年' : 'year'}`;
+};
+
 export const parseAnnualSupplyVolumeText = (value: unknown): AnnualSupplyVolumeTextParts => {
   const text = normalizeText(value);
 
@@ -131,7 +146,18 @@ const resolveAnnualSupplyVolumeSuffix = (
   options: AnnualSupplyVolumeFormatOptions,
 ) => {
   const normalizedExistingSuffix = normalizeText(existingSuffix);
+  const hasExplicitSuffix = normalizeText(suffix).length > 0;
   const normalizedSuffix = normalizeAnnualSupplyVolumeSuffix(suffix, options);
+
+  if (
+    normalizedExistingSuffix &&
+    isAnnualSupplyVolumeAnnualizedSuffix(normalizedExistingSuffix) &&
+    (!hasExplicitSuffix ||
+      !normalizedSuffix ||
+      !isAnnualSupplyVolumeAnnualizedSuffix(normalizedSuffix))
+  ) {
+    return normalizedExistingSuffix;
+  }
 
   if (!normalizedSuffix) {
     return '';
@@ -248,6 +274,11 @@ export const getAnnualSupplyVolumeDisplayNumericText = (value: unknown, lang: st
   return sanitizeAnnualSupplyVolumeNumericInput(numericText);
 };
 
+export const getAnnualSupplyVolumeDisplaySuffixText = (value: unknown, lang: string) => {
+  const { suffixText } = parseAnnualSupplyVolumeText(getAnnualSupplyVolumeTextForLang(value, lang));
+  return normalizeText(suffixText);
+};
+
 export const buildAnnualSupplyVolumeMultiLang = (
   numericValue: unknown,
   suffixResolver: string | ((lang: string) => string),
@@ -346,13 +377,6 @@ export const deriveAnnualSupplyVolumeSuffix = ({
   const refUnitRes = quantitativeReferenceExchange?.refUnitRes as ProcessRefUnitDisplay | undefined;
   const unitName =
     normalizeText(refUnitRes?.refUnitName) || normalizeText(getLangText(refUnitRes?.name, lang));
-  const referenceFlowName = normalizeText(
-    getLangText(referenceFlow?.['common:shortDescription'], lang),
-  );
-  const contextText = normalizeText(
-    getLangText(quantitativeReferenceExchange?.functionalUnitOrOther, lang),
-  );
-  const suffixParts = uniqueNonEmpty([unitName, contextText || referenceFlowName]);
 
-  return suffixParts.join(' ');
+  return annualizeUnitSuffix(unitName, lang);
 };

@@ -116,6 +116,48 @@ const cloneProcessData = (data?: FormProcessWithDatas) => {
   return JSON.parse(JSON.stringify(data)) as FormProcessWithDatas;
 };
 
+const mergeOptionalRecord = (baseValue: unknown, fieldValue: unknown) => {
+  const baseRecord =
+    baseValue && typeof baseValue === 'object' && !Array.isArray(baseValue)
+      ? (baseValue as Record<string, unknown>)
+      : {};
+  const fieldRecord =
+    fieldValue && typeof fieldValue === 'object' && !Array.isArray(fieldValue)
+      ? (fieldValue as Record<string, unknown>)
+      : {};
+
+  return {
+    ...baseRecord,
+    ...fieldRecord,
+  };
+};
+
+export const mergeProcessModellingAndValidation = (
+  baseValue?: FormProcessWithDatas['modellingAndValidation'],
+  fieldValue?: FormProcessWithDatas['modellingAndValidation'],
+) => {
+  const merged = mergeOptionalRecord(baseValue, fieldValue) as NonNullable<
+    FormProcessWithDatas['modellingAndValidation']
+  >;
+  const mergedRecord = merged as Record<string, unknown>;
+  const baseRecord = mergeOptionalRecord(baseValue, undefined);
+  const fieldRecord = mergeOptionalRecord(fieldValue, undefined);
+
+  [
+    'LCIMethodAndAllocation',
+    'dataSourcesTreatmentAndRepresentativeness',
+    'completeness',
+    'validation',
+    'complianceDeclarations',
+  ].forEach((key) => {
+    if (baseRecord[key] !== undefined || fieldRecord[key] !== undefined) {
+      mergedRecord[key] = mergeOptionalRecord(baseRecord[key], fieldRecord[key]);
+    }
+  });
+
+  return merged;
+};
+
 export const normalizeQuantitativeReferenceSelection = (
   exchangeData: ProcessExchangeData[],
   selectedExchangeInternalId?: string,
@@ -245,6 +287,10 @@ const ProcessEdit: FC<Props> = ({
     const currentData = {
       ...baseData,
       ...fieldsValue,
+      modellingAndValidation: mergeProcessModellingAndValidation(
+        baseData.modellingAndValidation,
+        fieldsValue.modellingAndValidation,
+      ),
       exchanges: {
         exchange: [...exchangeDataSource],
       },
@@ -253,18 +299,23 @@ const ProcessEdit: FC<Props> = ({
 
     if (activeTabKey === 'validation') {
       currentData.modellingAndValidation = {
-        ...baseData?.modellingAndValidation,
+        ...currentData.modellingAndValidation,
         validation: {
-          ...fieldsValue?.modellingAndValidation?.validation,
+          ...currentData.modellingAndValidation?.validation,
         },
       };
     } else if (activeTabKey === 'complianceDeclarations') {
       currentData.modellingAndValidation = {
-        ...baseData?.modellingAndValidation,
+        ...currentData.modellingAndValidation,
         complianceDeclarations: {
-          ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
+          ...currentData.modellingAndValidation?.complianceDeclarations,
         },
       };
+    } else if (activeTabKey === 'modellingAndValidation') {
+      currentData.modellingAndValidation = mergeProcessModellingAndValidation(
+        baseData.modellingAndValidation,
+        fieldsValue.modellingAndValidation,
+      );
     } else {
       currentData[activeTabKey] = fieldsValue?.[activeTabKey] ?? baseData?.[activeTabKey];
     }
@@ -314,23 +365,24 @@ const ProcessEdit: FC<Props> = ({
   const handletFromData = async () => {
     if (fromData?.id) {
       const fieldsValue = formRefEdit.current?.getFieldsValue();
+      const mergedModellingAndValidation = mergeProcessModellingAndValidation(
+        fromData.modellingAndValidation,
+        fieldsValue?.modellingAndValidation,
+      );
       if (activeTabKey === 'validation') {
         await setFromData({
           ...fromData,
-          modellingAndValidation: {
-            ...fromData?.modellingAndValidation,
-            validation: { ...fieldsValue?.modellingAndValidation?.validation },
-          },
+          modellingAndValidation: mergedModellingAndValidation,
         });
       } else if (activeTabKey === 'complianceDeclarations') {
         await setFromData({
           ...fromData,
-          modellingAndValidation: {
-            ...fromData?.modellingAndValidation,
-            complianceDeclarations: {
-              ...fieldsValue?.modellingAndValidation?.complianceDeclarations,
-            },
-          },
+          modellingAndValidation: mergedModellingAndValidation,
+        });
+      } else if (activeTabKey === 'modellingAndValidation') {
+        await setFromData({
+          ...fromData,
+          modellingAndValidation: mergedModellingAndValidation,
         });
       } else {
         await setFromData({

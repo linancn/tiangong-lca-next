@@ -1,5 +1,6 @@
 // @ts-nocheck
 import ProcessEdit, {
+  mergeProcessModellingAndValidation,
   normalizeQuantitativeReferenceSelection,
 } from '@/pages/Processes/Components/edit';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -364,6 +365,40 @@ describe('ProcessEdit component', () => {
     updateNodeCb: updateNodeCbMock,
     showRules: false,
   };
+
+  it('deep-merges modelling validation sections instead of dropping sibling data', () => {
+    expect(
+      mergeProcessModellingAndValidation(
+        {
+          dataSourcesTreatmentAndRepresentativeness: {
+            annualSupplyOrProductionVolume: [{ '#text': '3.6 MJ/year', '@xml:lang': 'en' }],
+          },
+          validation: {
+            review: [{ '@type': 'Not reviewed' }],
+          },
+          complianceDeclarations: {
+            compliance: [{ '@compliance': 'Not defined' }],
+          },
+        },
+        {
+          dataSourcesTreatmentAndRepresentativeness: {
+            completenessProductModel: 'All relevant flows included',
+          },
+        },
+      ),
+    ).toEqual({
+      dataSourcesTreatmentAndRepresentativeness: {
+        annualSupplyOrProductionVolume: [{ '#text': '3.6 MJ/year', '@xml:lang': 'en' }],
+        completenessProductModel: 'All relevant flows included',
+      },
+      validation: {
+        review: [{ '@type': 'Not reviewed' }],
+      },
+      complianceDeclarations: {
+        compliance: [{ '@compliance': 'Not defined' }],
+      },
+    });
+  });
 
   const processDataset = {
     processInformation: { name: 'Existing process' },
