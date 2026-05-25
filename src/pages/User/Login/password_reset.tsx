@@ -63,7 +63,6 @@ const PasswordSet: FC = () => {
     if (spinning) {
       getCurrentUser().then((res) => {
         if (!res?.userid) {
-          // history.push('/#/user/login');
           return;
         }
         setInitData([

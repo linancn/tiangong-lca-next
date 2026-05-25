@@ -25,6 +25,11 @@ jest.mock('@/services/reviews/api', () => ({
 let mockIntlLocale = 'en';
 
 jest.mock('umi', () => ({
+  Link: ({ children, to, ...props }: any) => (
+    <a data-umi-to={to} href={to} {...props}>
+      {children}
+    </a>
+  ),
   useIntl: () => ({
     formatMessage: (
       { id, defaultMessage }: { id: string; defaultMessage?: string },
@@ -348,37 +353,23 @@ describe('DataNotification Component', () => {
     });
   });
 
-  it('opens process view mode when a non-rejected process notification is viewed', async () => {
-    const mockOpen = jest.fn();
-    Object.defineProperty(window, 'open', {
-      value: mockOpen,
-      writable: true,
-    });
-
+  it('renders process view mode as an Umi link for non-rejected process notifications', async () => {
     render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
       </ConfigProvider>,
     );
 
-    await waitFor(() => {
-      const viewButton = screen.getAllByText('View')[0];
-      fireEvent.click(viewButton);
-    });
-
-    expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:8000/#/mydata/processes?id=process-1&version=1.0.0&mode=view',
-      '_blank',
-      'noopener,noreferrer',
+    const viewLinks = await screen.findAllByRole('link', { name: 'View' });
+    expect(viewLinks[0]).toHaveAttribute(
+      'data-umi-to',
+      '/mydata/processes?id=process-1&version=1.0.0&mode=view',
     );
+    expect(viewLinks[0]).toHaveAttribute('target', '_blank');
+    expect(viewLinks[0]).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('opens model view mode when a non-rejected lifecycle notification is viewed', async () => {
-    const mockOpen = jest.fn();
-    Object.defineProperty(window, 'open', {
-      value: mockOpen,
-      writable: true,
-    });
+  it('renders model view mode as an Umi link for non-rejected lifecycle notifications', async () => {
     mockGetNotifyReviews.mockResolvedValue({
       ...mockReviewData,
       data: [
@@ -396,22 +387,14 @@ describe('DataNotification Component', () => {
       </ConfigProvider>,
     );
 
-    const viewButton = await screen.findByText('View');
-    fireEvent.click(viewButton);
-
-    expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:8000/#/mydata/models?id=process-2&version=2.0.0&mode=view',
-      '_blank',
-      'noopener,noreferrer',
+    const viewLink = await screen.findByRole('link', { name: 'View' });
+    expect(viewLink).toHaveAttribute(
+      'data-umi-to',
+      '/mydata/models?id=process-2&version=2.0.0&mode=view',
     );
   });
 
   it('uses empty route params when notification data identifiers are missing', async () => {
-    const mockOpen = jest.fn();
-    Object.defineProperty(window, 'open', {
-      value: mockOpen,
-      writable: true,
-    });
     mockGetNotifyReviews.mockResolvedValue({
       ...mockReviewData,
       data: [
@@ -432,13 +415,8 @@ describe('DataNotification Component', () => {
       </ConfigProvider>,
     );
 
-    fireEvent.click(await screen.findByText('View'));
-
-    expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:8000/#/mydata/processes?id=&version=&mode=view',
-      '_blank',
-      'noopener,noreferrer',
-    );
+    const viewLink = await screen.findByRole('link', { name: 'View' });
+    expect(viewLink).toHaveAttribute('data-umi-to', '/mydata/processes?id=&version=&mode=view');
   });
 
   it('should handle pagination correctly', async () => {
@@ -550,13 +528,7 @@ describe('DataNotification Component', () => {
     expect(screen.queryByText('View')).not.toBeInTheDocument();
   });
 
-  it('opens rejection comment modal and fixes rejected data from the current process link', async () => {
-    const mockOpen = jest.fn();
-    Object.defineProperty(window, 'open', {
-      value: mockOpen,
-      writable: true,
-    });
-
+  it('opens rejection comment modal and renders the fix route as an Umi link', async () => {
     render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
@@ -571,13 +543,19 @@ describe('DataNotification Component', () => {
       expect(screen.getByText('Rejected comment')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Fix Data' }));
-
-    expect(mockOpen).toHaveBeenCalledWith(
-      'http://localhost:8000/#/mydata/processes?id=process-2&version=2.0.0&mode=edit',
-      '_blank',
-      'noopener,noreferrer',
+    const fixLink = screen.getByRole('link', { name: 'Fix Data' });
+    expect(fixLink).toHaveAttribute(
+      'data-umi-to',
+      '/mydata/processes?id=process-2&version=2.0.0&mode=edit',
     );
+    expect(fixLink).toHaveAttribute('target', '_blank');
+    expect(fixLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    fireEvent.click(fixLink);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Review Comment' })).not.toBeInTheDocument();
+    });
   });
 
   it('shows rejection comments stored as serialized JSON strings', async () => {
@@ -604,6 +582,12 @@ describe('DataNotification Component', () => {
     fireEvent.click(await screen.findByText('View'));
 
     expect(await screen.findByText('Serialized rejected comment')).toBeInTheDocument();
+
+    fireEvent.click(document.querySelector('.ant-modal-close') as HTMLElement);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'Review Comment' })).not.toBeInTheDocument();
+    });
   });
 
   it('falls back for malformed serialized rejection comments and closes the modal', async () => {

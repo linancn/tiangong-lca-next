@@ -1,14 +1,6 @@
-import { buildAppAbsoluteUrl, buildAppHashPath, getAppOrigin } from '@/utils/appUrl';
+import { buildAppAbsoluteUrl, getAppOrigin } from '@/utils/appUrl';
 
 describe('appUrl helpers', () => {
-  it('builds hash paths for empty, relative, and already-hashed app routes', () => {
-    expect(buildAppHashPath('')).toBe('/#/');
-    expect(buildAppHashPath('user/login')).toBe('/#/user/login');
-    expect(buildAppHashPath('/user/login')).toBe('/#/user/login');
-    expect(buildAppHashPath('/#/user/login')).toBe('/#/user/login');
-    expect(buildAppHashPath('#/user/login')).toBe('/#/user/login');
-  });
-
   it('returns the browser origin when window is available', () => {
     expect(getAppOrigin()).toBe('http://localhost:8000');
   });
@@ -33,8 +25,24 @@ describe('appUrl helpers', () => {
     }
   });
 
-  it('builds absolute app urls and trims trailing slashes from custom origins', () => {
+  it('builds absolute app urls for off-app consumers and trims trailing slashes', () => {
     expect(buildAppAbsoluteUrl('/user/login/password_reset', 'https://demo.example/')).toBe(
+      'https://demo.example/#/user/login/password_reset',
+    );
+  });
+
+  it('normalizes already-hashed route input before building absolute URLs', () => {
+    expect(buildAppAbsoluteUrl('/#/user/login/password_reset', 'https://demo.example')).toBe(
+      'https://demo.example/#/user/login/password_reset',
+    );
+    expect(buildAppAbsoluteUrl('#/user/login/password_reset', 'https://demo.example')).toBe(
+      'https://demo.example/#/user/login/password_reset',
+    );
+  });
+
+  it('normalizes empty and relative route input for off-app URLs', () => {
+    expect(buildAppAbsoluteUrl('', 'https://demo.example')).toBe('https://demo.example/#/');
+    expect(buildAppAbsoluteUrl('user/login/password_reset', 'https://demo.example')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
   });

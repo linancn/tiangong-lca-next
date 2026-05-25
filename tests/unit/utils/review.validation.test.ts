@@ -4,8 +4,8 @@ import {
   dealModel,
   dealProcress,
   enrichValidationIssuesWithOwner,
+  getDatasetDetailAbsoluteUrl,
   getDatasetDetailPath,
-  getDatasetDetailUrl,
   getDatasetPath,
   mapValidationIssuesToRefCheckData,
   normalizeSdkValidationResult,
@@ -127,10 +127,10 @@ describe('review helper coverage', () => {
     expect(getDatasetPath(ref, { required: true })).toBe(
       '/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
-    expect(getDatasetDetailUrl(ref, 'https://demo.example')).toBe(
+    expect(getDatasetDetailAbsoluteUrl(ref, 'https://demo.example')).toBe(
       'https://demo.example/#/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
-    expect(getDatasetDetailUrl(ref)).toBe(
+    expect(getDatasetDetailAbsoluteUrl(ref)).toBe(
       'http://localhost:8000/#/mydata/processes?id=process-1&version=01.00.000&required=1',
     );
 
@@ -140,7 +140,7 @@ describe('review helper coverage', () => {
       value: undefined,
     });
     try {
-      expect(getDatasetDetailUrl(ref)).toBe(
+      expect(getDatasetDetailAbsoluteUrl(ref)).toBe(
         'https://lca.tiangong.earth/#/mydata/processes?id=process-1&version=01.00.000&required=1',
       );
     } finally {
@@ -158,7 +158,7 @@ describe('review helper coverage', () => {
 
     expect(getDatasetDetailPath(unknownRef)).toBeNull();
     expect(getDatasetPath(unknownRef)).toBeNull();
-    expect(getDatasetDetailUrl(unknownRef)).toBe('');
+    expect(getDatasetDetailAbsoluteUrl(unknownRef)).toBe('');
   });
 
   it('maps combined validation issues into ref-check data flags', () => {

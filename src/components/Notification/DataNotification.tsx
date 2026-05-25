@@ -1,10 +1,9 @@
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
-import { buildAppAbsoluteUrl } from '@/utils/appUrl';
 import { Button, Modal, Space, Table, Tag, Typography, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { useEffect, useState } from 'react';
-import { useIntl } from 'umi';
+import { Link, useIntl } from 'umi';
 
 interface DataNotificationItem {
   key: string;
@@ -38,7 +37,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   const intl = useIntl();
   const { token } = theme.useToken();
 
-  const getNotificationDataPath = (
+  const getNotificationDataRoute = (
     record: DataNotificationItem,
     mode: 'view' | 'edit',
     options: { forceProcess?: boolean } = {},
@@ -47,19 +46,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
     const dataVersion = record?.json?.data?.version ?? '';
     const basePath =
       options.forceProcess || !record.isFromLifeCycle ? '/mydata/processes' : '/mydata/models';
-    return buildAppAbsoluteUrl(
-      `${basePath}?id=${encodeURIComponent(dataId)}&version=${encodeURIComponent(
-        dataVersion,
-      )}&mode=${mode}`,
-    );
-  };
-
-  const openNotificationData = (
-    record: DataNotificationItem,
-    mode: 'view' | 'edit',
-    options?: { forceProcess?: boolean },
-  ) => {
-    window.open(getNotificationDataPath(record, mode, options), '_blank', 'noopener,noreferrer');
+    return `${basePath}?id=${encodeURIComponent(dataId)}&version=${encodeURIComponent(
+      dataVersion,
+    )}&mode=${mode}`;
   };
 
   const getRejectReason = (item: ReviewsTable) => {
@@ -162,22 +151,36 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
     }
   };
 
-  const handleActionClick = (record: DataNotificationItem) => {
-    if (record.stateCode === -1) {
-      setSelectedRejectedRecord(record);
-      return;
-    }
-    openNotificationData(record, 'view');
-  };
-
-  const handleFixRejectedData = () => {
-    openNotificationData(selectedRejectedRecord as DataNotificationItem, 'edit', {
-      forceProcess: true,
-    });
-    setSelectedRejectedRecord(null);
-  };
-
   const rejectReason = selectedRejectedRecord?.rejectReason;
+
+  const renderAction = (record: DataNotificationItem) => {
+    const label = intl.formatMessage({ id: 'pages.review.table.view', defaultMessage: 'View' });
+
+    if (record.stateCode === -1) {
+      return (
+        <Button
+          type='link'
+          size='small'
+          style={{ color: token.colorPrimary }}
+          onClick={() => setSelectedRejectedRecord(record)}
+        >
+          {label}
+        </Button>
+      );
+    }
+
+    return (
+      <Link
+        className='ant-btn ant-btn-link ant-btn-sm'
+        style={{ color: token.colorPrimary }}
+        target='_blank'
+        rel='noopener noreferrer'
+        to={getNotificationDataRoute(record, 'view')}
+      >
+        <span>{label}</span>
+      </Link>
+    );
+  };
 
   const columns: ColumnsType<DataNotificationItem> = [
     {
@@ -234,18 +237,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
     {
       title: intl.formatMessage({ id: 'pages.review.table.actions', defaultMessage: 'Actions' }),
       key: 'actions',
-      render: (record: DataNotificationItem) => (
-        <Space>
-          <Button
-            type='link'
-            size='small'
-            style={{ color: token.colorPrimary }}
-            onClick={() => handleActionClick(record)}
-          >
-            {intl.formatMessage({ id: 'pages.review.table.view', defaultMessage: 'View' })}
-          </Button>
-        </Space>
-      ),
+      render: (_: unknown, record: DataNotificationItem) => <Space>{renderAction(record)}</Space>,
     },
   ];
 
@@ -280,15 +272,35 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
         })}
         open={!!selectedRejectedRecord}
         onCancel={() => setSelectedRejectedRecord(null)}
-        onOk={handleFixRejectedData}
-        cancelText={intl.formatMessage({
-          id: 'notifications.data.rejectionModal.close',
-          defaultMessage: 'Close',
-        })}
-        okText={intl.formatMessage({
-          id: 'notifications.data.rejectionModal.fix',
-          defaultMessage: 'Fix Data',
-        })}
+        footer={
+          selectedRejectedRecord
+            ? [
+                <Button key='close' onClick={() => setSelectedRejectedRecord(null)}>
+                  {intl.formatMessage({
+                    id: 'notifications.data.rejectionModal.close',
+                    defaultMessage: 'Close',
+                  })}
+                </Button>,
+                <Link
+                  key='fix'
+                  className='ant-btn ant-btn-primary'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  to={getNotificationDataRoute(selectedRejectedRecord, 'edit', {
+                    forceProcess: true,
+                  })}
+                  onClick={() => setSelectedRejectedRecord(null)}
+                >
+                  <span>
+                    {intl.formatMessage({
+                      id: 'notifications.data.rejectionModal.fix',
+                      defaultMessage: 'Fix Data',
+                    })}
+                  </span>
+                </Link>,
+              ]
+            : undefined
+        }
         width={640}
       >
         <Typography.Paragraph
