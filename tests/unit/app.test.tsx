@@ -178,6 +178,25 @@ describe('app runtime config', () => {
     expect(state.currentUser).toEqual({ name: 'Current User', access: undefined });
   });
 
+  it('getInitialState does not grant admin access when the system role response is empty', async () => {
+    const { getInitialState } = require('@/app');
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({});
+
+    const state = await getInitialState();
+
+    expect(state.currentUser).toEqual({ name: 'Current User', access: undefined });
+  });
+
+  it('getInitialState keeps the user signed in when the system role lookup fails', async () => {
+    const { getInitialState } = require('@/app');
+    mockGetSystemUserRoleApi.mockRejectedValueOnce(new Error('role lookup failed'));
+
+    const state = await getInitialState();
+
+    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(state.currentUser).toEqual({ name: 'Current User', access: undefined });
+  });
+
   it('getInitialState redirects to login when fetching the current user fails', async () => {
     const { getInitialState } = require('@/app');
     mockQueryCurrentUser.mockRejectedValueOnce(new Error('unauthorized'));
