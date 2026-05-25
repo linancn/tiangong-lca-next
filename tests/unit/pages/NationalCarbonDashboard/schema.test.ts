@@ -12,7 +12,7 @@ describe('NationalCarbonDashboard schema', () => {
 
   it('parses the dashboard fixture and exposes the expected wallboard metrics', () => {
     expect(snapshot.schemaVersion).toBe('dashboard_snapshot_v1');
-    expect(snapshot.title).toBe('国家碳数据平台建设进展');
+    expect(snapshot.title).toBe('天工数据库建设进展');
     expect(snapshot.summary).toMatchObject({
       coveredRegions: 29,
       totalRegions: 31,

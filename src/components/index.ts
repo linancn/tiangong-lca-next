@@ -7,6 +7,7 @@
  */
 import ExportTidasPackage from './ExportTidasPackage';
 import Footer from './Footer';
+import HeaderActionIcon from './HeaderActionIcon';
 import ImportTidasPackage from './ImportTidasPackage';
 import LcaTaskCenter from './LcaTaskCenter';
 import Notification from './Notification';
@@ -20,6 +21,7 @@ export {
   DarkMode,
   ExportTidasPackage,
   Footer,
+  HeaderActionIcon,
   ImportTidasPackage,
   LcaTaskCenter,
   Notification,

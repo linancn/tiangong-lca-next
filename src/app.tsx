@@ -4,6 +4,7 @@ import {
   DarkMode,
   ExportTidasPackage,
   Footer,
+  HeaderActionIcon,
   ImportTidasPackage,
   LcaTaskCenter,
   Notification,
@@ -14,8 +15,9 @@ import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
+import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
-import { LinkOutlined } from '@ant-design/icons';
+import { DashboardOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
@@ -28,13 +30,17 @@ import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+const dashboardPath = '/dashboard/national-carbon';
 const unAuthorizedPath = ['/user/login/password_forgot'];
-const publicPaths = ['/dashboard/national-carbon'];
+const systemAdminRoles = new Set(['admin', 'owner']);
 
-function isPublicPath(pathname: string): boolean {
-  return publicPaths.some(
-    (publicPath) => pathname === publicPath || pathname.startsWith(`${publicPath}/`),
-  );
+async function getAdminAccess(): Promise<string | undefined> {
+  try {
+    const systemUserRole = await getSystemUserRoleApi();
+    return systemAdminRoles.has(systemUserRole?.role ?? '') ? 'admin' : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -54,7 +60,10 @@ export async function getInitialState(): Promise<{
         history.push(loginPath);
         return null;
       }
-      return msg;
+      return {
+        ...msg,
+        access: await getAdminAccess(),
+      };
     } catch (error) {
       history.push(loginPath);
     }
@@ -70,11 +79,7 @@ export async function getInitialState(): Promise<{
 
   // 如果不是登录页面，执行
   const { location } = history;
-  if (
-    location.pathname !== loginPath &&
-    !unAuthorizedPath.includes(location.pathname) &&
-    !isPublicPath(location.pathname)
-  ) {
+  if (location.pathname !== loginPath && !unAuthorizedPath.includes(location.pathname)) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -96,6 +101,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   const appTitle =
     getLocalizedAppTitle(locale) ??
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
+  const canViewDashboard = initialState?.currentUser?.access === 'admin';
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -113,22 +119,42 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
-    actionsRender: () => [
-      <LCIACacheMonitor key='LCIACacheMonitor' />,
-      <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
-      <LocationCacheMonitor key='LocaltionCacheMonitor' />,
-      <ImportTidasPackage key='ImportTidasPackage' />,
-      <ExportTidasPackage key='ExportTidasPackage' />,
-      <LcaTaskCenter key='LcaTaskCenter' />,
-      <Notification key='Notification' />,
-      <DarkMode
-        key='DarkMode'
-        handleClick={handleClickFunction}
-        isDarkMode={initialState?.isDarkMode}
-      />,
-      <SelectLang key='SelectLang' />,
-      <Question key='doc' />,
-    ],
+    actionsRender: () => {
+      const actions = [
+        <LCIACacheMonitor key='LCIACacheMonitor' />,
+        <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
+        <LocationCacheMonitor key='LocaltionCacheMonitor' />,
+        <ImportTidasPackage key='ImportTidasPackage' />,
+        <ExportTidasPackage key='ExportTidasPackage' />,
+        <LcaTaskCenter key='LcaTaskCenter' />,
+        <Notification key='Notification' />,
+        <DarkMode
+          key='DarkMode'
+          handleClick={handleClickFunction}
+          isDarkMode={initialState?.isDarkMode}
+        />,
+        <SelectLang key='SelectLang' />,
+        <Question key='doc' />,
+      ];
+
+      if (canViewDashboard) {
+        actions.splice(
+          5,
+          0,
+          <HeaderActionIcon
+            key='NationalCarbonDashboard'
+            icon={<DashboardOutlined />}
+            onClick={() => history.push(dashboardPath)}
+            title={formatMessage({
+              id: 'menu.dashboard.nationalCarbon',
+              defaultMessage: 'Data Dashboard',
+            })}
+          />,
+        );
+      }
+
+      return actions;
+    },
     avatarProps: {
       title: <AvatarName />,
       render: () => {
@@ -151,8 +177,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       if (
         !initialState?.currentUser &&
         location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(location.pathname) &&
-        !isPublicPath(location.pathname)
+        !unAuthorizedPath.includes(location.pathname)
       ) {
         history.push(loginPath);
       }
@@ -174,8 +199,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       if (
         !initialState?.currentUser &&
         history.location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(history.location.pathname) &&
-        !isPublicPath(history.location.pathname)
+        !unAuthorizedPath.includes(history.location.pathname)
       ) {
         history.push(loginPath);
         return null;
