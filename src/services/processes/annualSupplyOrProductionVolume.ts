@@ -152,9 +152,7 @@ const resolveAnnualSupplyVolumeSuffix = (
   if (
     normalizedExistingSuffix &&
     isAnnualSupplyVolumeAnnualizedSuffix(normalizedExistingSuffix) &&
-    (!hasExplicitSuffix ||
-      !normalizedSuffix ||
-      !isAnnualSupplyVolumeAnnualizedSuffix(normalizedSuffix))
+    (!hasExplicitSuffix || !isAnnualSupplyVolumeAnnualizedSuffix(normalizedSuffix))
   ) {
     return normalizedExistingSuffix;
   }

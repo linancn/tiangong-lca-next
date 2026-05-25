@@ -6,6 +6,7 @@ import {
   deriveAnnualSupplyVolumeSuffix,
   formatAnnualSupplyVolumeText,
   getAnnualSupplyVolumeDisplayNumericText,
+  getAnnualSupplyVolumeDisplaySuffixText,
   mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
@@ -91,6 +92,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
       { '@xml:lang': 'en', '#text': '3.6 MJ/year' },
       { '@xml:lang': 'zh', '#text': '3.6 MJ/年' },
     ]);
+    expect(normalizeAnnualSupplyVolumeText('3.6 MJ/year', 'MJ')).toBe('3.6 MJ/year');
   });
 
   it('builds multilingual values from one numeric input and reads the displayed numeric value', () => {
@@ -137,9 +139,11 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(getAnnualSupplyVolumeDisplayNumericText([], 'en')).toBe('');
     expect(getAnnualSupplyVolumeDisplayNumericText({ '#text': '300 kg Steel' }, 'en')).toBe('300');
     expect(getAnnualSupplyVolumeDisplayNumericText('400 kg Steel', 'en')).toBe('400');
+    expect(getAnnualSupplyVolumeDisplaySuffixText('400 kg Steel', 'en')).toBe('kg Steel');
   });
 
   it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
+    expect(normalizeAnnualSupplyVolumeText('100', 'kg/year')).toBe('100 kg/year');
     expect(normalizeAnnualSupplyVolumeText('100 kg Steel', 'Steel')).toBe('100 kg Steel');
     expect(normalizeAnnualSupplyVolumeText('100 old suffix', 'Steel')).toBe('100 Steel');
     expect(normalizeAnnualSupplyVolumeText('100 old suffix', '', { useDefaultSuffix: false })).toBe(
@@ -207,6 +211,80 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         lang: 'en',
       }),
     ).toBe('kilogram/year');
+  });
+
+  it('derives suffixes from fallback unit display shapes', () => {
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+            },
+            refUnitRes: {
+              name: 'MJ',
+            },
+          },
+        ],
+        lang: 'en',
+      }),
+    ).toBe('MJ/year');
+
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+            },
+            refUnitRes: {
+              name: [{ '@xml:lang': 'en', '#text': 'kilogram' }],
+            },
+          },
+        ],
+        lang: 'zh',
+      }),
+    ).toBe('kilogram/年');
+
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+            },
+            refUnitRes: {
+              name: { '#text': 'cubic metre' },
+            },
+          },
+        ],
+        lang: 'en',
+      }),
+    ).toBe('cubic metre/year');
+
+    expect(
+      deriveAnnualSupplyVolumeSuffix({
+        exchangeDataSource: [
+          {
+            '@dataSetInternalID': 'output-1',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+            },
+            refUnitRes: {
+              name: 123 as never,
+            },
+          },
+        ],
+        lang: 'en',
+      }),
+    ).toBe('');
   });
 
   it('builds unit lookup rows and merges resolved flow units into exchange rows', () => {
