@@ -16,7 +16,7 @@ import {
 } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
-import { buildAppAbsoluteUrl } from '@/utils/appUrl';
+import { buildExternalUrl } from '@/utils/appUrl';
 import {
   createContact as createTidasContact,
   createFlow as createTidasFlow,
@@ -353,7 +353,7 @@ export const getDatasetDetailAbsoluteUrl = (ref: refDataType, origin?: string) =
   if (!path) {
     return '';
   }
-  return buildAppAbsoluteUrl(path, origin);
+  return buildExternalUrl(path, origin);
 };
 
 const getIssueKey = (code: ValidationIssueCode, ref: refDataType) =>

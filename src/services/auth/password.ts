@@ -1,5 +1,5 @@
 import { supabase } from '@/services/supabase';
-import { buildAppAbsoluteUrl } from '@/utils/appUrl';
+import { buildExternalUrl } from '@/utils/appUrl';
 
 /**
  * Change user password
@@ -62,7 +62,7 @@ export async function setPassword(body: any): Promise<Auth.LoginResult> {
  */
 export async function forgotPasswordSendEmail(body: Auth.LoginParams): Promise<Auth.LoginResult> {
   const { error } = await supabase.auth.resetPasswordForEmail(body.email ?? '', {
-    redirectTo: buildAppAbsoluteUrl('/user/login/password_reset'),
+    redirectTo: buildExternalUrl('/user/login/password_reset'),
   });
 
   if (error) {

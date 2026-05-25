@@ -4,7 +4,7 @@
 
 **目标：** 统一应用内 React 导航到 Umi 路由能力，只在 Umi 无法接管的边界保留自定义绝对 URL 构造。
 
-**架构：** 应用内路由以 Umi route path 为唯一语义源，例如 `/mydata/processes?id=...`。React UI 中的声明式跳转优先使用 Umi `Link`，命令式跳转继续使用 Umi `history.push` / `history.replace`。`buildAppAbsoluteUrl` 只保留给必须生成真实 URL 字符串的边界，例如 Supabase 邮件重定向、导出的 HTML、持久化通知链接、外部/存储对象链接。
+**架构：** 应用内路由以 Umi route path 为唯一语义源，例如 `/mydata/processes?id=...`。React UI 中的声明式跳转优先使用 Umi `Link`，命令式跳转继续使用 Umi `history.push` / `history.replace`。`buildExternalUrl` 只保留给必须生成真实 URL 字符串的边界，例如 Supabase 邮件重定向、导出的 HTML、持久化通知链接、外部/存储对象链接。
 
 **技术栈：** Umi 4 / `@umijs/max`、React 18、Ant Design 5、Jest、Testing Library、TypeScript。
 
@@ -105,7 +105,7 @@
 | 文件 | 位置 | 现状 | 目标 |
 | --- | --- | --- | --- |
 | `src/pages/User/Login/index.tsx` | `href={buildAppHashPath('/user/login/password_forgot')}` | React UI 直接使用 hash URL helper | 改为 Umi `<Link to='/user/login/password_forgot'>` |
-| `src/components/Notification/DataNotification.tsx` | `buildAppAbsoluteUrl('/mydata/...')` + `window.open(...)` | 表格操作按钮生成绝对 hash URL 并新开页 | 普通记录改为 Umi `Link target='_blank'`；拒绝记录保留按钮打开 modal，modal footer 用 Umi `Link` |
+| `src/components/Notification/DataNotification.tsx` | `buildExternalUrl('/mydata/...')` + `window.open(...)` | 表格操作按钮生成绝对 hash URL 并新开页 | 普通记录改为 Umi `Link target='_blank'`；拒绝记录保留按钮打开 modal，modal footer 用 Umi `Link` |
 
 ### 4. 必须保留绝对 URL helper 的边界
 
@@ -113,7 +113,7 @@
 
 | 文件 | 位置 | 原因 | 处理 |
 | --- | --- | --- | --- |
-| `src/services/auth/password.ts` | `supabase.auth.resetPasswordForEmail(..., { redirectTo })` | 邮件客户端和 Supabase 需要完整 URL，Umi 不在该环境运行 | 保留 `buildAppAbsoluteUrl('/user/login/password_reset')` |
+| `src/services/auth/password.ts` | `supabase.auth.resetPasswordForEmail(..., { redirectTo })` | 邮件客户端和 Supabase 需要完整 URL，Umi 不在该环境运行 | 保留 `buildExternalUrl('/user/login/password_reset')` |
 | `src/pages/Utils/review.tsx` | `getDatasetDetailUrl()` / `ValidationIssue.link` | link 会进入 validation issue 数据结构，后续可被通知、导出 HTML、`window.open` 使用 | 保留绝对 URL，但重命名为 `getDatasetDetailAbsoluteUrl` 明确语义 |
 | `src/components/ValidationIssueModal/index.tsx` | 导出 HTML 中 `<a href="...">` | 下载后的 HTML 是独立文档，不能依赖 Umi runtime | 保留绝对 URL |
 | `src/components/ValidationIssueModal/index.tsx` | `openValidationIssueLink(link)` | 打开的 link 来自 validation issue 数据，不一定是当前 React render 可控的 Umi route | 保留，但依赖上游生成 hash-compatible 绝对 URL |
@@ -232,7 +232,7 @@ git switch -c fix/issue-<id>-umi-routing origin/dev
 把 `buildAppHashPath` 的测试改成“helper 只服务绝对 URL 边界”的测试：
 
 ```ts
-import { buildAppAbsoluteUrl, getAppOrigin } from '@/utils/appUrl';
+import { buildExternalUrl, getAppOrigin } from '@/utils/appUrl';
 
 describe('appUrl helpers', () => {
   it('returns the browser origin when window is available', () => {
@@ -248,7 +248,7 @@ describe('appUrl helpers', () => {
 
     try {
       expect(getAppOrigin()).toBe('https://lca.tiangong.earth');
-      expect(buildAppAbsoluteUrl('/user/login/password_reset')).toBe(
+      expect(buildExternalUrl('/user/login/password_reset')).toBe(
         'https://lca.tiangong.earth/#/user/login/password_reset',
       );
     } finally {
@@ -260,16 +260,16 @@ describe('appUrl helpers', () => {
   });
 
   it('builds absolute app urls for off-app consumers and trims trailing slashes', () => {
-    expect(buildAppAbsoluteUrl('/user/login/password_reset', 'https://demo.example/')).toBe(
+    expect(buildExternalUrl('/user/login/password_reset', 'https://demo.example/')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
   });
 
   it('normalizes already-hashed route input before building absolute URLs', () => {
-    expect(buildAppAbsoluteUrl('/#/user/login/password_reset', 'https://demo.example')).toBe(
+    expect(buildExternalUrl('/#/user/login/password_reset', 'https://demo.example')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
-    expect(buildAppAbsoluteUrl('#/user/login/password_reset', 'https://demo.example')).toBe(
+    expect(buildExternalUrl('#/user/login/password_reset', 'https://demo.example')).toBe(
       'https://demo.example/#/user/login/password_reset',
     );
   });
@@ -318,7 +318,7 @@ const buildHashHistoryPath = (path: string) => `/#${normalizeAppPath(path)}`;
 export const getAppOrigin = () =>
   typeof window !== 'undefined' ? window.location.origin : DEFAULT_APP_ORIGIN;
 
-export const buildAppAbsoluteUrl = (path: string, origin: string = getAppOrigin()) =>
+export const buildExternalUrl = (path: string, origin: string = getAppOrigin()) =>
   `${normalizeOrigin(origin)}${buildHashHistoryPath(path)}`;
 ```
 
@@ -508,7 +508,7 @@ npx jest tests/unit/components/DataNotification.test.tsx --runInBand --testTimeo
 删除：
 
 ```ts
-import { buildAppAbsoluteUrl } from '@/utils/appUrl';
+import { buildExternalUrl } from '@/utils/appUrl';
 ```
 
 改 import：
@@ -771,7 +771,7 @@ rg -n "window\\.open\\(" src
 不允许：
 
 - 在 React UI 中直接 `window.open('/mydata/...')`。
-- 在 React UI 中直接 `window.open(buildAppAbsoluteUrl('/mydata/...'))`。
+- 在 React UI 中直接 `window.open(buildExternalUrl('/mydata/...'))`。
 
 **Step 4：确认查询参数逻辑未破坏**
 
