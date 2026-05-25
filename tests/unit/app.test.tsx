@@ -23,6 +23,11 @@ jest.mock('@/components', () => ({
   DarkMode: 'dark-mode',
   ExportTidasPackage: 'export-tidas-package',
   Footer: () => <div data-testid='footer'>Footer</div>,
+  HeaderActionIcon: ({ title, onClick }: any) => (
+    <button data-testid='header-action-icon' onClick={onClick} type='button'>
+      {title}
+    </button>
+  ),
   ImportTidasPackage: 'import-tidas-package',
   LcaTaskCenter: 'lca-task-center',
   Notification: 'notification-center',
@@ -88,6 +93,7 @@ jest.mock('@umijs/max', () => ({
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
+  DashboardOutlined: () => <span data-testid='dashboard-icon'>dashboard-icon</span>,
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
 }));
 
@@ -374,6 +380,27 @@ describe('app runtime config', () => {
     });
     expect(guardedLayout.childrenRender?.(<div>child</div>)).toBeNull();
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+  });
+
+  it('adds a national carbon dashboard shortcut for admin users', () => {
+    const { layout } = require('@/app');
+    const setInitialState = jest.fn();
+
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { access: 'admin', name: 'Admin User' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState,
+    });
+
+    const actions = runtimeLayout.actionsRender?.();
+    expect(actions).toHaveLength(11);
+    expect(actions[5].props.title).toBe('Data Dashboard');
+
+    fireEvent.click(render(actions[5]).getByTestId('header-action-icon'));
+    expect(mockHistory.push).toHaveBeenCalledWith('/dashboard/national-carbon');
   });
 
   it('uses the dark theme algorithm when dark mode is enabled', () => {

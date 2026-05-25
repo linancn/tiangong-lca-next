@@ -4,6 +4,7 @@ import {
   DarkMode,
   ExportTidasPackage,
   Footer,
+  HeaderActionIcon,
   ImportTidasPackage,
   LcaTaskCenter,
   Notification,
@@ -16,7 +17,7 @@ import { Link, getIntl, history } from '@umijs/max';
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
-import { LinkOutlined } from '@ant-design/icons';
+import { DashboardOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
@@ -29,6 +30,7 @@ import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+const dashboardPath = '/dashboard/national-carbon';
 const unAuthorizedPath = ['/user/login/password_forgot'];
 const systemAdminRoles = new Set(['admin', 'owner']);
 
@@ -99,6 +101,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   const appTitle =
     getLocalizedAppTitle(locale) ??
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
+  const canViewDashboard = initialState?.currentUser?.access === 'admin';
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -116,22 +119,42 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     });
   };
   return {
-    actionsRender: () => [
-      <LCIACacheMonitor key='LCIACacheMonitor' />,
-      <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
-      <LocationCacheMonitor key='LocaltionCacheMonitor' />,
-      <ImportTidasPackage key='ImportTidasPackage' />,
-      <ExportTidasPackage key='ExportTidasPackage' />,
-      <LcaTaskCenter key='LcaTaskCenter' />,
-      <Notification key='Notification' />,
-      <DarkMode
-        key='DarkMode'
-        handleClick={handleClickFunction}
-        isDarkMode={initialState?.isDarkMode}
-      />,
-      <SelectLang key='SelectLang' />,
-      <Question key='doc' />,
-    ],
+    actionsRender: () => {
+      const actions = [
+        <LCIACacheMonitor key='LCIACacheMonitor' />,
+        <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
+        <LocationCacheMonitor key='LocaltionCacheMonitor' />,
+        <ImportTidasPackage key='ImportTidasPackage' />,
+        <ExportTidasPackage key='ExportTidasPackage' />,
+        <LcaTaskCenter key='LcaTaskCenter' />,
+        <Notification key='Notification' />,
+        <DarkMode
+          key='DarkMode'
+          handleClick={handleClickFunction}
+          isDarkMode={initialState?.isDarkMode}
+        />,
+        <SelectLang key='SelectLang' />,
+        <Question key='doc' />,
+      ];
+
+      if (canViewDashboard) {
+        actions.splice(
+          5,
+          0,
+          <HeaderActionIcon
+            key='NationalCarbonDashboard'
+            icon={<DashboardOutlined />}
+            onClick={() => history.push(dashboardPath)}
+            title={formatMessage({
+              id: 'menu.dashboard.nationalCarbon',
+              defaultMessage: 'Data Dashboard',
+            })}
+          />,
+        );
+      }
+
+      return actions;
+    },
     avatarProps: {
       title: <AvatarName />,
       render: () => {
