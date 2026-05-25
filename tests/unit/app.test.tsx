@@ -2,6 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
 const mockQueryCurrentUser = jest.fn();
+const mockGetSystemUserRoleApi = jest.fn();
 const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
 const mockHistory = {
   location: {
@@ -52,6 +53,11 @@ jest.mock('@/components/TidasPackageActions', () => ({
 jest.mock('@/services/auth', () => ({
   __esModule: true,
   getCurrentUser: (...args: any[]) => mockQueryCurrentUser(...args),
+}));
+
+jest.mock('@/services/roles/api', () => ({
+  __esModule: true,
+  getSystemUserRoleApi: (...args: any[]) => mockGetSystemUserRoleApi(...args),
 }));
 
 jest.mock('../../config/defaultSettings', () => ({
@@ -125,6 +131,7 @@ describe('app runtime config', () => {
     mockHistory.location.pathname = '/tgdata';
     mockHistory.location.search = '';
     mockQueryCurrentUser.mockResolvedValue({ name: 'Current User', access: 'admin' });
+    mockGetSystemUserRoleApi.mockResolvedValue({ role: 'admin' });
     mockGetLocalizedAppTitle.mockReturnValue('Localized TianGong');
   });
 
@@ -135,6 +142,7 @@ describe('app runtime config', () => {
     const state = await getInitialState();
 
     expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+    expect(mockGetSystemUserRoleApi).toHaveBeenCalledTimes(1);
     expect(state.currentUser).toEqual({ name: 'Current User', access: 'admin' });
     expect(state.isDarkMode).toBe(true);
     expect(state.settings).toMatchObject({
@@ -142,6 +150,26 @@ describe('app runtime config', () => {
       colorPrimary: '#9e3ffd',
       logo: '/logo_dark.svg',
     });
+  });
+
+  it('getInitialState loads dashboard users so admin route access can gate the page', async () => {
+    const { getInitialState } = require('@/app');
+    mockHistory.location.pathname = '/dashboard/national-carbon';
+
+    const state = await getInitialState();
+
+    expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+    expect(mockGetSystemUserRoleApi).toHaveBeenCalledTimes(1);
+    expect(state.currentUser).toEqual({ name: 'Current User', access: 'admin' });
+  });
+
+  it('getInitialState does not grant admin access to non-admin system roles', async () => {
+    const { getInitialState } = require('@/app');
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ role: 'member' });
+
+    const state = await getInitialState();
+
+    expect(state.currentUser).toEqual({ name: 'Current User', access: undefined });
   });
 
   it('getInitialState redirects to login when fetching the current user fails', async () => {

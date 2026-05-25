@@ -13,6 +13,7 @@
 export default [
   {
     path: '/dashboard/national-carbon',
+    access: 'canAdmin',
     layout: false,
     menu: false,
     component: './NationalCarbonDashboard',
