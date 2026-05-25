@@ -69,6 +69,16 @@ Rules:
 - cache monitors live near runtime setup, not inside feature pages
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 
+### Process Review-Submit Gate
+
+Process review submission now has a frontend gate before the final review command:
+
+`src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_gate`
+
+Next owns only the UI orchestration for this gate. It computes the current ordered process revision checksum, requests or reads the Edge gate, renders returned `queued`, `running`, `passed`, `blocked`, `stale`, and `error` states, and shows backend-provided `blockingReasons` evidence. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
+
+When the gate passes, the final `app_dataset_submit_review` call must include the backend gate run id as `reviewSubmitGateRunId` and the same `revisionChecksum` used for the gate request. Database/Edge own the freshness and policy assertion; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
+
 ## Current Hotspots
 
 - lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
@@ -79,9 +89,9 @@ Rules:
 ## Cross-Repo Boundaries
 
 - `database-engine` owns schema truth and Supabase branch governance
-- `edge-functions` owns Edge runtime behavior
+- `edge-functions` owns Edge runtime behavior, including `app_dataset_review_submit_gate`
 - `next-docs` owns public docs-site content
-- `calculator` owns solver and compute internals
+- `calculator` owns solver and compute internals, including review-submit blocker heuristics
 - `lca-workspace` owns root delivery completion after merge
 
 ## Common Misreads
