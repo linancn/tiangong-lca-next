@@ -3,7 +3,17 @@ import { getRejectedCommentsByReviewIds } from '@/services/comments/api';
 import { getRefData, getRefDataByIds } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { FormProcess } from '@/services/processes/data';
-import { getRejectReviewsByProcess, submitDatasetReviewApi } from '@/services/reviews/api';
+import {
+  computeStableJsonSha256,
+  getRejectReviewsByProcess,
+  requestReviewSubmitGateApi,
+  submitDatasetReviewApi,
+  type ReviewSubmitDatasetTable,
+  type ReviewSubmitGateAction,
+  type ReviewSubmitGateDatasetTable,
+  type ReviewSubmitGateResult,
+  type SubmitReviewGateMetadata,
+} from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
 import { buildAppAbsoluteUrl } from '@/utils/appUrl';
@@ -1515,11 +1525,38 @@ export const validateDatasetRuleVerification = async (
 };
 
 export const submitDatasetReview = async (
-  table: 'processes' | 'lifecyclemodels',
+  table: ReviewSubmitDatasetTable,
   id: string,
   version: string,
+  gateMetadata: SubmitReviewGateMetadata = {},
 ) => {
-  return submitDatasetReviewApi(table, id, version);
+  return submitDatasetReviewApi(table, id, version, gateMetadata);
+};
+
+export const requestReviewSubmitGate = async (
+  table: ReviewSubmitGateDatasetTable,
+  id: string,
+  version: string,
+  orderedJson: unknown,
+  options: {
+    action?: ReviewSubmitGateAction;
+    gateRunId?: string;
+  } = {},
+) => {
+  const revisionChecksum = await computeStableJsonSha256(orderedJson);
+  const result = await requestReviewSubmitGateApi<ReviewSubmitGateResult>({
+    table,
+    id,
+    version,
+    revisionChecksum,
+    action: options.action ?? 'ensure',
+    gateRunId: options.gateRunId,
+  });
+
+  return {
+    ...result,
+    revisionChecksum,
+  };
 };
 
 const checkValidationFields = (data: any) => {

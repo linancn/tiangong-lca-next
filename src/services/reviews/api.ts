@@ -5,7 +5,9 @@ import {
 } from '@/services/general/api';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
+import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { getUserId } from '@/services/users/api';
+import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText, jsonToList } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
 import { genProcessName } from '../processes/util';
@@ -15,6 +17,65 @@ export type ReviewSubmitDatasetTable = Extract<
   TidasPackageRootTable,
   'processes' | 'lifecyclemodels'
 >;
+export type ReviewSubmitGateDatasetTable = Extract<ReviewSubmitDatasetTable, 'processes'>;
+export const REVIEW_SUBMIT_GATE_POLICY_PROFILE = 'review_submit_fast.v1';
+export const REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION = 'review_submit_gate_report.v1';
+
+export type ReviewSubmitGateAction = 'ensure' | 'read' | 'rerun';
+export type ReviewSubmitGateStatus =
+  | 'queued'
+  | 'running'
+  | 'passed'
+  | 'blocked'
+  | 'stale'
+  | 'error';
+
+export type ReviewSubmitGateBlockingReason = {
+  code?: string;
+  message?: string;
+  severity?: string;
+  details?: unknown;
+  [key: string]: unknown;
+};
+
+export type ReviewSubmitGateResult = {
+  status: ReviewSubmitGateStatus;
+  gateRunId?: string;
+  datasetRevision?: {
+    table?: string;
+    id?: string;
+    version?: string;
+    revisionChecksum?: string;
+  };
+  policy?: {
+    profile?: string;
+  };
+  calculatorReport?: {
+    schemaVersion?: string;
+    reportId?: string;
+    generatedAt?: string;
+  } | null;
+  blockingReasons?: ReviewSubmitGateBlockingReason[];
+  [key: string]: unknown;
+};
+
+export type ReviewSubmitGateRequest = {
+  table: ReviewSubmitGateDatasetTable;
+  id: string;
+  version: string;
+  revisionChecksum: string;
+  action?: ReviewSubmitGateAction;
+  gateRunId?: string;
+  policyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
+  reportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
+};
+
+export type SubmitReviewGateMetadata = {
+  reviewSubmitGateRunId?: string;
+  revisionChecksum?: string;
+  reviewSubmitPolicyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
+  reviewSubmitReportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
+};
 type ReviewWorkflowCommandFunctionName =
   | 'admin_review_save_assignment_draft'
   | 'admin_review_assign_reviewers'
@@ -69,6 +130,90 @@ async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
   body: Record<string, unknown>,
 ) {
   return invokeDatasetCommand<Row>(functionName as never, body);
+}
+
+function sortJsonForStableHash(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortJsonForStableHash);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, childValue]) => [key, sortJsonForStableHash(childValue)]),
+    );
+  }
+
+  return value;
+}
+
+export function stableJsonStringifyForReviewSubmit(value: unknown): string {
+  if (value === undefined) {
+    throw new Error('Cannot hash an undefined dataset revision payload');
+  }
+
+  return JSON.stringify(sortJsonForStableHash(value));
+}
+
+export async function computeStableJsonSha256(value: unknown): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle?.digest) {
+    throw new Error('SHA-256 digest is unavailable in this browser');
+  }
+
+  const normalizedJson = stableJsonStringifyForReviewSubmit(value);
+  const encoded = new TextEncoder().encode(normalizedJson);
+  const digest = await subtle.digest('SHA-256', encoded);
+
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function normalizeReviewSubmitGateRows<Row extends Record<string, unknown>>(payload: unknown) {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload) && 'data' in payload) {
+    const data = (payload as { data?: unknown }).data;
+    return data === null || data === undefined ? [] : [data as Row];
+  }
+
+  return payload === null || payload === undefined ? [] : [payload as Row];
+}
+
+async function parseReviewSubmitGateErrorPayload(error: any) {
+  if (!error?.context || typeof error.context.json !== 'function') {
+    return null;
+  }
+
+  try {
+    return await error.context.json();
+  } catch (_parseError) {
+    return null;
+  }
+}
+
+function isReviewSubmitGateEnvelope(payload: unknown): payload is {
+  command?: string;
+  data?: ReviewSubmitGateResult;
+} {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return false;
+  }
+
+  const candidate = payload as { command?: unknown; data?: { status?: unknown } };
+  return (
+    candidate.command === 'dataset_review_submit_gate' && typeof candidate.data?.status === 'string'
+  );
+}
+
+function normalizeReviewSubmitGateError(error: any, payload: any): SupabaseError {
+  return {
+    message:
+      payload?.message || payload?.detail || payload?.error || error?.message || 'Request failed',
+    code: typeof payload?.code === 'string' ? payload.code : 'FUNCTION_ERROR',
+    details: payload?.details ?? '',
+    hint: payload?.hint ?? '',
+  } as SupabaseError;
 }
 
 async function invokeReviewWorkflowCommandBatch<Row extends Record<string, unknown>>(
@@ -161,12 +306,85 @@ export async function addReviewsApi(id: string, data: any) {
 
 export async function submitDatasetReviewApi<
   Row extends Record<string, unknown> = Record<string, unknown>,
->(tableName: ReviewSubmitDatasetTable, id: string, version: string) {
+>(
+  tableName: ReviewSubmitDatasetTable,
+  id: string,
+  version: string,
+  gateMetadata: SubmitReviewGateMetadata = {},
+) {
   return invokeDatasetCommand<Row>('app_dataset_submit_review', {
     id,
     version,
     table: tableName,
+    ...gateMetadata,
   });
+}
+
+export async function requestReviewSubmitGateApi<
+  Row extends ReviewSubmitGateResult = ReviewSubmitGateResult,
+>(request: ReviewSubmitGateRequest): Promise<SupabaseMutationResult<Row>> {
+  const session = await supabase.auth.getSession();
+  if (!session?.data?.session) {
+    return {
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      } as SupabaseError,
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    };
+  }
+
+  const result = await supabase.functions.invoke('app_dataset_review_submit_gate', {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body: {
+      table: request.table,
+      id: request.id,
+      version: request.version,
+      revisionChecksum: request.revisionChecksum,
+      action: request.action ?? 'ensure',
+      gateRunId: request.gateRunId,
+      policyProfile: request.policyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
+      reportSchemaVersion: request.reportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
+    },
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    const payload = await parseReviewSubmitGateErrorPayload(result.error);
+    if (isReviewSubmitGateEnvelope(payload)) {
+      return {
+        data: [payload.data as Row],
+        error: null,
+        count: null,
+        status: result.error.context?.status ?? 200,
+        statusText: 'OK',
+      };
+    }
+
+    const normalizedError = normalizeReviewSubmitGateError(result.error, payload);
+    return {
+      data: null,
+      error: normalizedError,
+      count: null,
+      status: result.error.context?.status ?? 500,
+      statusText: normalizedError.code,
+    };
+  }
+
+  return {
+    data: normalizeReviewSubmitGateRows<Row>(result.data),
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  };
 }
 
 export async function saveReviewAssignmentDraftApi<
