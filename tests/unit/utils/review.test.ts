@@ -14,6 +14,7 @@ import {
   getRefTableName,
   getRejectedComments,
   mergeCommentsToData,
+  requestReviewSubmitGate,
   submitDatasetReview,
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
@@ -85,11 +86,15 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 }));
 
 const mockGetRejectReviewsByProcess = jest.fn();
+const mockComputeStableJsonSha256 = jest.fn();
+const mockRequestReviewSubmitGateApi = jest.fn();
 const mockSubmitDatasetReviewApi = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
+  computeStableJsonSha256: (...args: any[]) => mockComputeStableJsonSha256(...args),
   getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
+  requestReviewSubmitGateApi: (...args: any[]) => mockRequestReviewSubmitGateApi(...args),
   submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
@@ -115,6 +120,8 @@ describe('review utilities', () => {
     mockUpdateStateCodeApi.mockReset();
     mockGetLifeCycleModelDetail.mockReset();
     mockGetRejectReviewsByProcess.mockReset();
+    mockComputeStableJsonSha256.mockReset();
+    mockRequestReviewSubmitGateApi.mockReset();
     mockSubmitDatasetReviewApi.mockReset();
     mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
@@ -1541,8 +1548,49 @@ describe('review utilities', () => {
       'processes',
       '11111111-1111-4111-8111-111111111111',
       '01.00.000',
+      {},
     );
     expect(result).toEqual({ data: [{ review: { id: 'review-1' } }] });
+  });
+
+  it('computes the revision checksum before requesting the review-submit gate', async () => {
+    const checksum = 'd'.repeat(64);
+    const orderedJson = {
+      processDataSet: {
+        processInformation: { name: 'Process' },
+      },
+    };
+    mockComputeStableJsonSha256.mockResolvedValue(checksum);
+    mockRequestReviewSubmitGateApi.mockResolvedValue({
+      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      error: null,
+    });
+
+    const result = await requestReviewSubmitGate(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
+      orderedJson,
+      {
+        action: 'rerun',
+        gateRunId: 'gate-run-1',
+      },
+    );
+
+    expect(mockComputeStableJsonSha256).toHaveBeenCalledWith(orderedJson);
+    expect(mockRequestReviewSubmitGateApi).toHaveBeenCalledWith({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: checksum,
+      action: 'rerun',
+      gateRunId: 'gate-run-1',
+    });
+    expect(result).toEqual({
+      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      error: null,
+      revisionChecksum: checksum,
+    });
   });
 
   it('returns references that remain under review when checking reports', async () => {

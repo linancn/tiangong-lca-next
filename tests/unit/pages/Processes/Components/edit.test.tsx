@@ -132,6 +132,7 @@ const mockGetErrRefTab = jest.fn();
 const mockBuildValidationIssues = jest.fn(() => []);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
+const mockRequestReviewSubmitGate = jest.fn();
 const mockSubmitDatasetReview = jest.fn();
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
 
@@ -149,6 +150,7 @@ jest.mock('@/pages/Utils/review', () => ({
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
   mapValidationIssuesToRefCheckData: (...args: any[]) =>
     mockMapValidationIssuesToRefCheckData(...args),
+  requestReviewSubmitGate: (...args: any[]) => mockRequestReviewSubmitGate(...args),
   submitDatasetReview: (...args: any[]) => mockSubmitDatasetReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
@@ -240,6 +242,12 @@ jest.mock('antd', () => {
   const FormComponent = ({ children }: any) => <div>{children}</div>;
   FormComponent.Item = ({ children }: any) => <div>{children}</div>;
   const Input = (props: any) => <input {...props} />;
+  const Alert = ({ message, description }: any) => (
+    <div role='alert'>
+      <div>{toText(message)}</div>
+      <div>{description}</div>
+    </div>
+  );
 
   const message = {
     success: jest.fn(),
@@ -252,6 +260,7 @@ jest.mock('antd', () => {
   return {
     __esModule: true,
     Button,
+    Alert,
     Tooltip,
     Drawer,
     Space,
@@ -431,12 +440,22 @@ describe('ProcessEdit component', () => {
       },
     });
     mockGenProcessFromData.mockReturnValue({ ...processDataset });
+    mockGenProcessJsonOrdered.mockReset();
+    mockGenProcessJsonOrdered.mockImplementation((_processId, processDetail) => ({
+      processDataSet: processDetail,
+    }));
     mockCheckReferences.mockResolvedValue({ findProblemNodes: () => [] });
     mockCheckVersions.mockResolvedValue(undefined);
     mockDealProcress.mockImplementation(() => undefined);
     mockGetAllRefObj.mockReturnValue([]);
     mockGetErrRefTab.mockReturnValue('');
     mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
+    mockRequestReviewSubmitGate.mockReset();
+    mockRequestReviewSubmitGate.mockResolvedValue({
+      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      error: null,
+      revisionChecksum: 'a'.repeat(64),
+    });
     mockSubmitDatasetReview.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
@@ -1375,6 +1394,250 @@ describe('ProcessEdit component', () => {
     expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
   });
 
+  it('blocks final review submission when the review-submit gate returns blocker reasons', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitGate.mockResolvedValueOnce({
+      data: [
+        {
+          status: 'blocked',
+          gateRunId: 'gate-run-blocked',
+          blockingReasons: [
+            {
+              code: 'provider_unresolved',
+              message: 'Provider unresolved',
+              details: {
+                examples: [
+                  {
+                    process: {
+                      process_id: 'process-1',
+                      process_name: 'Existing process',
+                      process_version: '1.0.0',
+                    },
+                    exchange_id: 'exchange-1',
+                    flow_id: 'flow-1',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+      error: null,
+      revisionChecksum: 'b'.repeat(64),
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockRequestReviewSubmitGate).toHaveBeenCalledWith(
+        'processes',
+        'process-1',
+        '1.0.0',
+        expect.any(Object),
+        {
+          action: 'ensure',
+          gateRunId: undefined,
+        },
+      ),
+    );
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'Numerical stability gate blocked this revision.',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('provider_unresolved: Provider unresolved');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'process: Existing process, version: 1.0.0, exchange: exchange-1, flow: flow-1',
+    );
+  });
+
+  it('blocks final review submission when the review-submit gate result is stale', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitGate.mockResolvedValueOnce({
+      data: [{ status: 'stale', gateRunId: 'gate-run-stale' }],
+      error: null,
+      revisionChecksum: 'c'.repeat(64),
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
+      ),
+    );
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
+  });
+
+  it('blocks final review submission when the review-submit gate API fails', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitGate.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'gate api unavailable' },
+      revisionChecksum: 'd'.repeat(64),
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('gate api unavailable'));
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
+  });
+
+  it('reads queued review-submit gate results again before final submission', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitGate
+      .mockResolvedValueOnce({
+        data: [{ status: 'queued', gateRunId: 'gate-run-queued' }],
+        error: null,
+        revisionChecksum: 'e'.repeat(64),
+      })
+      .mockResolvedValueOnce({
+        data: [{ status: 'passed', gateRunId: 'gate-run-queued' }],
+        error: null,
+        revisionChecksum: 'e'.repeat(64),
+      });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() => expect(mockRequestReviewSubmitGate).toHaveBeenCalledTimes(2), {
+      timeout: 4000,
+    });
+    expect(mockRequestReviewSubmitGate).toHaveBeenNthCalledWith(
+      1,
+      'processes',
+      'process-1',
+      '1.0.0',
+      expect.any(Object),
+      {
+        action: 'ensure',
+        gateRunId: undefined,
+      },
+    );
+    expect(mockRequestReviewSubmitGate).toHaveBeenNthCalledWith(
+      2,
+      'processes',
+      'process-1',
+      '1.0.0',
+      expect.any(Object),
+      {
+        action: 'read',
+        gateRunId: 'gate-run-queued',
+      },
+    );
+    await waitFor(() =>
+      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0', {
+        reviewSubmitGateRunId: 'gate-run-queued',
+        revisionChecksum: 'e'.repeat(64),
+      }),
+    );
+  });
+
+  it('clears a passed review-submit gate state after data changes', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockSubmitDatasetReview.mockResolvedValue({
+      error: { message: 'review submission failed' },
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Numerical stability gate passed for the current revision.',
+      ),
+    );
+
+    await act(async () => {
+      triggerValuesChange?.(
+        {
+          processInformation: {
+            name: 'Changed process',
+          },
+        },
+        {
+          processInformation: {
+            name: 'Changed process',
+          },
+        },
+      );
+    });
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
   it('stops review submission when the saved process shape is incomplete', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
@@ -2257,7 +2520,10 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
     await waitFor(() =>
-      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0'),
+      expect(mockSubmitDatasetReview).toHaveBeenCalledWith('processes', 'process-1', '1.0.0', {
+        reviewSubmitGateRunId: 'gate-run-1',
+        revisionChecksum: 'a'.repeat(64),
+      }),
     );
     expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
     expect(actionRef.current.reload).toHaveBeenCalledTimes(2);
