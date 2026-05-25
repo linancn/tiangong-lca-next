@@ -810,7 +810,7 @@ function OverviewScreen({
         subtitle={`${snapshot.summary.coveredRegions}省覆盖 / ${formatNumber(
           sumStatus(snapshot.regions, 'all'),
         )}条建设数据 / ${snapshot.summary.connectivityRate.toFixed(1)}%可计算连接`}
-        title='国家碳数据能力建设成果总览'
+        title='天工数据库建设成果总览'
       />
       <div className={styles.overviewStage}>
         <div className={styles.overviewMetricsLeft}>
@@ -858,7 +858,7 @@ function OverviewScreen({
             ))}
           </div>
           <div className={styles.overviewInsight}>
-            <b>国家级碳数据底座已形成，支撑全生命周期核算应用</b>
+            <b>天工数据库底座已形成，支撑全生命周期核算应用</b>
             <span>
               <strong>{snapshot.summary.coveredRegions}</strong>省覆盖
             </span>
@@ -1200,7 +1200,7 @@ function OutcomeMetricsScreen({
     <section className={styles.screenPanel}>
       <HeaderRibbon
         snapshot={snapshot}
-        subtitle='国家碳数据能力建设成果总览'
+        subtitle='天工数据库建设成果总览'
         title='建设成果与发布成果'
       />
       <div className={styles.outcomeTopGrid}>
@@ -1364,7 +1364,7 @@ const matrixDensityContours = [
 ] as const;
 const matrixZoneBadges = [
   { key: 'closed-process', label: '闭合高地', left: '50%', top: '36%', tone: 'cyan' },
-  { key: 'closed-factor', label: '国家级闭合带', left: '70%', top: '58%', tone: 'cyan' },
+  { key: 'closed-factor', label: '天工数据库闭合带', left: '70%', top: '58%', tone: 'cyan' },
   { key: 'gap-provider-a', label: 'provider 缺口 A', left: '31%', top: '63%', tone: 'gold' },
   { key: 'gap-provider-b', label: 'provider 缺口 B', left: '80%', top: '27%', tone: 'gold' },
 ] as const;

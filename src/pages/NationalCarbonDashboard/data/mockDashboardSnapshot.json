@@ -2,8 +2,8 @@
   "schemaVersion": "dashboard_snapshot_v1",
   "snapshotId": "fixture-national-carbon-2026-05-19",
   "scopeKey": "national-carbon-platform",
-  "title": "国家碳数据平台建设进展",
-  "subtitle": "国家碳数据能力建设总览",
+  "title": "天工数据库建设进展",
+  "subtitle": "天工数据库建设总览",
   "dataVersion": "V2026.05",
   "generatedAt": "2026-05-19T09:30:00+08:00",
   "dataAsOf": "2026-05-19",
@@ -27,7 +27,7 @@
       "key": "publish",
       "index": "02",
       "title": "聚合发布",
-      "description": "数据聚合处理形成统一标准结果，支撑国家与区域统计分析",
+      "description": "数据聚合处理形成统一标准结果，支撑天工数据库统计分析与区域洞察",
       "tone": "cyan"
     },
     {
@@ -592,7 +592,7 @@
       },
       {
         "key": "nationalAverageResults",
-        "label": "国家平均结果",
+        "label": "天工数据库平均结果",
         "value": 218,
         "unit": "个",
         "tone": "gold"
