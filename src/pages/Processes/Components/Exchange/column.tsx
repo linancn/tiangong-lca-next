@@ -7,12 +7,15 @@ import { ProColumns } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
 import { Tooltip } from 'antd';
 
+export const PROCESS_EXCHANGE_TABLE_SCROLL = { x: 'max-content' };
+
 export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTable>[] {
   return [
     {
       title: <FormattedMessage id='pages.table.title.index' defaultMessage='Index' />,
       dataIndex: 'index',
       valueType: 'index',
+      width: 64,
       search: false,
     },
     // {
@@ -36,6 +39,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'referenceToFlowDataSet',
       sorter: false,
       search: false,
+      width: 220,
       render: (_, row) => [
         <Tooltip key={0} placement='topLeft' title={row.generalComment}>
           {row.referenceToFlowDataSet}
@@ -49,6 +53,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'typeOfDataSet',
       sorter: false,
       search: false,
+      width: 110,
       render: (_, row) => {
         return getFolwypeOfDataSetOptions(row.typeOfDataSet ?? '');
       },
@@ -59,6 +64,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       ),
       dataIndex: 'classification',
       search: false,
+      width: 240,
       render: (_, row) => {
         return row?.classification && row?.classification !== 'undefined'
           ? row.classification
@@ -70,6 +76,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'referenceToFlowDataSetVersion',
       sorter: false,
       search: false,
+      width: 110,
     },
     {
       title: (
@@ -110,6 +117,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'refUnitGroup',
       sorter: false,
       search: false,
+      width: 150,
       render: (_, row) => {
         return [
           // <ReferenceUnit
@@ -143,6 +151,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'dataDerivationTypeStatus',
       sorter: false,
       search: false,
+      width: 190,
     },
     {
       title: (
@@ -154,6 +163,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'quantitativeReference',
       sorter: false,
       search: false,
+      width: 150,
       render: (_, row) => {
         return <QuantitativeReferenceIcon value={row.quantitativeReference} />;
       },
@@ -165,7 +175,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       dataIndex: 'reviewType',
       sorter: false,
       search: false,
-      width: 80,
+      width: 100,
       render: (_, row) => {
         return (
           <>
