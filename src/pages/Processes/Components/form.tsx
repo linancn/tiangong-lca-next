@@ -35,7 +35,7 @@ import schema from '../processes_schema.json';
 import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
 import AnnualSupplyOrProductionVolumeForm from './AnnualSupplyOrProductionVolume/form';
 import ComplianceItemForm from './Compliance/form';
-import { getExchangeColumns } from './Exchange/column';
+import { getExchangeColumns, PROCESS_EXCHANGE_TABLE_SCROLL } from './Exchange/column';
 import ProcessExchangeCreate from './Exchange/create';
 import ProcessExchangeDelete from './Exchange/delete';
 import ProcessExchangeEdit from './Exchange/edit';
@@ -753,6 +753,7 @@ export const ProcessForm: FC<Props> = ({
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
+      width: 128,
       render: (_, row) => {
         const rowSdkHighlights = sdkExchangeFieldDetailsByExchangeId[row.dataSetInternalID] ?? [];
 
@@ -2574,6 +2575,7 @@ export const ProcessForm: FC<Props> = ({
                     return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
+                  scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate
@@ -2684,6 +2686,7 @@ export const ProcessForm: FC<Props> = ({
                     return rowClasses.join(' ').trim();
                   }}
                   className='process-exchange-table'
+                  scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   toolBarRender={() => {
                     return [
                       <ProcessExchangeCreate

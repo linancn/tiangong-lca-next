@@ -47,7 +47,7 @@ import {
 } from './optiondata';
 import ReviewItemView from './Review/view';
 
-import { getExchangeColumns } from './Exchange/column';
+import { getExchangeColumns, PROCESS_EXCHANGE_TABLE_SCROLL } from './Exchange/column';
 import {
   buildMergedLcaRows as buildMergedLciaRows,
   getLcaMethodMetaMap,
@@ -219,6 +219,7 @@ const ProcessView: FC<Props> = ({
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
       search: false,
+      width: 80,
       render: (_, row) => {
         return [
           <Space size={'small'} key={0}>
@@ -1479,6 +1480,7 @@ const ProcessView: FC<Props> = ({
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   search={false}
+                  scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
@@ -1540,6 +1542,7 @@ const ProcessView: FC<Props> = ({
               children: (
                 <ProTable<ProcessExchangeTable, ListPagination>
                   search={false}
+                  scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
