@@ -3,6 +3,8 @@
  * Path: src/services/reviews/api.ts
  */
 
+import { FunctionRegion } from '@supabase/supabase-js';
+
 const mockFrom = jest.fn();
 const mockAuthGetSession = jest.fn();
 const mockFunctionsInvoke = jest.fn();
@@ -82,6 +84,7 @@ jest.mock('@/services/general/util', () => {
 
 const mockGetUserId = jest.fn();
 let realGenProcessName: (...args: any[]) => any;
+const originalCrypto = globalThis.crypto;
 
 jest.mock('@/services/users/api', () => ({
   __esModule: true,
@@ -157,6 +160,10 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers();
+  Object.defineProperty(globalThis, 'crypto', {
+    configurable: true,
+    value: originalCrypto,
+  });
 });
 
 describe('addReviewsApi', () => {
@@ -191,6 +198,36 @@ describe('submitDatasetReviewApi', () => {
       'processes',
       '11111111-1111-4111-8111-111111111111',
       '01.00.000',
+      {
+        reviewSubmitGateRunId: '22222222-2222-4222-8222-222222222222',
+        revisionChecksum: 'a'.repeat(64),
+      },
+    );
+
+    expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      table: 'processes',
+      reviewSubmitGateRunId: '22222222-2222-4222-8222-222222222222',
+      revisionChecksum: 'a'.repeat(64),
+    });
+    expect(result).toBe(commandResult);
+  });
+
+  it('omits gate assertion metadata when it has not been provided', async () => {
+    const commandResult = {
+      data: [{ review: { id: 'review-1' } }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCommand.mockResolvedValue(commandResult);
+
+    const result = await reviewsApi.submitDatasetReviewApi(
+      'processes',
+      '11111111-1111-4111-8111-111111111111',
+      '01.00.000',
     );
 
     expect(mockInvokeDatasetCommand).toHaveBeenCalledWith('app_dataset_submit_review', {
@@ -199,6 +236,337 @@ describe('submitDatasetReviewApi', () => {
       table: 'processes',
     });
     expect(result).toBe(commandResult);
+  });
+});
+
+describe('review-submit gate helpers', () => {
+  it('hashes stable JSON with sorted object keys', async () => {
+    const digest = jest.fn(async (_algorithm: string, payload: Uint8Array) => {
+      expect(new TextDecoder().decode(payload)).toBe('{"a":{"x":1,"y":2},"b":3}');
+      return new Uint8Array([0, 15, 255]).buffer;
+    });
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { subtle: { digest } },
+    });
+
+    await expect(reviewsApi.computeStableJsonSha256({ b: 3, a: { y: 2, x: 1 } })).resolves.toBe(
+      '000fff',
+    );
+    expect(digest.mock.calls[0]?.[0]).toBe('SHA-256');
+  });
+
+  it('normalizes arrays and rejects invalid checksum inputs', async () => {
+    expect(reviewsApi.stableJsonStringifyForReviewSubmit([{ b: 2, a: 1 }])).toBe('[{"a":1,"b":2}]');
+    expect(() => reviewsApi.stableJsonStringifyForReviewSubmit(undefined)).toThrow(
+      'Cannot hash an undefined dataset revision payload',
+    );
+
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: undefined,
+    });
+
+    await expect(reviewsApi.computeStableJsonSha256({ processDataSet: {} })).rejects.toThrow(
+      'SHA-256 digest is unavailable in this browser',
+    );
+  });
+
+  it('invokes the review-submit gate and unwraps passed responses', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_review_submit_gate',
+        data: {
+          status: 'passed',
+          gateRunId: '22222222-2222-4222-8222-222222222222',
+        },
+      },
+      error: null,
+    });
+
+    const result = await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'b'.repeat(64),
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_review_submit_gate', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: {
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        revisionChecksum: 'b'.repeat(64),
+        action: 'ensure',
+        gateRunId: undefined,
+        policyProfile: 'review_submit_fast.v1',
+        reportSchemaVersion: 'review_submit_gate_report.v1',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.data).toEqual([
+      {
+        status: 'passed',
+        gateRunId: '22222222-2222-4222-8222-222222222222',
+      },
+    ]);
+    expect(result.error).toBeNull();
+  });
+
+  it('returns authentication errors before invoking the review-submit gate', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'b'.repeat(64),
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    });
+  });
+
+  it('normalizes empty successful review-submit gate responses', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: { data: null },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { status: 'running' },
+        error: null,
+      });
+
+    const baseRequest = {
+      table: 'processes' as const,
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'b'.repeat(64),
+    };
+
+    await expect(reviewsApi.requestReviewSubmitGateApi(baseRequest)).resolves.toMatchObject({
+      data: [],
+      error: null,
+    });
+    await expect(reviewsApi.requestReviewSubmitGateApi(baseRequest)).resolves.toMatchObject({
+      data: [],
+      error: null,
+    });
+    await expect(reviewsApi.requestReviewSubmitGateApi(baseRequest)).resolves.toMatchObject({
+      data: [{ status: 'running' }],
+      error: null,
+    });
+  });
+
+  it('invokes the review-submit gate when the session omits an access token', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: { id: 'user-default' },
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: { status: 'running' },
+      error: null,
+    });
+
+    await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'b'.repeat(64),
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'app_dataset_review_submit_gate',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer ' },
+      }),
+    );
+  });
+
+  it('treats blocked gate HTTP errors as gate results for rendering', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        context: {
+          status: 409,
+          json: async () => ({
+            ok: false,
+            command: 'dataset_review_submit_gate',
+            data: {
+              status: 'blocked',
+              gateRunId: '22222222-2222-4222-8222-222222222222',
+              blockingReasons: [{ code: 'provider_unresolved', message: 'Provider unresolved' }],
+            },
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'c'.repeat(64),
+      action: 'read',
+      gateRunId: '22222222-2222-4222-8222-222222222222',
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.status).toBe(409);
+    expect(result.data?.[0]).toEqual(
+      expect.objectContaining({
+        status: 'blocked',
+        blockingReasons: [{ code: 'provider_unresolved', message: 'Provider unresolved' }],
+      }),
+    );
+  });
+
+  it('uses an OK fallback status when a gate-result function error has no HTTP status', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        context: {
+          json: async () => ({
+            ok: false,
+            command: 'dataset_review_submit_gate',
+            data: {
+              status: 'blocked',
+              gateRunId: '22222222-2222-4222-8222-222222222222',
+            },
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'c'.repeat(64),
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.statusText).toBe('OK');
+    expect(result.data?.[0]).toEqual(
+      expect.objectContaining({
+        status: 'blocked',
+        gateRunId: '22222222-2222-4222-8222-222222222222',
+      }),
+    );
+  });
+
+  it('normalizes non-gate function errors with returned payload details', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        context: {
+          status: 400,
+          json: async () => ({
+            command: 'not_the_gate',
+            message: 'Invalid gate payload',
+            code: 'INVALID_GATE_PAYLOAD',
+            details: { field: 'revisionChecksum' },
+            hint: 'Use lowercase SHA-256 hex.',
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewSubmitGateApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'c'.repeat(64),
+    });
+
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Invalid gate payload',
+        code: 'INVALID_GATE_PAYLOAD',
+        details: { field: 'revisionChecksum' },
+        hint: 'Use lowercase SHA-256 hex.',
+      },
+      count: null,
+      status: 400,
+      statusText: 'INVALID_GATE_PAYLOAD',
+    });
+  });
+
+  it('falls back when function error payloads are missing or cannot be parsed', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: null,
+        error: {},
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+          context: {
+            status: 502,
+            json: async () => {
+              throw new Error('parse failed');
+            },
+          },
+        },
+      });
+
+    const baseRequest = {
+      table: 'processes' as const,
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'c'.repeat(64),
+    };
+
+    await expect(reviewsApi.requestReviewSubmitGateApi(baseRequest)).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Request failed',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+    await expect(reviewsApi.requestReviewSubmitGateApi(baseRequest)).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 502,
+      statusText: 'FUNCTION_ERROR',
+    });
   });
 });
 

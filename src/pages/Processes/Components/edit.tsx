@@ -19,6 +19,7 @@ import {
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
+  requestReviewSubmitGate,
   submitDatasetReview,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
@@ -45,12 +46,17 @@ import {
   ProcessExchangeData,
 } from '@/services/processes/data';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
+import type {
+  ReviewSubmitGateBlockingReason,
+  ReviewSubmitGateResult,
+  ReviewSubmitGateStatus,
+} from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
-import { Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
+import { Alert, Button, Drawer, Form, Input, Space, Spin, Tooltip, message } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
@@ -73,6 +79,119 @@ type RefProblemNode = ProblemNode & {
   versionUnderReview?: boolean;
   underReviewVersion?: string;
   versionIsInTg?: boolean;
+};
+type ReviewSubmitGateUiStatus = 'not_run' | ReviewSubmitGateStatus;
+type ReviewSubmitGateUiState = {
+  status: ReviewSubmitGateUiStatus;
+  gateRunId?: string;
+  revisionChecksum?: string;
+  blockingReasons?: ReviewSubmitGateBlockingReason[];
+  message?: string;
+};
+
+const REVIEW_SUBMIT_GATE_POLL_ATTEMPTS = 3;
+const REVIEW_SUBMIT_GATE_POLL_INTERVAL_MS = 1500;
+const REVIEW_SUBMIT_GATE_PENDING_STATUSES = new Set<ReviewSubmitGateStatus>(['queued', 'running']);
+
+const waitForReviewSubmitGatePoll = () =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, REVIEW_SUBMIT_GATE_POLL_INTERVAL_MS);
+  });
+
+const toReviewSubmitGateEvidenceValue = (value: unknown): string | undefined => {
+  if (typeof value === 'string') {
+    return value.trim() || undefined;
+  }
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  if (typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const values = value
+      .map(toReviewSubmitGateEvidenceValue)
+      .filter((item): item is string => Boolean(item));
+    if (values.length > 0) {
+      return `${values.slice(0, 3).join(', ')}${values.length > 3 ? '...' : ''}`;
+    }
+  }
+
+  return undefined;
+};
+
+const pickReviewSubmitGateEvidenceValue = (
+  record: Record<string, unknown>,
+  keys: string[],
+): string | undefined => {
+  for (const key of keys) {
+    const value = toReviewSubmitGateEvidenceValue(record[key]);
+    if (value) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+const toReviewSubmitGateEvidenceRecord = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+};
+
+const formatReviewSubmitGateEvidenceRecord = (value: unknown): string | null => {
+  const record = toReviewSubmitGateEvidenceRecord(value);
+  if (!record) {
+    return toReviewSubmitGateEvidenceValue(value) ?? null;
+  }
+
+  const nestedProcess =
+    toReviewSubmitGateEvidenceRecord(record.process) ??
+    (Array.isArray(record.processes)
+      ? toReviewSubmitGateEvidenceRecord(record.processes[0])
+      : null);
+  const processRecord = nestedProcess ?? record;
+  const parts = [
+    ['process', pickReviewSubmitGateEvidenceValue(processRecord, ['process_name', 'process_id'])],
+    ['version', pickReviewSubmitGateEvidenceValue(processRecord, ['process_version'])],
+    [
+      'exchange',
+      pickReviewSubmitGateEvidenceValue(record, [
+        'exchange_id',
+        'input_exchange_id',
+        'output_exchange_id',
+      ]),
+    ],
+    ['flow', pickReviewSubmitGateEvidenceValue(record, ['flow_id', 'flow_idx'])],
+    ['consumer', pickReviewSubmitGateEvidenceValue(record, ['consumer_idx'])],
+    ['provider', pickReviewSubmitGateEvidenceValue(record, ['provider_id', 'provider_idx'])],
+    ['target', pickReviewSubmitGateEvidenceValue(record, ['process_idx'])],
+  ]
+    .filter((part): part is [string, string] => Boolean(part[1]))
+    .map(([label, value]) => `${label}: ${value}`);
+
+  return parts.length > 0 ? parts.join(', ') : null;
+};
+
+const formatReviewSubmitGateEvidence = (details: unknown): string[] => {
+  const detailRecord = toReviewSubmitGateEvidenceRecord(details);
+  const examples =
+    detailRecord && Array.isArray(detailRecord.examples) && detailRecord.examples.length > 0
+      ? detailRecord.examples
+      : details !== undefined && details !== null
+        ? [details]
+        : [];
+
+  return examples
+    .slice(0, 2)
+    .map(formatReviewSubmitGateEvidenceRecord)
+    .filter((item): item is string => Boolean(item));
 };
 
 const collectChangedFieldPaths = (
@@ -190,6 +309,9 @@ const ProcessEdit: FC<Props> = ({
   const [spinning, setSpinning] = useState(false);
   const [showRules, setShowRules] = useState<boolean>(false);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
+  const [reviewSubmitGateState, setReviewSubmitGateState] = useState<ReviewSubmitGateUiState>({
+    status: 'not_run',
+  });
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
@@ -208,6 +330,114 @@ const ProcessEdit: FC<Props> = ({
   const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
   const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
 
+  const resetReviewSubmitGateState = useCallback(() => {
+    setReviewSubmitGateState({ status: 'not_run' });
+  }, []);
+
+  const getReviewSubmitGateStatusMessage = useCallback(
+    (status: ReviewSubmitGateUiStatus) => {
+      switch (status) {
+        case 'queued':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.queued',
+            defaultMessage:
+              'Numerical stability gate is queued. Submission is disabled until it passes.',
+          });
+        case 'running':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.running',
+            defaultMessage:
+              'Numerical stability gate is running. Submission is disabled until it passes.',
+          });
+        case 'passed':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.passed',
+            defaultMessage: 'Numerical stability gate passed for the current revision.',
+          });
+        case 'blocked':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.blocked',
+            defaultMessage: 'Numerical stability gate blocked this revision.',
+          });
+        case 'stale':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.stale',
+            defaultMessage:
+              'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
+          });
+        case 'error':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.error',
+            defaultMessage: 'Numerical stability gate could not complete.',
+          });
+        case 'not_run':
+        default:
+          return '';
+      }
+    },
+    [intl],
+  );
+
+  const formatReviewSubmitGateReason = useCallback(
+    (reason: ReviewSubmitGateBlockingReason, index: number) => {
+      const code =
+        typeof reason?.code === 'string' && reason.code.trim()
+          ? reason.code.trim()
+          : intl.formatMessage(
+              {
+                id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
+                defaultMessage: 'Reason {index}',
+              },
+              { index: index + 1 },
+            );
+      const reasonMessage =
+        typeof reason?.message === 'string' && reason.message.trim()
+          ? reason.message.trim()
+          : intl.formatMessage({
+              id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
+              defaultMessage: 'No detailed message returned.',
+            });
+
+      return `${code}: ${reasonMessage}`;
+    },
+    [intl],
+  );
+
+  const renderReviewSubmitGateDescription = useCallback(() => {
+    const reasons = reviewSubmitGateState.blockingReasons ?? [];
+    const statusMessage =
+      reviewSubmitGateState.message ||
+      getReviewSubmitGateStatusMessage(reviewSubmitGateState.status);
+
+    return (
+      <Space direction='vertical' size={4}>
+        <span>{statusMessage}</span>
+        {reasons.length > 0 && (
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {reasons.slice(0, 5).map((reason, index) => {
+              const evidence = formatReviewSubmitGateEvidence(reason.details);
+
+              return (
+                <li key={`${reason.code ?? 'reason'}-${index}`}>
+                  <span>{formatReviewSubmitGateReason(reason, index)}</span>
+                  {evidence.length > 0 && (
+                    <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{evidence.join('; ')}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Space>
+    );
+  }, [
+    formatReviewSubmitGateReason,
+    getReviewSubmitGateStatusMessage,
+    reviewSubmitGateState.blockingReasons,
+    reviewSubmitGateState.message,
+    reviewSubmitGateState.status,
+  ]);
+
   useEffect(() => {
     if (autoOpen && id && version) {
       setDrawerVisible(true);
@@ -217,6 +447,7 @@ const ProcessEdit: FC<Props> = ({
   const applyProcessData = useCallback(
     (nextData: FormProcessWithDatas, options?: { resetFields?: boolean }) => {
       const normalizedData = { ...nextData, id } as FormProcessWithDatas;
+      resetReviewSubmitGateState();
       setFromData(normalizedData);
       setExchangeDataSource(
         ((normalizedData?.exchanges?.exchange ?? []) as ProcessExchangeData[]).map((item) => ({
@@ -228,7 +459,7 @@ const ProcessEdit: FC<Props> = ({
       }
       formRefEdit.current?.setFieldsValue(normalizedData);
     },
-    [id],
+    [id, resetReviewSubmitGateState],
   );
 
   const getCurrentProcessData = useCallback(() => {
@@ -948,8 +1179,94 @@ const ProcessEdit: FC<Props> = ({
     return handleCheckData('checkData', validationTarget, { silent });
   };
 
+  const runReviewSubmitGate = async (processDetail: ProcessCheckTarget) => {
+    const orderedJson = genProcessJsonOrdered(processDetail.id, processDetail);
+    let gateRunId: string | undefined;
+    let action: 'ensure' | 'read' = 'ensure';
+
+    for (let attempt = 0; attempt < REVIEW_SUBMIT_GATE_POLL_ATTEMPTS; attempt += 1) {
+      const gateResult = await requestReviewSubmitGate(
+        'processes',
+        processDetail.id,
+        processDetail.version,
+        orderedJson,
+        {
+          action,
+          gateRunId,
+        },
+      );
+
+      if (gateResult.error) {
+        const messageText =
+          gateResult.error.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.error',
+            defaultMessage: 'Numerical stability gate could not complete.',
+          });
+        setReviewSubmitGateState({
+          status: 'error',
+          message: messageText,
+          revisionChecksum: gateResult.revisionChecksum,
+        });
+        message.error(messageText);
+        return null;
+      }
+
+      const gateData = gateResult.data?.[0] as ReviewSubmitGateResult | undefined;
+      const status = gateData?.status ?? 'error';
+      gateRunId = gateData?.gateRunId ?? gateRunId;
+
+      setReviewSubmitGateState({
+        status,
+        gateRunId,
+        revisionChecksum: gateResult.revisionChecksum,
+        blockingReasons: gateData?.blockingReasons,
+      });
+
+      if (status === 'passed') {
+        if (!gateRunId) {
+          const messageText = intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.missingRunId',
+            defaultMessage: 'Numerical stability gate passed but returned no gate run id.',
+          });
+          setReviewSubmitGateState({
+            status: 'error',
+            message: messageText,
+            revisionChecksum: gateResult.revisionChecksum,
+          });
+          message.error(messageText);
+          return null;
+        }
+
+        return {
+          reviewSubmitGateRunId: gateRunId,
+          revisionChecksum: gateResult.revisionChecksum,
+        };
+      }
+
+      if (REVIEW_SUBMIT_GATE_PENDING_STATUSES.has(status)) {
+        if (attempt < REVIEW_SUBMIT_GATE_POLL_ATTEMPTS - 1) {
+          await waitForReviewSubmitGatePoll();
+          action = gateRunId ? 'read' : 'ensure';
+          continue;
+        }
+
+        const messageText = getReviewSubmitGateStatusMessage(status);
+        message.info(messageText);
+        return null;
+      }
+
+      const messageText = getReviewSubmitGateStatusMessage(status);
+      message.error(messageText);
+      return null;
+    }
+
+    return null;
+  };
+
   const submitReview = async () => {
     setSpinning(true);
+    resetReviewSubmitGateState();
     const updateResult = await handleSubmit(false, { langIntent: 'validation' });
     const validationTarget = await resolveProcessCheckTarget(updateResult);
     const updatedProcess = toSavedProcessCheckTarget(updateResult);
@@ -962,10 +1279,17 @@ const ProcessEdit: FC<Props> = ({
 
     if (checkResult && updatedProcess) {
       setSpinning(true);
+      const gateMetadata = await runReviewSubmitGate(updatedProcess);
+      if (!gateMetadata) {
+        setSpinning(false);
+        return;
+      }
+
       const result = await submitDatasetReview(
         'processes',
         updatedProcess.id,
         updatedProcess.version,
+        gateMetadata,
       );
       if (result?.error) {
         message.error(
@@ -1042,12 +1366,13 @@ const ProcessEdit: FC<Props> = ({
       setSdkValidationDismissedFieldKeys(new Set());
       setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
+      resetReviewSubmitGateState();
       // setUnRuleVerificationData([]);
       // setNonExistentRefData([]);
       return;
     }
     onReset();
-  }, [drawerVisible]);
+  }, [drawerVisible, resetReviewSubmitGateState]);
 
   useEffect(() => {
     if (!showRules || !drawerVisible || pendingTabValidationKey !== activeTabKey) {
@@ -1192,6 +1517,7 @@ const ProcessEdit: FC<Props> = ({
             <>
               {!hideReviewButton && (
                 <Button
+                  disabled={spinning}
                   onClick={() => {
                     submitReview();
                   }}
@@ -1232,10 +1558,32 @@ const ProcessEdit: FC<Props> = ({
       >
         <Spin spinning={spinning}>
           <RefCheckContext.Provider value={refCheckContextValue}>
+            {reviewSubmitGateState.status !== 'not_run' && (
+              <Alert
+                showIcon
+                style={{ marginBottom: 12 }}
+                type={
+                  reviewSubmitGateState.status === 'passed'
+                    ? 'success'
+                    : reviewSubmitGateState.status === 'queued' ||
+                        reviewSubmitGateState.status === 'running'
+                      ? 'info'
+                      : 'error'
+                }
+                message={
+                  <FormattedMessage
+                    id='pages.process.reviewSubmitGate.title'
+                    defaultMessage='Numerical stability gate'
+                  />
+                }
+                description={renderReviewSubmitGateDescription()}
+              />
+            )}
             <ProForm
               formRef={formRefEdit}
               initialValues={initData}
               onValuesChange={async (changedValues, allValues) => {
+                resetReviewSubmitGateState();
                 dismissChangedSdkValidationFields(changedValues);
                 if (activeTabKey === 'validation') {
                   await setFromData({
