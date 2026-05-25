@@ -1593,6 +1593,41 @@ describe('review utilities', () => {
     });
   });
 
+  it('defaults review-submit gate requests to ensure action', async () => {
+    const checksum = 'e'.repeat(64);
+    const orderedJson = {
+      processDataSet: {
+        processInformation: { name: 'Default action process' },
+      },
+    };
+    mockComputeStableJsonSha256.mockResolvedValue(checksum);
+    mockRequestReviewSubmitGateApi.mockResolvedValue({
+      data: [{ status: 'running', gateRunId: 'gate-run-default' }],
+      error: null,
+    });
+
+    const result = await requestReviewSubmitGate(
+      'processes',
+      '22222222-2222-4222-8222-222222222222',
+      '01.00.000',
+      orderedJson,
+    );
+
+    expect(mockRequestReviewSubmitGateApi).toHaveBeenCalledWith({
+      table: 'processes',
+      id: '22222222-2222-4222-8222-222222222222',
+      version: '01.00.000',
+      revisionChecksum: checksum,
+      action: 'ensure',
+      gateRunId: undefined,
+    });
+    expect(result).toEqual({
+      data: [{ status: 'running', gateRunId: 'gate-run-default' }],
+      error: null,
+      revisionChecksum: checksum,
+    });
+  });
+
   it('returns references that remain under review when checking reports', async () => {
     mockGetSourcesByIdsAndVersions.mockResolvedValue({
       data: [
