@@ -258,6 +258,12 @@ describe('review-submit gate helpers', () => {
 
   it('normalizes arrays and rejects invalid checksum inputs', async () => {
     expect(reviewsApi.stableJsonStringifyForReviewSubmit([{ b: 2, a: 1 }])).toBe('[{"a":1,"b":2}]');
+    expect(
+      reviewsApi.stableJsonStringifyForReviewSubmit({ '@xml:lang': 'en', '#text': 'hello' }),
+    ).toBe('{"#text":"hello","@xml:lang":"en"}');
+    expect(reviewsApi.stableJsonStringifyForReviewSubmit({ 2: 'two', 10: 'ten', 1: 'one' })).toBe(
+      '{"1":"one","10":"ten","2":"two"}',
+    );
     expect(() => reviewsApi.stableJsonStringifyForReviewSubmit(undefined)).toThrow(
       'Cannot hash an undefined dataset revision payload',
     );
@@ -289,7 +295,6 @@ describe('review-submit gate helpers', () => {
       table: 'processes',
       id: '11111111-1111-4111-8111-111111111111',
       version: '01.00.000',
-      revisionChecksum: 'b'.repeat(64),
     });
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_review_submit_gate', {
@@ -298,7 +303,6 @@ describe('review-submit gate helpers', () => {
         table: 'processes',
         id: '11111111-1111-4111-8111-111111111111',
         version: '01.00.000',
-        revisionChecksum: 'b'.repeat(64),
         action: 'ensure',
         gateRunId: undefined,
         policyProfile: 'review_submit_fast.v1',
