@@ -1,6 +1,7 @@
 import schema from '@/pages/Processes/processes_schema.json';
 import {
   getSdkSuggestedFixMessage,
+  isAnnualSupplyVolumeReferenceContextSdkDetail,
   resolveRequiredValidationMessage,
   sdkValidationUiTestUtils,
   shouldSuppressRequiredSdkMessage,
@@ -50,6 +51,44 @@ describe('process sdk validation ui helpers', () => {
         '#text',
       ]),
     ).toBe(true);
+  });
+
+  it('detects only annual supply zh localized-text issues as reference-context candidates', () => {
+    expect(
+      isAnnualSupplyVolumeReferenceContextSdkDetail({
+        fieldPath:
+          'processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume.1.#text',
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+      }),
+    ).toBe(true);
+
+    expect(
+      isAnnualSupplyVolumeReferenceContextSdkDetail({
+        formName: [
+          'modellingAndValidation',
+          'dataSourcesTreatmentAndRepresentativeness',
+          'annualSupplyOrProductionVolume',
+          1,
+          '#text',
+        ],
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+      }),
+    ).toBe(true);
+
+    expect(
+      isAnnualSupplyVolumeReferenceContextSdkDetail({
+        fieldPath: 'processInformation.time.common:timeRepresentativenessDescription.1.#text',
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+      }),
+    ).toBe(false);
+
+    expect(
+      isAnnualSupplyVolumeReferenceContextSdkDetail({
+        fieldPath:
+          'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume.1.#text',
+        validationCode: 'localized_text_en_must_not_contain_chinese_character',
+      }),
+    ).toBe(false);
   });
 
   it('only treats exchange reference selectors as local required ui owners', () => {

@@ -11,7 +11,7 @@ import {
 } from '@/services/processes/annualSupplyOrProductionVolume';
 import type { ProcessExchangeData } from '@/services/processes/data';
 import type { ProFormInstance } from '@ant-design/pro-components';
-import { Form, Input, InputNumber, Space } from 'antd';
+import { Form, Input, InputNumber, Space, theme } from 'antd';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useIntl } from 'umi';
@@ -23,6 +23,7 @@ type Props = {
   lang: string;
   name: Array<string | number>;
   onData: () => void;
+  contextErrorMessage?: string;
   rules?: any[];
   setRuleErrorState?: (showError: boolean) => void;
 };
@@ -35,10 +36,12 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
   lang,
   name,
   onData,
+  contextErrorMessage,
   rules = [],
   setRuleErrorState,
 }) => {
   const intl = useIntl();
+  const { token } = theme.useToken();
   const [exchangeDataSourceWithUnits, setExchangeDataSourceWithUnits] =
     useState(exchangeDataSource);
   const form = formRef?.current;
@@ -183,10 +186,25 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
         <Input
           aria-label='annual-supply-volume-context'
           disabled
+          status={contextErrorMessage ? 'error' : undefined}
           style={{ width: '50%' }}
           value={currentSuffix}
         />
       </Space.Compact>
+      {contextErrorMessage ? (
+        <div
+          role='alert'
+          style={{
+            color: token.colorError,
+            fontSize: token.fontSizeSM ?? 12,
+            lineHeight: token.lineHeightSM ?? 1.5,
+            marginLeft: '50%',
+            marginTop: token.marginXXS ?? 4,
+          }}
+        >
+          {contextErrorMessage}
+        </div>
+      ) : null}
     </Form.Item>
   );
 };

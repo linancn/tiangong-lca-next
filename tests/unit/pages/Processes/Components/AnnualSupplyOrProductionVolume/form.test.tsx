@@ -58,8 +58,14 @@ jest.mock('antd', () => {
       />
     </label>
   );
-  const Input = ({ 'aria-label': ariaLabel, disabled, style, value = '' }: any) => (
-    <input aria-label={ariaLabel} disabled={disabled} style={style} value={value} />
+  const Input = ({ 'aria-label': ariaLabel, disabled, status, style, value = '' }: any) => (
+    <input
+      aria-label={ariaLabel}
+      data-status={status}
+      disabled={disabled}
+      style={style}
+      value={value}
+    />
   );
   const Space = ({ children }: any) => <div>{children}</div>;
   Space.Compact = ({ children }: any) => <div data-testid='annual-volume-compact'>{children}</div>;
@@ -70,6 +76,16 @@ jest.mock('antd', () => {
     Input,
     InputNumber,
     Space,
+    theme: {
+      useToken: () => ({
+        token: {
+          colorError: '#ff4d4f',
+          fontSizeSM: 12,
+          lineHeightSM: 1.5,
+          marginXXS: 4,
+        },
+      }),
+    },
   };
 });
 
@@ -375,6 +391,30 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       );
     });
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+  });
+
+  it('marks the derived context input and renders red help text when context is invalid', () => {
+    const form = buildForm(undefined);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        contextErrorMessage='请选择一条输入/输出作为基准'
+        exchangeDataSource={[]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='zh'
+        name={['annualSupply']}
+        onData={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveAttribute(
+      'data-status',
+      'error',
+    );
+    expect(screen.getByLabelText('annual-supply-volume-context')).toBeDisabled();
+    expect(screen.getByRole('alert')).toHaveTextContent('请选择一条输入/输出作为基准');
+    expect(screen.getByRole('alert')).toHaveStyle({ color: '#ff4d4f' });
   });
 
   it('normalizes single-object form values and uses default required validation copy', async () => {
