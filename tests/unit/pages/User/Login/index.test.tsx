@@ -55,6 +55,11 @@ jest.mock('umi', () => {
   return {
     __esModule: true,
     Helmet: ({ children }: any) => <>{children}</>,
+    Link: ({ children, to, ...props }: any) => (
+      <a data-umi-to={to} href={to} {...props}>
+        {toText(children)}
+      </a>
+    ),
     history: mockHistory,
     useLocation: () => mockLocation,
     useIntl: () => ({
@@ -68,6 +73,11 @@ jest.mock('umi', () => {
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   Helmet: ({ children }: any) => <>{children}</>,
+  Link: ({ children, to, ...props }: any) => (
+    <a data-umi-to={to} href={to} {...props}>
+      {toText(children)}
+    </a>
+  ),
   FormattedMessage: ({ defaultMessage, id, values }: any) => {
     const baseText = defaultMessage ?? id;
     if (!values) {
@@ -332,12 +342,12 @@ describe('Login page', () => {
     expect(mockHistory.push).not.toHaveBeenCalled();
   });
 
-  it('renders the forgot-password link with a hash-compatible app route', () => {
+  it('renders the forgot-password link as an Umi app route', () => {
     render(<LoginPage />);
 
     expect(screen.getByText('Forgot password').closest('a')).toHaveAttribute(
-      'href',
-      '/#/user/login/password_forgot',
+      'data-umi-to',
+      '/user/login/password_forgot',
     );
   });
 

@@ -41,6 +41,11 @@ export const createUmiMock = () => ({
   FormattedMessage: ({ defaultMessage, id, values }: any) => (
     <span>{renderMessageWithValues(defaultMessage ?? id ?? '', values)}</span>
   ),
+  Link: ({ children, to, ...props }: any) => (
+    <a href={typeof to === 'string' ? to : '#'} data-umi-to={to} {...props}>
+      {children}
+    </a>
+  ),
   useIntl: () => umiMocks.useIntl(),
   useLocation: () => umiMocks.useLocation(),
   useModel: (...args: any[]) => umiMocks.useModel(...args),

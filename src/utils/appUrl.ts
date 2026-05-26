@@ -21,7 +21,12 @@ const normalizeOrigin = (origin: string) => origin.replace(/\/+$/, '');
 export const getAppOrigin = () =>
   typeof window !== 'undefined' ? window.location.origin : DEFAULT_APP_ORIGIN;
 
-export const buildAppHashPath = (path: string) => `/#${normalizeAppPath(path)}`;
+const buildHashHistoryPath = (path: string) => `/#${normalizeAppPath(path)}`;
 
-export const buildAppAbsoluteUrl = (path: string, origin: string = getAppOrigin()) =>
-  `${normalizeOrigin(origin)}${buildAppHashPath(path)}`;
+/**
+ * Serialize an app route path into an absolute URL for consumers outside Umi's
+ * runtime, such as email redirects, exported HTML, or persisted links. React UI
+ * navigation should use Umi Link/history with plain route paths instead.
+ */
+export const buildExternalUrl = (path: string, origin: string = getAppOrigin()) =>
+  `${normalizeOrigin(origin)}${buildHashHistoryPath(path)}`;

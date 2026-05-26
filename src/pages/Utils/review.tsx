@@ -16,7 +16,7 @@ import {
 } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
 import { getUserId, getUsersByIds } from '@/services/users/api';
-import { buildAppAbsoluteUrl } from '@/utils/appUrl';
+import { buildExternalUrl } from '@/utils/appUrl';
 import {
   createContact as createTidasContact,
   createFlow as createTidasFlow,
@@ -348,12 +348,12 @@ export const getDatasetPath = (
   return `${route}?${searchParams.toString()}`;
 };
 
-export const getDatasetDetailUrl = (ref: refDataType, origin?: string) => {
+export const getDatasetDetailAbsoluteUrl = (ref: refDataType, origin?: string) => {
   const path = getDatasetPath(ref, { required: true });
   if (!path) {
     return '';
   }
-  return buildAppAbsoluteUrl(path, origin);
+  return buildExternalUrl(path, origin);
 };
 
 const getIssueKey = (code: ValidationIssueCode, ref: refDataType) =>
@@ -859,7 +859,7 @@ export const buildValidationIssues = ({
   if (!datasetSdkValid) {
     pushValidationIssue(issues, issueKeys, {
       code: 'sdkInvalid',
-      link: getDatasetDetailUrl(rootRef),
+      link: getDatasetDetailAbsoluteUrl(rootRef),
       ref: rootRef,
       sdkDetails: sdkInvalidDetails,
       tabNames: sdkInvalidTabNames.filter(
@@ -875,7 +875,7 @@ export const buildValidationIssues = ({
 
     pushValidationIssue(issues, issueKeys, {
       code: 'ruleVerificationFailed',
-      link: getDatasetDetailUrl(ref),
+      link: getDatasetDetailAbsoluteUrl(ref),
       ref,
     });
   });
@@ -883,7 +883,7 @@ export const buildValidationIssues = ({
   nonExistentRef.forEach((ref) => {
     pushValidationIssue(issues, issueKeys, {
       code: 'nonExistentRef',
-      link: getDatasetDetailUrl(ref),
+      link: getDatasetDetailAbsoluteUrl(ref),
       ref,
     });
   });
@@ -898,7 +898,7 @@ export const buildValidationIssues = ({
     if (node.versionIsInTg) {
       pushValidationIssue(issues, issueKeys, {
         code: 'versionIsInTg',
-        link: getDatasetDetailUrl(ref),
+        link: getDatasetDetailAbsoluteUrl(ref),
         ref,
       });
       return;
@@ -910,7 +910,7 @@ export const buildValidationIssues = ({
           actionFrom === 'review' && node.underReviewVersion === node['@version']
             ? 'underReview'
             : 'versionUnderReview',
-        link: getDatasetDetailUrl(ref),
+        link: getDatasetDetailAbsoluteUrl(ref),
         ref,
         underReviewVersion: node.underReviewVersion,
       });
