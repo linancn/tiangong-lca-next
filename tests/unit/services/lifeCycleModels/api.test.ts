@@ -2121,7 +2121,7 @@ describe('table/search helpers', () => {
       { key: 'baseName', lang: 'en', order: 'desc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels_latest', {
       query_text: 'keyword',
       filter_condition: { filter: true },
       page_size: 5,
@@ -2153,7 +2153,7 @@ describe('table/search helpers', () => {
       20,
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_lifecyclemodels_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_lifecyclemodels_latest', {
       query_text: 'keyword',
       filter_condition: {},
       page_size: 10,
@@ -2527,7 +2527,13 @@ describe('table/search helpers', () => {
       headers: {
         Authorization: 'Bearer ',
       },
-      body: { query: 'keyword', filter: {} },
+      body: {
+        query: 'keyword',
+        filter_condition: {},
+        data_source: 'my',
+        page_size: 10,
+        page_current: 1,
+      },
       region: expect.any(String),
     });
   });
@@ -2552,7 +2558,14 @@ describe('table/search helpers', () => {
       headers: {
         Authorization: `Bearer ${sampleAccessToken}`,
       },
-      body: { query: 'keyword', filter: { filter: true }, state_code: 100 },
+      body: {
+        query: 'keyword',
+        filter_condition: { filter: true },
+        data_source: 'tg',
+        page_size: 10,
+        page_current: 1,
+        state_code: 100,
+      },
       region: expect.any(String),
     });
     expect(result).toEqual({

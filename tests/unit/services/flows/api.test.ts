@@ -1178,7 +1178,7 @@ describe('getFlowTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_flows_latest',
+      'search_flows_latest',
       expect.objectContaining({
         query_text: 'water',
         data_source: 'tg',
@@ -1344,7 +1344,7 @@ describe('getFlowTablePgroongaSearch', () => {
       { key: 'baseName', lang: 'zh', order: 'asc' },
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
       query_text: 'steel',
       filter_condition: { flowType: 'Product flow' },
       page_size: 15,
@@ -1601,7 +1601,7 @@ describe('getFlowTablePgroongaSearch', () => {
     });
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_flows_latest',
+      'search_flows_latest',
       expect.objectContaining({
         filter_condition: {
           flowType: 'Product flow',
@@ -1643,7 +1643,7 @@ describe('getFlowTablePgroongaSearch', () => {
 
     const result = await getFlowTablePgroongaSearch({}, 'zh', 'my', 'steel', {}, 300);
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
       query_text: 'steel',
       filter_condition: {},
       page_size: 10,
@@ -1681,7 +1681,7 @@ describe('getFlowTablePgroongaSearch', () => {
 
     await getFlowTablePgroongaSearch({}, 'en', 'tg', 'default-query', {});
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_flows_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_flows_latest', {
       query_text: 'default-query',
       filter_condition: {},
       page_size: 10,
@@ -1798,7 +1798,13 @@ describe('flow_hybrid_search', () => {
     expect(mockFunctionsInvoke).toHaveBeenCalledWith(
       'flow_hybrid_search',
       expect.objectContaining({
-        body: { query: 'nitrogen', filter: { flowType: '' } },
+        body: {
+          query: 'nitrogen',
+          filter_condition: { flowType: '' },
+          data_source: 'tg',
+          page_size: 10,
+          page_current: 1,
+        },
         headers: { Authorization: 'Bearer token' },
         region: FunctionRegion.UsEast1,
       }),
@@ -1909,7 +1915,13 @@ describe('flow_hybrid_search', () => {
       'flow_hybrid_search',
       expect.objectContaining({
         headers: { Authorization: 'Bearer ' },
-        body: { query: 'steam', filter: {} },
+        body: {
+          query: 'steam',
+          filter_condition: {},
+          data_source: 'tg',
+          page_size: 10,
+          page_current: 1,
+        },
       }),
     );
     expect(result).toEqual({
@@ -1938,10 +1950,13 @@ describe('flow_hybrid_search', () => {
       expect.objectContaining({
         body: {
           query: 'steam',
-          filter: {
+          filter_condition: {
             flowType: 'Product flow',
             classification: [{ scope: 'classification', code: '01' }],
           },
+          data_source: 'tg',
+          page_size: 10,
+          page_current: 1,
         },
       }),
     );
@@ -2024,7 +2039,14 @@ describe('flow_hybrid_search', () => {
     expect(mockFunctionsInvoke).toHaveBeenCalledWith(
       'flow_hybrid_search',
       expect.objectContaining({
-        body: { query: '电力', filter: {}, state_code: 200 },
+        body: {
+          query: '电力',
+          filter_condition: {},
+          data_source: 'my',
+          page_size: 10,
+          page_current: 2,
+          state_code: 200,
+        },
       }),
     );
     expect(result).toEqual({

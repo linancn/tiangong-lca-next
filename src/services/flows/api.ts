@@ -457,7 +457,7 @@ export async function getFlowTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'pgroonga_search_flows_latest',
+      'search_flows_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
@@ -619,16 +619,23 @@ export async function flow_hybrid_search(
   stateCode?: string | number,
 ) {
   let result: any = {};
+  const bodyParams: Record<string, any> = {
+    query,
+    filter_condition: filter,
+    data_source: dataSource,
+    page_size: params.pageSize ?? 10,
+    page_current: params.current ?? 1,
+  };
+  if (typeof stateCode === 'number') {
+    bodyParams.state_code = stateCode;
+  }
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     result = await supabase.functions.invoke('flow_hybrid_search', {
       headers: {
         Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
       },
-      body:
-        typeof stateCode === 'number'
-          ? { query: query, filter: filter, state_code: stateCode }
-          : { query: query, filter: filter },
+      body: bodyParams,
       region: FunctionRegion.UsEast1,
     });
   }

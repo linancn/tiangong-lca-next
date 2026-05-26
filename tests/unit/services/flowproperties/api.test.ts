@@ -852,7 +852,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties_latest', {
+      expect(supabase.rpc).toHaveBeenCalledWith('search_flowproperties_latest', {
         query_text: 'mass',
         filter_condition: {},
         page_size: 10,
@@ -933,7 +933,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       );
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_flowproperties_latest',
+        'search_flowproperties_latest',
         expect.objectContaining({
           state_code_filter: 100,
         }),
@@ -946,7 +946,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       await getFlowpropertyTablePgroongaSearch({}, 'en', 'my', 'test', {}, 100);
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_flowproperties_latest',
+        'search_flowproperties_latest',
         expect.objectContaining({
           page_size: 10,
           page_current: 1,
@@ -1173,7 +1173,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         undefined,
       );
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_flowproperties_latest', {
+      expect(supabase.rpc).toHaveBeenCalledWith('search_flowproperties_latest', {
         query_text: '质量',
         filter_condition: {},
         page_size: 10,

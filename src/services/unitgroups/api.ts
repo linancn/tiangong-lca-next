@@ -342,7 +342,7 @@ export async function getUnitGroupTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'pgroonga_search_unitgroups_latest',
+      'search_unitgroups_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,

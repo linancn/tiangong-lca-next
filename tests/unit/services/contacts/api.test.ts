@@ -736,7 +736,7 @@ describe('Contacts API Service', () => {
       );
 
       expect(mockAuth).toHaveBeenCalled();
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
+      expect(mockRpc).toHaveBeenCalledWith('search_contacts_latest', {
         query_text: 'test query',
         filter_condition: {},
         page_size: 10,
@@ -782,7 +782,7 @@ describe('Contacts API Service', () => {
 
       await getContactTablePgroongaSearch({ current: 1, pageSize: 10 }, 'en', 'tg', 'query', {});
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
+      expect(mockRpc).toHaveBeenCalledWith('search_contacts_latest', {
         query_text: 'query',
         filter_condition: {},
         page_size: 10,
@@ -908,7 +908,7 @@ describe('Contacts API Service', () => {
         0,
       );
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
+      expect(mockRpc).toHaveBeenCalledWith('search_contacts_latest', {
         query_text: 'defaults',
         filter_condition: { status: 'active' },
         page_size: 10,
@@ -947,7 +947,7 @@ describe('Contacts API Service', () => {
 
       await getContactTablePgroongaSearch({}, 'en', 'tg', 'defaults', { level: 1 });
 
-      expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_contacts_latest', {
+      expect(mockRpc).toHaveBeenCalledWith('search_contacts_latest', {
         query_text: 'defaults',
         filter_condition: { level: 1 },
         page_size: 10,

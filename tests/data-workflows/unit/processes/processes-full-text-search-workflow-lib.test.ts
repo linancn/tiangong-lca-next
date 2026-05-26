@@ -215,7 +215,7 @@ describe('processes-full-text-search-workflow-lib', () => {
       );
       expect(rpc).toHaveBeenNthCalledWith(
         1,
-        'pgroonga_search_processes_v1',
+        'search_processes_latest',
         expect.objectContaining({
           data_source: 'my',
           page_current: 1,
