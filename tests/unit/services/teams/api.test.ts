@@ -140,6 +140,26 @@ describe('teams api task-4 boundaries', () => {
     });
   });
 
+  it('applies table visibility filters to keyword search when a table type is provided', async () => {
+    const joinTeamBuilder = createQueryBuilder({
+      data: [{ id: 'team-public' }],
+      error: null,
+    });
+    const manageSystemBuilder = createQueryBuilder({
+      data: [{ id: 'team-ranked' }],
+      error: null,
+    });
+    supabase.from.mockReturnValueOnce(joinTeamBuilder).mockReturnValueOnce(manageSystemBuilder);
+
+    await getTeamsByKeyword('public', 'joinTeam');
+    await getTeamsByKeyword('ranked', 'manageSystem');
+
+    expect(joinTeamBuilder.eq).toHaveBeenCalledWith('is_public', true);
+    expect(joinTeamBuilder.gt).not.toHaveBeenCalled();
+    expect(manageSystemBuilder.gt).toHaveBeenCalledWith('rank', 0);
+    expect(manageSystemBuilder.eq).not.toHaveBeenCalled();
+  });
+
   it('loads join-team table rows and enriches owner email', async () => {
     const teams = [
       { id: 'team-1', json: { title: 'Team One' }, rank: 1, is_public: true },
