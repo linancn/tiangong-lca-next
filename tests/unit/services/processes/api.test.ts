@@ -1482,7 +1482,7 @@ describe('listProcessesForLcaAnalysis', () => {
 
     expect(mockRpc).toHaveBeenNthCalledWith(
       1,
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1492,7 +1492,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       2,
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -1502,7 +1502,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       3,
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'my',
@@ -1512,7 +1512,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
     expect(mockRpc).toHaveBeenNthCalledWith(
       4,
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -2093,7 +2093,7 @@ describe('listProcessesForLcaAnalysis', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'battery',
         data_source: 'tg',
@@ -2242,7 +2242,13 @@ describe('process_hybrid_search', () => {
 
     expect(mockFunctionsInvoke).toHaveBeenCalledWith('process_hybrid_search', {
       headers: { Authorization: 'Bearer token-xyz' },
-      body: { query: 'steel', filter: {} },
+      body: {
+        query: 'steel',
+        filter_condition: {},
+        data_source: 'tg',
+        page_size: 5,
+        page_current: 3,
+      },
       region: FunctionRegion.UsEast1,
     });
     expect(mockJsonToList).toHaveBeenCalledWith({ '#text': 'class-h' });
@@ -2298,7 +2304,10 @@ describe('process_hybrid_search', () => {
       headers: { Authorization: 'Bearer ' },
       body: {
         query: 'steel',
-        filter: { status: 'active' },
+        filter_condition: { status: 'active' },
+        data_source: 'my',
+        page_size: 10,
+        page_current: 1,
         state_code: 300,
         type_of_data_set: 'foreground',
       },
@@ -3614,7 +3623,7 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_processes_latest',
+      'search_processes_latest',
       expect.objectContaining({
         query_text: 'search term',
         order_by: {},
@@ -3662,7 +3671,7 @@ describe('getProcessTablePgroongaSearch', () => {
       'foreground',
     );
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_processes_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_processes_latest', {
       query_text: 'keyword',
       filter_condition: { processType: 'target' },
       page_size: 10,

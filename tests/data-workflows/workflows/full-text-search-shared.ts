@@ -457,7 +457,7 @@ export async function runFullTextSearchSmoke(
     for (const query of searchFixture.queries) {
       const summary = await pollUntil(
         () =>
-          runPgroongaSearch({
+          runFullTextSearchQuery({
             config,
             currentUserId: signInResult.data.user.id,
             query,
@@ -557,7 +557,7 @@ export async function runFullTextSearchSmoke(
   };
 }
 
-async function runPgroongaSearch(input: {
+async function runFullTextSearchQuery(input: {
   config: FullTextSearchWorkflowConfig;
   currentUserId: string;
   query: FullTextSearchQueryFixture;
@@ -577,11 +577,11 @@ async function runPgroongaSearch(input: {
   }
 
   if (typeof input.query.stateCode === 'number') {
-    requestParams.state_code = input.query.stateCode;
+    requestParams.state_code_filter = input.query.stateCode;
   }
 
   if (input.query.typeOfDataSet && input.query.typeOfDataSet !== 'all') {
-    requestParams.type_of_data_set = input.query.typeOfDataSet;
+    requestParams.type_of_data_set_filter = input.query.typeOfDataSet;
   }
 
   const result = await input.supabase.rpc(input.config.rpcName, requestParams);

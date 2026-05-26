@@ -43,7 +43,7 @@ const FLOW_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'pgroonga_search_flows_v1',
+  rpcName: 'search_flows_latest',
   table: 'flows',
   workflowName: 'Flow full-text search',
 };

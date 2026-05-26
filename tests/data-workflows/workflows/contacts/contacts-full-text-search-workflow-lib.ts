@@ -44,7 +44,7 @@ const CONTACT_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'pgroonga_search_contacts',
+  rpcName: 'search_contacts_latest',
   table: 'contacts',
   workflowName: 'Contact full-text search',
 };

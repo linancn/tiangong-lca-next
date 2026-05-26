@@ -344,7 +344,7 @@ export async function getFlowpropertyTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'pgroonga_search_flowproperties_latest',
+      'search_flowproperties_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,

@@ -325,7 +325,7 @@ export async function getSourceTablePgroongaSearch(
     }
 
     result = await supabase.rpc(
-      'pgroonga_search_sources_latest',
+      'search_sources_latest',
       typeof stateCode === 'number'
         ? {
             query_text: queryText,
