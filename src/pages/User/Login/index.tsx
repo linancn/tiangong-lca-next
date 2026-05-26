@@ -12,8 +12,7 @@ import React, { useState } from 'react';
 import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
-import { buildAppHashPath } from '@/utils/appUrl';
-import { FormattedMessage } from '@umijs/max';
+import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
 import { getBrandTheme } from '../../../../config/branding';
@@ -38,18 +37,18 @@ const LoginMessage: React.FC<{
   />
 );
 
-const { Link } = Typography;
+const { Link: TypographyLink } = Typography;
 
 const termsOfServiceLink = (
-  <Link href='/terms_of_use.html' target='_blank' rel='noopener noreferrer'>
+  <TypographyLink href='/terms_of_use.html' target='_blank' rel='noopener noreferrer'>
     <FormattedMessage id='pages.login.termsOfUse' defaultMessage='Terms of Use' />
-  </Link>
+  </TypographyLink>
 );
 
 const privacyPolicyLink = (
-  <Link href='/privacy_notice.html' target='_blank' rel='noopener noreferrer'>
+  <TypographyLink href='/privacy_notice.html' target='_blank' rel='noopener noreferrer'>
     <FormattedMessage id='pages.login.privacyNotice' defaultMessage='Privacy Notice' />
-  </Link>
+  </TypographyLink>
 );
 
 const Login: React.FC = () => {
@@ -333,17 +332,17 @@ const Login: React.FC = () => {
                           defaultMessage='Remember me'
                         />
                       </ProFormCheckbox>
-                      <a
+                      <Link
                         style={{
                           float: 'right',
                         }}
-                        href={buildAppHashPath('/user/login/password_forgot')}
+                        to='/user/login/password_forgot'
                       >
                         <FormattedMessage
                           id='pages.login.forgotPassword'
                           defaultMessage='Forgot password'
                         />
-                      </a>
+                      </Link>
                     </div>
                   </>
                 )}
