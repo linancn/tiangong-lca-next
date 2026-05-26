@@ -452,9 +452,15 @@ describe('ProcessEdit component', () => {
     mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
     mockRequestReviewSubmitGate.mockReset();
     mockRequestReviewSubmitGate.mockResolvedValue({
-      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      data: [
+        {
+          status: 'passed',
+          gateRunId: 'gate-run-1',
+          datasetRevision: { revisionChecksum: 'a'.repeat(64) },
+        },
+      ],
       error: null,
-      revisionChecksum: 'a'.repeat(64),
+      revisionChecksum: 'z'.repeat(64),
     });
     mockSubmitDatasetReview.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
@@ -1448,7 +1454,7 @@ describe('ProcessEdit component', () => {
         'processes',
         'process-1',
         '1.0.0',
-        expect.any(Object),
+        null,
         {
           action: 'ensure',
           gateRunId: undefined,
@@ -1458,6 +1464,10 @@ describe('ProcessEdit component', () => {
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
       'Numerical stability gate blocked this revision.',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent('Provider selection is unresolved');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Narrow the provider candidates or add evidence that selects the intended provider.',
     );
     expect(screen.getByRole('alert')).toHaveTextContent('provider_unresolved: Provider unresolved');
     expect(screen.getByRole('alert')).toHaveTextContent(
@@ -1493,6 +1503,39 @@ describe('ProcessEdit component', () => {
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
         'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
+      ),
+    );
+    expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
+  });
+
+  it('blocks final review submission when a passed gate omits the revision checksum', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitGate.mockResolvedValueOnce({
+      data: [{ status: 'passed', gateRunId: 'gate-run-no-checksum' }],
+      error: null,
+      revisionChecksum: undefined,
+    });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Numerical stability gate passed but returned no revision checksum.',
       ),
     );
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
@@ -1546,9 +1589,15 @@ describe('ProcessEdit component', () => {
         revisionChecksum: 'e'.repeat(64),
       })
       .mockResolvedValueOnce({
-        data: [{ status: 'passed', gateRunId: 'gate-run-queued' }],
+        data: [
+          {
+            status: 'passed',
+            gateRunId: 'gate-run-queued',
+            datasetRevision: { revisionChecksum: 'e'.repeat(64) },
+          },
+        ],
         error: null,
-        revisionChecksum: 'e'.repeat(64),
+        revisionChecksum: 'f'.repeat(64),
       });
 
     render(<ProcessEdit {...baseProps} />);
@@ -1566,7 +1615,7 @@ describe('ProcessEdit component', () => {
       'processes',
       'process-1',
       '1.0.0',
-      expect.any(Object),
+      null,
       {
         action: 'ensure',
         gateRunId: undefined,
@@ -1577,7 +1626,7 @@ describe('ProcessEdit component', () => {
       'processes',
       'process-1',
       '1.0.0',
-      expect.any(Object),
+      null,
       {
         action: 'read',
         gateRunId: 'gate-run-queued',

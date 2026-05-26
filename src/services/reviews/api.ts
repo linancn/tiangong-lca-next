@@ -63,7 +63,7 @@ export type ReviewSubmitGateRequest = {
   table: ReviewSubmitGateDatasetTable;
   id: string;
   version: string;
-  revisionChecksum: string;
+  revisionChecksum?: string;
   action?: ReviewSubmitGateAction;
   gateRunId?: string;
   policyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
@@ -82,6 +82,8 @@ type ReviewWorkflowCommandFunctionName =
   | 'admin_review_revoke_reviewer'
   | 'admin_review_approve'
   | 'admin_review_reject';
+
+const STABLE_HASH_KEY_ENCODER = new TextEncoder();
 
 type DataNotificationRpcRow = {
   id: string;
@@ -125,6 +127,21 @@ type ReviewMemberQueueRpcRow = {
   total_count?: number | string | null;
 };
 
+function compareStableHashKeys(left: string, right: string): number {
+  const leftBytes = STABLE_HASH_KEY_ENCODER.encode(left);
+  const rightBytes = STABLE_HASH_KEY_ENCODER.encode(right);
+  const length = Math.min(leftBytes.length, rightBytes.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const diff = leftBytes[index] - rightBytes[index];
+    if (diff !== 0) {
+      return diff;
+    }
+  }
+
+  return leftBytes.length - rightBytes.length;
+}
+
 async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
   functionName: ReviewWorkflowCommandFunctionName,
   body: Record<string, unknown>,
@@ -132,20 +149,27 @@ async function invokeReviewWorkflowCommand<Row extends Record<string, unknown>>(
   return invokeDatasetCommand<Row>(functionName as never, body);
 }
 
-function sortJsonForStableHash(value: unknown): unknown {
+function stringifyStableJsonValue(value: unknown): string | undefined {
+  if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
+    return undefined;
+  }
+
   if (Array.isArray(value)) {
-    return value.map(sortJsonForStableHash);
+    return `[${value.map((item) => stringifyStableJsonValue(item) ?? 'null').join(',')}]`;
   }
 
   if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, childValue]) => [key, sortJsonForStableHash(childValue)]),
-    );
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => compareStableHashKeys(left, right))
+      .flatMap(([key, childValue]) => {
+        const serialized = stringifyStableJsonValue(childValue);
+        return serialized === undefined ? [] : [`${JSON.stringify(key)}:${serialized}`];
+      });
+
+    return `{${entries.join(',')}}`;
   }
 
-  return value;
+  return JSON.stringify(value);
 }
 
 export function stableJsonStringifyForReviewSubmit(value: unknown): string {
@@ -153,7 +177,11 @@ export function stableJsonStringifyForReviewSubmit(value: unknown): string {
     throw new Error('Cannot hash an undefined dataset revision payload');
   }
 
-  return JSON.stringify(sortJsonForStableHash(value));
+  const serialized = stringifyStableJsonValue(value);
+  if (serialized === undefined) {
+    throw new Error('Cannot hash an undefined dataset revision payload');
+  }
+  return serialized;
 }
 
 export async function computeStableJsonSha256(value: unknown): Promise<string> {
@@ -347,7 +375,7 @@ export async function requestReviewSubmitGateApi<
       table: request.table,
       id: request.id,
       version: request.version,
-      revisionChecksum: request.revisionChecksum,
+      ...(request.revisionChecksum ? { revisionChecksum: request.revisionChecksum } : {}),
       action: request.action ?? 'ensure',
       gateRunId: request.gateRunId,
       policyProfile: request.policyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,

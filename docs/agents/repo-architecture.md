@@ -22,7 +22,7 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-05-26
-lastReviewedCommit: 1d82d1467b6a73f3a369d846db66f8183a5b5d27
+lastReviewedCommit: f4b7ed09ebf1ec8cbace8c623f8f17a5a5b8d298
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -75,9 +75,9 @@ Process review submission now has a frontend gate before the final review comman
 
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_gate`
 
-Next owns only the UI orchestration for this gate. It computes the current ordered process revision checksum, requests or reads the Edge gate, renders returned `queued`, `running`, `passed`, `blocked`, `stale`, and `error` states, and shows backend-provided `blockingReasons` evidence. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
+Next owns only the UI orchestration for this gate. It requests or reads the Edge gate without treating any browser-computed checksum as authoritative, renders returned `queued`, `running`, `passed`, `blocked`, `stale`, and `error` states, and shows user-facing guidance for backend-provided `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
 
-When the gate passes, the final `app_dataset_submit_review` call must include the backend gate run id as `reviewSubmitGateRunId` and the same `revisionChecksum` used for the gate request. Database/Edge own the freshness and policy assertion; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
+When the gate passes, the final `app_dataset_submit_review` call must include the backend gate run id as `reviewSubmitGateRunId` and the authoritative `datasetRevision.revisionChecksum` returned by the gate response. A `passed` gate response without either value is not submit-ready in the frontend. Database/Edge own the persisted-row checksum, freshness, and policy assertion; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
 
 ## Current Hotspots
 

@@ -1553,16 +1553,21 @@ describe('review utilities', () => {
     expect(result).toEqual({ data: [{ review: { id: 'review-1' } }] });
   });
 
-  it('computes the revision checksum before requesting the review-submit gate', async () => {
+  it('uses the server revision checksum returned by the review-submit gate', async () => {
     const checksum = 'd'.repeat(64);
     const orderedJson = {
       processDataSet: {
         processInformation: { name: 'Process' },
       },
     };
-    mockComputeStableJsonSha256.mockResolvedValue(checksum);
     mockRequestReviewSubmitGateApi.mockResolvedValue({
-      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      data: [
+        {
+          status: 'passed',
+          gateRunId: 'gate-run-1',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
       error: null,
     });
 
@@ -1577,17 +1582,22 @@ describe('review utilities', () => {
       },
     );
 
-    expect(mockComputeStableJsonSha256).toHaveBeenCalledWith(orderedJson);
+    expect(mockComputeStableJsonSha256).not.toHaveBeenCalled();
     expect(mockRequestReviewSubmitGateApi).toHaveBeenCalledWith({
       table: 'processes',
       id: '11111111-1111-4111-8111-111111111111',
       version: '01.00.000',
-      revisionChecksum: checksum,
       action: 'rerun',
       gateRunId: 'gate-run-1',
     });
     expect(result).toEqual({
-      data: [{ status: 'passed', gateRunId: 'gate-run-1' }],
+      data: [
+        {
+          status: 'passed',
+          gateRunId: 'gate-run-1',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
       error: null,
       revisionChecksum: checksum,
     });
@@ -1600,9 +1610,14 @@ describe('review utilities', () => {
         processInformation: { name: 'Default action process' },
       },
     };
-    mockComputeStableJsonSha256.mockResolvedValue(checksum);
     mockRequestReviewSubmitGateApi.mockResolvedValue({
-      data: [{ status: 'running', gateRunId: 'gate-run-default' }],
+      data: [
+        {
+          status: 'running',
+          gateRunId: 'gate-run-default',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
       error: null,
     });
 
@@ -1617,12 +1632,17 @@ describe('review utilities', () => {
       table: 'processes',
       id: '22222222-2222-4222-8222-222222222222',
       version: '01.00.000',
-      revisionChecksum: checksum,
       action: 'ensure',
       gateRunId: undefined,
     });
     expect(result).toEqual({
-      data: [{ status: 'running', gateRunId: 'gate-run-default' }],
+      data: [
+        {
+          status: 'running',
+          gateRunId: 'gate-run-default',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
       error: null,
       revisionChecksum: checksum,
     });
