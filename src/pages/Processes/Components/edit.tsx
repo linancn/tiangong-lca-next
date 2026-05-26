@@ -92,6 +92,87 @@ type ReviewSubmitGateUiState = {
 const REVIEW_SUBMIT_GATE_POLL_ATTEMPTS = 3;
 const REVIEW_SUBMIT_GATE_POLL_INTERVAL_MS = 1500;
 const REVIEW_SUBMIT_GATE_PENDING_STATUSES = new Set<ReviewSubmitGateStatus>(['queued', 'running']);
+const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
+  revision_report_stale: {
+    titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
+    defaultTitle: 'Gate result is stale',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.description',
+    defaultDescription: 'The gate result no longer matches the saved process revision.',
+    actionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.action',
+    defaultAction: 'Save the latest data and run the submit-review gate again.',
+  },
+  invalid_scope_state: {
+    titleId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.title',
+    defaultTitle: 'Dataset lifecycle state is not eligible',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.description',
+    defaultDescription:
+      'The process is in a lifecycle state that cannot enter the submit-review gate.',
+    actionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.action',
+    defaultAction:
+      'Use a draft process or an already reviewed dependency; data under review cannot be submitted again.',
+  },
+  provider_missing: {
+    titleId: 'pages.process.reviewSubmitGate.reason.providerMissing.title',
+    defaultTitle: 'Provider data is missing',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.providerMissing.description',
+    defaultDescription:
+      'Some product inputs have no provider data yet. Newer gate runs treat this as diagnostic information.',
+    actionId: 'pages.process.reviewSubmitGate.reason.providerMissing.action',
+    defaultAction:
+      'Add provider data when available, or rerun the gate after the latest calculator policy is deployed.',
+  },
+  provider_unresolved: {
+    titleId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.title',
+    defaultTitle: 'Provider selection is unresolved',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.description',
+    defaultDescription:
+      'A product input still has multiple possible providers without a final selection.',
+    actionId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.action',
+    defaultAction:
+      'Narrow the provider candidates or add evidence that selects the intended provider.',
+  },
+  provider_equal_fallback: {
+    titleId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.title',
+    defaultTitle: 'Provider selection used equal fallback',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.description',
+    defaultDescription:
+      'The gate found provider weights that fell back to equal shares instead of evidence-based allocation.',
+    actionId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.action',
+    defaultAction:
+      'Add annual volume or other provider evidence so allocation does not use equal fallback.',
+  },
+  provider_volume_evidence_invalid: {
+    titleId: 'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.title',
+    defaultTitle: 'Provider volume evidence is incomplete',
+    descriptionId:
+      'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.description',
+    defaultDescription:
+      'Provider allocation depends on missing or defaulted volume evidence, so numerical results may be unstable.',
+    actionId: 'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.action',
+    defaultAction:
+      'Complete comparable annual volume evidence for provider candidates, then rerun the gate.',
+  },
+  sparse_matrix_zero_or_near_zero_diagonal: {
+    titleId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title',
+    defaultTitle: 'Matrix diagonal is zero or near zero',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description',
+    defaultDescription:
+      'The generated matrix has a process diagonal that is zero or too close to zero for stable solving.',
+    actionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action',
+    defaultAction:
+      'Check self-loops, reference exchanges, and process structure before running the gate again.',
+  },
+  singular_risk_medium_or_high: {
+    titleId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.title',
+    defaultTitle: 'Matrix singularity risk is too high',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.description',
+    defaultDescription:
+      'The snapshot has medium or high singularity risk, so solving may be unstable or fail.',
+    actionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.action',
+    defaultAction:
+      'Resolve duplicate or linearly dependent process structure, then rebuild and rerun the gate.',
+  },
+} as const;
 
 const waitForReviewSubmitGatePoll = () =>
   new Promise<void>((resolve) => {
@@ -380,16 +461,16 @@ const ProcessEdit: FC<Props> = ({
 
   const formatReviewSubmitGateReason = useCallback(
     (reason: ReviewSubmitGateBlockingReason, index: number) => {
-      const code =
-        typeof reason?.code === 'string' && reason.code.trim()
-          ? reason.code.trim()
-          : intl.formatMessage(
-              {
-                id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
-                defaultMessage: 'Reason {index}',
-              },
-              { index: index + 1 },
-            );
+      const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
+      const code = rawCode
+        ? rawCode
+        : intl.formatMessage(
+            {
+              id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
+              defaultMessage: 'Reason {index}',
+            },
+            { index: index + 1 },
+          );
       const reasonMessage =
         typeof reason?.message === 'string' && reason.message.trim()
           ? reason.message.trim()
@@ -397,8 +478,36 @@ const ProcessEdit: FC<Props> = ({
               id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
               defaultMessage: 'No detailed message returned.',
             });
+      const guidance = rawCode
+        ? REVIEW_SUBMIT_GATE_REASON_GUIDANCE[
+            rawCode as keyof typeof REVIEW_SUBMIT_GATE_REASON_GUIDANCE
+          ]
+        : undefined;
 
-      return `${code}: ${reasonMessage}`;
+      if (!guidance) {
+        return {
+          title: code,
+          description: reasonMessage,
+          action: undefined,
+          diagnostic: `${code}: ${reasonMessage}`,
+        };
+      }
+
+      return {
+        title: intl.formatMessage({
+          id: guidance.titleId,
+          defaultMessage: guidance.defaultTitle,
+        }),
+        description: intl.formatMessage({
+          id: guidance.descriptionId,
+          defaultMessage: guidance.defaultDescription,
+        }),
+        action: intl.formatMessage({
+          id: guidance.actionId,
+          defaultMessage: guidance.defaultAction,
+        }),
+        diagnostic: `${code}: ${reasonMessage}`,
+      };
     },
     [intl],
   );
@@ -414,12 +523,18 @@ const ProcessEdit: FC<Props> = ({
         <span>{statusMessage}</span>
         {reasons.length > 0 && (
           <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {reasons.slice(0, 5).map((reason, index) => {
+            {reasons.map((reason, index) => {
               const evidence = formatReviewSubmitGateEvidence(reason.details);
+              const formattedReason = formatReviewSubmitGateReason(reason, index);
 
               return (
                 <li key={`${reason.code ?? 'reason'}-${index}`}>
-                  <span>{formatReviewSubmitGateReason(reason, index)}</span>
+                  <div>{formattedReason.title}</div>
+                  <div>{formattedReason.description}</div>
+                  {formattedReason.action && (
+                    <div style={{ color: 'rgba(0, 0, 0, 0.78)' }}>{formattedReason.action}</div>
+                  )}
+                  <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{formattedReason.diagnostic}</div>
                   {evidence.length > 0 && (
                     <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{evidence.join('; ')}</div>
                   )}
@@ -1180,7 +1295,6 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const runReviewSubmitGate = async (processDetail: ProcessCheckTarget) => {
-    const orderedJson = genProcessJsonOrdered(processDetail.id, processDetail);
     let gateRunId: string | undefined;
     let action: 'ensure' | 'read' = 'ensure';
 
@@ -1189,7 +1303,7 @@ const ProcessEdit: FC<Props> = ({
         'processes',
         processDetail.id,
         processDetail.version,
-        orderedJson,
+        null,
         {
           action,
           gateRunId,
@@ -1215,11 +1329,13 @@ const ProcessEdit: FC<Props> = ({
       const gateData = gateResult.data?.[0] as ReviewSubmitGateResult | undefined;
       const status = gateData?.status ?? 'error';
       gateRunId = gateData?.gateRunId ?? gateRunId;
+      const revisionChecksum =
+        gateData?.datasetRevision?.revisionChecksum ?? gateResult.revisionChecksum;
 
       setReviewSubmitGateState({
         status,
         gateRunId,
-        revisionChecksum: gateResult.revisionChecksum,
+        revisionChecksum,
         blockingReasons: gateData?.blockingReasons,
       });
 
@@ -1232,7 +1348,21 @@ const ProcessEdit: FC<Props> = ({
           setReviewSubmitGateState({
             status: 'error',
             message: messageText,
-            revisionChecksum: gateResult.revisionChecksum,
+            revisionChecksum,
+          });
+          message.error(messageText);
+          return null;
+        }
+
+        if (!revisionChecksum) {
+          const messageText = intl.formatMessage({
+            id: 'pages.process.reviewSubmitGate.missingRevisionChecksum',
+            defaultMessage: 'Numerical stability gate passed but returned no revision checksum.',
+          });
+          setReviewSubmitGateState({
+            status: 'error',
+            message: messageText,
+            revisionChecksum,
           });
           message.error(messageText);
           return null;
@@ -1240,7 +1370,7 @@ const ProcessEdit: FC<Props> = ({
 
         return {
           reviewSubmitGateRunId: gateRunId,
-          revisionChecksum: gateResult.revisionChecksum,
+          revisionChecksum,
         };
       }
 

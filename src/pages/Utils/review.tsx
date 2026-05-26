@@ -4,7 +4,6 @@ import { getRefData, getRefDataByIds } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import { FormProcess } from '@/services/processes/data';
 import {
-  computeStableJsonSha256,
   getRejectReviewsByProcess,
   requestReviewSubmitGateApi,
   submitDatasetReviewApi,
@@ -1543,15 +1542,15 @@ export const requestReviewSubmitGate = async (
     gateRunId?: string;
   } = {},
 ) => {
-  const revisionChecksum = await computeStableJsonSha256(orderedJson);
+  void orderedJson;
   const result = await requestReviewSubmitGateApi<ReviewSubmitGateResult>({
     table,
     id,
     version,
-    revisionChecksum,
     action: options.action ?? 'ensure',
     gateRunId: options.gateRunId,
   });
+  const revisionChecksum = result.data?.[0]?.datasetRevision?.revisionChecksum;
 
   return {
     ...result,
