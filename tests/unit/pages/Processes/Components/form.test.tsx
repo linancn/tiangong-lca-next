@@ -378,10 +378,12 @@ jest.mock('antd', () => {
     'data-testid': dataTestId,
     'aria-label': ariaLabel,
     disabled,
+    status,
     style,
   }: any) => (
     <input
       aria-label={ariaLabel}
+      data-status={status}
       data-testid={dataTestId}
       disabled={disabled}
       style={style}
@@ -883,6 +885,99 @@ describe('ProcessForm component', () => {
     });
 
     expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
+  });
+
+  it('renders annual supply reference-context sdk issues on the derived context input', async () => {
+    const sdkValidationDetail = {
+      key: 'sdk-annual-supply-zh-context',
+      tabName: 'modellingAndValidation',
+      fieldKey: 'annualSupplyOrProductionVolume',
+      fieldLabel: 'Annual supply or production volume',
+      fieldPath:
+        'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume.1.#text',
+      formName: [
+        'modellingAndValidation',
+        'dataSourcesTreatmentAndRepresentativeness',
+        'annualSupplyOrProductionVolume',
+        1,
+        '#text',
+      ],
+      reasonMessage:
+        "@xml:lang values starting with 'zh' must include at least one Chinese character",
+      suggestedFix: 'Chinese text must include at least one Chinese character',
+      validationCode: 'localized_text_zh_must_include_chinese_character',
+    };
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='modellingAndValidation'
+        exchangeDataSource={[{ ...sampleExchange, quantitativeReference: false }]}
+        sdkValidationDetails={[sdkValidationDetail]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('annual-supply-volume-context')).toHaveAttribute(
+        'data-status',
+        'error',
+      );
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('请选择一条输入/输出作为基准');
+    expect(
+      screen.queryByText('Chinese text must include at least one Chinese character'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('keeps the generic annual supply localized-text sdk field error when a reference is selected', async () => {
+    const fieldName = [
+      'modellingAndValidation',
+      'dataSourcesTreatmentAndRepresentativeness',
+      'annualSupplyOrProductionVolume',
+      1,
+      '#text',
+    ];
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='modellingAndValidation'
+        exchangeDataSource={[{ ...sampleExchange, quantitativeReference: true }]}
+        sdkValidationDetails={[
+          {
+            key: 'sdk-annual-supply-zh-context-with-reference',
+            tabName: 'modellingAndValidation',
+            fieldKey: 'annualSupplyOrProductionVolume',
+            fieldLabel: 'Annual supply or production volume',
+            fieldPath:
+              'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume.1.#text',
+            formName: fieldName,
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            suggestedFix: 'Chinese text must include at least one Chinese character',
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            errors: ['Chinese text must include at least one Chinese character'],
+            name: fieldName,
+          }),
+        ]),
+      );
+    });
+
+    expect(screen.queryByText('请选择一条输入/输出作为基准')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('annual-supply-volume-context')).not.toHaveAttribute(
+      'data-status',
+      'error',
+    );
   });
 
   it('clears dismissed root sdk messages instead of replaying them on rerender', async () => {

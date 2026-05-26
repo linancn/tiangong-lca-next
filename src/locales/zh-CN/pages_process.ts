@@ -642,6 +642,7 @@ export default {
   'pages.process.validator.referenceToDataSource.required': '请输入使用的数据来源',
   'pages.process.validator.annualSupplyOrProductionVolume.required': '请输入年供应量或生产量',
   'pages.process.validator.annualSupplyOrProductionVolume.pattern': '请输入数值。',
+  'pages.process.validator.annualSupplyOrProductionVolume.referenceContext.required': '请选择一条输入/输出作为基准',
   'pages.process.validator.reviewType.required': '请输入审查类型',
   'pages.process.validator.scopeName.required': '请输入范围名称',
   'pages.process.validator.methodName.required': '请输入方法名称',

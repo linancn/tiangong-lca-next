@@ -32,6 +32,10 @@ type RequiredValidationMessageResolution = {
 
 const SDK_MESSAGE_TRAILING_PUNCTUATION_PATTERN = /[。．.!！?？,，;；:：]+$/u;
 const PROCESS_REFERENCE_YEAR_FIELD_PATH = 'processInformation.time.common:referenceYear';
+const PROCESS_ANNUAL_SUPPLY_VOLUME_FIELD_PATH =
+  'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.annualSupplyOrProductionVolume';
+const LOCALIZED_TEXT_ZH_MUST_INCLUDE_CHINESE_CHARACTER =
+  'localized_text_zh_must_include_chinese_character';
 const DEFAULT_REQUIRED_MESSAGE = {
   defaultMessage: 'Please complete this field',
   id: 'validator.lang.required',
@@ -158,6 +162,21 @@ const getSdkFieldSpecificSuggestedFixMessage = (
   }
 
   return undefined;
+};
+
+export const isAnnualSupplyVolumeReferenceContextSdkDetail = (
+  detail?: SdkValidationDetailMessageLike,
+) => {
+  if (detail?.validationCode !== LOCALIZED_TEXT_ZH_MUST_INCLUDE_CHINESE_CHARACTER) {
+    return false;
+  }
+
+  const fieldPath = getSdkDetailFieldPath(detail);
+
+  return (
+    fieldPath.startsWith(`${PROCESS_ANNUAL_SUPPLY_VOLUME_FIELD_PATH}.`) &&
+    fieldPath.endsWith('.#text')
+  );
 };
 
 const isRequiredRule = (rule: unknown): rule is SchemaRuleLike =>
