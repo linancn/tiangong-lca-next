@@ -32,7 +32,11 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../processes_schema.json';
-import { getSdkSuggestedFixMessage, resolveRequiredValidationMessage } from '../sdkValidationUi';
+import {
+  getSdkSuggestedFixMessage,
+  isAnnualSupplyVolumeReferenceContextSdkDetail,
+  resolveRequiredValidationMessage,
+} from '../sdkValidationUi';
 import AnnualSupplyOrProductionVolumeForm from './AnnualSupplyOrProductionVolume/form';
 import ComplianceItemForm from './Compliance/form';
 import { getExchangeColumns, PROCESS_EXCHANGE_TABLE_SCROLL } from './Exchange/column';
@@ -112,6 +116,9 @@ const isSdkHighlightOnlyDetail = (detail: ValidationIssueSdkDetail) =>
 const toReferenceValue = (reference?: ProcessExchangeData['referenceToFlowDataSet']) => {
   return Array.isArray(reference) ? reference[0] : reference;
 };
+
+const hasSelectedQuantitativeReferenceExchange = (exchangeDataSource: ProcessExchangeData[]) =>
+  exchangeDataSource.some((exchange) => exchange?.quantitativeReference === true);
 
 const parseSdkDetailFormName = (detail: ValidationIssueSdkDetail) => {
   if (Array.isArray(detail.formName) && detail.formName.length > 0) {
@@ -302,7 +309,7 @@ export const ProcessForm: FC<Props> = ({
     (detail: ValidationIssueSdkDetail) => getSdkSuggestedFixMessage(intlRef.current, detail),
     [],
   );
-  const fieldMessageSdkValidationDetails = useMemo(() => {
+  const visibleSdkValidationDetails = useMemo(() => {
     if (sdkValidationDismissedFieldKeys.size === 0) {
       return sdkValidationDetails;
     }
@@ -311,6 +318,27 @@ export const ProcessForm: FC<Props> = ({
       (detail) => !isDismissedRootSdkFieldDetail(detail, sdkValidationDismissedFieldKeys),
     );
   }, [sdkValidationDetails, sdkValidationDismissedFieldKeys]);
+  const hasAnnualSupplyVolumeReferenceContextError = useMemo(
+    () =>
+      !hasSelectedQuantitativeReferenceExchange(exchangeDataSource) &&
+      visibleSdkValidationDetails.some(isAnnualSupplyVolumeReferenceContextSdkDetail),
+    [exchangeDataSource, visibleSdkValidationDetails],
+  );
+  const annualSupplyVolumeReferenceContextErrorMessage = hasAnnualSupplyVolumeReferenceContextError
+    ? intl.formatMessage({
+        id: 'pages.process.validator.annualSupplyOrProductionVolume.referenceContext.required',
+        defaultMessage: '请选择一条输入/输出作为基准',
+      })
+    : undefined;
+  const fieldMessageSdkValidationDetails = useMemo(
+    () =>
+      hasAnnualSupplyVolumeReferenceContextError
+        ? visibleSdkValidationDetails.filter(
+            (detail) => !isAnnualSupplyVolumeReferenceContextSdkDetail(detail),
+          )
+        : visibleSdkValidationDetails,
+    [hasAnnualSupplyVolumeReferenceContextError, visibleSdkValidationDetails],
+  );
 
   const sdkVisibleSectionAnchorsByTab = sdkValidationDetails.reduce<Record<string, Set<string>>>(
     (accumulator, detail) => {
@@ -1877,6 +1905,7 @@ export const ProcessForm: FC<Props> = ({
             formRef={formRef}
             onData={onData}
             exchangeDataSource={exchangeDataSource}
+            contextErrorMessage={annualSupplyVolumeReferenceContextErrorMessage}
             rules={
               showRules
                 ? getRules(

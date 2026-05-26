@@ -645,6 +645,7 @@ export default {
   'pages.process.validator.referenceToDataSource.required': 'Please input data source(s) used for this data set',
   'pages.process.validator.annualSupplyOrProductionVolume.required': 'Please input annual supply or production volume',
   'pages.process.validator.annualSupplyOrProductionVolume.pattern': 'Please enter a number.',
+  'pages.process.validator.annualSupplyOrProductionVolume.referenceContext.required': 'Please select one input/output as the reference',
   'pages.process.validator.reviewType.required': 'Please input type of review',
   'pages.process.validator.scopeName.required': 'Please input scope name',
   'pages.process.validator.methodName.required': 'Please input method name',
