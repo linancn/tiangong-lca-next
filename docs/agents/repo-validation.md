@@ -22,7 +22,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-05-26
-lastReviewedCommit: 1d82d1467b6a73f3a369d846db66f8183a5b5d27
+lastReviewedCommit: f4b7ed09ebf1ec8cbace8c623f8f17a5a5b8d298
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -62,7 +62,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
-| process review-submit gate UI or service contract | `npm run lint`; focused review/gate tests such as `npm run test:ci -- tests/unit/services/reviews/api.test.ts tests/unit/utils/review.test.ts tests/unit/pages/Processes/Components/edit.test.tsx --runInBand --testTimeout=30000`; `npm run build` | smoke `app_dataset_review_submit_gate` and final process submit-review against a safe dev environment when credentials and a queued gate run are available | Next must render backend gate states and evidence, pass `reviewSubmitGateRunId` plus `revisionChecksum` to submit-review, and avoid duplicating calculator blocker heuristics. |
+| process review-submit gate UI or service contract | `npm run lint`; focused review/gate tests such as `npm run test:ci -- tests/unit/services/reviews/api.test.ts tests/unit/utils/review.test.ts tests/unit/pages/Processes/Components/edit.test.tsx --runInBand --testTimeout=30000`; `npm run build` | smoke `app_dataset_review_submit_gate` and final process submit-review against a safe dev environment when credentials and a queued gate run are available | Next must render backend gate states and evidence, pass `reviewSubmitGateRunId` plus the gate response's authoritative `datasetRevision.revisionChecksum` to submit-review, reject `passed` responses missing either value, and avoid duplicating calculator blocker heuristics or browser-authoritative checksum logic. |
 | static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; `npm run test:ci`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
