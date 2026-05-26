@@ -264,7 +264,21 @@ describe('review-submit gate helpers', () => {
     expect(reviewsApi.stableJsonStringifyForReviewSubmit({ 2: 'two', 10: 'ten', 1: 'one' })).toBe(
       '{"1":"one","10":"ten","2":"two"}',
     );
+    expect(
+      reviewsApi.stableJsonStringifyForReviewSubmit({
+        keep: 1,
+        omittedFunction: () => undefined,
+        omittedSymbol: Symbol('skip'),
+        omittedUndefined: undefined,
+      }),
+    ).toBe('{"keep":1}');
+    expect(
+      reviewsApi.stableJsonStringifyForReviewSubmit([undefined, () => undefined, Symbol('skip')]),
+    ).toBe('[null,null,null]');
     expect(() => reviewsApi.stableJsonStringifyForReviewSubmit(undefined)).toThrow(
+      'Cannot hash an undefined dataset revision payload',
+    );
+    expect(() => reviewsApi.stableJsonStringifyForReviewSubmit(() => undefined)).toThrow(
       'Cannot hash an undefined dataset revision payload',
     );
 
