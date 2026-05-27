@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-05-27
-lastReviewedCommit: 2a3cd23e643952abcec65813e67d1a417178954d
+lastReviewedAt: 2026-05-28
+lastReviewedCommit: 67294f4f6e49d4267ab9bfba5c0d3554da23ef20
 ---
 
 # Testing Strategy
