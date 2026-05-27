@@ -437,7 +437,7 @@ export async function runProcessFullTextSearchSmoke(
     for (const query of searchFixture.queries) {
       const summary = await pollUntil(
         () =>
-          runPgroongaProcessSearch({
+          runProcessFullTextSearchQuery({
             query,
             runtimeId: runtimeFixture.runtimeId,
             supabase,
@@ -539,7 +539,7 @@ export function buildProcessFullTextSearchHelpText() {
   return buildDataWorkflowHelpText(PROCESS_FULL_TEXT_SEARCH_DATA_WORKFLOW_HELP);
 }
 
-async function runPgroongaProcessSearch(input: {
+async function runProcessFullTextSearchQuery(input: {
   query: FullTextSearchQueryFixture;
   runtimeId: string;
   supabase: SupabaseLike;
@@ -553,14 +553,14 @@ async function runPgroongaProcessSearch(input: {
   };
 
   if (typeof input.query.stateCode === 'number') {
-    requestParams.state_code = input.query.stateCode;
+    requestParams.state_code_filter = input.query.stateCode;
   }
 
   if (input.query.typeOfDataSet && input.query.typeOfDataSet !== 'all') {
-    requestParams.type_of_data_set = input.query.typeOfDataSet;
+    requestParams.type_of_data_set_filter = input.query.typeOfDataSet;
   }
 
-  const result = await input.supabase.rpc('pgroonga_search_processes_v1', requestParams);
+  const result = await input.supabase.rpc('search_processes_latest', requestParams);
   if (result.error) {
     throw new Error(
       `Process full-text search failed for "${input.query.label}": ${result.error.message}`,

@@ -983,7 +983,7 @@ describe('getUnitGroupTablePgroongaSearch', () => {
     );
 
     expect(mockRpc).toHaveBeenCalledWith(
-      'pgroonga_search_unitgroups_latest',
+      'search_unitgroups_latest',
       expect.objectContaining({
         query_text: 'energy',
         filter_condition: {},
@@ -1021,7 +1021,7 @@ describe('getUnitGroupTablePgroongaSearch', () => {
 
     await getUnitGroupTablePgroongaSearch({} as any, 'en', 'tg', 'energy', { k: 1 }, undefined);
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_unitgroups_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_unitgroups_latest', {
       query_text: 'energy',
       filter_condition: { k: 1 },
       page_size: 10,
@@ -1252,7 +1252,7 @@ describe('getUnitGroupTablePgroongaSearch', () => {
 
     const result = await getUnitGroupTablePgroongaSearch({}, 'zh', 'tg', 'defaults', {}, 500);
 
-    expect(mockRpc).toHaveBeenCalledWith('pgroonga_search_unitgroups_latest', {
+    expect(mockRpc).toHaveBeenCalledWith('search_unitgroups_latest', {
       query_text: 'defaults',
       filter_condition: {},
       page_size: 10,

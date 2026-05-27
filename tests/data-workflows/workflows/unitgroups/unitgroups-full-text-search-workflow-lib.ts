@@ -44,7 +44,7 @@ const UNITGROUP_FULL_TEXT_SEARCH_CONFIG: FullTextSearchWorkflowConfig = {
   prepareRuntimeFixture,
   probeFrontendUrl,
   resolveRuntimeRecordFilePath,
-  rpcName: 'pgroonga_search_unitgroups',
+  rpcName: 'search_unitgroups_latest',
   table: 'unitgroups',
   workflowName: 'Unit group full-text search',
 };

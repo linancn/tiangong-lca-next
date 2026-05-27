@@ -753,7 +753,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
 
       expect(supabase.auth.getSession).toHaveBeenCalled();
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
+      expect(supabase.rpc).toHaveBeenCalledWith('search_sources_latest', {
         query_text: 'test query',
         filter_condition: mockFilterCondition,
         page_size: 10,
@@ -788,7 +788,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_sources_latest',
+        'search_sources_latest',
         expect.objectContaining({
           state_code_filter: 100,
         }),
@@ -812,7 +812,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       );
 
       expect(supabase.rpc).toHaveBeenCalledWith(
-        'pgroonga_search_sources_latest',
+        'search_sources_latest',
         expect.objectContaining({
           data_source: 'tg',
           team_id_filter: 'team-123',
@@ -871,7 +871,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTablePgroongaSearch({}, 'zh', 'tg', '出版物', {});
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
+      expect(supabase.rpc).toHaveBeenCalledWith('search_sources_latest', {
         query_text: '出版物',
         filter_condition: {},
         page_size: 10,
@@ -996,7 +996,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       const result = await getSourceTablePgroongaSearch({}, 'en', 'my', 'sparse', {}, 100);
 
-      expect(supabase.rpc).toHaveBeenCalledWith('pgroonga_search_sources_latest', {
+      expect(supabase.rpc).toHaveBeenCalledWith('search_sources_latest', {
         query_text: 'sparse',
         filter_condition: {},
         page_size: 10,
