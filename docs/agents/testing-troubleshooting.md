@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - package.json
-lastReviewedAt: 2026-05-26
-lastReviewedCommit: 9366a0891e16f64b5054c1f5e7bc76c37cb949a6
+lastReviewedAt: 2026-05-27
+lastReviewedCommit: 2a3cd23e643952abcec65813e67d1a417178954d
 ---
 
 # Testing Troubleshooting
@@ -71,5 +71,5 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 - rerun the narrow failing scope
 - rerun neighboring suites if shared behavior changed
 - rerun the baseline proof from `docs/agents/repo-validation.md` when the failure affected shipped behavior or repo gates
-- rerun CI-lane reproductions serially before escalating a failure that only appears during local parallel gate runs
+- rerun local or release gate reproductions serially before escalating a failure that only appears during local parallel gate runs
 - update the owning testing docs only if workflow or state changed

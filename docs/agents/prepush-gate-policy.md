@@ -58,18 +58,18 @@ It does not own:
 
 ## Target Trigger Rules
 
-| Surface                         | Target rule                                            |
-| ------------------------------- | ------------------------------------------------------ |
-| local `pre-push` hook on `main` | run docpact first, then always run the full gate       |
-| PRs into `dev`                  | run the full gate in CI                                |
-| PRs into `main`                 | run the full gate in CI                                |
-| feature-branch local pushes     | run docpact only; do not force the full gate           |
-| post-merge pushes               | keep branch-specific protection, do not lower the gate |
+| Surface | Target rule |
+| --- | --- |
+| local `pre-push` hook on any branch | run docpact first, then run the full local gate |
+| ordinary GitHub branch pushes | do not run standalone remote test jobs |
+| PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
+| release tags on `main` commits | run release-gate tests before web deploy and draft Electron release |
+| post-merge `main` pushes | do not deploy and do not duplicate the local test gate |
 
 ## Adoption Conditions
 
-- hook behavior and CI behavior must match the documented policy
-- no protected merge path may bypass the full gate
+- hook behavior and release-gate behavior must match the documented policy
+- no release path may bypass the full gate
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
@@ -77,8 +77,8 @@ It does not own:
 ## Short Rule Summary
 
 - keep one authoritative full gate
-- run the lightweight docpact gate before local push so governed-doc review failures surface before GitHub PR checks
-- protect the actual merge points
-- avoid forcing the heaviest gate on every local feature push
-- reproduce `lint-and-test` and `Full Gate` serially on one workstation; GitHub runs them in isolated jobs
+- run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
+- protect the actual local and release gates
+- avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
+- reproduce `npm run test:ci` and `npm run prepush:gate` serially on one workstation when both are needed
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern
