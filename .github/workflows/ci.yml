@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
