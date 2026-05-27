@@ -1,7 +1,6 @@
 name: Build/release
 
-# If the commit is tagged with a version (e.g. "v1.0.0"),
-# release the app
+# A release runs only for a version tag whose target commit is already on main.
 on:
   push:
     tags:
@@ -11,7 +10,132 @@ permissions:
   contents: write
 
 jobs:
+  release-context:
+    name: Release Context
+    runs-on: ubuntu-latest
+    outputs:
+      on_main: ${{ steps.main.outputs.on_main }}
+      tag_commit: ${{ steps.main.outputs.tag_commit }}
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check release tag is on main
+        id: main
+        run: |
+          set -euo pipefail
+
+          git fetch --force origin +refs/heads/main:refs/remotes/origin/main
+          tag_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
+          echo "tag_commit=${tag_commit}" >> "$GITHUB_OUTPUT"
+
+          if git merge-base --is-ancestor "$tag_commit" origin/main; then
+            echo "on_main=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on_main=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release tag ${GITHUB_REF_NAME} points to ${tag_commit}, which is not on origin/main. Skipping web deploy and Electron release."
+          fi
+
+  release-gate:
+    name: Release Gate
+    needs: release-context
+    if: needs.release-context.outputs.on_main == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-context.outputs.tag_commit }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run CI tests
+        run: npm run test:ci
+
+      - name: Run full release gate
+        run: npm run prepush:gate
+
+  web-deploy:
+    name: Build and Deploy Web App
+    needs: release-gate
+    runs-on: ubuntu-latest
+    env:
+      EDGEONE_OUTPUT_DIR: dist
+      EDGEONE_PROJECT_NAME: tiangong-lca-next-upload
+      EDGEONE_CLI_VERSION: 1.4.6
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to EdgeOne Pages
+        env:
+          EDGEONE_API_TOKEN: ${{ secrets.EDGEONE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${EDGEONE_API_TOKEN:-}" ]; then
+            echo "::error::EDGEONE_API_TOKEN secret is not configured."
+            exit 1
+          fi
+
+          max_attempts=3
+          for attempt in $(seq 1 "$max_attempts"); do
+            echo "Deploying to EdgeOne Pages, attempt ${attempt}/${max_attempts}."
+
+            if timeout 300s npx --yes "edgeone@${EDGEONE_CLI_VERSION}" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "EdgeOne Pages deploy failed after ${max_attempts} attempts."
+              exit 1
+            fi
+
+            sleep_seconds=$((attempt * 30))
+            echo "EdgeOne Pages deploy failed. Retrying in ${sleep_seconds}s."
+            sleep "$sleep_seconds"
+          done
+
   release:
+    needs: release-gate
     runs-on: ${{ matrix.os }}
 
     strategy:

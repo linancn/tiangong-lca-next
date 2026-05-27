@@ -19,13 +19,5 @@ esac
 echo "Running docpact gate against ${docpact_base_ref}."
 npm run docpact:gate -- --base "$docpact_base_ref"
 
-if [ "$current_branch" != "main" ]; then
-  if [ -n "$current_branch" ]; then
-    echo "Skipping full prepush:gate on branch '$current_branch'. Full gate is enforced on PRs to dev/main."
-  else
-    echo "Skipping full prepush:gate because HEAD is detached. Full gate is enforced on PRs to dev/main."
-  fi
-  exit 0
-fi
-
+echo "Running local test gate."
 npm run prepush:gate

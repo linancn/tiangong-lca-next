@@ -20,8 +20,8 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-05-26
-lastReviewedCommit: 9366a0891e16f64b5054c1f5e7bc76c37cb949a6
+lastReviewedAt: 2026-05-27
+lastReviewedCommit: 2a3cd23e643952abcec65813e67d1a417178954d
 ---
 
 # Development Bootstrap
@@ -62,7 +62,7 @@ npm install
 4. run focused validation
 5. run `npm run lint`
 6. run `npm run build` when the change affects shipped behavior or static assets
-7. run `npm run prepush:gate` before protected-branch parity is required
+7. run `npm run prepush:gate` before pushing or handing off local gate evidence
 
 ## Canonical Commands
 
@@ -82,7 +82,7 @@ npm install
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
 | build | `npm run build` |
-| protected-branch parity gate | `npm run prepush:gate` |
+| local full test gate | `npm run prepush:gate` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 ## Command Rules
@@ -92,9 +92,9 @@ npm install
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
-- local pushes run `npm run docpact:gate` before branch-specific push policy
-- treat `npm run prepush:gate` as the authoritative local parity check
-- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
+- treat `npm run prepush:gate` as the authoritative local test gate
+- when reproducing local or release gates manually, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## If You Need More Than This File
 
