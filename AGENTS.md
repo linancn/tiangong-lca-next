@@ -104,7 +104,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
-- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
+- when reproducing the local and release gates, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
 - new npm dependencies require human approval
 
 ## Minimal Execution Facts
@@ -151,8 +151,8 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
-- `main` pushes deploy the web app
-- `v*` tags build draft Electron releases
+- `main` branch pushes do not deploy or run standalone remote tests
+- `v*` tags whose target commit is already on `main` run the release gate, deploy the web app, and build draft Electron releases
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 

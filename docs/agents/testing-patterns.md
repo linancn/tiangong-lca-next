@@ -95,7 +95,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 
-- when reproducing both CI lanes locally, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- when reproducing both local test lanes, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## Skip And TODO Policy
 
