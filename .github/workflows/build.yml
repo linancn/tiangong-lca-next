@@ -78,7 +78,11 @@ jobs:
         run: npm install
 
       - name: Run docpact release gate
-        run: npm run docpact:gate -- --base origin/main
+        run: |
+          set -euo pipefail
+          release_head="${{ needs.release-context.outputs.tag_commit }}"
+          release_base="$(git rev-parse "${release_head}^")"
+          npm run docpact:gate -- --base "$release_base" --head "$release_head"
 
       - name: Run CI tests
         run: npm run test:ci
