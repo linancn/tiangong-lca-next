@@ -355,13 +355,11 @@ describe('AllTeams component', () => {
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'joinTeam');
   });
 
-  it('returns an empty join-team table when the system role is missing', async () => {
+  it('loads join-team table for regular users without a system role', async () => {
     renderAllTeams({ tableType: 'joinTeam', systemUserRole: undefined });
 
-    await waitFor(() => {
-      expect(mockGetAllTableTeams).not.toHaveBeenCalled();
-    });
-    expect(screen.queryByTestId('row-t1')).not.toBeInTheDocument();
+    expect(await screen.findByText('Alpha Team')).toBeInTheDocument();
+    expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'joinTeam');
   });
 
   it('searches by keyword in join-team view', async () => {
@@ -372,7 +370,7 @@ describe('AllTeams component', () => {
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
-      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('alpha');
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('alpha', 'joinTeam');
     });
   });
 
@@ -386,7 +384,7 @@ describe('AllTeams component', () => {
     fireEvent.click(searchButton);
 
     await waitFor(() => {
-      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('beta');
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('beta', 'manageSystem');
     });
   });
 
@@ -607,7 +605,7 @@ describe('AllTeams component', () => {
 
     await waitFor(() => {
       expect(actionRef.current.pageInfo.current).toBe(1);
-      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('gamma');
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('gamma', 'manageSystem');
     });
   });
 
@@ -662,7 +660,7 @@ describe('AllTeams component', () => {
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
-      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('missing');
+      expect(mockGetTeamsByKeyword).toHaveBeenCalledWith('missing', 'manageSystem');
     });
     expect(screen.queryByTestId('row-t1')).not.toBeInTheDocument();
   });

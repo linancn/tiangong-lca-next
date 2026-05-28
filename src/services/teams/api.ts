@@ -20,6 +20,8 @@ type TeamMemberRpcRow = {
   display_name?: string;
 };
 
+type TeamTableType = 'joinTeam' | 'manageSystem';
+
 async function invokeTeamCommand(command: string, body: Record<string, unknown>) {
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
@@ -58,11 +60,19 @@ export async function getTeams() {
   });
 }
 
-export async function getTeamsByKeyword(keyword: string) {
-  const result = await supabase
+export async function getTeamsByKeyword(keyword: string, tableType?: TeamTableType) {
+  const query = supabase
     .from('teams')
     .select('*')
     .or(`json->title->0->>#text.ilike.%${keyword}%,json->title->1->>#text.ilike.%${keyword}%`);
+
+  if (tableType === 'joinTeam') {
+    query.eq('is_public', true);
+  } else if (tableType === 'manageSystem') {
+    query.gt('rank', 0);
+  }
+
+  const result = await query;
 
   if (result.error) {
     return Promise.resolve({
@@ -79,7 +89,7 @@ export async function getTeamsByKeyword(keyword: string) {
 
 export async function getAllTableTeams(
   params: { pageSize: number; current: number },
-  tableType: 'joinTeam' | 'manageSystem',
+  tableType: TeamTableType,
   // sort: Record<string, SortOrder>,
 ) {
   try {
