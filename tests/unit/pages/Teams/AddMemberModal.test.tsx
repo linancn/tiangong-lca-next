@@ -285,6 +285,50 @@ describe('AddMemberModal', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
+  it('surfaces invite-state errors without closing the modal', async () => {
+    mockAddTeamMemberApi
+      .mockResolvedValueOnce({
+        error: { message: 'alreadyInTeam' },
+      } as any)
+      .mockResolvedValueOnce({
+        error: { message: 'alreadyInvitedToTeam' },
+      } as any)
+      .mockResolvedValueOnce({
+        error: { message: 'forbidden' },
+      } as any);
+
+    const { onCancel, onSuccess } = renderModal();
+
+    const emailInput = within(screen.getByTestId('form-item-email')).getByRole('textbox');
+    fireEvent.change(emailInput, {
+      target: { value: 'member@example.com' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+    await waitFor(() => {
+      expect(message.error).toHaveBeenLastCalledWith(
+        'This user already belongs to another team and cannot be invited.',
+      );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+    await waitFor(() => {
+      expect(message.error).toHaveBeenLastCalledWith(
+        'This user already has a pending invitation to another team and cannot be invited.',
+      );
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ok' }));
+    await waitFor(() => {
+      expect(message.error).toHaveBeenLastCalledWith(
+        'You do not have permission to invite members to this team.',
+      );
+    });
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
   it('surfaces generic failure without closing the modal', async () => {
     mockAddTeamMemberApi.mockResolvedValue({
       error: { message: 'boom' },

@@ -9,6 +9,7 @@
  */
 
 import {
+  findTeamInvitableUserByEmail,
   getUserDetail,
   getUserEmailByUserIds,
   getUserId,
@@ -27,6 +28,7 @@ jest.mock('@/services/supabase', () => ({
     functions: {
       invoke: jest.fn(),
     },
+    rpc: jest.fn(),
   },
 }));
 
@@ -39,6 +41,7 @@ const {
     from: mockFrom,
     auth: { getSession: mockAuthGetSession },
     functions: { invoke: mockFunctionsInvoke },
+    rpc: mockRpc,
   },
 } = jest.requireMock('@/services/supabase');
 
@@ -141,6 +144,80 @@ describe('Users API service (src/services/users/api.ts)', () => {
       const result = await getUserIdByEmail('notfound@example.com');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('findTeamInvitableUserByEmail', () => {
+    it('resolves an invitable user through the controlled RPC', async () => {
+      mockRpc.mockResolvedValue({
+        data: {
+          ok: true,
+          data: {
+            id: 'user-123',
+            email: 'user@example.com',
+            display_name: 'User',
+          },
+        },
+        error: null,
+      });
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'user@example.com');
+
+      expect(mockRpc).toHaveBeenCalledWith('qry_team_find_invitable_user_by_email', {
+        p_team_id: 'team-id',
+        p_email: 'user@example.com',
+      });
+      expect(result).toEqual({
+        data: {
+          id: 'user-123',
+          email: 'user@example.com',
+          displayName: 'User',
+        },
+        error: null,
+      });
+    });
+
+    it('returns structured RPC failures without falling back to public.users lookup', async () => {
+      mockRpc.mockResolvedValue({
+        data: {
+          ok: false,
+          code: 'USER_ALREADY_IN_TEAM',
+          message: 'already in team',
+        },
+        error: null,
+      });
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'user@example.com');
+
+      expect(result).toEqual({
+        data: null,
+        error: {
+          ok: false,
+          code: 'USER_ALREADY_IN_TEAM',
+          message: 'already in team',
+        },
+      });
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('passes through Supabase RPC transport errors', async () => {
+      mockRpc.mockResolvedValue({
+        data: null,
+        error: {
+          code: 'PGRST500',
+          message: 'RPC failed',
+        },
+      });
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'user@example.com');
+
+      expect(result).toEqual({
+        data: null,
+        error: {
+          code: 'PGRST500',
+          message: 'RPC failed',
+        },
+      });
     });
   });
 
