@@ -49,7 +49,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
 | one gate fails only while another heavy gate is running locally | shared `.umi-test` regeneration from concurrent commands | rerun `npm run test:ci` and `npm run prepush:gate` serially |
-| local `docpact:gate` or remote `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
+| local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 
 ## Open-Handle Playbook
 
