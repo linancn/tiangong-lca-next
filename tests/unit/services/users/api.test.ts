@@ -177,6 +177,28 @@ describe('Users API service (src/services/users/api.ts)', () => {
       });
     });
 
+    it('resolves legacy direct RPC user payloads', async () => {
+      mockRpc.mockResolvedValue({
+        data: {
+          user_id: 'user-456',
+          email: 'legacy@example.com',
+          displayName: 'Legacy User',
+        },
+        error: null,
+      });
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'legacy@example.com');
+
+      expect(result).toEqual({
+        data: {
+          id: 'user-456',
+          email: 'legacy@example.com',
+          displayName: 'Legacy User',
+        },
+        error: null,
+      });
+    });
+
     it('returns structured RPC failures without falling back to public.users lookup', async () => {
       mockRpc.mockResolvedValue({
         data: {
@@ -216,6 +238,44 @@ describe('Users API service (src/services/users/api.ts)', () => {
         error: {
           code: 'PGRST500',
           message: 'RPC failed',
+        },
+      });
+    });
+
+    it('returns not-found when the RPC success payload has no user id', async () => {
+      mockRpc.mockResolvedValue({
+        data: {
+          ok: true,
+          data: {
+            email: 'missing-id@example.com',
+          },
+        },
+        error: null,
+      });
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'missing-id@example.com');
+
+      expect(result).toEqual({
+        data: null,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'No registered user was found for this email',
+        },
+      });
+    });
+
+    it('normalizes thrown RPC lookup errors', async () => {
+      const thrown = { code: 'RPC_THROWN' };
+      mockRpc.mockRejectedValue(thrown);
+
+      const result = await findTeamInvitableUserByEmail('team-id', 'user@example.com');
+
+      expect(result).toEqual({
+        data: null,
+        error: {
+          code: 'RPC_THROWN',
+          message: 'Failed to look up invitee',
+          details: thrown,
         },
       });
     });

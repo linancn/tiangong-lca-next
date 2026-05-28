@@ -590,6 +590,22 @@ describe('teams api task-4 boundaries', () => {
     expect(supabase.functions.invoke).not.toHaveBeenCalled();
   });
 
+  it('returns notRegistered when invite lookup succeeds without a user id', async () => {
+    findTeamInvitableUserByEmail.mockResolvedValue({
+      data: { email: 'missing-id@example.com' },
+      error: null,
+    });
+
+    const result = await addTeamMemberApi('team-id', 'missing-id@example.com');
+
+    expect(result).toEqual({
+      error: {
+        message: 'notRegistered',
+      },
+    });
+    expect(supabase.functions.invoke).not.toHaveBeenCalled();
+  });
+
   it('returns the raw command error when adding a team member fails for another reason', async () => {
     findTeamInvitableUserByEmail.mockResolvedValueOnce({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke.mockResolvedValueOnce({
