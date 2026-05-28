@@ -101,7 +101,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
-- repo-local documentation maintenance is enforced by `.github/workflows/ai-doc-lint.yml` with `docpact lint`
+- repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - when reproducing the local and release gates, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
