@@ -36,4 +36,6 @@ jobs:
         run: cargo install docpact --version 0.1.9 --force
 
       - name: Run local docpact gate
-        run: npm run docpact:gate -- --base "${{ inputs.base_ref }}"
+        env:
+          BASE_REF: ${{ inputs.base_ref }}
+        run: npm run docpact:gate -- --base "$BASE_REF"
