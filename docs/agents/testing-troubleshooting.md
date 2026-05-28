@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-05-28
-lastReviewedCommit: d65dd52e116ae22440b09002a69191a933061b96
+lastReviewedCommit: 6ae7b1374cea4f9d80020cbef7576d53d1414e63
 ---
 
 # Testing Troubleshooting

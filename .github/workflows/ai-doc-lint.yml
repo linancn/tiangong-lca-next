@@ -2,6 +2,11 @@ name: ai-doc-lint
 
 on:
   workflow_dispatch:
+    inputs:
+      base_ref:
+        description: Base ref for the manual docpact comparison.
+        required: false
+        default: origin/dev
 
 permissions:
   contents: read
@@ -16,8 +21,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch main
-        run: git fetch --force origin +refs/heads/main:refs/remotes/origin/main
+      - name: Fetch branches
+        run: git fetch --force origin '+refs/heads/*:refs/remotes/origin/*'
 
       - name: Install Node.js
         uses: actions/setup-node@v6
@@ -31,4 +36,4 @@ jobs:
         run: cargo install docpact --version 0.1.9 --force
 
       - name: Run local docpact gate
-        run: npm run docpact:gate -- --base origin/main
+        run: npm run docpact:gate -- --base "${{ inputs.base_ref }}"
