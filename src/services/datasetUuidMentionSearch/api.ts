@@ -1,6 +1,3 @@
-import { supabase } from '@/services/supabase';
-import { getTeamIdByUserId } from '../general/api';
-
 export type DatasetUuidMentionEntityKind =
   | 'flow'
   | 'process'
@@ -51,6 +48,7 @@ async function getDatasetUuidMentionTeamFilter(
   teamId?: string | null,
 ): Promise<string | null> {
   if (dataSource === 'te') {
+    const { getTeamIdByUserId } = require('../general/api') as typeof import('../general/api');
     return (await getTeamIdByUserId()) ?? null;
   }
   if (dataSource === 'tg' || dataSource === 'co') {
@@ -96,6 +94,7 @@ export async function searchDatasetJsonUuidMentions({
     return { data: [], success: true };
   }
 
+  const { supabase } = require('@/services/supabase') as typeof import('@/services/supabase');
   const session = await supabase.auth.getSession();
   if (!session.data.session) {
     return { data: [], success: false, error: 'not_authenticated' };
