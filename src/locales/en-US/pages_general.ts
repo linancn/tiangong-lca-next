@@ -83,6 +83,10 @@ export default {
   'pages.search.openAI': 'AI Recommendation',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
+  'pages.datasetUuidMention.empty': 'No data contains this ID',
+  'pages.datasetUuidMention.entityKind': 'Data type',
+  'pages.datasetUuidMention.error': 'Search failed. Try again later.',
+  'pages.datasetUuidMention.searchButton': 'Find data containing this ID',
 
   'pages.lifeCycleModel.drawer.title.create': 'Create Model',
 

@@ -28,6 +28,7 @@ const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
 const mockGetTeamById = jest.fn();
+const mockDatasetUuidMentionSearch = jest.fn();
 const mockMessageSuccess = jest.fn();
 const mockMessageError = jest.fn();
 
@@ -144,6 +145,24 @@ jest.mock('@/components/TableFilter', () => ({
       table-filter
     </button>
   ),
+}));
+
+jest.mock('@/components/DatasetUuidMentionSearch', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockDatasetUuidMentionSearch(props);
+    return (
+      <div data-testid='dataset-uuid-mention-search'>
+        {JSON.stringify({
+          dataSource: props.dataSource,
+          queryText: props.queryText,
+          sourceEntityKinds: props.sourceEntityKinds,
+          stateCode: props.getStateCodeFilter?.(),
+          teamId: props.teamId,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Utils', () => ({
@@ -452,6 +471,16 @@ describe('FlowsPage', () => {
     );
     expect(screen.getByTestId('classification-filters')).toHaveTextContent(
       '"text":"-","value":"classification:class-empty"',
+    );
+    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
+      '"sourceEntityKinds":["flow"]',
+    );
+    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataSource: 'my',
+        sourceEntityKinds: ['flow'],
+        teamId: 'team-1',
+      }),
     );
     expect(screen.getAllByTestId('flow-create-createVersion')).toHaveLength(2);
     expect(screen.getAllByTestId('flow-create-createVersion')[0]).toHaveTextContent(

@@ -31,6 +31,7 @@ const mockGetLangText = jest.fn((value: any) => {
 });
 const mockGetTeamById = jest.fn();
 const mockGetUnitData = jest.fn();
+const mockDatasetUuidMentionSearch = jest.fn();
 const mockMessage = {
   success: jest.fn(),
   error: jest.fn(),
@@ -119,6 +120,24 @@ jest.mock('@/components/TableFilter', () => ({
       table-filter
     </button>
   ),
+}));
+
+jest.mock('@/components/DatasetUuidMentionSearch', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockDatasetUuidMentionSearch(props);
+    return (
+      <div data-testid='dataset-uuid-mention-search'>
+        {JSON.stringify({
+          dataSource: props.dataSource,
+          queryText: props.queryText,
+          sourceEntityKinds: props.sourceEntityKinds,
+          stateCode: props.getStateCodeFilter?.(),
+          teamId: props.teamId,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Utils', () => ({
@@ -389,6 +408,16 @@ describe('FlowpropertiesPage', () => {
     );
     expect(screen.getByTestId('table-dropdown')).toBeInTheDocument();
     expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
+    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
+      '"sourceEntityKinds":["flowproperty"]',
+    );
+    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataSource: 'my',
+        sourceEntityKinds: ['flowproperty'],
+        teamId: 'team-1',
+      }),
+    );
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(

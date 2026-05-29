@@ -11,6 +11,7 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
+import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -43,6 +44,7 @@ import SourceView from './Components/view';
 const { Search } = Input;
 
 const TableList: FC = () => {
+  const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<SourceImportData | null>(null);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
@@ -298,6 +300,7 @@ const TableList: FC = () => {
   }, []);
   const onSearch: SearchProps['onSearch'] = (value) => {
     keyWordRef.current = value;
+    setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
     actionRef.current?.reload();
   };
@@ -322,6 +325,13 @@ const TableList: FC = () => {
             />
           </Col>
         </Row>
+        <DatasetUuidMentionSearch
+          dataSource={dataSource}
+          getStateCodeFilter={() => stateCodeRef.current}
+          queryText={keyWord}
+          sourceEntityKinds={['source']}
+          teamId={tid}
+        />
       </Card>
       <ProTable<SourceTable, ListPagination>
         {...responsiveDataListTableProps}

@@ -27,6 +27,7 @@ const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
 const mockGetTeamById = jest.fn();
+const mockDatasetUuidMentionSearch = jest.fn();
 
 const baseContactRow = {
   id: 'contact-1',
@@ -148,6 +149,24 @@ jest.mock('@/components/TableFilter', () => ({
       table-filter
     </button>
   ),
+}));
+
+jest.mock('@/components/DatasetUuidMentionSearch', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockDatasetUuidMentionSearch(props);
+    return (
+      <div data-testid='dataset-uuid-mention-search'>
+        {JSON.stringify({
+          dataSource: props.dataSource,
+          queryText: props.queryText,
+          sourceEntityKinds: props.sourceEntityKinds,
+          stateCode: props.getStateCodeFilter?.(),
+          teamId: props.teamId,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Utils', () => ({
@@ -389,6 +408,16 @@ describe('ContactsPage', () => {
     expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
     expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
     expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
+    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
+      '"sourceEntityKinds":["contact"]',
+    );
+    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataSource: 'my',
+        sourceEntityKinds: ['contact'],
+        teamId: 'team-1',
+      }),
+    );
 
     await userEvent.click(screen.getByRole('button', { name: /close-contact-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-contact-delete/i }));

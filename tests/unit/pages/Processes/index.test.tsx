@@ -28,6 +28,7 @@ const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
 const mockGetTeamById = jest.fn();
+const mockDatasetUuidMentionSearch = jest.fn();
 let latestRequest: any = null;
 
 jest.mock('umi', () => ({
@@ -114,6 +115,24 @@ jest.mock('@/components/TableFilter', () => ({
       table-filter
     </button>
   ),
+}));
+
+jest.mock('@/components/DatasetUuidMentionSearch', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockDatasetUuidMentionSearch(props);
+    return (
+      <div data-testid='dataset-uuid-mention-search'>
+        {JSON.stringify({
+          dataSource: props.dataSource,
+          queryText: props.queryText,
+          sourceEntityKinds: props.sourceEntityKinds,
+          stateCode: props.getStateCodeFilter?.(),
+          teamId: props.teamId,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/ToolBarButton', () => ({
@@ -469,6 +488,16 @@ describe('ProcessesPage', () => {
     expect(screen.getByText('2024')).toBeInTheDocument();
     expect(screen.getByText('CN')).toBeInTheDocument();
     expect(screen.getAllByTestId('lca-solve-toolbar')).toHaveLength(3);
+    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
+      '"sourceEntityKinds":["process"]',
+    );
+    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataSource: 'my',
+        sourceEntityKinds: ['process'],
+        teamId: 'team-1',
+      }),
+    );
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     const createAction = screen

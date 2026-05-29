@@ -4,6 +4,7 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
+import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -358,6 +359,13 @@ const TableList: FC = () => {
             </Checkbox>
           </Col>
         </Row>
+        <DatasetUuidMentionSearch
+          dataSource={dataSource}
+          getStateCodeFilter={() => stateCodeRef.current}
+          queryText={keyWord}
+          sourceEntityKinds={['lifecyclemodel']}
+          teamId={tid}
+        />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
         {...responsiveDataListTableProps}
