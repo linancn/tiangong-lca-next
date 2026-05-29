@@ -2,6 +2,20 @@ import { getCurrentUser } from '@/services/auth';
 import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 
+export type TeamInviteLookupUser = {
+  id: string;
+  email?: string;
+  displayName?: string;
+};
+
+export type TeamInviteLookupError = {
+  ok?: false;
+  code?: string;
+  status?: number;
+  message?: string;
+  details?: unknown;
+};
+
 export async function getUsersByIds(userIds: string[]) {
   try {
     const { data, error } = await supabase
@@ -15,6 +29,62 @@ export async function getUsersByIds(userIds: string[]) {
   } catch (error) {
     console.log(error);
     return null;
+  }
+}
+
+export async function findTeamInvitableUserByEmail(
+  teamId: string,
+  email: string,
+): Promise<{ data: TeamInviteLookupUser | null; error: TeamInviteLookupError | null }> {
+  try {
+    const { data, error } = await supabase.rpc('qry_team_find_invitable_user_by_email', {
+      p_team_id: teamId,
+      p_email: email,
+    });
+
+    if (error) {
+      return {
+        data: null,
+        error,
+      };
+    }
+
+    if (data?.ok === false) {
+      return {
+        data: null,
+        error: data,
+      };
+    }
+
+    const user = data?.data ?? data;
+    const id = user?.id ?? user?.user_id;
+    if (!id) {
+      return {
+        data: null,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'No registered user was found for this email',
+        },
+      };
+    }
+
+    return {
+      data: {
+        id,
+        email: user?.email,
+        displayName: user?.display_name ?? user?.displayName,
+      },
+      error: null,
+    };
+  } catch (error: any) {
+    return {
+      data: null,
+      error: {
+        code: error?.code,
+        message: error?.message ?? 'Failed to look up invitee',
+        details: error,
+      },
+    };
   }
 }
 

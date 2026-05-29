@@ -15,6 +15,7 @@ import {
   getRejectedComments,
   mergeCommentsToData,
   requestReviewSubmitGate,
+  requestReviewSubmitJob,
   submitDatasetReview,
   validateDatasetRuleVerification,
   validateDatasetWithSdk,
@@ -88,6 +89,7 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 const mockGetRejectReviewsByProcess = jest.fn();
 const mockComputeStableJsonSha256 = jest.fn();
 const mockRequestReviewSubmitGateApi = jest.fn();
+const mockRequestReviewSubmitJobApi = jest.fn();
 const mockSubmitDatasetReviewApi = jest.fn();
 
 jest.mock('@/services/reviews/api', () => ({
@@ -95,6 +97,7 @@ jest.mock('@/services/reviews/api', () => ({
   computeStableJsonSha256: (...args: any[]) => mockComputeStableJsonSha256(...args),
   getRejectReviewsByProcess: (...args: any[]) => mockGetRejectReviewsByProcess(...args),
   requestReviewSubmitGateApi: (...args: any[]) => mockRequestReviewSubmitGateApi(...args),
+  requestReviewSubmitJobApi: (...args: any[]) => mockRequestReviewSubmitJobApi(...args),
   submitDatasetReviewApi: (...args: any[]) => mockSubmitDatasetReviewApi(...args),
 }));
 
@@ -122,6 +125,7 @@ describe('review utilities', () => {
     mockGetRejectReviewsByProcess.mockReset();
     mockComputeStableJsonSha256.mockReset();
     mockRequestReviewSubmitGateApi.mockReset();
+    mockRequestReviewSubmitJobApi.mockReset();
     mockSubmitDatasetReviewApi.mockReset();
     mockGetRejectedCommentsByReviewIds.mockReset();
     mockGetSourcesByIdsAndVersions.mockReset();
@@ -1645,6 +1649,114 @@ describe('review utilities', () => {
       ],
       error: null,
       revisionChecksum: checksum,
+    });
+  });
+
+  it('forwards review-submit job enqueue requests and exposes the server checksum', async () => {
+    const checksum = 'f'.repeat(64);
+    mockRequestReviewSubmitJobApi.mockResolvedValue({
+      data: [
+        {
+          status: 'queued',
+          reviewSubmitJobId: 'job-1',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
+      error: null,
+    });
+
+    const result = await requestReviewSubmitJob(
+      'processes',
+      '33333333-3333-4333-8333-333333333333',
+      '01.00.000',
+      { processDataSet: {} },
+    );
+
+    expect(mockComputeStableJsonSha256).not.toHaveBeenCalled();
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
+      table: 'processes',
+      id: '33333333-3333-4333-8333-333333333333',
+      version: '01.00.000',
+      action: 'enqueue',
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          status: 'queued',
+          reviewSubmitJobId: 'job-1',
+          datasetRevision: { revisionChecksum: checksum },
+        },
+      ],
+      error: null,
+      reviewSubmitJobId: 'job-1',
+      revisionChecksum: checksum,
+    });
+  });
+
+  it('forwards review-submit job read requests by job id', async () => {
+    mockRequestReviewSubmitJobApi.mockResolvedValue({
+      data: [{ status: 'submitted', reviewSubmitJobId: 'job-1' }],
+      error: null,
+    });
+
+    await requestReviewSubmitJob(
+      'processes',
+      '33333333-3333-4333-8333-333333333333',
+      '01.00.000',
+      null,
+      {
+        action: 'read',
+        reviewSubmitJobId: 'job-1',
+      },
+    );
+
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
+      action: 'read',
+      reviewSubmitJobId: 'job-1',
+    });
+  });
+
+  it('defaults review-submit job requests with a job id to read action', async () => {
+    mockRequestReviewSubmitJobApi.mockResolvedValue({
+      data: [{ status: 'waiting_gate', reviewSubmitJobId: 'job-default-read' }],
+      error: null,
+    });
+
+    await requestReviewSubmitJob(
+      'processes',
+      '33333333-3333-4333-8333-333333333333',
+      '01.00.000',
+      null,
+      {
+        reviewSubmitJobId: 'job-default-read',
+      },
+    );
+
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
+      action: 'read',
+      reviewSubmitJobId: 'job-default-read',
+    });
+  });
+
+  it('uses an empty job id fallback for explicit read requests without an id', async () => {
+    mockRequestReviewSubmitJobApi.mockResolvedValue({
+      data: null,
+      error: { message: 'missing job id' },
+    });
+
+    await requestReviewSubmitJob(
+      'processes',
+      '33333333-3333-4333-8333-333333333333',
+      '01.00.000',
+      null,
+      {
+        action: 'read',
+      },
+    );
+
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
+      action: 'read',
+      reviewSubmitJobId: '',
     });
   });
 

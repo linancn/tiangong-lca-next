@@ -15,6 +15,34 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, teamId,
   const [loading, setLoading] = useState(false);
   const intl = useIntl();
 
+  const errorMessages: Record<string, { id: string; defaultMessage: string }> = {
+    exists: {
+      id: 'teams.members.add.exists',
+      defaultMessage: 'User already exists in the team!',
+    },
+    notRegistered: {
+      id: 'teams.members.add.notRegistered',
+      defaultMessage: 'User is not registered!',
+    },
+    alreadyInTeam: {
+      id: 'teams.members.add.alreadyInTeam',
+      defaultMessage: 'This user already belongs to another team and cannot be invited.',
+    },
+    alreadyInvitedToTeam: {
+      id: 'teams.members.add.alreadyInvitedToTeam',
+      defaultMessage:
+        'This user already has a pending invitation to another team and cannot be invited.',
+    },
+    forbidden: {
+      id: 'teams.members.add.forbidden',
+      defaultMessage: 'You do not have permission to invite members to this team.',
+    },
+    reinviteRequired: {
+      id: 'teams.members.add.reinviteRequired',
+      defaultMessage: 'This user rejected a previous invitation. Use re-invite instead.',
+    },
+  };
+
   useEffect(() => {
     if (!open) {
       formRef?.current?.resetFields();
@@ -30,28 +58,11 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, teamId,
       const result = await addTeamMemberApi(teamId, values.email);
 
       if (result && result.error) {
-        if (result.error.message === 'exists') {
-          message.error(
-            intl.formatMessage({
-              id: 'teams.members.add.exists',
-              defaultMessage: 'User already exists in the team!',
-            }),
-          );
-        } else if (result.error.message === 'notRegistered') {
-          message.error(
-            intl.formatMessage({
-              id: 'teams.members.add.notRegistered',
-              defaultMessage: 'User is not registered!',
-            }),
-          );
-        } else {
-          message.error(
-            intl.formatMessage({
-              id: 'teams.members.add.error',
-              defaultMessage: 'Failed to add member!',
-            }),
-          );
-        }
+        const messageConfig = errorMessages[result.error.message] ?? {
+          id: 'teams.members.add.error',
+          defaultMessage: 'Failed to add member!',
+        };
+        message.error(intl.formatMessage(messageConfig));
       } else {
         message.success(
           intl.formatMessage({

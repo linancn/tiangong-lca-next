@@ -588,6 +588,316 @@ describe('review-submit gate helpers', () => {
   });
 });
 
+describe('review-submit job helpers', () => {
+  it('enqueues review submission jobs through the job endpoint', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: false,
+        command: 'dataset_review_submit_job_enqueue',
+        data: {
+          status: 'queued',
+          reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+          datasetRevision: {
+            table: 'processes',
+            id: '11111111-1111-4111-8111-111111111111',
+            version: '01.00.000',
+            revisionChecksum: 'a'.repeat(64),
+          },
+        },
+      },
+      error: null,
+    });
+
+    const result = await reviewsApi.requestReviewSubmitJobApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_review_submit_jobs', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: {
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        action: 'enqueue',
+        policyProfile: 'review_submit_fast.v1',
+        reportSchemaVersion: 'review_submit_gate_report.v1',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.error).toBeNull();
+    expect(result.data?.[0]).toEqual(
+      expect.objectContaining({
+        status: 'queued',
+        reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+      }),
+    );
+  });
+
+  it('treats blocked job HTTP errors as job results for rendering', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        context: {
+          status: 409,
+          json: async () => ({
+            ok: false,
+            command: 'dataset_review_submit_job_read',
+            data: {
+              status: 'blocked',
+              reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+              gate: {
+                status: 'blocked',
+                gateRunId: '22222222-2222-4222-8222-222222222222',
+                blockingReasons: [{ code: 'provider_unresolved', message: 'Provider unresolved' }],
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewSubmitJobApi({
+      action: 'read',
+      reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+    });
+
+    expect(result.error).toBeNull();
+    expect(result.status).toBe(409);
+    expect(result.data?.[0]).toEqual(
+      expect.objectContaining({
+        status: 'blocked',
+        gate: expect.objectContaining({
+          blockingReasons: [{ code: 'provider_unresolved', message: 'Provider unresolved' }],
+        }),
+      }),
+    );
+  });
+
+  it('reads the latest review-submit job without policy options and keeps optional checksum compatibility', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_review_submit_job_read_latest',
+        data: {
+          status: 'submitted',
+          reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+          datasetRevision: {
+            table: 'processes',
+            id: '11111111-1111-4111-8111-111111111111',
+            version: '01.00.000',
+            revisionChecksum: 'b'.repeat(64),
+          },
+        },
+      },
+      error: null,
+    });
+
+    const result = await reviewsApi.requestReviewSubmitJobApi({
+      action: 'read_latest',
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+      revisionChecksum: 'b'.repeat(64),
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_review_submit_jobs', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: {
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        revisionChecksum: 'b'.repeat(64),
+        action: 'read_latest',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.data?.[0]).toEqual(
+      expect.objectContaining({
+        status: 'submitted',
+        reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+      }),
+    );
+  });
+
+  it('falls back to an empty bearer token when the auth session omits the access token', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: {
+        session: {
+          user: { id: 'user-default' },
+        },
+      },
+    });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        command: 'dataset_review_submit_job_enqueue',
+        data: { status: 'queued' },
+      },
+      error: null,
+    });
+
+    await reviewsApi.requestReviewSubmitJobApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'app_dataset_review_submit_jobs',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer ' },
+      }),
+    );
+  });
+
+  it('uses default statuses when job errors do not expose HTTP status metadata', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+          context: {
+            json: async () => ({
+              ok: false,
+              command: 'dataset_review_submit_job_read',
+              data: {
+                status: 'blocked',
+                reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+              },
+            }),
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+        },
+      });
+
+    await expect(
+      reviewsApi.requestReviewSubmitJobApi({
+        action: 'read',
+        reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+      }),
+    ).resolves.toEqual({
+      data: [
+        {
+          status: 'blocked',
+          reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+    await expect(
+      reviewsApi.requestReviewSubmitJobApi({
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+      }),
+    ).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
+  it('returns authentication errors before invoking review-submit jobs', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+
+    const result = await reviewsApi.requestReviewSubmitJobApi({
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+    });
+
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    });
+  });
+
+  it('normalizes non-job function errors for review-submit jobs', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+          context: {
+            status: 400,
+            json: async () => null,
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+          context: {
+            status: 422,
+            json: async () => ({
+              command: 'not_the_review_submit_job',
+              message: 'Invalid job payload',
+              code: 'INVALID_REVIEW_SUBMIT_JOB_PAYLOAD',
+            }),
+          },
+        },
+      });
+
+    const request = {
+      table: 'processes' as const,
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+    };
+
+    await expect(reviewsApi.requestReviewSubmitJobApi(request)).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 400,
+      statusText: 'FUNCTION_ERROR',
+    });
+    await expect(reviewsApi.requestReviewSubmitJobApi(request)).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Invalid job payload',
+        code: 'INVALID_REVIEW_SUBMIT_JOB_PAYLOAD',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 422,
+      statusText: 'INVALID_REVIEW_SUBMIT_JOB_PAYLOAD',
+    });
+  });
+});
+
 describe('review workflow command wrappers', () => {
   it('saves reviewer assignment drafts through the admin review command', async () => {
     mockInvokeDatasetCommand

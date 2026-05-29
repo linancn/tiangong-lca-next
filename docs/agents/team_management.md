@@ -19,8 +19,8 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-05-22
-lastReviewedCommit: 7197f64b9a9bf301d670d715fa468c0699cbdd76
+lastReviewedAt: 2026-05-28
+lastReviewedCommit: f8f9e56f2b00ee98e2a2df2591b2dc4625f540d2
 ---
 
 # Team Management Reference

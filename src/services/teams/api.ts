@@ -2,7 +2,7 @@ import { supabase } from '@/services/supabase';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getTeamRoles, getUserIdsByTeamIds } from '../roles/api';
-import { getUserEmailByUserIds, getUserIdByEmail } from '../users/api';
+import { findTeamInvitableUserByEmail, getUserEmailByUserIds } from '../users/api';
 
 interface TeamMember {
   user_id: string;
@@ -41,6 +41,36 @@ async function invokeTeamCommand(command: string, body: Record<string, unknown>)
 
 const getCommandError = (result: { data: any; error: any }) =>
   result.error ?? (result.data?.ok === false ? result.data : null);
+
+const TEAM_INVITE_ERROR_MESSAGE_BY_CODE: Record<string, string> = {
+  USER_NOT_FOUND: 'notRegistered',
+  USER_ALREADY_IN_TEAM: 'alreadyInTeam',
+  USER_ALREADY_INVITED_TO_TEAM: 'alreadyInvitedToTeam',
+  TEAM_MEMBER_ALREADY_EXISTS: 'exists',
+  REINVITE_REQUIRED: 'reinviteRequired',
+  FORBIDDEN: 'forbidden',
+};
+
+const normalizeTeamInviteError = (error: any) => {
+  const code = String(error?.code ?? '').toUpperCase();
+  const mappedMessage = TEAM_INVITE_ERROR_MESSAGE_BY_CODE[code];
+  if (mappedMessage) {
+    return {
+      ...error,
+      message: mappedMessage,
+    };
+  }
+
+  const fallback = String(error?.code ?? error?.message ?? '').toLowerCase();
+  if (fallback.includes('already') || fallback.includes('exist') || fallback.includes('conflict')) {
+    return {
+      ...error,
+      message: 'exists',
+    };
+  }
+
+  return error;
+};
 
 export async function getTeams() {
   const result = await supabase
@@ -273,9 +303,16 @@ export async function getTeamMembersApi(
 }
 
 export async function addTeamMemberApi(teamId: string, email: string) {
-  const id = await getUserIdByEmail(email);
+  const lookup = await findTeamInvitableUserByEmail(teamId, email);
 
-  if (!id) {
+  if (lookup.error) {
+    return {
+      error: normalizeTeamInviteError(lookup.error),
+    };
+  }
+
+  const userId = lookup.data?.id;
+  if (!userId) {
     return {
       error: {
         message: 'notRegistered',
@@ -285,7 +322,7 @@ export async function addTeamMemberApi(teamId: string, email: string) {
 
   const result = await invokeTeamCommand('admin_team_change_member_role', {
     teamId,
-    userId: id,
+    userId,
     role: 'is_invited',
     action: 'set',
   });
@@ -294,16 +331,7 @@ export async function addTeamMemberApi(teamId: string, email: string) {
     return { error: null };
   }
 
-  const code = String(commandError?.code ?? commandError?.message ?? '').toLowerCase();
-  if (code.includes('already') || code.includes('exist') || code.includes('conflict')) {
-    return {
-      error: {
-        message: 'exists',
-      },
-    };
-  }
-
-  return { error: commandError };
+  return { error: normalizeTeamInviteError(commandError) };
 }
 
 export async function addTeam(id: string, data: any, rank: number, is_public: boolean) {
