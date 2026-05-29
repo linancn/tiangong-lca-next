@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-05-29
-lastReviewedCommit: 5209b8678e0e942858f39919cbfd0a73c89cf60f
+lastReviewedCommit: c90f5c23745b6d5ca58c2047bf4194987224d26c
 ---
 
 # Development Bootstrap
