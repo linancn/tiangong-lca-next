@@ -52,5 +52,9 @@
     "target": ["deb", "rpm"],
     "category": "Science",
     "icon": "./icons"
+  },
+  "publish": {
+    "provider": "github",
+    "releaseType": "draft"
   }
 }

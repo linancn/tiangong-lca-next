@@ -27,7 +27,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-05-29
-lastReviewedCommit: d0fac07ab01d19d8ca82e925619928143f1c4eba
+lastReviewedCommit: 5209b8678e0e942858f39919cbfd0a73c89cf60f
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
