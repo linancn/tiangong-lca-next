@@ -19,8 +19,7 @@ import {
   getAllRefObj,
   getErrRefTab,
   mapValidationIssuesToRefCheckData,
-  requestReviewSubmitGate,
-  submitDatasetReview,
+  requestReviewSubmitJob,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 
@@ -48,8 +47,9 @@ import {
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import type {
   ReviewSubmitGateBlockingReason,
-  ReviewSubmitGateResult,
   ReviewSubmitGateStatus,
+  ReviewSubmitJobResult,
+  ReviewSubmitJobStatus,
 } from '@/services/reviews/api';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
@@ -80,18 +80,24 @@ type RefProblemNode = ProblemNode & {
   underReviewVersion?: string;
   versionIsInTg?: boolean;
 };
-type ReviewSubmitGateUiStatus = 'not_run' | ReviewSubmitGateStatus;
+type ReviewSubmitGateUiStatus = 'not_run' | ReviewSubmitGateStatus | ReviewSubmitJobStatus;
 type ReviewSubmitGateUiState = {
   status: ReviewSubmitGateUiStatus;
+  reviewSubmitJobId?: string;
   gateRunId?: string;
   revisionChecksum?: string;
   blockingReasons?: ReviewSubmitGateBlockingReason[];
   message?: string;
 };
 
-const REVIEW_SUBMIT_GATE_POLL_ATTEMPTS = 3;
-const REVIEW_SUBMIT_GATE_POLL_INTERVAL_MS = 1500;
-const REVIEW_SUBMIT_GATE_PENDING_STATUSES = new Set<ReviewSubmitGateStatus>(['queued', 'running']);
+const REVIEW_SUBMIT_JOB_POLL_ATTEMPTS = 20;
+const REVIEW_SUBMIT_JOB_POLL_INTERVAL_MS = 1500;
+const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
+  'queued',
+  'running',
+  'waiting_gate',
+  'submitting',
+]);
 const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
   revision_report_stale: {
     titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
@@ -174,9 +180,9 @@ const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
   },
 } as const;
 
-const waitForReviewSubmitGatePoll = () =>
+const waitForReviewSubmitJobPoll = () =>
   new Promise<void>((resolve) => {
-    setTimeout(resolve, REVIEW_SUBMIT_GATE_POLL_INTERVAL_MS);
+    setTimeout(resolve, REVIEW_SUBMIT_JOB_POLL_INTERVAL_MS);
   });
 
 const toReviewSubmitGateEvidenceValue = (value: unknown): string | undefined => {
@@ -422,13 +428,29 @@ const ProcessEdit: FC<Props> = ({
           return intl.formatMessage({
             id: 'pages.process.reviewSubmitGate.queued',
             defaultMessage:
-              'Numerical stability gate is queued. Submission is disabled until it passes.',
+              'Review submission is queued. The system will run the numerical stability gate first.',
           });
         case 'running':
           return intl.formatMessage({
             id: 'pages.process.reviewSubmitGate.running',
             defaultMessage:
               'Numerical stability gate is running. Submission is disabled until it passes.',
+          });
+        case 'waiting_gate':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.waitingGate',
+            defaultMessage:
+              'Review submission is waiting for the numerical stability gate to finish.',
+          });
+        case 'submitting':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.submitting',
+            defaultMessage: 'Numerical stability gate passed. Submitting for review now.',
+          });
+        case 'submitted':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.submitted',
+            defaultMessage: 'Review submission completed.',
           });
         case 'passed':
           return intl.formatMessage({
@@ -450,6 +472,11 @@ const ProcessEdit: FC<Props> = ({
           return intl.formatMessage({
             id: 'pages.process.reviewSubmitGate.error',
             defaultMessage: 'Numerical stability gate could not complete.',
+          });
+        case 'cancelled':
+          return intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.cancelled',
+            defaultMessage: 'Review submission job was cancelled.',
           });
         case 'not_run':
         default:
@@ -1294,25 +1321,25 @@ const ProcessEdit: FC<Props> = ({
     return handleCheckData('checkData', validationTarget, { silent });
   };
 
-  const runReviewSubmitGate = async (processDetail: ProcessCheckTarget) => {
-    let gateRunId: string | undefined;
-    let action: 'ensure' | 'read' = 'ensure';
+  const runReviewSubmitJob = async (processDetail: ProcessCheckTarget) => {
+    let reviewSubmitJobId: string | undefined;
+    let action: 'enqueue' | 'read' = 'enqueue';
 
-    for (let attempt = 0; attempt < REVIEW_SUBMIT_GATE_POLL_ATTEMPTS; attempt += 1) {
-      const gateResult = await requestReviewSubmitGate(
+    for (let attempt = 0; attempt < REVIEW_SUBMIT_JOB_POLL_ATTEMPTS; attempt += 1) {
+      const jobResult = await requestReviewSubmitJob(
         'processes',
         processDetail.id,
         processDetail.version,
         null,
         {
           action,
-          gateRunId,
+          reviewSubmitJobId,
         },
       );
 
-      if (gateResult.error) {
+      if (jobResult.error) {
         const messageText =
-          gateResult.error.message ||
+          jobResult.error.message ||
           intl.formatMessage({
             id: 'pages.process.reviewSubmitGate.error',
             defaultMessage: 'Numerical stability gate could not complete.',
@@ -1320,78 +1347,59 @@ const ProcessEdit: FC<Props> = ({
         setReviewSubmitGateState({
           status: 'error',
           message: messageText,
-          revisionChecksum: gateResult.revisionChecksum,
+          reviewSubmitJobId,
+          revisionChecksum: jobResult.revisionChecksum,
         });
         message.error(messageText);
-        return null;
+        return false;
       }
 
-      const gateData = gateResult.data?.[0] as ReviewSubmitGateResult | undefined;
-      const status = gateData?.status ?? 'error';
-      gateRunId = gateData?.gateRunId ?? gateRunId;
+      const jobData = jobResult.data?.[0] as ReviewSubmitJobResult | undefined;
+      const status = jobData?.status ?? 'error';
+      reviewSubmitJobId = jobData?.reviewSubmitJobId ?? reviewSubmitJobId;
+      const gateData = jobData?.gate ?? undefined;
+      const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
       const revisionChecksum =
-        gateData?.datasetRevision?.revisionChecksum ?? gateResult.revisionChecksum;
+        jobData?.datasetRevision?.revisionChecksum ??
+        gateData?.datasetRevision?.revisionChecksum ??
+        jobResult.revisionChecksum;
+      const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
 
       setReviewSubmitGateState({
         status,
+        reviewSubmitJobId,
         gateRunId,
         revisionChecksum,
         blockingReasons: gateData?.blockingReasons,
+        message: jobData?.error?.message,
       });
 
-      if (status === 'passed') {
-        if (!gateRunId) {
-          const messageText = intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.missingRunId',
-            defaultMessage: 'Numerical stability gate passed but returned no gate run id.',
-          });
-          setReviewSubmitGateState({
-            status: 'error',
-            message: messageText,
-            revisionChecksum,
-          });
-          message.error(messageText);
-          return null;
-        }
-
-        if (!revisionChecksum) {
-          const messageText = intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.missingRevisionChecksum',
-            defaultMessage: 'Numerical stability gate passed but returned no revision checksum.',
-          });
-          setReviewSubmitGateState({
-            status: 'error',
-            message: messageText,
-            revisionChecksum,
-          });
-          message.error(messageText);
-          return null;
-        }
-
-        return {
-          reviewSubmitGateRunId: gateRunId,
-          revisionChecksum,
-        };
+      if (status === 'submitted') {
+        return true;
       }
 
-      if (REVIEW_SUBMIT_GATE_PENDING_STATUSES.has(status)) {
-        if (attempt < REVIEW_SUBMIT_GATE_POLL_ATTEMPTS - 1) {
-          await waitForReviewSubmitGatePoll();
-          action = gateRunId ? 'read' : 'ensure';
+      if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
+        if (attempt < REVIEW_SUBMIT_JOB_POLL_ATTEMPTS - 1) {
+          await waitForReviewSubmitJobPoll();
+          action = reviewSubmitJobId ? 'read' : 'enqueue';
           continue;
         }
 
-        const messageText = getReviewSubmitGateStatusMessage(status);
-        message.info(messageText);
-        return null;
+        message.info(
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.backgroundProcessing',
+            defaultMessage:
+              'Review submission is still processing in the background. You can retry later to refresh the latest status.',
+          }),
+        );
+        return false;
       }
 
-      const messageText = getReviewSubmitGateStatusMessage(status);
       message.error(messageText);
-      return null;
+      return false;
     }
 
-    return null;
+    return false;
   };
 
   const submitReview = async () => {
@@ -1409,29 +1417,12 @@ const ProcessEdit: FC<Props> = ({
 
     if (checkResult && updatedProcess) {
       setSpinning(true);
-      const gateMetadata = await runReviewSubmitGate(updatedProcess);
-      if (!gateMetadata) {
+      const submitted = await runReviewSubmitJob(updatedProcess);
+      if (!submitted) {
         setSpinning(false);
         return;
       }
 
-      const result = await submitDatasetReview(
-        'processes',
-        updatedProcess.id,
-        updatedProcess.version,
-        gateMetadata,
-      );
-      if (result?.error) {
-        message.error(
-          result.error.message ||
-            intl.formatMessage({
-              id: 'pages.process.review.submitError',
-              defaultMessage: 'Submit review failed',
-            }),
-        );
-        setSpinning(false);
-        return;
-      }
       message.success(
         intl.formatMessage({
           id: 'pages.process.review.submitSuccess',
@@ -1693,10 +1684,13 @@ const ProcessEdit: FC<Props> = ({
                 showIcon
                 style={{ marginBottom: 12 }}
                 type={
-                  reviewSubmitGateState.status === 'passed'
+                  reviewSubmitGateState.status === 'passed' ||
+                  reviewSubmitGateState.status === 'submitted'
                     ? 'success'
                     : reviewSubmitGateState.status === 'queued' ||
-                        reviewSubmitGateState.status === 'running'
+                        reviewSubmitGateState.status === 'running' ||
+                        reviewSubmitGateState.status === 'waiting_gate' ||
+                        reviewSubmitGateState.status === 'submitting'
                       ? 'info'
                       : 'error'
                 }

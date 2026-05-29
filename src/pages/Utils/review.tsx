@@ -6,11 +6,14 @@ import { FormProcess } from '@/services/processes/data';
 import {
   getRejectReviewsByProcess,
   requestReviewSubmitGateApi,
+  requestReviewSubmitJobApi,
   submitDatasetReviewApi,
   type ReviewSubmitDatasetTable,
   type ReviewSubmitGateAction,
   type ReviewSubmitGateDatasetTable,
   type ReviewSubmitGateResult,
+  type ReviewSubmitJobAction,
+  type ReviewSubmitJobResult,
   type SubmitReviewGateMetadata,
 } from '@/services/reviews/api';
 import { getSourcesByIdsAndVersions } from '@/services/sources/api';
@@ -1554,6 +1557,40 @@ export const requestReviewSubmitGate = async (
 
   return {
     ...result,
+    revisionChecksum,
+  };
+};
+
+export const requestReviewSubmitJob = async (
+  table: ReviewSubmitGateDatasetTable,
+  id: string,
+  version: string,
+  orderedJson: unknown,
+  options: {
+    action?: ReviewSubmitJobAction;
+    reviewSubmitJobId?: string;
+  } = {},
+) => {
+  void orderedJson;
+  const action = options.action ?? (options.reviewSubmitJobId ? 'read' : 'enqueue');
+  const result =
+    action === 'read'
+      ? await requestReviewSubmitJobApi<ReviewSubmitJobResult>({
+          action,
+          reviewSubmitJobId: options.reviewSubmitJobId ?? '',
+        })
+      : await requestReviewSubmitJobApi<ReviewSubmitJobResult>({
+          table,
+          id,
+          version,
+          action,
+        });
+  const job = result.data?.[0];
+  const revisionChecksum = job?.datasetRevision?.revisionChecksum;
+
+  return {
+    ...result,
+    reviewSubmitJobId: job?.reviewSubmitJobId,
     revisionChecksum,
   };
 };

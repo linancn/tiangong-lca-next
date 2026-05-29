@@ -76,6 +76,63 @@ export type SubmitReviewGateMetadata = {
   reviewSubmitPolicyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
   reviewSubmitReportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
 };
+
+export type ReviewSubmitJobAction = 'enqueue' | 'read' | 'read_latest';
+export type ReviewSubmitJobStatus =
+  | 'queued'
+  | 'waiting_gate'
+  | 'submitting'
+  | 'submitted'
+  | 'blocked'
+  | 'stale'
+  | 'error'
+  | 'cancelled';
+
+export type ReviewSubmitJobResult = {
+  status: ReviewSubmitJobStatus;
+  reviewSubmitJobId?: string;
+  gateRunId?: string | null;
+  datasetRevision?: {
+    table?: string;
+    id?: string;
+    version?: string;
+    revisionChecksum?: string;
+  };
+  policy?: {
+    profile?: string;
+    reportSchemaVersion?: string;
+  };
+  gate?: ReviewSubmitGateResult | null;
+  error?: {
+    code?: string;
+    message?: string;
+    details?: unknown;
+  } | null;
+  result?: unknown;
+  [key: string]: unknown;
+};
+
+export type ReviewSubmitJobRequest =
+  | {
+      action?: 'enqueue';
+      table: ReviewSubmitGateDatasetTable;
+      id: string;
+      version: string;
+      revisionChecksum?: string;
+      policyProfile?: typeof REVIEW_SUBMIT_GATE_POLICY_PROFILE;
+      reportSchemaVersion?: typeof REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION;
+    }
+  | {
+      action: 'read';
+      reviewSubmitJobId: string;
+    }
+  | {
+      action: 'read_latest';
+      table: ReviewSubmitGateDatasetTable;
+      id: string;
+      version: string;
+      revisionChecksum?: string;
+    };
 type ReviewWorkflowCommandFunctionName =
   | 'admin_review_save_assignment_draft'
   | 'admin_review_assign_reviewers'
@@ -199,7 +256,7 @@ export async function computeStableJsonSha256(value: unknown): Promise<string> {
     .join('');
 }
 
-function normalizeReviewSubmitGateRows<Row extends Record<string, unknown>>(payload: unknown) {
+function normalizeReviewSubmitCommandRows<Row extends Record<string, unknown>>(payload: unknown) {
   if (payload && typeof payload === 'object' && !Array.isArray(payload) && 'data' in payload) {
     const data = (payload as { data?: unknown }).data;
     return data === null || data === undefined ? [] : [data as Row];
@@ -208,7 +265,7 @@ function normalizeReviewSubmitGateRows<Row extends Record<string, unknown>>(payl
   return payload === null || payload === undefined ? [] : [payload as Row];
 }
 
-async function parseReviewSubmitGateErrorPayload(error: any) {
+async function parseReviewSubmitCommandErrorPayload(error: any) {
   if (!error?.context || typeof error.context.json !== 'function') {
     return null;
   }
@@ -234,7 +291,24 @@ function isReviewSubmitGateEnvelope(payload: unknown): payload is {
   );
 }
 
-function normalizeReviewSubmitGateError(error: any, payload: any): SupabaseError {
+function isReviewSubmitJobEnvelope(payload: unknown): payload is {
+  command?: string;
+  data?: ReviewSubmitJobResult;
+} {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return false;
+  }
+
+  const candidate = payload as { command?: unknown; data?: { status?: unknown } };
+  return (
+    (candidate.command === 'dataset_review_submit_job_enqueue' ||
+      candidate.command === 'dataset_review_submit_job_read' ||
+      candidate.command === 'dataset_review_submit_job_read_latest') &&
+    typeof candidate.data?.status === 'string'
+  );
+}
+
+function normalizeReviewSubmitCommandError(error: any, payload: any): SupabaseError {
   return {
     message:
       payload?.message || payload?.detail || payload?.error || error?.message || 'Request failed',
@@ -385,7 +459,7 @@ export async function requestReviewSubmitGateApi<
   });
 
   if (result.error) {
-    const payload = await parseReviewSubmitGateErrorPayload(result.error);
+    const payload = await parseReviewSubmitCommandErrorPayload(result.error);
     if (isReviewSubmitGateEnvelope(payload)) {
       return {
         data: [payload.data as Row],
@@ -396,7 +470,7 @@ export async function requestReviewSubmitGateApi<
       };
     }
 
-    const normalizedError = normalizeReviewSubmitGateError(result.error, payload);
+    const normalizedError = normalizeReviewSubmitCommandError(result.error, payload);
     return {
       data: null,
       error: normalizedError,
@@ -407,7 +481,86 @@ export async function requestReviewSubmitGateApi<
   }
 
   return {
-    data: normalizeReviewSubmitGateRows<Row>(result.data),
+    data: normalizeReviewSubmitCommandRows<Row>(result.data),
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  };
+}
+
+export async function requestReviewSubmitJobApi<
+  Row extends ReviewSubmitJobResult = ReviewSubmitJobResult,
+>(request: ReviewSubmitJobRequest): Promise<SupabaseMutationResult<Row>> {
+  const session = await supabase.auth.getSession();
+  if (!session?.data?.session) {
+    return {
+      data: null,
+      error: {
+        message: 'Authentication required',
+        code: 'AUTH_REQUIRED',
+        details: '',
+        hint: '',
+      } as SupabaseError,
+      count: null,
+      status: 401,
+      statusText: 'AUTH_REQUIRED',
+    };
+  }
+
+  const body =
+    request.action === 'read'
+      ? {
+          action: 'read',
+          reviewSubmitJobId: request.reviewSubmitJobId,
+        }
+      : {
+          table: request.table,
+          id: request.id,
+          version: request.version,
+          ...(request.revisionChecksum ? { revisionChecksum: request.revisionChecksum } : {}),
+          action: request.action ?? 'enqueue',
+          ...(request.action === 'read_latest'
+            ? {}
+            : {
+                policyProfile: request.policyProfile ?? REVIEW_SUBMIT_GATE_POLICY_PROFILE,
+                reportSchemaVersion:
+                  request.reportSchemaVersion ?? REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION,
+              }),
+        };
+
+  const result = await supabase.functions.invoke('app_dataset_review_submit_jobs', {
+    headers: {
+      Authorization: `Bearer ${session.data.session?.access_token ?? ''}`,
+    },
+    body,
+    region: FunctionRegion.UsEast1,
+  });
+
+  if (result.error) {
+    const payload = await parseReviewSubmitCommandErrorPayload(result.error);
+    if (isReviewSubmitJobEnvelope(payload)) {
+      return {
+        data: [payload.data as Row],
+        error: null,
+        count: null,
+        status: result.error.context?.status ?? 200,
+        statusText: 'OK',
+      };
+    }
+
+    const normalizedError = normalizeReviewSubmitCommandError(result.error, payload);
+    return {
+      data: null,
+      error: normalizedError,
+      count: null,
+      status: result.error.context?.status ?? 500,
+      statusText: normalizedError.code,
+    };
+  }
+
+  return {
+    data: normalizeReviewSubmitCommandRows<Row>(result.data),
     error: null,
     count: null,
     status: 200,

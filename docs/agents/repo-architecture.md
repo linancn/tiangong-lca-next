@@ -21,8 +21,8 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-05-28
-lastReviewedCommit: f8f9e56f2b00ee98e2a2df2591b2dc4625f540d2
+lastReviewedAt: 2026-05-29
+lastReviewedCommit: 14bb4ec53086ce0806703661938254727328a460
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -71,13 +71,13 @@ Rules:
 
 ### Process Review-Submit Gate
 
-Process review submission now has a frontend gate before the final review command:
+Process review submission uses an asynchronous submit job:
 
-`src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_gate`
+`src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_jobs`
 
-Next owns only the UI orchestration for this gate. It requests or reads the Edge gate without treating any browser-computed checksum as authoritative, renders returned `queued`, `running`, `passed`, `blocked`, `stale`, and `error` states, and shows user-facing guidance for backend-provided `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
+Next owns only the UI orchestration for this job. It enqueues or reads the Edge job without treating any browser-computed checksum as authoritative, renders returned `queued`, `waiting_gate`, `submitting`, `submitted`, `blocked`, `stale`, `error`, and `cancelled` states, and shows user-facing guidance for backend-provided gate `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
 
-When the gate passes, the final `app_dataset_submit_review` call must include the backend gate run id as `reviewSubmitGateRunId` and the authoritative `datasetRevision.revisionChecksum` returned by the gate response. A `passed` gate response without either value is not submit-ready in the frontend. Database/Edge own the persisted-row checksum, freshness, and policy assertion; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
+When the job reaches `submitted`, Edge/Database have already validated the gate and called the final submit-review RPC on behalf of the original user. The browser must not call `app_dataset_submit_review` after a gate pass in the main process flow. Database/Edge own the persisted-row checksum, freshness, policy assertion, and final submit idempotency; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
 
 ## Current Hotspots
 
@@ -89,7 +89,7 @@ When the gate passes, the final `app_dataset_submit_review` call must include th
 ## Cross-Repo Boundaries
 
 - `database-engine` owns schema truth and Supabase branch governance
-- `edge-functions` owns Edge runtime behavior, including `app_dataset_review_submit_gate`
+- `edge-functions` owns Edge runtime behavior, including `app_dataset_review_submit_gate` and `app_dataset_review_submit_jobs`
 - `next-docs` owns public docs-site content
 - `calculator` owns solver and compute internals, including review-submit blocker heuristics
 - `lca-workspace` owns root delivery completion after merge
