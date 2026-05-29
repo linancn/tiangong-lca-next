@@ -25,6 +25,7 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
+import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
@@ -370,6 +371,13 @@ const TableList: FC = () => {
             />
           </Col>
         </Row>
+        <DatasetUuidMentionSearch
+          dataSource={dataSource}
+          getStateCodeFilter={() => stateCodeRef.current}
+          queryText={keyWord}
+          sourceEntityKinds={['flowproperty']}
+          teamId={tid}
+        />
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
         {...responsiveDataListTableProps}
