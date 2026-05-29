@@ -82,6 +82,10 @@ export default {
   'pages.search.openAI': '智能推荐',
   'pages.search.keyWord': '全文检索：请输入一个或多个关键词。',
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
+  'pages.datasetUuidMention.empty': '没有找到包含该 ID 的数据',
+  'pages.datasetUuidMention.entityKind': '数据类型',
+  'pages.datasetUuidMention.error': '查找失败，请稍后重试',
+  'pages.datasetUuidMention.searchButton': '查找包含该 ID 的数据',
 
   'pages.lifeCycleModel.drawer.title.create': '创建模型',
 

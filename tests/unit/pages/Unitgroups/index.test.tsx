@@ -32,6 +32,7 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockDatasetUuidMentionSearch = jest.fn();
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -141,6 +142,24 @@ jest.mock('@/components/TableFilter', () => ({
       table-filter
     </button>
   ),
+}));
+
+jest.mock('@/components/DatasetUuidMentionSearch', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    mockDatasetUuidMentionSearch(props);
+    return (
+      <div data-testid='dataset-uuid-mention-search'>
+        {JSON.stringify({
+          dataSource: props.dataSource,
+          queryText: props.queryText,
+          sourceEntityKinds: props.sourceEntityKinds,
+          stateCode: props.getStateCodeFilter?.(),
+          teamId: props.teamId,
+        })}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/pages/Utils', () => ({
@@ -431,6 +450,16 @@ describe('UnitgroupsPage', () => {
       'my',
       'team-1',
       'all',
+    );
+    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
+      '"sourceEntityKinds":["unitgroup"]',
+    );
+    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataSource: 'my',
+        sourceEntityKinds: ['unitgroup'],
+        teamId: 'team-1',
+      }),
     );
 
     expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
