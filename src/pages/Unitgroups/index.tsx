@@ -5,7 +5,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -17,6 +16,7 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
@@ -28,15 +28,25 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
-import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
+import {
+  getUnitGroupTableAll,
+  getUnitGroupTablePgroongaSearch,
+  getUnitGroupTableUuidMentionSearch,
+} from '@/services/unitgroups/api';
 import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Col, Input, Row, Space, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import UnitGroupCreate from './Components/create';
 import UnitGroupDelete from './Components/delete';
 import UnitGroupEdit from './Components/edit';
@@ -49,6 +59,7 @@ const TableList: FC = () => {
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -71,6 +82,7 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: UnitGroupTable[];
     page?: number;
@@ -336,6 +348,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
 
@@ -356,19 +371,28 @@ const TableList: FC = () => {
             <Search
               disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
-              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+              placeholder={intl.formatMessage({
+                id: referenceLookup
+                  ? 'pages.search.referenceLookup.placeholder'
+                  : 'pages.search.keyWord',
+              })}
               onSearch={onSearch}
               enterButton
             />
           </Col>
+          <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={referenceLookup}
+              disabled={dataSource === 'my' && !isSystemAdmin}
+              onChange={(e) => setReferenceLookup(e.target.checked)}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
+          </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['unitgroup']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<UnitGroupTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -439,6 +463,29 @@ const TableList: FC = () => {
           }
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
+          if (referenceLookup) {
+            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+            if (!referenceLookupUuid) {
+              return attachReviewState(getReferenceLookupEmptyResult(params.current));
+            }
+
+            const result = await getUnitGroupTableUuidMentionSearch(
+              params,
+              lang,
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              tid ?? '',
+            );
+            const noticeKey = [dataSource, referenceLookupUuid, currentStateCode, tid ?? ''].join(
+              ':',
+            );
+            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+              referenceLookupLimitNoticeRef.current = noticeKey;
+              showReferenceLookupLimitMessage(intl);
+            }
+            return attachReviewState(result);
+          }
           if (currentKeyWord.length > 0) {
             return attachReviewState(
               await getUnitGroupTablePgroongaSearch(

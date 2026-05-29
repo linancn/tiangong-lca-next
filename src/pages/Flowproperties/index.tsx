@@ -1,6 +1,7 @@
 import {
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
+  getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
@@ -14,7 +15,7 @@ import {
 } from '@/services/general/util';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Col, Input, Row, Space, Tooltip, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -25,7 +26,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
@@ -41,12 +41,19 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import FlowpropertiesCreate from './Components/create';
 import FlowpropertiesDelete from './Components/delete';
 import FlowpropertiesEdit from './Components/edit';
@@ -59,6 +66,7 @@ const TableList: FC = () => {
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -79,6 +87,7 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: FlowpropertyTable[];
     page?: number;
@@ -348,6 +357,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: FlowpropertyImportData) => {
@@ -365,19 +377,27 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+              placeholder={intl.formatMessage({
+                id: referenceLookup
+                  ? 'pages.search.referenceLookup.placeholder'
+                  : 'pages.search.keyWord',
+              })}
               onSearch={onSearch}
               enterButton
             />
           </Col>
+          <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={referenceLookup}
+              onChange={(e) => setReferenceLookup(e.target.checked)}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
+          </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['flowproperty']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<FlowpropertyTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -431,6 +451,29 @@ const TableList: FC = () => {
         ) => {
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
+          if (referenceLookup) {
+            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+            if (!referenceLookupUuid) {
+              return attachRefUnitData(getReferenceLookupEmptyResult(params.current));
+            }
+
+            const result = await getFlowpropertyTableUuidMentionSearch(
+              params,
+              lang,
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              tid ?? '',
+            );
+            const noticeKey = [dataSource, referenceLookupUuid, currentStateCode, tid ?? ''].join(
+              ':',
+            );
+            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+              referenceLookupLimitNoticeRef.current = noticeKey;
+              showReferenceLookupLimitMessage(intl);
+            }
+            return attachRefUnitData(result);
+          }
           if (currentKeyWord.length > 0) {
             return attachRefUnitData(
               await getFlowpropertyTablePgroongaSearch(

@@ -21,6 +21,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetProcessTableAll = jest.fn();
 const mockGetProcessTablePgroongaSearch = jest.fn();
+const mockGetProcessTableUuidMentionSearch = jest.fn();
 const mockProcessHybridSearch = jest.fn();
 const mockContributeProcess = jest.fn();
 const mockContributeLifeCycleModel = jest.fn();
@@ -49,6 +50,8 @@ jest.mock('@/services/processes/api', () => ({
   contributeProcess: (...args: any[]) => mockContributeProcess(...args),
   getProcessTableAll: (...args: any[]) => mockGetProcessTableAll(...args),
   getProcessTablePgroongaSearch: (...args: any[]) => mockGetProcessTablePgroongaSearch(...args),
+  getProcessTableUuidMentionSearch: (...args: any[]) =>
+    mockGetProcessTableUuidMentionSearch(...args),
   process_hybrid_search: (...args: any[]) => mockProcessHybridSearch(...args),
 }));
 
@@ -453,6 +456,7 @@ describe('ProcessesPage', () => {
       success: true,
     });
     mockGetProcessTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    mockGetProcessTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
     message.success.mockReset();
     message.error.mockReset();
@@ -488,16 +492,7 @@ describe('ProcessesPage', () => {
     expect(screen.getByText('2024')).toBeInTheDocument();
     expect(screen.getByText('CN')).toBeInTheDocument();
     expect(screen.getAllByTestId('lca-solve-toolbar')).toHaveLength(3);
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["process"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['process'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     const createAction = screen

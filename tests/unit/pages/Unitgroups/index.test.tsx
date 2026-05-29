@@ -32,6 +32,7 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockGetUnitGroupTableUuidMentionSearch = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
 
 jest.mock('umi', () => ({
@@ -72,6 +73,8 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
   getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  getUnitGroupTableUuidMentionSearch: (...args: any[]) =>
+    mockGetUnitGroupTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -414,6 +417,11 @@ describe('UnitgroupsPage', () => {
       ],
       success: true,
     });
+    mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -451,16 +459,7 @@ describe('UnitgroupsPage', () => {
       'team-1',
       'all',
     );
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["unitgroup"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['unitgroup'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
     await waitFor(() =>

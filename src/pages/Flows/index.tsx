@@ -2,6 +2,7 @@ import {
   flow_hybrid_search,
   getFlowTableAll,
   getFlowTablePgroongaSearch,
+  getFlowTableUuidMentionSearch,
 } from '@/services/flows/api';
 import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -13,7 +14,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -43,6 +43,12 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/lib/table/interface';
 import type { FC, ReactNode } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -60,6 +66,7 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -81,6 +88,7 @@ const TableList: FC = () => {
   const lang = getLang(intl.locale);
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
 
   const parseClassificationFilter = (
     values?: (string | number | boolean)[] | null,
@@ -411,6 +419,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: FlowImportData) => {
@@ -429,9 +440,11 @@ const TableList: FC = () => {
             <Search
               size={'large'}
               placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
               }
               onSearch={onSearch}
               enterButton
@@ -439,21 +452,32 @@ const TableList: FC = () => {
           </Col>
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
+              checked={openAI}
               onChange={(e) => {
                 setOpenAI(e.target.checked);
+                if (e.target.checked) {
+                  setReferenceLookup(false);
+                }
               }}
             >
               <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
             </Checkbox>
+            <Checkbox
+              checked={referenceLookup}
+              onChange={(e) => {
+                setReferenceLookup(e.target.checked);
+                if (e.target.checked) {
+                  setOpenAI(false);
+                }
+              }}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
           </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['flow']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<FlowTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -514,6 +538,33 @@ const TableList: FC = () => {
             flowType: flowTypeFilter,
             ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
           };
+          if (referenceLookup) {
+            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+            if (!referenceLookupUuid) {
+              return attachReviewState(getReferenceLookupEmptyResult(params.current));
+            }
+
+            const result = await getFlowTableUuidMentionSearch(
+              params,
+              lang,
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              tid ?? '',
+            );
+            const noticeKey = [
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              JSON.stringify(searchFilters),
+              tid ?? '',
+            ].join(':');
+            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+              referenceLookupLimitNoticeRef.current = noticeKey;
+              showReferenceLookupLimitMessage(intl);
+            }
+            return attachReviewState(result);
+          }
           if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }

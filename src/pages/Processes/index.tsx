@@ -3,6 +3,7 @@ import {
   contributeProcess,
   getProcessTableAll,
   getProcessTablePgroongaSearch,
+  getProcessTableUuidMentionSearch,
   process_hybrid_search,
 } from '@/services/processes/api';
 import { BarChartOutlined } from '@ant-design/icons';
@@ -17,7 +18,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -51,6 +51,12 @@ import { SearchProps } from 'antd/es/input/Search';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { FC, ReactElement } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import ProcessCreate from './Components/create';
 import ProcessDelete from './Components/delete';
 import ProcessEdit from './Components/edit';
@@ -73,6 +79,7 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ProcessImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -111,6 +118,7 @@ const TableList: FC = () => {
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
   const typeOfDataSetRef = useRef<string>('all');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
   const typeOfDataSetFilter = (width: number) => {
     const onChange = (value: string) => {
       typeOfDataSetRef.current = value;
@@ -485,6 +493,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
   const handleImportData = (jsonData: ProcessImportData) => {
@@ -513,9 +524,11 @@ const TableList: FC = () => {
             <Search
               size={'large'}
               placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
               }
               onSearch={onSearch}
               enterButton
@@ -523,21 +536,32 @@ const TableList: FC = () => {
           </Col>
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
+              checked={openAI}
               onChange={(e) => {
                 setOpenAI(e.target.checked);
+                if (e.target.checked) {
+                  setReferenceLookup(false);
+                }
               }}
             >
               <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
             </Checkbox>
+            <Checkbox
+              checked={referenceLookup}
+              onChange={(e) => {
+                setReferenceLookup(e.target.checked);
+                if (e.target.checked) {
+                  setOpenAI(false);
+                }
+              }}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
           </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['process']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<ProcessTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -656,6 +680,34 @@ const TableList: FC = () => {
             const currentKeyWord = keyWordRef.current || keyWord;
             const currentStateCode = stateCodeRef.current;
             const currentTypeOfDataSet = typeOfDataSetRef.current;
+            if (referenceLookup) {
+              const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+              if (!referenceLookupUuid) {
+                return applyProcessTableResult(getReferenceLookupEmptyResult(params.current));
+              }
+
+              const result = await getProcessTableUuidMentionSearch(
+                params,
+                lang,
+                dataSource,
+                referenceLookupUuid,
+                currentStateCode,
+                currentTypeOfDataSet,
+                tid ?? '',
+              );
+              const noticeKey = [
+                dataSource,
+                referenceLookupUuid,
+                currentStateCode,
+                currentTypeOfDataSet,
+                tid ?? '',
+              ].join(':');
+              if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+                referenceLookupLimitNoticeRef.current = noticeKey;
+                showReferenceLookupLimitMessage(intl);
+              }
+              return applyProcessTableResult(result);
+            }
             if (currentKeyWord.length > 0) {
               let orderBy:
                 | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }

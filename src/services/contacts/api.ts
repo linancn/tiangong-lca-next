@@ -11,6 +11,10 @@ import { normalizeDeleteCommandResult } from '@/services/supabase/data';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
+  mapDatasetUuidMentionRowsToListRows,
+  searchDatasetJsonUuidMentionPage,
+} from '../datasetUuidMentionSearch/api';
+import {
   attachLangNormalizationMetadata,
   buildLangNormalizationMetadata,
   getDataDetail,
@@ -358,6 +362,36 @@ export async function getContactTablePgroongaSearch(
     });
   }
   return result;
+}
+
+export async function getContactTableUuidMentionSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  lang: string,
+  dataSource: string,
+  uuid: string,
+  stateCode?: string | number,
+  tid: string | [] = [],
+) {
+  const result = await searchDatasetJsonUuidMentionPage({
+    dataSource,
+    pageCurrent: params.current,
+    pageSize: params.pageSize,
+    sourceEntityKinds: ['contact'],
+    stateCode,
+    teamId: typeof tid === 'string' ? tid : null,
+    uuid,
+  });
+  if (!result.success) {
+    return { ...result, data: [] };
+  }
+
+  return {
+    ...result,
+    data: await mapContactListRows(mapDatasetUuidMentionRowsToListRows(result.data), lang),
+  };
 }
 
 export async function getContactDetail(id: string, version: string) {

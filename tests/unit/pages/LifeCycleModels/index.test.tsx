@@ -25,6 +25,7 @@ const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
 const mockGetLifeCycleModelTableAll = jest.fn();
 const mockGetLifeCycleModelTablePgroongaSearch = jest.fn();
+const mockGetLifeCycleModelTableUuidMentionSearch = jest.fn();
 const mockLifeCycleModelHybridSearch = jest.fn();
 const mockContributeLifeCycleModel = jest.fn();
 const mockGetTeamById = jest.fn();
@@ -81,6 +82,8 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelTableAll: (...args: any[]) => mockGetLifeCycleModelTableAll(...args),
   getLifeCycleModelTablePgroongaSearch: (...args: any[]) =>
     mockGetLifeCycleModelTablePgroongaSearch(...args),
+  getLifeCycleModelTableUuidMentionSearch: (...args: any[]) =>
+    mockGetLifeCycleModelTableUuidMentionSearch(...args),
   lifeCycleModel_hybrid_search: (...args: any[]) => mockLifeCycleModelHybridSearch(...args),
 }));
 
@@ -423,6 +426,11 @@ describe('LifeCycleModelsPage', () => {
       data: [],
       success: true,
     });
+    mockGetLifeCycleModelTableUuidMentionSearch.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    });
     mockLifeCycleModelHybridSearch.mockResolvedValue({
       data: [],
       success: true,
@@ -474,16 +482,7 @@ describe('LifeCycleModelsPage', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["lifecyclemodel"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['lifecyclemodel'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /import-data/i }));
     expect(screen.getByTestId('lifecycle-create-create')).toHaveTextContent('"importCount":1');

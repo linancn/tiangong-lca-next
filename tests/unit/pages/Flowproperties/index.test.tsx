@@ -22,6 +22,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetFlowpropertyTableAll = jest.fn();
 const mockGetFlowpropertyTablePgroongaSearch = jest.fn();
+const mockGetFlowpropertyTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => {
@@ -52,6 +53,8 @@ jest.mock('@/services/flowproperties/api', () => ({
   getFlowpropertyTableAll: (...args: any[]) => mockGetFlowpropertyTableAll(...args),
   getFlowpropertyTablePgroongaSearch: (...args: any[]) =>
     mockGetFlowpropertyTablePgroongaSearch(...args),
+  getFlowpropertyTableUuidMentionSearch: (...args: any[]) =>
+    mockGetFlowpropertyTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/general/util', () => ({
@@ -372,6 +375,11 @@ describe('FlowpropertiesPage', () => {
     mockContributeSource.mockResolvedValue({ error: null });
     mockGetFlowpropertyTableAll.mockResolvedValue({ data: [row], success: true });
     mockGetFlowpropertyTablePgroongaSearch.mockResolvedValue({ data: [row], success: true });
+    mockGetFlowpropertyTableUuidMentionSearch.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    });
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
@@ -408,16 +416,7 @@ describe('FlowpropertiesPage', () => {
     );
     expect(screen.getByTestId('table-dropdown')).toBeInTheDocument();
     expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["flowproperty"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['flowproperty'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
     expect(

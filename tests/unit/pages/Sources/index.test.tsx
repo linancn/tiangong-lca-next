@@ -23,6 +23,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetSourceTableAll = jest.fn();
 const mockGetSourceTablePgroongaSearch = jest.fn();
+const mockGetSourceTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -53,6 +54,7 @@ jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
   getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  getSourceTableUuidMentionSearch: (...args: any[]) => mockGetSourceTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -387,6 +389,7 @@ describe('SourcesPage', () => {
     });
     mockGetSourceTableAll.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTablePgroongaSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
+    mockGetSourceTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -414,16 +417,7 @@ describe('SourcesPage', () => {
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["source"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['source'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-source-delete/i }));

@@ -17,6 +17,10 @@ import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getILCDClassification } from '../classifications/api';
+import {
+  mapDatasetUuidMentionRowsToListRows,
+  searchDatasetJsonUuidMentionPage,
+} from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
@@ -30,6 +34,7 @@ import type {
   LifeCycleModelJsonTg,
   LifeCycleModelMutationResult,
   LifeCycleModelPersistencePlan,
+  LifeCycleModelTable,
 } from './data';
 import {
   buildDeleteLifeCycleModelBundlePayload,
@@ -773,6 +778,119 @@ export async function getLifeCycleModelTablePgroongaSearch(
   }
 
   return result;
+}
+
+async function mapLifeCycleModelMentionRows(
+  rows: LifeCycleModelListRpcRow[],
+  lang: string,
+): Promise<LifeCycleModelTable[]> {
+  if (lang === 'zh') {
+    const classificationData = await getILCDClassification('LifeCycleModel', lang, ['all']);
+    return rows.map((i: any) => {
+      try {
+        const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
+        const classifications = jsonToList(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+        );
+        const classificationZH = genClassificationZH(classifications, classificationData?.data);
+
+        return {
+          key: i.id,
+          id: i.id,
+          name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+          generalComment: getLangText(
+            dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+            lang,
+          ),
+          classification: classificationToString(classificationZH),
+          version: i?.version ?? '',
+          modifiedAt: new Date(i?.modified_at ?? 0),
+          teamId: i?.team_id ?? '',
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+          version: i.version ?? '',
+          modifiedAt: new Date(i.modified_at ?? 0),
+          teamId: i.team_id ?? '',
+          name: '-',
+          generalComment: '',
+          classification: '',
+        };
+      }
+    });
+  }
+
+  return rows.map((i: any) => {
+    try {
+      const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
+      const classifications = jsonToList(
+        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+          'common:class'
+        ],
+      );
+      return {
+        key: i.id,
+        id: i.id,
+        name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        classification: classificationToString(classifications),
+        version: i?.version ?? '',
+        modifiedAt: new Date(i?.modified_at ?? 0),
+        teamId: i?.team_id ?? '',
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+        version: i.version ?? '',
+        modifiedAt: new Date(i.modified_at ?? 0),
+        teamId: i.team_id ?? '',
+        name: '-',
+        generalComment: '',
+        classification: '',
+      };
+    }
+  });
+}
+
+export async function getLifeCycleModelTableUuidMentionSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  lang: string,
+  dataSource: string,
+  uuid: string,
+  stateCode?: string | number,
+  tid: string = '',
+) {
+  const result = await searchDatasetJsonUuidMentionPage({
+    dataSource,
+    pageCurrent: params.current,
+    pageSize: params.pageSize,
+    sourceEntityKinds: ['lifecyclemodel'],
+    stateCode,
+    teamId: tid,
+    uuid,
+  });
+  if (!result.success) {
+    return { ...result, data: [] };
+  }
+
+  return {
+    ...result,
+    data: await mapLifeCycleModelMentionRows(
+      mapDatasetUuidMentionRowsToListRows(result.data),
+      lang,
+    ),
+  };
 }
 export async function lifeCycleModel_hybrid_search(
   params: {

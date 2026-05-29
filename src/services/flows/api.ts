@@ -12,6 +12,10 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedFlowCategorizationAll } from '../classifications/cache';
 import {
+  mapDatasetUuidMentionRowsToListRows,
+  searchDatasetJsonUuidMentionPage,
+} from '../datasetUuidMentionSearch/api';
+import {
   attachLangNormalizationMetadata,
   buildLangNormalizationMetadata,
   getDataDetail,
@@ -22,6 +26,7 @@ import {
 } from '../general/api';
 import { getILCDLocationByValues } from '../locations/api';
 import { getCachedLocationData } from '../locations/cache';
+import type { FlowTable } from './data';
 import { genFlowJsonOrdered, genFlowName } from './util';
 function normalizeLocationData(response: any): any[] {
   if (Array.isArray(response)) {
@@ -604,6 +609,107 @@ export async function getFlowTablePgroongaSearch(
     data: [],
     success: false,
   });
+}
+
+async function mapFlowMentionRows(rows: FlowListRpcRow[], lang: string): Promise<FlowTable[]> {
+  const [locationData, categorizationData] = await Promise.all([
+    fetchLocationLookup(
+      lang,
+      rows.map((i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply),
+    ),
+    lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+  ]);
+
+  return rows.map((i: any) => {
+    try {
+      const typeOfDataSet = i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
+      const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+      let classificationData: any = {};
+      let thisClass: any[] = [];
+      if (typeOfDataSet === 'Elementary flow') {
+        classificationData =
+          dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
+            'common:category'
+          ];
+        thisClass = categorizationData?.categoryElementaryFlow ?? [];
+      } else {
+        classificationData =
+          dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
+        thisClass = categorizationData?.category ?? [];
+      }
+      const classifications = jsonToList(classificationData);
+      const classification =
+        lang === 'zh' && categorizationData
+          ? classificationToString(genClassificationZH(classifications, thisClass))
+          : classificationToString(classifications);
+
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        name: genFlowName(dataInfo?.name ?? {}, lang) ?? '-',
+        flowType: typeOfDataSet ?? '-',
+        classification,
+        synonyms: getLangText(dataInfo?.['common:synonyms'], lang),
+        CASNumber: dataInfo?.CASNumber ?? '-',
+        refFlowPropertyId:
+          i.json?.flowDataSet?.flowProperties?.flowProperty?.referenceToFlowPropertyDataSet?.[
+            '@refObjectId'
+          ] ?? '-',
+        locationOfSupply: resolveLocationOfSupply(
+          i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+          locationData,
+        ),
+        version: i.version ?? '',
+        modifiedAt: new Date(i.modified_at ?? 0),
+        teamId: i.team_id ?? '',
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+        version: i.version ?? '',
+        modifiedAt: new Date(i.modified_at ?? 0),
+        teamId: i.team_id ?? '',
+        name: '-',
+        synonyms: '',
+        classification: '',
+        flowType: '-',
+        CASNumber: '-',
+        locationOfSupply: '-',
+        refFlowPropertyId: '-',
+      };
+    }
+  });
+}
+
+export async function getFlowTableUuidMentionSearch(
+  params: {
+    current?: number;
+    pageSize?: number;
+  },
+  lang: string,
+  dataSource: string,
+  uuid: string,
+  stateCode?: string | number,
+  tid: string | [] = [],
+) {
+  const result = await searchDatasetJsonUuidMentionPage({
+    dataSource,
+    pageCurrent: params.current,
+    pageSize: params.pageSize,
+    sourceEntityKinds: ['flow'],
+    stateCode,
+    teamId: typeof tid === 'string' ? tid : null,
+    uuid,
+  });
+  if (!result.success) {
+    return { ...result, data: [] };
+  }
+
+  return {
+    ...result,
+    data: await mapFlowMentionRows(mapDatasetUuidMentionRowsToListRows(result.data), lang),
+  };
 }
 
 export async function flow_hybrid_search(

@@ -22,6 +22,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetFlowTableAll = jest.fn();
 const mockGetFlowTablePgroongaSearch = jest.fn();
+const mockGetFlowTableUuidMentionSearch = jest.fn();
 const mockFlowHybridSearch = jest.fn();
 const mockGetCachedFlowCategorizationAll = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
@@ -74,6 +75,7 @@ jest.mock('@/services/flows/api', () => ({
   flow_hybrid_search: (...args: any[]) => mockFlowHybridSearch(...args),
   getFlowTableAll: (...args: any[]) => mockGetFlowTableAll(...args),
   getFlowTablePgroongaSearch: (...args: any[]) => mockGetFlowTablePgroongaSearch(...args),
+  getFlowTableUuidMentionSearch: (...args: any[]) => mockGetFlowTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/classifications/cache', () => ({
@@ -437,6 +439,7 @@ describe('FlowsPage', () => {
     });
     mockGetFlowTableAll.mockResolvedValue({ data: flowRows, success: true });
     mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    mockGetFlowTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockFlowHybridSearch.mockResolvedValue({ data: [], success: true });
     mockContributeSource.mockResolvedValue({ error: null });
   });
@@ -472,16 +475,7 @@ describe('FlowsPage', () => {
     expect(screen.getByTestId('classification-filters')).toHaveTextContent(
       '"text":"-","value":"classification:class-empty"',
     );
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["flow"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['flow'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getAllByTestId('flow-create-createVersion')).toHaveLength(2);
     expect(screen.getAllByTestId('flow-create-createVersion')[0]).toHaveTextContent(
       '"newVersion":"02.00.000"',

@@ -23,6 +23,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetContactTableAll = jest.fn();
 const mockGetContactTablePgroongaSearch = jest.fn();
+const mockGetContactTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -54,6 +55,8 @@ jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   getContactTableAll: (...args: any[]) => mockGetContactTableAll(...args),
   getContactTablePgroongaSearch: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
+  getContactTableUuidMentionSearch: (...args: any[]) =>
+    mockGetContactTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -381,6 +384,7 @@ describe('ContactsPage', () => {
     });
     mockGetContactTableAll.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
+    mockGetContactTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -408,16 +412,7 @@ describe('ContactsPage', () => {
     expect(screen.getByTestId('contact-edit')).toHaveTextContent('edit:contact-1');
     expect(screen.getByTestId('contact-delete')).toHaveTextContent('delete:contact-1');
     expect(screen.getAllByTestId('contact-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["contact"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['contact'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /close-contact-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-contact-delete/i }));
