@@ -241,6 +241,9 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => onSearch?.('climate')}>
         search
       </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
+      </button>
     </div>
   );
   const Input = { Search };
@@ -623,6 +626,80 @@ describe('FlowpropertiesPage', () => {
         'unitgroup',
         [],
       ]),
+    );
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const referenceRows = [
+      {
+        id: 'fp-ref',
+        version: '01.00.000',
+        name: 'Referenced flow property',
+        generalComment: 'Referenced comment',
+        classification: 'Impact',
+        refUnitRes: {
+          name: [{ '@xml:lang': 'en', '#text': 'Mass' }],
+          refUnitGeneralComment: [{ '@xml:lang': 'en', '#text': 'Reference unit comment' }],
+          refUnitName: 'kg',
+        },
+        modifiedAt: '2024-01-01T00:00:00.000Z',
+        teamId: null,
+      },
+    ];
+    mockGetFlowpropertyTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<FlowpropertiesPage />);
+
+    await screen.findByTestId('flowproperty-view');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockMessage.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('flowproperty-view')).not.toBeInTheDocument());
+    expect(mockGetFlowpropertyTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced flow property')).toBeInTheDocument();
+    expect(mockMessage.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup =
+      mockGetFlowpropertyTableUuidMentionSearch.mock.calls.length;
+    mockGetFlowpropertyTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetFlowpropertyTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
+      ),
     );
   });
 

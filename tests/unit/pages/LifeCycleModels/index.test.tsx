@@ -258,6 +258,9 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => onSearch?.('steel')}>
         search
       </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
+      </button>
     </div>
   );
 
@@ -801,6 +804,66 @@ describe('LifeCycleModelsPage', () => {
         'all',
         undefined,
         '',
+      ),
+    );
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const { message } = jest.requireMock('antd');
+    const referenceRows = [{ ...modelRows[0], id: 'model-ref', name: 'Referenced model' }];
+    mockGetLifeCycleModelTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await screen.findByText('Lifecycle model 1');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByText('Lifecycle model 1')).not.toBeInTheDocument());
+    expect(mockGetLifeCycleModelTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced model')).toBeInTheDocument();
+    expect(message.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup =
+      mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.length;
+    mockGetLifeCycleModelTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
       ),
     );
   });

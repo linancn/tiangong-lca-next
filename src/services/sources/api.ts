@@ -12,6 +12,7 @@ import { SortOrder } from 'antd/lib/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
   mapDatasetUuidMentionRowsToListRows,
+  normalizeDatasetUuidMentionTeamId,
   searchDatasetJsonUuidMentionPage,
 } from '../datasetUuidMentionSearch/api';
 import {
@@ -386,7 +387,7 @@ export async function getSourceTableUuidMentionSearch(
   dataSource: string,
   uuid: string,
   stateCode?: string | number,
-  tid: string | [] = [],
+  tid?: string | [],
 ) {
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
@@ -394,7 +395,7 @@ export async function getSourceTableUuidMentionSearch(
     pageSize: params.pageSize,
     sourceEntityKinds: ['source'],
     stateCode,
-    teamId: typeof tid === 'string' ? tid : null,
+    teamId: normalizeDatasetUuidMentionTeamId(tid),
     uuid,
   });
   if (!result.success) {

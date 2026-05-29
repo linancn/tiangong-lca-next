@@ -3961,6 +3961,243 @@ describe('getProcessTablePgroongaSearch', () => {
   });
 });
 
+describe('getProcessTableUuidMentionSearch', () => {
+  beforeEach(() => {
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'user-id' },
+        },
+      },
+    });
+  });
+
+  const mentionRow = (overrides: any = {}) => ({
+    matched_by: 'json',
+    matched_entity_table: 'processes',
+    rank: 1,
+    source_entity_kind: 'process',
+    source_id: 'process-ref',
+    source_json: {
+      processDataSet: {
+        processInformation: {
+          dataSetInformation: {
+            name: {},
+            'common:generalComment': {},
+            classificationInformation: {
+              'common:classification': {
+                'common:class': [{ '@value': 'process-class', '#text': 'Process Class' }],
+              },
+            },
+          },
+          geography: {
+            locationOfOperationSupplyOrProduction: {
+              '@location': 'CN',
+            },
+          },
+          time: {
+            'common:referenceYear': '2024',
+          },
+        },
+        modellingAndValidation: {
+          LCIMethodAndAllocation: {
+            typeOfDataSet: 'LCI result',
+          },
+        },
+      },
+    },
+    source_modified_at: '2024-01-01T00:00:00Z',
+    source_model_id: 'model-ref',
+    source_team_id: 'team-ref',
+    source_version: sampleVersion,
+    ...overrides,
+  });
+
+  it('maps and filters English reference lookup rows into process table rows', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow(),
+        mentionRow({
+          source_id: 'process-filtered-out',
+          source_json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+              },
+              modellingAndValidation: {
+                LCIMethodAndAllocation: {
+                  typeOfDataSet: 'gate to gate',
+                },
+              },
+            },
+          },
+        }),
+      ],
+      error: null,
+    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+
+    const result = await processesApi.getProcessTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+      '100',
+      'LCI result',
+      'team-1',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
+      p_data_source: 'tg',
+      p_limit: 11,
+      p_source_entity_kinds: ['process'],
+      p_state_code_filter: 100,
+      p_team_id_filter: 'team-1',
+      p_this_user_id: 'user-id',
+      p_uuid: 'd1380000-0000-4000-8000-000000000001',
+    });
+    expect(result.data).toEqual([
+      {
+        key: `process-ref:${sampleVersion}`,
+        id: 'process-ref',
+        lang: 'en',
+        name: 'Process Name',
+        generalComment: 'General comment',
+        classification: 'classification-string',
+        referenceYear: '2024',
+        location: 'China',
+        version: sampleVersion,
+        typeOfDataSet: 'LCI result',
+        modifiedAt: new Date('2024-01-01T00:00:00Z'),
+        teamId: 'team-ref',
+        modelId: '',
+      },
+    ]);
+  });
+
+  it('maps Chinese reference lookup rows and all dataset types with fallbacks', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow({
+          source_id: 'process-zh',
+          source_json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+                geography: {
+                  locationOfOperationSupplyOrProduction: {
+                    '@location': 'US',
+                  },
+                },
+              },
+            },
+          },
+          source_modified_at: undefined,
+          source_model_id: undefined,
+          source_team_id: undefined,
+        }),
+        mentionRow({
+          source_id: 'process-no-location',
+          source_json: {
+            processDataSet: {
+              processInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+        }),
+      ],
+      error: null,
+    });
+    mockGetCachedLocationData.mockResolvedValueOnce([]);
+
+    const result = await processesApi.getProcessTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+      undefined,
+      'all',
+    );
+
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', 'zh', ['all']);
+    expect(result.data[0]).toEqual({
+      key: `process-zh:${sampleVersion}`,
+      id: 'process-zh',
+      lang: 'zh',
+      name: 'Process Name',
+      generalComment: 'General comment',
+      classification: 'classification-string',
+      referenceYear: '-',
+      location: 'US',
+      version: sampleVersion,
+      typeOfDataSet: '-',
+      modifiedAt: new Date(0),
+      teamId: '',
+      modelId: '',
+    });
+    expect(result.data[1]).toMatchObject({
+      id: 'process-no-location',
+      location: '-',
+    });
+  });
+
+  it('returns fallback rows when reference lookup process mapping throws', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+    mockRpc.mockResolvedValueOnce({
+      data: [mentionRow({ source_id: 'process-bad' })],
+      error: null,
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad process mention');
+    });
+
+    const result = await processesApi.getProcessTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+
+    expect(result.data).toEqual([{ id: 'process-bad' }]);
+    expect(errorSpy).toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  it('returns empty table data when reference lookup fails', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'lookup failed' },
+    });
+
+    const result = await processesApi.getProcessTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+      undefined,
+      undefined,
+      [],
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_dataset_json_uuid_mentions',
+      expect.objectContaining({
+        p_source_entity_kinds: ['process'],
+        p_team_id_filter: null,
+      }),
+    );
+    expect(result).toEqual({
+      capped: false,
+      data: [],
+      error: 'lookup failed',
+      page: 1,
+      success: false,
+      total: 0,
+    });
+  });
+});
+
 describe('contributeProcess', () => {
   const testId = 'process-123';
   const testVersion = '01.00.000';

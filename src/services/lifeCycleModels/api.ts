@@ -19,6 +19,7 @@ import { SortOrder } from 'antd/lib/table/interface';
 import { getILCDClassification } from '../classifications/api';
 import {
   mapDatasetUuidMentionRowsToListRows,
+  normalizeDatasetUuidMentionTeamId,
   searchDatasetJsonUuidMentionPage,
 } from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
@@ -85,12 +86,12 @@ function normalizeLifeCycleModelSortDirection(orderBy: SortOrder): 'asc' | 'desc
 
 async function getLifeCycleModelTeamFilter(
   dataSource: string,
-  tid: string,
+  tid?: string | [],
 ): Promise<string | null> {
   if (dataSource === 'te') {
     return (await getTeamIdByUserId()) ?? null;
   }
-  return tid.length > 0 ? tid : null;
+  return normalizeDatasetUuidMentionTeamId(tid);
 }
 
 function buildMutationError(
@@ -651,7 +652,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
-  tid: string = '',
+  tid?: string | [],
 ) {
   let result: any = {};
   const session = await supabase.auth.getSession();
@@ -869,7 +870,7 @@ export async function getLifeCycleModelTableUuidMentionSearch(
   dataSource: string,
   uuid: string,
   stateCode?: string | number,
-  tid: string = '',
+  tid?: string | [],
 ) {
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
@@ -877,7 +878,7 @@ export async function getLifeCycleModelTableUuidMentionSearch(
     pageSize: params.pageSize,
     sourceEntityKinds: ['lifecyclemodel'],
     stateCode,
-    teamId: tid,
+    teamId: normalizeDatasetUuidMentionTeamId(tid),
     uuid,
   });
   if (!result.success) {

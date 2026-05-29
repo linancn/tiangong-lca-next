@@ -258,6 +258,9 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => onSearch?.('alice')}>
         search
       </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
+      </button>
     </div>
   );
   const Input = { Search };
@@ -566,6 +569,67 @@ describe('ContactsPage', () => {
     expect(message.success).not.toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'contribute failed' });
     consoleLogSpy.mockRestore();
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const { message } = jest.requireMock('antd');
+    const referenceRows = [
+      { ...baseContactRow, id: 'contact-ref', shortName: 'Referenced contact' },
+    ];
+    mockGetContactTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<ContactsPage />);
+
+    await screen.findByTestId('contact-view');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('contact-view')).not.toBeInTheDocument());
+    expect(mockGetContactTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetContactTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced contact')).toBeInTheDocument();
+    expect(message.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup = mockGetContactTableUuidMentionSearch.mock.calls.length;
+    mockGetContactTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetContactTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
+      ),
+    );
   });
 
   it('renders a dash when classification is missing or invalid', async () => {

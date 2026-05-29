@@ -50,6 +50,7 @@ import TableFilter from '@/components/TableFilter';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
+  getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
@@ -456,6 +457,7 @@ const TableList: FC = () => {
             if (!referenceLookupUuid) {
               return attachRefUnitData(getReferenceLookupEmptyResult(params.current));
             }
+            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
             const result = await getFlowpropertyTableUuidMentionSearch(
               params,
@@ -463,11 +465,14 @@ const TableList: FC = () => {
               dataSource,
               referenceLookupUuid,
               currentStateCode,
-              tid ?? '',
+              referenceLookupTeamId,
             );
-            const noticeKey = [dataSource, referenceLookupUuid, currentStateCode, tid ?? ''].join(
-              ':',
-            );
+            const noticeKey = [
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              referenceLookupTeamId,
+            ].join(':');
             if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
               referenceLookupLimitNoticeRef.current = noticeKey;
               showReferenceLookupLimitMessage(intl);

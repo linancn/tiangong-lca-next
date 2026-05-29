@@ -987,6 +987,114 @@ describe('Contacts API Service', () => {
     });
   });
 
+  describe('getContactTableUuidMentionSearch', () => {
+    const mentionRow = (overrides: any = {}) => ({
+      matched_by: 'json',
+      matched_entity_table: 'contacts',
+      rank: 1,
+      source_entity_kind: 'contact',
+      source_id: 'contact-ref',
+      source_json: {
+        contactDataSet: {
+          contactInformation: {
+            dataSetInformation: {
+              'common:shortName': [{ '@xml:lang': 'en', '#text': 'Referenced contact' }],
+              'common:name': [{ '@xml:lang': 'en', '#text': 'Reference Contact Full Name' }],
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [{ '@level': '0', '#text': 'People' }],
+                },
+              },
+              email: 'ref@example.com',
+            },
+          },
+        },
+      },
+      source_modified_at: '2024-01-01T00:00:00Z',
+      source_team_id: 'team-ref',
+      source_version: '01.00.000',
+      ...overrides,
+    });
+
+    it('maps reference lookup rows into contact table rows', async () => {
+      const { getContactTableUuidMentionSearch } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({
+        data: [mentionRow()],
+        error: null,
+      });
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+      jsonToList.mockReturnValue([{ '@level': '0', '#text': 'People' }]);
+      classificationToString.mockReturnValue('People');
+
+      const result = await getContactTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+        '100',
+        'team-1',
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
+        p_data_source: 'tg',
+        p_limit: 11,
+        p_source_entity_kinds: ['contact'],
+        p_state_code_filter: 100,
+        p_team_id_filter: 'team-1',
+        p_this_user_id: 'user-123',
+        p_uuid: 'd1380000-0000-4000-8000-000000000001',
+      });
+      expect(result).toMatchObject({
+        data: [
+          expect.objectContaining({
+            id: 'contact-ref',
+            shortName: 'Referenced contact',
+            name: 'Reference Contact Full Name',
+            classification: 'People',
+            email: 'ref@example.com',
+            teamId: 'team-ref',
+            version: '01.00.000',
+          }),
+        ],
+        success: true,
+        total: 1,
+      });
+    });
+
+    it('returns empty table data when reference lookup fails', async () => {
+      const { getContactTableUuidMentionSearch } = require('@/services/contacts/api');
+      mockRpc.mockResolvedValue({
+        data: null,
+        error: { message: 'lookup failed' },
+      });
+
+      const result = await getContactTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+        undefined,
+        [],
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_dataset_json_uuid_mentions',
+        expect.objectContaining({
+          p_source_entity_kinds: ['contact'],
+          p_team_id_filter: null,
+        }),
+      );
+      expect(result).toEqual({
+        capped: false,
+        data: [],
+        error: 'lookup failed',
+        page: 1,
+        success: false,
+        total: 0,
+      });
+    });
+  });
+
   describe('getContactDetail', () => {
     it('should delegate to getDataDetail with contacts table', async () => {
       const { getContactDetail } = require('@/services/contacts/api');

@@ -26,6 +26,7 @@ import { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
 import {
   mapDatasetUuidMentionRowsToListRows,
+  normalizeDatasetUuidMentionTeamId,
   searchDatasetJsonUuidMentionPage,
 } from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
@@ -896,7 +897,6 @@ export async function getProcessTablePgroongaSearch(
             return {
               key: i.id + ':' + i.version,
               id: i.id,
-              lang,
               name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
               generalComment: getLangText(
                 dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
@@ -1087,7 +1087,7 @@ export async function getProcessTableUuidMentionSearch(
   uuid: string,
   stateCode?: string | number,
   typeOfDataSet?: string,
-  tid: string | [] = [],
+  tid?: string | [],
 ): Promise<ProcessTableResponse & { capped?: boolean }> {
   const result = await searchDatasetJsonUuidMentionPage({
     dataSource,
@@ -1095,7 +1095,7 @@ export async function getProcessTableUuidMentionSearch(
     pageSize: params.pageSize,
     sourceEntityKinds: ['process'],
     stateCode,
-    teamId: typeof tid === 'string' ? tid : null,
+    teamId: normalizeDatasetUuidMentionTeamId(tid),
     uuid,
   });
   if (!result.success) {

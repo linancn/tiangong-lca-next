@@ -2496,6 +2496,242 @@ describe('table/search helpers', () => {
     expect(result).toEqual({});
   });
 
+  describe('getLifeCycleModelTableUuidMentionSearch', () => {
+    const mentionRow = (overrides: any = {}) => ({
+      matched_by: 'json',
+      matched_entity_table: 'lifecyclemodels',
+      rank: 1,
+      source_entity_kind: 'lifecyclemodel',
+      source_id: sampleModelId,
+      source_json: {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            dataSetInformation: {
+              name: {},
+              'common:generalComment': {},
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [{ id: 'class-1' }],
+                },
+              },
+            },
+          },
+        },
+      },
+      source_modified_at: '2026-03-17T10:00:00.000Z',
+      source_team_id: 'team-1',
+      source_version: sampleVersion,
+      ...overrides,
+    });
+
+    it('maps English reference lookup rows and sparse fallbacks into lifecycle model table rows', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          mentionRow(),
+          mentionRow({
+            source_id: 'model-sparse',
+            source_json: {},
+            source_modified_at: undefined,
+            source_team_id: undefined,
+            source_version: undefined,
+          }),
+        ],
+        error: null,
+      });
+
+      const result = await lifeCycleModelsApi.getLifeCycleModelTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+        '100',
+        'team-1',
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
+        p_data_source: 'tg',
+        p_limit: 11,
+        p_source_entity_kinds: ['lifecyclemodel'],
+        p_state_code_filter: 100,
+        p_team_id_filter: 'team-1',
+        p_this_user_id: sampleUserId,
+        p_uuid: 'd1380000-0000-4000-8000-000000000001',
+      });
+      expect(result.data).toEqual([
+        {
+          key: sampleModelId,
+          id: sampleModelId,
+          name: 'Life Cycle Model Name',
+          generalComment: 'localized-text',
+          classification: 'classification-string',
+          version: sampleVersion,
+          modifiedAt: new Date('2026-03-17T10:00:00.000Z'),
+          teamId: 'team-1',
+        },
+        {
+          key: 'model-sparse',
+          id: 'model-sparse',
+          name: 'Life Cycle Model Name',
+          generalComment: 'localized-text',
+          classification: 'classification-string',
+          version: '',
+          modifiedAt: new Date(0),
+          teamId: '',
+        },
+      ]);
+    });
+
+    it('maps Chinese reference lookup rows with classification localization', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          mentionRow({ source_id: 'model-zh' }),
+          mentionRow({
+            source_id: 'model-zh-sparse',
+            source_json: {},
+            source_modified_at: undefined,
+            source_team_id: undefined,
+            source_version: undefined,
+          }),
+        ],
+        error: null,
+      });
+      mockGenClassificationZH.mockReturnValueOnce(['zh-classification']);
+
+      const result = await lifeCycleModelsApi.getLifeCycleModelTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'zh',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+      );
+
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('LifeCycleModel', 'zh', ['all']);
+      expect(result.data[0]).toEqual({
+        key: 'model-zh',
+        id: 'model-zh',
+        name: 'Life Cycle Model Name',
+        generalComment: 'localized-text',
+        classification: 'classification-string',
+        version: sampleVersion,
+        modifiedAt: new Date('2026-03-17T10:00:00.000Z'),
+        teamId: 'team-1',
+      });
+      expect(result.data[1]).toEqual({
+        key: 'model-zh-sparse',
+        id: 'model-zh-sparse',
+        name: 'Life Cycle Model Name',
+        generalComment: 'localized-text',
+        classification: 'classification-string',
+        version: '',
+        modifiedAt: new Date(0),
+        teamId: '',
+      });
+    });
+
+    it('returns fallback rows when Chinese reference lookup mapping throws', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          mentionRow({
+            source_id: 'model-bad-zh',
+            source_modified_at: undefined,
+            source_team_id: undefined,
+            source_version: undefined,
+          }),
+        ],
+        error: null,
+      });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('bad zh lifecycle mention');
+      });
+
+      const result = await lifeCycleModelsApi.getLifeCycleModelTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'zh',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+      );
+
+      expect(result.data[0]).toEqual({
+        id: 'model-bad-zh',
+        version: '',
+        modifiedAt: new Date(0),
+        teamId: '',
+        name: '-',
+        generalComment: '',
+        classification: '',
+      });
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('returns fallback rows when English reference lookup mapping throws', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          mentionRow({
+            source_id: 'model-bad-en',
+            source_modified_at: undefined,
+            source_team_id: undefined,
+            source_version: undefined,
+          }),
+        ],
+        error: null,
+      });
+      mockJsonToList.mockImplementationOnce(() => {
+        throw new Error('bad en lifecycle mention');
+      });
+
+      const result = await lifeCycleModelsApi.getLifeCycleModelTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+      );
+
+      expect(result.data[0]).toEqual({
+        id: 'model-bad-en',
+        version: '',
+        modifiedAt: new Date(0),
+        teamId: '',
+        name: '-',
+        generalComment: '',
+        classification: '',
+      });
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('returns empty table data when reference lookup fails', async () => {
+      mockRpc.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'lookup failed' },
+      });
+
+      const result = await lifeCycleModelsApi.getLifeCycleModelTableUuidMentionSearch(
+        { current: 1, pageSize: 10 },
+        'en',
+        'tg',
+        'd1380000-0000-4000-8000-000000000001',
+      );
+
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_dataset_json_uuid_mentions',
+        expect.objectContaining({
+          p_source_entity_kinds: ['lifecyclemodel'],
+          p_team_id_filter: null,
+        }),
+      );
+      expect(result).toEqual({
+        capped: false,
+        data: [],
+        error: 'lookup failed',
+        page: 1,
+        success: false,
+        total: 0,
+      });
+    });
+  });
+
   it('returns the raw hybrid-search result when there is no session', async () => {
     mockAuthGetSession.mockResolvedValueOnce(createMockNoSession());
 

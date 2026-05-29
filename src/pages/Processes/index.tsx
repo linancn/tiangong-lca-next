@@ -53,6 +53,7 @@ import type { FC, ReactElement } from 'react';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
+  getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
@@ -685,6 +686,7 @@ const TableList: FC = () => {
               if (!referenceLookupUuid) {
                 return applyProcessTableResult(getReferenceLookupEmptyResult(params.current));
               }
+              const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
               const result = await getProcessTableUuidMentionSearch(
                 params,
@@ -693,14 +695,14 @@ const TableList: FC = () => {
                 referenceLookupUuid,
                 currentStateCode,
                 currentTypeOfDataSet,
-                tid ?? '',
+                referenceLookupTeamId,
               );
               const noticeKey = [
                 dataSource,
                 referenceLookupUuid,
                 currentStateCode,
                 currentTypeOfDataSet,
-                tid ?? '',
+                referenceLookupTeamId,
               ].join(':');
               if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
                 referenceLookupLimitNoticeRef.current = noticeKey;

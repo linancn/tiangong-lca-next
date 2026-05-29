@@ -282,6 +282,9 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => onSearch?.('cement')}>
         search
       </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
+      </button>
     </div>
   );
   const Input = { Search };
@@ -1029,6 +1032,79 @@ describe('ProcessesPage', () => {
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
     expect(screen.getByRole('heading', { name: 'Process Team' })).toBeInTheDocument();
     expect(screen.queryAllByTestId('process-view')).toHaveLength(0);
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const referenceRows = [
+      {
+        id: 'proc-ref',
+        version: '1.0.0',
+        name: 'Referenced process',
+        generalComment: 'Referenced comment',
+        classification: 'Materials',
+        typeOfDataSet: 'gate to gate',
+        referenceYear: '2024',
+        location: 'CN',
+        modifiedAt: '2024-01-01T00:00:00Z',
+        modelId: '',
+        teamId: '',
+      },
+    ];
+    mockGetProcessTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<ProcessesPage />);
+
+    await screen.findByTestId('process-view');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('process-view')).not.toBeInTheDocument());
+    expect(mockGetProcessTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'all',
+        'team-1',
+      ),
+    );
+    expect((await screen.findAllByText('Referenced process')).length).toBeGreaterThan(0);
+    expect(message.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup = mockGetProcessTableUuidMentionSearch.mock.calls.length;
+    mockGetProcessTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetProcessTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
+      ),
+    );
   });
 
   it('falls back to an empty table and shows a toast when loading the process list throws', async () => {

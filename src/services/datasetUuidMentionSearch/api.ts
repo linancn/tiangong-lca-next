@@ -99,6 +99,11 @@ export function normalizeDatasetUuidMentionStateCode(
   return null;
 }
 
+export function normalizeDatasetUuidMentionTeamId(tid?: string | [] | null): string | null {
+  const normalizedTeamId = typeof tid === 'string' ? tid.trim() : '';
+  return normalizedTeamId.length > 0 ? normalizedTeamId : null;
+}
+
 export async function searchDatasetJsonUuidMentions({
   dataSource,
   limit = 20,

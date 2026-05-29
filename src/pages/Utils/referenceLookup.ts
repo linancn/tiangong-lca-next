@@ -18,6 +18,10 @@ export function getReferenceLookupEmptyResult(current = 1) {
   };
 }
 
+export function getReferenceLookupTeamId(tid?: string | null): string {
+  return tid ?? '';
+}
+
 export function showInvalidReferenceLookupUuidMessage(intl: IntlLike) {
   const text = intl.formatMessage({
     defaultMessage: 'Enter a complete dataset UUID before running Reference Lookup.',

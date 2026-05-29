@@ -3,6 +3,7 @@ import {
   DATASET_UUID_MENTION_PAGE_SIZE,
   mapDatasetUuidMentionRowsToListRows,
   normalizeDatasetUuidMentionStateCode,
+  normalizeDatasetUuidMentionTeamId,
   normalizeDatasetUuidSearchQuery,
   searchDatasetJsonUuidMentionPage,
   searchDatasetJsonUuidMentions,
@@ -56,6 +57,13 @@ describe('datasetUuidMentionSearch service', () => {
     expect(normalizeDatasetUuidMentionStateCode('')).toBe(null);
     expect(normalizeDatasetUuidMentionStateCode('draft')).toBe(null);
     expect(normalizeDatasetUuidMentionStateCode(Number.NaN)).toBe(null);
+  });
+
+  it('normalizes optional route team ids', () => {
+    expect(normalizeDatasetUuidMentionTeamId(' team-1 ')).toBe('team-1');
+    expect(normalizeDatasetUuidMentionTeamId('')).toBe(null);
+    expect(normalizeDatasetUuidMentionTeamId([])).toBe(null);
+    expect(normalizeDatasetUuidMentionTeamId()).toBe(null);
   });
 
   it('calls the JSON UUID mention RPC with bounded params', async () => {
@@ -293,6 +301,68 @@ describe('datasetUuidMentionSearch service', () => {
       'search_dataset_json_uuid_mentions',
       expect.objectContaining({ p_limit: 21 }),
     );
+  });
+
+  it('uses default synthetic pagination when page inputs are omitted', async () => {
+    const rows = Array.from({ length: 11 }, (_, index) => ({
+      matched_by: 'json',
+      matched_entity_table: 'processes',
+      rank: index + 1,
+      source_entity_kind: 'process' as const,
+      source_id: `process-${index + 1}`,
+      source_json: { value: index + 1 },
+      source_version: '01.00.000',
+    }));
+
+    supabaseMock.rpc.mockResolvedValueOnce({ data: rows, error: null });
+
+    await expect(
+      searchDatasetJsonUuidMentionPage({
+        dataSource: 'my',
+        sourceEntityKinds: ['process'],
+        uuid: 'd1380000-0000-4000-8000-000000000001',
+      }),
+    ).resolves.toMatchObject({
+      capped: false,
+      data: rows.slice(0, 10),
+      page: 1,
+      success: true,
+      total: 11,
+    });
+
+    expect(supabaseMock.rpc).toHaveBeenCalledWith(
+      'search_dataset_json_uuid_mentions',
+      expect.objectContaining({ p_limit: 11 }),
+    );
+  });
+
+  it('marks the last fetchable synthetic page as capped when 50 rows are reached', async () => {
+    const rows = Array.from({ length: DATASET_UUID_MENTION_MAX_RESULTS }, (_, index) => ({
+      matched_by: 'json',
+      matched_entity_table: 'processes',
+      rank: index + 1,
+      source_entity_kind: 'process' as const,
+      source_id: `process-${index + 1}`,
+      source_json: { value: index + 1 },
+      source_version: '01.00.000',
+    }));
+
+    supabaseMock.rpc.mockResolvedValueOnce({ data: rows, error: null });
+
+    await expect(
+      searchDatasetJsonUuidMentionPage({
+        dataSource: 'my',
+        pageCurrent: 5,
+        sourceEntityKinds: ['process'],
+        uuid: 'd1380000-0000-4000-8000-000000000001',
+      }),
+    ).resolves.toMatchObject({
+      capped: true,
+      data: rows.slice(40, 50),
+      page: 5,
+      success: true,
+      total: DATASET_UUID_MENTION_MAX_RESULTS,
+    });
   });
 
   it('caps synthetic reference lookup pages at the first 50 rows', async () => {
