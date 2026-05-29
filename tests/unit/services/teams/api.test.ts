@@ -32,12 +32,13 @@ jest.mock('@/services/roles/api', () => ({
 
 jest.mock('@/services/users/api', () => ({
   getUserEmailByUserIds: jest.fn(),
-  getUserIdByEmail: jest.fn(),
+  findTeamInvitableUserByEmail: jest.fn(),
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
 const { getTeamRoles, getUserIdsByTeamIds } = jest.requireMock('@/services/roles/api');
-const { getUserEmailByUserIds, getUserIdByEmail } = jest.requireMock('@/services/users/api');
+const { findTeamInvitableUserByEmail, getUserEmailByUserIds } =
+  jest.requireMock('@/services/users/api');
 
 const createQueryBuilder = (
   resolvedValue: {
@@ -522,7 +523,7 @@ describe('teams api task-4 boundaries', () => {
   });
 
   it('adds team member via admin_team_change_member_role command', async () => {
-    getUserIdByEmail.mockResolvedValue('user-id');
+    findTeamInvitableUserByEmail.mockResolvedValue({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke.mockResolvedValue({ data: { ok: true }, error: null });
 
     const result = await addTeamMemberApi('team-id', 'u@example.com');
@@ -537,7 +538,7 @@ describe('teams api task-4 boundaries', () => {
   });
 
   it('returns exists when command indicates duplicate', async () => {
-    getUserIdByEmail.mockResolvedValue('user-id');
+    findTeamInvitableUserByEmail.mockResolvedValue({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke.mockResolvedValue({
       data: { ok: false, code: 'ROLE_ALREADY_EXISTS', message: 'already exists' },
       error: null,
@@ -545,11 +546,13 @@ describe('teams api task-4 boundaries', () => {
 
     const result = await addTeamMemberApi('team-id', 'u@example.com');
 
-    expect(result).toEqual({ error: { message: 'exists' } });
+    expect(result).toEqual({
+      error: { ok: false, code: 'ROLE_ALREADY_EXISTS', message: 'exists' },
+    });
   });
 
   it('returns raw command errors when addTeamMemberApi fails for other reasons', async () => {
-    getUserIdByEmail.mockResolvedValueOnce('user-id');
+    findTeamInvitableUserByEmail.mockResolvedValueOnce({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke.mockResolvedValueOnce({
       data: {
         ok: false,
@@ -571,19 +574,40 @@ describe('teams api task-4 boundaries', () => {
   });
 
   it('returns notRegistered when email has no user', async () => {
-    getUserIdByEmail.mockResolvedValue(null);
+    findTeamInvitableUserByEmail.mockResolvedValue({
+      data: null,
+      error: { code: 'USER_NOT_FOUND', message: 'missing' },
+    });
 
     const result = await addTeamMemberApi('team-id', 'unknown@example.com');
+
+    expect(result).toEqual({
+      error: {
+        code: 'USER_NOT_FOUND',
+        message: 'notRegistered',
+      },
+    });
+    expect(supabase.functions.invoke).not.toHaveBeenCalled();
+  });
+
+  it('returns notRegistered when invite lookup succeeds without a user id', async () => {
+    findTeamInvitableUserByEmail.mockResolvedValue({
+      data: { email: 'missing-id@example.com' },
+      error: null,
+    });
+
+    const result = await addTeamMemberApi('team-id', 'missing-id@example.com');
 
     expect(result).toEqual({
       error: {
         message: 'notRegistered',
       },
     });
+    expect(supabase.functions.invoke).not.toHaveBeenCalled();
   });
 
   it('returns the raw command error when adding a team member fails for another reason', async () => {
-    getUserIdByEmail.mockResolvedValueOnce('user-id');
+    findTeamInvitableUserByEmail.mockResolvedValueOnce({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke.mockResolvedValueOnce({
       data: { ok: false, code: 'FORBIDDEN', message: 'forbidden' },
       error: null,
@@ -598,6 +622,34 @@ describe('teams api task-4 boundaries', () => {
         message: 'forbidden',
       },
     });
+  });
+
+  it('maps controlled invite lookup states to modal-friendly messages', async () => {
+    findTeamInvitableUserByEmail
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'USER_ALREADY_IN_TEAM', message: 'already active elsewhere' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'USER_ALREADY_INVITED_TO_TEAM', message: 'already invited elsewhere' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'FORBIDDEN', message: 'forbidden' },
+      });
+
+    await expect(addTeamMemberApi('team-id', 'member@example.com')).resolves.toEqual({
+      error: { code: 'USER_ALREADY_IN_TEAM', message: 'alreadyInTeam' },
+    });
+    await expect(addTeamMemberApi('team-id', 'invited@example.com')).resolves.toEqual({
+      error: { code: 'USER_ALREADY_INVITED_TO_TEAM', message: 'alreadyInvitedToTeam' },
+    });
+    await expect(addTeamMemberApi('team-id', 'blocked@example.com')).resolves.toEqual({
+      error: { code: 'FORBIDDEN', message: 'forbidden' },
+    });
+
+    expect(supabase.functions.invoke).not.toHaveBeenCalled();
   });
 
   it('loads ranked teams and falls back to an empty list when the query payload is null', async () => {
@@ -968,7 +1020,9 @@ describe('teams api task-4 boundaries', () => {
         },
       ],
     });
-    getUserIdByEmail.mockResolvedValueOnce('user-id').mockResolvedValueOnce('user-id');
+    findTeamInvitableUserByEmail
+      .mockResolvedValueOnce({ data: { id: 'user-id' }, error: null })
+      .mockResolvedValueOnce({ data: { id: 'user-id' }, error: null });
     supabase.functions.invoke
       .mockResolvedValueOnce({
         data: { ok: false, message: 'already exists' },
@@ -997,6 +1051,7 @@ describe('teams api task-4 boundaries', () => {
     });
     expect(existsByMessage).toEqual({
       error: {
+        ok: false,
         message: 'exists',
       },
     });
