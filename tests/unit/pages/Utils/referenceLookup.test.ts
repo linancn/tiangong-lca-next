@@ -1,5 +1,6 @@
 import {
   getReferenceLookupEmptyResult,
+  getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
@@ -44,6 +45,14 @@ describe('reference lookup page helpers', () => {
   it('normalizes optional team ids for reference lookup requests', () => {
     expect(getReferenceLookupTeamId('team-1')).toBe('team-1');
     expect(getReferenceLookupTeamId()).toBe('');
+  });
+
+  it('hides total text only while reference lookup pagination is active', () => {
+    expect(getReferenceLookupPaginationProps(false)).toEqual({});
+
+    const paginationProps = getReferenceLookupPaginationProps(true);
+
+    expect(paginationProps.showTotal?.(24, [1, 10])).toBeNull();
   });
 
   it('shows localized reference lookup messages', () => {

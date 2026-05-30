@@ -5,6 +5,10 @@ type IntlLike = {
   formatMessage: (descriptor: { defaultMessage?: string; id: string }) => string;
 };
 
+type ReferenceLookupPaginationProps = {
+  showTotal?: (total: number, range: [number, number]) => null;
+};
+
 export function getReferenceLookupUuid(queryText: string): string | null {
   return normalizeDatasetUuidSearchQuery(queryText);
 }
@@ -16,6 +20,16 @@ export function getReferenceLookupEmptyResult(current = 1) {
     success: true,
     total: 0,
   };
+}
+
+export function getReferenceLookupPaginationProps(
+  enabled: boolean,
+): ReferenceLookupPaginationProps {
+  return enabled
+    ? {
+        showTotal: () => null,
+      }
+    : {};
 }
 
 export function getReferenceLookupTeamId(tid?: string | null): string {

@@ -50,6 +50,7 @@ import TableFilter from '@/components/TableFilter';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
 import {
   getReferenceLookupEmptyResult,
+  getReferenceLookupPaginationProps,
   getReferenceLookupTeamId,
   getReferenceLookupUuid,
   showInvalidReferenceLookupUuidMessage,
@@ -415,6 +416,7 @@ const TableList: FC = () => {
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
+          ...getReferenceLookupPaginationProps(referenceLookup),
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
