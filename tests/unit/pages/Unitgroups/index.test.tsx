@@ -32,6 +32,7 @@ const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitGroupTableAll = jest.fn();
 const mockGetUnitGroupTablePgroongaSearch = jest.fn();
+const mockGetUnitGroupTableUuidMentionSearch = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
 
 jest.mock('umi', () => ({
@@ -72,6 +73,8 @@ jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
   getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  getUnitGroupTableUuidMentionSearch: (...args: any[]) =>
+    mockGetUnitGroupTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -245,6 +248,13 @@ jest.mock('antd', () => {
       <button type='button' disabled={disabled} onClick={() => onSearch?.('density')}>
         search
       </button>
+      <button
+        type='button'
+        disabled={disabled}
+        onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}
+      >
+        uuid-lookup
+      </button>
     </div>
   );
   const Input = { Search };
@@ -414,6 +424,11 @@ describe('UnitgroupsPage', () => {
       ],
       success: true,
     });
+    mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
+      data: [],
+      success: true,
+      total: 0,
+    });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -451,16 +466,7 @@ describe('UnitgroupsPage', () => {
       'team-1',
       'all',
     );
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["unitgroup"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['unitgroup'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     expect(screen.getByRole('heading', { name: 'Unit Team' })).toBeInTheDocument();
     await waitFor(() =>
@@ -506,6 +512,82 @@ describe('UnitgroupsPage', () => {
     const { message } = jest.requireMock('antd');
     expect(message.success).toHaveBeenCalledWith('Contribute successfully');
     expect(latestReloadMock).toHaveBeenCalled();
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const { message } = jest.requireMock('antd');
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
+    const referenceRows = [
+      {
+        id: 'ug-ref',
+        version: '1.0.0',
+        name: 'Referenced unit group',
+        refUnitName: 'kg',
+        refUnitGeneralComment: 'Mass unit',
+        classification: 'Physical',
+        modifiedAt: '2024-01-01',
+        teamId: '',
+      },
+    ];
+    mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await screen.findByTestId('unitgroup-view');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('unitgroup-view')).not.toBeInTheDocument());
+    expect(mockGetUnitGroupTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced unit group')).toBeInTheDocument();
+    expect(message.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup = mockGetUnitGroupTableUuidMentionSearch.mock.calls.length;
+    mockGetUnitGroupTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
+      ),
+    );
   });
 
   it('uses compact mobile controls for admin my data rows', async () => {

@@ -24,6 +24,11 @@ import {
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/es/table/interface';
 import { getCachedClassificationData } from '../classifications/cache';
+import {
+  mapDatasetUuidMentionRowsToListRows,
+  normalizeDatasetUuidMentionTeamId,
+  searchDatasetJsonUuidMentionPage,
+} from '../datasetUuidMentionSearch/api';
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
@@ -1007,6 +1012,111 @@ function mergeUniqueProcessTableRows(responses: ProcessTableResponse[]): Process
   });
 
   return merged;
+}
+
+async function mapProcessListRows(
+  rows: ProcessListRpcRow[],
+  lang: string,
+): Promise<ProcessTable[]> {
+  const locations: string[] = Array.from(
+    new Set(
+      rows.map(
+        (i: any) =>
+          i.json?.processDataSet?.processInformation?.geography
+            ?.locationOfOperationSupplyOrProduction?.['@location'],
+      ),
+    ),
+  );
+  const locationData = await getCachedLocationData(lang, locations);
+  const classificationData =
+    lang === 'zh' ? await getCachedClassificationData('Process', lang, ['all']) : [];
+
+  return rows.map((i: any) => {
+    try {
+      const dataInfo = i.json?.processDataSet?.processInformation;
+      const classifications = jsonToList(
+        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+          'common:class'
+        ],
+      );
+      const thisLocation = locationData.find(
+        (l: any) =>
+          l['@value'] === dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
+      );
+      const location =
+        thisLocation?.['#text'] ??
+        dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
+      const classification =
+        lang === 'zh'
+          ? classificationToString(genClassificationZH(classifications, classificationData))
+          : classificationToString(classifications);
+
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        lang,
+        name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        classification,
+        referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
+        location: location ?? '-',
+        version: i.version,
+        typeOfDataSet:
+          i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ??
+          '-',
+        modifiedAt: new Date(i.modified_at ?? 0),
+        teamId: i.team_id ?? '',
+        modelId: i.model_id ?? '',
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+      } as ProcessTable;
+    }
+  });
+}
+
+export async function getProcessTableUuidMentionSearch(
+  params: ProcessTableQueryParams,
+  lang: string,
+  dataSource: string,
+  uuid: string,
+  stateCode?: string | number,
+  typeOfDataSet?: string,
+  tid?: string | [],
+): Promise<ProcessTableResponse & { capped?: boolean }> {
+  const result = await searchDatasetJsonUuidMentionPage({
+    dataSource,
+    pageCurrent: params.current,
+    pageSize: params.pageSize,
+    sourceEntityKinds: ['process'],
+    stateCode,
+    teamId: normalizeDatasetUuidMentionTeamId(tid),
+    uuid,
+  });
+  if (!result.success) {
+    return { ...result, data: [] };
+  }
+
+  const rows = mapDatasetUuidMentionRowsToListRows(result.data).filter((row) => {
+    if (!typeOfDataSet || typeOfDataSet === 'all') {
+      return true;
+    }
+    const sourceJson = row.json as any;
+    return (
+      sourceJson?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ===
+      typeOfDataSet
+    );
+  }) as ProcessListRpcRow[];
+
+  return {
+    ...result,
+    data: await mapProcessListRows(rows, lang),
+  };
 }
 
 async function listAllDataSearchProcessPage(

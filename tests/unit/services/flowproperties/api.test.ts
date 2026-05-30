@@ -21,6 +21,7 @@ import {
   getFlowpropertyDetail,
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
+  getFlowpropertyTableUuidMentionSearch,
   getReferenceUnitGroup,
   getReferenceUnitGroups,
   updateFlowproperties,
@@ -807,6 +808,95 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         page: 1,
         success: true,
         total: 0,
+      });
+    });
+
+    describe('getFlowpropertyTableUuidMentionSearch', () => {
+      const mentionRow = (overrides: any = {}) => ({
+        matched_by: 'json',
+        matched_entity_table: 'flowproperties',
+        rank: 1,
+        source_entity_kind: 'flowproperty',
+        source_id: 'fp-ref',
+        source_json: latestFlowpropertyRow().json,
+        source_modified_at: '2024-01-01T00:00:00Z',
+        source_team_id: 'team-ref',
+        source_version: '01.00.000',
+        ...overrides,
+      });
+
+      it('maps reference lookup rows into flow property table rows', async () => {
+        supabase.rpc.mockResolvedValueOnce({
+          data: [mentionRow()],
+          error: null,
+        });
+        classificationToString.mockReturnValue('Impact category');
+
+        const result = await getFlowpropertyTableUuidMentionSearch(
+          { current: 1, pageSize: 10 },
+          'en',
+          'tg',
+          'd1380000-0000-4000-8000-000000000001',
+          '100',
+          'team-1',
+        );
+
+        expect(supabase.rpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
+          p_data_source: 'tg',
+          p_limit: 11,
+          p_source_entity_kinds: ['flowproperty'],
+          p_state_code_filter: 100,
+          p_team_id_filter: 'team-1',
+          p_this_user_id: 'user-123',
+          p_uuid: 'd1380000-0000-4000-8000-000000000001',
+        });
+        expect(result).toMatchObject({
+          data: [
+            expect.objectContaining({
+              id: 'fp-ref',
+              name: 'Mass',
+              classification: 'Impact category',
+              refUnitGroupId: 'ug-1',
+              refUnitGroup: 'Reference unit group',
+              teamId: 'team-ref',
+              version: '01.00.000',
+            }),
+          ],
+          success: true,
+          total: 1,
+        });
+      });
+
+      it('returns empty table data when reference lookup fails', async () => {
+        supabase.rpc.mockResolvedValueOnce({
+          data: null,
+          error: { message: 'lookup failed' },
+        });
+
+        const result = await getFlowpropertyTableUuidMentionSearch(
+          { current: 1, pageSize: 10 },
+          'en',
+          'tg',
+          'd1380000-0000-4000-8000-000000000001',
+          undefined,
+          [],
+        );
+
+        expect(supabase.rpc).toHaveBeenCalledWith(
+          'search_dataset_json_uuid_mentions',
+          expect.objectContaining({
+            p_source_entity_kinds: ['flowproperty'],
+            p_team_id_filter: null,
+          }),
+        );
+        expect(result).toEqual({
+          capped: false,
+          data: [],
+          error: 'lookup failed',
+          page: 1,
+          success: false,
+          total: 0,
+        });
       });
     });
   });

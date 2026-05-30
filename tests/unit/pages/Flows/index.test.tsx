@@ -22,6 +22,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetFlowTableAll = jest.fn();
 const mockGetFlowTablePgroongaSearch = jest.fn();
+const mockGetFlowTableUuidMentionSearch = jest.fn();
 const mockFlowHybridSearch = jest.fn();
 const mockGetCachedFlowCategorizationAll = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
@@ -74,6 +75,7 @@ jest.mock('@/services/flows/api', () => ({
   flow_hybrid_search: (...args: any[]) => mockFlowHybridSearch(...args),
   getFlowTableAll: (...args: any[]) => mockGetFlowTableAll(...args),
   getFlowTablePgroongaSearch: (...args: any[]) => mockGetFlowTablePgroongaSearch(...args),
+  getFlowTableUuidMentionSearch: (...args: any[]) => mockGetFlowTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/classifications/cache', () => ({
@@ -252,6 +254,9 @@ jest.mock('antd', () => {
       <input aria-label='search-input' placeholder={placeholder} />
       <button type='button' onClick={() => onSearch?.('steel')}>
         search
+      </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
       </button>
     </div>
   );
@@ -437,6 +442,7 @@ describe('FlowsPage', () => {
     });
     mockGetFlowTableAll.mockResolvedValue({ data: flowRows, success: true });
     mockGetFlowTablePgroongaSearch.mockResolvedValue({ data: [], success: true });
+    mockGetFlowTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockFlowHybridSearch.mockResolvedValue({ data: [], success: true });
     mockContributeSource.mockResolvedValue({ error: null });
   });
@@ -472,16 +478,7 @@ describe('FlowsPage', () => {
     expect(screen.getByTestId('classification-filters')).toHaveTextContent(
       '"text":"-","value":"classification:class-empty"',
     );
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["flow"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['flow'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
     expect(screen.getAllByTestId('flow-create-createVersion')).toHaveLength(2);
     expect(screen.getAllByTestId('flow-create-createVersion')[0]).toHaveTextContent(
       '"newVersion":"02.00.000"',
@@ -825,6 +822,64 @@ describe('FlowsPage', () => {
         'all',
         undefined,
         '',
+      ),
+    );
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const referenceRows = [{ ...flowRows[0], id: 'flow-ref', name: 'Referenced flow' }];
+    mockGetFlowTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<FlowsPage />);
+
+    await screen.findByText('Flow One');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(mockMessageError).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByText('Flow One')).not.toBeInTheDocument());
+    expect(mockGetFlowTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced flow')).toBeInTheDocument();
+    expect(mockMessageError).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup = mockGetFlowTableUuidMentionSearch.mock.calls.length;
+    mockGetFlowTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
       ),
     );
   });
