@@ -413,6 +413,19 @@ describe('lca task center', () => {
     unsubscribe();
   });
 
+  it('notifies and unsubscribes task-center open request listeners', () => {
+    const { module } = loadTaskCenterModule();
+    const listener = jest.fn();
+    const unsubscribe = module.subscribeLcaTaskCenterOpenRequests(listener);
+
+    module.requestOpenLcaTaskCenter();
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    unsubscribe();
+    module.requestOpenLcaTaskCenter();
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
   it('transitions through snapshot building and solving phases before completing', async () => {
     const { module, mocks } = loadTaskCenterModule((next) => {
       next.submitLcaSolve

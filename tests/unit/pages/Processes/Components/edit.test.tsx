@@ -136,6 +136,8 @@ const mockRequestReviewSubmitGate = jest.fn();
 const mockRequestReviewSubmitJob = jest.fn();
 const mockSubmitDatasetReview = jest.fn();
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockRequestOpenLcaTaskCenter = jest.fn();
+const mockTrackReviewSubmitTask = jest.fn();
 
 jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
@@ -155,6 +157,16 @@ jest.mock('@/pages/Utils/review', () => ({
   requestReviewSubmitJob: (...args: any[]) => mockRequestReviewSubmitJob(...args),
   submitDatasetReview: (...args: any[]) => mockSubmitDatasetReview(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
+}));
+
+jest.mock('@/services/lca/taskCenter', () => ({
+  __esModule: true,
+  requestOpenLcaTaskCenter: (...args: any[]) => mockRequestOpenLcaTaskCenter(...args),
+}));
+
+jest.mock('@/services/reviews/taskCenter', () => ({
+  __esModule: true,
+  trackReviewSubmitTask: (...args: any[]) => mockTrackReviewSubmitTask(...args),
 }));
 
 jest.mock('@/components/ValidationIssueModal', () => ({
@@ -479,6 +491,8 @@ describe('ProcessEdit component', () => {
       revisionChecksum: 'a'.repeat(64),
     });
     mockSubmitDatasetReview.mockResolvedValue({ data: [{ review: { id: 'review-1' } }] });
+    mockRequestOpenLcaTaskCenter.mockReset();
+    mockTrackReviewSubmitTask.mockReset();
     mockGetRefsOfCurrentVersion.mockResolvedValue({ oldRefs: [] });
     mockGetRefsOfNewVersion.mockResolvedValue({ newRefs: [], oldRefs: [] });
     mockUpdateRefsData.mockImplementation((data: any) => data);
@@ -1597,7 +1611,7 @@ describe('ProcessEdit component', () => {
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
   });
 
-  it('reads queued review-submit jobs again before showing success', async () => {
+  it('enqueues queued review-submit jobs and sends the user to the task center', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [
         {
@@ -1609,26 +1623,12 @@ describe('ProcessEdit component', () => {
         },
       ],
     });
-    mockRequestReviewSubmitJob
-      .mockResolvedValueOnce({
-        data: [{ status: 'queued', reviewSubmitJobId: 'job-queued' }],
-        error: null,
-        reviewSubmitJobId: 'job-queued',
-        revisionChecksum: 'e'.repeat(64),
-      })
-      .mockResolvedValueOnce({
-        data: [
-          {
-            status: 'submitted',
-            reviewSubmitJobId: 'job-queued',
-            gateRunId: 'gate-run-queued',
-            datasetRevision: { revisionChecksum: 'e'.repeat(64) },
-          },
-        ],
-        error: null,
-        reviewSubmitJobId: 'job-queued',
-        revisionChecksum: 'e'.repeat(64),
-      });
+    mockRequestReviewSubmitJob.mockResolvedValueOnce({
+      data: [{ status: 'queued', reviewSubmitJobId: 'job-queued' }],
+      error: null,
+      reviewSubmitJobId: 'job-queued',
+      revisionChecksum: 'e'.repeat(64),
+    });
 
     render(<ProcessEdit {...baseProps} />);
 
@@ -1637,11 +1637,8 @@ describe('ProcessEdit component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
 
-    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalledTimes(2), {
-      timeout: 4000,
-    });
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      1,
+    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalledTimes(1));
+    expect(mockRequestReviewSubmitJob).toHaveBeenCalledWith(
       'processes',
       'process-1',
       '1.0.0',
@@ -1651,19 +1648,16 @@ describe('ProcessEdit component', () => {
         reviewSubmitJobId: undefined,
       },
     );
-    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
-      2,
-      'processes',
-      'process-1',
-      '1.0.0',
-      null,
-      {
-        action: 'read',
-        reviewSubmitJobId: 'job-queued',
-      },
-    );
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Review submitted successfully');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Review submitted successfully');
+    expect(mockAntdMessage.info).toHaveBeenCalledWith(
+      'Review submission task has been created. Track progress in the task center.',
+    );
+    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith({
+      status: 'queued',
+      reviewSubmitJobId: 'job-queued',
+    });
+    expect(mockRequestOpenLcaTaskCenter).toHaveBeenCalled();
   });
 
   it('clears a review-submit job state after data changes', async () => {
