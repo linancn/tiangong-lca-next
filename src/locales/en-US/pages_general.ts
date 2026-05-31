@@ -81,11 +81,15 @@ export default {
   'pages.tab.title.co': 'Business Data',
 
   'pages.search.openAI': 'AI Recommendation',
+  'pages.search.referenceLookup': 'Reference Lookup',
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
+  'pages.search.referenceLookup.placeholder': 'Reference Lookup: Enter a complete dataset UUID.',
   'pages.datasetUuidMention.empty': 'No data contains this ID',
   'pages.datasetUuidMention.entityKind': 'Data type',
   'pages.datasetUuidMention.error': 'Search failed. Try again later.',
+  'pages.datasetUuidMention.invalidUuid': 'Enter a complete dataset UUID before running Reference Lookup.',
+  'pages.datasetUuidMention.maxResults': 'Showing up to the first 50 reference lookup results.',
   'pages.datasetUuidMention.searchButton': 'Find data containing this ID',
 
   'pages.lifeCycleModel.drawer.title.create': 'Create Model',

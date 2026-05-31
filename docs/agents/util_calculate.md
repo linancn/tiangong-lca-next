@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-05-26
-lastReviewedCommit: 9366a0891e16f64b5054c1f5e7bc76c37cb949a6
+lastReviewedAt: 2026-05-29
+lastReviewedCommit: 224fca96a652a087ef851787967628014f17e9d7
 ---
 
 # Lifecycle Model Calculation Reference

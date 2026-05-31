@@ -80,11 +80,15 @@ export default {
   'pages.tab.title.co': '商业数据',
 
   'pages.search.openAI': '智能推荐',
+  'pages.search.referenceLookup': '引用查找',
   'pages.search.keyWord': '全文检索：请输入一个或多个关键词。',
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
+  'pages.search.referenceLookup.placeholder': '引用查找：请输入完整的数据集 UUID。',
   'pages.datasetUuidMention.empty': '没有找到包含该 ID 的数据',
   'pages.datasetUuidMention.entityKind': '数据类型',
   'pages.datasetUuidMention.error': '查找失败，请稍后重试',
+  'pages.datasetUuidMention.invalidUuid': '请输入完整的数据集 UUID 后再进行引用查找。',
+  'pages.datasetUuidMention.maxResults': '最多展示前 50 条引用查找结果。',
   'pages.datasetUuidMention.searchButton': '查找包含该 ID 的数据',
 
   'pages.lifeCycleModel.drawer.title.create': '创建模型',

@@ -4,7 +4,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -29,6 +28,7 @@ import {
   contributeLifeCycleModel,
   getLifeCycleModelTableAll,
   getLifeCycleModelTablePgroongaSearch,
+  getLifeCycleModelTableUuidMentionSearch,
   lifeCycleModel_hybrid_search,
 } from '@/services/lifeCycleModels/api';
 import type {
@@ -44,6 +44,14 @@ import type { FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupPaginationProps,
+  getReferenceLookupTeamId,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import LifeCycleModelCreate from './Components/create';
 import LifeCycleModelDelete from './Components/delete';
 import LifeCycleModelEdit from './Components/edit';
@@ -56,6 +64,7 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<LifeCycleModelImportData | null>(null);
   const [openAI, setOpenAI] = useState<boolean>(false);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
@@ -78,6 +87,7 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef('');
   const stateCodeRef = useRef<string | number>('all');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: LifeCycleModelTable[];
     page?: number;
@@ -314,6 +324,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
 
@@ -341,9 +354,11 @@ const TableList: FC = () => {
             <Search
               size={'large'}
               placeholder={
-                openAI
-                  ? intl.formatMessage({ id: 'pages.search.placeholder' })
-                  : intl.formatMessage({ id: 'pages.search.keyWord' })
+                referenceLookup
+                  ? intl.formatMessage({ id: 'pages.search.referenceLookup.placeholder' })
+                  : openAI
+                    ? intl.formatMessage({ id: 'pages.search.placeholder' })
+                    : intl.formatMessage({ id: 'pages.search.keyWord' })
               }
               onSearch={onSearch}
               enterButton
@@ -351,21 +366,32 @@ const TableList: FC = () => {
           </Col>
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
+              checked={openAI}
               onChange={(e) => {
                 setOpenAI(e.target.checked);
+                if (e.target.checked) {
+                  setReferenceLookup(false);
+                }
               }}
             >
               <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
             </Checkbox>
+            <Checkbox
+              checked={referenceLookup}
+              onChange={(e) => {
+                setReferenceLookup(e.target.checked);
+                if (e.target.checked) {
+                  setOpenAI(false);
+                }
+              }}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
           </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['lifecyclemodel']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<LifeCycleModelTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -382,6 +408,7 @@ const TableList: FC = () => {
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
+          ...getReferenceLookupPaginationProps(referenceLookup),
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
@@ -420,6 +447,33 @@ const TableList: FC = () => {
         ) => {
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
+          if (referenceLookup) {
+            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+            if (!referenceLookupUuid) {
+              return attachReviewState(getReferenceLookupEmptyResult(params.current));
+            }
+            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+
+            const result = await getLifeCycleModelTableUuidMentionSearch(
+              params,
+              lang,
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              referenceLookupTeamId,
+            );
+            const noticeKey = [
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              referenceLookupTeamId,
+            ].join(':');
+            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+              referenceLookupLimitNoticeRef.current = noticeKey;
+              showReferenceLookupLimitMessage(intl);
+            }
+            return attachReviewState(result);
+          }
           if (currentKeyWord.length > 0) {
             let orderBy:
               | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }

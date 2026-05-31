@@ -4,7 +4,6 @@ import {
   extractContributeDataError,
   getContributeDataErrorMessage,
 } from '@/components/ContributeData/utils';
-import DatasetUuidMentionSearch from '@/components/DatasetUuidMentionSearch';
 import ExportData from '@/components/ExportData';
 import ImportData from '@/components/ImportData';
 import {
@@ -16,12 +15,17 @@ import {
   dataListTextColumn,
   responsiveDataListTableProps,
   responsiveSearchCardClassName,
+  responsiveSearchExtraColProps,
   responsiveSearchPrimaryColProps,
   responsiveSearchRowProps,
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
+import {
+  getContactTableAll,
+  getContactTablePgroongaSearch,
+  getContactTableUuidMentionSearch,
+} from '@/services/contacts/api';
 import { ContactImportData, ContactTable } from '@/services/contacts/data';
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
@@ -29,12 +33,20 @@ import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/servic
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Col, Input, Row, Space, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 import { getAllVersionsColumns, getDataTitle } from '../Utils';
+import {
+  getReferenceLookupEmptyResult,
+  getReferenceLookupPaginationProps,
+  getReferenceLookupTeamId,
+  getReferenceLookupUuid,
+  showInvalidReferenceLookupUuidMessage,
+  showReferenceLookupLimitMessage,
+} from '../Utils/referenceLookup';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
@@ -46,6 +58,7 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<ContactImportData | null>(null);
+  const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
@@ -66,6 +79,7 @@ const TableList: FC = () => {
   const actionRef = useRef<ActionType>();
   const stateCodeRef = useRef<string | number>('all');
   const keyWordRef = useRef<string>('');
+  const referenceLookupLimitNoticeRef = useRef<string>('');
   const attachReviewState = async (result: {
     data?: ContactTable[];
     page?: number;
@@ -305,6 +319,9 @@ const TableList: FC = () => {
     keyWordRef.current = value;
     setKeyWord(value);
     actionRef.current?.setPageInfo?.({ current: 1 });
+    if (referenceLookup && !getReferenceLookupUuid(value)) {
+      showInvalidReferenceLookupUuidMessage(intl);
+    }
     actionRef.current?.reload();
   };
 
@@ -324,19 +341,27 @@ const TableList: FC = () => {
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
               size={'large'}
-              placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+              placeholder={intl.formatMessage({
+                id: referenceLookup
+                  ? 'pages.search.referenceLookup.placeholder'
+                  : 'pages.search.keyWord',
+              })}
               onSearch={onSearch}
               enterButton
             />
           </Col>
+          <Col {...responsiveSearchExtraColProps}>
+            <Checkbox
+              checked={referenceLookup}
+              onChange={(e) => setReferenceLookup(e.target.checked)}
+            >
+              <FormattedMessage
+                id='pages.search.referenceLookup'
+                defaultMessage='Reference Lookup'
+              />
+            </Checkbox>
+          </Col>
         </Row>
-        <DatasetUuidMentionSearch
-          dataSource={dataSource}
-          getStateCodeFilter={() => stateCodeRef.current}
-          queryText={keyWord}
-          sourceEntityKinds={['contact']}
-          teamId={tid}
-        />
       </Card>
       <ProTable<ContactTable, ListPagination>
         {...responsiveDataListTableProps}
@@ -353,6 +378,7 @@ const TableList: FC = () => {
         pagination={{
           showSizeChanger: false,
           pageSize: 10,
+          ...getReferenceLookupPaginationProps(referenceLookup),
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
@@ -387,8 +413,35 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current;
+          const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
+          if (referenceLookup) {
+            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+            if (!referenceLookupUuid) {
+              return attachReviewState(getReferenceLookupEmptyResult(params.current));
+            }
+            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+
+            const result = await getContactTableUuidMentionSearch(
+              params,
+              lang,
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              referenceLookupTeamId,
+            );
+            const noticeKey = [
+              dataSource,
+              referenceLookupUuid,
+              currentStateCode,
+              referenceLookupTeamId,
+            ].join(':');
+            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
+              referenceLookupLimitNoticeRef.current = noticeKey;
+              showReferenceLookupLimitMessage(intl);
+            }
+            return attachReviewState(result);
+          }
           if (currentKeyWord.length > 0) {
             return attachReviewState(
               await getContactTablePgroongaSearch(

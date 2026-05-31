@@ -12,6 +12,7 @@ import {
   getFlowStateCodeByIdsAndVersions,
   getFlowTableAll,
   getFlowTablePgroongaSearch,
+  getFlowTableUuidMentionSearch,
   getReferenceProperty,
   updateFlows,
 } from '@/services/flows/api';
@@ -1740,6 +1741,310 @@ describe('getFlowTablePgroongaSearch', () => {
       version: '01.00.019',
       modifiedAt: new Date('2024-01-19T00:00:00Z'),
       teamId: undefined,
+    });
+  });
+});
+
+describe('getFlowTableUuidMentionSearch', () => {
+  const mentionRow = (overrides: any = {}) => ({
+    matched_by: 'json',
+    matched_entity_table: 'flows',
+    rank: 1,
+    source_entity_kind: 'flow',
+    source_id: 'flow-ref',
+    source_json: {
+      flowDataSet: {
+        flowInformation: {
+          dataSetInformation: {
+            name: {
+              baseName: [{ '@xml:lang': 'en', '#text': 'Referenced flow' }],
+            },
+            classificationInformation: {
+              'common:classification': {
+                'common:class': [{ '@value': 'Products', '#text': 'Products' }],
+              },
+            },
+            'common:synonyms': [{ '@xml:lang': 'en', '#text': 'Ref flow synonym' }],
+            CASNumber: '50-00-0',
+          },
+          geography: {
+            locationOfSupply: 'CN',
+          },
+        },
+        modellingAndValidation: {
+          LCIMethod: {
+            typeOfDataSet: 'Product flow',
+          },
+        },
+        flowProperties: {
+          flowProperty: {
+            referenceToFlowPropertyDataSet: {
+              '@refObjectId': 'fp-ref',
+            },
+          },
+        },
+      },
+    },
+    source_modified_at: '2024-01-01T00:00:00Z',
+    source_team_id: 'team-ref',
+    source_version: '01.00.000',
+    ...overrides,
+  });
+
+  it('maps English reference lookup rows and sparse fallbacks into flow table rows', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow(),
+        mentionRow({
+          source_id: 'flow-sparse',
+          source_json: { flowDataSet: { flowInformation: { dataSetInformation: {} } } },
+          source_modified_at: undefined,
+          source_team_id: undefined,
+          source_version: undefined,
+        }),
+      ],
+      error: null,
+    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+      '100',
+      'team-1',
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith('search_dataset_json_uuid_mentions', {
+      p_data_source: 'tg',
+      p_limit: 11,
+      p_source_entity_kinds: ['flow'],
+      p_state_code_filter: 100,
+      p_team_id_filter: 'team-1',
+      p_this_user_id: 'user-id',
+      p_uuid: 'd1380000-0000-4000-8000-000000000001',
+    });
+    expect(result.data[0]).toEqual({
+      key: 'flow-ref:01.00.000',
+      id: 'flow-ref',
+      name: 'Referenced flow',
+      synonyms: 'Ref flow synonym',
+      flowType: 'Product flow',
+      classification: 'Products',
+      CASNumber: '50-00-0',
+      locationOfSupply: 'China',
+      refFlowPropertyId: 'fp-ref',
+      version: '01.00.000',
+      modifiedAt: new Date('2024-01-01T00:00:00Z'),
+      teamId: 'team-ref',
+    });
+    expect(result.data[1]).toEqual({
+      key: 'flow-sparse:undefined',
+      id: 'flow-sparse',
+      name: '-',
+      synonyms: '-',
+      flowType: '-',
+      classification: '',
+      CASNumber: '-',
+      locationOfSupply: '-',
+      refFlowPropertyId: '-',
+      version: '',
+      modifiedAt: new Date(0),
+      teamId: '',
+    });
+  });
+
+  it('localizes Chinese elementary flow reference lookup rows', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow({
+          source_id: 'flow-zh',
+          source_json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {
+                  name: {
+                    baseName: [{ '@xml:lang': 'zh', '#text': '参考流' }],
+                  },
+                  classificationInformation: {
+                    'common:elementaryFlowCategorization': {
+                      'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+                    },
+                  },
+                  'common:synonyms': [{ '@xml:lang': 'zh', '#text': '别名' }],
+                },
+                geography: {
+                  locationOfSupply: 'GLO',
+                },
+              },
+              modellingAndValidation: {
+                LCIMethod: {
+                  typeOfDataSet: 'Elementary flow',
+                },
+              },
+            },
+          },
+        }),
+      ],
+      error: null,
+    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'GLO', '#text': '全球' }]);
+    mockGetCachedFlowCategorizationAll.mockResolvedValueOnce({
+      categoryElementaryFlow: [{ '@value': 'Air', '#text': '空气' }],
+      category: [],
+    });
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'flow-zh',
+      name: '参考流',
+      synonyms: '别名',
+      classification: '空气',
+      flowType: 'Elementary flow',
+      locationOfSupply: '全球',
+    });
+  });
+
+  it('uses raw classifications when Chinese categorization data is unavailable', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow({
+          source_id: 'flow-zh-no-category',
+          source_json: {
+            flowDataSet: {
+              flowInformation: {
+                dataSetInformation: {
+                  classificationInformation: {
+                    'common:elementaryFlowCategorization': {
+                      'common:category': [{ '@value': 'Air', '#text': 'Air' }],
+                    },
+                  },
+                },
+              },
+              modellingAndValidation: {
+                LCIMethod: {
+                  typeOfDataSet: 'Elementary flow',
+                },
+              },
+            },
+          },
+        }),
+      ],
+      error: null,
+    });
+    mockGetCachedFlowCategorizationAll.mockResolvedValueOnce(null);
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'zh',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'flow-zh-no-category',
+      classification: 'Air',
+    });
+  });
+
+  it('falls back when the reference lookup flow name formatter returns undefined', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [mentionRow({ source_id: 'flow-unnamed' })],
+      error: null,
+    });
+    mockGetCachedLocationData.mockResolvedValueOnce([{ '@value': 'CN', '#text': 'China' }]);
+    mockGenFlowName.mockReturnValueOnce(undefined);
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+
+    expect(result.data[0]).toMatchObject({
+      id: 'flow-unnamed',
+      name: '-',
+    });
+  });
+
+  it('returns fallback rows when reference lookup flow mapping throws', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        mentionRow({
+          source_id: 'flow-bad',
+          source_modified_at: undefined,
+          source_team_id: undefined,
+          source_version: undefined,
+        }),
+      ],
+      error: null,
+    });
+    mockJsonToList.mockImplementationOnce(() => {
+      throw new Error('bad flow mapping');
+    });
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result.data[0]).toEqual({
+      id: 'flow-bad',
+      version: '',
+      modifiedAt: new Date(0),
+      teamId: '',
+      name: '-',
+      synonyms: '',
+      classification: '',
+      flowType: '-',
+      CASNumber: '-',
+      locationOfSupply: '-',
+      refFlowPropertyId: '-',
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('returns empty table data when reference lookup fails', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'lookup failed' },
+    });
+
+    const result = await getFlowTableUuidMentionSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'd1380000-0000-4000-8000-000000000001',
+      undefined,
+      [],
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_dataset_json_uuid_mentions',
+      expect.objectContaining({
+        p_source_entity_kinds: ['flow'],
+        p_team_id_filter: null,
+      }),
+    );
+    expect(result).toEqual({
+      capped: false,
+      data: [],
+      error: 'lookup failed',
+      page: 1,
+      success: false,
+      total: 0,
     });
   });
 });

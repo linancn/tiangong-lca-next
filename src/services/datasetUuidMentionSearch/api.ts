@@ -35,6 +35,24 @@ export type SearchDatasetJsonUuidMentionsResult = {
   success: boolean;
 };
 
+export type SearchDatasetJsonUuidMentionPageOptions = Omit<
+  SearchDatasetJsonUuidMentionsOptions,
+  'limit'
+> & {
+  maxResults?: number;
+  pageCurrent?: number;
+  pageSize?: number;
+};
+
+export type SearchDatasetJsonUuidMentionPageResult = SearchDatasetJsonUuidMentionsResult & {
+  capped: boolean;
+  page: number;
+  total: number;
+};
+
+export const DATASET_UUID_MENTION_PAGE_SIZE = 10;
+export const DATASET_UUID_MENTION_MAX_RESULTS = 50;
+
 const DATASET_UUID_QUERY_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -79,6 +97,11 @@ export function normalizeDatasetUuidMentionStateCode(
     }
   }
   return null;
+}
+
+export function normalizeDatasetUuidMentionTeamId(tid?: string | [] | null): string | null {
+  const normalizedTeamId = typeof tid === 'string' ? tid.trim() : '';
+  return normalizedTeamId.length > 0 ? normalizedTeamId : null;
 }
 
 export async function searchDatasetJsonUuidMentions({
@@ -127,4 +150,70 @@ export async function searchDatasetJsonUuidMentions({
     data: (result.data ?? []) as DatasetUuidMentionRow[],
     success: true,
   };
+}
+
+export async function searchDatasetJsonUuidMentionPage({
+  maxResults = DATASET_UUID_MENTION_MAX_RESULTS,
+  pageCurrent = 1,
+  pageSize = DATASET_UUID_MENTION_PAGE_SIZE,
+  ...options
+}: SearchDatasetJsonUuidMentionPageOptions): Promise<SearchDatasetJsonUuidMentionPageResult> {
+  const normalizedPageSize = Math.max(1, Math.floor(pageSize));
+  const normalizedPage = Math.max(1, Math.floor(pageCurrent));
+  const normalizedMaxResults = Math.min(
+    DATASET_UUID_MENTION_MAX_RESULTS,
+    Math.max(1, Math.floor(maxResults)),
+  );
+  const pageStart = (normalizedPage - 1) * normalizedPageSize;
+
+  if (pageStart >= normalizedMaxResults) {
+    return {
+      capped: true,
+      data: [],
+      page: normalizedPage,
+      success: true,
+      total: normalizedMaxResults,
+    };
+  }
+
+  const fetchLimit = Math.min(normalizedMaxResults, pageStart + normalizedPageSize + 1);
+  const result = await searchDatasetJsonUuidMentions({
+    ...options,
+    limit: fetchLimit,
+  });
+
+  if (!result.success) {
+    return {
+      ...result,
+      capped: false,
+      page: normalizedPage,
+      total: 0,
+    };
+  }
+
+  const pageRows = result.data.slice(pageStart, pageStart + normalizedPageSize);
+  const hasNextPage = result.data.length > pageStart + normalizedPageSize;
+  const capped = fetchLimit >= normalizedMaxResults && result.data.length >= normalizedMaxResults;
+  const total = Math.min(
+    normalizedMaxResults,
+    hasNextPage ? pageStart + pageRows.length + 1 : pageStart + pageRows.length,
+  );
+
+  return {
+    ...result,
+    capped,
+    data: pageRows,
+    page: normalizedPage,
+    total,
+  };
+}
+
+export function mapDatasetUuidMentionRowsToListRows(rows: DatasetUuidMentionRow[]) {
+  return rows.map((row) => ({
+    id: row.source_id,
+    json: row.source_json,
+    modified_at: row.source_modified_at ?? undefined,
+    team_id: row.source_team_id ?? undefined,
+    version: row.source_version,
+  }));
 }

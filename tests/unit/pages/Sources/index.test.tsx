@@ -23,6 +23,7 @@ let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 const mockContributeSource = jest.fn();
 const mockGetSourceTableAll = jest.fn();
 const mockGetSourceTablePgroongaSearch = jest.fn();
+const mockGetSourceTableUuidMentionSearch = jest.fn();
 const mockGetDataSource = jest.fn(() => 'my');
 const mockGetLang = jest.fn(() => 'en');
 const mockGetLangText = jest.fn((value: any) => value?.[0]?.['#text'] ?? 'Team title');
@@ -53,6 +54,7 @@ jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
   getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  getSourceTableUuidMentionSearch: (...args: any[]) => mockGetSourceTableUuidMentionSearch(...args),
 }));
 
 jest.mock('@/services/general/api', () => ({
@@ -261,6 +263,9 @@ jest.mock('antd', () => {
       <button type='button' onClick={() => onSearch?.('iso')}>
         search
       </button>
+      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+        uuid-lookup
+      </button>
     </div>
   );
   const Input = { Search };
@@ -387,6 +392,7 @@ describe('SourcesPage', () => {
     });
     mockGetSourceTableAll.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTablePgroongaSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
+    mockGetSourceTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
   });
 
@@ -414,16 +420,7 @@ describe('SourcesPage', () => {
     expect(screen.getByTestId('source-edit')).toHaveTextContent('edit:source-1');
     expect(screen.getByTestId('source-delete')).toHaveTextContent('delete:source-1');
     expect(screen.getAllByTestId('source-create')[0]).toHaveTextContent('"actionType":"create"');
-    expect(screen.getByTestId('dataset-uuid-mention-search')).toHaveTextContent(
-      '"sourceEntityKinds":["source"]',
-    );
-    expect(mockDatasetUuidMentionSearch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        dataSource: 'my',
-        sourceEntityKinds: ['source'],
-        teamId: 'team-1',
-      }),
-    );
+    expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /close-source-edit/i }));
     await userEvent.click(screen.getByRole('button', { name: /close-source-delete/i }));
@@ -577,6 +574,65 @@ describe('SourcesPage', () => {
     expect(message.success).not.toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith({ message: 'contribute failed' });
     consoleLogSpy.mockRestore();
+  });
+
+  it('uses the main table for reference lookup and clears rows for incomplete UUIDs', async () => {
+    const { message } = jest.requireMock('antd');
+    const referenceRows = [{ ...baseSourceRow, id: 'source-ref', shortName: 'Referenced source' }];
+    mockGetSourceTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: true,
+    });
+
+    renderWithProviders(<SourcesPage />);
+
+    await screen.findByTestId('source-view');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Reference Lookup' }));
+    expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
+      'placeholder',
+      'pages.search.referenceLookup.placeholder',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'search' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith(
+        'Enter a complete dataset UUID before running Reference Lookup.',
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('source-view')).not.toBeInTheDocument());
+    expect(mockGetSourceTableUuidMentionSearch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetSourceTableUuidMentionSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'd1380000-0000-4000-8000-000000000001',
+        'all',
+        'team-1',
+      ),
+    );
+    expect(await screen.findByText('Referenced source')).toBeInTheDocument();
+    expect(message.error).toHaveBeenCalledWith(
+      'Showing up to the first 50 reference lookup results.',
+    );
+
+    const callCountBeforeUncappedLookup = mockGetSourceTableUuidMentionSearch.mock.calls.length;
+    mockGetSourceTableUuidMentionSearch.mockResolvedValue({
+      data: referenceRows,
+      success: true,
+      total: 1,
+      capped: false,
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'uuid-lookup' }));
+    await waitFor(() =>
+      expect(mockGetSourceTableUuidMentionSearch.mock.calls.length).toBeGreaterThan(
+        callCountBeforeUncappedLookup,
+      ),
+    );
   });
 
   it('renders a dash when classification is missing or invalid', async () => {
