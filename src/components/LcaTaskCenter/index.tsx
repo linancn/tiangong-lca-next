@@ -79,6 +79,19 @@ type TaskCenterItem =
       task: ReviewSubmitBackgroundTask;
     };
 
+type ReviewSubmitBlockingReason = NonNullable<
+  ReviewSubmitBackgroundTask['blockingReasons']
+>[number];
+
+type FormattedReviewSubmitReason = {
+  title: string;
+  description: string;
+  action?: string;
+  diagnosticCode?: string;
+  diagnosticMessage?: string;
+  diagnosticDetails?: string;
+};
+
 function useLcaTasks(): LcaBackgroundTask[] {
   return useSyncExternalStore(subscribeLcaTasks, listLcaTasks, listLcaTasks);
 }
@@ -695,36 +708,55 @@ const REVIEW_SUBMIT_REASON_GUIDANCE: Record<
   },
 };
 
+function diagnosticJson(value: unknown): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (_error) {
+    return String(value);
+  }
+}
+
 function formatReviewSubmitReason(
-  reason: NonNullable<ReviewSubmitBackgroundTask['blockingReasons']>[number],
+  reason: ReviewSubmitBlockingReason,
   index: number,
   intl: IntlShapeLike,
-) {
+): FormattedReviewSubmitReason {
   const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
-  const code =
-    rawCode ||
-    intl.formatMessage(
-      {
-        id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
-        defaultMessage: 'Reason {index}',
-      },
-      { index: index + 1 },
-    );
+  const rawMessage = typeof reason?.message === 'string' ? reason.message.trim() : '';
   const reasonMessage =
-    typeof reason?.message === 'string' && reason.message.trim()
-      ? reason.message.trim()
-      : intl.formatMessage({
-          id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
-          defaultMessage: 'No detailed message returned.',
-        });
+    rawMessage ||
+    intl.formatMessage({
+      id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
+      defaultMessage: 'No detailed message returned.',
+    });
   const guidance = rawCode ? REVIEW_SUBMIT_REASON_GUIDANCE[rawCode] : undefined;
+  const diagnosticDetails = diagnosticJson('details' in reason ? reason.details : undefined);
 
   if (!guidance) {
     return {
-      title: code,
-      description: reasonMessage,
-      action: undefined,
-      diagnostic: `${code}: ${reasonMessage}`,
+      title: intl.formatMessage(
+        {
+          id: 'pages.process.reviewSubmitGate.reason.unknown.title',
+          defaultMessage: 'Gate returned an unmapped blocker',
+        },
+        { index: index + 1 },
+      ),
+      description: intl.formatMessage({
+        id: 'pages.process.reviewSubmitGate.reason.unknown.description',
+        defaultMessage:
+          'The revision was blocked by a backend gate condition that is not mapped to a user-facing message yet.',
+      }),
+      action: intl.formatMessage({
+        id: 'pages.process.reviewSubmitGate.reason.unknown.action',
+        defaultMessage:
+          'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
+      }),
+      diagnosticCode: rawCode || undefined,
+      diagnosticMessage: reasonMessage,
+      diagnosticDetails,
     };
   }
 
@@ -741,20 +773,18 @@ function formatReviewSubmitReason(
       id: guidance.actionId,
       defaultMessage: guidance.defaultAction,
     }),
-    diagnostic: `${code}: ${reasonMessage}`,
+    diagnosticCode: rawCode,
+    diagnosticMessage: reasonMessage,
+    diagnosticDetails,
   };
 }
 
-function shortJson(value: unknown): string | undefined {
-  if (value === undefined || value === null) {
-    return undefined;
-  }
-  try {
-    const text = JSON.stringify(value);
-    return text.length > 360 ? `${text.slice(0, 360)}...` : text;
-  } catch (_error) {
-    return String(value);
-  }
+function normalizedReviewSubmitReasons(
+  task: ReviewSubmitBackgroundTask,
+): ReviewSubmitBlockingReason[] {
+  const reasons = task.blockingReasons ?? [];
+  const blockerCodes = task.blockerCodes ?? [];
+  return reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
 }
 
 function lcaDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
@@ -900,23 +930,19 @@ function packageDetailContent(
   );
 }
 
-function reviewSubmitBlockerContent(
+function reviewSubmitBlockerSummaryContent(
   task: ReviewSubmitBackgroundTask,
   intl: IntlShapeLike,
 ): React.ReactNode {
-  const reasons = task.blockingReasons ?? [];
-  const blockerCodes = task.blockerCodes ?? [];
-  if (reasons.length === 0 && blockerCodes.length === 0) {
+  const normalizedReasons = normalizedReviewSubmitReasons(task);
+  if (normalizedReasons.length === 0) {
     return null;
   }
-
-  const normalizedReasons = reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
 
   return (
     <Space direction='vertical' size={6} style={{ maxWidth: 420 }}>
       {normalizedReasons.map((reason, index) => {
         const formattedReason = formatReviewSubmitReason(reason, index, intl);
-        const details = shortJson('details' in reason ? reason.details : undefined);
         return (
           <div key={`${reason.code ?? 'reason'}-${index}`}>
             <Typography.Text strong>{formattedReason.title}</Typography.Text>
@@ -928,21 +954,164 @@ function reviewSubmitBlockerContent(
                 <Typography.Text type='secondary'>{formattedReason.action}</Typography.Text>
               </>
             )}
-            <br />
-            <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-              {formattedReason.diagnostic}
-            </Typography.Text>
-            {details && (
-              <>
-                <br />
-                <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                  {details}
-                </Typography.Text>
-              </>
-            )}
           </div>
         );
       })}
+    </Space>
+  );
+}
+
+function reviewSubmitErrorSummaryContent(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  if (task.phase !== 'error' || !task.error || normalizedReviewSubmitReasons(task).length > 0) {
+    return null;
+  }
+
+  return (
+    <Space direction='vertical' size={2} style={{ maxWidth: 420 }}>
+      <Typography.Text strong>
+        {intl.formatMessage({
+          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.title',
+          defaultMessage: 'Review submission task failed',
+        })}
+      </Typography.Text>
+      <Typography.Text>
+        {intl.formatMessage({
+          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.description',
+          defaultMessage:
+            'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
+        })}
+      </Typography.Text>
+      <Typography.Text type='secondary'>
+        {intl.formatMessage({
+          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.action',
+          defaultMessage:
+            'If the task fails again, open details and share the diagnostics with an administrator.',
+        })}
+      </Typography.Text>
+    </Space>
+  );
+}
+
+function reviewSubmitDiagnosticText(
+  label: string,
+  value: string | null | undefined,
+  key: React.Key,
+): React.ReactNode {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (!text) {
+    return null;
+  }
+
+  return (
+    <div key={key}>
+      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+        {label}
+      </Typography.Text>
+      <Typography.Text
+        copyable
+        style={{
+          display: 'block',
+          fontSize: 12,
+          marginBottom: 0,
+          maxHeight: 180,
+          maxWidth: 420,
+          overflowY: 'auto',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        }}
+      >
+        {text}
+      </Typography.Text>
+    </div>
+  );
+}
+
+function reviewSubmitDiagnosticsContent(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  const normalizedReasons = normalizedReviewSubmitReasons(task);
+  const workerErrorCode =
+    typeof task.workerJob?.errorCode === 'string' ? task.workerJob.errorCode.trim() : '';
+  const workerErrorMessage =
+    typeof task.workerJob?.errorMessage === 'string' ? task.workerJob.errorMessage.trim() : '';
+  const taskError = typeof task.error === 'string' ? task.error.trim() : '';
+  const formattedReasons = normalizedReasons.map((reason, index) =>
+    formatReviewSubmitReason(reason, index, intl),
+  );
+  const hasDiagnostics =
+    Boolean(taskError || workerErrorCode || workerErrorMessage) ||
+    formattedReasons.some(
+      (reason) => Boolean(reason.diagnosticCode) || Boolean(reason.diagnosticMessage),
+    );
+
+  if (!hasDiagnostics) {
+    return null;
+  }
+
+  const codeLabel = intl.formatMessage({
+    id: 'pages.process.reviewSubmitGate.diagnostics.code',
+    defaultMessage: 'code',
+  });
+  const messageLabel = intl.formatMessage({
+    id: 'pages.process.reviewSubmitGate.diagnostics.message',
+    defaultMessage: 'message',
+  });
+  const detailsLabel = intl.formatMessage({
+    id: 'pages.process.reviewSubmitGate.diagnostics.details',
+    defaultMessage: 'details',
+  });
+
+  return (
+    <Space direction='vertical' size={6} style={{ maxWidth: 440 }}>
+      <Typography.Text strong>
+        {intl.formatMessage({
+          id: 'pages.process.reviewSubmitGate.diagnostics.title',
+          defaultMessage: 'Diagnostics',
+        })}
+      </Typography.Text>
+      {reviewSubmitDiagnosticText(
+        intl.formatMessage({
+          id: 'pages.process.reviewSubmitGate.diagnostics.error',
+          defaultMessage: 'error',
+        }),
+        taskError,
+        'task-error',
+      )}
+      {reviewSubmitDiagnosticText(codeLabel, workerErrorCode, 'worker-error-code')}
+      {reviewSubmitDiagnosticText(messageLabel, workerErrorMessage, 'worker-error-message')}
+      {formattedReasons.map((reason, index) => (
+        <Space
+          key={`reason-diagnostic-${index}`}
+          direction='vertical'
+          size={2}
+          style={{ width: '100%' }}
+        >
+          <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+            {intl.formatMessage(
+              {
+                id: 'pages.process.reviewSubmitGate.diagnostics.reason',
+                defaultMessage: 'reason {index}',
+              },
+              { index: index + 1 },
+            )}
+          </Typography.Text>
+          {reviewSubmitDiagnosticText(codeLabel, reason.diagnosticCode, `reason-code-${index}`)}
+          {reviewSubmitDiagnosticText(
+            messageLabel,
+            reason.diagnosticMessage,
+            `reason-message-${index}`,
+          )}
+          {reviewSubmitDiagnosticText(
+            detailsLabel,
+            reason.diagnosticDetails,
+            `reason-details-${index}`,
+          )}
+        </Space>
+      ))}
     </Space>
   );
 }
@@ -1022,7 +1191,9 @@ function reviewSubmitDetailContent(
         })}
         : {formatDateTime(task.updatedAt)}
       </Typography.Text>
-      {reviewSubmitBlockerContent(task, intl)}
+      {reviewSubmitBlockerSummaryContent(task, intl)}
+      {reviewSubmitErrorSummaryContent(task, intl)}
+      {reviewSubmitDiagnosticsContent(task, intl)}
     </Space>
   );
 }
@@ -1387,12 +1558,12 @@ const LcaTaskCenter: React.FC = () => {
                       {item.kind === 'lca' && item.task.error && (
                         <Typography.Text type='danger'>{item.task.error}</Typography.Text>
                       )}
-                      {item.kind === 'reviewSubmit' && item.task.error && (
-                        <Typography.Text type='danger'>{item.task.error}</Typography.Text>
-                      )}
                       {item.kind === 'reviewSubmit' &&
                         item.task.state === 'failed' &&
-                        reviewSubmitBlockerContent(item.task, intl)}
+                        reviewSubmitBlockerSummaryContent(item.task, intl)}
+                      {item.kind === 'reviewSubmit' &&
+                        item.task.state === 'failed' &&
+                        reviewSubmitErrorSummaryContent(item.task, intl)}
                       <Space size={12} wrap>
                         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
                           {intl.formatMessage({

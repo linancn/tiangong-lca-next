@@ -125,12 +125,24 @@ jest.mock('antd', () => {
       </div>
     ) : null;
 
-  const Popover = ({ children, content }: any) => (
-    <div>
-      {children}
-      <div>{content}</div>
-    </div>
-  );
+  const Popover = ({ children, content }: any) => {
+    const [open, setOpen] = React.useState(false);
+    const trigger = React.isValidElement(children)
+      ? React.cloneElement(children, {
+          onClick: (...args: any[]) => {
+            children.props.onClick?.(...args);
+            setOpen((current: boolean) => !current);
+          },
+        })
+      : children;
+
+    return (
+      <div>
+        {trigger}
+        {open ? <div>{content}</div> : null}
+      </div>
+    );
+  };
 
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tag = ({ children }: any) => <span>{children}</span>;
@@ -280,6 +292,9 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('Solving (solve-1)')).toBeInTheDocument();
     expect(screen.getByText('Cache hit (result result-2)')).toBeInTheDocument();
     expect(screen.getByText('Solve failed once')).toBeInTheDocument();
+    screen.getAllByRole('button', { name: 'Details' }).forEach((button) => {
+      fireEvent.click(button);
+    });
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('build_job_id') ?? false)
         .length,
@@ -400,6 +415,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
     expect(screen.getByText('Stage duration')).toBeInTheDocument();
     expect(screen.getByText('Total 0 ms')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Details' }));
     expect(
       screen.getByText((_, element) => element?.textContent === 'created_at: not-a-date'),
     ).toBeInTheDocument();
@@ -470,9 +486,31 @@ describe('LcaTaskCenter', () => {
         'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
       ).length,
     ).toBeGreaterThan(0);
+    expect(screen.queryByText('same input/output flow')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        (_, element) => element?.textContent?.includes('flow_lcia_semantic_mismatch') ?? false,
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText((_, element) => element?.textContent?.includes('"flowId"') ?? false),
+    ).not.toBeInTheDocument();
+
+    const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
+    fireEvent.click(detailsButtons[1]);
     expect(
       screen.getByText((_, element) => element?.textContent === 'dataset: process-2 @ 01.00.000'),
     ).toBeInTheDocument();
+    expect(screen.getByText('same input/output flow')).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        (_, element) => element?.textContent?.includes('flow_lcia_semantic_mismatch') ?? false,
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.includes('"flowId"') ?? false)
+        .length,
+    ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
@@ -612,6 +650,11 @@ describe('LcaTaskCenter', () => {
         phase: 'error',
         message: 'error',
         error: 'worker failed',
+        workerJob: {
+          status: 'failed',
+          errorCode: 'worker_error_code',
+          errorMessage: 'worker backend message',
+        },
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:08.000Z',
         blockingReasons: [
@@ -649,22 +692,31 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
     expect(screen.getByText('Review submission task was cancelled')).toBeInTheDocument();
     expect(screen.getByText('Review submission task failed')).toBeInTheDocument();
+    expect(screen.getAllByText('Gate returned an unmapped blocker').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(
+        'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText('worker failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('custom_blocker')).not.toBeInTheDocument();
+    expect(screen.queryByText('custom blocker message')).not.toBeInTheDocument();
+    expect(screen.queryByText('missing code reason')).not.toBeInTheDocument();
+
+    const reviewDetailsButtons = screen.getAllByRole('button', { name: 'Details' });
+    fireEvent.click(reviewDetailsButtons[0]);
     expect(screen.getByText('worker failed')).toBeInTheDocument();
+    expect(screen.getByText('worker_error_code')).toBeInTheDocument();
+    expect(screen.getByText('worker backend message')).toBeInTheDocument();
     expect(screen.getAllByText('custom_blocker').length).toBeGreaterThan(0);
     expect(screen.getAllByText('custom blocker message').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('custom_blocker: custom blocker message').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Reason 1').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('No detailed message returned.').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Reason 1: No detailed message returned.').length).toBeGreaterThan(
-      0,
-    );
-    expect(screen.getAllByText('Reason 2').length).toBeGreaterThan(0);
     expect(screen.getAllByText('missing code reason').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Reason 2: missing code reason').length).toBeGreaterThan(0);
     expect(
-      screen.getAllByText((_, element) => element?.textContent?.endsWith('...') ?? false).length,
+      screen.getAllByText((_, element) => element?.textContent?.includes('"note"') ?? false).length,
     ).toBeGreaterThan(0);
     expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
+
+    fireEvent.click(reviewDetailsButtons[4]);
     expect(
       screen.getByText((_, element) => element?.textContent === 'gate_run_id: gate-run-submitted'),
     ).toBeInTheDocument();
@@ -688,6 +740,7 @@ describe('LcaTaskCenter', () => {
         state: 'failed',
         phase: 'error',
         message: 'failed',
+        error: 'transient worker failure',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:02.000Z',
       },
@@ -701,6 +754,13 @@ describe('LcaTaskCenter', () => {
 
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(
+      screen.getByText(
+        'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('transient worker failure')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() =>
@@ -971,7 +1031,9 @@ describe('LcaTaskCenter', () => {
     ).toBeInTheDocument();
 
     const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
-    fireEvent.click(detailsButtons[0]);
+    detailsButtons.forEach((button) => {
+      fireEvent.click(button);
+    });
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('root_count') ?? false)
         .length,
