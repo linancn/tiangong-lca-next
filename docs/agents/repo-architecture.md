@@ -79,7 +79,7 @@ The task-center recovery path is:
 
 `src/components/LcaTaskCenter/index.tsx -> src/services/reviews/taskCenter.ts -> src/services/workerJobs/api.ts -> app_worker_jobs`
 
-Next owns only the UI orchestration for this job. It enqueues or reads the Edge job without treating any browser-computed checksum as authoritative, renders returned `queued`, `waiting_gate`, `submitting`, `submitted`, `blocked`, `stale`, `error`, and `cancelled` states, and shows user-facing guidance for backend-provided gate `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
+Next owns only the UI orchestration for this job. It enqueues or reads the Edge job without treating any browser-computed checksum as authoritative, renders returned `queued`, `waiting_gate`, `submitting`, `submitted`, `blocked`, `stale`, `error`, and `cancelled` states, and shows user-facing guidance for backend-provided gate `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate worker-owned blocker heuristics or infer submit readiness from worker internals.
 
 After enqueue succeeds, the process edit page must stop long blocking loading and route attention to the task center. The task center treats service-returned `worker_jobs` / coordinator rows as the task fact source. LocalStorage may cache UI projections and dismissals for resume behavior, but it must not be the authority for review-submit job state.
 
@@ -97,7 +97,7 @@ When the job reaches `submitted`, Edge/Database have already validated the gate 
 - `database-engine` owns schema truth and Supabase branch governance
 - `edge-functions` owns Edge runtime behavior, including `app_dataset_review_submit_gate` and `app_dataset_review_submit_jobs`
 - `next-docs` owns public docs-site content
-- `calculator` owns solver and compute internals, including review-submit blocker heuristics
+- `worker` owns solver and compute internals, including review-submit blocker heuristics
 - `lca-workspace` owns root delivery completion after merge
 
 ## Common Misreads
