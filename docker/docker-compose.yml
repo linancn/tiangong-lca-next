@@ -416,14 +416,16 @@ services:
         "rm -rf /tmp/functions-runtime && mkdir -p /tmp/functions-runtime && cp -R /home/deno/functions/. /tmp/functions-runtime/ && rm -f /tmp/functions-runtime/deno.lock /tmp/functions-runtime/.DS_Store && exec edge-runtime start --main-service /tmp/functions-runtime/main"
       ]
 
-  lca-calculator-worker:
-    container_name: tiangong-lca-calculator-worker
+  lca-worker:
+    container_name: tiangong-lca-worker
     build:
       context: .
-      dockerfile: Dockerfile.calculator-worker
+      dockerfile: Dockerfile.worker
       args:
-        LCA_CALCULATOR_REPO: ${LCA_CALCULATOR_REPO}
-        LCA_CALCULATOR_REF: ${LCA_CALCULATOR_REF}
+        LCA_WORKER_REPO: ${LCA_WORKER_REPO:-https://github.com/linancn/tiangong-lca-worker.git}
+        LCA_WORKER_REF: ${LCA_WORKER_REF:-refs/heads/main}
+        LCA_CALCULATOR_REPO: ${LCA_CALCULATOR_REPO:-}
+        LCA_CALCULATOR_REF: ${LCA_CALCULATOR_REF:-}
     restart: unless-stopped
     depends_on:
       db:
