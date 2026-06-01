@@ -63,18 +63,8 @@ const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
 ];
 
 const statusFilterKeys: StatusFilterKey[] = ['all', ...dashboardStatusKeys];
-const overviewMapSignals = [
-  { key: 'bohai', left: '62%', top: '35%', tone: 'blue' },
-  { key: 'yangtze', left: '60%', top: '50%', tone: 'cyan' },
-  { key: 'south', left: '59%', top: '62%', tone: 'gold' },
-  { key: 'west', left: '43%', top: '48%', tone: 'cyan' },
-] as const;
-const overviewHotspotPositions = [
-  { left: '63%', top: '42%' },
-  { left: '66%', top: '56%' },
-  { left: '59%', top: '50%' },
-  { left: '52%', top: '44%' },
-] as const;
+const overviewMapViewBox = { height: 580, width: 1030 } as const;
+const overviewHotspotLabelSize = { height: 21, width: 104 } as const;
 const statusTonePalette: Record<StatusFilterKey, StatusTone> = {
   all: {
     dark: '#0849c8',
@@ -541,12 +531,10 @@ function ChinaStatusMap({
     event: ReactMouseEvent<SVGPathElement>,
     region: RegionSnapshot,
     value: number,
-    centroid: [number, number],
   ) => {
-    const svg = event.currentTarget.ownerSVGElement;
-    const layer = svg?.parentElement;
+    const layer = event.currentTarget.ownerSVGElement?.parentElement;
     const bounds = layer?.getBoundingClientRect();
-    if (!svg || !layer || !bounds) {
+    if (!layer || !bounds) {
       return;
     }
 
@@ -556,23 +544,8 @@ function ChinaStatusMap({
     const scaleY = bounds.height / layerHeight || 1;
     const tooltipWidth = 264;
     const tooltipHeight = 126;
-    let anchorX = (event.clientX - bounds.left) / scaleX;
-    let anchorY = (event.clientY - bounds.top) / scaleY;
-    const svgBounds = svg.getBoundingClientRect();
-    const viewBox = svg.viewBox.baseVal;
-
-    if (viewBox.width > 0 && viewBox.height > 0 && centroid.every(Number.isFinite)) {
-      anchorX =
-        (svgBounds.left -
-          bounds.left +
-          ((centroid[0] - viewBox.x) / viewBox.width) * svgBounds.width) /
-        scaleX;
-      anchorY =
-        (svgBounds.top -
-          bounds.top +
-          ((centroid[1] - viewBox.y) / viewBox.height) * svgBounds.height) /
-        scaleY;
-    }
+    const anchorX = (event.clientX - bounds.left) / scaleX;
+    const anchorY = (event.clientY - bounds.top) / scaleY;
 
     const gutter = 22;
     const maxX = Math.max(16, layerWidth - tooltipWidth - 16);
@@ -585,6 +558,15 @@ function ChinaStatusMap({
     const y = Math.min(Math.max(anchorY - tooltipHeight / 2, 16), maxY);
 
     setProvinceTooltip({ anchorX, anchorY, placement, region, value, x, y });
+  };
+  const clearProvinceTooltipWhenOutsideRegion = (event: ReactMouseEvent<SVGSVGElement>) => {
+    const target = event.target;
+    const isRegionPath =
+      target instanceof SVGPathElement && Boolean(target.getAttribute('aria-label'));
+
+    if (!isRegionPath) {
+      setProvinceTooltip(null);
+    }
   };
 
   useEffect(() => {
@@ -662,6 +644,8 @@ function ChinaStatusMap({
           variant === 'overview' ? styles.chinaMapOverview : styles.chinaMapDetail
         }`}
         role='img'
+        onMouseLeave={() => setProvinceTooltip(null)}
+        onMouseMove={clearProvinceTooltipWhenOutsideRegion}
         viewBox={`0 0 ${variant === 'overview' ? 1030 : 1100} ${
           variant === 'overview' ? 580 : 720
         }`}
@@ -705,12 +689,11 @@ function ChinaStatusMap({
                 key={`${item.adcode ?? 'inset'}-${index}`}
                 onClick={() => item.region && onSelectRegion?.(item.region)}
                 onMouseEnter={(event) =>
-                  item.region &&
-                  updateProvinceTooltip(event, item.region, item.value, item.centroid)
+                  item.region && updateProvinceTooltip(event, item.region, item.value)
                 }
+                onMouseLeave={() => setProvinceTooltip(null)}
                 onMouseMove={(event) =>
-                  item.region &&
-                  updateProvinceTooltip(event, item.region, item.value, item.centroid)
+                  item.region && updateProvinceTooltip(event, item.region, item.value)
                 }
                 stroke='rgba(255,255,255,.92)'
                 strokeWidth={isSelected || isTopRegion ? 2.8 : 1.15}
@@ -801,7 +784,80 @@ function OverviewScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
-  const overviewTopRegions = getTopRegions(snapshot.regions, 'all', 4);
+  const [mapData, setMapData] = useState<ChinaMapData | null>(null);
+  const overviewTopRegions = useMemo(
+    () => getTopRegions(snapshot.regions, 'all', 4),
+    [snapshot.regions],
+  );
+  const overviewHotspotItems = useMemo(() => {
+    if (!mapData) {
+      return [];
+    }
+
+    const displayFeatures = mapData.features
+      .filter((feature) => {
+        const adcode = getRegionAdcode(feature);
+        return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
+      })
+      .map(rewindMapFeature);
+    const featureMap = new Map(
+      displayFeatures.flatMap((feature) => {
+        const adcode = getRegionAdcode(feature);
+        return adcode ? [[adcode, feature] as const] : [];
+      }),
+    );
+    const displayMapData: ChinaMapData = {
+      ...mapData,
+      features: displayFeatures,
+    };
+    const projection = geoMercator().fitExtent(
+      [
+        [18, 18],
+        [1010, 560],
+      ],
+      displayMapData,
+    );
+    const pathGenerator = geoPath(projection);
+
+    return overviewTopRegions.flatMap((region) => {
+      const feature = featureMap.get(region.adcode);
+      if (!feature) {
+        return [];
+      }
+
+      const centroid = pathGenerator.centroid(feature) as [number, number];
+      if (!centroid.every(Number.isFinite)) {
+        return [];
+      }
+
+      return [
+        {
+          centroid,
+          region,
+        },
+      ];
+    });
+  }, [mapData, overviewTopRegions]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    loadChinaMapData()
+      .then((data) => {
+        if (mounted) {
+          setMapData(data);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setMapData(null);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <section className={styles.screenPanel}>
@@ -833,30 +889,29 @@ function OverviewScreen({
           <ChinaStatusMap regions={snapshot.regions} statusKey='all' variant='overview' />
           <div className={styles.mapEnergyOverlay} aria-hidden='true'>
             <i className={styles.mapEnergyOrbit} />
-            <span className={styles.mapEnergyBeam} />
-            <span className={styles.mapEnergyBeamAlt} />
-            {overviewMapSignals.map((signal) => (
-              <b
-                className={`${styles.mapEnergyNode} ${styles[`tone-${signal.tone}`]}`}
-                key={signal.key}
-                style={{ left: signal.left, top: signal.top }}
-              />
-            ))}
           </div>
-          <div className={styles.overviewHotspots} aria-hidden='true'>
-            {overviewTopRegions.map((region, index) => (
-              <span
-                key={region.adcode}
-                style={{
-                  left: overviewHotspotPositions[index]?.left,
-                  top: overviewHotspotPositions[index]?.top,
-                }}
-              >
-                <b>{region.shortName}</b>
-                {formatNumber(getRegionTotal(region))}
-              </span>
+          <svg
+            aria-hidden='true'
+            className={styles.overviewHotspotLayer}
+            viewBox={`0 0 ${overviewMapViewBox.width} ${overviewMapViewBox.height}`}
+          >
+            {overviewHotspotItems.map(({ centroid, region }) => (
+              <g className={styles.overviewHotspotCallout} key={region.adcode}>
+                <foreignObject
+                  height={overviewHotspotLabelSize.height}
+                  width={overviewHotspotLabelSize.width}
+                  x={centroid[0]}
+                  y={centroid[1] - overviewHotspotLabelSize.height / 2}
+                >
+                  <div className={styles.overviewHotspotLabel}>
+                    <i />
+                    <b>{region.shortName}</b>
+                    <span>{formatNumber(getRegionTotal(region))}</span>
+                  </div>
+                </foreignObject>
+              </g>
             ))}
-          </div>
+          </svg>
           <div className={styles.overviewInsight}>
             <b>天工数据库底座已形成，支撑全生命周期核算应用</b>
             <span>
