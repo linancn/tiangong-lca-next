@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-06-01"
-lastReviewedCommit: "710b7e5f82205c4f1509dbbcbc5f3480d341669f"
+lastReviewedCommit: "e535b7a213326414b7df9c22d48a0ac36615d460"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

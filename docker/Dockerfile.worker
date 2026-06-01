@@ -1,7 +1,9 @@
 FROM rust:1.93-bookworm
 
-ARG LCA_CALCULATOR_REPO=https://github.com/linancn/tiangong-lca-calculator.git
-ARG LCA_CALCULATOR_REF=refs/heads/main
+ARG LCA_WORKER_REPO=https://github.com/linancn/tiangong-lca-worker.git
+ARG LCA_WORKER_REF=refs/heads/main
+ARG LCA_CALCULATOR_REPO=
+ARG LCA_CALCULATOR_REF=
 ARG TIDAS_TOOLS_REPO=https://github.com/tiangong-lca/tidas-tools.git
 ARG TIDAS_TOOLS_REF=main
 
@@ -23,14 +25,14 @@ RUN apt-get update \
 
 ENV PATH="/opt/tidas-tools-venv/bin:${PATH}"
 
-WORKDIR /workspace/tiangong-lca-calculator
+WORKDIR /workspace/tiangong-lca-worker
 
-RUN cat <<'EOF' >/usr/local/bin/calculator-worker-entrypoint
+RUN cat <<'EOF' >/usr/local/bin/worker-entrypoint
 #!/usr/bin/env bash
 set -euo pipefail
 
-solver_bin="/workspace/tiangong-lca-calculator/target/release/solver-worker"
-package_bin="/workspace/tiangong-lca-calculator/target/release/package_worker"
+solver_bin="/workspace/tiangong-lca-worker/target/release/solver-worker"
+package_bin="/workspace/tiangong-lca-worker/target/release/package_worker"
 
 package_args=()
 if [[ -n "${PACKAGE_PGMQ_QUEUE:-}" ]]; then
@@ -70,13 +72,15 @@ package_pid=$!
 
 wait -n "${solver_pid}" "${package_pid}"
 EOF
-RUN chmod +x /usr/local/bin/calculator-worker-entrypoint
+RUN chmod +x /usr/local/bin/worker-entrypoint
 
 RUN git init . \
-    && git remote add origin "${LCA_CALCULATOR_REPO}" \
-    && git fetch --depth 1 origin "${LCA_CALCULATOR_REF}" \
+    && worker_repo="${LCA_CALCULATOR_REPO:-${LCA_WORKER_REPO}}" \
+    && worker_ref="${LCA_CALCULATOR_REF:-${LCA_WORKER_REF}}" \
+    && git remote add origin "${worker_repo}" \
+    && git fetch --depth 1 origin "${worker_ref}" \
     && git checkout --detach FETCH_HEAD
 
 RUN cargo build -p solver-worker --bin solver-worker --bin snapshot_builder --bin package_worker --release
 
-ENTRYPOINT ["/usr/local/bin/calculator-worker-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/worker-entrypoint"]

@@ -5,7 +5,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 ROOT_ENV_FILE="${REPO_ROOT}/.env"
 DOCKER_ENV_FILE="${REPO_ROOT}/docker/.env"
-CALCULATOR_ENV_FILE="$(cd -- "${REPO_ROOT}/.." && pwd)/tiangong-lca-calculator/.env"
+WORKER_ENV_FILE="$(cd -- "${REPO_ROOT}/.." && pwd)/tiangong-lca-worker/.env"
+LEGACY_CALCULATOR_ENV_FILE="$(cd -- "${REPO_ROOT}/.." && pwd)/tiangong-lca-calculator/.env"
 
 DEFAULT_INPUT_FILE="${REPO_ROOT}/docker/volumes/db/init/data.sql"
 DEFAULT_OUTPUT_FILE="${REPO_ROOT}/docker/volumes/db/init/data_desensitized.sql"
@@ -61,7 +62,7 @@ resolve_remote_db_url() {
     return 0
   fi
 
-  for env_file in "${DOCKER_ENV_FILE}" "${ROOT_ENV_FILE}" "${CALCULATOR_ENV_FILE}"; do
+  for env_file in "${DOCKER_ENV_FILE}" "${ROOT_ENV_FILE}" "${WORKER_ENV_FILE}" "${LEGACY_CALCULATOR_ENV_FILE}"; do
     [[ -f "${env_file}" ]] || continue
     for key in REMOTE_DB_URL SUPABASE_REMOTE_DB_URL SUPABASE_DB_URL CONN; do
       candidate="$(lookup_env_key_from_file "${env_file}" "${key}")"
