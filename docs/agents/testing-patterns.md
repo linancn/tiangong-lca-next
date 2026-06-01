@@ -22,7 +22,7 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-06-01
-lastReviewedCommit: 710b7e5f82205c4f1509dbbcbc5f3480d341669f
+lastReviewedCommit: 5f291096792e8e67770fd03a29826a3ec21a2dcd
 ---
 
 # Testing Patterns Reference

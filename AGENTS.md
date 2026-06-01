@@ -151,8 +151,8 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
-- `main` branch pushes do not deploy or run standalone remote tests
-- `v*` tags whose target commit is already on `main` run the release gate, deploy the web app, and build draft Electron releases
+- canonical `main` branch pushes read `package.json.version`, create the matching `v*` tag when missing, run the release gate, deploy the web app, and build draft Electron releases in the same workflow run
+- manual `v*` tag pushes whose target commit is already on `main` remain supported for recovery/backfill releases
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 
