@@ -141,7 +141,7 @@ Route those tasks to:
 - `database-engine` for schema truth and Supabase branch governance
 - `edge-functions` for Edge runtime and API orchestration behavior
 - `next-docs` for public docs-site content
-- `calculator` for solver and compute behavior
+- `worker` for solver and compute behavior
 - `lca-workspace` for root integration after merge
 
 ## Branch And Delivery Facts
