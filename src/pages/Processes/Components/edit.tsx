@@ -35,6 +35,7 @@ import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { hasLangNormalizationDraftChanges } from '@/services/general/api';
 import { toBigNumberOrZero } from '@/services/general/bignumber';
 import { jsonToList } from '@/services/general/util';
+import { requestOpenLcaTaskCenter } from '@/services/lca/taskCenter';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, updateProcess } from '@/services/processes/api';
 import {
@@ -51,6 +52,7 @@ import type {
   ReviewSubmitJobResult,
   ReviewSubmitJobStatus,
 } from '@/services/reviews/api';
+import { trackReviewSubmitTask } from '@/services/reviews/taskCenter';
 import { getUserTeamId } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
@@ -90,8 +92,6 @@ type ReviewSubmitGateUiState = {
   message?: string;
 };
 
-const REVIEW_SUBMIT_JOB_POLL_ATTEMPTS = 20;
-const REVIEW_SUBMIT_JOB_POLL_INTERVAL_MS = 1500;
 const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
   'queued',
   'running',
@@ -179,11 +179,6 @@ const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
       'Resolve duplicate or linearly dependent process structure, then rebuild and rerun the gate.',
   },
 } as const;
-
-const waitForReviewSubmitJobPoll = () =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, REVIEW_SUBMIT_JOB_POLL_INTERVAL_MS);
-  });
 
 const toReviewSubmitGateEvidenceValue = (value: unknown): string | undefined => {
   if (typeof value === 'string') {
@@ -1322,84 +1317,93 @@ const ProcessEdit: FC<Props> = ({
   };
 
   const runReviewSubmitJob = async (processDetail: ProcessCheckTarget) => {
-    let reviewSubmitJobId: string | undefined;
-    let action: 'enqueue' | 'read' = 'enqueue';
+    const jobResult = await requestReviewSubmitJob(
+      'processes',
+      processDetail.id,
+      processDetail.version,
+      null,
+      {
+        action: 'enqueue',
+        reviewSubmitJobId: undefined,
+      },
+    );
 
-    for (let attempt = 0; attempt < REVIEW_SUBMIT_JOB_POLL_ATTEMPTS; attempt += 1) {
-      const jobResult = await requestReviewSubmitJob(
-        'processes',
-        processDetail.id,
-        processDetail.version,
-        null,
-        {
-          action,
-          reviewSubmitJobId,
-        },
-      );
-
-      if (jobResult.error) {
-        const messageText =
-          jobResult.error.message ||
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitGate.error',
-            defaultMessage: 'Numerical stability gate could not complete.',
-          });
-        setReviewSubmitGateState({
-          status: 'error',
-          message: messageText,
-          reviewSubmitJobId,
-          revisionChecksum: jobResult.revisionChecksum,
+    if (jobResult.error) {
+      const messageText =
+        jobResult.error.message ||
+        intl.formatMessage({
+          id: 'pages.process.reviewSubmitGate.error',
+          defaultMessage: 'Numerical stability gate could not complete.',
         });
-        message.error(messageText);
-        return false;
-      }
-
-      const jobData = jobResult.data?.[0] as ReviewSubmitJobResult | undefined;
-      const status = jobData?.status ?? 'error';
-      reviewSubmitJobId = jobData?.reviewSubmitJobId ?? reviewSubmitJobId;
-      const gateData = jobData?.gate ?? undefined;
-      const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
-      const revisionChecksum =
-        jobData?.datasetRevision?.revisionChecksum ??
-        gateData?.datasetRevision?.revisionChecksum ??
-        jobResult.revisionChecksum;
-      const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
-
       setReviewSubmitGateState({
-        status,
-        reviewSubmitJobId,
-        gateRunId,
-        revisionChecksum,
-        blockingReasons: gateData?.blockingReasons,
-        message: jobData?.error?.message,
+        status: 'error',
+        message: messageText,
+        revisionChecksum: jobResult.revisionChecksum,
       });
-
-      if (status === 'submitted') {
-        return true;
-      }
-
-      if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
-        if (attempt < REVIEW_SUBMIT_JOB_POLL_ATTEMPTS - 1) {
-          await waitForReviewSubmitJobPoll();
-          action = reviewSubmitJobId ? 'read' : 'enqueue';
-          continue;
-        }
-
-        message.info(
-          intl.formatMessage({
-            id: 'pages.process.reviewSubmitJob.backgroundProcessing',
-            defaultMessage:
-              'Review submission is still processing in the background. You can retry later to refresh the latest status.',
-          }),
-        );
-        return false;
-      }
-
       message.error(messageText);
-      return false;
+      return 'failed' as const;
     }
 
-    return false;
+    const jobData = jobResult.data?.[0] as ReviewSubmitJobResult | undefined;
+    const status = jobData?.status ?? 'error';
+    const gateData = jobData?.gate ?? undefined;
+    const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
+    const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
+    const revisionChecksum =
+      jobData?.datasetRevision?.revisionChecksum ??
+      gateData?.datasetRevision?.revisionChecksum ??
+      (gateWorkerJob?.result &&
+      typeof gateWorkerJob.result === 'object' &&
+      'datasetRevision' in gateWorkerJob.result
+        ? (
+            gateWorkerJob.result as {
+              datasetRevision?: { revisionChecksum?: string };
+            }
+          ).datasetRevision?.revisionChecksum
+        : undefined) ??
+      jobResult.revisionChecksum;
+    const blockingReasons =
+      gateData?.blockingReasons ??
+      (gateWorkerJob?.result &&
+      typeof gateWorkerJob.result === 'object' &&
+      'blockingReasons' in gateWorkerJob.result &&
+      Array.isArray((gateWorkerJob.result as { blockingReasons?: unknown }).blockingReasons)
+        ? ((gateWorkerJob.result as { blockingReasons?: ReviewSubmitGateBlockingReason[] })
+            .blockingReasons ?? [])
+        : undefined);
+    const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
+
+    setReviewSubmitGateState({
+      status,
+      reviewSubmitJobId: jobData?.reviewSubmitJobId,
+      gateRunId,
+      revisionChecksum,
+      blockingReasons,
+      message: jobData?.error?.message,
+    });
+
+    if (jobData) {
+      trackReviewSubmitTask(jobData);
+      requestOpenLcaTaskCenter();
+    }
+
+    if (status === 'submitted') {
+      return 'submitted' as const;
+    }
+
+    if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
+      message.info(
+        intl.formatMessage({
+          id: 'pages.process.reviewSubmitJob.enqueued',
+          defaultMessage:
+            'Review submission task has been created. Track progress in the task center.',
+        }),
+      );
+      return 'queued' as const;
+    }
+
+    message.error(messageText);
+    return 'failed' as const;
   };
 
   const submitReview = async () => {
@@ -1417,8 +1421,8 @@ const ProcessEdit: FC<Props> = ({
 
     if (checkResult && updatedProcess) {
       setSpinning(true);
-      const submitted = await runReviewSubmitJob(updatedProcess);
-      if (!submitted) {
+      const submitState = await runReviewSubmitJob(updatedProcess);
+      if (submitState !== 'submitted') {
         setSpinning(false);
         return;
       }

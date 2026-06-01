@@ -1,16 +1,24 @@
 // @ts-nocheck
 import LcaTaskCenter from '@/components/LcaTaskCenter';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 let mockTasks: any[] = [];
 let mockPackageTasks: any[] = [];
+let mockReviewSubmitTasks: any[] = [];
 const mockClearFinishedLcaTasks = jest.fn();
 const mockClearFinishedTidasPackageTasks = jest.fn();
+const mockClearFinishedReviewSubmitTasks = jest.fn();
 const mockDownloadTidasPackageExportTask = jest.fn();
 const mockRemoveLcaTask = jest.fn();
 const mockRemoveTidasPackageTask = jest.fn();
+const mockRemoveReviewSubmitTask = jest.fn();
+const mockCancelReviewSubmitTask = jest.fn();
+const mockRefreshReviewSubmitTasks = jest.fn();
+const mockRetryReviewSubmitTask = jest.fn();
 const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
 const mockSubscribeTidasPackageTasks = jest.fn(() => jest.fn());
+const mockSubscribeReviewSubmitTasks = jest.fn(() => jest.fn());
+const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
 
 const formatWithValues = (message: string, values?: Record<string, any>) =>
   Object.entries(values ?? {}).reduce((text, [key, value]) => {
@@ -22,6 +30,8 @@ jest.mock('@/services/lca/taskCenter', () => ({
   clearFinishedLcaTasks: () => mockClearFinishedLcaTasks(),
   listLcaTasks: () => mockTasks,
   removeLcaTask: (...args: any[]) => mockRemoveLcaTask(...args),
+  subscribeLcaTaskCenterOpenRequests: (...args: any[]) =>
+    mockSubscribeLcaTaskCenterOpenRequests(...args),
   subscribeLcaTasks: (...args: any[]) => mockSubscribeLcaTasks(...args),
 }));
 
@@ -32,6 +42,17 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
   listTidasPackageTasks: () => mockPackageTasks,
   removeTidasPackageTask: (...args: any[]) => mockRemoveTidasPackageTask(...args),
   subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
+}));
+
+jest.mock('@/services/reviews/taskCenter', () => ({
+  __esModule: true,
+  cancelReviewSubmitTask: (...args: any[]) => mockCancelReviewSubmitTask(...args),
+  clearFinishedReviewSubmitTasks: () => mockClearFinishedReviewSubmitTasks(),
+  listReviewSubmitTasks: () => mockReviewSubmitTasks,
+  refreshReviewSubmitTasks: (...args: any[]) => mockRefreshReviewSubmitTasks(...args),
+  removeReviewSubmitTask: (...args: any[]) => mockRemoveReviewSubmitTask(...args),
+  retryReviewSubmitTask: (...args: any[]) => mockRetryReviewSubmitTask(...args),
+  subscribeReviewSubmitTasks: (...args: any[]) => mockSubscribeReviewSubmitTasks(...args),
 }));
 
 jest.mock('umi', () => ({
@@ -53,6 +74,7 @@ jest.mock('@ant-design/icons', () => ({
   CloseCircleOutlined: () => <span>close-icon</span>,
   DownloadOutlined: () => <span>download-icon</span>,
   InfoCircleOutlined: () => <span>info-icon</span>,
+  ReloadOutlined: () => <span>reload-icon</span>,
 }));
 
 jest.mock('antd', () => {
@@ -159,7 +181,11 @@ describe('LcaTaskCenter', () => {
     jest.clearAllMocks();
     mockTasks = [];
     mockPackageTasks = [];
+    mockReviewSubmitTasks = [];
     mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
+    mockCancelReviewSubmitTask.mockResolvedValue(undefined);
+    mockRefreshReviewSubmitTasks.mockResolvedValue([]);
+    mockRetryReviewSubmitTask.mockResolvedValue(undefined);
   });
 
   it('shows the empty state when there are no tracked tasks', () => {
@@ -176,8 +202,11 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
     expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
+    expect(mockClearFinishedReviewSubmitTasks).toHaveBeenCalledTimes(1);
     expect(mockSubscribeLcaTasks).toHaveBeenCalled();
     expect(mockSubscribeTidasPackageTasks).toHaveBeenCalled();
+    expect(mockSubscribeReviewSubmitTasks).toHaveBeenCalled();
+    expect(mockSubscribeLcaTaskCenterOpenRequests).toHaveBeenCalled();
   });
 
   it('renders running and completed tasks, task details, and remove actions', () => {
@@ -270,6 +299,7 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
     expect(mockClearFinishedTidasPackageTasks).toHaveBeenCalledTimes(1);
+    expect(mockClearFinishedReviewSubmitTasks).toHaveBeenCalledTimes(1);
   });
 
   it('renders failed, building, and submitting summaries with their status labels', () => {
@@ -379,6 +409,312 @@ describe('LcaTaskCenter', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'Elapsed 0 ms'),
     ).toBeInTheDocument();
+  });
+
+  it('renders service-backed review-submit tasks with blocker guidance and cancel/remove actions', async () => {
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-running',
+        gateWorkerJobId: 'gate-worker-running',
+        reviewSubmitJobId: 'review-job-running',
+        state: 'running',
+        phase: 'waiting_gate',
+        message: 'waiting',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:01:00.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-1',
+          version: '01.00.000',
+          revisionChecksum: 'a'.repeat(64),
+        },
+      },
+      {
+        id: 'review-blocked',
+        gateWorkerJobId: 'gate-worker-blocked',
+        reviewSubmitJobId: 'review-job-blocked',
+        state: 'failed',
+        phase: 'blocked',
+        message: 'blocked',
+        createdAt: '2026-03-12T11:00:00.000Z',
+        updatedAt: '2026-03-12T11:02:00.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-2',
+          version: '01.00.000',
+          revisionChecksum: 'b'.repeat(64),
+        },
+        blockingReasons: [
+          {
+            code: 'flow_lcia_semantic_mismatch',
+            message: 'same input/output flow',
+            details: { flowId: 'flow-1' },
+          },
+        ],
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('2');
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
+    expect(screen.getByText('Waiting for gate')).toBeInTheDocument();
+    expect(screen.getByText('Blocked')).toBeInTheDocument();
+    expect(screen.getAllByText('Input and output flow semantics conflict').length).toBeGreaterThan(
+      0,
+    );
+    expect(
+      screen.getAllByText(
+        'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
+      ).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'dataset: process-2 @ 01.00.000'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('review-blocked'));
+    await waitFor(() =>
+      expect(message.success).toHaveBeenCalledWith('Review-submit task restarted'),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('review-running'));
+    await waitFor(() =>
+      expect(message.success).toHaveBeenCalledWith('Review-submit task cancelled'),
+    );
+
+    const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
+    fireEvent.click(removeButtons[1]);
+    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('review-blocked');
+  });
+
+  it('refreshes review-submit tasks on mount, timer, open request, and manual refresh failures', async () => {
+    jest.useFakeTimers();
+    let openRequestListener: (() => void) | undefined;
+    mockSubscribeLcaTaskCenterOpenRequests.mockImplementation((listener: () => void) => {
+      openRequestListener = listener;
+      return jest.fn();
+    });
+    mockRefreshReviewSubmitTasks.mockRejectedValue({});
+
+    render(<LcaTaskCenter />);
+
+    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      jest.advanceTimersByTime(5000);
+    });
+    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(2));
+
+    act(() => {
+      openRequestListener?.();
+    });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(3));
+
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+    await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(4));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to refresh review-submit tasks'),
+    );
+
+    mockRefreshReviewSubmitTasks.mockRejectedValueOnce(new Error('refresh failed'));
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('refresh failed'));
+
+    jest.useRealTimers();
+  });
+
+  it('renders all review-submit phases and sparse blocker diagnostics', () => {
+    const circularDetails: any = { flowId: 'flow-circular' };
+    circularDetails.self = circularDetails;
+    const longDetails = { note: 'x'.repeat(400) };
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-queued',
+        state: 'running',
+        phase: 'queued',
+        message: 'queued',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+      },
+      {
+        id: 'review-running',
+        state: 'running',
+        phase: 'running',
+        message: 'running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:02.000Z',
+      },
+      {
+        id: 'review-submitting',
+        state: 'running',
+        phase: 'submitting',
+        message: 'submitting',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:03.000Z',
+      },
+      {
+        id: 'review-submitted',
+        state: 'completed',
+        phase: 'submitted',
+        message: 'submitted',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:04.000Z',
+        gateRunId: 'gate-run-submitted',
+        datasetRevision: {
+          id: 'process-no-version',
+        },
+      },
+      {
+        id: 'review-passed',
+        state: 'completed',
+        phase: 'passed',
+        message: 'passed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.000Z',
+      },
+      {
+        id: 'review-stale',
+        state: 'failed',
+        phase: 'stale',
+        message: 'stale',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:06.000Z',
+        blockerCodes: ['revision_report_stale'],
+      },
+      {
+        id: 'review-cancelled',
+        state: 'failed',
+        phase: 'cancelled',
+        message: 'cancelled',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:07.000Z',
+        blockingReasons: [
+          {
+            code: '  ',
+            message: '  ',
+            details: null,
+          },
+        ],
+      },
+      {
+        id: 'review-error',
+        state: 'failed',
+        phase: 'error',
+        message: 'error',
+        error: 'worker failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:08.000Z',
+        blockingReasons: [
+          {
+            code: 'custom_blocker',
+            message: 'custom blocker message',
+            details: circularDetails,
+          },
+          {
+            message: 'missing code reason',
+            details: longDetails,
+          },
+        ],
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getByText('Queued')).toBeInTheDocument();
+    expect(screen.getByText('Gate running')).toBeInTheDocument();
+    expect(screen.getByText('Submitting review')).toBeInTheDocument();
+    expect(screen.getByText('Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Gate passed')).toBeInTheDocument();
+    expect(screen.getByText('Stale')).toBeInTheDocument();
+    expect(screen.getByText('Cancelled')).toBeInTheDocument();
+    expect(screen.getByText('Error')).toBeInTheDocument();
+    expect(screen.getByText('Review submission completed')).toBeInTheDocument();
+    expect(
+      screen.getByText('Numerical stability gate passed; final submission is being coordinated'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Gate passed; submitting review')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('Gate result is stale; save the latest data and submit again').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Review submission task was cancelled')).toBeInTheDocument();
+    expect(screen.getByText('Review submission task failed')).toBeInTheDocument();
+    expect(screen.getByText('worker failed')).toBeInTheDocument();
+    expect(screen.getAllByText('custom_blocker').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('custom blocker message').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('custom_blocker: custom blocker message').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Reason 1').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('No detailed message returned.').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Reason 1: No detailed message returned.').length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getAllByText('Reason 2').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('missing code reason').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Reason 2: missing code reason').length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.endsWith('...') ?? false).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'gate_run_id: gate-run-submitted'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'dataset: process-no-version @ -'),
+    ).toBeInTheDocument();
+  });
+
+  it('reports review-submit refresh, cancel, and retry errors with fallback and explicit messages', async () => {
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-running',
+        state: 'running',
+        phase: 'running',
+        message: 'running',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:01.000Z',
+      },
+      {
+        id: 'review-failed',
+        state: 'failed',
+        phase: 'error',
+        message: 'failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:02.000Z',
+      },
+    ];
+    mockCancelReviewSubmitTask
+      .mockRejectedValueOnce({})
+      .mockRejectedValueOnce(new Error('cancel failed'));
+    mockRetryReviewSubmitTask
+      .mockRejectedValueOnce({})
+      .mockRejectedValueOnce(new Error('retry failed'));
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to cancel review-submit task'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('cancel failed'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to retry review-submit task'),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('retry failed'));
   });
 
   it('covers modal close and task-summary fallbacks for sparse or inconsistent task metadata', () => {
