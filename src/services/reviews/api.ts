@@ -7,6 +7,7 @@ import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { getUserId } from '@/services/users/api';
+import type { WorkerJobResult } from '@/services/workerJobs/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { getLangText, jsonToList } from '../general/util';
 import { getProcessDetailByIdAndVersion } from '../processes/api';
@@ -92,6 +93,7 @@ export type ReviewSubmitJobResult = {
   status: ReviewSubmitJobStatus;
   reviewSubmitJobId?: string;
   gateRunId?: string | null;
+  gateWorkerJobId?: string | null;
   datasetRevision?: {
     table?: string;
     id?: string;
@@ -103,6 +105,7 @@ export type ReviewSubmitJobResult = {
     reportSchemaVersion?: string;
   };
   gate?: ReviewSubmitGateResult | null;
+  gateWorkerJob?: WorkerJobResult | null;
   error?: {
     code?: string;
     message?: string;

@@ -21,8 +21,8 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-05-30
-lastReviewedCommit: ab4c20721106b32cb8a6cee77762278dd5a55dce
+lastReviewedAt: 2026-05-31
+lastReviewedCommit: 8fc53fa8fd42311db9f4d36ef40e16f8f2f5764d
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -75,13 +75,19 @@ Process review submission uses an asynchronous submit job:
 
 `src/pages/Processes/Components/edit.tsx -> src/pages/Utils/review.tsx -> src/services/reviews/api.ts -> app_dataset_review_submit_jobs`
 
+The task-center recovery path is:
+
+`src/components/LcaTaskCenter/index.tsx -> src/services/reviews/taskCenter.ts -> src/services/workerJobs/api.ts -> app_worker_jobs`
+
 Next owns only the UI orchestration for this job. It enqueues or reads the Edge job without treating any browser-computed checksum as authoritative, renders returned `queued`, `waiting_gate`, `submitting`, `submitted`, `blocked`, `stale`, `error`, and `cancelled` states, and shows user-facing guidance for backend-provided gate `blockingReasons` while keeping raw code/message/details as diagnostics. Next must not duplicate calculator-owned blocker heuristics or infer submit readiness from calculator internals.
+
+After enqueue succeeds, the process edit page must stop long blocking loading and route attention to the task center. The task center treats service-returned `worker_jobs` / coordinator rows as the task fact source. LocalStorage may cache UI projections and dismissals for resume behavior, but it must not be the authority for review-submit job state.
 
 When the job reaches `submitted`, Edge/Database have already validated the gate and called the final submit-review RPC on behalf of the original user. The browser must not call `app_dataset_submit_review` after a gate pass in the main process flow. Database/Edge own the persisted-row checksum, freshness, policy assertion, and final submit idempotency; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
 
 ## Current Hotspots
 
-- lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
+- lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/services/workerJobs/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
 - dataset validation, localized field guidance, and review jump targets: `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/pages/Processes/sdkValidationUi.ts`, `src/pages/Processes/Components/**`, `src/components/ValidationIssueModal/index.tsx`, `src/components/LangTextItem/form.tsx`, `src/pages/Utils/review.tsx`
 - review, team, and system-management flows: `src/pages/Review/**`, `src/pages/ManageSystem/**`, `src/pages/Teams/**`
 - cache-backed static resources: `public/classifications/**`, `public/locations/**`, `public/lciamethods/**`, `public/maps/**`

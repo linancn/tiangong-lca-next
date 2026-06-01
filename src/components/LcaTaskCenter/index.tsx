@@ -8,8 +8,22 @@ import {
   clearFinishedLcaTasks,
   listLcaTasks,
   removeLcaTask,
+  subscribeLcaTaskCenterOpenRequests,
   subscribeLcaTasks,
 } from '@/services/lca/taskCenter';
+import type {
+  ReviewSubmitBackgroundTask,
+  ReviewSubmitTaskPhase,
+} from '@/services/reviews/taskCenter';
+import {
+  cancelReviewSubmitTask,
+  clearFinishedReviewSubmitTasks,
+  listReviewSubmitTasks,
+  refreshReviewSubmitTasks,
+  removeReviewSubmitTask,
+  retryReviewSubmitTask,
+  subscribeReviewSubmitTasks,
+} from '@/services/reviews/taskCenter';
 import {
   TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR,
   classifyTidasPackageExportError,
@@ -31,6 +45,7 @@ import {
   CloseCircleOutlined,
   DownloadOutlined,
   InfoCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -45,7 +60,7 @@ import {
   message,
   theme,
 } from 'antd';
-import React, { useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useIntl } from 'umi';
 
 type IntlShapeLike = ReturnType<typeof useIntl>;
@@ -58,6 +73,10 @@ type TaskCenterItem =
   | {
       kind: 'package';
       task: TidasPackageBackgroundTask;
+    }
+  | {
+      kind: 'reviewSubmit';
+      task: ReviewSubmitBackgroundTask;
     };
 
 function useLcaTasks(): LcaBackgroundTask[] {
@@ -69,6 +88,14 @@ function useTidasPackageTasks(): TidasPackageBackgroundTask[] {
     subscribeTidasPackageTasks,
     listTidasPackageTasks,
     listTidasPackageTasks,
+  );
+}
+
+function useReviewSubmitTasks(): ReviewSubmitBackgroundTask[] {
+  return useSyncExternalStore(
+    subscribeReviewSubmitTasks,
+    listReviewSubmitTasks,
+    listReviewSubmitTasks,
   );
 }
 
@@ -174,15 +201,74 @@ function packagePhaseLabel(phase: TidasPackageTaskPhase, intl: IntlShapeLike): s
   });
 }
 
+function reviewSubmitPhaseLabel(phase: ReviewSubmitTaskPhase, intl: IntlShapeLike): string {
+  switch (phase) {
+    case 'queued':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.queued',
+        defaultMessage: 'Queued',
+      });
+    case 'running':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.running',
+        defaultMessage: 'Gate running',
+      });
+    case 'waiting_gate':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.waitingGate',
+        defaultMessage: 'Waiting for gate',
+      });
+    case 'submitting':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.submitting',
+        defaultMessage: 'Submitting review',
+      });
+    case 'submitted':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.submitted',
+        defaultMessage: 'Submitted',
+      });
+    case 'passed':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.passed',
+        defaultMessage: 'Gate passed',
+      });
+    case 'blocked':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.blocked',
+        defaultMessage: 'Blocked',
+      });
+    case 'stale':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.stale',
+        defaultMessage: 'Stale',
+      });
+    case 'cancelled':
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.cancelled',
+        defaultMessage: 'Cancelled',
+      });
+    case 'error':
+    default:
+      return intl.formatMessage({
+        id: 'pages.process.reviewSubmitTaskCenter.phase.error',
+        defaultMessage: 'Error',
+      });
+  }
+}
+
 function phaseLabel(item: TaskCenterItem, intl: IntlShapeLike): string {
   if (item.kind === 'lca') {
     return lcaPhaseLabel(item.task.phase, intl);
+  }
+  if (item.kind === 'reviewSubmit') {
+    return reviewSubmitPhaseLabel(item.task.phase, intl);
   }
   return packagePhaseLabel(item.task.phase, intl);
 }
 
 function shouldShowPhaseTag(item: TaskCenterItem): boolean {
-  return item.task.state === 'running';
+  return item.kind === 'reviewSubmit' || item.task.state === 'running';
 }
 
 function formatDuration(durationMs: number): string {
@@ -449,11 +535,226 @@ function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLik
   return task.message;
 }
 
+function reviewSubmitTaskSummary(task: ReviewSubmitBackgroundTask, intl: IntlShapeLike): string {
+  if (task.phase === 'submitted') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.submitted',
+      defaultMessage: 'Review submission completed',
+    });
+  }
+  if (task.phase === 'passed') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.passed',
+      defaultMessage: 'Numerical stability gate passed; final submission is being coordinated',
+    });
+  }
+  if (task.phase === 'blocked') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.blocked',
+      defaultMessage: 'Numerical stability gate blocked this process revision',
+    });
+  }
+  if (task.phase === 'stale') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.stale',
+      defaultMessage: 'Gate result is stale; save the latest data and submit again',
+    });
+  }
+  if (task.phase === 'cancelled') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.cancelled',
+      defaultMessage: 'Review submission task was cancelled',
+    });
+  }
+  if (task.phase === 'error') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.error',
+      defaultMessage: 'Review submission task failed',
+    });
+  }
+  if (task.phase === 'submitting') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.summary.submitting',
+      defaultMessage: 'Gate passed; submitting review',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.reviewSubmitTaskCenter.summary.running',
+    defaultMessage: 'Numerical stability gate is running before review submission',
+  });
+}
+
 function taskSummary(item: TaskCenterItem, intl: IntlShapeLike): string {
   if (item.kind === 'lca') {
     return lcaTaskSummary(item.task, intl);
   }
+  if (item.kind === 'reviewSubmit') {
+    return reviewSubmitTaskSummary(item.task, intl);
+  }
   return packageTaskSummary(item.task, intl);
+}
+
+const REVIEW_SUBMIT_REASON_GUIDANCE: Record<
+  string,
+  {
+    titleId: string;
+    defaultTitle: string;
+    descriptionId: string;
+    defaultDescription: string;
+    actionId: string;
+    defaultAction: string;
+  }
+> = {
+  revision_report_stale: {
+    titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
+    defaultTitle: 'Gate result is stale',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.description',
+    defaultDescription: 'The gate result no longer matches the saved process revision.',
+    actionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.action',
+    defaultAction: 'Save the latest data and run the submit-review gate again.',
+  },
+  invalid_scope_state: {
+    titleId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.title',
+    defaultTitle: 'Dataset lifecycle state is not eligible',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.description',
+    defaultDescription:
+      'The process is in a lifecycle state that cannot enter the submit-review gate.',
+    actionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.action',
+    defaultAction:
+      'Use a draft process or an already reviewed dependency; data under review cannot be submitted again.',
+  },
+  flow_lcia_semantic_mismatch: {
+    titleId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title',
+    defaultTitle: 'Input and output flow semantics conflict',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.description',
+    defaultDescription:
+      'The process appears to contain the same flow as both input and output, which can make the numerical system unstable.',
+    actionId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.action',
+    defaultAction:
+      'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
+  },
+  sparse_matrix_zero_or_near_zero_diagonal: {
+    titleId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title',
+    defaultTitle: 'Matrix diagonal is zero or near zero',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description',
+    defaultDescription:
+      'The generated matrix has a process diagonal that is zero or too close to zero for stable solving.',
+    actionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action',
+    defaultAction:
+      'Check self-loops, reference exchanges, and process structure before running the gate again.',
+  },
+  singular_risk_medium_or_high: {
+    titleId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.title',
+    defaultTitle: 'Matrix singularity risk is too high',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.description',
+    defaultDescription:
+      'The snapshot has medium or high singularity risk, so solving may be unstable or fail.',
+    actionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.action',
+    defaultAction:
+      'Resolve duplicate or linearly dependent process structure, then rebuild and rerun the gate.',
+  },
+  duplicate_sparse_columns: {
+    titleId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.title',
+    defaultTitle: 'Duplicate process columns were detected',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.description',
+    defaultDescription:
+      'Two or more process columns are numerically identical, which can produce an underdetermined matrix.',
+    actionId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.action',
+    defaultAction:
+      'Review repeated processes, duplicated exchanges, and reference products before submitting again.',
+  },
+  factorization_probe_failed: {
+    titleId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title',
+    defaultTitle: 'Numerical probe failed',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.description',
+    defaultDescription: 'The fast factorization probe could not solve the target process reliably.',
+    actionId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.action',
+    defaultAction:
+      'Check the exchange graph around the target process and rerun the gate after correcting unstable structure.',
+  },
+  target_process_not_covered_by_probe: {
+    titleId: 'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.title',
+    defaultTitle: 'Target process is outside the probe scope',
+    descriptionId:
+      'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.description',
+    defaultDescription:
+      'The fast gate could not include the submitted process in the numerical stability probe.',
+    actionId: 'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.action',
+    defaultAction:
+      'Confirm the process has valid reference exchanges and connected product flows, then submit again.',
+  },
+  service_loop_detected: {
+    titleId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.title',
+    defaultTitle: 'Service loop detected',
+    descriptionId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.description',
+    defaultDescription:
+      'The process graph contains a service loop that may make the matrix unstable.',
+    actionId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.action',
+    defaultAction:
+      'Inspect the referenced processes in the loop and remove unintended circular dependencies.',
+  },
+};
+
+function formatReviewSubmitReason(
+  reason: NonNullable<ReviewSubmitBackgroundTask['blockingReasons']>[number],
+  index: number,
+  intl: IntlShapeLike,
+) {
+  const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
+  const code =
+    rawCode ||
+    intl.formatMessage(
+      {
+        id: 'pages.process.reviewSubmitGate.reasonFallbackCode',
+        defaultMessage: 'Reason {index}',
+      },
+      { index: index + 1 },
+    );
+  const reasonMessage =
+    typeof reason?.message === 'string' && reason.message.trim()
+      ? reason.message.trim()
+      : intl.formatMessage({
+          id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
+          defaultMessage: 'No detailed message returned.',
+        });
+  const guidance = rawCode ? REVIEW_SUBMIT_REASON_GUIDANCE[rawCode] : undefined;
+
+  if (!guidance) {
+    return {
+      title: code,
+      description: reasonMessage,
+      action: undefined,
+      diagnostic: `${code}: ${reasonMessage}`,
+    };
+  }
+
+  return {
+    title: intl.formatMessage({
+      id: guidance.titleId,
+      defaultMessage: guidance.defaultTitle,
+    }),
+    description: intl.formatMessage({
+      id: guidance.descriptionId,
+      defaultMessage: guidance.defaultDescription,
+    }),
+    action: intl.formatMessage({
+      id: guidance.actionId,
+      defaultMessage: guidance.defaultAction,
+    }),
+    diagnostic: `${code}: ${reasonMessage}`,
+  };
+}
+
+function shortJson(value: unknown): string | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  try {
+    const text = JSON.stringify(value);
+    return text.length > 360 ? `${text.slice(0, 360)}...` : text;
+  } catch (_error) {
+    return String(value);
+  }
 }
 
 function lcaDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
@@ -599,9 +900,139 @@ function packageDetailContent(
   );
 }
 
+function reviewSubmitBlockerContent(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  const reasons = task.blockingReasons ?? [];
+  const blockerCodes = task.blockerCodes ?? [];
+  if (reasons.length === 0 && blockerCodes.length === 0) {
+    return null;
+  }
+
+  const normalizedReasons = reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
+
+  return (
+    <Space direction='vertical' size={6} style={{ maxWidth: 420 }}>
+      {normalizedReasons.map((reason, index) => {
+        const formattedReason = formatReviewSubmitReason(reason, index, intl);
+        const details = shortJson('details' in reason ? reason.details : undefined);
+        return (
+          <div key={`${reason.code ?? 'reason'}-${index}`}>
+            <Typography.Text strong>{formattedReason.title}</Typography.Text>
+            <br />
+            <Typography.Text>{formattedReason.description}</Typography.Text>
+            {formattedReason.action && (
+              <>
+                <br />
+                <Typography.Text type='secondary'>{formattedReason.action}</Typography.Text>
+              </>
+            )}
+            <br />
+            <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+              {formattedReason.diagnostic}
+            </Typography.Text>
+            {details && (
+              <>
+                <br />
+                <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                  {details}
+                </Typography.Text>
+              </>
+            )}
+          </div>
+        );
+      })}
+    </Space>
+  );
+}
+
+function reviewSubmitDetailContent(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  const revision = task.datasetRevision;
+  return (
+    <Space direction='vertical' size={4} style={{ maxWidth: 440 }}>
+      <Space size={6} wrap>
+        <Tag color='gold'>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.kind',
+            defaultMessage: 'Review Submit',
+          })}
+        </Tag>
+        {revision?.table && <Tag>{revision.table}</Tag>}
+      </Space>
+      {task.reviewSubmitJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId',
+            defaultMessage: 'review_submit_job_id',
+          })}
+          : <Typography.Text copyable>{task.reviewSubmitJobId}</Typography.Text>
+        </Typography.Text>
+      )}
+      {task.gateWorkerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId',
+            defaultMessage: 'gate_worker_job_id',
+          })}
+          : <Typography.Text copyable>{task.gateWorkerJobId}</Typography.Text>
+        </Typography.Text>
+      )}
+      {task.gateRunId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.gateRunId',
+            defaultMessage: 'gate_run_id',
+          })}
+          : <Typography.Text copyable>{task.gateRunId}</Typography.Text>
+        </Typography.Text>
+      )}
+      {revision?.id && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.dataset',
+            defaultMessage: 'dataset',
+          })}
+          : {revision.id} @ {revision.version ?? '-'}
+        </Typography.Text>
+      )}
+      {revision?.revisionChecksum && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.revisionChecksum',
+            defaultMessage: 'revision_checksum',
+          })}
+          : <Typography.Text copyable>{revision.revisionChecksum}</Typography.Text>
+        </Typography.Text>
+      )}
+      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.createdAt',
+          defaultMessage: 'created_at',
+        })}
+        : {formatDateTime(task.createdAt)}
+      </Typography.Text>
+      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.updatedAt',
+          defaultMessage: 'updated_at',
+        })}
+        : {formatDateTime(task.updatedAt)}
+      </Typography.Text>
+      {reviewSubmitBlockerContent(task, intl)}
+    </Space>
+  );
+}
+
 function taskDetailContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
   if (item.kind === 'lca') {
     return lcaDetailContent(item.task, intl);
+  }
+  if (item.kind === 'reviewSubmit') {
+    return reviewSubmitDetailContent(item.task, intl);
   }
   return packageDetailContent(item.task, intl);
 }
@@ -610,20 +1041,49 @@ const LcaTaskCenter: React.FC = () => {
   const intl = useIntl();
   const [open, setOpen] = useState(false);
   const [downloadingTaskId, setDownloadingTaskId] = useState<string | null>(null);
+  const [cancellingTaskId, setCancellingTaskId] = useState<string | null>(null);
+  const [retryingTaskId, setRetryingTaskId] = useState<string | null>(null);
+  const [refreshingReviewTasks, setRefreshingReviewTasks] = useState(false);
   const lcaTasks = useLcaTasks();
   const packageTasks = useTidasPackageTasks();
+  const reviewSubmitTasks = useReviewSubmitTasks();
+
+  useEffect(() => {
+    void refreshReviewSubmitTasks().catch(() => undefined);
+    const interval = window.setInterval(() => {
+      void refreshReviewSubmitTasks().catch(() => undefined);
+    }, 5000);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(
+    () =>
+      subscribeLcaTaskCenterOpenRequests(() => {
+        setOpen(true);
+        void refreshReviewSubmitTasks().catch(() => undefined);
+      }),
+    [],
+  );
 
   const items = useMemo<TaskCenterItem[]>(
     () =>
       [
         ...lcaTasks.map((task) => ({ kind: 'lca' as const, task })),
         ...packageTasks.map((task) => ({ kind: 'package' as const, task })),
+        ...reviewSubmitTasks.map((task) => ({ kind: 'reviewSubmit' as const, task })),
       ].sort((left, right) => Date.parse(right.task.updatedAt) - Date.parse(left.task.updatedAt)),
-    [lcaTasks, packageTasks],
+    [lcaTasks, packageTasks, reviewSubmitTasks],
   );
 
   const runningCount = useMemo(
     () => items.filter((item) => item.task.state === 'running').length,
+    [items],
+  );
+  const attentionCount = useMemo(
+    () =>
+      items.filter((item) => item.kind === 'reviewSubmit' && item.task.state === 'failed').length,
     [items],
   );
 
@@ -653,6 +1113,69 @@ const LcaTaskCenter: React.FC = () => {
     }
   };
 
+  const handleRefreshReviewSubmitTasks = async () => {
+    try {
+      setRefreshingReviewTasks(true);
+      await refreshReviewSubmitTasks();
+    } catch (error: any) {
+      message.error(
+        error?.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.refresh.error',
+            defaultMessage: 'Failed to refresh review-submit tasks',
+          }),
+      );
+    } finally {
+      setRefreshingReviewTasks(false);
+    }
+  };
+
+  const handleCancelReviewSubmit = async (task: ReviewSubmitBackgroundTask) => {
+    try {
+      setCancellingTaskId(task.id);
+      await cancelReviewSubmitTask(task.id);
+      message.success(
+        intl.formatMessage({
+          id: 'pages.process.reviewSubmitTaskCenter.cancel.success',
+          defaultMessage: 'Review-submit task cancelled',
+        }),
+      );
+    } catch (error: any) {
+      message.error(
+        error?.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.cancel.error',
+            defaultMessage: 'Failed to cancel review-submit task',
+          }),
+      );
+    } finally {
+      setCancellingTaskId(null);
+    }
+  };
+
+  const handleRetryReviewSubmit = async (task: ReviewSubmitBackgroundTask) => {
+    try {
+      setRetryingTaskId(task.id);
+      await retryReviewSubmitTask(task.id);
+      message.success(
+        intl.formatMessage({
+          id: 'pages.process.reviewSubmitTaskCenter.retry.success',
+          defaultMessage: 'Review-submit task restarted',
+        }),
+      );
+    } catch (error: any) {
+      message.error(
+        error?.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.retry.error',
+            defaultMessage: 'Failed to retry review-submit task',
+          }),
+      );
+    } finally {
+      setRetryingTaskId(null);
+    }
+  };
+
   return (
     <>
       <HeaderActionIcon
@@ -661,9 +1184,11 @@ const LcaTaskCenter: React.FC = () => {
           defaultMessage: 'Task Center',
         })}
         icon={<ClockCircleOutlined />}
-        badgeCount={runningCount}
+        badgeCount={runningCount + attentionCount}
+        badgeStyle={attentionCount > 0 ? { backgroundColor: '#cf1322' } : undefined}
         onClick={() => {
           setOpen(true);
+          void refreshReviewSubmitTasks().catch(() => undefined);
         }}
       />
       <Modal
@@ -679,12 +1204,26 @@ const LcaTaskCenter: React.FC = () => {
         width={760}
       >
         <Space direction='vertical' size={12} style={{ width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button
+              size='small'
+              icon={<ReloadOutlined />}
+              loading={refreshingReviewTasks}
+              onClick={() => {
+                void handleRefreshReviewSubmitTasks();
+              }}
+            >
+              {intl.formatMessage({
+                id: 'pages.process.lca.taskCenter.refresh',
+                defaultMessage: 'Refresh',
+              })}
+            </Button>
             <Button
               size='small'
               onClick={() => {
                 clearFinishedLcaTasks();
                 clearFinishedTidasPackageTasks();
+                clearFinishedReviewSubmitTasks();
               }}
             >
               {intl.formatMessage({
@@ -727,6 +1266,40 @@ const LcaTaskCenter: React.FC = () => {
                           })}
                         </Button>
                       ) : null,
+                      item.kind === 'reviewSubmit' && item.task.state === 'running' ? (
+                        <Button
+                          key='cancel'
+                          type='link'
+                          size='small'
+                          icon={<CloseCircleOutlined />}
+                          loading={cancellingTaskId === item.task.id}
+                          onClick={() => {
+                            void handleCancelReviewSubmit(item.task);
+                          }}
+                        >
+                          {intl.formatMessage({
+                            id: 'pages.process.reviewSubmitTaskCenter.cancel',
+                            defaultMessage: 'Cancel',
+                          })}
+                        </Button>
+                      ) : null,
+                      item.kind === 'reviewSubmit' && item.task.state === 'failed' ? (
+                        <Button
+                          key='retry'
+                          type='link'
+                          size='small'
+                          icon={<ReloadOutlined />}
+                          loading={retryingTaskId === item.task.id}
+                          onClick={() => {
+                            void handleRetryReviewSubmit(item.task);
+                          }}
+                        >
+                          {intl.formatMessage({
+                            id: 'pages.process.reviewSubmitTaskCenter.retry',
+                            defaultMessage: 'Retry',
+                          })}
+                        </Button>
+                      ) : null,
                       <Popover
                         key='details'
                         trigger='click'
@@ -744,9 +1317,14 @@ const LcaTaskCenter: React.FC = () => {
                         key='remove'
                         type='link'
                         size='small'
+                        disabled={item.kind === 'reviewSubmit' && item.task.state === 'running'}
                         onClick={() => {
                           if (item.kind === 'lca') {
                             removeLcaTask(item.task.id);
+                            return;
+                          }
+                          if (item.kind === 'reviewSubmit') {
+                            removeReviewSubmitTask(item.task.id);
                             return;
                           }
                           removeTidasPackageTask(item.task.id);
@@ -761,17 +1339,32 @@ const LcaTaskCenter: React.FC = () => {
                   >
                     <Space direction='vertical' size={4} style={{ width: '100%' }}>
                       <Space size={8} wrap>
-                        <Typography.Text strong>#{item.task.sequence}</Typography.Text>
-                        <Tag color={item.kind === 'lca' ? 'blue' : 'geekblue'}>
+                        {'sequence' in item.task && (
+                          <Typography.Text strong>#{item.task.sequence}</Typography.Text>
+                        )}
+                        <Tag
+                          color={
+                            item.kind === 'lca'
+                              ? 'blue'
+                              : item.kind === 'reviewSubmit'
+                                ? 'gold'
+                                : 'geekblue'
+                          }
+                        >
                           {item.kind === 'lca'
                             ? intl.formatMessage({
                                 id: 'component.tidasPackage.taskCenter.kind.lca',
                                 defaultMessage: 'LCA',
                               })
-                            : intl.formatMessage({
-                                id: 'component.tidasPackage.taskCenter.kind.packageExport',
-                                defaultMessage: 'TIDAS Export',
-                              })}
+                            : item.kind === 'reviewSubmit'
+                              ? intl.formatMessage({
+                                  id: 'pages.process.reviewSubmitTaskCenter.kind',
+                                  defaultMessage: 'Review Submit',
+                                })
+                              : intl.formatMessage({
+                                  id: 'component.tidasPackage.taskCenter.kind.packageExport',
+                                  defaultMessage: 'TIDAS Export',
+                                })}
                         </Tag>
                         {statusTag(item.task.state, intl)}
                         {shouldShowPhaseTag(item) && (
@@ -794,6 +1387,12 @@ const LcaTaskCenter: React.FC = () => {
                       {item.kind === 'lca' && item.task.error && (
                         <Typography.Text type='danger'>{item.task.error}</Typography.Text>
                       )}
+                      {item.kind === 'reviewSubmit' && item.task.error && (
+                        <Typography.Text type='danger'>{item.task.error}</Typography.Text>
+                      )}
+                      {item.kind === 'reviewSubmit' &&
+                        item.task.state === 'failed' &&
+                        reviewSubmitBlockerContent(item.task, intl)}
                       <Space size={12} wrap>
                         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
                           {intl.formatMessage({

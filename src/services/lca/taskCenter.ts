@@ -46,6 +46,7 @@ const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
 let taskSequence = 0;
 let tasks: LcaBackgroundTask[] = [];
 const listeners = new Set<() => void>();
+const openRequestListeners = new Set<() => void>();
 
 type PersistedTaskStore = {
   version: number;
@@ -664,6 +665,19 @@ export function subscribeLcaTasks(listener: () => void): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
+  };
+}
+
+export function requestOpenLcaTaskCenter(): void {
+  for (const listener of openRequestListeners) {
+    listener();
+  }
+}
+
+export function subscribeLcaTaskCenterOpenRequests(listener: () => void): () => void {
+  openRequestListeners.add(listener);
+  return () => {
+    openRequestListeners.delete(listener);
   };
 }
 
