@@ -1,21 +1,38 @@
 name: Build/release
 
-# A release runs only for a version tag whose target commit is already on main.
+# Releases normally start from a main push whose package.json version is new.
+# The workflow creates the matching v* tag and runs the release in the same run.
+# Manual v* tag pushes and workflow_dispatch runs remain supported for recovery/backfill releases.
 on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing v* tag to release with the current workflow definition.
+        required: true
+        type: string
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
 permissions:
   contents: write
 
+concurrency:
+  group: build-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release-context:
     name: Release Context
     runs-on: ubuntu-latest
     outputs:
-      on_main: ${{ steps.main.outputs.on_main }}
-      tag_commit: ${{ steps.main.outputs.tag_commit }}
+      release_base: ${{ steps.release.outputs.release_base }}
+      release_head: ${{ steps.release.outputs.release_head }}
+      should_release: ${{ steps.release.outputs.should_release }}
+      tag_created: ${{ steps.release.outputs.tag_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
       - name: Check out Git repository
@@ -23,33 +40,140 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check release tag is on main
-        id: main
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Resolve release target
+        id: release
+        env:
+          PUSH_BEFORE_SHA: ${{ github.event.before || '' }}
+          REQUESTED_TAG_NAME: ${{ github.event.inputs.tag_name || '' }}
         run: |
           set -euo pipefail
 
           git fetch --force origin +refs/heads/main:refs/remotes/origin/main
-          tag_commit="$(git rev-list -n 1 "$GITHUB_REF_NAME")"
-          echo "tag_commit=${tag_commit}" >> "$GITHUB_OUTPUT"
+          git fetch --force origin '+refs/tags/*:refs/tags/*'
 
-          if git merge-base --is-ancestor "$tag_commit" origin/main; then
-            echo "on_main=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "on_main=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Release tag ${GITHUB_REF_NAME} points to ${tag_commit}, which is not on origin/main. Skipping web deploy and Electron release."
+          if [ "${GITHUB_REPOSITORY}" != "linancn/tiangong-lca-next" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "tag_created=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping release outside canonical repository: ${GITHUB_REPOSITORY}."
+            exit 0
           fi
+
+          read_package_version() {
+            git show "${1}:package.json" | node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); console.log(pkg.version);"
+          }
+
+          tag_created=false
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            tag_name="${REQUESTED_TAG_NAME}"
+            if [ -z "${tag_name}" ] || [[ "${tag_name}" != v* ]]; then
+              echo "::error::workflow_dispatch tag_name must be an existing v* tag."
+              exit 1
+            fi
+
+            if ! release_head="$(git rev-list -n 1 "${tag_name}" 2>/dev/null)"; then
+              echo "::error::Release tag ${tag_name} does not exist."
+              exit 1
+            fi
+
+            package_version="$(read_package_version "${release_head}")"
+            expected_tag="v${package_version}"
+            if [ "${tag_name}" != "${expected_tag}" ]; then
+              echo "::error::Release tag ${tag_name} does not match package.json version ${package_version} at ${release_head}."
+              exit 1
+            fi
+
+            echo "::notice::Releasing existing ${tag_name} at ${release_head} with the current workflow definition."
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            tag_name="${GITHUB_REF_NAME}"
+            release_head="$(git rev-list -n 1 "${tag_name}")"
+            package_version="$(read_package_version "${release_head}")"
+            expected_tag="v${package_version}"
+            if [ "${tag_name}" != "${expected_tag}" ]; then
+              echo "::error::Release tag ${tag_name} does not match package.json version ${package_version} at ${release_head}."
+              exit 1
+            fi
+          else
+            release_head="${GITHUB_SHA}"
+            package_version="$(read_package_version "${release_head}")"
+            expected_tag="v${package_version}"
+            tag_name="${expected_tag}"
+            package_changed=true
+
+            if [ -n "${PUSH_BEFORE_SHA}" ] && [ "${PUSH_BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+              if git diff --quiet "${PUSH_BEFORE_SHA}" "${release_head}" -- package.json; then
+                package_changed=false
+              fi
+            fi
+
+            existing_tag_sha="$(git ls-remote --tags origin "refs/tags/${tag_name}" | awk '{print $1}')"
+            if [ -n "${existing_tag_sha}" ]; then
+              git fetch --force origin "refs/tags/${tag_name}:refs/tags/${tag_name}"
+              existing_tag_commit="$(git rev-list -n 1 "${tag_name}")"
+              if [ "${existing_tag_commit}" != "${release_head}" ]; then
+                if [ "${package_changed}" = "false" ]; then
+                  echo "should_release=false" >> "$GITHUB_OUTPUT"
+                  echo "tag_created=false" >> "$GITHUB_OUTPUT"
+                  echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
+                  echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
+                  echo "::notice::${tag_name} already points to ${existing_tag_commit}; package.json was unchanged in this main push, so this workflow hotfix is not a new release."
+                  exit 0
+                fi
+
+                echo "::error::${tag_name} already points to ${existing_tag_commit}, not current main commit ${release_head}. Bump package.json before releasing another main commit."
+                exit 1
+              fi
+              echo "::notice::${tag_name} already exists on current main commit ${release_head}; continuing release."
+            else
+              git tag "${tag_name}" "${release_head}"
+              git push origin "refs/tags/${tag_name}"
+              tag_created=true
+              echo "::notice::Created ${tag_name} on ${release_head}."
+            fi
+          fi
+
+          if ! git merge-base --is-ancestor "${release_head}" origin/main; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "tag_created=${tag_created}" >> "$GITHUB_OUTPUT"
+            echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
+            echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release target ${tag_name} points to ${release_head}, which is not on origin/main. Skipping web deploy and Electron release."
+            exit 0
+          fi
+
+          release_base="$(git rev-parse "${release_head}^")"
+
+          echo "release_base=${release_base}" >> "$GITHUB_OUTPUT"
+          echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+          echo "tag_created=${tag_created}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Release context"
+            echo "- tag: \`${tag_name}\`"
+            echo "- head: \`${release_head}\`"
+            echo "- base: \`${release_base}\`"
+            echo "- package version: \`${package_version}\`"
+            echo "- tag created: \`${tag_created}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   release-gate:
     name: Release Gate
     needs: release-context
-    if: needs.release-context.outputs.on_main == 'true'
+    if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v6
         with:
-          ref: ${{ needs.release-context.outputs.tag_commit }}
+          ref: ${{ needs.release-context.outputs.release_head }}
           fetch-depth: 0
 
       - name: Install Node.js
@@ -80,8 +204,8 @@ jobs:
       - name: Run docpact release gate
         run: |
           set -euo pipefail
-          release_head="${{ needs.release-context.outputs.tag_commit }}"
-          release_base="$(git rev-parse "${release_head}^")"
+          release_head="${{ needs.release-context.outputs.release_head }}"
+          release_base="${{ needs.release-context.outputs.release_base }}"
           npm run docpact:gate -- --base "$release_base" --head "$release_head"
 
       - name: Run CI tests
@@ -92,16 +216,23 @@ jobs:
 
   web-deploy:
     name: Build and Deploy Web App
-    needs: release-gate
+    needs:
+      - release-context
+      - release-gate
+    if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     env:
       EDGEONE_OUTPUT_DIR: dist
       EDGEONE_PROJECT_NAME: tiangong-lca-next-upload
       EDGEONE_CLI_VERSION: 1.4.6
+      EDGEONE_VITEST_VERSION: 3.2.4
+      EDGEONE_VITE_NODE_VERSION: 3.2.4
 
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-context.outputs.release_head }}
 
       - name: Install Node.js
         uses: actions/setup-node@v6
@@ -133,11 +264,34 @@ jobs:
             exit 1
           fi
 
+          edgeone_cli_dir="$(mktemp -d)"
+          cleanup_edgeone_cli() {
+            rm -rf "$edgeone_cli_dir"
+          }
+          trap cleanup_edgeone_cli EXIT
+
+          npm --prefix "$edgeone_cli_dir" install \
+            --prefer-offline \
+            --no-save \
+            --ignore-scripts \
+            --package-lock=false \
+            --no-audit \
+            --no-fund \
+            "edgeone@${EDGEONE_CLI_VERSION}" \
+            "vitest@${EDGEONE_VITEST_VERSION}" \
+            "vite-node@${EDGEONE_VITE_NODE_VERSION}"
+
+          edgeone_bin="$edgeone_cli_dir/node_modules/.bin/edgeone"
+          if [ ! -x "$edgeone_bin" ]; then
+            echo "::error::EdgeOne CLI binary was not installed at ${edgeone_bin}."
+            exit 1
+          fi
+
           max_attempts=3
           for attempt in $(seq 1 "$max_attempts"); do
             echo "Deploying to EdgeOne Pages, attempt ${attempt}/${max_attempts}."
 
-            if timeout 300s npx --yes "edgeone@${EDGEONE_CLI_VERSION}" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
+            if timeout 300s "$edgeone_bin" pages deploy "$EDGEONE_OUTPUT_DIR" -n "$EDGEONE_PROJECT_NAME" -t "$EDGEONE_API_TOKEN"; then
               exit 0
             fi
 
@@ -152,7 +306,10 @@ jobs:
           done
 
   release:
-    needs: release-gate
+    needs:
+      - release-context
+      - release-gate
+    if: needs.release-context.outputs.should_release == 'true'
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -170,6 +327,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-context.outputs.release_head }}
 
       - name: Install Node.js
         uses: actions/setup-node@v6
@@ -185,4 +344,4 @@ jobs:
         run: |
           npm run build
           npx tsc --project tsconfig.electron.json
-          npx electron-builder --config electron-builder.json --publish onTag --${{ matrix.arch }}
+          npx electron-builder --config electron-builder.json --publish always --${{ matrix.arch }}
