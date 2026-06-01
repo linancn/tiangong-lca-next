@@ -23,7 +23,7 @@ checkPaths:
   - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-06-01
-lastReviewedCommit: 710b7e5f82205c4f1509dbbcbc5f3480d341669f
+lastReviewedCommit: e8aa2619aaf2332e8f7cb61130e163a2ab1ed795
 ---
 
 # Pre-Push Gate Policy
@@ -64,7 +64,8 @@ It does not own:
 | ordinary GitHub branch pushes | do not run standalone remote test jobs |
 | PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, then run release-gate tests before web deploy and draft Electron release |
-| manual release tags on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
+| unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
+| manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
 
 ## Adoption Conditions
 
@@ -81,5 +82,6 @@ It does not own:
 - protect the actual local and release gates
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
+- use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - reproduce `npm run test:ci` and `npm run prepush:gate` serially on one workstation when both are needed
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern
