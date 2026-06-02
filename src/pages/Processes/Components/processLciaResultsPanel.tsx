@@ -33,7 +33,6 @@ type SolverLciaPendingJob = {
   kind: 'snapshot_build' | 'all_unit_solve';
   jobId: string;
   snapshotId: string;
-  workerJobId?: string | null;
 };
 
 const ProcessLciaResultsPanel: FC<Props> = ({
@@ -265,7 +264,6 @@ const ProcessLciaResultsPanel: FC<Props> = ({
               kind: 'all_unit_solve',
               jobId: displayJobId,
               snapshotId,
-              workerJobId: solveWorkerJobId || null,
             });
             setSolverLciaMeta(null);
             setSolverLciaError(null);

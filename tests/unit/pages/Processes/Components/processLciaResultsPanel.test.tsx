@@ -195,6 +195,33 @@ describe('ProcessLciaResultsPanel', () => {
     jest.useRealTimers();
   });
 
+  it('shows a friendly error when queued all-unit LCIA response lacks identifiers', async () => {
+    jest.useFakeTimers();
+    const queuedError = {
+      code: 'all_unit_result_queued',
+      body: {
+        snapshot_id: '',
+      },
+    };
+    mockIsLcaFunctionInvokeError.mockImplementation(
+      (error: any) => error?.code === 'all_unit_result_queued',
+    );
+    mockQueryLcaResults.mockRejectedValueOnce(queuedError);
+
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    expect(mockQueryLcaResults).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
   it('skips state updates when base-row enrichment resolves after unmount', async () => {
     let resolveReferenceQuantity: () => void = () => {};
     mockGetReferenceQuantityFromMethod.mockImplementation(
