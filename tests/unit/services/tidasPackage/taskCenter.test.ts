@@ -216,6 +216,15 @@ describe('tidasPackage/taskCenter', () => {
             scope: 123,
             rootCount: 3,
           },
+          {
+            id: 'normalized-import-task',
+            kind: 'tidas_package_import',
+            state: 'completed',
+            phase: 'completed',
+            message: 'import done',
+            createdAt: '2026-03-21T10:10:00.000Z',
+            updatedAt: '2026-03-21T10:11:00.000Z',
+          },
         ],
       }),
     );
@@ -225,11 +234,17 @@ describe('tidasPackage/taskCenter', () => {
       expect.objectContaining({
         id: 'normalized-task',
         sequence: 1,
+        kind: 'tidas_package_export',
         workerJobId: 'worker-normalized-task',
         jobKind: 'tidas.export_package',
         scope: null,
         createdAt: '2026-03-21T10:00:00.000Z',
         updatedAt: '2026-03-21T11:00:00.000Z',
+      }),
+      expect.objectContaining({
+        id: 'normalized-import-task',
+        kind: 'tidas_package_import',
+        sequence: 2,
       }),
     ]);
   });
@@ -541,24 +556,29 @@ describe('tidasPackage/taskCenter', () => {
         ],
       }),
     );
-    mockRequestWorkerJobsApi.mockResolvedValue({
-      data: [
-        {
-          id: 'worker-package-maintenance',
-          jobKind: 'maintenance.package_gc',
-          status: 'running',
-          subjectType: 'lca_package_job',
-          subjectId: 'package-maintenance',
-        },
-        {
-          jobKind: 'tidas.export_package',
-          status: 'running',
-          subjectType: 'lca_package_job',
-          subjectId: 'package-without-worker-id',
-        },
-      ],
-      error: null,
-    });
+    mockRequestWorkerJobsApi
+      .mockResolvedValueOnce({
+        data: null,
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: 'worker-package-maintenance',
+            jobKind: 'maintenance.package_gc',
+            status: 'running',
+            subjectType: 'lca_package_job',
+            subjectId: 'package-maintenance',
+          },
+          {
+            jobKind: 'tidas.export_package',
+            status: 'running',
+            subjectType: 'lca_package_job',
+            subjectId: 'package-without-worker-id',
+          },
+        ],
+        error: null,
+      });
 
     const taskCenter = loadTaskCenterModule();
     const refreshed = await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
@@ -569,6 +589,9 @@ describe('tidasPackage/taskCenter', () => {
         message: 'existing',
       }),
     ]);
+
+    const unmappableRefresh = await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+    expect(unmappableRefresh).toEqual(refreshed);
   });
 
   it('submits queued export tasks and handles collect_refs progress before completion', async () => {
