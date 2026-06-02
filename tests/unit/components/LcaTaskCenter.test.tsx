@@ -1020,6 +1020,32 @@ describe('LcaTaskCenter', () => {
         rootCount: 0,
       },
       {
+        id: 'pkg-import-running',
+        sequence: 5.7,
+        kind: 'tidas_package_import',
+        state: 'running',
+        phase: 'import_package',
+        message: 'importing package data',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.700Z',
+        workerJobId: 'worker-package-import-running',
+        jobId: 'import-job-1',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-import-completed',
+        sequence: 5.8,
+        kind: 'tidas_package_import',
+        state: 'completed',
+        phase: 'completed',
+        message: 'import completed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.800Z',
+        workerJobId: 'worker-package-import-completed',
+        jobId: 'import-job-2',
+        rootCount: 0,
+      },
+      {
         id: 'pkg-failed',
         sequence: 6,
         kind: 'tidas_package_export',
@@ -1053,11 +1079,13 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByTestId('badge-count')).toHaveTextContent('7');
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('8');
     expect(screen.getAllByText('TIDAS Export').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('TIDAS Import').length).toBeGreaterThan(0);
     expect(screen.getByText('Queued')).toBeInTheDocument();
     expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
     expect(screen.getByText('Collecting related data')).toBeInTheDocument();
+    expect(screen.getByText('Importing data')).toBeInTheDocument();
     expect(screen.getByText('Building ZIP')).toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
@@ -1067,7 +1095,9 @@ describe('LcaTaskCenter', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
     expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
+    expect(screen.getByText('Import package completed')).toBeInTheDocument();
     expect(screen.getByText('queueing')).toBeInTheDocument();
+    expect(screen.getByText('importing package data')).toBeInTheDocument();
     expect(screen.getByText('package failed')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -1103,6 +1133,7 @@ describe('LcaTaskCenter', () => {
     ).toBeInTheDocument();
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
+    expect(downloadButtons).toHaveLength(2);
     fireEvent.click(downloadButtons[0]);
     await waitFor(() => {
       expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(

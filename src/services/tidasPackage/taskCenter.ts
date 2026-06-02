@@ -19,6 +19,7 @@ export type TidasPackageTaskPhase =
   | 'submitting'
   | 'queued'
   | 'collect_refs'
+  | 'import_package'
   | 'finalize_zip'
   | 'completed'
   | 'failed';
@@ -26,7 +27,7 @@ export type TidasPackageTaskPhase =
 export type TidasPackageBackgroundTask = {
   id: string;
   sequence: number;
-  kind: 'tidas_package_export';
+  kind: 'tidas_package_export' | 'tidas_package_import';
   request?: ExportTidasPackageRequest;
   state: TidasPackageTaskState;
   phase: TidasPackageTaskPhase;
@@ -139,6 +140,7 @@ function normalizePhase(value: unknown): TidasPackageTaskPhase | null {
     value === 'submitting' ||
     value === 'queued' ||
     value === 'collect_refs' ||
+    value === 'import_package' ||
     value === 'finalize_zip' ||
     value === 'completed' ||
     value === 'failed'
@@ -247,7 +249,7 @@ function normalizeTask(raw: unknown, fallbackSequence: number): TidasPackageBack
     sequence: Number.isInteger(item.sequence)
       ? Math.max(1, Number(item.sequence))
       : fallbackSequence,
-    kind: 'tidas_package_export',
+    kind: item.kind === 'tidas_package_import' ? 'tidas_package_import' : 'tidas_package_export',
     request: normalizeRequest(item.request),
     state,
     phase,
@@ -316,7 +318,7 @@ function upsertTask(taskId: string, patch: Partial<TidasPackageBackgroundTask>):
     ...patch,
     id: current.id,
     sequence: current.sequence,
-    kind: 'tidas_package_export',
+    kind: current.kind,
     request: patch.request ?? current.request,
     createdAt: current.createdAt,
     updatedAt: nowIso(),
@@ -401,6 +403,10 @@ function isTidasPackageExportWorkerJob(job: WorkerJobResult): boolean {
   return job.jobKind === 'tidas.export_package';
 }
 
+function isTidasPackageImportWorkerJob(job: WorkerJobResult): boolean {
+  return job.jobKind === 'tidas.import_package';
+}
+
 function packageJobIdFromWorkerJob(job: WorkerJobResult): string | undefined {
   const result = asRecord(job.result);
   return firstString(result?.packageJobId, job.subjectId);
@@ -447,6 +453,9 @@ function phaseFromWorkerJob(job: WorkerJobResult): TidasPackageTaskPhase {
   if (phase === 'collect_refs') {
     return 'collect_refs';
   }
+  if (phase === 'import_package') {
+    return 'import_package';
+  }
   if (phase === 'finalize_zip') {
     return 'finalize_zip';
   }
@@ -471,11 +480,19 @@ function messageFromWorkerJob(
   phase: TidasPackageTaskPhase,
   displayJobId: string,
 ): string {
+  const isImport = isTidasPackageImportWorkerJob(job);
   if (job.status === 'completed') {
-    return `Export package ready (${filenameFromWorkerJob(job) ?? 'tidas-package.zip'})`;
+    return isImport
+      ? 'Import package completed'
+      : `Export package ready (${filenameFromWorkerJob(job) ?? 'tidas-package.zip'})`;
   }
   if (stateFromWorkerJob(job) === 'failed') {
-    return 'Export package failed';
+    return isImport ? 'Import package failed' : 'Export package failed';
+  }
+  if (isImport) {
+    return phase === 'import_package'
+      ? 'Importing package data'
+      : `Import task queued (${displayJobId})`;
   }
   if (phase === 'collect_refs') {
     return 'Collecting related datasets';
@@ -491,7 +508,10 @@ function taskFromWorkerJob(
   fallbackSequence: number,
 ): TidasPackageBackgroundTask | null {
   const workerJobId = firstString(job.id);
-  if (!workerJobId || !isTidasPackageExportWorkerJob(job)) {
+  if (
+    !workerJobId ||
+    (!isTidasPackageExportWorkerJob(job) && !isTidasPackageImportWorkerJob(job))
+  ) {
     return null;
   }
 
@@ -506,7 +526,7 @@ function taskFromWorkerJob(
   return {
     id: workerJobId,
     sequence: fallbackSequence,
-    kind: 'tidas_package_export',
+    kind: isTidasPackageImportWorkerJob(job) ? 'tidas_package_import' : 'tidas_package_export',
     state,
     phase,
     message: messageFromWorkerJob(job, phase, displayJobId),

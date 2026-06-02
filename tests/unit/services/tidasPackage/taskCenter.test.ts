@@ -292,6 +292,8 @@ describe('tidasPackage/taskCenter', () => {
           status: 'running',
           subjectType: 'lca_package_job',
           subjectId: 'package-import-1',
+          createdAt: '2026-03-21T08:50:00.000Z',
+          updatedAt: '2026-03-21T08:51:00.000Z',
         },
       ],
       error: null,
@@ -323,8 +325,19 @@ describe('tidasPackage/taskCenter', () => {
         jobId: 'package-job-1',
         state: 'completed',
         phase: 'completed',
+        kind: 'tidas_package_export',
         scope: 'selected_roots',
         filename: 'worker-export.zip',
+      }),
+      expect.objectContaining({
+        id: 'worker-package-import',
+        workerJobId: 'worker-package-import',
+        jobKind: 'tidas.import_package',
+        jobId: 'package-import-1',
+        state: 'running',
+        phase: 'submitting',
+        kind: 'tidas_package_import',
+        message: 'Import task queued (package-import-1)',
       }),
     ]);
   });
@@ -399,6 +412,36 @@ describe('tidasPackage/taskCenter', () => {
           createdAt: '2026-03-21T08:50:00.000Z',
           updatedAt: '2026-03-21T08:51:00.000Z',
         },
+        {
+          id: 'worker-package-import-completed',
+          jobKind: 'tidas.import_package',
+          status: 'completed',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-import-completed',
+          createdAt: '2026-03-21T08:40:00.000Z',
+          updatedAt: '2026-03-21T08:41:00.000Z',
+        },
+        {
+          id: 'worker-package-import-running',
+          jobKind: 'tidas.import_package',
+          status: 'running',
+          phase: 'import_package',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-import-running',
+          createdAt: '2026-03-21T08:30:00.000Z',
+          updatedAt: '2026-03-21T08:31:00.000Z',
+        },
+        {
+          id: 'worker-package-import-failed',
+          jobKind: 'tidas.import_package',
+          status: 'failed',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-import-failed',
+          errorCode: 'validation_failed',
+          errorMessage: 'Validation blocked import',
+          createdAt: '2026-03-21T08:20:00.000Z',
+          updatedAt: '2026-03-21T08:21:00.000Z',
+        },
       ],
       error: null,
     });
@@ -439,6 +482,25 @@ describe('tidasPackage/taskCenter', () => {
       state: 'running',
       phase: 'submitting',
       message: 'Export task queued (package-submitting)',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-import-completed')).toMatchObject({
+      kind: 'tidas_package_import',
+      state: 'completed',
+      phase: 'completed',
+      message: 'Import package completed',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-import-running')).toMatchObject({
+      kind: 'tidas_package_import',
+      state: 'running',
+      phase: 'import_package',
+      message: 'Importing package data',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-import-failed')).toMatchObject({
+      kind: 'tidas_package_import',
+      state: 'failed',
+      phase: 'failed',
+      message: 'Import package failed',
+      error: 'Validation blocked import',
     });
   });
 
