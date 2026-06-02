@@ -29,6 +29,12 @@ type Props = {
   enableSolverRefresh?: boolean;
 };
 
+type SolverLciaPendingJob = {
+  kind: 'snapshot_build' | 'all_unit_solve';
+  jobId: string;
+  snapshotId: string;
+};
+
 const ProcessLciaResultsPanel: FC<Props> = ({
   baseRows,
   lang,
@@ -53,10 +59,9 @@ const ProcessLciaResultsPanel: FC<Props> = ({
     source: string;
     computedAt: string;
   } | null>(null);
-  const [solverLciaPendingBuild, setSolverLciaPendingBuild] = useState<{
-    jobId: string;
-    snapshotId: string;
-  } | null>(null);
+  const [solverLciaPendingJob, setSolverLciaPendingJob] = useState<SolverLciaPendingJob | null>(
+    null,
+  );
 
   const columns = useMemo<ProColumns<LCIAResultTable>[]>(
     () => [
@@ -135,7 +140,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
     setSolverLciaLoaded(false);
     setSolverLciaError(null);
     setSolverLciaMeta(null);
-    setSolverLciaPendingBuild(null);
+    setSolverLciaPendingJob(null);
 
     const syncBaseRows = async () => {
       const sourceRows = JSON.parse(JSON.stringify(baseRows ?? [])) as LCIAResultTable[];
@@ -175,7 +180,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
 
       setSolverLciaLoading(true);
       setSolverLciaError(null);
-      setSolverLciaPendingBuild(null);
+      setSolverLciaPendingJob(null);
 
       try {
         const queried = await queryLcaResults({
@@ -219,7 +224,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
           source: queried.source,
           computedAt: queried.meta.computed_at,
         });
-        setSolverLciaPendingBuild(null);
+        setSolverLciaPendingJob(null);
         setSolverLciaLoaded(true);
       } catch (error: unknown) {
         if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
@@ -231,7 +236,8 @@ const ProcessLciaResultsPanel: FC<Props> = ({
               : '';
 
           if (buildJobId && buildSnapshotId) {
-            setSolverLciaPendingBuild({
+            setSolverLciaPendingJob({
+              kind: 'snapshot_build',
               jobId: buildJobId,
               snapshotId: buildSnapshotId,
             });
@@ -242,7 +248,38 @@ const ProcessLciaResultsPanel: FC<Props> = ({
           }
         }
 
-        setSolverLciaPendingBuild(null);
+        if (isLcaFunctionInvokeError(error) && error.code === 'all_unit_result_queued') {
+          const solveJobId =
+            typeof error.body?.solve_job_id === 'string' ? error.body.solve_job_id.trim() : '';
+          const solveWorkerJobId =
+            typeof error.body?.solve_worker_job_id === 'string'
+              ? error.body.solve_worker_job_id.trim()
+              : '';
+          const snapshotId =
+            typeof error.body?.snapshot_id === 'string' ? error.body.snapshot_id.trim() : '';
+          const displayJobId = solveJobId || solveWorkerJobId;
+
+          if (displayJobId && snapshotId) {
+            setSolverLciaPendingJob({
+              kind: 'all_unit_solve',
+              jobId: displayJobId,
+              snapshotId,
+            });
+            setSolverLciaMeta(null);
+            setSolverLciaError(null);
+            setSolverLciaLoaded(true);
+            return;
+          }
+
+          setSolverLciaError('LCIA result calculation is queued. Please retry in a moment.');
+          setSolverLciaPendingJob(null);
+          setRows(normalizedBaseRows);
+          setSolverLciaMeta(null);
+          setSolverLciaLoaded(true);
+          return;
+        }
+
+        setSolverLciaPendingJob(null);
         setRows(normalizedBaseRows);
         setSolverLciaMeta(null);
         setSolverLciaError(error instanceof Error ? error.message : String(error));
@@ -273,7 +310,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
   }, [baseRowsReady, canQuerySolver, loadSolverLciaResults]);
 
   useEffect(() => {
-    if (!canQuerySolver || !solverLciaPendingBuild) {
+    if (!canQuerySolver || !solverLciaPendingJob) {
       return;
     }
 
@@ -284,7 +321,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
     return () => {
       globalThis.clearTimeout(timer);
     };
-  }, [canQuerySolver, loadSolverLciaResults, solverLciaPendingBuild]);
+  }, [canQuerySolver, loadSolverLciaResults, solverLciaPendingJob]);
 
   return (
     <Space direction='vertical' size={'middle'} style={{ width: '100%' }}>
@@ -307,18 +344,27 @@ const ProcessLciaResultsPanel: FC<Props> = ({
               {`source=${solverLciaMeta.source}, snapshot=${solverLciaMeta.snapshotId}, result=${solverLciaMeta.resultId}, computed_at=${solverLciaMeta.computedAt}`}
             </Typography.Text>
           )}
-          {solverLciaPendingBuild && (
+          {solverLciaPendingJob?.kind === 'snapshot_build' && (
             <Typography.Text type='secondary'>
               <FormattedMessage
                 id='pages.process.view.lciaresults.solver.snapshotBuilding'
                 defaultMessage='Snapshot is rebuilding (job {jobId}). Retrying automatically...'
-                values={{ jobId: solverLciaPendingBuild.jobId }}
+                values={{ jobId: solverLciaPendingJob.jobId }}
+              />
+            </Typography.Text>
+          )}
+          {solverLciaPendingJob?.kind === 'all_unit_solve' && (
+            <Typography.Text type='secondary'>
+              <FormattedMessage
+                id='pages.process.view.lciaresults.solver.allUnitSolving'
+                defaultMessage='LCIA results are being calculated (job {jobId}). Retrying automatically...'
+                values={{ jobId: solverLciaPendingJob.jobId }}
               />
             </Typography.Text>
           )}
         </Space>
       )}
-      {solverLciaError && !solverLciaPendingBuild && (
+      {solverLciaError && !solverLciaPendingJob && (
         <Typography.Text type='danger'>
           <FormattedMessage
             id='pages.process.view.lciaresults.solver.error'
