@@ -17,6 +17,8 @@ export type WorkerJobResult = {
   jobKind?: string;
   workerRuntime?: string;
   workerQueue?: string;
+  rootJobId?: string | null;
+  parentJobId?: string | null;
   priority?: number | string | null;
   subjectType?: string;
   subjectId?: string;
@@ -26,6 +28,8 @@ export type WorkerJobResult = {
   phase?: string | null;
   progress?: number | string | null;
   result?: unknown;
+  resultRef?: unknown;
+  diagnostics?: unknown;
   errorCode?: string | null;
   errorMessage?: string | null;
   blockerCodes?: string[];

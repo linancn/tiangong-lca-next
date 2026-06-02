@@ -51,6 +51,7 @@ export type LcaSolveSubmitResponse =
       snapshot_id: string;
       cache_key: string;
       job_id: string;
+      worker_job_id?: string | null;
       result_id?: never;
     }
   | {
@@ -58,6 +59,7 @@ export type LcaSolveSubmitResponse =
       snapshot_id: string;
       build_job_id: string;
       build_snapshot_id: string;
+      build_worker_job_id?: string | null;
       cache_key?: never;
       job_id?: never;
       result_id?: never;
