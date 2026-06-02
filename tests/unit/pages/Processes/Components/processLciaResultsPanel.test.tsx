@@ -151,6 +151,75 @@ describe('ProcessLciaResultsPanel', () => {
     expect(screen.getByTestId('pro-table')).toBeInTheDocument();
   });
 
+  it('waits and retries when all-unit LCIA calculation is queued', async () => {
+    jest.useFakeTimers();
+    const queuedError = {
+      code: 'all_unit_result_queued',
+      body: {
+        snapshot_id: 'snapshot-pending',
+        solve_job_id: 'lca-job-1',
+        solve_worker_job_id: 'worker-job-1',
+      },
+    };
+    mockIsLcaFunctionInvokeError.mockImplementation(
+      (error: any) => error?.code === 'all_unit_result_queued',
+    );
+    mockQueryLcaResults.mockRejectedValueOnce(queuedError).mockResolvedValueOnce({
+      snapshot_id: 'snapshot-ready',
+      result_id: 'result-ready',
+      source: 'all_unit',
+      meta: { computed_at: '2026-04-29T00:00:00Z' },
+      data: { values: [] },
+    });
+
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'LCIA results are being calculated (job {jobId}). Retrying automatically...',
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/source=all_unit, snapshot=snapshot-ready, result=result-ready/),
+      ).toBeInTheDocument(),
+    );
+    jest.useRealTimers();
+  });
+
+  it('shows a friendly error when queued all-unit LCIA response lacks identifiers', async () => {
+    jest.useFakeTimers();
+    const queuedError = {
+      code: 'all_unit_result_queued',
+      body: {},
+    };
+    mockIsLcaFunctionInvokeError.mockImplementation(
+      (error: any) => error?.code === 'all_unit_result_queued',
+    );
+    mockQueryLcaResults.mockRejectedValueOnce(queuedError);
+
+    render(<ProcessLciaResultsPanel baseRows={[]} lang='en' processId='process-1' />);
+
+    await waitFor(() =>
+      expect(screen.getByText('Result query failed: {message}')).toBeInTheDocument(),
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    expect(mockQueryLcaResults).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
   it('skips state updates when base-row enrichment resolves after unmount', async () => {
     let resolveReferenceQuantity: () => void = () => {};
     mockGetReferenceQuantityFromMethod.mockImplementation(
