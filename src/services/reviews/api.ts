@@ -92,6 +92,8 @@ export type ReviewSubmitJobStatus =
 export type ReviewSubmitJobResult = {
   status: ReviewSubmitJobStatus;
   reviewSubmitJobId?: string;
+  submitWorkerJobId?: string | null;
+  rootJobId?: string | null;
   gateRunId?: string | null;
   gateWorkerJobId?: string | null;
   datasetRevision?: {
@@ -105,6 +107,8 @@ export type ReviewSubmitJobResult = {
     reportSchemaVersion?: string;
   };
   gate?: ReviewSubmitGateResult | null;
+  submitWorkerJob?: WorkerJobResult | null;
+  workerJob?: WorkerJobResult | null;
   gateWorkerJob?: WorkerJobResult | null;
   error?: {
     code?: string;

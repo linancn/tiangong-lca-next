@@ -430,7 +430,8 @@ describe('LcaTaskCenter', () => {
   it('renders service-backed review-submit tasks with blocker guidance and cancel/remove actions', async () => {
     mockReviewSubmitTasks = [
       {
-        id: 'review-running',
+        id: 'submit-worker-running',
+        submitWorkerJobId: 'submit-worker-running',
         gateWorkerJobId: 'gate-worker-running',
         reviewSubmitJobId: 'review-job-running',
         state: 'running',
@@ -446,7 +447,9 @@ describe('LcaTaskCenter', () => {
         },
       },
       {
-        id: 'review-blocked',
+        id: 'submit-worker-blocked',
+        submitWorkerJobId: 'submit-worker-blocked',
+        rootJobId: 'root-worker-blocked',
         gateWorkerJobId: 'gate-worker-blocked',
         reviewSubmitJobId: 'review-job-blocked',
         state: 'failed',
@@ -501,6 +504,14 @@ describe('LcaTaskCenter', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'dataset: process-2 @ 01.00.000'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, element) => element?.textContent === 'submit_worker_job_id: submit-worker-blocked',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'root_job_id: root-worker-blocked'),
+    ).toBeInTheDocument();
     expect(screen.getByText('same input/output flow')).toBeInTheDocument();
     expect(
       screen.getAllByText(
@@ -516,20 +527,24 @@ describe('LcaTaskCenter', () => {
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    await waitFor(() => expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('review-blocked'));
+    await waitFor(() =>
+      expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked'),
+    );
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review-submit task restarted'),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('review-running'));
+    await waitFor(() =>
+      expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('submit-worker-running'),
+    );
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review-submit task cancelled'),
     );
 
     const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
     fireEvent.click(removeButtons[1]);
-    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('review-blocked');
+    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked');
   });
 
   it('refreshes review-submit tasks on mount, timer, open request, and manual refresh failures', async () => {

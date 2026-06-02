@@ -1132,6 +1132,24 @@ function reviewSubmitDetailContent(
         </Tag>
         {revision?.table && <Tag>{revision.table}</Tag>}
       </Space>
+      {task.submitWorkerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
+            defaultMessage: 'submit_worker_job_id',
+          })}
+          : <Typography.Text copyable>{task.submitWorkerJobId}</Typography.Text>
+        </Typography.Text>
+      )}
+      {task.rootJobId && task.rootJobId !== task.submitWorkerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
+            defaultMessage: 'root_job_id',
+          })}
+          : <Typography.Text copyable>{task.rootJobId}</Typography.Text>
+        </Typography.Text>
+      )}
       {task.reviewSubmitJobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
           {intl.formatMessage({

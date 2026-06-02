@@ -25,6 +25,8 @@ export type ReviewSubmitTaskPhase =
 
 export type ReviewSubmitBackgroundTask = {
   id: string;
+  submitWorkerJobId?: string;
+  rootJobId?: string;
   gateWorkerJobId?: string;
   reviewSubmitJobId?: string;
   state: ReviewSubmitTaskState;
@@ -40,6 +42,8 @@ export type ReviewSubmitBackgroundTask = {
   };
   gateRunId?: string | null;
   workerJob?: WorkerJobResult | null;
+  rootWorkerJob?: WorkerJobResult | null;
+  gateWorkerJob?: WorkerJobResult | null;
   coordinator?: ReviewSubmitJobResult | null;
   blockingReasons?: ReviewSubmitGateBlockingReason[];
   blockerCodes?: string[];
@@ -51,7 +55,8 @@ const MAX_TASK_ITEMS = 50;
 const STORAGE_KEY = 'tg_review_submit_task_center_v1';
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const REVIEW_SUBMIT_WORKER_KIND = 'review_submit.gate';
+const REVIEW_SUBMIT_ROOT_WORKER_KIND = 'review_submit.submit';
+const REVIEW_SUBMIT_GATE_WORKER_KIND = 'review_submit.gate';
 
 let tasks: ReviewSubmitBackgroundTask[] = [];
 let dismissedTaskIds = new Set<string>();
@@ -182,6 +187,97 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function asNonEmptyString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    const text = asNonEmptyString(value);
+    if (text) {
+      return text;
+    }
+  }
+  return undefined;
+}
+
+function isReviewSubmitWorkerJob(workerJob?: WorkerJobResult | null): boolean {
+  return (
+    workerJob?.jobKind === REVIEW_SUBMIT_ROOT_WORKER_KIND ||
+    workerJob?.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND
+  );
+}
+
+function isRootReviewSubmitWorker(
+  workerJob?: WorkerJobResult | null,
+): workerJob is WorkerJobResult {
+  return workerJob?.jobKind === REVIEW_SUBMIT_ROOT_WORKER_KIND;
+}
+
+function isGateReviewSubmitWorker(
+  workerJob?: WorkerJobResult | null,
+): workerJob is WorkerJobResult {
+  return workerJob?.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND;
+}
+
+function rootWorkerJobFromParts(
+  job?: ReviewSubmitJobResult | null,
+  workerJob?: WorkerJobResult | null,
+): WorkerJobResult | null {
+  if (job?.submitWorkerJob) {
+    return job.submitWorkerJob;
+  }
+  if (job?.workerJob && isRootReviewSubmitWorker(job.workerJob)) {
+    return job.workerJob;
+  }
+  if (isRootReviewSubmitWorker(workerJob)) {
+    return workerJob;
+  }
+  return null;
+}
+
+function gateWorkerJobFromParts(
+  job?: ReviewSubmitJobResult | null,
+  workerJob?: WorkerJobResult | null,
+): WorkerJobResult | null {
+  if (job?.gateWorkerJob) {
+    return job.gateWorkerJob;
+  }
+  if (isGateReviewSubmitWorker(workerJob)) {
+    return workerJob;
+  }
+  return null;
+}
+
+function submitWorkerJobIdFromParts(
+  job?: ReviewSubmitJobResult | null,
+  workerJob?: WorkerJobResult | null,
+): string | undefined {
+  const rootWorkerJob = rootWorkerJobFromParts(job, workerJob);
+  return firstString(
+    job?.submitWorkerJobId,
+    rootWorkerJob?.id,
+    isRootReviewSubmitWorker(workerJob) ? workerJob?.id : undefined,
+    workerJob?.rootJobId,
+  );
+}
+
+function rootJobIdFromParts(
+  job?: ReviewSubmitJobResult | null,
+  workerJob?: WorkerJobResult | null,
+): string | undefined {
+  const rootWorkerJob = rootWorkerJobFromParts(job, workerJob);
+  return firstString(job?.rootJobId, workerJob?.rootJobId, rootWorkerJob?.rootJobId);
+}
+
+function gateWorkerJobIdFromParts(
+  job?: ReviewSubmitJobResult | null,
+  workerJob?: WorkerJobResult | null,
+): string | undefined {
+  const gateWorkerJob = gateWorkerJobFromParts(job, workerJob);
+  return firstString(job?.gateWorkerJobId, gateWorkerJob?.id);
+}
+
 function blockingReasonsFromWorker(
   workerJob?: WorkerJobResult | null,
 ): ReviewSubmitGateBlockingReason[] {
@@ -249,10 +345,14 @@ function taskIdFromParts(
   job?: ReviewSubmitJobResult | null,
   workerJob?: WorkerJobResult | null,
 ): string {
+  const submitWorkerJobId = submitWorkerJobIdFromParts(job, workerJob);
+  const rootJobId = rootJobIdFromParts(job, workerJob);
+  const gateWorkerJobId = gateWorkerJobIdFromParts(job, workerJob);
   return (
+    submitWorkerJobId ||
+    rootJobId ||
+    gateWorkerJobId ||
     job?.reviewSubmitJobId ||
-    job?.gateWorkerJobId ||
-    workerJob?.id ||
     `${workerJob?.subjectType ?? 'processes'}:${workerJob?.subjectId ?? 'unknown'}:${
       workerJob?.subjectVersion ?? 'unknown'
     }`
@@ -288,9 +388,17 @@ function mapReviewSubmitTask(
           typeof reason.code === 'string' && reason.code ? [reason.code] : [],
         );
 
+  const rootWorkerJob = rootWorkerJobFromParts(job, workerJob);
+  const gateWorkerJob = gateWorkerJobFromParts(job, workerJob);
+  const submitWorkerJobId = submitWorkerJobIdFromParts(job, workerJob);
+  const rootJobId = rootJobIdFromParts(job, workerJob);
+  const gateWorkerJobId = gateWorkerJobIdFromParts(job, workerJob);
+
   return {
     id: taskIdFromParts(job, workerJob),
-    gateWorkerJobId: job?.gateWorkerJobId ?? workerJob?.id,
+    submitWorkerJobId,
+    rootJobId,
+    gateWorkerJobId,
     reviewSubmitJobId: job?.reviewSubmitJobId,
     state: phaseToState(phase),
     phase,
@@ -299,7 +407,9 @@ function mapReviewSubmitTask(
     updatedAt,
     datasetRevision: job?.datasetRevision ?? datasetRevisionFromWorker(workerJob),
     gateRunId: job?.gateRunId ?? job?.gate?.gateRunId ?? null,
-    workerJob: job?.gateWorkerJob ?? workerJob ?? null,
+    workerJob: rootWorkerJob ?? gateWorkerJob ?? workerJob ?? null,
+    rootWorkerJob,
+    gateWorkerJob,
     coordinator: job ?? null,
     blockingReasons,
     blockerCodes,
@@ -333,6 +443,9 @@ function normalizePersistedTask(raw: unknown): ReviewSubmitBackgroundTask | null
   const createdAt = normalizeIso(raw.createdAt, nowIso());
   return {
     id,
+    submitWorkerJobId:
+      typeof raw.submitWorkerJobId === 'string' ? raw.submitWorkerJobId : undefined,
+    rootJobId: typeof raw.rootJobId === 'string' ? raw.rootJobId : undefined,
     gateWorkerJobId: typeof raw.gateWorkerJobId === 'string' ? raw.gateWorkerJobId : undefined,
     reviewSubmitJobId:
       typeof raw.reviewSubmitJobId === 'string' ? raw.reviewSubmitJobId : undefined,
@@ -347,6 +460,8 @@ function normalizePersistedTask(raw: unknown): ReviewSubmitBackgroundTask | null
     gateRunId:
       typeof raw.gateRunId === 'string' || raw.gateRunId === null ? raw.gateRunId : undefined,
     workerJob: isRecord(raw.workerJob) ? (raw.workerJob as WorkerJobResult) : null,
+    rootWorkerJob: isRecord(raw.rootWorkerJob) ? (raw.rootWorkerJob as WorkerJobResult) : null,
+    gateWorkerJob: isRecord(raw.gateWorkerJob) ? (raw.gateWorkerJob as WorkerJobResult) : null,
     coordinator: isRecord(raw.coordinator) ? (raw.coordinator as ReviewSubmitJobResult) : null,
     blockingReasons: Array.isArray(raw.blockingReasons)
       ? (raw.blockingReasons as ReviewSubmitGateBlockingReason[])
@@ -398,7 +513,7 @@ async function readLatestCoordinatorForWorker(
   workerJob: WorkerJobResult,
 ): Promise<ReviewSubmitJobResult | null> {
   if (
-    workerJob.jobKind !== REVIEW_SUBMIT_WORKER_KIND ||
+    !isReviewSubmitWorkerJob(workerJob) ||
     workerJob.subjectType !== 'processes' ||
     !workerJob.subjectId ||
     !workerJob.subjectVersion
@@ -416,10 +531,98 @@ async function readLatestCoordinatorForWorker(
   if (!job || result.error) {
     return null;
   }
-  if (job.gateWorkerJobId && workerJob.id && job.gateWorkerJobId !== workerJob.id) {
+  const submitWorkerJobId = submitWorkerJobIdFromParts(job, workerJob);
+  const gateWorkerJobId = gateWorkerJobIdFromParts(job, workerJob);
+  if (
+    isRootReviewSubmitWorker(workerJob) &&
+    submitWorkerJobId &&
+    workerJob.id &&
+    submitWorkerJobId !== workerJob.id
+  ) {
+    return null;
+  }
+  if (
+    isGateReviewSubmitWorker(workerJob) &&
+    gateWorkerJobId &&
+    workerJob.id &&
+    gateWorkerJobId !== workerJob.id
+  ) {
     return null;
   }
   return job;
+}
+
+function taskIdentityValues(task: ReviewSubmitBackgroundTask): string[] {
+  return [
+    task.id,
+    task.submitWorkerJobId,
+    task.rootJobId,
+    task.gateWorkerJobId,
+    task.reviewSubmitJobId,
+  ].flatMap((value) => (value ? [value] : []));
+}
+
+function sameReviewSubmitTask(
+  left: ReviewSubmitBackgroundTask,
+  right: ReviewSubmitBackgroundTask,
+): boolean {
+  const rightIds = new Set(taskIdentityValues(right));
+  return taskIdentityValues(left).some((value) => rightIds.has(value));
+}
+
+function hasRootPrimaryWorker(task: ReviewSubmitBackgroundTask): boolean {
+  if (isRootReviewSubmitWorker(task.rootWorkerJob)) {
+    return true;
+  }
+  return isRootReviewSubmitWorker(task.workerJob);
+}
+
+function mergeReviewSubmitTask(
+  current: ReviewSubmitBackgroundTask,
+  incoming: ReviewSubmitBackgroundTask,
+): ReviewSubmitBackgroundTask {
+  const currentHasRootPrimary = hasRootPrimaryWorker(current);
+  const incomingHasRootPrimary = hasRootPrimaryWorker(incoming);
+  const preferIncoming = incomingHasRootPrimary && !currentHasRootPrimary;
+  const primary = preferIncoming ? incoming : current;
+  const secondary = preferIncoming ? current : incoming;
+  return {
+    ...secondary,
+    ...primary,
+    submitWorkerJobId: primary.submitWorkerJobId,
+    rootJobId: primary.rootJobId ?? secondary.rootJobId,
+    gateWorkerJobId: primary.gateWorkerJobId ?? secondary.gateWorkerJobId,
+    reviewSubmitJobId: primary.reviewSubmitJobId ?? secondary.reviewSubmitJobId,
+    datasetRevision: primary.datasetRevision ?? secondary.datasetRevision,
+    gateRunId: primary.gateRunId ?? secondary.gateRunId,
+    workerJob: primary.workerJob,
+    rootWorkerJob: primary.rootWorkerJob,
+    gateWorkerJob: primary.gateWorkerJob ?? secondary.gateWorkerJob,
+    coordinator: primary.coordinator ?? secondary.coordinator,
+    blockingReasons:
+      primary.blockingReasons && primary.blockingReasons.length > 0
+        ? primary.blockingReasons
+        : secondary.blockingReasons,
+    blockerCodes:
+      primary.blockerCodes && primary.blockerCodes.length > 0
+        ? primary.blockerCodes
+        : secondary.blockerCodes,
+    progress: primary.progress ?? secondary.progress,
+  };
+}
+
+function dedupeReviewSubmitTasks(
+  candidates: ReviewSubmitBackgroundTask[],
+): ReviewSubmitBackgroundTask[] {
+  return candidates.reduce<ReviewSubmitBackgroundTask[]>((accumulator, task) => {
+    const index = accumulator.findIndex((existing) => sameReviewSubmitTask(existing, task));
+    if (index < 0) {
+      accumulator.push(task);
+      return accumulator;
+    }
+    accumulator[index] = mergeReviewSubmitTask(accumulator[index], task);
+    return accumulator;
+  }, []);
 }
 
 async function loadReviewSubmitTasksFromServer(): Promise<ReviewSubmitBackgroundTask[]> {
@@ -433,15 +636,16 @@ async function loadReviewSubmitTasksFromServer(): Promise<ReviewSubmitBackground
   }
 
   const reviewSubmitWorkers = (workerJobs.data ?? []).filter(
-    (job) => job.jobKind === REVIEW_SUBMIT_WORKER_KIND && normalizeWorkerStatus(job.status),
+    (job) => isReviewSubmitWorkerJob(job) && normalizeWorkerStatus(job.status),
   );
 
-  return Promise.all(
+  const serverTasks = await Promise.all(
     reviewSubmitWorkers.map(async (workerJob) => {
       const coordinator = await readLatestCoordinatorForWorker(workerJob);
       return mapReviewSubmitTask(coordinator, workerJob);
     }),
   );
+  return dedupeReviewSubmitTasks(serverTasks);
 }
 
 export async function refreshReviewSubmitTasks(): Promise<ReviewSubmitBackgroundTask[]> {
@@ -454,13 +658,7 @@ export async function refreshReviewSubmitTasks(): Promise<ReviewSubmitBackground
       const merged = [
         ...serverTasks,
         ...tasks.filter(
-          (cached) =>
-            !serverTasks.some(
-              (serverTask) =>
-                serverTask.id === cached.id ||
-                (serverTask.gateWorkerJobId &&
-                  serverTask.gateWorkerJobId === cached.gateWorkerJobId),
-            ),
+          (cached) => !serverTasks.some((serverTask) => sameReviewSubmitTask(serverTask, cached)),
         ),
       ];
       setTasks(merged);
@@ -474,7 +672,10 @@ export async function refreshReviewSubmitTasks(): Promise<ReviewSubmitBackground
 }
 
 export function trackReviewSubmitTask(job: ReviewSubmitJobResult): ReviewSubmitBackgroundTask {
-  const task = mapReviewSubmitTask(job, job.gateWorkerJob ?? null);
+  const task = mapReviewSubmitTask(
+    job,
+    job.submitWorkerJob ?? job.workerJob ?? job.gateWorkerJob ?? null,
+  );
   setTasks([task, ...tasks]);
   void refreshReviewSubmitTasks().catch(() => undefined);
   return task;
@@ -482,14 +683,14 @@ export function trackReviewSubmitTask(job: ReviewSubmitJobResult): ReviewSubmitB
 
 export async function cancelReviewSubmitTask(taskId: string): Promise<void> {
   const task = tasks.find((item) => item.id === taskId);
-  const gateWorkerJobId = task?.gateWorkerJobId;
-  if (!gateWorkerJobId) {
-    throw new Error('Review-submit gate worker job id is missing');
+  const workerJobId = task?.submitWorkerJobId ?? task?.rootJobId ?? task?.gateWorkerJobId;
+  if (!workerJobId) {
+    throw new Error('Review-submit worker job id is missing');
   }
 
   const result = await requestWorkerJobsApi<WorkerJobResult>({
     action: 'cancel',
-    jobId: gateWorkerJobId,
+    jobId: workerJobId,
     reason: 'user_cancelled',
   });
   if (result.error) {
@@ -502,8 +703,14 @@ export async function cancelReviewSubmitTask(taskId: string): Promise<void> {
     setTasks([
       {
         ...cancelledTask,
+        id: cancelledTask.id,
         datasetRevision: cancelledTask.datasetRevision ?? task?.datasetRevision,
+        submitWorkerJobId: cancelledTask.submitWorkerJobId ?? task?.submitWorkerJobId,
+        rootJobId: cancelledTask.rootJobId ?? task?.rootJobId,
         gateWorkerJobId: cancelledTask.gateWorkerJobId ?? task?.gateWorkerJobId,
+        workerJob: cancelledTask.workerJob,
+        rootWorkerJob: cancelledTask.rootWorkerJob ?? task?.rootWorkerJob,
+        gateWorkerJob: cancelledTask.gateWorkerJob ?? task?.gateWorkerJob,
       },
       ...tasks,
     ]);
