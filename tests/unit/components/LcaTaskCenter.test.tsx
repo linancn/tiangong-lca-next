@@ -1046,6 +1046,20 @@ describe('LcaTaskCenter', () => {
         rootCount: 0,
       },
       {
+        id: 'pkg-import-failed',
+        sequence: 5.9,
+        kind: 'tidas_package_import',
+        state: 'failed',
+        phase: 'failed',
+        message: 'import failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.900Z',
+        workerJobId: 'worker-package-import-failed',
+        jobId: 'import-job-3',
+        error: 'import validation failed',
+        rootCount: 0,
+      },
+      {
         id: 'pkg-failed',
         sequence: 6,
         kind: 'tidas_package_export',
@@ -1096,8 +1110,10 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
     expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
     expect(screen.getByText('Import package completed')).toBeInTheDocument();
+    expect(screen.getByText('Import package failed')).toBeInTheDocument();
     expect(screen.getByText('queueing')).toBeInTheDocument();
     expect(screen.getByText('importing package data')).toBeInTheDocument();
+    expect(screen.getByText('import validation failed')).toBeInTheDocument();
     expect(screen.getByText('package failed')).toBeInTheDocument();
     expect(
       screen.getByText(
