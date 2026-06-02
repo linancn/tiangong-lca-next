@@ -466,7 +466,11 @@ function stateFromWorkerJob(job: WorkerJobResult): TidasPackageTaskState {
   return 'failed';
 }
 
-function messageFromWorkerJob(job: WorkerJobResult, phase: TidasPackageTaskPhase): string {
+function messageFromWorkerJob(
+  job: WorkerJobResult,
+  phase: TidasPackageTaskPhase,
+  displayJobId: string,
+): string {
   if (job.status === 'completed') {
     return `Export package ready (${filenameFromWorkerJob(job) ?? 'tidas-package.zip'})`;
   }
@@ -479,7 +483,7 @@ function messageFromWorkerJob(job: WorkerJobResult, phase: TidasPackageTaskPhase
   if (phase === 'finalize_zip') {
     return 'Materializing ZIP package';
   }
-  return `Export task queued (${packageJobIdFromWorkerJob(job) ?? job.id ?? '-'})`;
+  return `Export task queued (${displayJobId})`;
 }
 
 function taskFromWorkerJob(
@@ -496,6 +500,8 @@ function taskFromWorkerJob(
   const updatedAt = normalizeIso(job.updatedAt, createdAt);
   const phase = phaseFromWorkerJob(job);
   const state = stateFromWorkerJob(job);
+  const packageJobId = packageJobIdFromWorkerJob(job);
+  const displayJobId = packageJobId ?? workerJobId;
 
   return {
     id: workerJobId,
@@ -503,12 +509,12 @@ function taskFromWorkerJob(
     kind: 'tidas_package_export',
     state,
     phase,
-    message: messageFromWorkerJob(job, phase),
+    message: messageFromWorkerJob(job, phase, displayJobId),
     createdAt,
     updatedAt,
     workerJobId,
     jobKind: firstString(job.jobKind),
-    jobId: packageJobIdFromWorkerJob(job),
+    jobId: packageJobId,
     scope: (firstString(job.subjectVersion) as TidasPackageManifestScope | undefined) ?? null,
     rootCount: 0,
     filename: filenameFromWorkerJob(job),

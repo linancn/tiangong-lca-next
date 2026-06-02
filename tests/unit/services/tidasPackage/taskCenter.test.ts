@@ -211,6 +211,8 @@ describe('tidasPackage/taskCenter', () => {
             message: 'done',
             createdAt: 123,
             updatedAt: '2026-03-21T11:00:00.000Z',
+            workerJobId: 'worker-normalized-task',
+            jobKind: 'tidas.export_package',
             scope: 123,
             rootCount: 3,
           },
@@ -223,6 +225,8 @@ describe('tidasPackage/taskCenter', () => {
       expect.objectContaining({
         id: 'normalized-task',
         sequence: 1,
+        workerJobId: 'worker-normalized-task',
+        jobKind: 'tidas.export_package',
         scope: null,
         createdAt: '2026-03-21T10:00:00.000Z',
         updatedAt: '2026-03-21T11:00:00.000Z',
@@ -321,6 +325,171 @@ describe('tidasPackage/taskCenter', () => {
         phase: 'completed',
         scope: 'selected_roots',
         filename: 'worker-export.zip',
+      }),
+    ]);
+  });
+
+  it('maps canonical export worker_jobs phase and artifact fallback branches', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [
+        {
+          id: 'worker-package-completed-fallback',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-completed-fallback',
+          result: {
+            artifacts: [
+              {
+                artifactKind: 'diagnostic_json',
+                metadata: { filename: 'ignored.json' },
+              },
+            ],
+          },
+          createdAt: '2026-03-21T09:40:00.000Z',
+          updatedAt: '2026-03-21T09:41:00.000Z',
+        },
+        {
+          id: 'worker-package-failed',
+          jobKind: 'tidas.export_package',
+          status: 'blocked',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-failed',
+          createdAt: '2026-03-21T09:30:00.000Z',
+          updatedAt: '2026-03-21T09:31:00.000Z',
+        },
+        {
+          id: 'worker-package-collect',
+          jobKind: 'tidas.export_package',
+          status: 'running',
+          phase: 'collect_refs',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-collect',
+          createdAt: '2026-03-21T09:20:00.000Z',
+          updatedAt: '2026-03-21T09:21:00.000Z',
+        },
+        {
+          id: 'worker-package-finalize',
+          jobKind: 'tidas.export_package',
+          status: 'running',
+          phase: 'finalize_zip',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-finalize',
+          createdAt: '2026-03-21T09:10:00.000Z',
+          updatedAt: '2026-03-21T09:11:00.000Z',
+        },
+        {
+          id: 'worker-package-queued',
+          jobKind: 'tidas.export_package',
+          status: 'queued',
+          phase: 123,
+          subjectType: 'lca_package_job',
+          subjectId: 123,
+          result: { packageJobId: null },
+          createdAt: '2026-03-21T09:00:00.000Z',
+          updatedAt: '2026-03-21T09:01:00.000Z',
+        },
+        {
+          id: 'worker-package-submitting',
+          jobKind: 'tidas.export_package',
+          status: 'running',
+          phase: 'unknown-worker-phase',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-submitting',
+          createdAt: '2026-03-21T08:50:00.000Z',
+          updatedAt: '2026-03-21T08:51:00.000Z',
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+    const tasks = taskCenter.listTidasPackageTasks();
+
+    expect(tasks.find((item) => item.id === 'worker-package-completed-fallback')).toMatchObject({
+      state: 'completed',
+      phase: 'completed',
+      filename: undefined,
+      message: 'Export package ready (tidas-package.zip)',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-failed')).toMatchObject({
+      state: 'failed',
+      phase: 'failed',
+      message: 'Export package failed',
+      error: 'blocked',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-collect')).toMatchObject({
+      state: 'running',
+      phase: 'collect_refs',
+      message: 'Collecting related datasets',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-finalize')).toMatchObject({
+      state: 'running',
+      phase: 'finalize_zip',
+      message: 'Materializing ZIP package',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-queued')).toMatchObject({
+      state: 'running',
+      phase: 'queued',
+      jobId: undefined,
+      message: 'Export task queued (worker-package-queued)',
+    });
+    expect(tasks.find((item) => item.id === 'worker-package-submitting')).toMatchObject({
+      state: 'running',
+      phase: 'submitting',
+      message: 'Export task queued (package-submitting)',
+    });
+  });
+
+  it('surfaces worker_jobs refresh API errors with explicit and fallback messages', async () => {
+    const explicitModule = loadTaskCenterModule();
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'package api down' },
+    });
+    await expect(explicitModule.refreshTidasPackageTasksFromWorkerJobs()).rejects.toThrow(
+      'package api down',
+    );
+
+    const fallbackModule = loadTaskCenterModule();
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({ data: null, error: {} });
+    await expect(fallbackModule.refreshTidasPackageTasksFromWorkerJobs()).rejects.toThrow(
+      'Failed to refresh TIDAS package worker jobs',
+    );
+  });
+
+  it('keeps existing export tasks when worker_jobs refresh returns no mappable tasks', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        savedAt: new Date().toISOString(),
+        tasks: [
+          {
+            id: 'existing-export-task',
+            state: 'completed',
+            phase: 'completed',
+            message: 'existing',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            sequence: 1,
+            jobId: 'existing-package-job',
+          },
+        ],
+      }),
+    );
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    const refreshed = await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+
+    expect(refreshed).toEqual([
+      expect.objectContaining({
+        id: 'existing-export-task',
+        message: 'existing',
       }),
     ]);
   });

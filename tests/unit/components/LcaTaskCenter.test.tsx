@@ -240,6 +240,7 @@ describe('LcaTaskCenter', () => {
         message: 'running message',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:01:00.000Z',
+        workerJobId: 'worker-lca-1',
         solveJobId: 'solve-1',
         error: 'Solve failed once',
         phaseTimeline: [
@@ -306,6 +307,9 @@ describe('LcaTaskCenter', () => {
       screen.getAllByText((_, element) => element?.textContent?.includes('build_job_id') ?? false)
         .length,
     ).toBeGreaterThan(0);
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-lca-1'),
+    ).toBeInTheDocument();
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('result_id') ?? false)
         .length,
@@ -922,6 +926,7 @@ describe('LcaTaskCenter', () => {
         message: 'finished',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:04.000Z',
+        workerJobId: 'worker-package-1',
         filename: 'custom.zip',
         jobId: 'job-1',
         scope: 'current_user',
@@ -1092,6 +1097,9 @@ describe('LcaTaskCenter', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText((_, element) => element?.textContent === 'job_id: job-1'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-package-1'),
     ).toBeInTheDocument();
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });

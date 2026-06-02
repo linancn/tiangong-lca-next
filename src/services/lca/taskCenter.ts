@@ -498,8 +498,11 @@ function resultIdFromWorkerJob(job: WorkerJobResult): string | undefined {
   return firstString(result?.resultId);
 }
 
-function messageFromWorkerJob(job: WorkerJobResult, phase: LcaTaskPhase): string {
-  const legacyJobId = lcaJobIdFromWorkerJob(job) ?? job.id ?? '-';
+function messageFromWorkerJob(
+  job: WorkerJobResult,
+  phase: LcaTaskPhase,
+  displayJobId: string,
+): string {
   if (job.status === 'completed') {
     const resultId = resultIdFromWorkerJob(job);
     return resultId ? `Completed (result ${resultId})` : 'Completed';
@@ -508,10 +511,10 @@ function messageFromWorkerJob(job: WorkerJobResult, phase: LcaTaskPhase): string
     return 'Task failed';
   }
   if (phase === 'building_snapshot') {
-    return `Building snapshot (${legacyJobId})`;
+    return `Building snapshot (${displayJobId})`;
   }
   if (phase === 'solving') {
-    return `Solving (${legacyJobId})`;
+    return `Solving (${displayJobId})`;
   }
   return 'Submitting task';
 }
@@ -531,6 +534,7 @@ function taskFromWorkerJob(
   const phase = phaseFromWorkerJob(job);
   const state = stateFromWorkerJob(job);
   const legacyJobId = lcaJobIdFromWorkerJob(job);
+  const displayJobId = legacyJobId ?? workerJobId;
   const isBuildJob = job.jobKind === 'lca.build_snapshot' || phase === 'building_snapshot';
 
   return {
@@ -540,7 +544,7 @@ function taskFromWorkerJob(
     scope: 'prod',
     state,
     phase,
-    message: messageFromWorkerJob(job, phase),
+    message: messageFromWorkerJob(job, phase, displayJobId),
     createdAt,
     updatedAt,
     workerJobId,
