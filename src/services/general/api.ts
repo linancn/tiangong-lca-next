@@ -253,6 +253,7 @@ export type ExportTidasPackageQueueResponse = {
   ok: boolean;
   mode: Exclude<TidasPackageJobMode, 'completed'>;
   job_id: string;
+  worker_job_id?: string | null;
   scope: TidasPackageManifestScope;
   root_count: number;
   code?: string;
@@ -294,6 +295,7 @@ export type EnqueueImportTidasPackageResponse = {
   ok: boolean;
   mode: 'queued' | 'in_progress' | 'completed';
   job_id: string;
+  worker_job_id?: string | null;
   source_artifact_id: string;
   code?: string;
   message?: string;
