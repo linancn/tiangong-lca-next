@@ -542,6 +542,21 @@ describe('tidasPackage/taskCenter', () => {
       }),
     );
     mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [
+        {
+          id: 'worker-package-maintenance',
+          jobKind: 'maintenance.package_gc',
+          status: 'running',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-maintenance',
+        },
+        {
+          jobKind: 'tidas.export_package',
+          status: 'running',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-without-worker-id',
+        },
+      ],
       error: null,
     });
 
