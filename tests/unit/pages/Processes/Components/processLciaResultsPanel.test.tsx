@@ -199,9 +199,7 @@ describe('ProcessLciaResultsPanel', () => {
     jest.useFakeTimers();
     const queuedError = {
       code: 'all_unit_result_queued',
-      body: {
-        snapshot_id: '',
-      },
+      body: {},
     };
     mockIsLcaFunctionInvokeError.mockImplementation(
       (error: any) => error?.code === 'all_unit_result_queued',
