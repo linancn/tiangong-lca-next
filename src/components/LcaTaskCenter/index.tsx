@@ -198,6 +198,12 @@ function packagePhaseLabel(phase: TidasPackageTaskPhase, intl: IntlShapeLike): s
       defaultMessage: 'Collecting related data',
     });
   }
+  if (phase === 'import_package') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.phase.importPackage',
+      defaultMessage: 'Importing data',
+    });
+  }
   if (phase === 'finalize_zip') {
     return intl.formatMessage({
       id: 'component.tidasPackage.taskCenter.phase.finalizeZip',
@@ -514,7 +520,10 @@ function packageTaskErrorText(
     return undefined;
   }
 
-  if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+  if (
+    task.kind === 'tidas_package_export' &&
+    classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR
+  ) {
     return intl.formatMessage({
       id: 'component.tidasPackage.export.error.tooLarge',
       defaultMessage:
@@ -527,6 +536,12 @@ function packageTaskErrorText(
 
 function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLike): string {
   if (task.state === 'completed') {
+    if (task.kind === 'tidas_package_import') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.summary.importCompleted',
+        defaultMessage: 'Import package completed',
+      });
+    }
     return intl.formatMessage(
       {
         id: 'component.tidasPackage.taskCenter.summary.completed',
@@ -536,10 +551,19 @@ function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLik
     );
   }
   if (task.state === 'failed') {
-    if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+    if (
+      task.kind === 'tidas_package_export' &&
+      classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR
+    ) {
       return intl.formatMessage({
         id: 'component.tidasPackage.taskCenter.summary.failedTooLarge',
         defaultMessage: 'Export package exceeded the storage upload limit',
+      });
+    }
+    if (task.kind === 'tidas_package_import') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.summary.importFailed',
+        defaultMessage: 'Import package failed',
       });
     }
     return intl.formatMessage({
@@ -874,15 +898,21 @@ function packageDetailContent(
   intl: IntlShapeLike,
 ): React.ReactNode {
   const singleRoot = task.request?.roots?.length === 1 ? task.request.roots[0] : null;
+  const isImport = task.kind === 'tidas_package_import';
 
   return (
     <Space direction='vertical' size={4} style={{ maxWidth: 360 }}>
       <Space size={6} wrap>
         <Tag color='geekblue'>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.exportKind',
-            defaultMessage: 'TIDAS Export',
-          })}
+          {isImport
+            ? intl.formatMessage({
+                id: 'component.tidasPackage.taskCenter.detail.importKind',
+                defaultMessage: 'TIDAS Import',
+              })
+            : intl.formatMessage({
+                id: 'component.tidasPackage.taskCenter.detail.exportKind',
+                defaultMessage: 'TIDAS Export',
+              })}
         </Tag>
         {task.scope && <Tag>{task.scope}</Tag>}
         {singleRoot && <Tag>{singleRoot.table}</Tag>}
@@ -1466,7 +1496,9 @@ const LcaTaskCenter: React.FC = () => {
                   <List.Item
                     key={item.task.id}
                     actions={[
-                      item.kind === 'package' && item.task.state === 'completed' ? (
+                      item.kind === 'package' &&
+                      item.task.kind === 'tidas_package_export' &&
+                      item.task.state === 'completed' ? (
                         <Button
                           key='download'
                           type='link'
@@ -1579,8 +1611,14 @@ const LcaTaskCenter: React.FC = () => {
                                   defaultMessage: 'Review Submit',
                                 })
                               : intl.formatMessage({
-                                  id: 'component.tidasPackage.taskCenter.kind.packageExport',
-                                  defaultMessage: 'TIDAS Export',
+                                  id:
+                                    item.task.kind === 'tidas_package_import'
+                                      ? 'component.tidasPackage.taskCenter.kind.packageImport'
+                                      : 'component.tidasPackage.taskCenter.kind.packageExport',
+                                  defaultMessage:
+                                    item.task.kind === 'tidas_package_import'
+                                      ? 'TIDAS Import'
+                                      : 'TIDAS Export',
                                 })}
                         </Tag>
                         {statusTag(item.task.state, intl)}
