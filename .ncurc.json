@@ -1,5 +1,4 @@
 {
-  "upgrade": true,
   "target": "latest",
   "reject": [
     "react",
