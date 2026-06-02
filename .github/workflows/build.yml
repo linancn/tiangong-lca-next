@@ -103,11 +103,12 @@ jobs:
             package_version="$(read_package_version "${release_head}")"
             expected_tag="v${package_version}"
             tag_name="${expected_tag}"
-            package_changed=true
+            package_version_changed=true
 
             if [ -n "${PUSH_BEFORE_SHA}" ] && [ "${PUSH_BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
-              if git diff --quiet "${PUSH_BEFORE_SHA}" "${release_head}" -- package.json; then
-                package_changed=false
+              previous_package_version="$(read_package_version "${PUSH_BEFORE_SHA}")"
+              if [ "${previous_package_version}" = "${package_version}" ]; then
+                package_version_changed=false
               fi
             fi
 
@@ -116,12 +117,12 @@ jobs:
               git fetch --force origin "refs/tags/${tag_name}:refs/tags/${tag_name}"
               existing_tag_commit="$(git rev-list -n 1 "${tag_name}")"
               if [ "${existing_tag_commit}" != "${release_head}" ]; then
-                if [ "${package_changed}" = "false" ]; then
+                if [ "${package_version_changed}" = "false" ]; then
                   echo "should_release=false" >> "$GITHUB_OUTPUT"
                   echo "tag_created=false" >> "$GITHUB_OUTPUT"
                   echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
                   echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
-                  echo "::notice::${tag_name} already points to ${existing_tag_commit}; package.json was unchanged in this main push, so this workflow hotfix is not a new release."
+                  echo "::notice::${tag_name} already points to ${existing_tag_commit}; package.json version was unchanged in this main push, so this workflow hotfix is not a new release."
                   exit 0
                 fi
 
