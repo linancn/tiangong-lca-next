@@ -13,6 +13,8 @@ const mockRemoveLcaTask = jest.fn();
 const mockRemoveTidasPackageTask = jest.fn();
 const mockRemoveReviewSubmitTask = jest.fn();
 const mockCancelReviewSubmitTask = jest.fn();
+const mockRefreshLcaTasksFromWorkerJobs = jest.fn();
+const mockRefreshTidasPackageTasksFromWorkerJobs = jest.fn();
 const mockRefreshReviewSubmitTasks = jest.fn();
 const mockRetryReviewSubmitTask = jest.fn();
 const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
@@ -29,6 +31,7 @@ jest.mock('@/services/lca/taskCenter', () => ({
   __esModule: true,
   clearFinishedLcaTasks: () => mockClearFinishedLcaTasks(),
   listLcaTasks: () => mockTasks,
+  refreshLcaTasksFromWorkerJobs: (...args: any[]) => mockRefreshLcaTasksFromWorkerJobs(...args),
   removeLcaTask: (...args: any[]) => mockRemoveLcaTask(...args),
   subscribeLcaTaskCenterOpenRequests: (...args: any[]) =>
     mockSubscribeLcaTaskCenterOpenRequests(...args),
@@ -40,6 +43,8 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
   clearFinishedTidasPackageTasks: () => mockClearFinishedTidasPackageTasks(),
   downloadTidasPackageExportTask: (...args: any[]) => mockDownloadTidasPackageExportTask(...args),
   listTidasPackageTasks: () => mockPackageTasks,
+  refreshTidasPackageTasksFromWorkerJobs: (...args: any[]) =>
+    mockRefreshTidasPackageTasksFromWorkerJobs(...args),
   removeTidasPackageTask: (...args: any[]) => mockRemoveTidasPackageTask(...args),
   subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
 }));
@@ -196,6 +201,8 @@ describe('LcaTaskCenter', () => {
     mockReviewSubmitTasks = [];
     mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
     mockCancelReviewSubmitTask.mockResolvedValue(undefined);
+    mockRefreshLcaTasksFromWorkerJobs.mockResolvedValue([]);
+    mockRefreshTidasPackageTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshReviewSubmitTasks.mockResolvedValue([]);
     mockRetryReviewSubmitTask.mockResolvedValue(undefined);
   });
@@ -524,6 +531,8 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalled());
+    await waitFor(() => expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalled());
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
@@ -547,7 +556,7 @@ describe('LcaTaskCenter', () => {
     expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked');
   });
 
-  it('refreshes review-submit tasks on mount, timer, open request, and manual refresh failures', async () => {
+  it('refreshes worker-backed task families on mount, timer, open request, and manual refresh failures', async () => {
     jest.useFakeTimers();
     let openRequestListener: (() => void) | undefined;
     mockSubscribeLcaTaskCenterOpenRequests.mockImplementation((listener: () => void) => {
@@ -559,20 +568,36 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
 
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(1),
+    );
 
     await act(async () => {
       jest.advanceTimersByTime(5000);
     });
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(2),
+    );
 
     act(() => {
       openRequestListener?.();
     });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(3));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(3),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(4));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(4),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() =>

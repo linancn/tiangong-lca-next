@@ -5,12 +5,18 @@ const STORAGE_KEY = 'tg_tidas_package_task_center_v1';
 const mockQueueExportTidasPackageApi = jest.fn();
 const mockGetTidasPackageJobApi = jest.fn();
 const mockDownloadReadyTidasPackageExportApi = jest.fn();
+const mockRequestWorkerJobsApi = jest.fn();
 
 jest.mock('@/services/general/api', () => ({
   queueExportTidasPackageApi: (...args: any[]) => mockQueueExportTidasPackageApi(...args),
   getTidasPackageJobApi: (...args: any[]) => mockGetTidasPackageJobApi(...args),
   downloadReadyTidasPackageExportApi: (...args: any[]) =>
     mockDownloadReadyTidasPackageExportApi(...args),
+}));
+
+jest.mock('@/services/workerJobs/api', () => ({
+  __esModule: true,
+  requestWorkerJobsApi: (...args: any[]) => mockRequestWorkerJobsApi(...args),
 }));
 
 function loadTaskCenterModule() {
@@ -32,6 +38,8 @@ describe('tidasPackage/taskCenter', () => {
     mockQueueExportTidasPackageApi.mockReset();
     mockGetTidasPackageJobApi.mockReset();
     mockDownloadReadyTidasPackageExportApi.mockReset();
+    mockRequestWorkerJobsApi.mockReset();
+    mockRequestWorkerJobsApi.mockResolvedValue({ data: [], error: null });
     jest.useRealTimers();
     localStorage.clear();
   });
@@ -247,6 +255,72 @@ describe('tidasPackage/taskCenter', () => {
       expect.objectContaining({
         id: 'scoped-task',
         scope: 'open_data',
+      }),
+    ]);
+  });
+
+  it('refreshes export tasks from canonical worker_jobs and preserves package job ids', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [
+        {
+          id: 'worker-package-export',
+          jobKind: 'tidas.export_package',
+          status: 'completed',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-job-1',
+          subjectVersion: 'selected_roots',
+          result: {
+            packageJobId: 'package-job-1',
+            packageJobStatus: 'completed',
+            artifacts: [
+              {
+                artifactKind: 'export_zip',
+                metadata: { filename: 'worker-export.zip' },
+              },
+            ],
+          },
+          createdAt: '2026-03-21T09:00:00.000Z',
+          updatedAt: '2026-03-21T09:02:00.000Z',
+        },
+        {
+          id: 'worker-package-import',
+          jobKind: 'tidas.import_package',
+          status: 'running',
+          subjectType: 'lca_package_job',
+          subjectId: 'package-import-1',
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await taskCenter.refreshTidasPackageTasksFromWorkerJobs();
+
+    expect(mockRequestWorkerJobsApi).toHaveBeenCalledWith({
+      action: 'list',
+      subjectType: 'lca_package_job',
+      statuses: [
+        'queued',
+        'running',
+        'waiting',
+        'completed',
+        'blocked',
+        'stale',
+        'failed',
+        'cancelled',
+      ],
+      limit: 30,
+    });
+    expect(taskCenter.listTidasPackageTasks()).toEqual([
+      expect.objectContaining({
+        id: 'worker-package-export',
+        workerJobId: 'worker-package-export',
+        jobKind: 'tidas.export_package',
+        jobId: 'package-job-1',
+        state: 'completed',
+        phase: 'completed',
+        scope: 'selected_roots',
+        filename: 'worker-export.zip',
       }),
     ]);
   });

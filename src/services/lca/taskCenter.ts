@@ -1,4 +1,9 @@
 import {
+  requestWorkerJobsApi,
+  type WorkerJobResult,
+  type WorkerJobStatus,
+} from '@/services/workerJobs/api';
+import {
   pollLcaJobUntilTerminal,
   submitLcaSolve,
   type LcaJobResponse,
@@ -28,6 +33,9 @@ export type LcaBackgroundTask = {
   message: string;
   createdAt: string;
   updatedAt: string;
+  workerJobId?: string;
+  rootJobId?: string;
+  jobKind?: string;
   buildJobId?: string;
   solveJobId?: string;
   snapshotId?: string;
@@ -42,6 +50,16 @@ const SOLVE_TIMEOUT_MS = 20 * 60 * 1000;
 const STORAGE_KEY = 'tg_lca_task_center_v1';
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
+const LCA_WORKER_JOB_STATUSES: WorkerJobStatus[] = [
+  'queued',
+  'running',
+  'waiting',
+  'completed',
+  'blocked',
+  'stale',
+  'failed',
+  'cancelled',
+];
 
 let taskSequence = 0;
 let tasks: LcaBackgroundTask[] = [];
@@ -138,6 +156,25 @@ function normalizeIso(value: unknown, fallback: string): string {
   return Number.isFinite(Date.parse(text)) ? text : fallback;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  for (const value of values) {
+    if (typeof value !== 'string') {
+      continue;
+    }
+    const text = value.trim();
+    if (text) {
+      return text;
+    }
+  }
+  return undefined;
+}
+
 function normalizeRequest(value: unknown): LcaSolveRequest | undefined {
   if (!value || typeof value !== 'object') {
     return undefined;
@@ -219,6 +256,9 @@ function normalizeTask(raw: unknown, fallbackSequence: number): LcaBackgroundTas
     message?: unknown;
     createdAt?: unknown;
     updatedAt?: unknown;
+    workerJobId?: unknown;
+    rootJobId?: unknown;
+    jobKind?: unknown;
     buildJobId?: unknown;
     solveJobId?: unknown;
     snapshotId?: unknown;
@@ -254,6 +294,9 @@ function normalizeTask(raw: unknown, fallbackSequence: number): LcaBackgroundTas
     message: typeof item.message === 'string' ? item.message : 'Recovered task',
     createdAt,
     updatedAt,
+    workerJobId: typeof item.workerJobId === 'string' ? item.workerJobId : undefined,
+    rootJobId: typeof item.rootJobId === 'string' ? item.rootJobId : undefined,
+    jobKind: typeof item.jobKind === 'string' ? item.jobKind : undefined,
     buildJobId: typeof item.buildJobId === 'string' ? item.buildJobId : undefined,
     solveJobId: typeof item.solveJobId === 'string' ? item.solveJobId : undefined,
     snapshotId: typeof item.snapshotId === 'string' ? item.snapshotId : undefined,
@@ -392,6 +435,163 @@ function messageForRunningJob(job: LcaJobResponse, defaultText: string): string 
   return `${defaultText}: ${status}`;
 }
 
+function isLcaWorkerJob(job: WorkerJobResult): boolean {
+  return typeof job.jobKind === 'string' && job.jobKind.startsWith('lca.');
+}
+
+function modeFromWorkerJob(job: WorkerJobResult): LcaTaskMode {
+  return job.jobKind === 'lca.solve_all_unit' ? 'all_unit' : 'single';
+}
+
+function phaseFromWorkerJob(job: WorkerJobResult): LcaTaskPhase {
+  if (job.status === 'completed') {
+    return 'completed';
+  }
+  if (
+    job.status === 'failed' ||
+    job.status === 'stale' ||
+    job.status === 'blocked' ||
+    job.status === 'cancelled'
+  ) {
+    return 'failed';
+  }
+
+  const phase = typeof job.phase === 'string' ? job.phase : '';
+  if (phase === 'build_snapshot' || job.jobKind === 'lca.build_snapshot') {
+    return 'building_snapshot';
+  }
+  if (
+    phase === 'solve_one' ||
+    phase === 'solve_batch' ||
+    phase === 'solve_all_unit' ||
+    job.jobKind === 'lca.solve_one' ||
+    job.jobKind === 'lca.solve_batch' ||
+    job.jobKind === 'lca.solve_all_unit'
+  ) {
+    return 'solving';
+  }
+  return 'submitting';
+}
+
+function stateFromWorkerJob(job: WorkerJobResult): LcaTaskState {
+  if (job.status === 'completed') {
+    return 'completed';
+  }
+  if (job.status === 'queued' || job.status === 'running' || job.status === 'waiting') {
+    return 'running';
+  }
+  return 'failed';
+}
+
+function lcaJobIdFromWorkerJob(job: WorkerJobResult): string | undefined {
+  const result = asRecord(job.result);
+  return firstString(result?.lcaJobId, job.subjectId);
+}
+
+function snapshotIdFromWorkerJob(job: WorkerJobResult): string | undefined {
+  const result = asRecord(job.result);
+  return firstString(result?.snapshotId, job.subjectVersion);
+}
+
+function resultIdFromWorkerJob(job: WorkerJobResult): string | undefined {
+  const result = asRecord(job.result);
+  return firstString(result?.resultId);
+}
+
+function messageFromWorkerJob(job: WorkerJobResult, phase: LcaTaskPhase): string {
+  const legacyJobId = lcaJobIdFromWorkerJob(job) ?? job.id ?? '-';
+  if (job.status === 'completed') {
+    const resultId = resultIdFromWorkerJob(job);
+    return resultId ? `Completed (result ${resultId})` : 'Completed';
+  }
+  if (stateFromWorkerJob(job) === 'failed') {
+    return 'Task failed';
+  }
+  if (phase === 'building_snapshot') {
+    return `Building snapshot (${legacyJobId})`;
+  }
+  if (phase === 'solving') {
+    return `Solving (${legacyJobId})`;
+  }
+  return 'Submitting task';
+}
+
+function taskFromWorkerJob(
+  job: WorkerJobResult,
+  fallbackSequence: number,
+): LcaBackgroundTask | null {
+  const workerJobId = firstString(job.id);
+  if (!workerJobId || !isLcaWorkerJob(job)) {
+    return null;
+  }
+
+  const now = nowIso();
+  const createdAt = normalizeIso(job.createdAt, now);
+  const updatedAt = normalizeIso(job.updatedAt, createdAt);
+  const phase = phaseFromWorkerJob(job);
+  const state = stateFromWorkerJob(job);
+  const legacyJobId = lcaJobIdFromWorkerJob(job);
+  const isBuildJob = job.jobKind === 'lca.build_snapshot' || phase === 'building_snapshot';
+
+  return {
+    id: workerJobId,
+    sequence: fallbackSequence,
+    mode: modeFromWorkerJob(job),
+    scope: 'prod',
+    state,
+    phase,
+    message: messageFromWorkerJob(job, phase),
+    createdAt,
+    updatedAt,
+    workerJobId,
+    rootJobId: firstString(job.rootJobId),
+    jobKind: firstString(job.jobKind),
+    buildJobId: isBuildJob ? legacyJobId : undefined,
+    solveJobId: !isBuildJob ? legacyJobId : undefined,
+    snapshotId: snapshotIdFromWorkerJob(job),
+    resultId: resultIdFromWorkerJob(job),
+    error:
+      state === 'failed' ? firstString(job.errorMessage, job.errorCode, job.status) : undefined,
+    phaseTimeline: normalizeTimeline([], createdAt, phase),
+  };
+}
+
+function mergeWorkerJobTask(serverTask: LcaBackgroundTask): LcaBackgroundTask {
+  const current = tasks.find((item) =>
+    Boolean(
+      (serverTask.workerJobId && item.workerJobId === serverTask.workerJobId) ||
+      item.id === serverTask.id ||
+      (serverTask.buildJobId && item.buildJobId === serverTask.buildJobId) ||
+      (serverTask.solveJobId && item.solveJobId === serverTask.solveJobId),
+    ),
+  );
+
+  if (!current) {
+    return serverTask;
+  }
+
+  return {
+    ...current,
+    ...serverTask,
+    id: current.id,
+    sequence: current.sequence,
+    request: current.request,
+    mode: current.mode,
+    scope: current.scope,
+    createdAt: current.createdAt,
+    phaseTimeline:
+      current.phase === serverTask.phase && current.state === serverTask.state
+        ? current.phaseTimeline
+        : applyTaskTimelineTransition(
+            current.phaseTimeline,
+            current.phase,
+            serverTask.phase,
+            serverTask.state,
+            serverTask.updatedAt,
+          ),
+  };
+}
+
 async function waitBuildSnapshot(taskId: string, buildJobId: string): Promise<'ok' | 'failed'> {
   upsertTask(taskId, {
     phase: 'building_snapshot',
@@ -505,11 +705,17 @@ async function processSubmitResponse(
   }
 
   if (submit.mode === 'snapshot_building') {
+    upsertTask(taskId, {
+      workerJobId: submit.build_worker_job_id ?? undefined,
+      buildJobId: submit.build_job_id,
+      snapshotId: submit.build_snapshot_id,
+    });
     if (attempt >= 3) {
       upsertTask(taskId, {
         phase: 'failed',
         state: 'failed',
         buildJobId: submit.build_job_id,
+        workerJobId: submit.build_worker_job_id ?? undefined,
         snapshotId: submit.build_snapshot_id,
         message: 'Snapshot build retry limit reached',
         error: 'snapshot_build_retry_limit',
@@ -525,12 +731,30 @@ async function processSubmitResponse(
     return;
   }
 
+  upsertTask(taskId, {
+    workerJobId: submit.worker_job_id ?? undefined,
+    solveJobId: submit.job_id,
+    snapshotId: submit.snapshot_id,
+  });
   await waitSolveResult(taskId, submit.job_id);
 }
 
 async function runTask(taskId: string, request: LcaSolveRequest): Promise<void> {
   try {
     const submit = await submitLcaSolve(request);
+    if (submit.mode === 'queued' || submit.mode === 'in_progress') {
+      upsertTask(taskId, {
+        workerJobId: submit.worker_job_id ?? undefined,
+        solveJobId: submit.job_id,
+        snapshotId: submit.snapshot_id,
+      });
+    } else if (submit.mode === 'snapshot_building') {
+      upsertTask(taskId, {
+        workerJobId: submit.build_worker_job_id ?? undefined,
+        buildJobId: submit.build_job_id,
+        snapshotId: submit.build_snapshot_id,
+      });
+    }
     await processSubmitResponse(taskId, request, submit, 0);
   } catch (error) {
     upsertTask(taskId, {
@@ -604,23 +828,60 @@ async function resumeTaskAfterReload(taskId: string): Promise<void> {
   }
 }
 
-function hydrateTasksFromStorage(): void {
-  const restored = readTasksFromStorage();
-  if (restored.length === 0) {
-    return;
+export async function refreshLcaTasksFromWorkerJobs(): Promise<LcaBackgroundTask[]> {
+  const result = await requestWorkerJobsApi({
+    action: 'list',
+    subjectType: 'lca_job',
+    statuses: LCA_WORKER_JOB_STATUSES,
+    limit: MAX_TASK_ITEMS,
+  });
+  if (result.error) {
+    throw new Error(result.error.message || 'Failed to refresh LCA worker jobs');
   }
 
-  setTasks(restored);
-  const maxSequence = restored.reduce((max, item) => Math.max(max, item.sequence), 0);
+  const serverTasks = (result.data ?? [])
+    .map((job, index) => taskFromWorkerJob(job, taskSequence + index + 1))
+    .filter((item): item is LcaBackgroundTask => Boolean(item));
+  if (serverTasks.length === 0) {
+    return tasks;
+  }
+
+  const merged = tasks.slice();
+  for (const serverTask of serverTasks) {
+    const nextTask = mergeWorkerJobTask(serverTask);
+    const existingIndex = merged.findIndex((item) => item.id === nextTask.id);
+    if (existingIndex >= 0) {
+      merged[existingIndex] = nextTask;
+    } else {
+      merged.push(nextTask);
+    }
+  }
+
+  setTasks(merged);
+  const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
   if (maxSequence > taskSequence) {
     taskSequence = maxSequence;
   }
+  return tasks;
+}
 
-  restored
-    .filter((item) => item.state === 'running')
-    .forEach((item) => {
-      void resumeTaskAfterReload(item.id);
-    });
+function hydrateTasksFromStorage(): void {
+  const restored = readTasksFromStorage();
+  if (restored.length > 0) {
+    setTasks(restored);
+    const maxSequence = restored.reduce((max, item) => Math.max(max, item.sequence), 0);
+    if (maxSequence > taskSequence) {
+      taskSequence = maxSequence;
+    }
+
+    restored
+      .filter((item) => item.state === 'running')
+      .forEach((item) => {
+        void resumeTaskAfterReload(item.id);
+      });
+  }
+
+  void refreshLcaTasksFromWorkerJobs().catch(() => undefined);
 }
 
 export function submitLcaTask(request: LcaSolveRequest): LcaBackgroundTask {

@@ -65,6 +65,7 @@ function loadTaskCenterModule(setupMocks?: (mocks: any) => void) {
   const mocks = {
     submitLcaSolve: jest.fn(),
     pollLcaJobUntilTerminal: jest.fn(),
+    requestWorkerJobsApi: jest.fn().mockResolvedValue({ data: [], error: null }),
   };
 
   setupMocks?.(mocks);
@@ -73,6 +74,11 @@ function loadTaskCenterModule(setupMocks?: (mocks: any) => void) {
     __esModule: true,
     submitLcaSolve: (...args: any[]) => mocks.submitLcaSolve(...args),
     pollLcaJobUntilTerminal: (...args: any[]) => mocks.pollLcaJobUntilTerminal(...args),
+  }));
+
+  jest.doMock('@/services/workerJobs/api', () => ({
+    __esModule: true,
+    requestWorkerJobsApi: (...args: any[]) => mocks.requestWorkerJobsApi(...args),
   }));
 
   const module = require('@/services/lca/taskCenter');
@@ -89,6 +95,7 @@ describe('lca task center', () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.dontMock('@/services/lca/api');
+    jest.dontMock('@/services/workerJobs/api');
     window.localStorage.clear();
   });
 
@@ -411,6 +418,87 @@ describe('lca task center', () => {
     expect(module.listLcaTasks()).toEqual([]);
 
     unsubscribe();
+  });
+
+  it('refreshes LCA tasks from canonical worker_jobs and keeps legacy job ids as domain refs', async () => {
+    const { module, mocks } = loadTaskCenterModule((next) => {
+      next.requestWorkerJobsApi.mockResolvedValue({
+        data: [
+          {
+            id: 'worker-build-1',
+            jobKind: 'lca.build_snapshot',
+            status: 'running',
+            phase: 'build_snapshot',
+            subjectType: 'lca_job',
+            subjectId: 'legacy-build-1',
+            subjectVersion: 'snapshot-build-worker',
+            createdAt: '2026-03-12T11:00:00.000Z',
+            updatedAt: '2026-03-12T11:00:02.000Z',
+          },
+          {
+            id: 'worker-solve-1',
+            jobKind: 'lca.solve_all_unit',
+            status: 'completed',
+            subjectType: 'lca_job',
+            subjectId: 'legacy-solve-1',
+            subjectVersion: 'snapshot-solve-worker',
+            result: {
+              lcaJobId: 'legacy-solve-1',
+              snapshotId: 'snapshot-solve-worker',
+              resultId: 'result-worker-1',
+            },
+            createdAt: '2026-03-12T10:00:00.000Z',
+            updatedAt: '2026-03-12T10:10:00.000Z',
+          },
+          {
+            id: 'review-worker',
+            jobKind: 'review_submit.submit',
+            status: 'running',
+          },
+        ],
+        error: null,
+      });
+    });
+
+    await module.refreshLcaTasksFromWorkerJobs();
+
+    expect(mocks.requestWorkerJobsApi).toHaveBeenCalledWith({
+      action: 'list',
+      subjectType: 'lca_job',
+      statuses: [
+        'queued',
+        'running',
+        'waiting',
+        'completed',
+        'blocked',
+        'stale',
+        'failed',
+        'cancelled',
+      ],
+      limit: 30,
+    });
+    expect(module.listLcaTasks()).toEqual([
+      expect.objectContaining({
+        id: 'worker-build-1',
+        workerJobId: 'worker-build-1',
+        jobKind: 'lca.build_snapshot',
+        buildJobId: 'legacy-build-1',
+        snapshotId: 'snapshot-build-worker',
+        phase: 'building_snapshot',
+        state: 'running',
+      }),
+      expect.objectContaining({
+        id: 'worker-solve-1',
+        workerJobId: 'worker-solve-1',
+        jobKind: 'lca.solve_all_unit',
+        solveJobId: 'legacy-solve-1',
+        snapshotId: 'snapshot-solve-worker',
+        resultId: 'result-worker-1',
+        mode: 'all_unit',
+        phase: 'completed',
+        state: 'completed',
+      }),
+    ]);
   });
 
   it('notifies and unsubscribes task-center open request listeners', () => {

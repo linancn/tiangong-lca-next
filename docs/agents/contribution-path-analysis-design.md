@@ -21,7 +21,7 @@ checkPaths:
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
 lastReviewedAt: 2026-06-02
-lastReviewedCommit: d0290875e64ea22e30d0598fa1904cac895d554a
+lastReviewedCommit: b063fc0ebfec2b413495466daa5015c067d7b497
 ---
 
 # Contribution Path Analysis Design
