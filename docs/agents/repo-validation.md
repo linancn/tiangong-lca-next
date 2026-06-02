@@ -22,7 +22,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-06-02
-lastReviewedCommit: df058eec79d9158a986e1d37a34637acc33d8894
+lastReviewedCommit: 130a4732d9f87aa4ae0475751852c2f90d4fc2c4
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -73,7 +73,7 @@ The local `pre-push` hook always runs `npm run docpact:gate` first, then runs th
 
 If the change touches `scripts/test-runner.cjs` or protected-branch gate reproduction, run `npm run test:ci` and `npm run prepush:gate` serially locally because both commands regenerate `.umi-test`.
 
-For deployment-only workflow changes under `.github/workflows/build.yml` or the manual `.github/workflows/ci.yml` fallback, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the automatic EdgeOne Pages deploy step runs only from a `v*` release tag whose target commit is already on `main`, the manual deploy fallback is guarded to `refs/heads/main` and checks out `github.sha`, and ordinary branch pushes belong to the local pre-push gate.
+For deployment-only workflow changes under `.github/workflows/build.yml` or the manual `.github/workflows/ci.yml` fallback, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. For EdgeOne CLI dependency changes, also validate the pinned temporary install path locally without calling the live deploy command. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the automatic EdgeOne Pages deploy step runs from canonical `main` pushes by creating the matching `v*` tag from `package.json.version` and continuing release in the same workflow run, unchanged-version `main` workflow hotfix pushes skip release when the matching tag already belongs to an older `main` commit, manual `v*` tag pushes and `workflow_dispatch` recovery runs remain supported when the target commit is already on `main`, the manual deploy fallback is guarded to `refs/heads/main` and checks out `github.sha`, and ordinary non-release branch pushes belong to the local pre-push gate.
 
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 

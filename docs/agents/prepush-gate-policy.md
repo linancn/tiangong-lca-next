@@ -23,7 +23,7 @@ checkPaths:
   - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-06-02
-lastReviewedCommit: df058eec79d9158a986e1d37a34637acc33d8894
+lastReviewedCommit: 130a4732d9f87aa4ae0475751852c2f90d4fc2c4
 ---
 
 # Pre-Push Gate Policy
@@ -63,8 +63,9 @@ It does not own:
 | local `pre-push` hook on any branch | run docpact first, then run the full local gate |
 | ordinary GitHub branch pushes | do not run standalone remote test jobs |
 | PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
-| release tags on `main` commits | run release-gate tests before web deploy and draft Electron release |
-| post-merge `main` pushes | do not deploy and do not duplicate the local test gate |
+| canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, then run release-gate tests before web deploy and draft Electron release |
+| unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
+| manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
 
 ## Adoption Conditions
 
@@ -80,5 +81,7 @@ It does not own:
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - protect the actual local and release gates
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
+- keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
+- use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - reproduce `npm run test:ci` and `npm run prepush:gate` serially on one workstation when both are needed
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern
