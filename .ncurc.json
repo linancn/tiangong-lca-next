@@ -1,0 +1,16 @@
+{
+  "upgrade": true,
+  "target": "latest",
+  "reject": [
+    "react",
+    "react-dom",
+    "@types/react",
+    "@types/react-dom",
+    "antd",
+    "typescript",
+    "eslint",
+    "jest",
+    "jest-environment-jsdom",
+    "@types/jest"
+  ]
+}
