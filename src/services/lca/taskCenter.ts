@@ -3,13 +3,7 @@ import {
   type WorkerJobResult,
   type WorkerJobStatus,
 } from '@/services/workerJobs/api';
-import {
-  pollLcaJobUntilTerminal,
-  submitLcaSolve,
-  type LcaJobResponse,
-  type LcaSolveRequest,
-  type LcaSolveSubmitResponse,
-} from './api';
+import { submitLcaSolve, type LcaSolveRequest, type LcaSolveSubmitResponse } from './api';
 
 export type LcaTaskState = 'running' | 'completed' | 'failed';
 export type LcaTaskPhase = 'submitting' | 'building_snapshot' | 'solving' | 'completed' | 'failed';
@@ -47,6 +41,7 @@ export type LcaBackgroundTask = {
 const MAX_TASK_ITEMS = 30;
 const BUILD_TIMEOUT_MS = 20 * 60 * 1000;
 const SOLVE_TIMEOUT_MS = 20 * 60 * 1000;
+const DEFAULT_POLL_INTERVALS_MS = [1000, 2000, 3000, 5000];
 const STORAGE_KEY = 'tg_lca_task_center_v1';
 const STORAGE_SCHEMA_VERSION = 1;
 const STORAGE_TTL_MS = 72 * 60 * 60 * 1000;
@@ -424,12 +419,34 @@ function toErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function messageForRunningJob(job: LcaJobResponse, defaultText: string): string {
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function terminalWorkerJobStatus(status: WorkerJobStatus): boolean {
+  return (
+    status === 'completed' ||
+    status === 'failed' ||
+    status === 'stale' ||
+    status === 'blocked' ||
+    status === 'cancelled'
+  );
+}
+
+function failedWorkerJobStatus(status: WorkerJobStatus): boolean {
+  return (
+    status === 'failed' || status === 'stale' || status === 'blocked' || status === 'cancelled'
+  );
+}
+
+function messageForRunningWorkerJob(job: WorkerJobResult, defaultText: string): string {
   const status = job.status;
-  if (status === 'queued') {
+  if (status === 'queued' || status === 'waiting') {
     return `${defaultText}: queued`;
   }
-  if (status === 'running' || status === 'ready') {
+  if (status === 'running') {
     return `${defaultText}: running`;
   }
   return `${defaultText}: ${status}`;
@@ -519,6 +536,81 @@ function messageFromWorkerJob(
   return 'Submitting task';
 }
 
+function patchFromWorkerJobTick(
+  job: WorkerJobResult,
+  fallbackDisplayJobId: string,
+): Partial<LcaBackgroundTask> {
+  const workerJobId = firstString(job.id);
+  const legacyJobId = lcaJobIdFromWorkerJob(job);
+  const displayJobId = legacyJobId ?? workerJobId ?? fallbackDisplayJobId;
+  const isBuildJob =
+    job.jobKind === 'lca.build_snapshot' || phaseFromWorkerJob(job) === 'building_snapshot';
+  const snapshotId = snapshotIdFromWorkerJob(job);
+  const patch: Partial<LcaBackgroundTask> = {
+    workerJobId,
+    jobKind: firstString(job.jobKind),
+    message: messageForRunningWorkerJob(
+      job,
+      `${isBuildJob ? 'Building snapshot' : 'Solving'} (${displayJobId})`,
+    ),
+  };
+
+  if (isBuildJob) {
+    patch.buildJobId = legacyJobId ?? fallbackDisplayJobId;
+  } else {
+    patch.solveJobId = legacyJobId ?? fallbackDisplayJobId;
+  }
+  if (snapshotId) {
+    patch.snapshotId = snapshotId;
+  }
+  return patch;
+}
+
+async function readWorkerJob(workerJobId: string): Promise<WorkerJobResult> {
+  const result = await requestWorkerJobsApi({
+    action: 'read',
+    jobId: workerJobId,
+  });
+  if (result.error) {
+    throw new Error(result.error.message || 'Failed to read LCA worker job');
+  }
+
+  const job = Array.isArray(result.data) ? result.data[0] : result.data;
+  if (!job) {
+    throw new Error('worker_job_not_found');
+  }
+  return job;
+}
+
+async function pollWorkerJobUntilTerminal(
+  workerJobId: string,
+  options: {
+    timeoutMs: number;
+    onTick?: (job: WorkerJobResult) => void;
+  },
+): Promise<WorkerJobResult> {
+  const startedAt = Date.now();
+  let attempt = 0;
+
+  while (true) {
+    const job = await readWorkerJob(workerJobId);
+    options.onTick?.(job);
+
+    if (terminalWorkerJobStatus(job.status)) {
+      return job;
+    }
+
+    if (Date.now() - startedAt > options.timeoutMs) {
+      throw new Error('poll_timeout');
+    }
+
+    const delay =
+      DEFAULT_POLL_INTERVALS_MS[Math.min(attempt, DEFAULT_POLL_INTERVALS_MS.length - 1)];
+    attempt += 1;
+    await sleep(delay);
+  }
+}
+
 function taskFromWorkerJob(
   job: WorkerJobResult,
   fallbackSequence: number,
@@ -596,99 +688,187 @@ function mergeWorkerJobTask(serverTask: LcaBackgroundTask): LcaBackgroundTask {
   };
 }
 
-async function waitBuildSnapshot(taskId: string, buildJobId: string): Promise<'ok' | 'failed'> {
+async function waitBuildSnapshot(
+  taskId: string,
+  buildJobId: string,
+  buildWorkerJobId: string,
+): Promise<'ok' | 'failed'> {
   upsertTask(taskId, {
     phase: 'building_snapshot',
     state: 'running',
+    workerJobId: buildWorkerJobId,
     buildJobId,
     message: `Building snapshot (${buildJobId})`,
   });
 
-  const job = await pollLcaJobUntilTerminal(buildJobId, {
+  const job = await pollWorkerJobUntilTerminal(buildWorkerJobId, {
     timeoutMs: BUILD_TIMEOUT_MS,
     onTick: (tick) => {
-      upsertTask(taskId, {
-        buildJobId: tick.job_id,
-        snapshotId: tick.snapshot_id,
-        message: messageForRunningJob(tick, `Building snapshot (${tick.job_id})`),
-      });
+      upsertTask(taskId, patchFromWorkerJobTick(tick, buildJobId));
     },
   });
 
-  if (job.status === 'failed' || job.status === 'stale') {
-    upsertTask(taskId, {
+  const legacyJobId = lcaJobIdFromWorkerJob(job) ?? buildJobId;
+  const snapshotId = snapshotIdFromWorkerJob(job);
+  if (failedWorkerJobStatus(job.status)) {
+    const failurePatch: Partial<LcaBackgroundTask> = {
       phase: 'failed',
       state: 'failed',
-      buildJobId: job.job_id,
-      snapshotId: job.snapshot_id,
-      message: `Snapshot build failed (${job.job_id})`,
+      workerJobId: firstString(job.id) ?? buildWorkerJobId,
+      buildJobId: legacyJobId,
+      message: `Snapshot build failed (${legacyJobId})`,
       error: `snapshot_build_${job.status}`,
-    });
+    };
+    if (snapshotId) {
+      failurePatch.snapshotId = snapshotId;
+    }
+    upsertTask(taskId, failurePatch);
     return 'failed';
   }
 
-  upsertTask(taskId, {
+  const successPatch: Partial<LcaBackgroundTask> = {
     phase: 'submitting',
     state: 'running',
-    buildJobId: job.job_id,
-    snapshotId: job.snapshot_id,
+    workerJobId: firstString(job.id) ?? buildWorkerJobId,
+    buildJobId: legacyJobId,
     message: 'Snapshot ready, submitting solve job',
-  });
+  };
+  if (snapshotId) {
+    successPatch.snapshotId = snapshotId;
+  }
+  upsertTask(taskId, successPatch);
   return 'ok';
 }
 
-async function waitSolveResult(taskId: string, solveJobId: string): Promise<void> {
+async function waitSolveResult(
+  taskId: string,
+  solveJobId: string,
+  solveWorkerJobId: string,
+): Promise<void> {
   upsertTask(taskId, {
     phase: 'solving',
     state: 'running',
+    workerJobId: solveWorkerJobId,
     solveJobId,
     message: `Solving (${solveJobId})`,
   });
 
-  const job = await pollLcaJobUntilTerminal(solveJobId, {
+  const job = await pollWorkerJobUntilTerminal(solveWorkerJobId, {
     timeoutMs: SOLVE_TIMEOUT_MS,
     onTick: (tick) => {
-      upsertTask(taskId, {
-        solveJobId: tick.job_id,
-        snapshotId: tick.snapshot_id,
-        message: messageForRunningJob(tick, `Solving (${tick.job_id})`),
-      });
+      upsertTask(taskId, patchFromWorkerJobTick(tick, solveJobId));
     },
   });
 
-  if (job.status === 'failed' || job.status === 'stale') {
-    upsertTask(taskId, {
+  const legacyJobId = lcaJobIdFromWorkerJob(job) ?? solveJobId;
+  const snapshotId = snapshotIdFromWorkerJob(job);
+  if (failedWorkerJobStatus(job.status)) {
+    const failurePatch: Partial<LcaBackgroundTask> = {
       phase: 'failed',
       state: 'failed',
-      solveJobId: job.job_id,
-      snapshotId: job.snapshot_id,
-      message: `Solve failed (${job.job_id})`,
+      workerJobId: firstString(job.id) ?? solveWorkerJobId,
+      solveJobId: legacyJobId,
+      message: `Solve failed (${legacyJobId})`,
       error: `solve_${job.status}`,
-    });
+    };
+    if (snapshotId) {
+      failurePatch.snapshotId = snapshotId;
+    }
+    upsertTask(taskId, failurePatch);
     return;
   }
 
-  const resultId = job.result?.result_id ?? '';
+  const resultId = resultIdFromWorkerJob(job) ?? '';
   if (!resultId) {
-    upsertTask(taskId, {
+    const missingResultPatch: Partial<LcaBackgroundTask> = {
       phase: 'failed',
       state: 'failed',
-      solveJobId: job.job_id,
-      snapshotId: job.snapshot_id,
-      message: `Solve finished but result is missing (${job.job_id})`,
+      workerJobId: firstString(job.id) ?? solveWorkerJobId,
+      solveJobId: legacyJobId,
+      message: `Solve finished but result is missing (${legacyJobId})`,
       error: 'result_id_missing',
-    });
+    };
+    if (snapshotId) {
+      missingResultPatch.snapshotId = snapshotId;
+    }
+    upsertTask(taskId, missingResultPatch);
     return;
   }
 
-  upsertTask(taskId, {
+  const completedPatch: Partial<LcaBackgroundTask> = {
     phase: 'completed',
     state: 'completed',
-    solveJobId: job.job_id,
-    snapshotId: job.snapshot_id,
+    workerJobId: firstString(job.id) ?? solveWorkerJobId,
+    solveJobId: legacyJobId,
     resultId,
     message: `Completed (result ${resultId})`,
+  };
+  if (snapshotId) {
+    completedPatch.snapshotId = snapshotId;
+  }
+  upsertTask(taskId, completedPatch);
+}
+
+async function refreshLcaTasksFromWorkerJobsInternal(): Promise<LcaBackgroundTask[]> {
+  const result = await requestWorkerJobsApi({
+    action: 'list',
+    subjectType: 'lca_job',
+    statuses: LCA_WORKER_JOB_STATUSES,
+    limit: MAX_TASK_ITEMS,
   });
+  if (result.error) {
+    throw new Error(result.error.message || 'Failed to refresh LCA worker jobs');
+  }
+
+  const serverTasks = (result.data ?? [])
+    .map((job, index) => taskFromWorkerJob(job, taskSequence + index + 1))
+    .filter((item): item is LcaBackgroundTask => Boolean(item));
+  if (serverTasks.length === 0) {
+    return tasks;
+  }
+
+  const merged = tasks.slice();
+  for (const serverTask of serverTasks) {
+    const nextTask = mergeWorkerJobTask(serverTask);
+    const existingIndex = merged.findIndex((item) => item.id === nextTask.id);
+    if (existingIndex >= 0) {
+      merged[existingIndex] = nextTask;
+    } else {
+      merged.push(nextTask);
+    }
+  }
+
+  setTasks(merged);
+  const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
+  if (maxSequence > taskSequence) {
+    taskSequence = maxSequence;
+  }
+  return tasks;
+}
+
+async function resolveRunningTaskWorkerJobId(
+  taskId: string,
+  phase: 'building_snapshot' | 'solving',
+): Promise<string | undefined> {
+  const current = tasks.find((item) => item.id === taskId);
+  if (current?.workerJobId) {
+    return current.workerJobId;
+  }
+
+  await refreshLcaTasksFromWorkerJobsInternal().catch(() => undefined);
+  const refreshed = tasks.find((item) => item.id === taskId);
+  if (refreshed?.workerJobId) {
+    return refreshed.workerJobId;
+  }
+
+  const legacyId = phase === 'building_snapshot' ? current!.buildJobId : current!.solveJobId;
+
+  const matched = tasks.find((item) =>
+    phase === 'building_snapshot'
+      ? item.buildJobId === legacyId && item.workerJobId
+      : item.solveJobId === legacyId && item.workerJobId,
+  );
+  return matched?.workerJobId;
 }
 
 async function processSubmitResponse(
@@ -709,24 +889,36 @@ async function processSubmitResponse(
   }
 
   if (submit.mode === 'snapshot_building') {
+    const buildWorkerJobId = submit.build_worker_job_id ?? undefined;
     upsertTask(taskId, {
-      workerJobId: submit.build_worker_job_id ?? undefined,
+      workerJobId: buildWorkerJobId,
       buildJobId: submit.build_job_id,
       snapshotId: submit.build_snapshot_id,
     });
+    if (!buildWorkerJobId) {
+      upsertTask(taskId, {
+        phase: 'failed',
+        state: 'failed',
+        buildJobId: submit.build_job_id,
+        snapshotId: submit.build_snapshot_id,
+        message: 'Snapshot build worker job is missing',
+        error: 'worker_job_id_missing',
+      });
+      return;
+    }
     if (attempt >= 3) {
       upsertTask(taskId, {
         phase: 'failed',
         state: 'failed',
         buildJobId: submit.build_job_id,
-        workerJobId: submit.build_worker_job_id ?? undefined,
+        workerJobId: buildWorkerJobId,
         snapshotId: submit.build_snapshot_id,
         message: 'Snapshot build retry limit reached',
         error: 'snapshot_build_retry_limit',
       });
       return;
     }
-    const built = await waitBuildSnapshot(taskId, submit.build_job_id);
+    const built = await waitBuildSnapshot(taskId, submit.build_job_id, buildWorkerJobId);
     if (built !== 'ok') {
       return;
     }
@@ -735,12 +927,24 @@ async function processSubmitResponse(
     return;
   }
 
+  const solveWorkerJobId = submit.worker_job_id ?? undefined;
   upsertTask(taskId, {
-    workerJobId: submit.worker_job_id ?? undefined,
+    workerJobId: solveWorkerJobId,
     solveJobId: submit.job_id,
     snapshotId: submit.snapshot_id,
   });
-  await waitSolveResult(taskId, submit.job_id);
+  if (!solveWorkerJobId) {
+    upsertTask(taskId, {
+      phase: 'failed',
+      state: 'failed',
+      solveJobId: submit.job_id,
+      snapshotId: submit.snapshot_id,
+      message: 'Solve worker job is missing',
+      error: 'worker_job_id_missing',
+    });
+    return;
+  }
+  await waitSolveResult(taskId, submit.job_id, solveWorkerJobId);
 }
 
 async function runTask(taskId: string, request: LcaSolveRequest): Promise<void> {
@@ -778,18 +982,40 @@ async function resumeTaskAfterReload(taskId: string): Promise<void> {
 
   try {
     if (task.phase === 'solving' && task.solveJobId) {
+      const workerJobId = await resolveRunningTaskWorkerJobId(task.id, 'solving');
+      if (!workerJobId) {
+        upsertTask(task.id, {
+          phase: 'failed',
+          state: 'failed',
+          message: 'Task recovery failed',
+          error: 'worker_job_id_missing',
+        });
+        return;
+      }
       upsertTask(task.id, {
+        workerJobId,
         message: `Resuming solve (${task.solveJobId})`,
       });
-      await waitSolveResult(task.id, task.solveJobId);
+      await waitSolveResult(task.id, task.solveJobId, workerJobId);
       return;
     }
 
     if (task.phase === 'building_snapshot' && task.buildJobId) {
+      const workerJobId = await resolveRunningTaskWorkerJobId(task.id, 'building_snapshot');
+      if (!workerJobId) {
+        upsertTask(task.id, {
+          phase: 'failed',
+          state: 'failed',
+          message: 'Task recovery failed',
+          error: 'worker_job_id_missing',
+        });
+        return;
+      }
       upsertTask(task.id, {
+        workerJobId,
         message: `Resuming snapshot build (${task.buildJobId})`,
       });
-      const built = await waitBuildSnapshot(task.id, task.buildJobId);
+      const built = await waitBuildSnapshot(task.id, task.buildJobId, workerJobId);
       if (built !== 'ok') {
         return;
       }
@@ -833,40 +1059,7 @@ async function resumeTaskAfterReload(taskId: string): Promise<void> {
 }
 
 export async function refreshLcaTasksFromWorkerJobs(): Promise<LcaBackgroundTask[]> {
-  const result = await requestWorkerJobsApi({
-    action: 'list',
-    subjectType: 'lca_job',
-    statuses: LCA_WORKER_JOB_STATUSES,
-    limit: MAX_TASK_ITEMS,
-  });
-  if (result.error) {
-    throw new Error(result.error.message || 'Failed to refresh LCA worker jobs');
-  }
-
-  const serverTasks = (result.data ?? [])
-    .map((job, index) => taskFromWorkerJob(job, taskSequence + index + 1))
-    .filter((item): item is LcaBackgroundTask => Boolean(item));
-  if (serverTasks.length === 0) {
-    return tasks;
-  }
-
-  const merged = tasks.slice();
-  for (const serverTask of serverTasks) {
-    const nextTask = mergeWorkerJobTask(serverTask);
-    const existingIndex = merged.findIndex((item) => item.id === nextTask.id);
-    if (existingIndex >= 0) {
-      merged[existingIndex] = nextTask;
-    } else {
-      merged.push(nextTask);
-    }
-  }
-
-  setTasks(merged);
-  const maxSequence = tasks.reduce((max, item) => Math.max(max, item.sequence), 0);
-  if (maxSequence > taskSequence) {
-    taskSequence = maxSequence;
-  }
-  return tasks;
+  return await refreshLcaTasksFromWorkerJobsInternal();
 }
 
 function hydrateTasksFromStorage(): void {
