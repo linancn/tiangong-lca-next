@@ -1,5 +1,6 @@
 import { flow_hybrid_search } from '@/services/flows/api';
 import type { FlowTable } from '@/services/flows/data';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { geoMercator, geoPath } from 'd3-geo';
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { gsap } from 'gsap';
@@ -375,21 +376,101 @@ class FlowTopologyCacheMissError extends Error {
   }
 }
 
-function createMockFlowTable(): FlowTable {
+const useLocalFlowTopologyFixture = true;
+const localFlowTopologyFixtureCacheBaseUrl =
+  process.env.FLOW_TOPOLOGY_CACHE_BASE_URL ||
+  'http://127.0.0.1:9000/flow-topology-local/national-carbon/flow-topology/v1';
+const flowTopologySearchPageSize = 5;
+
+type FlowTopologyFixtureFlow = {
+  classification: string;
+  flowType: string;
+  id: string;
+  locationOfSupply: string;
+  name: string;
+  synonyms: string;
+  version: string;
+};
+
+const localFlowTopologyFixtureFlows: FlowTopologyFixtureFlow[] = [
+  {
+    classification: '钢铁 / 热轧',
+    flowType: 'Product flow',
+    id: '11111111-1111-4111-8111-111111111111',
+    locationOfSupply: 'CN',
+    name: '低碳热轧钢卷',
+    synonyms: '低碳钢卷;热轧卷板',
+    version: '01.00.000',
+  },
+  {
+    classification: '电力 / 可再生',
+    flowType: 'Product flow',
+    id: '22222222-2222-4222-8222-222222222222',
+    locationOfSupply: 'CN',
+    name: '可再生电力',
+    synonyms: '绿电;风电;光伏电力',
+    version: '01.00.000',
+  },
+  {
+    classification: '资源回收 / 废钢',
+    flowType: 'Waste flow',
+    id: '33333333-3333-4333-8333-333333333333',
+    locationOfSupply: 'CN',
+    name: '再生废钢',
+    synonyms: '废钢;回收钢材',
+    version: '01.00.000',
+  },
+  {
+    classification: '氢能 / 绿氢',
+    flowType: 'Product flow',
+    id: '44444444-4444-4444-8444-444444444444',
+    locationOfSupply: 'CN',
+    name: '绿氢',
+    synonyms: '可再生氢;电解制氢',
+    version: '01.00.000',
+  },
+];
+
+function createFixtureFlowTable(
+  flow: FlowTopologyFixtureFlow,
+  modifiedAt = mockFlowTopologySnapshot.dataAsOf,
+): FlowTable {
   return {
     CASNumber: '-',
+    classification: flow.classification,
+    flowType: flow.flowType,
+    id: flow.id,
+    key: `${flow.id}:${flow.version}`,
+    locationOfSupply: flow.locationOfSupply,
+    modifiedAt: new Date(modifiedAt),
+    name: flow.name,
+    refFlowPropertyId: '-',
+    synonyms: flow.synonyms,
+    teamId: '',
+    version: flow.version,
+  };
+}
+
+function createMockFlowTable(): FlowTable {
+  return createFixtureFlowTable({
     classification: '钢铁 / 热轧',
     flowType: mockFlowTopologySnapshot.flow.flowType,
     id: mockFlowTopologySnapshot.flow.id,
-    key: `${mockFlowTopologySnapshot.flow.id}:${mockFlowTopologySnapshot.flow.version}`,
     locationOfSupply: 'CN',
-    modifiedAt: new Date(mockFlowTopologySnapshot.dataAsOf),
     name: mockFlowTopologySnapshot.flow.name,
-    refFlowPropertyId: '-',
     synonyms: '低碳钢卷;热轧卷板',
-    teamId: '',
     version: mockFlowTopologySnapshot.flow.version,
-  };
+  });
+}
+
+function createLocalFlowTopologyFixtureFlowTables(): FlowTable[] {
+  return localFlowTopologyFixtureFlows.map((flow) => createFixtureFlowTable(flow));
+}
+
+function getInitialFlowTopologySearchResults(): FlowTable[] {
+  return useLocalFlowTopologyFixture
+    ? createLocalFlowTopologyFixtureFlowTables()
+    : [createMockFlowTable()];
 }
 
 function getFlowTopologyFlowNodeId(snapshot: FlowTopologySnapshot): string {
@@ -490,11 +571,13 @@ async function fetchJsonOrCacheMiss<T>(url: string): Promise<T> {
 }
 
 async function loadCachedFlowTopology(flow: FlowTable): Promise<FlowTopologySnapshot> {
-  if (flow.id === mockFlowTopologySnapshot.flow.id) {
+  if (!useLocalFlowTopologyFixture && flow.id === mockFlowTopologySnapshot.flow.id) {
     return mockFlowTopologySnapshot;
   }
 
-  const baseUrl = getFlowTopologyCacheBaseUrl();
+  const baseUrl = useLocalFlowTopologyFixture
+    ? localFlowTopologyFixtureCacheBaseUrl
+    : getFlowTopologyCacheBaseUrl();
   const manifest = await fetchJsonOrCacheMiss<{ activeBuildId?: string; buildId?: string }>(
     `${baseUrl}/manifest.json`,
   );
@@ -523,6 +606,24 @@ async function searchSmartRecommendedFlows(queryText: string): Promise<{
 }> {
   const normalizedQuery = queryText.trim();
   const mockFlow = createMockFlowTable();
+
+  if (useLocalFlowTopologyFixture) {
+    const fixtureFlows = createLocalFlowTopologyFixtureFlowTables();
+    const normalizedFixtureQuery = normalizedQuery.toLowerCase();
+    const matchedFixtureFlows = normalizedFixtureQuery
+      ? fixtureFlows.filter((flow) =>
+          [flow.id, flow.name, flow.classification, flow.flowType, flow.synonyms]
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedFixtureQuery),
+        )
+      : fixtureFlows;
+
+    return {
+      data: matchedFixtureFlows.length > 0 ? matchedFixtureFlows : fixtureFlows,
+      fallback: true,
+    };
+  }
 
   if (!normalizedQuery) {
     return { data: [mockFlow], fallback: true };
@@ -2454,7 +2555,7 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
             <strong>{topology.flow.name}</strong>
             <em>{topology.flow.version}</em>
           </div>
-          {layoutItems.map((item) => (
+          {layoutItems.map((item, index) => (
             <button
               className={[
                 styles.flowTopologyProcessNode,
@@ -2466,11 +2567,17 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
                 .filter(Boolean)
                 .join(' ')}
               key={item.node.id}
-              onClick={() => setHoveredProcessId(item.node.id)}
               onFocus={() => setHoveredProcessId(item.node.id)}
+              onBlur={() => setHoveredProcessId(null)}
               onMouseEnter={() => setHoveredProcessId(item.node.id)}
-              onMouseMove={() => setHoveredProcessId(item.node.id)}
-              style={{ '--node-x': `${item.x}%`, '--node-y': `${item.y}%` } as CSSProperties}
+              onMouseLeave={() => setHoveredProcessId(null)}
+              style={
+                {
+                  '--node-delay': `${0.18 + index * 0.06}s`,
+                  '--node-x': `${item.x}%`,
+                  '--node-y': `${item.y}%`,
+                } as CSSProperties
+              }
               type='button'
             >
               <i aria-hidden='true' className={styles.flowTopologyProcessAnchor} />
@@ -2497,25 +2604,38 @@ function FlowTopologyScreen({
 }) {
   const [query, setQuery] = useState('低碳热轧钢卷');
   const [searchState, setSearchState] = useState<FlowTopologySearchState>('ready');
-  const [searchResults, setSearchResults] = useState<FlowTable[]>(() => [createMockFlowTable()]);
-  const [usedFallbackRecommendations, setUsedFallbackRecommendations] = useState(true);
+  const [searchResults, setSearchResults] = useState<FlowTable[]>(() =>
+    getInitialFlowTopologySearchResults(),
+  );
+  const [searchPage, setSearchPage] = useState(1);
   const [selectedFlow, setSelectedFlow] = useState<FlowTable | null>(null);
   const [topologyState, setTopologyState] = useState<FlowTopologyLoadState>('idle');
   const [topology, setTopology] = useState<FlowTopologySnapshot | null>(null);
-  const [statusMessage, setStatusMessage] = useState('选择一条非基础流后读取拓扑缓存');
+  const [topologyTransitionKey, setTopologyTransitionKey] = useState(0);
+  const searchTotalPages = Math.max(
+    1,
+    Math.ceil(searchResults.length / flowTopologySearchPageSize),
+  );
+  const pagedSearchResults = useMemo(() => {
+    const start = (searchPage - 1) * flowTopologySearchPageSize;
+    return searchResults.slice(start, start + flowTopologySearchPageSize);
+  }, [searchPage, searchResults]);
+  const firstResultIndex =
+    searchResults.length > 0 ? (searchPage - 1) * flowTopologySearchPageSize + 1 : 0;
+  const lastResultIndex = Math.min(searchPage * flowTopologySearchPageSize, searchResults.length);
+
+  useEffect(() => {
+    setSearchPage((currentPage) => Math.min(currentPage, searchTotalPages));
+  }, [searchTotalPages]);
 
   const handleSearch = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     setSearchState('loading');
-    setStatusMessage('智能推荐正在计算候选流');
 
     const result = await searchSmartRecommendedFlows(query);
     setSearchResults(result.data);
-    setUsedFallbackRecommendations(result.fallback);
+    setSearchPage(1);
     setSearchState('ready');
-    setStatusMessage(
-      result.fallback ? '当前展示本地示例推荐，可用于验证流图谱交互' : '智能推荐已返回候选流',
-    );
   };
 
   const handleSelectFlow = async (flow: FlowTable) => {
@@ -2524,26 +2644,36 @@ function FlowTopologyScreen({
     }
 
     setSelectedFlow(flow);
+    setTopologyTransitionKey((currentKey) => currentKey + 1);
     setTopology(null);
     setTopologyState('loading');
-    setStatusMessage('正在读取流过程拓扑缓存');
 
     try {
       const nextTopology = await loadCachedFlowTopology(flow);
       setTopology(nextTopology);
       setTopologyState('ready');
-      setStatusMessage('已从缓存读取拓扑，不触发过程表实时查询');
     } catch (error) {
       if (error instanceof FlowTopologyCacheMissError) {
         setTopologyState('missing');
-        setStatusMessage('未命中该流的拓扑缓存');
         return;
       }
       console.error(error);
       setTopologyState('error');
-      setStatusMessage('拓扑缓存读取失败');
     }
   };
+
+  const placeholderTitle =
+    topologyState === 'missing'
+      ? '拓扑缓存未命中'
+      : topologyState === 'error'
+        ? '缓存链路异常'
+        : topologyState === 'loading'
+          ? '拓扑信号接入中'
+          : '过程网络待激活';
+  const placeholderCaption =
+    topologyState === 'loading'
+      ? 'Provider / consumer signal locking'
+      : 'Provider / consumer network';
 
   return (
     <section className={styles.screenPanel}>
@@ -2555,9 +2685,7 @@ function FlowTopologyScreen({
       <div className={styles.flowTopologyGrid}>
         <aside className={styles.flowTopologySearchPanel}>
           <div className={styles.flowTopologyPanelHeader}>
-            <span>智能推荐</span>
-            <strong>选择非基础流</strong>
-            <p>Elementary flow 已排除，仅保留过程网络候选。</p>
+            <strong>流查询</strong>
           </div>
           <form className={styles.flowTopologySearchForm} onSubmit={handleSearch}>
             <input
@@ -2567,16 +2695,11 @@ function FlowTopologyScreen({
               value={query}
             />
             <button disabled={searchState === 'loading'} type='submit'>
-              推荐
+              查询
             </button>
           </form>
-          <div className={styles.flowTopologySearchMeta}>
-            <span>{searchState === 'loading' ? '推荐中' : '候选流'}</span>
-            <strong>{formatNumber(searchResults.length)}</strong>
-            <em>{usedFallbackRecommendations ? '本地示例' : '智能推荐'}</em>
-          </div>
           <div className={styles.flowTopologyResultList}>
-            {searchResults.map((flow) => (
+            {pagedSearchResults.map((flow) => (
               <FlowTopologySearchResult
                 flow={flow}
                 isSelected={selectedFlow?.id === flow.id && selectedFlow?.version === flow.version}
@@ -2588,27 +2711,56 @@ function FlowTopologyScreen({
               <div className={styles.flowTopologyEmpty}>没有可用于拓扑展示的非基础流</div>
             )}
           </div>
-        </aside>
-        <div className={styles.flowTopologyWorkspace}>
-          <div className={styles.flowTopologyStatusBar}>
-            <span>{selectedFlow ? selectedFlow.name : '未选择流'}</span>
-            <strong>{statusMessage}</strong>
-            <em>
-              {topologyState === 'ready'
-                ? 'CACHE READY'
-                : topologyState === 'loading'
-                  ? 'CACHE LOADING'
-                  : topologyState === 'missing'
-                    ? 'CACHE MISSING'
-                    : topologyState === 'error'
-                      ? 'CACHE ERROR'
-                      : 'WAITING'}
-            </em>
+          <div className={styles.flowTopologySearchMeta}>
+            <span>
+              {searchResults.length > 0
+                ? `${formatNumber(firstResultIndex)}-${formatNumber(lastResultIndex)} / ${formatNumber(searchResults.length)}`
+                : '0 / 0'}
+            </span>
+            <b>
+              {formatNumber(searchPage)} / {formatNumber(searchTotalPages)}
+            </b>
+            <div className={styles.flowTopologyPagerActions}>
+              <button
+                aria-label='上一页'
+                disabled={searchPage <= 1}
+                onClick={() => setSearchPage((currentPage) => Math.max(1, currentPage - 1))}
+                type='button'
+              >
+                <LeftOutlined />
+              </button>
+              <button
+                aria-label='下一页'
+                disabled={searchPage >= searchTotalPages}
+                onClick={() =>
+                  setSearchPage((currentPage) => Math.min(searchTotalPages, currentPage + 1))
+                }
+                type='button'
+              >
+                <RightOutlined />
+              </button>
+            </div>
           </div>
+        </aside>
+        <div
+          className={[
+            styles.flowTopologyWorkspace,
+            topologyState === 'loading' ? styles.flowTopologyWorkspaceLoading : '',
+            topologyState === 'ready' ? styles.flowTopologyWorkspaceReady : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           {topologyState === 'ready' && topology ? (
-            <FlowTopologyGraph topology={topology} />
+            <FlowTopologyGraph
+              key={`${topology.buildId}:${topology.flow.id}:${topologyTransitionKey}`}
+              topology={topology}
+            />
           ) : (
-            <div className={styles.flowTopologyPlaceholder}>
+            <div
+              className={styles.flowTopologyPlaceholder}
+              key={`${topologyState}:${topologyTransitionKey}`}
+            >
               <div className={styles.flowTopologyPlaceholderSignal} />
               <span>
                 {topologyState === 'missing'
@@ -2619,8 +2771,8 @@ function FlowTopologyScreen({
                       ? '正在读取缓存'
                       : '等待选择非基础流'}
               </span>
-              <strong>Flow Topology Cache</strong>
-              <p>Provider / consumer network standby</p>
+              <strong>{placeholderTitle}</strong>
+              <p>{placeholderCaption}</p>
             </div>
           )}
         </div>
