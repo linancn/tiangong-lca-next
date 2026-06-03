@@ -336,87 +336,61 @@
     0 0 52px rgba(28, 102, 229, 0.1);
 }
 
-.mapEnergyBeam,
-.mapEnergyBeamAlt {
-  position: absolute;
-  width: 36%;
-  height: 3px;
-  content: '';
-  background: linear-gradient(90deg, transparent, rgba(19, 197, 216, 0.62), transparent);
-  border-radius: 999px;
-  filter: drop-shadow(0 0 10px rgba(19, 197, 216, 0.24));
-  transform-origin: left center;
-}
-
-.mapEnergyBeam {
-  top: 45%;
-  left: 38%;
-  transform: rotate(18deg);
-}
-
-.mapEnergyBeamAlt {
-  top: 58%;
-  left: 39%;
-  background: linear-gradient(90deg, transparent, rgba(197, 138, 18, 0.5), transparent);
-  filter: drop-shadow(0 0 10px rgba(197, 138, 18, 0.22));
-  transform: rotate(-15deg);
-}
-
-.mapEnergyNode {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  background: currentColor;
-  border: 3px solid white;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 8px color-mix(in srgb, currentColor 16%, transparent),
-    0 0 24px color-mix(in srgb, currentColor 42%, transparent);
-  transform: translate(-50%, -50%);
-  animation: mapNodePulse 1.8s ease-in-out infinite;
-}
-
-.overviewHotspots {
+.overviewHotspotLayer {
   position: absolute;
   inset: 0;
   z-index: 7;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
+  transform: translateY(12px) scale(1.48);
+  transform-origin: 50% 55%;
 }
 
-.overviewHotspots span {
-  position: absolute;
-  display: inline-flex;
-  gap: 7px;
-  align-items: baseline;
-  height: 31px;
-  padding: 0 11px;
+.overviewHotspotCallout {
+  overflow: visible;
+}
+
+.overviewHotspotLabel {
+  box-sizing: border-box;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 7px;
   color: #17345e;
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(77, 143, 221, 0.44);
   border-radius: 999px;
   box-shadow:
     0 12px 28px rgba(7, 27, 63, 0.13),
     0 0 18px rgba(28, 102, 229, 0.12);
-  transform: translate(-50%, -50%);
   backdrop-filter: blur(10px);
 }
 
-.overviewHotspots span::before {
-  width: 8px;
-  height: 8px;
+.overviewHotspotLabel i {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
   content: '';
   background: var(--cyan);
   border-radius: 50%;
   box-shadow: 0 0 14px rgba(19, 197, 216, 0.42);
 }
 
-.overviewHotspots b {
+.overviewHotspotLabel b {
   color: var(--blue);
   font-family: 'Source Han Sans SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
-  font-size: 16px;
+  font-size: 11px;
+  line-height: 1;
 }
 
 .overviewInsight {
@@ -471,19 +445,6 @@
   font-size: 19px;
   font-weight: 900;
   white-space: nowrap;
-}
-
-@keyframes mapNodePulse {
-  0%,
-  100% {
-    opacity: 0.78;
-    transform: translate(-50%, -50%) scale(0.92);
-  }
-
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.12);
-  }
 }
 
 .mapSignal {
@@ -666,8 +627,10 @@
 .storyItem {
   position: relative;
   z-index: 1;
+  --story-line-left: 78px;
+
   min-height: 104px;
-  padding: 34px 0 2px 64px;
+  padding: 34px 0 2px var(--story-line-left);
 }
 
 .storyItem > * {
@@ -708,7 +671,7 @@
   position: absolute;
   top: 23px;
   right: 12px;
-  left: 78px;
+  left: var(--story-line-left);
   height: 5px;
   content: '';
   background: currentColor;
@@ -2389,7 +2352,7 @@
 .matrixSpotlight,
 .matrixQualityStrip span,
 .gapQueue div,
-.overviewHotspots span,
+.overviewHotspotLabel,
 .overviewInsight {
   background:
     linear-gradient(180deg, rgba(12, 38, 74, 0.76), rgba(4, 18, 36, 0.66)),
@@ -2440,13 +2403,13 @@
     drop-shadow(0 32px 38px rgba(0, 0, 0, 0.22));
 }
 
-.overviewHotspots span,
+.overviewHotspotLabel,
 .overviewInsight {
   color: var(--ink);
   border-color: rgba(32, 231, 255, 0.38);
 }
 
-.overviewHotspots b,
+.overviewHotspotLabel b,
 .overviewInsight strong {
   color: #8dd8ff;
 }

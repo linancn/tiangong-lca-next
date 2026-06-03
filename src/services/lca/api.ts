@@ -400,12 +400,17 @@ export async function submitLcaSolve(
         typeof error.body?.build_snapshot_id === 'string'
           ? error.body.build_snapshot_id.trim()
           : '';
+      const buildWorkerJobId =
+        typeof error.body?.build_worker_job_id === 'string'
+          ? error.body.build_worker_job_id.trim()
+          : '';
       if (buildJobId && buildSnapshotId) {
         return {
           mode: 'snapshot_building',
           snapshot_id: buildSnapshotId,
           build_job_id: buildJobId,
           build_snapshot_id: buildSnapshotId,
+          build_worker_job_id: buildWorkerJobId || null,
         };
       }
     }
