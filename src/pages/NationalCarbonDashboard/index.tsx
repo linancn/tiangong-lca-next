@@ -447,8 +447,8 @@ function getFlowTopologyLayout(snapshot: FlowTopologySnapshot): FlowTopologyLayo
     }));
   };
 
-  const providerNodes = placeColumn(groups.provider, 'provider', 20);
-  const consumerNodes = placeColumn(groups.consumer, 'consumer', 80);
+  const providerNodes = placeColumn(groups.provider, 'provider', 24);
+  const consumerNodes = placeColumn(groups.consumer, 'consumer', 76);
   const bothNodes = groups.both.map((node, index) => ({
     node,
     relation: 'both' as const,
@@ -2268,35 +2268,57 @@ function FlowTopologySearchResult({
 function FlowTopologyProcessTooltip({
   selectedProcess,
 }: {
-  selectedProcess?: FlowTopologySelectedProcess;
+  selectedProcess: FlowTopologySelectedProcess;
 }) {
-  if (!selectedProcess) {
-    return (
-      <aside className={styles.flowTopologyInspector}>
-        <span>过程信息</span>
-        <strong>未选中过程</strong>
-        <p>Exchange detail standby</p>
-      </aside>
-    );
-  }
-
   const { edges, layout } = selectedProcess;
   const providerCount = edges.filter((edge) => edge.relation === 'provider').length;
   const consumerCount = edges.filter((edge) => edge.relation === 'consumer').length;
   const primaryEdge = edges[0];
+  const placement =
+    layout.y > 66
+      ? 'top'
+      : layout.y < 34
+        ? 'bottom'
+        : layout.x > 62
+          ? 'left'
+          : layout.x < 38
+            ? 'right'
+            : 'bottom';
+  const tooltipX =
+    placement === 'left' ? layout.x - 1 : placement === 'right' ? layout.x + 1 : layout.x;
+  const tooltipY = Math.min(Math.max(layout.y, 18), 82);
 
   return (
-    <aside className={styles.flowTopologyInspector}>
-      <span>
-        {layout.relation === 'provider'
-          ? 'Provider Process'
-          : layout.relation === 'consumer'
-            ? 'Consumer Process'
-            : 'Provider / Consumer'}
-      </span>
-      <strong>{layout.node.name}</strong>
-      <p>{layout.node.classification ?? '未分类'}</p>
-      <div className={styles.flowTopologyInspectorGrid}>
+    <aside
+      className={[
+        styles.flowTopologyProcessTooltip,
+        placement === 'left' ? styles.flowTopologyTooltipLeft : '',
+        placement === 'right' ? styles.flowTopologyTooltipRight : '',
+        placement === 'top' ? styles.flowTopologyTooltipTop : '',
+        placement === 'bottom' ? styles.flowTopologyTooltipBottom : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      role='tooltip'
+      style={
+        {
+          '--tooltip-x': `${tooltipX}%`,
+          '--tooltip-y': `${tooltipY}%`,
+        } as CSSProperties
+      }
+    >
+      <div className={styles.flowTopologyTooltipHeader}>
+        <span>
+          {layout.relation === 'provider'
+            ? 'Provider Process'
+            : layout.relation === 'consumer'
+              ? 'Consumer Process'
+              : 'Provider / Consumer'}
+        </span>
+        <strong>{layout.node.name}</strong>
+        <p>{layout.node.classification ?? '未分类'}</p>
+      </div>
+      <div className={styles.flowTopologyTooltipGrid}>
         <span>UUID</span>
         <b>{layout.node.id.replace(/^process:/, '').split('@')[0]}</b>
         <span>版本</span>
@@ -2373,6 +2395,7 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
       </div>
       <div className={styles.flowTopologyGraphBody}>
         <div className={styles.flowTopologyCanvas} onMouseLeave={() => setHoveredProcessId(null)}>
+          <div aria-hidden='true' className={styles.flowTopologyCanvasSignal} />
           <svg aria-hidden='true' className={styles.flowTopologyEdges} viewBox='0 0 100 100'>
             <defs>
               <linearGradient id='flowTopologyProviderLine' x1='0' x2='1' y1='0' y2='0'>
@@ -2428,8 +2451,10 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
                 .filter(Boolean)
                 .join(' ')}
               key={item.node.id}
+              onClick={() => setHoveredProcessId(item.node.id)}
               onFocus={() => setHoveredProcessId(item.node.id)}
               onMouseEnter={() => setHoveredProcessId(item.node.id)}
+              onMouseMove={() => setHoveredProcessId(item.node.id)}
               style={{ '--node-x': `${item.x}%`, '--node-y': `${item.y}%` } as CSSProperties}
               type='button'
             >
@@ -2438,8 +2463,8 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
               <em>{item.node.location ?? '-'}</em>
             </button>
           ))}
+          {selectedProcess && <FlowTopologyProcessTooltip selectedProcess={selectedProcess} />}
         </div>
-        <FlowTopologyProcessTooltip selectedProcess={selectedProcess} />
       </div>
     </div>
   );

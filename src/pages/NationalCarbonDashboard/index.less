@@ -2529,8 +2529,7 @@
 
 .flowTopologySearchPanel,
 .flowTopologyWorkspace,
-.flowTopologyGraphShell,
-.flowTopologyInspector {
+.flowTopologyGraphShell {
   position: relative;
   min-height: 0;
   background:
@@ -2559,8 +2558,7 @@
 .flowTopologyPanelHeader span,
 .flowTopologySearchMeta span,
 .flowTopologyStatusBar span,
-.flowTopologyGraphHeader span,
-.flowTopologyInspector span {
+.flowTopologyGraphHeader span {
   color: var(--muted);
   font-size: 17px;
   font-weight: 900;
@@ -2575,8 +2573,7 @@
 }
 
 .flowTopologyPanelHeader p,
-.flowTopologyPlaceholder p,
-.flowTopologyInspector p {
+.flowTopologyPlaceholder p {
   margin: 0;
   color: var(--muted);
   font-size: 17px;
@@ -2775,7 +2772,22 @@
   overflow: hidden;
 }
 
+.flowTopologyGraphShell::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(32, 231, 255, 0.12) 42%, transparent 47%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 18%);
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  animation: flowTopologyPanelSweep 8s linear infinite;
+}
+
 .flowTopologyGraphHeader {
+  position: relative;
+  z-index: 5;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 18px;
@@ -2821,29 +2833,87 @@
 }
 
 .flowTopologyGraphBody {
-  display: grid;
-  grid-template-columns: 1fr 29%;
-  gap: 18px;
+  position: relative;
   min-height: 0;
   flex: 1;
 }
 
 .flowTopologyCanvas {
   position: relative;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(32, 231, 255, 0.08) 1px, transparent 1px),
     linear-gradient(0deg, rgba(61, 140, 255, 0.07) 1px, transparent 1px),
-    radial-gradient(ellipse at 50% 50%, rgba(32, 231, 255, 0.14), transparent 34%),
+    repeating-radial-gradient(
+      ellipse at 50% 50%,
+      rgba(32, 231, 255, 0.13) 0,
+      rgba(32, 231, 255, 0.13) 1px,
+      transparent 1px,
+      transparent 78px
+    ),
+    radial-gradient(ellipse at 50% 50%, rgba(32, 231, 255, 0.2), transparent 39%),
     rgba(2, 12, 26, 0.56);
   background-size:
-    42px 42px,
-    42px 42px,
+    48px 48px,
+    48px 48px,
+    100% 100%,
     100% 100%,
     100% 100%;
   border: 1px solid rgba(116, 196, 255, 0.24);
   border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 58px rgba(32, 231, 255, 0.09),
+    0 0 38px rgba(32, 231, 255, 0.08);
+}
+
+.flowTopologyCanvas::before,
+.flowTopologyCanvas::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.flowTopologyCanvas::before {
+  background:
+    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.18), transparent),
+    linear-gradient(0deg, transparent 0 48%, rgba(255, 212, 95, 0.08) 50%, transparent 52%);
+  opacity: 0.55;
+  transform: translateX(-64%);
+  animation: flowTopologyScan 5.6s ease-in-out infinite;
+}
+
+.flowTopologyCanvas::after {
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      transparent 0 22%,
+      rgba(32, 231, 255, 0.16) 22.4% 22.8%,
+      transparent 23.2% 32%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      transparent 0 36%,
+      rgba(255, 212, 95, 0.1) 36.3% 36.7%,
+      transparent 37.1%
+    );
+  opacity: 0.72;
+}
+
+.flowTopologyCanvasSignal {
+  position: absolute;
+  inset: 28px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid rgba(32, 231, 255, 0.1);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 34px rgba(32, 231, 255, 0.08),
+    0 0 22px rgba(32, 231, 255, 0.06);
 }
 
 .flowTopologyEdges {
@@ -2858,10 +2928,12 @@
 
 .flowTopologyEdge path {
   fill: none;
-  stroke-width: 0.34;
-  opacity: 0.72;
-  filter: drop-shadow(0 0 4px currentColor);
+  stroke-width: 0.46;
+  stroke-dasharray: 2.8 1.4;
+  opacity: 0.78;
+  filter: drop-shadow(0 0 6px currentColor);
   vector-effect: non-scaling-stroke;
+  animation: flowTopologyLinePulse 2.9s ease-in-out infinite;
 }
 
 .flowTopologyEdgeProvider path {
@@ -2873,8 +2945,10 @@
 }
 
 .flowTopologyEdgeActive path {
-  stroke-width: 0.62;
+  stroke-width: 0.9;
+  stroke-dasharray: 4 0.8;
   opacity: 1;
+  filter: drop-shadow(0 0 12px currentColor);
 }
 
 .flowTopologyCoreNode {
@@ -2887,21 +2961,45 @@
   width: 210px;
   min-height: 132px;
   padding: 18px;
+  overflow: hidden;
   color: var(--ink);
   text-align: center;
   background:
-    radial-gradient(circle at 50% 36%, rgba(32, 231, 255, 0.28), transparent 58%),
-    linear-gradient(180deg, rgba(13, 57, 103, 0.94), rgba(4, 18, 36, 0.92));
+    linear-gradient(180deg, rgba(15, 64, 111, 0.94), rgba(4, 18, 36, 0.92)),
+    linear-gradient(135deg, rgba(32, 231, 255, 0.18), rgba(255, 212, 95, 0.08));
   border: 1px solid rgba(32, 231, 255, 0.64);
   border-radius: 8px;
   box-shadow:
-    0 0 42px rgba(32, 231, 255, 0.22),
+    0 0 54px rgba(32, 231, 255, 0.3),
+    0 0 110px rgba(32, 231, 255, 0.12),
     inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   transform: translate(-50%, -50%);
 }
 
+.flowTopologyCoreNode::before {
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.34), transparent);
+  opacity: 0.7;
+  transform: translateX(-100%);
+  animation: flowTopologyNodeSweep 3.8s ease-in-out infinite;
+}
+
+.flowTopologyCoreNode::after {
+  position: absolute;
+  inset: 9px;
+  pointer-events: none;
+  content: '';
+  border: 1px solid rgba(32, 231, 255, 0.18);
+  border-radius: 6px;
+}
+
 .flowTopologyCoreNode span,
 .flowTopologyCoreNode em {
+  position: relative;
+  z-index: 1;
   color: var(--muted);
   font-size: 13px;
   font-style: normal;
@@ -2909,6 +3007,8 @@
 }
 
 .flowTopologyCoreNode strong {
+  position: relative;
+  z-index: 1;
   margin: 9px 0;
   color: var(--ink);
   font-size: 26px;
@@ -2926,6 +3026,7 @@
   width: 174px;
   min-height: 82px;
   padding: 12px 14px;
+  overflow: hidden;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
@@ -2934,6 +3035,14 @@
     linear-gradient(90deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.06));
   border: 1px solid rgba(116, 196, 255, 0.38);
   border-radius: 8px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 13px) 0,
+    100% 13px,
+    100% 100%,
+    13px 100%,
+    0 calc(100% - 13px)
+  );
   box-shadow:
     0 18px 34px rgba(0, 0, 0, 0.26),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
@@ -2944,7 +3053,24 @@
     transform 180ms ease;
 }
 
+.flowTopologyProcessNode::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.16), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%);
+  opacity: 0.5;
+  transform: translateX(-100%);
+  transition:
+    opacity 180ms ease,
+    transform 240ms ease;
+}
+
 .flowTopologyProcessNode span {
+  position: relative;
+  z-index: 1;
   color: var(--muted);
   font-size: 11px;
   font-weight: 900;
@@ -2953,6 +3079,8 @@
 }
 
 .flowTopologyProcessNode strong {
+  position: relative;
+  z-index: 1;
   overflow: hidden;
   color: var(--ink);
   font-size: 17px;
@@ -2963,6 +3091,8 @@
 }
 
 .flowTopologyProcessNode em {
+  position: relative;
+  z-index: 1;
   color: var(--muted);
   font-size: 12px;
   font-style: normal;
@@ -2991,46 +3121,126 @@
   border-color: rgba(32, 231, 255, 0.82);
   box-shadow:
     0 20px 38px rgba(0, 0, 0, 0.28),
-    0 0 30px rgba(32, 231, 255, 0.22),
+    0 0 36px rgba(32, 231, 255, 0.34),
+    0 0 80px rgba(255, 212, 95, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.16);
   transform: translate(-50%, -52%);
 }
 
-.flowTopologyInspector {
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
-  padding: 20px;
-  overflow: hidden;
+.flowTopologyProcessNode:hover::before,
+.flowTopologyProcessNode:focus-visible::before,
+.flowTopologyNodeActive::before {
+  opacity: 1;
+  transform: translateX(100%);
 }
 
-.flowTopologyInspector strong {
-  color: var(--ink);
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1.1;
-}
-
-.flowTopologyInspectorGrid {
+.flowTopologyProcessTooltip {
+  position: absolute;
+  top: var(--tooltip-y);
+  left: var(--tooltip-x);
+  z-index: 8;
   display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  gap: 9px 12px;
-  min-height: 0;
-  margin-top: 6px;
-  overflow: auto;
+  gap: 12px;
+  width: 330px;
+  max-width: 34%;
+  padding: 18px 18px 16px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(10, 39, 73, 0.94), rgba(2, 13, 29, 0.92)),
+    linear-gradient(135deg, rgba(32, 231, 255, 0.14), rgba(255, 212, 95, 0.08));
+  border: 1px solid rgba(32, 231, 255, 0.66);
+  border-radius: 8px;
+  box-shadow:
+    0 28px 58px rgba(0, 0, 0, 0.38),
+    0 0 36px rgba(32, 231, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: flowTopologyTooltipIn 160ms ease-out both;
 }
 
-.flowTopologyInspectorGrid span {
-  color: var(--muted);
+.flowTopologyProcessTooltip::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.32), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 32%);
+  opacity: 0.72;
+}
+
+.flowTopologyTooltipLeft {
+  transform: translate(calc(-100% - 18px), -50%);
+}
+
+.flowTopologyTooltipRight {
+  transform: translate(18px, -50%);
+}
+
+.flowTopologyTooltipTop {
+  transform: translate(-50%, calc(-100% - 18px));
+}
+
+.flowTopologyTooltipBottom {
+  transform: translate(-50%, 18px);
+}
+
+.flowTopologyTooltipHeader,
+.flowTopologyTooltipGrid {
+  position: relative;
+  z-index: 1;
+}
+
+.flowTopologyTooltipHeader {
+  display: grid;
+  gap: 7px;
+}
+
+.flowTopologyTooltipHeader span {
+  color: var(--cyan);
   font-size: 13px;
   font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
-.flowTopologyInspectorGrid b {
+.flowTopologyTooltipHeader strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyTooltipHeader p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyTooltipGrid {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 8px 11px;
+  min-height: 0;
+}
+
+.flowTopologyTooltipGrid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.flowTopologyTooltipGrid b {
   min-width: 0;
   overflow: hidden;
   color: var(--ink);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3086,6 +3296,57 @@
   font-size: 42px;
   font-weight: 900;
   line-height: 1;
+}
+
+@keyframes flowTopologyPanelSweep {
+  0% {
+    transform: translateX(-52%);
+  }
+  100% {
+    transform: translateX(52%);
+  }
+}
+
+@keyframes flowTopologyScan {
+  0%,
+  100% {
+    transform: translateX(-64%);
+  }
+  50% {
+    transform: translateX(64%);
+  }
+}
+
+@keyframes flowTopologyLinePulse {
+  0%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.62;
+  }
+  50% {
+    stroke-dashoffset: -8;
+    opacity: 0.96;
+  }
+}
+
+@keyframes flowTopologyNodeSweep {
+  0%,
+  22% {
+    transform: translateX(-100%);
+  }
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes flowTopologyTooltipIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 900px) {
