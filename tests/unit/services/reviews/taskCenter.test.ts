@@ -42,7 +42,13 @@ describe('reviews/taskCenter', () => {
     const task = taskCenter.trackReviewSubmitTask({
       status: 'waiting_gate',
       reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
+      submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
       gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+      submitWorkerJob: {
+        id: '00000000-0000-4000-8000-000000000001',
+        jobKind: 'review_submit.submit',
+        status: 'waiting',
+      },
       datasetRevision: {
         table: 'processes',
         id: '33333333-3333-4333-8333-333333333333',
@@ -53,7 +59,8 @@ describe('reviews/taskCenter', () => {
 
     expect(task).toEqual(
       expect.objectContaining({
-        id: '11111111-1111-4111-8111-111111111111',
+        id: '00000000-0000-4000-8000-000000000001',
+        submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
         gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
         state: 'running',
         phase: 'waiting_gate',
@@ -69,8 +76,19 @@ describe('reviews/taskCenter', () => {
     mockRequestWorkerJobsApi.mockResolvedValue({
       data: [
         {
+          id: '00000000-0000-4000-8000-000000000001',
+          jobKind: 'review_submit.submit',
+          subjectType: 'processes',
+          subjectId: '33333333-3333-4333-8333-333333333333',
+          subjectVersion: '01.00.000',
+          status: 'waiting',
+          createdAt: '2026-03-12T10:59:00.000Z',
+          updatedAt: '2026-03-12T11:02:00.000Z',
+        },
+        {
           id: '22222222-2222-4222-8222-222222222222',
           jobKind: 'review_submit.gate',
+          rootJobId: '00000000-0000-4000-8000-000000000001',
           subjectType: 'processes',
           subjectId: '33333333-3333-4333-8333-333333333333',
           subjectVersion: '01.00.000',
@@ -96,9 +114,16 @@ describe('reviews/taskCenter', () => {
         {
           status: 'blocked',
           reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
+          submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
           gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+          submitWorkerJob: {
+            id: '00000000-0000-4000-8000-000000000001',
+            jobKind: 'review_submit.submit',
+            status: 'waiting',
+          },
           gateWorkerJob: {
             id: '22222222-2222-4222-8222-222222222222',
+            jobKind: 'review_submit.gate',
             status: 'blocked',
           },
           datasetRevision: {
@@ -134,9 +159,12 @@ describe('reviews/taskCenter', () => {
       id: '33333333-3333-4333-8333-333333333333',
       version: '01.00.000',
     });
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledTimes(2);
     expect(tasks).toEqual([
       expect.objectContaining({
-        id: '11111111-1111-4111-8111-111111111111',
+        id: '00000000-0000-4000-8000-000000000001',
+        submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
+        gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
         phase: 'blocked',
         state: 'failed',
         blockerCodes: ['flow_lcia_semantic_mismatch'],
@@ -375,6 +403,8 @@ describe('reviews/taskCenter', () => {
           {
             id: 'cached-task',
             phase: 'running',
+            submitWorkerJobId: 'submit-worker-cached',
+            rootJobId: 'root-worker-cached',
             gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
             reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
             message: 'Cached task is still running',
@@ -388,6 +418,16 @@ describe('reviews/taskCenter', () => {
             gateRunId: null,
             workerJob: {
               id: '22222222-2222-4222-8222-222222222222',
+              status: 'running',
+            },
+            rootWorkerJob: {
+              id: 'root-worker-cached',
+              jobKind: 'review_submit.submit',
+              status: 'running',
+            },
+            gateWorkerJob: {
+              id: '22222222-2222-4222-8222-222222222222',
+              jobKind: 'review_submit.gate',
               status: 'running',
             },
             coordinator: {
@@ -407,11 +447,23 @@ describe('reviews/taskCenter', () => {
       expect.objectContaining({
         id: 'cached-task',
         phase: 'running',
+        submitWorkerJobId: 'submit-worker-cached',
+        rootJobId: 'root-worker-cached',
         gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
         reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
         message: 'Cached task is still running',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:00.000Z',
+        rootWorkerJob: {
+          id: 'root-worker-cached',
+          jobKind: 'review_submit.submit',
+          status: 'running',
+        },
+        gateWorkerJob: {
+          id: '22222222-2222-4222-8222-222222222222',
+          jobKind: 'review_submit.gate',
+          status: 'running',
+        },
         gateRunId: null,
         blockerCodes: ['flow_lcia_semantic_mismatch'],
         progress: 0,
@@ -590,8 +642,153 @@ describe('reviews/taskCenter', () => {
 
     await expect(taskCenter.refreshReviewSubmitTasks()).resolves.toEqual([
       expect.objectContaining({
-        id: 'server-job',
+        id: 'same-worker',
         gateWorkerJobId: 'same-worker',
+        reviewSubmitJobId: 'server-job',
+      }),
+    ]);
+  });
+
+  it('hydrates root worker projections and ignores stale root coordinator ids', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'root-worker-from-coordinator',
+          jobKind: 'review_submit.submit',
+          subjectType: 'processes',
+          subjectId: '33333333-3333-4333-8333-333333333333',
+          subjectVersion: '01.00.000',
+          status: 'running',
+          createdAt: '2026-03-12T11:00:00.000Z',
+          updatedAt: '2026-03-12T11:02:00.000Z',
+        },
+        {
+          id: 'root-worker-stale',
+          jobKind: 'review_submit.submit',
+          subjectType: 'processes',
+          subjectId: '44444444-4444-4444-8444-444444444444',
+          subjectVersion: '01.00.000',
+          status: 'completed',
+          createdAt: '2026-03-12T10:00:00.000Z',
+          updatedAt: '2026-03-12T10:02:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    mockRequestReviewSubmitJobApi
+      .mockResolvedValueOnce({
+        data: [
+          {
+            status: 'waiting_gate',
+            reviewSubmitJobId: 'coordinator-for-root',
+            workerJob: {
+              id: 'root-worker-from-coordinator',
+              jobKind: 'review_submit.submit',
+              status: 'running',
+            },
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            status: 'submitted',
+            reviewSubmitJobId: 'stale-coordinator-root',
+            submitWorkerJobId: 'different-root-worker',
+          },
+        ],
+        error: null,
+      });
+
+    const taskCenter = loadTaskCenterModule();
+    await expect(taskCenter.refreshReviewSubmitTasks()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'root-worker-from-coordinator',
+          submitWorkerJobId: 'root-worker-from-coordinator',
+          reviewSubmitJobId: 'coordinator-for-root',
+          phase: 'waiting_gate',
+        }),
+        expect.objectContaining({
+          id: 'root-worker-stale',
+          submitWorkerJobId: 'root-worker-stale',
+          reviewSubmitJobId: undefined,
+          phase: 'passed',
+        }),
+      ]),
+    );
+  });
+
+  it('prefers canonical root worker tasks while preserving legacy gate metadata', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'gate-worker-for-merge',
+          jobKind: 'review_submit.gate',
+          rootJobId: 'root-worker-for-merge',
+          subjectType: 'processes',
+          subjectId: '33333333-3333-4333-8333-333333333333',
+          subjectVersion: '01.00.000',
+          status: 'blocked',
+          blockerCodes: ['flow_lcia_semantic_mismatch'],
+          result: {
+            blockingReasons: [
+              {
+                code: 'flow_lcia_semantic_mismatch',
+              },
+            ],
+          },
+          progress: 0.4,
+          createdAt: '2026-03-12T10:59:00.000Z',
+          updatedAt: '2026-03-12T11:01:00.000Z',
+        },
+        {
+          id: 'root-worker-for-merge',
+          jobKind: 'review_submit.submit',
+          status: 'running',
+          createdAt: '2026-03-12T11:00:00.000Z',
+          updatedAt: '2026-03-12T11:02:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    mockRequestReviewSubmitJobApi.mockResolvedValueOnce({
+      data: [
+        {
+          status: 'blocked',
+          reviewSubmitJobId: 'review-job-for-merge',
+          gateWorkerJobId: 'gate-worker-for-merge',
+          gateRunId: 'gate-run-for-merge',
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    await expect(taskCenter.refreshReviewSubmitTasks()).resolves.toEqual([
+      expect.objectContaining({
+        id: 'root-worker-for-merge',
+        submitWorkerJobId: 'root-worker-for-merge',
+        gateWorkerJobId: 'gate-worker-for-merge',
+        reviewSubmitJobId: 'review-job-for-merge',
+        rootJobId: 'root-worker-for-merge',
+        datasetRevision: {
+          table: 'processes',
+          id: '33333333-3333-4333-8333-333333333333',
+          version: '01.00.000',
+        },
+        gateRunId: 'gate-run-for-merge',
+        gateWorkerJob: expect.objectContaining({
+          id: 'gate-worker-for-merge',
+        }),
+        blockingReasons: [
+          {
+            code: 'flow_lcia_semantic_mismatch',
+          },
+        ],
+        blockerCodes: ['flow_lcia_semantic_mismatch'],
+        progress: 0.4,
       }),
     ]);
   });
@@ -625,10 +822,11 @@ describe('reviews/taskCenter', () => {
     });
 
     await expect(
-      taskCenter.retryReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.retryReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).resolves.toEqual(
       expect.objectContaining({
-        id: '44444444-4444-4444-8444-444444444444',
+        id: '55555555-5555-4555-8555-555555555555',
+        reviewSubmitJobId: '44444444-4444-4444-8444-444444444444',
         phase: 'waiting_gate',
       }),
     );
@@ -643,7 +841,7 @@ describe('reviews/taskCenter', () => {
   it('surfaces cancel and retry failures', async () => {
     const taskCenter = loadTaskCenterModule();
     await expect(taskCenter.cancelReviewSubmitTask('missing-task')).rejects.toThrow(
-      'Review-submit gate worker job id is missing',
+      'Review-submit worker job id is missing',
     );
     await expect(taskCenter.retryReviewSubmitTask('missing-task')).rejects.toThrow(
       'Review-submit dataset revision is missing',
@@ -672,10 +870,10 @@ describe('reviews/taskCenter', () => {
         error: {},
       });
     await expect(
-      taskCenter.cancelReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.cancelReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).rejects.toThrow('cancel failed');
     await expect(
-      taskCenter.cancelReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.cancelReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).rejects.toThrow('Failed to cancel review-submit task');
 
     mockRequestReviewSubmitJobApi
@@ -694,13 +892,13 @@ describe('reviews/taskCenter', () => {
         error: {},
       });
     await expect(
-      taskCenter.retryReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.retryReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).rejects.toThrow('retry failed');
     await expect(
-      taskCenter.retryReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.retryReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).rejects.toThrow('Review-submit retry returned no job');
     await expect(
-      taskCenter.retryReviewSubmitTask('11111111-1111-4111-8111-111111111111'),
+      taskCenter.retryReviewSubmitTask('22222222-2222-4222-8222-222222222222'),
     ).rejects.toThrow('Failed to retry review-submit task');
   });
 
@@ -781,7 +979,8 @@ describe('reviews/taskCenter', () => {
 
     await expect(taskCenter.retryReviewSubmitTask('track-refresh-fails')).resolves.toEqual(
       expect.objectContaining({
-        id: 'retry-refresh-fails',
+        id: 'retry-refresh-worker',
+        reviewSubmitJobId: 'retry-refresh-fails',
       }),
     );
     await taskCenter.refreshReviewSubmitTasks().catch(() => undefined);
@@ -825,18 +1024,18 @@ describe('reviews/taskCenter', () => {
       ],
       error: null,
     });
-    await taskCenter.cancelReviewSubmitTask('11111111-1111-4111-8111-111111111111');
+    await taskCenter.cancelReviewSubmitTask('22222222-2222-4222-8222-222222222222');
     expect(mockRequestWorkerJobsApi).toHaveBeenCalledWith({
       action: 'cancel',
       jobId: '22222222-2222-4222-8222-222222222222',
       reason: 'user_cancelled',
     });
 
-    taskCenter.removeReviewSubmitTask('11111111-1111-4111-8111-111111111111');
+    taskCenter.removeReviewSubmitTask('22222222-2222-4222-8222-222222222222');
     expect(taskCenter.listReviewSubmitTasks()).toEqual([]);
     expect(
       JSON.parse(window.localStorage.getItem(REVIEW_SUBMIT_STORAGE_KEY) ?? '{}').dismissedTaskIds,
-    ).toContain('11111111-1111-4111-8111-111111111111');
+    ).toContain('22222222-2222-4222-8222-222222222222');
   });
 
   it('clears only finished review-submit tasks', () => {

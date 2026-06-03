@@ -708,6 +708,8 @@ export default {
   'pages.process.reviewSubmitTaskCenter.errorSummary.title': 'Review submission task failed',
   'pages.process.reviewSubmitTaskCenter.errorSummary.description': 'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
   'pages.process.reviewSubmitTaskCenter.errorSummary.action': 'If the task fails again, open details and share the diagnostics with an administrator.',
+  'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId': 'submit_worker_job_id',
+  'pages.process.reviewSubmitTaskCenter.detail.rootJobId': 'root_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId': 'review_submit_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId': 'gate_worker_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.gateRunId': 'gate_run_id',

@@ -7,6 +7,7 @@ import type {
 import {
   clearFinishedLcaTasks,
   listLcaTasks,
+  refreshLcaTasksFromWorkerJobs,
   removeLcaTask,
   subscribeLcaTaskCenterOpenRequests,
   subscribeLcaTasks,
@@ -36,6 +37,7 @@ import {
   clearFinishedTidasPackageTasks,
   downloadTidasPackageExportTask,
   listTidasPackageTasks,
+  refreshTidasPackageTasksFromWorkerJobs,
   removeTidasPackageTask,
   subscribeTidasPackageTasks,
 } from '@/services/tidasPackage/taskCenter';
@@ -60,7 +62,7 @@ import {
   message,
   theme,
 } from 'antd';
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useIntl } from 'umi';
 
 type IntlShapeLike = ReturnType<typeof useIntl>;
@@ -194,6 +196,12 @@ function packagePhaseLabel(phase: TidasPackageTaskPhase, intl: IntlShapeLike): s
     return intl.formatMessage({
       id: 'component.tidasPackage.taskCenter.phase.collectRefs',
       defaultMessage: 'Collecting related data',
+    });
+  }
+  if (phase === 'import_package') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.phase.importPackage',
+      defaultMessage: 'Importing data',
     });
   }
   if (phase === 'finalize_zip') {
@@ -512,7 +520,10 @@ function packageTaskErrorText(
     return undefined;
   }
 
-  if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+  if (
+    task.kind === 'tidas_package_export' &&
+    classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR
+  ) {
     return intl.formatMessage({
       id: 'component.tidasPackage.export.error.tooLarge',
       defaultMessage:
@@ -525,6 +536,12 @@ function packageTaskErrorText(
 
 function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLike): string {
   if (task.state === 'completed') {
+    if (task.kind === 'tidas_package_import') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.summary.importCompleted',
+        defaultMessage: 'Import package completed',
+      });
+    }
     return intl.formatMessage(
       {
         id: 'component.tidasPackage.taskCenter.summary.completed',
@@ -534,10 +551,19 @@ function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLik
     );
   }
   if (task.state === 'failed') {
-    if (classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR) {
+    if (
+      task.kind === 'tidas_package_export' &&
+      classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR
+    ) {
       return intl.formatMessage({
         id: 'component.tidasPackage.taskCenter.summary.failedTooLarge',
         defaultMessage: 'Export package exceeded the storage upload limit',
+      });
+    }
+    if (task.kind === 'tidas_package_import') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.summary.importFailed',
+        defaultMessage: 'Import package failed',
       });
     }
     return intl.formatMessage({
@@ -804,6 +830,15 @@ function lcaDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.R
         </Tag>
         <Tag>{task.scope}</Tag>
       </Space>
+      {task.workerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.workerJobId',
+            defaultMessage: 'worker_job_id',
+          })}
+          : <Typography.Text copyable>{task.workerJobId}</Typography.Text>
+        </Typography.Text>
+      )}
       {task.buildJobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
           {intl.formatMessage({
@@ -863,19 +898,34 @@ function packageDetailContent(
   intl: IntlShapeLike,
 ): React.ReactNode {
   const singleRoot = task.request?.roots?.length === 1 ? task.request.roots[0] : null;
+  const isImport = task.kind === 'tidas_package_import';
 
   return (
     <Space direction='vertical' size={4} style={{ maxWidth: 360 }}>
       <Space size={6} wrap>
         <Tag color='geekblue'>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.exportKind',
-            defaultMessage: 'TIDAS Export',
-          })}
+          {isImport
+            ? intl.formatMessage({
+                id: 'component.tidasPackage.taskCenter.detail.importKind',
+                defaultMessage: 'TIDAS Import',
+              })
+            : intl.formatMessage({
+                id: 'component.tidasPackage.taskCenter.detail.exportKind',
+                defaultMessage: 'TIDAS Export',
+              })}
         </Tag>
         {task.scope && <Tag>{task.scope}</Tag>}
         {singleRoot && <Tag>{singleRoot.table}</Tag>}
       </Space>
+      {task.workerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'component.tidasPackage.taskCenter.detail.workerJobId',
+            defaultMessage: 'worker_job_id',
+          })}
+          : <Typography.Text copyable>{task.workerJobId}</Typography.Text>
+        </Typography.Text>
+      )}
       {task.jobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
           {intl.formatMessage({
@@ -1132,6 +1182,24 @@ function reviewSubmitDetailContent(
         </Tag>
         {revision?.table && <Tag>{revision.table}</Tag>}
       </Space>
+      {task.submitWorkerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
+            defaultMessage: 'submit_worker_job_id',
+          })}
+          : <Typography.Text copyable>{task.submitWorkerJobId}</Typography.Text>
+        </Typography.Text>
+      )}
+      {task.rootJobId && task.rootJobId !== task.submitWorkerJobId && (
+        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+          {intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
+            defaultMessage: 'root_job_id',
+          })}
+          : <Typography.Text copyable>{task.rootJobId}</Typography.Text>
+        </Typography.Text>
+      )}
       {task.reviewSubmitJobId && (
         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
           {intl.formatMessage({
@@ -1214,28 +1282,36 @@ const LcaTaskCenter: React.FC = () => {
   const [downloadingTaskId, setDownloadingTaskId] = useState<string | null>(null);
   const [cancellingTaskId, setCancellingTaskId] = useState<string | null>(null);
   const [retryingTaskId, setRetryingTaskId] = useState<string | null>(null);
-  const [refreshingReviewTasks, setRefreshingReviewTasks] = useState(false);
+  const [refreshingTasks, setRefreshingTasks] = useState(false);
   const lcaTasks = useLcaTasks();
   const packageTasks = useTidasPackageTasks();
   const reviewSubmitTasks = useReviewSubmitTasks();
 
+  const refreshAllTasks = useCallback(async () => {
+    await Promise.all([
+      refreshLcaTasksFromWorkerJobs(),
+      refreshTidasPackageTasksFromWorkerJobs(),
+      refreshReviewSubmitTasks(),
+    ]);
+  }, []);
+
   useEffect(() => {
-    void refreshReviewSubmitTasks().catch(() => undefined);
+    void refreshAllTasks().catch(() => undefined);
     const interval = window.setInterval(() => {
-      void refreshReviewSubmitTasks().catch(() => undefined);
+      void refreshAllTasks().catch(() => undefined);
     }, 5000);
     return () => {
       window.clearInterval(interval);
     };
-  }, []);
+  }, [refreshAllTasks]);
 
   useEffect(
     () =>
       subscribeLcaTaskCenterOpenRequests(() => {
         setOpen(true);
-        void refreshReviewSubmitTasks().catch(() => undefined);
+        void refreshAllTasks().catch(() => undefined);
       }),
-    [],
+    [refreshAllTasks],
   );
 
   const items = useMemo<TaskCenterItem[]>(
@@ -1284,10 +1360,10 @@ const LcaTaskCenter: React.FC = () => {
     }
   };
 
-  const handleRefreshReviewSubmitTasks = async () => {
+  const handleRefreshTasks = async () => {
     try {
-      setRefreshingReviewTasks(true);
-      await refreshReviewSubmitTasks();
+      setRefreshingTasks(true);
+      await refreshAllTasks();
     } catch (error: any) {
       message.error(
         error?.message ||
@@ -1297,7 +1373,7 @@ const LcaTaskCenter: React.FC = () => {
           }),
       );
     } finally {
-      setRefreshingReviewTasks(false);
+      setRefreshingTasks(false);
     }
   };
 
@@ -1359,7 +1435,7 @@ const LcaTaskCenter: React.FC = () => {
         badgeStyle={attentionCount > 0 ? { backgroundColor: '#cf1322' } : undefined}
         onClick={() => {
           setOpen(true);
-          void refreshReviewSubmitTasks().catch(() => undefined);
+          void refreshAllTasks().catch(() => undefined);
         }}
       />
       <Modal
@@ -1379,9 +1455,9 @@ const LcaTaskCenter: React.FC = () => {
             <Button
               size='small'
               icon={<ReloadOutlined />}
-              loading={refreshingReviewTasks}
+              loading={refreshingTasks}
               onClick={() => {
-                void handleRefreshReviewSubmitTasks();
+                void handleRefreshTasks();
               }}
             >
               {intl.formatMessage({
@@ -1420,7 +1496,9 @@ const LcaTaskCenter: React.FC = () => {
                   <List.Item
                     key={item.task.id}
                     actions={[
-                      item.kind === 'package' && item.task.state === 'completed' ? (
+                      item.kind === 'package' &&
+                      item.task.kind === 'tidas_package_export' &&
+                      item.task.state === 'completed' ? (
                         <Button
                           key='download'
                           type='link'
@@ -1533,8 +1611,14 @@ const LcaTaskCenter: React.FC = () => {
                                   defaultMessage: 'Review Submit',
                                 })
                               : intl.formatMessage({
-                                  id: 'component.tidasPackage.taskCenter.kind.packageExport',
-                                  defaultMessage: 'TIDAS Export',
+                                  id:
+                                    item.task.kind === 'tidas_package_import'
+                                      ? 'component.tidasPackage.taskCenter.kind.packageImport'
+                                      : 'component.tidasPackage.taskCenter.kind.packageExport',
+                                  defaultMessage:
+                                    item.task.kind === 'tidas_package_import'
+                                      ? 'TIDAS Import'
+                                      : 'TIDAS Export',
                                 })}
                         </Tag>
                         {statusTag(item.task.state, intl)}

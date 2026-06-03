@@ -21,8 +21,8 @@ checkPaths:
   - jest.config.cjs
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-06-01
-lastReviewedCommit: 2871eed6e1e062df86b4f4c9918a715f0dec3ca9
+lastReviewedAt: 2026-06-02
+lastReviewedCommit: cda6505285c9818324e6f7bd20489fc2fd977c27
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -62,7 +62,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
-| process review-submit gate/job UI or service contract | `npm run lint`; focused review/gate/job tests such as `npm run test:ci -- tests/unit/services/workerJobs/api.test.ts tests/unit/services/reviews/taskCenter.test.ts tests/unit/components/LcaTaskCenter.test.tsx tests/unit/services/reviews/api.test.ts tests/unit/utils/review.test.ts tests/unit/pages/Processes/Components/edit.test.tsx --runInBand --testTimeout=30000`; `npm run build` | smoke `app_worker_jobs`, `app_dataset_review_submit_jobs`, the worker, and final process submit-review against a safe dev environment when credentials and a queued job are available | Next must render backend job states and gate evidence, enqueue/read submit jobs instead of calling final submit-review from the browser, recover task-center state from service-backed worker jobs, and avoid duplicating worker blocker heuristics or browser-authoritative checksum logic. |
+| process review-submit gate/job UI or service contract | `npm run lint`; focused review/gate/job tests such as `npm run test:ci -- tests/unit/services/workerJobs/api.test.ts tests/unit/services/reviews/taskCenter.test.ts tests/unit/components/LcaTaskCenter.test.tsx tests/unit/services/reviews/api.test.ts tests/unit/utils/review.test.ts tests/unit/pages/Processes/Components/edit.test.tsx --runInBand --testTimeout=30000`; `npm run build` | smoke `app_worker_jobs`, `app_dataset_review_submit_jobs`, the worker, and final process submit-review against a safe dev environment when credentials and a queued job are available | Next must render backend job states and gate evidence, enqueue/read submit jobs instead of calling final submit-review from the browser, recover task-center state from service-backed worker jobs, prefer the canonical root `review_submit.submit` worker job for task identity/actions, and avoid duplicating worker blocker heuristics or browser-authoritative checksum logic. |
 | static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; `npm run test:ci`; `npm run test:coverage`; `npm run test:coverage:assert-full` | `npm run prepush:gate` | coverage expectations remain strict |
@@ -73,7 +73,7 @@ The local `pre-push` hook always runs `npm run docpact:gate` first, then runs th
 
 If the change touches `scripts/test-runner.cjs` or protected-branch gate reproduction, run `npm run test:ci` and `npm run prepush:gate` serially locally because both commands regenerate `.umi-test`.
 
-For deployment-only workflow changes under `.github/workflows/build.yml` or the manual `.github/workflows/ci.yml` fallback, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the automatic EdgeOne Pages deploy step runs only from a `v*` release tag whose target commit is already on `main`, the manual deploy fallback is guarded to `refs/heads/main` and checks out `github.sha`, and ordinary branch pushes belong to the local pre-push gate.
+For deployment-only workflow changes under `.github/workflows/build.yml` or the manual `.github/workflows/ci.yml` fallback, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. For EdgeOne CLI dependency changes, also validate the pinned temporary install path locally without calling the live deploy command. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the automatic EdgeOne Pages deploy step runs from canonical `main` pushes by creating the matching `v*` tag from `package.json.version` and continuing release in the same workflow run, unchanged-version `main` workflow hotfix pushes skip release when the matching tag already belongs to an older `main` commit, manual `v*` tag pushes and `workflow_dispatch` recovery runs remain supported when the target commit is already on `main`, the manual deploy fallback is guarded to `refs/heads/main` and checks out `github.sha`, and ordinary non-release branch pushes belong to the local pre-push gate.
 
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 

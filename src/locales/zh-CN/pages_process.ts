@@ -705,6 +705,8 @@ export default {
   'pages.process.reviewSubmitTaskCenter.errorSummary.title': '提交审核任务失败',
   'pages.process.reviewSubmitTaskCenter.errorSummary.description': '任务在完成提交审核前停止。请检查已保存的过程数据后重试。',
   'pages.process.reviewSubmitTaskCenter.errorSummary.action': '如果重试后仍失败，请打开详情并将诊断信息提供给管理员。',
+  'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId': 'submit_worker_job_id',
+  'pages.process.reviewSubmitTaskCenter.detail.rootJobId': 'root_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId': 'review_submit_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId': 'gate_worker_job_id',
   'pages.process.reviewSubmitTaskCenter.detail.gateRunId': 'gate_run_id',

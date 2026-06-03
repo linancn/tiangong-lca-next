@@ -13,6 +13,8 @@ const mockRemoveLcaTask = jest.fn();
 const mockRemoveTidasPackageTask = jest.fn();
 const mockRemoveReviewSubmitTask = jest.fn();
 const mockCancelReviewSubmitTask = jest.fn();
+const mockRefreshLcaTasksFromWorkerJobs = jest.fn();
+const mockRefreshTidasPackageTasksFromWorkerJobs = jest.fn();
 const mockRefreshReviewSubmitTasks = jest.fn();
 const mockRetryReviewSubmitTask = jest.fn();
 const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
@@ -29,6 +31,7 @@ jest.mock('@/services/lca/taskCenter', () => ({
   __esModule: true,
   clearFinishedLcaTasks: () => mockClearFinishedLcaTasks(),
   listLcaTasks: () => mockTasks,
+  refreshLcaTasksFromWorkerJobs: (...args: any[]) => mockRefreshLcaTasksFromWorkerJobs(...args),
   removeLcaTask: (...args: any[]) => mockRemoveLcaTask(...args),
   subscribeLcaTaskCenterOpenRequests: (...args: any[]) =>
     mockSubscribeLcaTaskCenterOpenRequests(...args),
@@ -40,6 +43,8 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
   clearFinishedTidasPackageTasks: () => mockClearFinishedTidasPackageTasks(),
   downloadTidasPackageExportTask: (...args: any[]) => mockDownloadTidasPackageExportTask(...args),
   listTidasPackageTasks: () => mockPackageTasks,
+  refreshTidasPackageTasksFromWorkerJobs: (...args: any[]) =>
+    mockRefreshTidasPackageTasksFromWorkerJobs(...args),
   removeTidasPackageTask: (...args: any[]) => mockRemoveTidasPackageTask(...args),
   subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
 }));
@@ -196,6 +201,8 @@ describe('LcaTaskCenter', () => {
     mockReviewSubmitTasks = [];
     mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
     mockCancelReviewSubmitTask.mockResolvedValue(undefined);
+    mockRefreshLcaTasksFromWorkerJobs.mockResolvedValue([]);
+    mockRefreshTidasPackageTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshReviewSubmitTasks.mockResolvedValue([]);
     mockRetryReviewSubmitTask.mockResolvedValue(undefined);
   });
@@ -233,6 +240,7 @@ describe('LcaTaskCenter', () => {
         message: 'running message',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:01:00.000Z',
+        workerJobId: 'worker-lca-1',
         solveJobId: 'solve-1',
         error: 'Solve failed once',
         phaseTimeline: [
@@ -299,6 +307,9 @@ describe('LcaTaskCenter', () => {
       screen.getAllByText((_, element) => element?.textContent?.includes('build_job_id') ?? false)
         .length,
     ).toBeGreaterThan(0);
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-lca-1'),
+    ).toBeInTheDocument();
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('result_id') ?? false)
         .length,
@@ -430,7 +441,8 @@ describe('LcaTaskCenter', () => {
   it('renders service-backed review-submit tasks with blocker guidance and cancel/remove actions', async () => {
     mockReviewSubmitTasks = [
       {
-        id: 'review-running',
+        id: 'submit-worker-running',
+        submitWorkerJobId: 'submit-worker-running',
         gateWorkerJobId: 'gate-worker-running',
         reviewSubmitJobId: 'review-job-running',
         state: 'running',
@@ -446,7 +458,9 @@ describe('LcaTaskCenter', () => {
         },
       },
       {
-        id: 'review-blocked',
+        id: 'submit-worker-blocked',
+        submitWorkerJobId: 'submit-worker-blocked',
+        rootJobId: 'root-worker-blocked',
         gateWorkerJobId: 'gate-worker-blocked',
         reviewSubmitJobId: 'review-job-blocked',
         state: 'failed',
@@ -501,6 +515,14 @@ describe('LcaTaskCenter', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'dataset: process-2 @ 01.00.000'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, element) => element?.textContent === 'submit_worker_job_id: submit-worker-blocked',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'root_job_id: root-worker-blocked'),
+    ).toBeInTheDocument();
     expect(screen.getByText('same input/output flow')).toBeInTheDocument();
     expect(
       screen.getAllByText(
@@ -513,26 +535,32 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalled());
+    await waitFor(() => expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalled());
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalled());
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
-    await waitFor(() => expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('review-blocked'));
+    await waitFor(() =>
+      expect(mockRetryReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked'),
+    );
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review-submit task restarted'),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() => expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('review-running'));
+    await waitFor(() =>
+      expect(mockCancelReviewSubmitTask).toHaveBeenCalledWith('submit-worker-running'),
+    );
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review-submit task cancelled'),
     );
 
     const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
     fireEvent.click(removeButtons[1]);
-    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('review-blocked');
+    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked');
   });
 
-  it('refreshes review-submit tasks on mount, timer, open request, and manual refresh failures', async () => {
+  it('refreshes worker-backed task families on mount, timer, open request, and manual refresh failures', async () => {
     jest.useFakeTimers();
     let openRequestListener: (() => void) | undefined;
     mockSubscribeLcaTaskCenterOpenRequests.mockImplementation((listener: () => void) => {
@@ -544,20 +572,36 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
 
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(1),
+    );
 
     await act(async () => {
       jest.advanceTimersByTime(5000);
     });
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(2),
+    );
 
     act(() => {
       openRequestListener?.();
     });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(3));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(3),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
     await waitFor(() => expect(mockRefreshReviewSubmitTasks).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(mockRefreshLcaTasksFromWorkerJobs).toHaveBeenCalledTimes(4));
+    await waitFor(() =>
+      expect(mockRefreshTidasPackageTasksFromWorkerJobs).toHaveBeenCalledTimes(4),
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() =>
@@ -882,6 +926,7 @@ describe('LcaTaskCenter', () => {
         message: 'finished',
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:04.000Z',
+        workerJobId: 'worker-package-1',
         filename: 'custom.zip',
         jobId: 'job-1',
         scope: 'current_user',
@@ -975,6 +1020,46 @@ describe('LcaTaskCenter', () => {
         rootCount: 0,
       },
       {
+        id: 'pkg-import-running',
+        sequence: 5.7,
+        kind: 'tidas_package_import',
+        state: 'running',
+        phase: 'import_package',
+        message: 'importing package data',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.700Z',
+        workerJobId: 'worker-package-import-running',
+        jobId: 'import-job-1',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-import-completed',
+        sequence: 5.8,
+        kind: 'tidas_package_import',
+        state: 'completed',
+        phase: 'completed',
+        message: 'import completed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.800Z',
+        workerJobId: 'worker-package-import-completed',
+        jobId: 'import-job-2',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-import-failed',
+        sequence: 5.9,
+        kind: 'tidas_package_import',
+        state: 'failed',
+        phase: 'failed',
+        message: 'import failed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.900Z',
+        workerJobId: 'worker-package-import-failed',
+        jobId: 'import-job-3',
+        error: 'import validation failed',
+        rootCount: 0,
+      },
+      {
         id: 'pkg-failed',
         sequence: 6,
         kind: 'tidas_package_export',
@@ -1008,11 +1093,13 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByTestId('badge-count')).toHaveTextContent('7');
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('8');
     expect(screen.getAllByText('TIDAS Export').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('TIDAS Import').length).toBeGreaterThan(0);
     expect(screen.getByText('Queued')).toBeInTheDocument();
     expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
     expect(screen.getByText('Collecting related data')).toBeInTheDocument();
+    expect(screen.getByText('Importing data')).toBeInTheDocument();
     expect(screen.getByText('Building ZIP')).toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
@@ -1022,7 +1109,11 @@ describe('LcaTaskCenter', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
     expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
+    expect(screen.getByText('Import package completed')).toBeInTheDocument();
+    expect(screen.getByText('Import package failed')).toBeInTheDocument();
     expect(screen.getByText('queueing')).toBeInTheDocument();
+    expect(screen.getByText('importing package data')).toBeInTheDocument();
+    expect(screen.getByText('import validation failed')).toBeInTheDocument();
     expect(screen.getByText('package failed')).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -1053,8 +1144,12 @@ describe('LcaTaskCenter', () => {
     expect(
       screen.getByText((_, element) => element?.textContent === 'job_id: job-1'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-package-1'),
+    ).toBeInTheDocument();
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
+    expect(downloadButtons).toHaveLength(2);
     fireEvent.click(downloadButtons[0]);
     await waitFor(() => {
       expect(mockDownloadTidasPackageExportTask).toHaveBeenNthCalledWith(

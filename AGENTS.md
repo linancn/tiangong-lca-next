@@ -26,8 +26,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-06-01
-lastReviewedCommit: 2871eed6e1e062df86b4f4c9918a715f0dec3ca9
+lastReviewedAt: 2026-06-02
+lastReviewedCommit: cda6505285c9818324e6f7bd20489fc2fd977c27
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -151,8 +151,9 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
-- `main` branch pushes do not deploy or run standalone remote tests
-- `v*` tags whose target commit is already on `main` run the release gate, deploy the web app, and build draft Electron releases
+- canonical `main` branch pushes read `package.json.version`, create the matching `v*` tag when missing, run the release gate, deploy the web app, and build draft Electron releases in the same workflow run
+- canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
+- manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases
 
 Do not infer daily workflow from GitHub default-branch UI alone.
 
