@@ -2879,12 +2879,20 @@
 }
 
 .flowTopologyCanvas::before {
-  background:
-    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.18), transparent),
-    linear-gradient(0deg, transparent 0 48%, rgba(255, 212, 95, 0.08) 50%, transparent 52%);
-  opacity: 0.55;
-  transform: translateX(-64%);
-  animation: flowTopologyScan 5.6s ease-in-out infinite;
+  inset: -36%;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    transparent 248deg,
+    rgba(32, 231, 255, 0.02) 262deg,
+    rgba(32, 231, 255, 0.22) 278deg,
+    rgba(255, 212, 95, 0.08) 286deg,
+    transparent 304deg,
+    transparent 360deg
+  );
+  opacity: 0.7;
+  transform-origin: center;
+  animation: flowTopologyRadarSweep 8s linear infinite;
 }
 
 .flowTopologyCanvas::after {
@@ -2900,20 +2908,22 @@
       transparent 0 36%,
       rgba(255, 212, 95, 0.1) 36.3% 36.7%,
       transparent 37.1%
-    );
-  opacity: 0.72;
+    ),
+    linear-gradient(90deg, transparent 0 18%, rgba(32, 231, 255, 0.08) 50%, transparent 82%);
+  opacity: 0.78;
 }
 
 .flowTopologyCanvasSignal {
   position: absolute;
-  inset: 28px;
+  inset: 9% 12%;
   z-index: 0;
   pointer-events: none;
   border: 1px solid rgba(32, 231, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 50%;
   box-shadow:
-    inset 0 0 34px rgba(32, 231, 255, 0.08),
-    0 0 22px rgba(32, 231, 255, 0.06);
+    inset 0 0 54px rgba(32, 231, 255, 0.08),
+    0 0 34px rgba(32, 231, 255, 0.08);
+  transform: scaleY(0.66);
 }
 
 .flowTopologyEdges {
@@ -2926,29 +2936,78 @@
   pointer-events: none;
 }
 
-.flowTopologyEdge path {
-  fill: none;
-  stroke-width: 0.46;
-  stroke-dasharray: 2.8 1.4;
-  opacity: 0.78;
-  filter: drop-shadow(0 0 6px currentColor);
+.flowTopologyMidline {
+  stroke: rgba(32, 231, 255, 0.12);
+  stroke-dasharray: 0.8 2.2;
+  stroke-width: 0.22;
   vector-effect: non-scaling-stroke;
-  animation: flowTopologyLinePulse 2.9s ease-in-out infinite;
 }
 
-.flowTopologyEdgeProvider path {
+.flowTopologyOrbitOuter,
+.flowTopologyOrbitInner {
+  fill: none;
+  stroke-dasharray: 5 3;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  vector-effect: non-scaling-stroke;
+  animation: flowTopologyOrbitSpin 18s linear infinite;
+}
+
+.flowTopologyOrbitOuter {
+  stroke: rgba(32, 231, 255, 0.24);
+  stroke-width: 0.28;
+}
+
+.flowTopologyOrbitInner {
+  stroke: rgba(255, 212, 95, 0.18);
+  stroke-width: 0.34;
+  animation-duration: 12s;
+  animation-direction: reverse;
+}
+
+.flowTopologyEdgeHalo,
+.flowTopologyEdgeBeam {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.flowTopologyEdgeHalo {
+  stroke-width: 1.25;
+  opacity: 0.16;
+  filter: blur(0.35px) drop-shadow(0 0 9px rgba(32, 231, 255, 0.28));
+}
+
+.flowTopologyEdgeBeam {
+  stroke-width: 0.52;
+  stroke-dasharray: 7 11;
+  opacity: 0.88;
+  filter: drop-shadow(0 0 7px rgba(32, 231, 255, 0.34));
+  animation: flowTopologyLinePulse 3.2s linear infinite;
+  animation-delay: var(--edge-delay);
+}
+
+.flowTopologyEdgeProvider .flowTopologyEdgeHalo,
+.flowTopologyEdgeProvider .flowTopologyEdgeBeam {
   stroke: url('#flowTopologyProviderLine');
 }
 
-.flowTopologyEdgeConsumer path {
+.flowTopologyEdgeConsumer .flowTopologyEdgeHalo,
+.flowTopologyEdgeConsumer .flowTopologyEdgeBeam {
   stroke: url('#flowTopologyConsumerLine');
 }
 
-.flowTopologyEdgeActive path {
-  stroke-width: 0.9;
-  stroke-dasharray: 4 0.8;
+.flowTopologyEdgeActive .flowTopologyEdgeHalo {
+  stroke-width: 1.8;
+  opacity: 0.34;
+}
+
+.flowTopologyEdgeActive .flowTopologyEdgeBeam {
+  stroke-width: 0.82;
+  stroke-dasharray: 8 4;
   opacity: 1;
-  filter: drop-shadow(0 0 12px currentColor);
+  filter: drop-shadow(0 0 13px rgba(32, 231, 255, 0.48));
 }
 
 .flowTopologyCoreNode {
@@ -2958,20 +3017,23 @@
   z-index: 3;
   display: grid;
   place-items: center;
-  width: 210px;
-  min-height: 132px;
+  width: 204px;
+  min-height: 148px;
   padding: 18px;
   overflow: hidden;
   color: var(--ink);
   text-align: center;
   background:
-    linear-gradient(180deg, rgba(15, 64, 111, 0.94), rgba(4, 18, 36, 0.92)),
-    linear-gradient(135deg, rgba(32, 231, 255, 0.18), rgba(255, 212, 95, 0.08));
+    radial-gradient(circle at 50% 34%, rgba(182, 251, 255, 0.24), transparent 28%),
+    linear-gradient(180deg, rgba(15, 64, 111, 0.96), rgba(4, 18, 36, 0.94)),
+    linear-gradient(135deg, rgba(32, 231, 255, 0.24), rgba(255, 212, 95, 0.1));
   border: 1px solid rgba(32, 231, 255, 0.64);
-  border-radius: 8px;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 94% 24%, 94% 76%, 50% 100%, 6% 76%, 6% 24%);
   box-shadow:
-    0 0 54px rgba(32, 231, 255, 0.3),
-    0 0 110px rgba(32, 231, 255, 0.12),
+    0 0 62px rgba(32, 231, 255, 0.34),
+    0 0 132px rgba(32, 231, 255, 0.18),
+    0 0 42px rgba(255, 212, 95, 0.1),
     inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   transform: translate(-50%, -50%);
 }
@@ -2989,11 +3051,11 @@
 
 .flowTopologyCoreNode::after {
   position: absolute;
-  inset: 9px;
+  inset: 12px;
   pointer-events: none;
   content: '';
   border: 1px solid rgba(32, 231, 255, 0.18);
-  border-radius: 6px;
+  clip-path: polygon(50% 0, 94% 24%, 94% 76%, 50% 100%, 6% 76%, 6% 24%);
 }
 
 .flowTopologyCoreNode span,
@@ -3022,17 +3084,18 @@
   left: var(--node-x);
   z-index: 4;
   display: grid;
-  gap: 5px;
-  width: 174px;
-  min-height: 82px;
-  padding: 12px 14px;
+  gap: 4px;
+  width: 164px;
+  min-height: 70px;
+  padding: 10px 16px;
   overflow: hidden;
   color: var(--ink);
   text-align: left;
   cursor: pointer;
   background:
+    radial-gradient(circle at 86% 50%, rgba(32, 231, 255, 0.13), transparent 26%),
     linear-gradient(180deg, rgba(11, 38, 72, 0.94), rgba(4, 18, 36, 0.9)),
-    linear-gradient(90deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.06));
+    linear-gradient(90deg, rgba(61, 140, 255, 0.16), rgba(32, 231, 255, 0.06));
   border: 1px solid rgba(116, 196, 255, 0.38);
   border-radius: 8px;
   clip-path: polygon(
@@ -3068,6 +3131,33 @@
     transform 240ms ease;
 }
 
+.flowTopologyProcessNode::after {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(180deg, transparent, rgba(32, 231, 255, 0.85), transparent);
+  box-shadow: 0 0 12px rgba(32, 231, 255, 0.38);
+}
+
+.flowTopologyProcessAnchor {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  background: var(--cyan);
+  border: 1px solid rgba(182, 251, 255, 0.92);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px rgba(32, 231, 255, 0.1),
+    0 0 16px rgba(32, 231, 255, 0.7);
+  transform: translateY(-50%);
+}
+
 .flowTopologyProcessNode span {
   position: relative;
   z-index: 1;
@@ -3100,11 +3190,40 @@
 }
 
 .flowTopologyNodeProvider {
+  padding-right: 24px;
   border-color: rgba(32, 231, 255, 0.48);
 }
 
 .flowTopologyNodeConsumer {
+  padding-left: 24px;
+  background:
+    radial-gradient(circle at 14% 50%, rgba(255, 212, 95, 0.14), transparent 26%),
+    linear-gradient(180deg, rgba(11, 38, 72, 0.94), rgba(4, 18, 36, 0.9)),
+    linear-gradient(90deg, rgba(255, 212, 95, 0.12), rgba(61, 140, 255, 0.08));
   border-color: rgba(255, 212, 95, 0.44);
+}
+
+.flowTopologyNodeProvider::after {
+  right: 0;
+}
+
+.flowTopologyNodeConsumer::after {
+  left: 0;
+  background: linear-gradient(180deg, transparent, rgba(255, 212, 95, 0.86), transparent);
+  box-shadow: 0 0 12px rgba(255, 212, 95, 0.34);
+}
+
+.flowTopologyNodeProvider .flowTopologyProcessAnchor {
+  right: 10px;
+}
+
+.flowTopologyNodeConsumer .flowTopologyProcessAnchor {
+  left: 10px;
+  background: var(--gold);
+  border-color: rgba(255, 241, 168, 0.9);
+  box-shadow:
+    0 0 0 4px rgba(255, 212, 95, 0.1),
+    0 0 16px rgba(255, 212, 95, 0.62);
 }
 
 .flowTopologyNodeBoth {
@@ -3307,13 +3426,23 @@
   }
 }
 
-@keyframes flowTopologyScan {
-  0%,
-  100% {
-    transform: translateX(-64%);
+@keyframes flowTopologyRadarSweep {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: translateX(64%);
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flowTopologyOrbitSpin {
+  from {
+    stroke-dashoffset: 0;
+    transform: rotate(0deg);
+  }
+  to {
+    stroke-dashoffset: -32;
+    transform: rotate(360deg);
   }
 }
 

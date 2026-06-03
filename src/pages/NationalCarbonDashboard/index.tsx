@@ -432,23 +432,30 @@ function getFlowTopologyLayout(snapshot: FlowTopologySnapshot): FlowTopologyLayo
     groups[getFlowTopologyNodeRelation(snapshot, node.id)].push(node);
   });
 
-  const placeColumn = (
+  const placeOrbit = (
     nodes: FlowTopologyNode[],
     relation: FlowTopologyRelation,
-    x: number,
   ): FlowTopologyLayoutItem[] => {
-    const step = nodes.length > 1 ? 62 / (nodes.length - 1) : 0;
-    const start = nodes.length > 1 ? 19 : 50;
-    return nodes.map((node, index) => ({
-      node,
-      relation,
-      x,
-      y: start + index * step,
-    }));
+    const startAngle = relation === 'provider' ? 222 : -42;
+    const endAngle = relation === 'provider' ? 138 : 42;
+    const radiusX = 35;
+    const radiusY = 35;
+
+    return nodes.map((node, index) => {
+      const progress = nodes.length > 1 ? index / (nodes.length - 1) : 0.5;
+      const radians = ((startAngle + (endAngle - startAngle) * progress) * Math.PI) / 180;
+
+      return {
+        node,
+        relation,
+        x: 50 + Math.cos(radians) * radiusX,
+        y: 50 + Math.sin(radians) * radiusY,
+      };
+    });
   };
 
-  const providerNodes = placeColumn(groups.provider, 'provider', 24);
-  const consumerNodes = placeColumn(groups.consumer, 'consumer', 76);
+  const providerNodes = placeOrbit(groups.provider, 'provider');
+  const consumerNodes = placeOrbit(groups.consumer, 'consumer');
   const bothNodes = groups.both.map((node, index) => ({
     node,
     relation: 'both' as const,
@@ -2399,19 +2406,29 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
           <svg aria-hidden='true' className={styles.flowTopologyEdges} viewBox='0 0 100 100'>
             <defs>
               <linearGradient id='flowTopologyProviderLine' x1='0' x2='1' y1='0' y2='0'>
-                <stop offset='0%' stopColor='#3d8cff' stopOpacity='0.16' />
-                <stop offset='100%' stopColor='#22e8ff' stopOpacity='0.94' />
+                <stop offset='0%' stopColor='#3d8cff' stopOpacity='0.08' />
+                <stop offset='45%' stopColor='#22e8ff' stopOpacity='0.98' />
+                <stop offset='100%' stopColor='#b6fbff' stopOpacity='0.42' />
               </linearGradient>
               <linearGradient id='flowTopologyConsumerLine' x1='0' x2='1' y1='0' y2='0'>
-                <stop offset='0%' stopColor='#ffd45f' stopOpacity='0.9' />
-                <stop offset='100%' stopColor='#ffb342' stopOpacity='0.18' />
+                <stop offset='0%' stopColor='#fff1a8' stopOpacity='0.42' />
+                <stop offset='55%' stopColor='#ffd45f' stopOpacity='0.98' />
+                <stop offset='100%' stopColor='#ff9d36' stopOpacity='0.08' />
               </linearGradient>
             </defs>
-            {topology.edges.map((edge) => {
+            <line className={styles.flowTopologyMidline} x1='10' x2='90' y1='50' y2='50' />
+            <ellipse className={styles.flowTopologyOrbitOuter} cx='50' cy='50' rx='38' ry='36' />
+            <ellipse className={styles.flowTopologyOrbitInner} cx='50' cy='50' rx='22' ry='20' />
+            {topology.edges.map((edge, index) => {
               const source = getEndpoint(edge.source);
               const target = getEndpoint(edge.target);
               const isHighlighted =
                 hoveredProcessId === edge.source || hoveredProcessId === edge.target;
+              const controlX =
+                edge.relation === 'provider'
+                  ? Math.max(Math.min((source.x + target.x) / 2, 43), 34)
+                  : Math.min(Math.max((source.x + target.x) / 2, 57), 66);
+              const path = `M ${source.x} ${source.y} C ${controlX} ${source.y}, ${controlX} ${target.y}, ${target.x} ${target.y}`;
               return (
                 <g
                   className={[
@@ -2424,12 +2441,10 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
                     .filter(Boolean)
                     .join(' ')}
                   key={edge.id}
+                  style={{ '--edge-delay': `${index * 0.12}s` } as CSSProperties}
                 >
-                  <path
-                    d={`M ${source.x} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${
-                      (source.x + target.x) / 2
-                    } ${target.y}, ${target.x} ${target.y}`}
-                  />
+                  <path className={styles.flowTopologyEdgeHalo} d={path} />
+                  <path className={styles.flowTopologyEdgeBeam} d={path} />
                 </g>
               );
             })}
@@ -2458,6 +2473,7 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
               style={{ '--node-x': `${item.x}%`, '--node-y': `${item.y}%` } as CSSProperties}
               type='button'
             >
+              <i aria-hidden='true' className={styles.flowTopologyProcessAnchor} />
               <span>{item.relation}</span>
               <strong>{item.node.name}</strong>
               <em>{item.node.location ?? '-'}</em>
