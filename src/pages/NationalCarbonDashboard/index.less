@@ -2516,6 +2516,578 @@
   box-shadow: 0 0 14px currentColor;
 }
 
+.flowTopologyGrid {
+  position: absolute;
+  top: 11.4%;
+  right: 1.5%;
+  bottom: 3.8%;
+  left: 1.5%;
+  display: grid;
+  grid-template-columns: 25.5% 1fr;
+  gap: 1.4%;
+}
+
+.flowTopologySearchPanel,
+.flowTopologyWorkspace,
+.flowTopologyGraphShell,
+.flowTopologyInspector {
+  position: relative;
+  min-height: 0;
+  background:
+    linear-gradient(180deg, rgba(12, 38, 74, 0.78), rgba(4, 18, 36, 0.68)),
+    linear-gradient(135deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.06));
+  border: 1px solid rgba(116, 196, 255, 0.34);
+  border-radius: 8px;
+  box-shadow:
+    0 24px 58px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.flowTopologySearchPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px 28px 24px;
+  overflow: hidden;
+}
+
+.flowTopologyPanelHeader {
+  display: grid;
+  gap: 10px;
+}
+
+.flowTopologyPanelHeader span,
+.flowTopologySearchMeta span,
+.flowTopologyStatusBar span,
+.flowTopologyGraphHeader span,
+.flowTopologyInspector span {
+  color: var(--muted);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.flowTopologyPanelHeader strong {
+  color: var(--ink);
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flowTopologyPanelHeader p,
+.flowTopologyPlaceholder p,
+.flowTopologyInspector p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.flowTopologySearchForm {
+  display: grid;
+  grid-template-columns: 1fr 92px;
+  gap: 10px;
+}
+
+.flowTopologySearchForm input,
+.flowTopologySearchForm button {
+  height: 52px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 900;
+  background: rgba(4, 18, 36, 0.72);
+  border: 1px solid rgba(116, 196, 255, 0.34);
+  border-radius: 8px;
+  outline: none;
+}
+
+.flowTopologySearchForm input {
+  min-width: 0;
+  padding: 0 16px;
+}
+
+.flowTopologySearchForm input::placeholder {
+  color: rgba(155, 184, 216, 0.72);
+}
+
+.flowTopologySearchForm input:focus {
+  border-color: rgba(32, 231, 255, 0.72);
+  box-shadow: 0 0 0 3px rgba(32, 231, 255, 0.14);
+}
+
+.flowTopologySearchForm button {
+  cursor: pointer;
+  background:
+    linear-gradient(135deg, rgba(61, 140, 255, 0.86), rgba(18, 184, 218, 0.82)),
+    rgba(4, 18, 36, 0.72);
+  box-shadow: 0 16px 32px rgba(32, 231, 255, 0.16);
+}
+
+.flowTopologySearchForm button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.flowTopologySearchMeta,
+.flowTopologyStatusBar,
+.flowTopologyStats {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 46px;
+  padding: 8px 12px;
+  color: var(--ink);
+  background: rgba(4, 18, 36, 0.48);
+  border: 1px solid rgba(116, 196, 255, 0.22);
+  border-radius: 8px;
+}
+
+.flowTopologySearchMeta strong,
+.flowTopologyStats strong {
+  color: var(--cyan);
+  font-family:
+    DIN Alternate,
+    'Barlow Condensed',
+    'Arial Narrow',
+    sans-serif;
+  font-size: 34px;
+  line-height: 0.95;
+}
+
+.flowTopologySearchMeta em,
+.flowTopologyStatusBar em {
+  color: var(--gold);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.flowTopologyResultList {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.flowTopologyResult {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  min-height: 116px;
+  padding: 15px 16px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  background:
+    linear-gradient(90deg, rgba(61, 140, 255, 0.14), rgba(32, 231, 255, 0.05)),
+    rgba(4, 18, 36, 0.58);
+  border: 1px solid rgba(116, 196, 255, 0.24);
+  border-radius: 8px;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.flowTopologyResult:hover,
+.flowTopologyResult:focus-visible,
+.flowTopologyResultActive {
+  border-color: rgba(32, 231, 255, 0.72);
+  box-shadow:
+    0 16px 32px rgba(32, 231, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.flowTopologyResult span {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.flowTopologyResult strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.12;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyResult small,
+.flowTopologyResult em {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyEmpty {
+  display: grid;
+  place-items: center;
+  min-height: 140px;
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 900;
+  border: 1px dashed rgba(116, 196, 255, 0.32);
+  border-radius: 8px;
+}
+
+.flowTopologyWorkspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.flowTopologyStatusBar {
+  grid-template-columns: minmax(220px, auto) 1fr auto;
+  min-height: 58px;
+  padding: 10px 16px;
+}
+
+.flowTopologyStatusBar strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 19px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyGraphShell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 18px 18px 20px;
+  overflow: hidden;
+}
+
+.flowTopologyGraphHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  min-height: 72px;
+}
+
+.flowTopologyGraphHeader div:first-child {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.flowTopologyGraphHeader strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyStats {
+  display: flex;
+  gap: 14px;
+  min-height: 46px;
+}
+
+.flowTopologyStats span {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.flowTopologyStats strong {
+  color: var(--cyan);
+  font-size: 27px;
+}
+
+.flowTopologyGraphBody {
+  display: grid;
+  grid-template-columns: 1fr 29%;
+  gap: 18px;
+  min-height: 0;
+  flex: 1;
+}
+
+.flowTopologyCanvas {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.07) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 50%, rgba(32, 231, 255, 0.14), transparent 34%),
+    rgba(2, 12, 26, 0.56);
+  background-size:
+    42px 42px,
+    42px 42px,
+    100% 100%,
+    100% 100%;
+  border: 1px solid rgba(116, 196, 255, 0.24);
+  border-radius: 8px;
+}
+
+.flowTopologyEdges {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.flowTopologyEdge path {
+  fill: none;
+  stroke-width: 0.34;
+  opacity: 0.72;
+  filter: drop-shadow(0 0 4px currentColor);
+  vector-effect: non-scaling-stroke;
+}
+
+.flowTopologyEdgeProvider path {
+  stroke: url('#flowTopologyProviderLine');
+}
+
+.flowTopologyEdgeConsumer path {
+  stroke: url('#flowTopologyConsumerLine');
+}
+
+.flowTopologyEdgeActive path {
+  stroke-width: 0.62;
+  opacity: 1;
+}
+
+.flowTopologyCoreNode {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 210px;
+  min-height: 132px;
+  padding: 18px;
+  color: var(--ink);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(32, 231, 255, 0.28), transparent 58%),
+    linear-gradient(180deg, rgba(13, 57, 103, 0.94), rgba(4, 18, 36, 0.92));
+  border: 1px solid rgba(32, 231, 255, 0.64);
+  border-radius: 8px;
+  box-shadow:
+    0 0 42px rgba(32, 231, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transform: translate(-50%, -50%);
+}
+
+.flowTopologyCoreNode span,
+.flowTopologyCoreNode em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.flowTopologyCoreNode strong {
+  margin: 9px 0;
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.06;
+}
+
+.flowTopologyProcessNode {
+  position: absolute;
+  top: var(--node-y);
+  left: var(--node-x);
+  z-index: 4;
+  display: grid;
+  gap: 5px;
+  width: 174px;
+  min-height: 82px;
+  padding: 12px 14px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(11, 38, 72, 0.94), rgba(4, 18, 36, 0.9)),
+    linear-gradient(90deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.06));
+  border: 1px solid rgba(116, 196, 255, 0.38);
+  border-radius: 8px;
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.26),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transform: translate(-50%, -50%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.flowTopologyProcessNode span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.flowTopologyProcessNode strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyProcessNode em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.flowTopologyNodeProvider {
+  border-color: rgba(32, 231, 255, 0.48);
+}
+
+.flowTopologyNodeConsumer {
+  border-color: rgba(255, 212, 95, 0.44);
+}
+
+.flowTopologyNodeBoth {
+  border-color: rgba(255, 212, 95, 0.5);
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.26),
+    0 0 24px rgba(32, 231, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.flowTopologyNodeActive,
+.flowTopologyProcessNode:hover,
+.flowTopologyProcessNode:focus-visible {
+  border-color: rgba(32, 231, 255, 0.82);
+  box-shadow:
+    0 20px 38px rgba(0, 0, 0, 0.28),
+    0 0 30px rgba(32, 231, 255, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  transform: translate(-50%, -52%);
+}
+
+.flowTopologyInspector {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.flowTopologyInspector strong {
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.flowTopologyInspectorGrid {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 9px 12px;
+  min-height: 0;
+  margin-top: 6px;
+  overflow: auto;
+}
+
+.flowTopologyInspectorGrid span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.flowTopologyInspectorGrid b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyPlaceholder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  flex: 1;
+  gap: 13px;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: center;
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.07) 1px, transparent 1px), rgba(2, 12, 26, 0.48);
+  background-size:
+    48px 48px,
+    48px 48px,
+    100% 100%;
+  border: 1px solid rgba(116, 196, 255, 0.22);
+  border-radius: 8px;
+}
+
+.flowTopologyPlaceholderSignal {
+  width: 440px;
+  height: 86px;
+  background:
+    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.22), transparent),
+    repeating-linear-gradient(
+      90deg,
+      rgba(116, 196, 255, 0.28) 0,
+      rgba(116, 196, 255, 0.28) 2px,
+      transparent 2px,
+      transparent 24px
+    );
+  border-top: 1px solid rgba(32, 231, 255, 0.42);
+  border-bottom: 1px solid rgba(32, 231, 255, 0.22);
+  opacity: 0.84;
+}
+
+.flowTopologyPlaceholder span {
+  color: var(--gold);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.flowTopologyPlaceholder strong {
+  color: var(--ink);
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 @media (max-width: 900px) {
   .screenNavigator {
     transform: scale(0.78);

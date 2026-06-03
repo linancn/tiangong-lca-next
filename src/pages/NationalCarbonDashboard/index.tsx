@@ -1,3 +1,5 @@
+import { flow_hybrid_search } from '@/services/flows/api';
+import type { FlowTable } from '@/services/flows/data';
 import { geoMercator, geoPath } from 'd3-geo';
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { gsap } from 'gsap';
@@ -8,9 +10,25 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type FormEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
+import {
+  filterTopologyFlowCandidates,
+  getFlowTopologyCacheBaseUrl,
+  getFlowTopologyLatestPointerPath,
+  getFlowTopologyObjectPath,
+  isTopologyEligibleFlow,
+  parseFlowTopologySnapshot,
+  resolveFlowTopologyUrl,
+  topologyFlowTypeFilter,
+  type FlowTopologyEdge,
+  type FlowTopologyLatestPointer,
+  type FlowTopologyNode,
+  type FlowTopologySnapshot,
+} from './data/flowTopology';
 import rawSnapshot from './data/mockDashboardSnapshot.json';
+import rawFlowTopology from './data/mockFlowTopology.json';
 import {
   dashboardStatusKeys,
   dashboardStatusLabels,
@@ -25,7 +43,7 @@ import {
 } from './data/schema';
 import styles from './index.less';
 
-type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity';
+type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity' | 'flow_topology';
 type StatusFilterKey = DashboardStatusKey | 'all';
 type ProvinceTooltipState = {
   anchorX: number;
@@ -54,12 +72,14 @@ type StatusTone = {
 type ConnectivitySnapshot = DashboardSnapshot['connectivity'];
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
+const mockFlowTopologySnapshot = parseFlowTopologySnapshot(rawFlowTopology);
 
 const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
   { key: 'overview', label: '总览', shortLabel: '01' },
   { key: 'map_status', label: '态势', shortLabel: '02' },
   { key: 'outcome_metrics', label: '成果', shortLabel: '03' },
   { key: 'connectivity', label: '可计算', shortLabel: '04' },
+  { key: 'flow_topology', label: '流图谱', shortLabel: '05' },
 ];
 
 const statusFilterKeys: StatusFilterKey[] = ['all', ...dashboardStatusKeys];
@@ -332,6 +352,194 @@ function getNarrativeMetric(snapshot: DashboardSnapshot, stageKey: string) {
     unit: '个',
     value: formatNumber(snapshot.summary.sampleDatasets),
   };
+}
+
+type FlowTopologySearchState = 'idle' | 'loading' | 'ready' | 'error';
+type FlowTopologyLoadState = 'idle' | 'loading' | 'ready' | 'missing' | 'error';
+type FlowTopologyRelation = 'provider' | 'consumer' | 'both';
+type FlowTopologyLayoutItem = {
+  node: FlowTopologyNode;
+  relation: FlowTopologyRelation;
+  x: number;
+  y: number;
+};
+type FlowTopologySelectedProcess = {
+  edges: FlowTopologyEdge[];
+  layout: FlowTopologyLayoutItem;
+};
+
+class FlowTopologyCacheMissError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FlowTopologyCacheMissError';
+  }
+}
+
+function createMockFlowTable(): FlowTable {
+  return {
+    CASNumber: '-',
+    classification: '钢铁 / 热轧',
+    flowType: mockFlowTopologySnapshot.flow.flowType,
+    id: mockFlowTopologySnapshot.flow.id,
+    key: `${mockFlowTopologySnapshot.flow.id}:${mockFlowTopologySnapshot.flow.version}`,
+    locationOfSupply: 'CN',
+    modifiedAt: new Date(mockFlowTopologySnapshot.dataAsOf),
+    name: mockFlowTopologySnapshot.flow.name,
+    refFlowPropertyId: '-',
+    synonyms: '低碳钢卷;热轧卷板',
+    teamId: '',
+    version: mockFlowTopologySnapshot.flow.version,
+  };
+}
+
+function getFlowTopologyFlowNodeId(snapshot: FlowTopologySnapshot): string {
+  return `flow:${snapshot.flow.id}@${snapshot.flow.version}`;
+}
+
+function getFlowTopologyProcessNodes(snapshot: FlowTopologySnapshot): FlowTopologyNode[] {
+  return snapshot.nodes.filter((node) => node.type === 'process');
+}
+
+function getFlowTopologyNodeRelation(
+  snapshot: FlowTopologySnapshot,
+  nodeId: string,
+): FlowTopologyRelation {
+  const isProvider = snapshot.edges.some(
+    (edge) => edge.relation === 'provider' && edge.source === nodeId,
+  );
+  const isConsumer = snapshot.edges.some(
+    (edge) => edge.relation === 'consumer' && edge.target === nodeId,
+  );
+
+  if (isProvider && isConsumer) {
+    return 'both';
+  }
+  if (isProvider) {
+    return 'provider';
+  }
+  return 'consumer';
+}
+
+function getFlowTopologyLayout(snapshot: FlowTopologySnapshot): FlowTopologyLayoutItem[] {
+  const processNodes = getFlowTopologyProcessNodes(snapshot);
+  const groups: Record<FlowTopologyRelation, FlowTopologyNode[]> = {
+    both: [],
+    consumer: [],
+    provider: [],
+  };
+
+  processNodes.forEach((node) => {
+    groups[getFlowTopologyNodeRelation(snapshot, node.id)].push(node);
+  });
+
+  const placeColumn = (
+    nodes: FlowTopologyNode[],
+    relation: FlowTopologyRelation,
+    x: number,
+  ): FlowTopologyLayoutItem[] => {
+    const step = nodes.length > 1 ? 62 / (nodes.length - 1) : 0;
+    const start = nodes.length > 1 ? 19 : 50;
+    return nodes.map((node, index) => ({
+      node,
+      relation,
+      x,
+      y: start + index * step,
+    }));
+  };
+
+  const providerNodes = placeColumn(groups.provider, 'provider', 20);
+  const consumerNodes = placeColumn(groups.consumer, 'consumer', 80);
+  const bothNodes = groups.both.map((node, index) => ({
+    node,
+    relation: 'both' as const,
+    x: 50,
+    y: groups.both.length > 1 ? 22 + index * 56 : 20,
+  }));
+
+  return [...providerNodes, ...bothNodes, ...consumerNodes];
+}
+
+function getFlowTopologyProcessEdges(
+  snapshot: FlowTopologySnapshot,
+  nodeId: string,
+): FlowTopologyEdge[] {
+  return snapshot.edges.filter((edge) => edge.source === nodeId || edge.target === nodeId);
+}
+
+async function fetchJsonOrCacheMiss<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    cache: 'no-cache',
+  });
+
+  if (response.status === 404) {
+    throw new FlowTopologyCacheMissError(`Topology cache was not found: ${url}`);
+  }
+
+  if (!response.ok) {
+    throw new Error(`Topology cache request failed: ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+async function loadCachedFlowTopology(flow: FlowTable): Promise<FlowTopologySnapshot> {
+  if (flow.id === mockFlowTopologySnapshot.flow.id) {
+    return mockFlowTopologySnapshot;
+  }
+
+  const baseUrl = getFlowTopologyCacheBaseUrl();
+  const manifest = await fetchJsonOrCacheMiss<{ activeBuildId?: string; buildId?: string }>(
+    `${baseUrl}/manifest.json`,
+  );
+  const buildId = manifest.activeBuildId ?? manifest.buildId;
+
+  if (!buildId) {
+    throw new FlowTopologyCacheMissError('Topology manifest does not include an active build id.');
+  }
+
+  const latestPointerPath = getFlowTopologyLatestPointerPath(buildId, flow.id);
+  const latestPointer = await fetchJsonOrCacheMiss<FlowTopologyLatestPointer>(
+    resolveFlowTopologyUrl(baseUrl, latestPointerPath),
+  );
+  const topologyUrl =
+    latestPointer.topologyUrl ??
+    (latestPointer.topologyPath
+      ? resolveFlowTopologyUrl(baseUrl, latestPointer.topologyPath)
+      : resolveFlowTopologyUrl(baseUrl, getFlowTopologyObjectPath(buildId, flow.id, flow.version)));
+
+  return parseFlowTopologySnapshot(await fetchJsonOrCacheMiss(topologyUrl));
+}
+
+async function searchSmartRecommendedFlows(queryText: string): Promise<{
+  data: FlowTable[];
+  fallback: boolean;
+}> {
+  const normalizedQuery = queryText.trim();
+  const mockFlow = createMockFlowTable();
+
+  if (!normalizedQuery) {
+    return { data: [mockFlow], fallback: true };
+  }
+
+  try {
+    const result = await Promise.race([
+      flow_hybrid_search({ current: 1, pageSize: 8 }, 'zh', 'tg', normalizedQuery, {
+        flowType: topologyFlowTypeFilter,
+      }),
+      new Promise<{ data?: FlowTable[] }>((resolve) => {
+        window.setTimeout(() => resolve({ data: [] }), 2500);
+      }),
+    ]);
+    const recommendedFlows = filterTopologyFlowCandidates(result.data ?? []);
+
+    if (recommendedFlows.length > 0) {
+      return { data: recommendedFlows, fallback: false };
+    }
+  } catch (error) {
+    console.warn('Failed to load smart flow recommendations.', error);
+  }
+
+  return { data: [mockFlow], fallback: true };
 }
 
 type StageLayout = {
@@ -2031,6 +2239,356 @@ function ConnectivityScreen({
   );
 }
 
+function FlowTopologySearchResult({
+  flow,
+  isSelected,
+  onSelect,
+}: {
+  flow: FlowTable;
+  isSelected: boolean;
+  onSelect: (flow: FlowTable) => void;
+}) {
+  return (
+    <button
+      className={`${styles.flowTopologyResult} ${isSelected ? styles.flowTopologyResultActive : ''}`}
+      disabled={!isTopologyEligibleFlow(flow)}
+      onClick={() => onSelect(flow)}
+      type='button'
+    >
+      <span>{flow.flowType}</span>
+      <strong>{flow.name}</strong>
+      <small>{flow.classification || '未分类'}</small>
+      <em>
+        {flow.id} / {flow.version}
+      </em>
+    </button>
+  );
+}
+
+function FlowTopologyProcessTooltip({
+  selectedProcess,
+}: {
+  selectedProcess?: FlowTopologySelectedProcess;
+}) {
+  if (!selectedProcess) {
+    return (
+      <aside className={styles.flowTopologyInspector}>
+        <span>过程信息</span>
+        <strong>未选中过程</strong>
+        <p>Exchange detail standby</p>
+      </aside>
+    );
+  }
+
+  const { edges, layout } = selectedProcess;
+  const providerCount = edges.filter((edge) => edge.relation === 'provider').length;
+  const consumerCount = edges.filter((edge) => edge.relation === 'consumer').length;
+  const primaryEdge = edges[0];
+
+  return (
+    <aside className={styles.flowTopologyInspector}>
+      <span>
+        {layout.relation === 'provider'
+          ? 'Provider Process'
+          : layout.relation === 'consumer'
+            ? 'Consumer Process'
+            : 'Provider / Consumer'}
+      </span>
+      <strong>{layout.node.name}</strong>
+      <p>{layout.node.classification ?? '未分类'}</p>
+      <div className={styles.flowTopologyInspectorGrid}>
+        <span>UUID</span>
+        <b>{layout.node.id.replace(/^process:/, '').split('@')[0]}</b>
+        <span>版本</span>
+        <b>{layout.node.version}</b>
+        <span>地区</span>
+        <b>{layout.node.location ?? '-'}</b>
+        <span>参考年</span>
+        <b>{layout.node.referenceYear ?? '-'}</b>
+        <span>数据集类型</span>
+        <b>{layout.node.typeOfDataSet ?? '-'}</b>
+        <span>关系</span>
+        <b>
+          {providerCount > 0 ? `${providerCount} provider` : ''}
+          {providerCount > 0 && consumerCount > 0 ? ' / ' : ''}
+          {consumerCount > 0 ? `${consumerCount} consumer` : ''}
+        </b>
+        <span>Exchange</span>
+        <b>{primaryEdge?.exchangeDirection ?? '-'}</b>
+        <span>Mean / Resulting</span>
+        <b>
+          {primaryEdge?.meanAmount ?? '-'} / {primaryEdge?.resultingAmount ?? '-'}
+        </b>
+        <span>数据状态</span>
+        <b>{primaryEdge?.dataDerivationTypeStatus ?? '-'}</b>
+        <span>定量参考</span>
+        <b>{primaryEdge?.quantitativeReference ? '是' : '否'}</b>
+      </div>
+    </aside>
+  );
+}
+
+function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
+  const [hoveredProcessId, setHoveredProcessId] = useState<string | null>(null);
+  const layoutItems = useMemo(() => getFlowTopologyLayout(topology), [topology]);
+  const layoutMap = useMemo(
+    () => new Map(layoutItems.map((item) => [item.node.id, item] as const)),
+    [layoutItems],
+  );
+  const flowNodeId = getFlowTopologyFlowNodeId(topology);
+  const hoveredProcess = hoveredProcessId ? layoutMap.get(hoveredProcessId) : undefined;
+  const selectedProcess = hoveredProcess
+    ? {
+        edges: getFlowTopologyProcessEdges(topology, hoveredProcess.node.id),
+        layout: hoveredProcess,
+      }
+    : undefined;
+
+  const getEndpoint = (nodeId: string) => {
+    if (nodeId === flowNodeId) {
+      return { x: 50, y: 50 };
+    }
+    const item = layoutMap.get(nodeId);
+    return item ? { x: item.x, y: item.y } : { x: 50, y: 50 };
+  };
+
+  return (
+    <div className={styles.flowTopologyGraphShell}>
+      <div className={styles.flowTopologyGraphHeader}>
+        <div>
+          <span>缓存构建：{topology.buildId}</span>
+          <strong>{topology.flow.name}</strong>
+        </div>
+        <div className={styles.flowTopologyStats}>
+          <span>
+            Provider <strong>{formatNumber(topology.stats.providers)}</strong>
+          </span>
+          <span>
+            Consumer <strong>{formatNumber(topology.stats.consumers)}</strong>
+          </span>
+          <span>
+            Process <strong>{formatNumber(topology.stats.processCount)}</strong>
+          </span>
+        </div>
+      </div>
+      <div className={styles.flowTopologyGraphBody}>
+        <div className={styles.flowTopologyCanvas} onMouseLeave={() => setHoveredProcessId(null)}>
+          <svg aria-hidden='true' className={styles.flowTopologyEdges} viewBox='0 0 100 100'>
+            <defs>
+              <linearGradient id='flowTopologyProviderLine' x1='0' x2='1' y1='0' y2='0'>
+                <stop offset='0%' stopColor='#3d8cff' stopOpacity='0.16' />
+                <stop offset='100%' stopColor='#22e8ff' stopOpacity='0.94' />
+              </linearGradient>
+              <linearGradient id='flowTopologyConsumerLine' x1='0' x2='1' y1='0' y2='0'>
+                <stop offset='0%' stopColor='#ffd45f' stopOpacity='0.9' />
+                <stop offset='100%' stopColor='#ffb342' stopOpacity='0.18' />
+              </linearGradient>
+            </defs>
+            {topology.edges.map((edge) => {
+              const source = getEndpoint(edge.source);
+              const target = getEndpoint(edge.target);
+              const isHighlighted =
+                hoveredProcessId === edge.source || hoveredProcessId === edge.target;
+              return (
+                <g
+                  className={[
+                    styles.flowTopologyEdge,
+                    edge.relation === 'provider'
+                      ? styles.flowTopologyEdgeProvider
+                      : styles.flowTopologyEdgeConsumer,
+                    isHighlighted ? styles.flowTopologyEdgeActive : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  key={edge.id}
+                >
+                  <path
+                    d={`M ${source.x} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${
+                      (source.x + target.x) / 2
+                    } ${target.y}, ${target.x} ${target.y}`}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+          <div className={styles.flowTopologyCoreNode}>
+            <span>{topology.flow.flowType}</span>
+            <strong>{topology.flow.name}</strong>
+            <em>{topology.flow.version}</em>
+          </div>
+          {layoutItems.map((item) => (
+            <button
+              className={[
+                styles.flowTopologyProcessNode,
+                item.relation === 'provider' ? styles.flowTopologyNodeProvider : '',
+                item.relation === 'consumer' ? styles.flowTopologyNodeConsumer : '',
+                item.relation === 'both' ? styles.flowTopologyNodeBoth : '',
+                hoveredProcessId === item.node.id ? styles.flowTopologyNodeActive : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              key={item.node.id}
+              onFocus={() => setHoveredProcessId(item.node.id)}
+              onMouseEnter={() => setHoveredProcessId(item.node.id)}
+              style={{ '--node-x': `${item.x}%`, '--node-y': `${item.y}%` } as CSSProperties}
+              type='button'
+            >
+              <span>{item.relation}</span>
+              <strong>{item.node.name}</strong>
+              <em>{item.node.location ?? '-'}</em>
+            </button>
+          ))}
+        </div>
+        <FlowTopologyProcessTooltip selectedProcess={selectedProcess} />
+      </div>
+    </div>
+  );
+}
+
+function FlowTopologyScreen({
+  snapshot,
+  activeScreen,
+  onChangeScreen,
+}: {
+  snapshot: DashboardSnapshot;
+  activeScreen: ScreenKey;
+  onChangeScreen: (screen: ScreenKey) => void;
+}) {
+  const [query, setQuery] = useState('低碳热轧钢卷');
+  const [searchState, setSearchState] = useState<FlowTopologySearchState>('ready');
+  const [searchResults, setSearchResults] = useState<FlowTable[]>(() => [createMockFlowTable()]);
+  const [usedFallbackRecommendations, setUsedFallbackRecommendations] = useState(true);
+  const [selectedFlow, setSelectedFlow] = useState<FlowTable | null>(null);
+  const [topologyState, setTopologyState] = useState<FlowTopologyLoadState>('idle');
+  const [topology, setTopology] = useState<FlowTopologySnapshot | null>(null);
+  const [statusMessage, setStatusMessage] = useState('选择一条非基础流后读取拓扑缓存');
+
+  const handleSearch = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+    setSearchState('loading');
+    setStatusMessage('智能推荐正在计算候选流');
+
+    const result = await searchSmartRecommendedFlows(query);
+    setSearchResults(result.data);
+    setUsedFallbackRecommendations(result.fallback);
+    setSearchState('ready');
+    setStatusMessage(
+      result.fallback ? '当前展示本地示例推荐，可用于验证流图谱交互' : '智能推荐已返回候选流',
+    );
+  };
+
+  const handleSelectFlow = async (flow: FlowTable) => {
+    if (!isTopologyEligibleFlow(flow)) {
+      return;
+    }
+
+    setSelectedFlow(flow);
+    setTopology(null);
+    setTopologyState('loading');
+    setStatusMessage('正在读取流过程拓扑缓存');
+
+    try {
+      const nextTopology = await loadCachedFlowTopology(flow);
+      setTopology(nextTopology);
+      setTopologyState('ready');
+      setStatusMessage('已从缓存读取拓扑，不触发过程表实时查询');
+    } catch (error) {
+      if (error instanceof FlowTopologyCacheMissError) {
+        setTopologyState('missing');
+        setStatusMessage('未命中该流的拓扑缓存');
+        return;
+      }
+      console.error(error);
+      setTopologyState('error');
+      setStatusMessage('拓扑缓存读取失败');
+    }
+  };
+
+  return (
+    <section className={styles.screenPanel}>
+      <HeaderRibbon
+        snapshot={snapshot}
+        subtitle='从非基础流下钻到 provider / consumer 过程网络'
+        title='流过程网络拓扑'
+      />
+      <div className={styles.flowTopologyGrid}>
+        <aside className={styles.flowTopologySearchPanel}>
+          <div className={styles.flowTopologyPanelHeader}>
+            <span>智能推荐</span>
+            <strong>选择非基础流</strong>
+            <p>Elementary flow 已排除，仅保留过程网络候选。</p>
+          </div>
+          <form className={styles.flowTopologySearchForm} onSubmit={handleSearch}>
+            <input
+              aria-label='智能推荐流'
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder='输入产品流、废物流或关键词'
+              value={query}
+            />
+            <button disabled={searchState === 'loading'} type='submit'>
+              推荐
+            </button>
+          </form>
+          <div className={styles.flowTopologySearchMeta}>
+            <span>{searchState === 'loading' ? '推荐中' : '候选流'}</span>
+            <strong>{formatNumber(searchResults.length)}</strong>
+            <em>{usedFallbackRecommendations ? '本地示例' : '智能推荐'}</em>
+          </div>
+          <div className={styles.flowTopologyResultList}>
+            {searchResults.map((flow) => (
+              <FlowTopologySearchResult
+                flow={flow}
+                isSelected={selectedFlow?.id === flow.id && selectedFlow?.version === flow.version}
+                key={`${flow.id}:${flow.version}`}
+                onSelect={handleSelectFlow}
+              />
+            ))}
+            {searchState === 'ready' && searchResults.length === 0 && (
+              <div className={styles.flowTopologyEmpty}>没有可用于拓扑展示的非基础流</div>
+            )}
+          </div>
+        </aside>
+        <div className={styles.flowTopologyWorkspace}>
+          <div className={styles.flowTopologyStatusBar}>
+            <span>{selectedFlow ? selectedFlow.name : '未选择流'}</span>
+            <strong>{statusMessage}</strong>
+            <em>
+              {topologyState === 'ready'
+                ? 'CACHE READY'
+                : topologyState === 'loading'
+                  ? 'CACHE LOADING'
+                  : topologyState === 'missing'
+                    ? 'CACHE MISSING'
+                    : topologyState === 'error'
+                      ? 'CACHE ERROR'
+                      : 'WAITING'}
+            </em>
+          </div>
+          {topologyState === 'ready' && topology ? (
+            <FlowTopologyGraph topology={topology} />
+          ) : (
+            <div className={styles.flowTopologyPlaceholder}>
+              <div className={styles.flowTopologyPlaceholderSignal} />
+              <span>
+                {topologyState === 'missing'
+                  ? '该流尚未生成拓扑缓存'
+                  : topologyState === 'error'
+                    ? '拓扑缓存读取失败'
+                    : topologyState === 'loading'
+                      ? '正在读取缓存'
+                      : '等待选择非基础流'}
+              </span>
+              <strong>Flow Topology Cache</strong>
+              <p>Provider / consumer network standby</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
+    </section>
+  );
+}
+
 export default function NationalCarbonDashboardPage() {
   const [activeScreen, setActiveScreen] = useState<ScreenKey>(() => getInitialScreen());
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -2128,6 +2686,13 @@ export default function NationalCarbonDashboardPage() {
         )}
         {activeScreen === 'connectivity' && (
           <ConnectivityScreen
+            activeScreen={activeScreen}
+            onChangeScreen={setActiveScreen}
+            snapshot={dashboardSnapshot}
+          />
+        )}
+        {activeScreen === 'flow_topology' && (
+          <FlowTopologyScreen
             activeScreen={activeScreen}
             onChangeScreen={setActiveScreen}
             snapshot={dashboardSnapshot}

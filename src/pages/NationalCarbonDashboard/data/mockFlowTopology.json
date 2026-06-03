@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "flow_process_topology_v1",
+  "buildId": "fixture-flow-topology-2026-06-03",
+  "dataAsOf": "2026-06-03T04:00:00Z",
+  "flow": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "version": "01.00.000",
+    "name": "低碳热轧钢卷",
+    "flowType": "Product flow"
+  },
+  "stats": {
+    "processCount": 9,
+    "providers": 4,
+    "consumers": 5
+  },
+  "nodes": [
+    {
+      "id": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "type": "flow",
+      "name": "低碳热轧钢卷",
+      "version": "01.00.000"
+    },
+    {
+      "id": "process:21000000-0000-4000-8000-000000000001@01.00.000",
+      "type": "process",
+      "name": "高炉炼铁过程",
+      "version": "01.00.000",
+      "location": "河北",
+      "classification": "钢铁 / 铁水",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:21000000-0000-4000-8000-000000000002@01.00.000",
+      "type": "process",
+      "name": "转炉炼钢过程",
+      "version": "01.00.000",
+      "location": "江苏",
+      "classification": "钢铁 / 粗钢",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:21000000-0000-4000-8000-000000000003@01.00.000",
+      "type": "process",
+      "name": "连铸过程",
+      "version": "01.00.000",
+      "location": "山东",
+      "classification": "钢铁 / 板坯",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:21000000-0000-4000-8000-000000000004@01.00.000",
+      "type": "process",
+      "name": "热轧过程",
+      "version": "01.00.000",
+      "location": "辽宁",
+      "classification": "钢铁 / 热轧",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:31000000-0000-4000-8000-000000000001@01.00.000",
+      "type": "process",
+      "name": "汽车白车身制造",
+      "version": "01.00.000",
+      "location": "上海",
+      "classification": "汽车 / 车身",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:31000000-0000-4000-8000-000000000002@01.00.000",
+      "type": "process",
+      "name": "工程机械结构件制造",
+      "version": "01.00.000",
+      "location": "湖南",
+      "classification": "装备制造 / 结构件",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:31000000-0000-4000-8000-000000000003@01.00.000",
+      "type": "process",
+      "name": "家电外壳冲压",
+      "version": "01.00.000",
+      "location": "广东",
+      "classification": "家电 / 金属外壳",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:31000000-0000-4000-8000-000000000004@01.00.000",
+      "type": "process",
+      "name": "钢结构构件加工",
+      "version": "01.00.000",
+      "location": "浙江",
+      "classification": "建筑 / 钢结构",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    },
+    {
+      "id": "process:31000000-0000-4000-8000-000000000005@01.00.000",
+      "type": "process",
+      "name": "再制造拆解与回收",
+      "version": "01.00.000",
+      "location": "天津",
+      "classification": "循环经济 / 回收",
+      "referenceYear": "2024",
+      "typeOfDataSet": "Unit process"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-provider-1",
+      "source": "process:21000000-0000-4000-8000-000000000001@01.00.000",
+      "target": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "relation": "provider",
+      "exchangeDirection": "output",
+      "meanAmount": "0.42",
+      "resultingAmount": "0.42",
+      "dataDerivationTypeStatus": "Calculated",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-provider-2",
+      "source": "process:21000000-0000-4000-8000-000000000002@01.00.000",
+      "target": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "relation": "provider",
+      "exchangeDirection": "output",
+      "meanAmount": "0.74",
+      "resultingAmount": "0.74",
+      "dataDerivationTypeStatus": "Measured",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-provider-3",
+      "source": "process:21000000-0000-4000-8000-000000000003@01.00.000",
+      "target": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "relation": "provider",
+      "exchangeDirection": "output",
+      "meanAmount": "0.88",
+      "resultingAmount": "0.88",
+      "dataDerivationTypeStatus": "Calculated",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-provider-4",
+      "source": "process:21000000-0000-4000-8000-000000000004@01.00.000",
+      "target": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "relation": "provider",
+      "exchangeDirection": "output",
+      "meanAmount": "1",
+      "resultingAmount": "1",
+      "dataDerivationTypeStatus": "Measured",
+      "quantitativeReference": true
+    },
+    {
+      "id": "edge-consumer-1",
+      "source": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "target": "process:31000000-0000-4000-8000-000000000001@01.00.000",
+      "relation": "consumer",
+      "exchangeDirection": "input",
+      "meanAmount": "0.31",
+      "resultingAmount": "0.31",
+      "dataDerivationTypeStatus": "Estimated",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-consumer-2",
+      "source": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "target": "process:31000000-0000-4000-8000-000000000002@01.00.000",
+      "relation": "consumer",
+      "exchangeDirection": "input",
+      "meanAmount": "0.46",
+      "resultingAmount": "0.46",
+      "dataDerivationTypeStatus": "Calculated",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-consumer-3",
+      "source": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "target": "process:31000000-0000-4000-8000-000000000003@01.00.000",
+      "relation": "consumer",
+      "exchangeDirection": "input",
+      "meanAmount": "0.18",
+      "resultingAmount": "0.18",
+      "dataDerivationTypeStatus": "Measured",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-consumer-4",
+      "source": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "target": "process:31000000-0000-4000-8000-000000000004@01.00.000",
+      "relation": "consumer",
+      "exchangeDirection": "input",
+      "meanAmount": "0.27",
+      "resultingAmount": "0.27",
+      "dataDerivationTypeStatus": "Calculated",
+      "quantitativeReference": false
+    },
+    {
+      "id": "edge-consumer-5",
+      "source": "flow:11111111-1111-4111-8111-111111111111@01.00.000",
+      "target": "process:31000000-0000-4000-8000-000000000005@01.00.000",
+      "relation": "consumer",
+      "exchangeDirection": "input",
+      "meanAmount": "0.09",
+      "resultingAmount": "0.09",
+      "dataDerivationTypeStatus": "Estimated",
+      "quantitativeReference": false
+    }
+  ]
+}
