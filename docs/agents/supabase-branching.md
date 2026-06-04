@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-06-02
-lastReviewedCommit: df058eec79d9158a986e1d37a34637acc33d8894
+lastReviewedAt: 2026-06-04
+lastReviewedCommit: da18c7ef7d4e3da77aa29ef419ad6301ca2b4972
 ---
 
 # Supabase Environment And Database Workflow
@@ -60,6 +60,7 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- `FLOW_TOPOLOGY_CACHE_BASE_URL` is a frontend public read URL for the national-carbon flow topology cache; it is loaded through `config/supabaseEnv.ts` with other frontend environment values and does not create a database schema, Supabase branch, or Edge runtime ownership change
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 
