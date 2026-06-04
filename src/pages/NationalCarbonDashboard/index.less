@@ -2624,8 +2624,7 @@
   opacity: 0.55;
 }
 
-.flowTopologySearchMeta,
-.flowTopologyStats {
+.flowTopologySearchMeta {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 10px;
@@ -2638,8 +2637,7 @@
   border-radius: 8px;
 }
 
-.flowTopologySearchMeta strong,
-.flowTopologyStats strong {
+.flowTopologySearchMeta strong {
   color: var(--cyan);
   font-family:
     DIN Alternate,
@@ -2705,6 +2703,197 @@
 .flowTopologyResultList {
   flex: 1;
   align-content: start;
+}
+
+.flowTopologySearchLoading {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 13px;
+  height: 100%;
+  min-height: 520px;
+  padding: 28px 16px;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: center;
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.06) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 34%, rgba(32, 231, 255, 0.16), transparent 48%),
+    rgba(2, 12, 26, 0.34);
+  background-size:
+    34px 34px,
+    34px 34px,
+    100% 100%,
+    100% 100%;
+  border: 1px solid rgba(116, 196, 255, 0.26);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 34px rgba(32, 231, 255, 0.08),
+    0 0 28px rgba(32, 231, 255, 0.06);
+}
+
+.flowTopologySearchLoading::before,
+.flowTopologySearchLoading::after {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+}
+
+.flowTopologySearchLoading::before {
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(32, 231, 255, 0.18), transparent);
+  opacity: 0.72;
+  animation: flowTopologySearchLoadingSweep 1.75s linear infinite;
+}
+
+.flowTopologySearchLoading::after {
+  inset: 10px;
+  border: 1px solid rgba(32, 231, 255, 0.14);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+    inset 0 0 28px rgba(32, 231, 255, 0.06);
+  animation: flowTopologySearchLoadingFrame 1.8s ease-in-out infinite;
+}
+
+.flowTopologySearchLoadingCore {
+  position: relative;
+  z-index: 1;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(226, 241, 255, 0.18) 0 8%, transparent 9%),
+    radial-gradient(circle, rgba(32, 231, 255, 0.2), transparent 58%);
+  border: 1px solid rgba(32, 231, 255, 0.28);
+  box-shadow:
+    0 0 34px rgba(32, 231, 255, 0.2),
+    inset 0 0 28px rgba(32, 231, 255, 0.12);
+}
+
+.flowTopologySearchLoadingCore::before,
+.flowTopologySearchLoadingCore::after,
+.flowTopologySearchLoadingCore i {
+  position: absolute;
+  border-radius: 50%;
+  content: '';
+}
+
+.flowTopologySearchLoadingCore::before {
+  inset: 30px;
+  border: 1px solid rgba(240, 165, 43, 0.46);
+  box-shadow: 0 0 18px rgba(240, 165, 43, 0.18);
+  animation: flowTopologySearchLoadingCorePulse 1.3s ease-in-out infinite;
+}
+
+.flowTopologySearchLoadingCore::after {
+  inset: 55px;
+  background: var(--cyan);
+  box-shadow:
+    0 0 16px rgba(32, 231, 255, 0.88),
+    0 0 34px rgba(32, 231, 255, 0.44);
+}
+
+.flowTopologySearchLoadingCore i:nth-child(1) {
+  inset: 8px;
+  border: 2px solid transparent;
+  border-top-color: rgba(32, 231, 255, 0.92);
+  border-right-color: rgba(32, 231, 255, 0.34);
+  animation: flowTopologySearchLoadingSpin 1.35s linear infinite;
+}
+
+.flowTopologySearchLoadingCore i:nth-child(2) {
+  inset: 18px;
+  border: 1px solid transparent;
+  border-bottom-color: rgba(240, 165, 43, 0.74);
+  border-left-color: rgba(240, 165, 43, 0.3);
+  animation: flowTopologySearchLoadingSpin 1.9s linear infinite reverse;
+}
+
+.flowTopologySearchLoadingCore i:nth-child(3) {
+  inset: 42px;
+  border: 1px dashed rgba(116, 196, 255, 0.36);
+  animation: flowTopologySearchLoadingSpin 4.4s linear infinite;
+}
+
+.flowTopologySearchLoading strong {
+  position: relative;
+  z-index: 1;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(32, 231, 255, 0.34);
+}
+
+.flowTopologySearchLoading span {
+  position: relative;
+  z-index: 1;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.flowTopologySearchLoadingBars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 7px;
+  width: min(300px, 100%);
+  height: 58px;
+  padding: 8px 10px;
+  border-top: 1px solid rgba(32, 231, 255, 0.24);
+  border-bottom: 1px solid rgba(32, 231, 255, 0.16);
+}
+
+.flowTopologySearchLoadingBars i {
+  width: 5px;
+  height: 38px;
+  background: linear-gradient(180deg, rgba(32, 231, 255, 0.92), rgba(61, 140, 255, 0.12));
+  box-shadow: 0 0 14px rgba(32, 231, 255, 0.24);
+  transform: scaleY(0.28);
+  transform-origin: center bottom;
+  animation: flowTopologySearchLoadingBar 980ms ease-in-out infinite;
+  animation-delay: calc(var(--bar-index) * 42ms);
+}
+
+.flowTopologySearchLoadingRows {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 376px;
+  margin-top: 2px;
+}
+
+.flowTopologySearchLoadingRows i {
+  position: relative;
+  height: 46px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.04)), rgba(4, 18, 36, 0.5);
+  border: 1px solid rgba(116, 196, 255, 0.2);
+  border-radius: 8px;
+}
+
+.flowTopologySearchLoadingRows i::before {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0 30%,
+    rgba(32, 231, 255, 0.22) 48%,
+    transparent 68%
+  );
+  content: '';
+  transform: translateX(-120%);
+  animation: flowTopologySearchLoadingRow 1.35s ease-in-out infinite;
+  animation-delay: calc(var(--row-index) * 120ms);
 }
 
 .flowTopologyPagerActions {
@@ -2870,14 +3059,260 @@
 }
 
 .flowTopologyEmpty {
+  position: relative;
   display: grid;
   place-items: center;
-  min-height: 140px;
-  color: var(--muted);
-  font-size: 18px;
-  font-weight: 900;
-  border: 1px dashed rgba(116, 196, 255, 0.32);
+  align-content: center;
+  gap: 12px;
+  height: 100%;
+  min-height: 520px;
+  padding: 28px 18px;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: center;
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.055) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 38%, rgba(32, 231, 255, 0.16), transparent 38%),
+    radial-gradient(ellipse at 50% 76%, rgba(61, 140, 255, 0.1), transparent 48%),
+    rgba(2, 12, 26, 0.38);
+  background-size:
+    38px 38px,
+    38px 38px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  border: 1px solid rgba(116, 196, 255, 0.24);
   border-radius: 8px;
+  box-shadow:
+    inset 0 0 48px rgba(32, 231, 255, 0.08),
+    0 0 28px rgba(32, 231, 255, 0.05);
+}
+
+.flowTopologyEmpty::before,
+.flowTopologyEmpty::after {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+}
+
+.flowTopologyEmpty::before {
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.12), transparent),
+    linear-gradient(180deg, transparent 0 42%, rgba(255, 212, 95, 0.08) 50%, transparent 58%);
+  opacity: 0.65;
+  animation: flowTopologyEmptySweep 2.2s linear infinite;
+}
+
+.flowTopologyEmpty::after {
+  inset: 12px;
+  border: 1px dashed rgba(116, 196, 255, 0.18);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    inset 0 0 28px rgba(32, 231, 255, 0.05);
+  animation: flowTopologyEmptyFrame 1.8s ease-in-out infinite;
+}
+
+.flowTopologyEmptyRadar {
+  position: relative;
+  z-index: 1;
+  width: 156px;
+  height: 156px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 212, 95, 0.18) 0 6%, transparent 7%),
+    repeating-radial-gradient(
+      circle,
+      rgba(32, 231, 255, 0.22) 0,
+      rgba(32, 231, 255, 0.22) 1px,
+      transparent 1px,
+      transparent 28px
+    ),
+    radial-gradient(circle, rgba(32, 231, 255, 0.18), transparent 68%);
+  border: 1px solid rgba(32, 231, 255, 0.28);
+  box-shadow:
+    0 0 42px rgba(32, 231, 255, 0.18),
+    inset 0 0 36px rgba(32, 231, 255, 0.12);
+}
+
+.flowTopologyEmptyRadar::before,
+.flowTopologyEmptyRadar::after,
+.flowTopologyEmptyRadar i,
+.flowTopologyEmptyRadar span {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+}
+
+.flowTopologyEmptyRadar::before {
+  inset: 50%;
+  width: 54%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(32, 231, 255, 0.92), transparent);
+  transform-origin: left center;
+  animation: flowTopologyEmptyRadarSpin 2.6s linear infinite;
+}
+
+.flowTopologyEmptyRadar::after {
+  inset: 36px;
+  border: 1px solid rgba(255, 212, 95, 0.38);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 212, 95, 0.16);
+  animation: flowTopologyEmptyRadarPulse 1.4s ease-in-out infinite;
+}
+
+.flowTopologyEmptyRadar i:nth-child(1) {
+  inset: 9px;
+  border: 2px solid transparent;
+  border-top-color: rgba(32, 231, 255, 0.72);
+  border-right-color: rgba(32, 231, 255, 0.22);
+  border-radius: 50%;
+  animation: flowTopologyEmptyRadarSpin 4.8s linear infinite reverse;
+}
+
+.flowTopologyEmptyRadar i:nth-child(2) {
+  inset: 26px;
+  border: 1px dashed rgba(116, 196, 255, 0.32);
+  border-radius: 50%;
+  animation: flowTopologyEmptyRadarSpin 7s linear infinite;
+}
+
+.flowTopologyEmptyRadar i:nth-child(3) {
+  top: 50%;
+  right: 16px;
+  left: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.38), transparent);
+  transform: translateY(-50%);
+}
+
+.flowTopologyEmptyRadar span {
+  top: 16px;
+  bottom: 16px;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(32, 231, 255, 0.34), transparent);
+  transform: translateX(-50%);
+}
+
+.flowTopologyEmpty strong {
+  position: relative;
+  z-index: 1;
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 18px rgba(32, 231, 255, 0.32);
+}
+
+.flowTopologyEmpty > span {
+  position: relative;
+  z-index: 1;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.flowTopologyEmptyNodes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flowTopologyEmptyNodes i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: rgba(32, 231, 255, 0.78);
+  border: 1px solid rgba(182, 251, 255, 0.88);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px rgba(32, 231, 255, 0.08),
+    0 0 15px rgba(32, 231, 255, 0.48);
+  opacity: 0.22;
+  transform: translate(-50%, -50%);
+  animation: flowTopologyEmptyNode 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--empty-node-index) * 130ms);
+}
+
+.flowTopologyEmptyNodes i:nth-child(1) {
+  top: 18%;
+  left: 24%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(2) {
+  top: 24%;
+  left: 72%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(3) {
+  top: 34%;
+  left: 18%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(4) {
+  top: 44%;
+  left: 82%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(5) {
+  top: 56%;
+  left: 17%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(6) {
+  top: 64%;
+  left: 77%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(7) {
+  top: 76%;
+  left: 31%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(8) {
+  top: 82%;
+  left: 68%;
+}
+
+.flowTopologyEmptyNodes i:nth-child(9) {
+  top: 50%;
+  left: 50%;
+  background: var(--gold);
+  border-color: rgba(255, 241, 168, 0.9);
+  box-shadow:
+    0 0 0 5px rgba(255, 212, 95, 0.08),
+    0 0 18px rgba(255, 212, 95, 0.42);
+  opacity: 0.38;
+}
+
+.flowTopologyEmptyBars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 6px;
+  width: min(270px, 100%);
+  height: 48px;
+  margin-top: 4px;
+  padding: 7px 8px;
+  border-top: 1px solid rgba(32, 231, 255, 0.18);
+  border-bottom: 1px solid rgba(32, 231, 255, 0.1);
+}
+
+.flowTopologyEmptyBars i {
+  width: 4px;
+  height: 32px;
+  background: linear-gradient(180deg, rgba(255, 212, 95, 0.76), rgba(32, 231, 255, 0.1));
+  box-shadow: 0 0 12px rgba(255, 212, 95, 0.16);
+  transform: scaleY(0.18);
+  transform-origin: center bottom;
+  animation: flowTopologyEmptyBar 1.2s ease-in-out infinite;
+  animation-delay: calc(var(--empty-bar-index) * 52ms);
 }
 
 .flowTopologyWorkspace {
@@ -2983,12 +3418,12 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 18px;
   align-items: center;
-  min-height: 72px;
+  min-height: 56px;
 }
 
 .flowTopologyGraphHeader div:first-child {
   display: grid;
-  gap: 7px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -3002,29 +3437,166 @@
   white-space: nowrap;
 }
 
-.flowTopologyStats {
+.flowTopologyHeaderActions {
   display: flex;
-  gap: 14px;
-  min-height: 46px;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
 }
 
-.flowTopologyStats span {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
+.flowTopologyLayoutToggleGroup {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 46px;
+  padding: 3px;
+  background:
+    linear-gradient(180deg, rgba(8, 28, 54, 0.84), rgba(3, 13, 29, 0.72)),
+    linear-gradient(90deg, rgba(32, 231, 255, 0.1), rgba(255, 212, 95, 0.05));
+  border: 1px solid rgba(116, 196, 255, 0.24);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(32, 231, 255, 0.08);
+}
+
+.flowTopologyLayoutToggle {
+  position: relative;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  min-height: 40px;
+  padding: 7px 10px;
+  overflow: hidden;
   color: var(--muted);
-  font-size: 14px;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(32, 231, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(11, 38, 72, 0.82), rgba(4, 18, 36, 0.72));
+  border: 1px solid rgba(116, 196, 255, 0.28);
+  border-radius: 7px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 18px rgba(32, 231, 255, 0.08);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.flowTopologyLayoutToggle::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.2), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+  transition:
+    opacity 180ms ease,
+    transform 240ms ease;
+}
+
+.flowTopologyLayoutToggle:hover,
+.flowTopologyLayoutToggle:focus-visible,
+.flowTopologyLayoutToggleActive {
+  color: var(--ink);
+  border-color: rgba(32, 231, 255, 0.7);
+  box-shadow:
+    0 0 24px rgba(32, 231, 255, 0.18),
+    inset 0 0 20px rgba(32, 231, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.flowTopologyLayoutToggle:hover::before,
+.flowTopologyLayoutToggle:focus-visible::before,
+.flowTopologyLayoutToggleActive::before {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.flowTopologyLayoutToggle svg {
+  position: relative;
+  z-index: 1;
+  color: var(--cyan);
+  font-size: 17px;
+  filter: drop-shadow(0 0 8px rgba(32, 231, 255, 0.42));
+}
+
+.flowTopologyLayoutToggle span {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
   font-weight: 900;
+  line-height: 1;
   white-space: nowrap;
 }
 
-.flowTopologyStats strong {
+.flowTopologyLayoutToggleGroup .flowTopologyLayoutToggle {
+  min-width: 70px;
+  min-height: 34px;
+  padding: 6px 9px;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.flowTopologyLayoutToggleGroup .flowTopologyLayoutToggleActive {
+  background:
+    radial-gradient(circle at 78% 50%, rgba(32, 231, 255, 0.24), transparent 34%),
+    linear-gradient(180deg, rgba(15, 64, 111, 0.92), rgba(4, 18, 36, 0.76));
+  border-color: rgba(32, 231, 255, 0.68);
+}
+
+.flowTopologyStats {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  min-height: 42px;
+}
+
+.flowTopologyStatCard {
+  display: inline-grid;
+  flex-shrink: 0;
+  grid-template-columns: auto auto;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 12px;
+  color: var(--muted);
+  background:
+    linear-gradient(180deg, rgba(11, 38, 72, 0.72), rgba(4, 18, 36, 0.7)), rgba(4, 18, 36, 0.54);
+  border: 1px solid rgba(116, 196, 255, 0.22);
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+}
+
+.flowTopologyStatCard span {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.flowTopologyStatCard strong {
   color: var(--cyan);
-  font-size: 27px;
+  font-size: 26px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .flowTopologyGraphBody {
   position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 56%) minmax(0, 1fr);
+  gap: 14px;
   min-height: 0;
   flex: 1;
 }
@@ -3207,6 +3779,66 @@
   filter: drop-shadow(0 0 13px rgba(32, 231, 255, 0.48));
 }
 
+.flowTopologyDenseMode::before {
+  opacity: 0.38;
+  animation-duration: 14s;
+}
+
+.flowTopologyDenseMode .flowTopologyOrbitOuter,
+.flowTopologyDenseMode .flowTopologyOrbitInner {
+  animation-duration: 28s;
+}
+
+.flowTopologyAggregateHalo,
+.flowTopologyAggregateBeam {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.flowTopologyAggregateHalo {
+  stroke-width: calc(var(--edge-width, 1.4) * 1.9);
+  opacity: 0.16;
+  filter: blur(0.45px) drop-shadow(0 0 12px rgba(32, 231, 255, 0.26));
+}
+
+.flowTopologyAggregateBeam {
+  stroke-width: calc(var(--edge-width, 1.4) * 0.44);
+  stroke-dasharray: 10 14;
+  opacity: 0.82;
+  filter: drop-shadow(0 0 10px rgba(32, 231, 255, 0.32));
+  animation: flowTopologyAggregatePulse 3.6s linear infinite;
+}
+
+.flowTopologyAggregateProvider .flowTopologyAggregateHalo,
+.flowTopologyAggregateProvider .flowTopologyAggregateBeam {
+  stroke: rgba(32, 231, 255, 0.82);
+}
+
+.flowTopologyAggregateConsumer .flowTopologyAggregateHalo,
+.flowTopologyAggregateConsumer .flowTopologyAggregateBeam {
+  stroke: rgba(255, 212, 95, 0.86);
+}
+
+.flowTopologyAggregateMixed .flowTopologyAggregateHalo {
+  stroke: rgba(116, 196, 255, 0.5);
+}
+
+.flowTopologyAggregateMixed .flowTopologyAggregateBeam {
+  stroke: rgba(255, 212, 95, 0.72);
+}
+
+.flowTopologyEdgeActive .flowTopologyAggregateHalo {
+  opacity: 0.32;
+  filter: blur(0.5px) drop-shadow(0 0 16px rgba(32, 231, 255, 0.34));
+}
+
+.flowTopologyEdgeActive .flowTopologyAggregateBeam {
+  stroke-dasharray: 8 4;
+  opacity: 1;
+  filter: drop-shadow(0 0 13px rgba(32, 231, 255, 0.48));
+}
+
 .flowTopologyCoreNode {
   position: absolute;
   top: 50%;
@@ -3274,6 +3906,118 @@
   font-size: 26px;
   font-weight: 900;
   line-height: 1.06;
+}
+
+.flowTopologyClusterNode {
+  position: absolute;
+  top: var(--node-y);
+  left: var(--node-x);
+  z-index: 4;
+  display: grid;
+  gap: 5px;
+  width: 192px;
+  min-height: 108px;
+  padding: 14px 18px;
+  overflow: hidden;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 84% 28%, rgba(32, 231, 255, 0.18), transparent 30%),
+    linear-gradient(180deg, rgba(11, 38, 72, 0.96), rgba(4, 18, 36, 0.92)),
+    linear-gradient(90deg, rgba(61, 140, 255, 0.2), rgba(32, 231, 255, 0.07));
+  border: 1px solid rgba(116, 196, 255, 0.44);
+  border-radius: 8px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+  box-shadow:
+    0 20px 38px rgba(0, 0, 0, 0.28),
+    0 0 30px rgba(32, 231, 255, 0.09),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transform: translate(-50%, -50%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+  animation: flowTopologyNodeMaterialize 560ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: var(--node-delay);
+}
+
+.flowTopologyClusterNode::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, transparent, rgba(32, 231, 255, 0.18), transparent),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 44%);
+  opacity: 0.5;
+  transform: translateX(-100%);
+  transition:
+    opacity 180ms ease,
+    transform 240ms ease;
+}
+
+.flowTopologyClusterNode::after {
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  width: 2px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(180deg, transparent, rgba(32, 231, 255, 0.85), transparent);
+  box-shadow: 0 0 12px rgba(32, 231, 255, 0.38);
+}
+
+.flowTopologyClusterNode span,
+.flowTopologyClusterNode strong,
+.flowTopologyClusterNode em,
+.flowTopologyClusterNode small {
+  position: relative;
+  z-index: 1;
+}
+
+.flowTopologyClusterNode span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flowTopologyClusterNode strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyClusterNode em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.flowTopologyClusterNode em b {
+  color: var(--cyan);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flowTopologyClusterNode small {
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .flowTopologyProcessNode {
@@ -3390,13 +4134,31 @@
   font-weight: 900;
 }
 
+.flowTopologyRepresentativeNode {
+  z-index: 5;
+  width: 132px;
+  min-height: 55px;
+  padding: 8px 13px;
+  opacity: 0.96;
+}
+
+.flowTopologyRepresentativeNode span {
+  font-size: 10px;
+}
+
+.flowTopologyRepresentativeNode strong {
+  font-size: 14px;
+}
+
+.flowTopologyRepresentativeNode em {
+  font-size: 10px;
+}
+
 .flowTopologyNodeProvider {
-  padding-right: 24px;
   border-color: rgba(32, 231, 255, 0.48);
 }
 
 .flowTopologyNodeConsumer {
-  padding-left: 24px;
   background:
     radial-gradient(circle at 14% 50%, rgba(255, 212, 95, 0.14), transparent 26%),
     linear-gradient(180deg, rgba(11, 38, 72, 0.94), rgba(4, 18, 36, 0.9)),
@@ -3404,22 +4166,36 @@
   border-color: rgba(255, 212, 95, 0.44);
 }
 
-.flowTopologyNodeProvider::after {
+.flowTopologyNodeLeft {
+  padding-right: 24px;
+}
+
+.flowTopologyNodeRight {
+  padding-left: 24px;
+}
+
+.flowTopologyNodeLeft::after {
   right: 0;
 }
 
-.flowTopologyNodeConsumer::after {
+.flowTopologyNodeRight::after {
   left: 0;
+}
+
+.flowTopologyNodeConsumer::after {
   background: linear-gradient(180deg, transparent, rgba(255, 212, 95, 0.86), transparent);
   box-shadow: 0 0 12px rgba(255, 212, 95, 0.34);
 }
 
-.flowTopologyNodeProvider .flowTopologyProcessAnchor {
+.flowTopologyNodeLeft .flowTopologyProcessAnchor {
   right: 10px;
 }
 
-.flowTopologyNodeConsumer .flowTopologyProcessAnchor {
+.flowTopologyNodeRight .flowTopologyProcessAnchor {
   left: 10px;
+}
+
+.flowTopologyNodeConsumer .flowTopologyProcessAnchor {
   background: var(--gold);
   border-color: rgba(255, 241, 168, 0.9);
   box-shadow:
@@ -3437,7 +4213,9 @@
 
 .flowTopologyNodeActive,
 .flowTopologyProcessNode:hover,
-.flowTopologyProcessNode:focus-visible {
+.flowTopologyProcessNode:focus-visible,
+.flowTopologyClusterNode:hover,
+.flowTopologyClusterNode:focus-visible {
   border-color: rgba(32, 231, 255, 0.82);
   box-shadow:
     0 20px 38px rgba(0, 0, 0, 0.28),
@@ -3449,9 +4227,562 @@
 
 .flowTopologyProcessNode:hover::before,
 .flowTopologyProcessNode:focus-visible::before,
+.flowTopologyClusterNode:hover::before,
+.flowTopologyClusterNode:focus-visible::before,
 .flowTopologyNodeActive::before {
   opacity: 1;
   transform: translateX(100%);
+}
+
+.flowTopologyDenseMode .flowTopologyAggregateHalo {
+  opacity: 0.12;
+  filter: none;
+}
+
+.flowTopologyDenseMode .flowTopologyAggregateBeam {
+  opacity: 0.62;
+  filter: none;
+  animation: none;
+}
+
+.flowTopologyDenseMode .flowTopologyProcessNode {
+  box-shadow:
+    0 9px 18px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+  animation: none;
+  will-change: auto;
+  contain: layout paint;
+}
+
+.flowTopologyDenseMode .flowTopologyClusterNode {
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: none;
+}
+
+.flowTopologyDenseMode .flowTopologyClusterNode::before {
+  display: none;
+}
+
+.flowTopologyDenseMode .flowTopologyProcessNode::before {
+  display: none;
+}
+
+.flowTopologyDenseMode .flowTopologyProcessNode::after {
+  opacity: 0.72;
+  box-shadow: none;
+}
+
+.flowTopologyDenseMode .flowTopologyProcessAnchor {
+  box-shadow:
+    0 0 0 3px rgba(32, 231, 255, 0.08),
+    0 0 10px rgba(32, 231, 255, 0.46);
+}
+
+.flowTopologyDenseMode .flowTopologyNodeConsumer .flowTopologyProcessAnchor {
+  box-shadow:
+    0 0 0 3px rgba(255, 212, 95, 0.08),
+    0 0 10px rgba(255, 212, 95, 0.42);
+}
+
+.flowTopologyDenseMode .flowTopologyProcessNode strong {
+  font-size: 16px;
+}
+
+.flowTopologyDenseMode .flowTopologyProcessNode em {
+  font-size: 11px;
+}
+
+.flowTopologyDenseMode .flowTopologyNodeActive,
+.flowTopologyDenseMode .flowTopologyProcessNode:hover,
+.flowTopologyDenseMode .flowTopologyProcessNode:focus-visible {
+  z-index: 12;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.26),
+    0 0 22px rgba(32, 231, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.flowTopologyBasinCanvas {
+  min-height: 0;
+}
+
+.flowTopologyBasinCanvas .flowTopologyCanvasSignal {
+  inset: 10% 16%;
+  opacity: 0.68;
+  transform: scaleY(0.56);
+}
+
+.flowTopologyBasinCanvas .flowTopologyCoreNode {
+  width: 176px;
+  min-height: 118px;
+  padding: 14px 16px;
+}
+
+.flowTopologyBasinCanvas .flowTopologyCoreNode strong {
+  font-size: 22px;
+}
+
+.flowTopologyBasinNode {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  width: 214px;
+  min-height: 46px;
+  gap: 3px 8px;
+  padding: 7px 14px 6px 16px;
+}
+
+.flowTopologyBasinNode.flowTopologyNodeLeft {
+  padding-right: 30px;
+}
+
+.flowTopologyBasinNode.flowTopologyNodeRight {
+  padding-left: 30px;
+}
+
+.flowTopologyBasinNode.flowTopologyNodeLeft .flowTopologyProcessAnchor {
+  right: 8px;
+}
+
+.flowTopologyBasinNode.flowTopologyNodeRight .flowTopologyProcessAnchor {
+  left: 8px;
+}
+
+.flowTopologyBasinNode span {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 9px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyBasinNode strong {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.flowTopologyBasinNode em {
+  display: inline-flex;
+  grid-column: 2;
+  grid-row: 2;
+  gap: 2px;
+  align-items: baseline;
+  justify-self: end;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.flowTopologyBasinNode em b {
+  font-size: 17px;
+}
+
+.flowTopologyBasinNode small {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  max-width: 82px;
+  overflow: hidden;
+  font-size: 9px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyProcessLedger {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(7, 28, 55, 0.82), rgba(2, 12, 26, 0.66));
+  background-size:
+    34px 34px,
+    34px 34px,
+    100% 100%;
+  border: 1px solid rgba(116, 196, 255, 0.24);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 34px rgba(32, 231, 255, 0.06);
+}
+
+.flowTopologyProcessLedger::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 30%);
+  opacity: 0.6;
+}
+
+.flowTopologyLedgerHeader,
+.flowTopologyLedgerColumns,
+.flowTopologyProcessRows {
+  position: relative;
+  z-index: 1;
+}
+
+.flowTopologyLedgerHeader {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.flowTopologyLedgerSummary {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 12px;
+}
+
+.flowTopologyLedgerSummary span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flowTopologyLedgerSummary strong {
+  min-width: 0;
+  max-width: 360px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyLedgerSummary p {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.flowTopologyLedgerSummary strong,
+.flowTopologyLedgerSummary p {
+  padding-left: 10px;
+  border-left: 1px solid rgba(116, 196, 255, 0.22);
+}
+
+.flowTopologyLedgerColumns,
+.flowTopologyProcessRow {
+  display: grid;
+  grid-template-columns:
+    68px minmax(230px, 1.32fr) minmax(140px, 0.82fr) 64px 82px 82px
+    126px;
+  gap: 10px;
+  align-items: center;
+}
+
+.flowTopologyLedgerColumns {
+  padding: 0 12px;
+  color: rgba(155, 184, 216, 0.72);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.flowTopologyProcessRows {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.flowTopologyProcessRow {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 12px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  background:
+    linear-gradient(90deg, rgba(61, 140, 255, 0.12), rgba(32, 231, 255, 0.04)),
+    rgba(3, 15, 32, 0.54);
+  border: 1px solid rgba(116, 196, 255, 0.18);
+  border-radius: 7px;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.flowTopologyProcessRow span {
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flowTopologyProcessRow strong,
+.flowTopologyProcessRow small,
+.flowTopologyProcessRow em,
+.flowTopologyProcessRow i {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyProcessRow strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.flowTopologyProcessRow small,
+.flowTopologyProcessRow em,
+.flowTopologyProcessRow i {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.flowTopologyProcessRow b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--cyan);
+  font-family:
+    DIN Alternate,
+    'Barlow Condensed',
+    'Arial Narrow',
+    sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowTopologyProcessRow.flowTopologyNodeConsumer {
+  background:
+    linear-gradient(90deg, rgba(255, 212, 95, 0.1), rgba(61, 140, 255, 0.05)), rgba(3, 15, 32, 0.54);
+  border-color: rgba(255, 212, 95, 0.17);
+}
+
+.flowTopologyProcessRow.flowTopologyNodeConsumer span,
+.flowTopologyProcessRow.flowTopologyNodeConsumer b {
+  color: var(--gold);
+}
+
+.flowTopologyProcessRow:hover,
+.flowTopologyProcessRow:focus-visible,
+.flowTopologyProcessRowActive {
+  border-color: rgba(32, 231, 255, 0.62);
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.2),
+    0 0 22px rgba(32, 231, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.flowTopologyProcessRowActive {
+  background:
+    radial-gradient(circle at 96% 50%, rgba(32, 231, 255, 0.2), transparent 28%),
+    linear-gradient(90deg, rgba(61, 140, 255, 0.2), rgba(32, 231, 255, 0.06)), rgba(3, 15, 32, 0.68);
+}
+
+.flowTopologyLedgerEmpty {
+  display: grid;
+  place-items: center;
+  min-height: 76px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 900;
+  border: 1px dashed rgba(116, 196, 255, 0.24);
+  border-radius: 7px;
+}
+
+.flowTopologyFreeLayout {
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(61, 140, 255, 0.07) 1px, transparent 1px),
+    repeating-radial-gradient(
+      ellipse at 50% 50%,
+      rgba(32, 231, 255, 0.12) 0,
+      rgba(32, 231, 255, 0.12) 1px,
+      transparent 1px,
+      transparent 62px
+    ),
+    radial-gradient(ellipse at 50% 50%, rgba(32, 231, 255, 0.2), transparent 34%),
+    radial-gradient(circle at 18% 18%, rgba(61, 140, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 82% 76%, rgba(255, 212, 95, 0.08), transparent 28%),
+    rgba(2, 12, 26, 0.56);
+}
+
+.flowTopologyFreeLayout .flowTopologyCanvasSignal {
+  inset: 7% 9%;
+  border-radius: 12px;
+  opacity: 0.68;
+  transform: none;
+}
+
+.flowTopologyFreeLayout .flowTopologyOrbitOuter {
+  opacity: 0.78;
+}
+
+.flowTopologyFreeLayout .flowTopologyOrbitInner {
+  opacity: 0.86;
+}
+
+.flowTopologyNodeFree {
+  width: 142px;
+  min-height: 62px;
+  padding: 8px 13px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeLeft {
+  padding-right: 21px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeRight {
+  padding-left: 21px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeCompact {
+  gap: 3px;
+  width: 118px;
+  min-height: 54px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeMicro {
+  gap: 3px;
+  width: 100px;
+  min-height: 46px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeNano {
+  gap: 2px;
+  width: 82px;
+  min-height: 38px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeCompact strong {
+  font-size: 15px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeCompact em {
+  font-size: 11px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeMicro span {
+  font-size: 10px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeMicro strong {
+  font-size: 12px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeMicro em {
+  display: none;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeNano span {
+  font-size: 9px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeNano strong {
+  font-size: 11px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeNano em {
+  display: none;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeMicro .flowTopologyProcessAnchor,
+.flowTopologyNodeFree.flowTopologyNodeNano .flowTopologyProcessAnchor {
+  width: 6px;
+  height: 6px;
+}
+
+.flowTopologyNodeFree.flowTopologyNodeActive,
+.flowTopologyNodeFree:hover,
+.flowTopologyNodeFree:focus-visible {
+  transform: translate(-50%, -53%);
+}
+
+.flowTopologyDenseMode .flowTopologyNodeFree {
+  box-shadow:
+    0 7px 14px rgba(0, 0, 0, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.flowTopologyViewEmpty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-width: 230px;
+  padding: 18px 24px;
+  color: var(--ink);
+  text-align: center;
+  background:
+    linear-gradient(90deg, rgba(32, 231, 255, 0.12), rgba(61, 140, 255, 0.04)),
+    rgba(4, 18, 36, 0.74);
+  border: 1px dashed rgba(116, 196, 255, 0.36);
+  border-radius: 8px;
+  box-shadow:
+    0 0 32px rgba(32, 231, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transform: translate(-50%, 92px);
+  animation: flowTopologyGraphMaterialize 420ms ease-out both;
+}
+
+.flowTopologyViewEmpty span {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.flowTopologyViewEmpty strong {
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .flowTopologyProcessTooltip {
@@ -3504,6 +4835,26 @@
   transform: translate(-50%, 18px);
 }
 
+.flowTopologyTooltipFree {
+  z-index: 24;
+  width: 292px;
+  max-width: 30%;
+  max-height: calc(100% - 24px);
+  gap: 9px;
+  padding: 13px 14px 12px;
+  overflow: hidden;
+  transform: none;
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.36),
+    0 0 24px rgba(32, 231, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.flowTopologyTooltipCluster {
+  width: 362px;
+  max-width: 38%;
+}
+
 .flowTopologyTooltipHeader,
 .flowTopologyTooltipGrid {
   position: relative;
@@ -3533,6 +4884,22 @@
   white-space: nowrap;
 }
 
+.flowTopologyTooltipFree .flowTopologyTooltipHeader {
+  gap: 5px;
+}
+
+.flowTopologyTooltipFree .flowTopologyTooltipHeader span {
+  font-size: 12px;
+}
+
+.flowTopologyTooltipFree .flowTopologyTooltipHeader strong {
+  font-size: 21px;
+}
+
+.flowTopologyTooltipFree .flowTopologyTooltipHeader p {
+  font-size: 13px;
+}
+
 .flowTopologyTooltipHeader p {
   margin: 0;
   overflow: hidden;
@@ -3548,6 +4915,11 @@
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 8px 11px;
   min-height: 0;
+}
+
+.flowTopologyTooltipFree .flowTopologyTooltipGrid {
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 6px 9px;
 }
 
 .flowTopologyTooltipGrid span {
@@ -3656,6 +5028,138 @@
   }
 }
 
+@keyframes flowTopologySearchLoadingSweep {
+  0% {
+    opacity: 0;
+    transform: translateY(-78%);
+  }
+  22%,
+  70% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(78%);
+  }
+}
+
+@keyframes flowTopologySearchLoadingFrame {
+  0%,
+  100% {
+    border-color: rgba(32, 231, 255, 0.12);
+    opacity: 0.66;
+  }
+  50% {
+    border-color: rgba(32, 231, 255, 0.32);
+    opacity: 1;
+  }
+}
+
+@keyframes flowTopologySearchLoadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flowTopologySearchLoadingCorePulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes flowTopologySearchLoadingBar {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scaleY(0.26);
+  }
+  48% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes flowTopologySearchLoadingRow {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes flowTopologyEmptySweep {
+  0% {
+    opacity: 0;
+    transform: translateY(-82%);
+  }
+  20%,
+  72% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(82%);
+  }
+}
+
+@keyframes flowTopologyEmptyFrame {
+  0%,
+  100% {
+    border-color: rgba(116, 196, 255, 0.14);
+    opacity: 0.58;
+  }
+  50% {
+    border-color: rgba(32, 231, 255, 0.34);
+    opacity: 1;
+  }
+}
+
+@keyframes flowTopologyEmptyRadarSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flowTopologyEmptyRadarPulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(0.82);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes flowTopologyEmptyNode {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(0.78);
+  }
+  50% {
+    opacity: 0.76;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes flowTopologyEmptyBar {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scaleY(0.16);
+  }
+  48% {
+    opacity: 0.92;
+    transform: scaleY(0.88);
+  }
+}
+
 @keyframes flowTopologyWorkspaceScan {
   0% {
     opacity: 0;
@@ -3728,6 +5232,20 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes flowTopologyAggregatePulse {
+  0% {
+    opacity: 0.44;
+    stroke-dashoffset: 32;
+  }
+  45% {
+    opacity: 0.94;
+  }
+  100% {
+    opacity: 0.44;
+    stroke-dashoffset: -32;
   }
 }
 

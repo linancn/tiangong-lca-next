@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 
 const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as const;
+const FLOW_TOPOLOGY_FRONTEND_KEYS = ['FLOW_TOPOLOGY_CACHE_BASE_URL'] as const;
 
 const SUPABASE_ENV_FILE_ORDER = {
   dev: ['.env.development', '.env.local', '.env.development.local'],
@@ -13,6 +14,10 @@ type FrontendSupabaseTarget = keyof typeof SUPABASE_ENV_FILE_ORDER;
 type FrontendRuntimeEnv = string | false | undefined;
 
 type SupabaseFrontendEnv = Record<(typeof SUPABASE_FRONTEND_KEYS)[number], string | undefined>;
+type FlowTopologyFrontendEnv = Record<
+  (typeof FLOW_TOPOLOGY_FRONTEND_KEYS)[number],
+  string | undefined
+>;
 
 const hasEnvValue = (value: string | undefined): value is string => Boolean(value);
 
@@ -71,4 +76,24 @@ export const applySupabaseFrontendEnv = (
     merged[key] = value;
     return merged;
   }, {} as SupabaseFrontendEnv);
+};
+
+export const applyFlowTopologyFrontendEnv = (
+  rootDir: string,
+  appEnv: FrontendRuntimeEnv,
+): FlowTopologyFrontendEnv => {
+  const target = resolveSupabaseFrontendTarget(appEnv);
+  const fileEnv = readMergedEnvFiles(rootDir, SUPABASE_ENV_FILE_ORDER[target]);
+
+  return FLOW_TOPOLOGY_FRONTEND_KEYS.reduce<FlowTopologyFrontendEnv>((merged, key) => {
+    const runtimeValue = process.env[key];
+    const value = hasEnvValue(fileEnv[key]) ? fileEnv[key] : runtimeValue;
+
+    if (hasEnvValue(value)) {
+      process.env[key] = value;
+    }
+
+    merged[key] = value;
+    return merged;
+  }, {} as FlowTopologyFrontendEnv);
 };

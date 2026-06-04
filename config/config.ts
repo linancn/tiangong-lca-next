@@ -4,11 +4,12 @@ import defaultSettings from './defaultSettings';
 import { defineConfig } from '@umijs/max';
 import proxy from './proxy';
 import routes from './routes';
-import { applySupabaseFrontendEnv } from './supabaseEnv';
+import { applyFlowTopologyFrontendEnv, applySupabaseFrontendEnv } from './supabaseEnv';
 
 const { REACT_APP_ENV = 'main' } = process.env;
 
 applySupabaseFrontendEnv(process.cwd(), REACT_APP_ENV);
+applyFlowTopologyFrontendEnv(process.cwd(), REACT_APP_ENV);
 
 export default defineConfig({
   /**
@@ -175,5 +176,6 @@ export default defineConfig({
     'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
     'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
     'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
+    'process.env.FLOW_TOPOLOGY_CACHE_BASE_URL': process.env.FLOW_TOPOLOGY_CACHE_BASE_URL,
   },
 });

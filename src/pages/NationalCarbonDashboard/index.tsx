@@ -1,3 +1,4 @@
+import { DataDerivationTypeStatusOptions } from '@/pages/Processes/Components/optiondata';
 import { flow_hybrid_search } from '@/services/flows/api';
 import type { FlowTable } from '@/services/flows/data';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -6,6 +7,8 @@ import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
+  memo,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -29,7 +32,6 @@ import {
   type FlowTopologySnapshot,
 } from './data/flowTopology';
 import rawSnapshot from './data/mockDashboardSnapshot.json';
-import rawFlowTopology from './data/mockFlowTopology.json';
 import {
   dashboardStatusKeys,
   dashboardStatusLabels,
@@ -73,7 +75,6 @@ type StatusTone = {
 type ConnectivitySnapshot = DashboardSnapshot['connectivity'];
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
-const mockFlowTopologySnapshot = parseFlowTopologySnapshot(rawFlowTopology);
 
 const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
   { key: 'overview', label: '总览', shortLabel: '01' },
@@ -358,16 +359,40 @@ function getNarrativeMetric(snapshot: DashboardSnapshot, stageKey: string) {
 type FlowTopologySearchState = 'idle' | 'loading' | 'ready' | 'error';
 type FlowTopologyLoadState = 'idle' | 'loading' | 'ready' | 'missing' | 'error';
 type FlowTopologyRelation = 'provider' | 'consumer' | 'both';
-type FlowTopologyLayoutItem = {
+type FlowTopologyViewMode = 'overview' | 'provider' | 'consumer' | 'process';
+type FlowTopologySide = 'left' | 'right';
+type FlowTopologyProcessReference = {
+  edges: FlowTopologyEdge[];
   node: FlowTopologyNode;
   relation: FlowTopologyRelation;
+  score: number;
+};
+type FlowTopologyClusterLayoutItem = {
+  category: string;
+  id: string;
+  kind: 'cluster';
+  processCount: number;
+  referenceCount: number;
+  relation: FlowTopologyRelation;
+  representativeRefs: FlowTopologyProcessReference[];
+  share: number;
+  side: FlowTopologySide;
+  strength: number;
   x: number;
   y: number;
 };
-type FlowTopologySelectedProcess = {
+type FlowTopologyProcessListItem = {
+  category: string;
+  clusterId: string;
   edges: FlowTopologyEdge[];
-  layout: FlowTopologyLayoutItem;
+  id: string;
+  kind: 'process';
+  node: FlowTopologyNode;
+  relation: FlowTopologyRelation;
+  side: FlowTopologySide;
+  strength: number;
 };
+type FlowTopologyLayoutItem = FlowTopologyClusterLayoutItem | FlowTopologyProcessListItem;
 
 class FlowTopologyCacheMissError extends Error {
   constructor(message: string) {
@@ -376,106 +401,26 @@ class FlowTopologyCacheMissError extends Error {
   }
 }
 
-const useLocalFlowTopologyFixture = true;
-const localFlowTopologyFixtureCacheBaseUrl =
-  process.env.FLOW_TOPOLOGY_CACHE_BASE_URL ||
-  'http://127.0.0.1:9000/flow-topology-local/national-carbon/flow-topology/v1';
 const flowTopologySearchPageSize = 5;
-
-type FlowTopologyFixtureFlow = {
-  classification: string;
-  flowType: string;
-  id: string;
-  locationOfSupply: string;
-  name: string;
-  synonyms: string;
-  version: string;
+const flowTopologyCategoryDisplayLimit = 5;
+const flowTopologyFlowTypeLabelMap: Record<string, string> = {
+  'Elementary flow': '基础流',
+  'Other flow': '其他流',
+  'Product flow': '产品流',
+  'Waste flow': '废物流',
 };
-
-const localFlowTopologyFixtureFlows: FlowTopologyFixtureFlow[] = [
-  {
-    classification: '钢铁 / 热轧',
-    flowType: 'Product flow',
-    id: '11111111-1111-4111-8111-111111111111',
-    locationOfSupply: 'CN',
-    name: '低碳热轧钢卷',
-    synonyms: '低碳钢卷;热轧卷板',
-    version: '01.00.000',
-  },
-  {
-    classification: '电力 / 可再生',
-    flowType: 'Product flow',
-    id: '22222222-2222-4222-8222-222222222222',
-    locationOfSupply: 'CN',
-    name: '可再生电力',
-    synonyms: '绿电;风电;光伏电力',
-    version: '01.00.000',
-  },
-  {
-    classification: '资源回收 / 废钢',
-    flowType: 'Waste flow',
-    id: '33333333-3333-4333-8333-333333333333',
-    locationOfSupply: 'CN',
-    name: '再生废钢',
-    synonyms: '废钢;回收钢材',
-    version: '01.00.000',
-  },
-  {
-    classification: '氢能 / 绿氢',
-    flowType: 'Product flow',
-    id: '44444444-4444-4444-8444-444444444444',
-    locationOfSupply: 'CN',
-    name: '绿氢',
-    synonyms: '可再生氢;电解制氢',
-    version: '01.00.000',
-  },
-];
-
-function createFixtureFlowTable(
-  flow: FlowTopologyFixtureFlow,
-  modifiedAt = mockFlowTopologySnapshot.dataAsOf,
-): FlowTable {
-  return {
-    CASNumber: '-',
-    classification: flow.classification,
-    flowType: flow.flowType,
-    id: flow.id,
-    key: `${flow.id}:${flow.version}`,
-    locationOfSupply: flow.locationOfSupply,
-    modifiedAt: new Date(modifiedAt),
-    name: flow.name,
-    refFlowPropertyId: '-',
-    synonyms: flow.synonyms,
-    teamId: '',
-    version: flow.version,
-  };
-}
-
-function createMockFlowTable(): FlowTable {
-  return createFixtureFlowTable({
-    classification: '钢铁 / 热轧',
-    flowType: mockFlowTopologySnapshot.flow.flowType,
-    id: mockFlowTopologySnapshot.flow.id,
-    locationOfSupply: 'CN',
-    name: mockFlowTopologySnapshot.flow.name,
-    synonyms: '低碳钢卷;热轧卷板',
-    version: mockFlowTopologySnapshot.flow.version,
-  });
-}
-
-function createLocalFlowTopologyFixtureFlowTables(): FlowTable[] {
-  return localFlowTopologyFixtureFlows.map((flow) => createFixtureFlowTable(flow));
-}
-
-function getInitialFlowTopologySearchResults(): FlowTable[] {
-  return useLocalFlowTopologyFixture
-    ? createLocalFlowTopologyFixtureFlowTables()
-    : [createMockFlowTable()];
-}
-
-function getFlowTopologyFlowNodeId(snapshot: FlowTopologySnapshot): string {
-  return `flow:${snapshot.flow.id}@${snapshot.flow.version}`;
-}
+const flowTopologyCategoryLabelMap: Record<string, string> = {
+  'Agriculture, forestry and fishing': '农林牧渔业',
+  Construction: '建筑业',
+  'End-of-life treatment': '末端处理',
+  'Energy carriers and technologies': '能源载体与技术',
+  Manufacturing: '制造业',
+  'Materials production': '材料生产',
+  'Mining and quarrying': '采矿业',
+  'Other Services': '其他服务业',
+  Systems: '系统与设备',
+  'Water supply; sewerage, waste management and remediation activities': '水务、污水与废弃物处理',
+};
 
 function getFlowTopologyProcessNodes(snapshot: FlowTopologySnapshot): FlowTopologyNode[] {
   return snapshot.nodes.filter((node) => node.type === 'process');
@@ -501,57 +446,350 @@ function getFlowTopologyNodeRelation(
   return 'consumer';
 }
 
-function getFlowTopologyLayout(snapshot: FlowTopologySnapshot): FlowTopologyLayoutItem[] {
-  const processNodes = getFlowTopologyProcessNodes(snapshot);
-  const groups: Record<FlowTopologyRelation, FlowTopologyNode[]> = {
-    both: [],
-    consumer: [],
-    provider: [],
-  };
-
-  processNodes.forEach((node) => {
-    groups[getFlowTopologyNodeRelation(snapshot, node.id)].push(node);
-  });
-
-  const placeOrbit = (
-    nodes: FlowTopologyNode[],
-    relation: FlowTopologyRelation,
-  ): FlowTopologyLayoutItem[] => {
-    const startAngle = relation === 'provider' ? 222 : -42;
-    const endAngle = relation === 'provider' ? 138 : 42;
-    const radiusX = 35;
-    const radiusY = 35;
-
-    return nodes.map((node, index) => {
-      const progress = nodes.length > 1 ? index / (nodes.length - 1) : 0.5;
-      const radians = ((startAngle + (endAngle - startAngle) * progress) * Math.PI) / 180;
-
-      return {
-        node,
-        relation,
-        x: 50 + Math.cos(radians) * radiusX,
-        y: 50 + Math.sin(radians) * radiusY,
-      };
-    });
-  };
-
-  const providerNodes = placeOrbit(groups.provider, 'provider');
-  const consumerNodes = placeOrbit(groups.consumer, 'consumer');
-  const bothNodes = groups.both.map((node, index) => ({
-    node,
-    relation: 'both' as const,
-    x: 50,
-    y: groups.both.length > 1 ? 22 + index * 56 : 20,
-  }));
-
-  return [...providerNodes, ...bothNodes, ...consumerNodes];
+function isFlowTopologyRelationVisible(
+  relation: FlowTopologyRelation,
+  viewMode: FlowTopologyViewMode,
+) {
+  if (viewMode === 'overview' || viewMode === 'process') {
+    return true;
+  }
+  return relation === viewMode || relation === 'both';
 }
 
-function getFlowTopologyProcessEdges(
+function getFlowTopologyRelationLabel(relation: FlowTopologyRelation) {
+  if (relation === 'provider') {
+    return '供给';
+  }
+  if (relation === 'consumer') {
+    return '消费';
+  }
+  return '供需';
+}
+
+function getFlowTopologyFlowTypeLabel(flowType?: string) {
+  if (!flowType) {
+    return '-';
+  }
+
+  return flowTopologyFlowTypeLabelMap[flowType] ?? flowType;
+}
+
+function getFlowTopologyDataDerivationTypeStatusLabel(status?: string) {
+  if (!status || status === '-') {
+    return '-';
+  }
+
+  const option = DataDerivationTypeStatusOptions.find((item) => item.value === status);
+
+  return option?.label ?? '-';
+}
+
+function getFlowTopologyCategory(node: FlowTopologyNode): string {
+  const classification = node.classification?.trim();
+
+  if (!classification) {
+    return '未分类';
+  }
+
+  const primaryCategory = classification.split(/[/>|｜]/)[0]?.trim() || classification;
+
+  return flowTopologyCategoryLabelMap[primaryCategory] ?? primaryCategory;
+}
+
+function getFlowTopologyRelationSide(
+  relation: FlowTopologyRelation,
+  viewMode: FlowTopologyViewMode,
+  index: number,
+): FlowTopologySide {
+  if (viewMode === 'provider') {
+    return 'left';
+  }
+  if (viewMode === 'consumer') {
+    return 'right';
+  }
+  if (relation === 'provider') {
+    return 'left';
+  }
+  if (relation === 'consumer') {
+    return 'right';
+  }
+  return index % 2 === 0 ? 'left' : 'right';
+}
+
+type FlowTopologyAmountField = 'meanAmount' | 'resultingAmount';
+
+function getFlowTopologyEdgeAmountByField(
+  edge: FlowTopologyEdge,
+  amountField: FlowTopologyAmountField,
+): number | null {
+  const rawAmount = edge[amountField];
+  const amount = typeof rawAmount === 'number' ? rawAmount : Number(rawAmount);
+
+  return Number.isFinite(amount) ? amount : null;
+}
+
+function getFlowTopologyEdgeAmount(edge: FlowTopologyEdge): number | null {
+  return (
+    getFlowTopologyEdgeAmountByField(edge, 'resultingAmount') ??
+    getFlowTopologyEdgeAmountByField(edge, 'meanAmount')
+  );
+}
+
+function getFlowTopologyReferenceScore(edges: FlowTopologyEdge[]): number {
+  const numericScore = edges.reduce((total, edge) => {
+    const amount = getFlowTopologyEdgeAmount(edge);
+    return total + (amount === null ? 0 : Math.abs(amount));
+  }, 0);
+
+  return numericScore > 0 ? numericScore : edges.length;
+}
+
+function formatFlowTopologyAmount(amount: number): string {
+  const absoluteAmount = Math.abs(amount);
+
+  if (absoluteAmount === 0) {
+    return '0';
+  }
+
+  return absoluteAmount >= 100
+    ? amount.toFixed(0)
+    : absoluteAmount >= 10
+      ? amount.toFixed(1)
+      : amount.toFixed(2);
+}
+
+function getFlowTopologyAmountLabel(
+  edges: FlowTopologyEdge[],
+  amountField?: FlowTopologyAmountField,
+): string {
+  let hasAmount = false;
+  const amount = edges.reduce((total, edge) => {
+    const edgeAmount = amountField
+      ? getFlowTopologyEdgeAmountByField(edge, amountField)
+      : getFlowTopologyEdgeAmount(edge);
+
+    if (edgeAmount === null) {
+      return total;
+    }
+
+    hasAmount = true;
+    return total + edgeAmount;
+  }, 0);
+
+  return hasAmount ? formatFlowTopologyAmount(amount) : '-';
+}
+
+function getFlowTopologyProcessReferences(
   snapshot: FlowTopologySnapshot,
-  nodeId: string,
-): FlowTopologyEdge[] {
-  return snapshot.edges.filter((edge) => edge.source === nodeId || edge.target === nodeId);
+  viewMode: FlowTopologyViewMode,
+): FlowTopologyProcessReference[] {
+  const processNodes = getFlowTopologyProcessNodes(snapshot);
+  const references = processNodes
+    .map((node, index) => {
+      const relation = getFlowTopologyNodeRelation(snapshot, node.id);
+      const edges = snapshot.edges.filter(
+        (edge) => edge.source === node.id || edge.target === node.id,
+      );
+
+      return {
+        edges,
+        node,
+        originalIndex: index,
+        relation,
+        score: getFlowTopologyReferenceScore(edges),
+      };
+    })
+    .filter((item) => isFlowTopologyRelationVisible(item.relation, viewMode))
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.edges.length - left.edges.length ||
+        left.node.name.localeCompare(right.node.name, 'zh-CN') ||
+        left.originalIndex - right.originalIndex,
+    );
+
+  return references.map(({ edges, node, relation, score }) => ({
+    edges,
+    node,
+    relation,
+    score,
+  }));
+}
+
+function getFlowTopologyClusterPoint(
+  index: number,
+  total: number,
+  side: FlowTopologySide,
+): Pick<FlowTopologyClusterLayoutItem, 'x' | 'y'> {
+  const yMin = 20;
+  const yMax = 80;
+  const progress = total > 1 ? index / (total - 1) : 0.5;
+  const y = yMin + (yMax - yMin) * progress;
+  const yCurve = Math.abs(progress - 0.5) * 2;
+  const x = side === 'left' ? 22 + yCurve * 3 : 78 - yCurve * 3;
+
+  return { x, y };
+}
+
+function getFlowTopologyClusterRelation(
+  references: FlowTopologyProcessReference[],
+): FlowTopologyRelation {
+  const hasProvider = references.some((reference) => reference.relation === 'provider');
+  const hasConsumer = references.some((reference) => reference.relation === 'consumer');
+  const hasBoth = references.some((reference) => reference.relation === 'both');
+
+  if (hasBoth || (hasProvider && hasConsumer)) {
+    return 'both';
+  }
+  return hasProvider ? 'provider' : 'consumer';
+}
+
+function getFlowTopologyClusterLayout(
+  snapshot: FlowTopologySnapshot,
+  viewMode: FlowTopologyViewMode,
+): FlowTopologyClusterLayoutItem[] {
+  const references = getFlowTopologyProcessReferences(snapshot, viewMode);
+  const buckets = new Map<string, FlowTopologyProcessReference[]>();
+
+  references.forEach((reference, index) => {
+    const side = getFlowTopologyRelationSide(reference.relation, viewMode, index);
+    const category = getFlowTopologyCategory(reference.node);
+    const key = `${side}:${category}`;
+    buckets.set(key, [...(buckets.get(key) ?? []), reference]);
+  });
+
+  const sideBuckets: Record<FlowTopologySide, FlowTopologyClusterLayoutItem[]> = {
+    left: [],
+    right: [],
+  };
+
+  Array.from(buckets.entries()).forEach(([key, bucket]) => {
+    const [side, category] = key.split(':') as [FlowTopologySide, string];
+    const sortedRefs = [...bucket].sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.edges.length - left.edges.length ||
+        left.node.name.localeCompare(right.node.name, 'zh-CN'),
+    );
+    const referenceCount = sortedRefs.reduce(
+      (total, reference) => total + reference.edges.length,
+      0,
+    );
+    const strength = sortedRefs.reduce((total, reference) => total + reference.score, 0);
+
+    sideBuckets[side].push({
+      category,
+      id: `cluster:${side}:${category}`,
+      kind: 'cluster',
+      processCount: sortedRefs.length,
+      referenceCount,
+      relation: getFlowTopologyClusterRelation(sortedRefs),
+      representativeRefs: sortedRefs,
+      share: 0,
+      side,
+      strength,
+      x: 50,
+      y: 50,
+    });
+  });
+
+  return (Object.keys(sideBuckets) as FlowTopologySide[]).flatMap((side) => {
+    const sortedClusters = sideBuckets[side].sort(
+      (left, right) =>
+        right.processCount - left.processCount ||
+        right.referenceCount - left.referenceCount ||
+        left.category.localeCompare(right.category, 'zh-CN'),
+    );
+    const visibleClusters = sortedClusters.slice(0, flowTopologyCategoryDisplayLimit);
+    const restClusters = sortedClusters.slice(flowTopologyCategoryDisplayLimit);
+    const clusters =
+      restClusters.length === 0
+        ? visibleClusters
+        : [
+            ...visibleClusters,
+            {
+              category: `其他 ${formatNumber(restClusters.length)} 类`,
+              id: `cluster:${side}:__other`,
+              kind: 'cluster' as const,
+              processCount: restClusters.reduce(
+                (total, cluster) => total + cluster.processCount,
+                0,
+              ),
+              referenceCount: restClusters.reduce(
+                (total, cluster) => total + cluster.referenceCount,
+                0,
+              ),
+              relation: getFlowTopologyClusterRelation(
+                restClusters.flatMap((cluster) => cluster.representativeRefs),
+              ),
+              representativeRefs: restClusters.flatMap((cluster) => cluster.representativeRefs),
+              share: 0,
+              side,
+              strength: restClusters.reduce((total, cluster) => total + cluster.strength, 0),
+              x: 50,
+              y: 50,
+            },
+          ];
+    const sideStrength = clusters.reduce((total, cluster) => total + cluster.strength, 0);
+
+    return clusters.map((cluster, index) => ({
+      ...cluster,
+      share: sideStrength > 0 ? cluster.strength / sideStrength : 0,
+      ...getFlowTopologyClusterPoint(index, clusters.length, side),
+    }));
+  });
+}
+
+function getFlowTopologyLayout(
+  snapshot: FlowTopologySnapshot,
+  viewMode: FlowTopologyViewMode,
+): FlowTopologyLayoutItem[] {
+  const clusters = getFlowTopologyClusterLayout(snapshot, viewMode);
+  const processItems = clusters.flatMap((cluster) =>
+    cluster.representativeRefs.map((reference) => ({
+      category: getFlowTopologyCategory(reference.node),
+      clusterId: cluster.id,
+      edges: reference.edges,
+      id: `process:${reference.node.id}`,
+      kind: 'process' as const,
+      node: reference.node,
+      relation: reference.relation,
+      side: cluster.side,
+      strength: reference.score,
+    })),
+  );
+
+  return [...clusters, ...processItems];
+}
+
+function isFlowTopologyItemHighlighted(
+  item: FlowTopologyLayoutItem,
+  activeItem?: FlowTopologyLayoutItem,
+) {
+  if (!activeItem) {
+    return false;
+  }
+  if (item.id === activeItem.id) {
+    return true;
+  }
+  if (item.kind === 'process' && activeItem.kind === 'cluster') {
+    return item.clusterId === activeItem.id;
+  }
+  if (item.kind === 'cluster' && activeItem.kind === 'process') {
+    return item.id === activeItem.clusterId;
+  }
+
+  return false;
+}
+
+function getFlowTopologyClusterPath(item: FlowTopologyClusterLayoutItem) {
+  const controlX = item.side === 'left' ? 38 : 62;
+
+  return `M ${item.x} ${item.y} C ${controlX} ${item.y}, ${controlX} 50, 50 50`;
+}
+
+function getFlowTopologyEdgeWeight(strength: number) {
+  return Math.min(8.2, Math.max(2.2, 1.8 + Math.log10(strength + 1) * 1.18));
 }
 
 async function fetchJsonOrCacheMiss<T>(url: string): Promise<T> {
@@ -571,13 +809,7 @@ async function fetchJsonOrCacheMiss<T>(url: string): Promise<T> {
 }
 
 async function loadCachedFlowTopology(flow: FlowTable): Promise<FlowTopologySnapshot> {
-  if (!useLocalFlowTopologyFixture && flow.id === mockFlowTopologySnapshot.flow.id) {
-    return mockFlowTopologySnapshot;
-  }
-
-  const baseUrl = useLocalFlowTopologyFixture
-    ? localFlowTopologyFixtureCacheBaseUrl
-    : getFlowTopologyCacheBaseUrl();
+  const baseUrl = getFlowTopologyCacheBaseUrl();
   const manifest = await fetchJsonOrCacheMiss<{ activeBuildId?: string; buildId?: string }>(
     `${baseUrl}/manifest.json`,
   );
@@ -605,39 +837,22 @@ async function searchSmartRecommendedFlows(queryText: string): Promise<{
   fallback: boolean;
 }> {
   const normalizedQuery = queryText.trim();
-  const mockFlow = createMockFlowTable();
-
-  if (useLocalFlowTopologyFixture) {
-    const fixtureFlows = createLocalFlowTopologyFixtureFlowTables();
-    const normalizedFixtureQuery = normalizedQuery.toLowerCase();
-    const matchedFixtureFlows = normalizedFixtureQuery
-      ? fixtureFlows.filter((flow) =>
-          [flow.id, flow.name, flow.classification, flow.flowType, flow.synonyms]
-            .join(' ')
-            .toLowerCase()
-            .includes(normalizedFixtureQuery),
-        )
-      : fixtureFlows;
-
-    return {
-      data: matchedFixtureFlows.length > 0 ? matchedFixtureFlows : fixtureFlows,
-      fallback: true,
-    };
-  }
 
   if (!normalizedQuery) {
-    return { data: [mockFlow], fallback: true };
+    return { data: [], fallback: false };
   }
 
   try {
-    const result = await Promise.race([
-      flow_hybrid_search({ current: 1, pageSize: 8 }, 'zh', 'tg', normalizedQuery, {
+    const result = await flow_hybrid_search(
+      { current: 1, pageSize: 8 },
+      'zh',
+      'tg',
+      normalizedQuery,
+      {
         flowType: topologyFlowTypeFilter,
-      }),
-      new Promise<{ data?: FlowTable[] }>((resolve) => {
-        window.setTimeout(() => resolve({ data: [] }), 2500);
-      }),
-    ]);
+      },
+      100,
+    );
     const recommendedFlows = filterTopologyFlowCandidates(result.data ?? []);
 
     if (recommendedFlows.length > 0) {
@@ -647,7 +862,7 @@ async function searchSmartRecommendedFlows(queryText: string): Promise<{
     console.warn('Failed to load smart flow recommendations.', error);
   }
 
-  return { data: [mockFlow], fallback: true };
+  return { data: [], fallback: false };
 }
 
 type StageLayout = {
@@ -2363,7 +2578,7 @@ function FlowTopologySearchResult({
       onClick={() => onSelect(flow)}
       type='button'
     >
-      <span>{flow.flowType}</span>
+      <span>{getFlowTopologyFlowTypeLabel(flow.flowType)}</span>
       <strong>{flow.name}</strong>
       <small>{flow.classification || '未分类'}</small>
       <em>
@@ -2373,136 +2588,324 @@ function FlowTopologySearchResult({
   );
 }
 
-function FlowTopologyProcessTooltip({
-  selectedProcess,
-}: {
-  selectedProcess: FlowTopologySelectedProcess;
-}) {
-  const { edges, layout } = selectedProcess;
-  const providerCount = edges.filter((edge) => edge.relation === 'provider').length;
-  const consumerCount = edges.filter((edge) => edge.relation === 'consumer').length;
-  const primaryEdge = edges[0];
-  const placement =
-    layout.y > 66
-      ? 'top'
-      : layout.y < 34
-        ? 'bottom'
-        : layout.x > 62
-          ? 'left'
-          : layout.x < 38
-            ? 'right'
-            : 'bottom';
-  const tooltipX =
-    placement === 'left' ? layout.x - 1 : placement === 'right' ? layout.x + 1 : layout.x;
-  const tooltipY = Math.min(Math.max(layout.y, 18), 82);
-
+function FlowTopologySearchLoading() {
   return (
-    <aside
-      className={[
-        styles.flowTopologyProcessTooltip,
-        placement === 'left' ? styles.flowTopologyTooltipLeft : '',
-        placement === 'right' ? styles.flowTopologyTooltipRight : '',
-        placement === 'top' ? styles.flowTopologyTooltipTop : '',
-        placement === 'bottom' ? styles.flowTopologyTooltipBottom : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      role='tooltip'
-      style={
-        {
-          '--tooltip-x': `${tooltipX}%`,
-          '--tooltip-y': `${tooltipY}%`,
-        } as CSSProperties
-      }
-    >
-      <div className={styles.flowTopologyTooltipHeader}>
-        <span>
-          {layout.relation === 'provider'
-            ? 'Provider Process'
-            : layout.relation === 'consumer'
-              ? 'Consumer Process'
-              : 'Provider / Consumer'}
-        </span>
-        <strong>{layout.node.name}</strong>
-        <p>{layout.node.classification ?? '未分类'}</p>
+    <div aria-live='polite' className={styles.flowTopologySearchLoading} role='status'>
+      <div className={styles.flowTopologySearchLoadingCore} aria-hidden='true'>
+        <i />
+        <i />
+        <i />
       </div>
-      <div className={styles.flowTopologyTooltipGrid}>
-        <span>UUID</span>
-        <b>{layout.node.id.replace(/^process:/, '').split('@')[0]}</b>
-        <span>版本</span>
-        <b>{layout.node.version}</b>
-        <span>地区</span>
-        <b>{layout.node.location ?? '-'}</b>
-        <span>参考年</span>
-        <b>{layout.node.referenceYear ?? '-'}</b>
-        <span>数据集类型</span>
-        <b>{layout.node.typeOfDataSet ?? '-'}</b>
-        <span>关系</span>
-        <b>
-          {providerCount > 0 ? `${providerCount} provider` : ''}
-          {providerCount > 0 && consumerCount > 0 ? ' / ' : ''}
-          {consumerCount > 0 ? `${consumerCount} consumer` : ''}
-        </b>
-        <span>Exchange</span>
-        <b>{primaryEdge?.exchangeDirection ?? '-'}</b>
-        <span>Mean / Resulting</span>
-        <b>
-          {primaryEdge?.meanAmount ?? '-'} / {primaryEdge?.resultingAmount ?? '-'}
-        </b>
-        <span>数据状态</span>
-        <b>{primaryEdge?.dataDerivationTypeStatus ?? '-'}</b>
-        <span>定量参考</span>
-        <b>{primaryEdge?.quantitativeReference ? '是' : '否'}</b>
+      <strong>智能推荐中</strong>
+      <span>正在锁定非基础流候选</span>
+      <div className={styles.flowTopologySearchLoadingBars} aria-hidden='true'>
+        {Array.from({ length: 18 }, (_, index) => (
+          <i key={index} style={{ '--bar-index': index } as CSSProperties} />
+        ))}
       </div>
-    </aside>
+      <div className={styles.flowTopologySearchLoadingRows} aria-hidden='true'>
+        {Array.from({ length: 4 }, (_, index) => (
+          <i key={index} style={{ '--row-index': index } as CSSProperties} />
+        ))}
+      </div>
+    </div>
   );
 }
 
+function FlowTopologySearchEmpty() {
+  return (
+    <div className={styles.flowTopologyEmpty}>
+      <div className={styles.flowTopologyEmptyRadar} aria-hidden='true'>
+        <i />
+        <i />
+        <i />
+        <span />
+      </div>
+      <strong>未命中拓扑候选</strong>
+      <span>NO TOPOLOGY SIGNAL</span>
+      <div className={styles.flowTopologyEmptyNodes} aria-hidden='true'>
+        {Array.from({ length: 9 }, (_, index) => (
+          <i key={index} style={{ '--empty-node-index': index } as CSSProperties} />
+        ))}
+      </div>
+      <div className={styles.flowTopologyEmptyBars} aria-hidden='true'>
+        {Array.from({ length: 14 }, (_, index) => (
+          <i key={index} style={{ '--empty-bar-index': index } as CSSProperties} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getFlowTopologyViewLabel(viewMode: FlowTopologyViewMode) {
+  if (viewMode === 'provider') {
+    return '输出引用';
+  }
+  if (viewMode === 'consumer') {
+    return '输入引用';
+  }
+  if (viewMode === 'process') {
+    return '过程清单';
+  }
+  return '供需概览';
+}
+
+function getFlowTopologyListTitle(selectedItem: FlowTopologyLayoutItem | undefined) {
+  if (!selectedItem) {
+    return '全部过程';
+  }
+  if (selectedItem.kind === 'cluster') {
+    return selectedItem.category;
+  }
+  return selectedItem.node.name;
+}
+
+const FlowTopologyClusterButton = memo(function FlowTopologyClusterButton({
+  index,
+  isActive,
+  item,
+  onActivate,
+  onClearHover,
+  onHover,
+}: {
+  index: number;
+  isActive: boolean;
+  item: FlowTopologyClusterLayoutItem;
+  onActivate: (itemId: string) => void;
+  onClearHover: () => void;
+  onHover: (itemId: string) => void;
+}) {
+  const handleHover = () => onHover(item.id);
+
+  return (
+    <button
+      aria-label={`${item.category}，${formatNumber(item.processCount)} 个过程，${getFlowTopologyRelationLabel(item.relation)}`}
+      aria-pressed={isActive}
+      className={[
+        styles.flowTopologyClusterNode,
+        styles.flowTopologyBasinNode,
+        item.relation === 'provider' ? styles.flowTopologyNodeProvider : '',
+        item.relation === 'consumer' ? styles.flowTopologyNodeConsumer : '',
+        item.relation === 'both' ? styles.flowTopologyNodeBoth : '',
+        item.side === 'left' ? styles.flowTopologyNodeLeft : styles.flowTopologyNodeRight,
+        isActive ? styles.flowTopologyNodeActive : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      onBlur={onClearHover}
+      onClick={() => onActivate(item.id)}
+      onFocus={handleHover}
+      onMouseEnter={handleHover}
+      onMouseLeave={onClearHover}
+      style={
+        {
+          '--node-delay': `${0.12 + index * 0.06}s`,
+          '--node-x': `${item.x}%`,
+          '--node-y': `${item.y}%`,
+        } as CSSProperties
+      }
+      title={item.category}
+      type='button'
+    >
+      <i aria-hidden='true' className={styles.flowTopologyProcessAnchor} />
+      <span>{item.side === 'left' ? '输出引用' : '输入引用'}</span>
+      <strong>{item.category}</strong>
+      <em>
+        <b>{formatNumber(item.processCount)}</b> 个过程
+      </em>
+      <small>
+        {formatNumber(item.referenceCount)} 条引用 / {(item.share * 100).toFixed(0)}%
+      </small>
+    </button>
+  );
+});
+
+const FlowTopologyProcessRow = memo(function FlowTopologyProcessRow({
+  isActive,
+  item,
+  onActivate,
+  onClearHover,
+  onHover,
+}: {
+  isActive: boolean;
+  item: FlowTopologyProcessListItem;
+  onActivate: (itemId: string) => void;
+  onClearHover: () => void;
+  onHover: (itemId: string) => void;
+}) {
+  const handleHover = () => onHover(item.id);
+  const primaryEdge = item.edges[0];
+
+  return (
+    <button
+      className={[
+        styles.flowTopologyProcessRow,
+        item.relation === 'provider' ? styles.flowTopologyNodeProvider : '',
+        item.relation === 'consumer' ? styles.flowTopologyNodeConsumer : '',
+        item.relation === 'both' ? styles.flowTopologyNodeBoth : '',
+        isActive ? styles.flowTopologyProcessRowActive : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-label={`${item.node.name}，${getFlowTopologyRelationLabel(item.relation)}`}
+      aria-pressed={isActive}
+      onBlur={onClearHover}
+      onClick={() => onActivate(item.id)}
+      onFocus={handleHover}
+      onMouseEnter={handleHover}
+      onMouseLeave={onClearHover}
+      title={item.node.name}
+      type='button'
+    >
+      <span>{getFlowTopologyRelationLabel(item.relation)}</span>
+      <strong>{item.node.name}</strong>
+      <small>{item.category}</small>
+      <em>{item.node.location ?? '-'}</em>
+      <b>{getFlowTopologyAmountLabel(item.edges, 'meanAmount')}</b>
+      <b>{getFlowTopologyAmountLabel(item.edges, 'resultingAmount')}</b>
+      <i>{getFlowTopologyDataDerivationTypeStatusLabel(primaryEdge?.dataDerivationTypeStatus)}</i>
+    </button>
+  );
+});
+
 function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
+  const [hoveredClusterId, setHoveredClusterId] = useState<string | null>(null);
+  const [selectedClusterId, setSelectedClusterId] = useState<string | null>(null);
   const [hoveredProcessId, setHoveredProcessId] = useState<string | null>(null);
-  const layoutItems = useMemo(() => getFlowTopologyLayout(topology), [topology]);
-  const layoutMap = useMemo(
-    () => new Map(layoutItems.map((item) => [item.node.id, item] as const)),
+  const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null);
+  const layoutItems = useMemo(() => getFlowTopologyLayout(topology, 'overview'), [topology]);
+  const clusterItems = useMemo(
+    () =>
+      layoutItems.filter((item): item is FlowTopologyClusterLayoutItem => item.kind === 'cluster'),
     [layoutItems],
   );
-  const flowNodeId = getFlowTopologyFlowNodeId(topology);
-  const hoveredProcess = hoveredProcessId ? layoutMap.get(hoveredProcessId) : undefined;
-  const selectedProcess = hoveredProcess
-    ? {
-        edges: getFlowTopologyProcessEdges(topology, hoveredProcess.node.id),
-        layout: hoveredProcess,
-      }
-    : undefined;
+  const processItems = useMemo(
+    () =>
+      layoutItems.filter((item): item is FlowTopologyProcessListItem => item.kind === 'process'),
+    [layoutItems],
+  );
+  const layoutMap = useMemo(
+    () => new Map(layoutItems.map((item) => [item.id, item] as const)),
+    [layoutItems],
+  );
+  const selectedFilterItem = selectedClusterId ? layoutMap.get(selectedClusterId) : undefined;
+  const activeClusterId = hoveredClusterId ?? selectedClusterId;
+  const activeCluster = activeClusterId ? layoutMap.get(activeClusterId) : undefined;
+  const activeProcessId = hoveredProcessId ?? selectedProcessId;
+  const activeProcess = activeProcessId ? layoutMap.get(activeProcessId) : undefined;
+  const highlightedItem = activeProcess ?? activeCluster;
+  const visibleProcessItems =
+    selectedFilterItem?.kind === 'cluster'
+      ? processItems.filter((item) => item.clusterId === selectedFilterItem.id)
+      : processItems;
+  const stats: { count: number; label: string }[] = [
+    { count: topology.stats.providers, label: '输出' },
+    { count: topology.stats.consumers, label: '输入' },
+    { count: topology.stats.processCount, label: '过程' },
+  ];
 
-  const getEndpoint = (nodeId: string) => {
-    if (nodeId === flowNodeId) {
-      return { x: 50, y: 50 };
-    }
-    const item = layoutMap.get(nodeId);
-    return item ? { x: item.x, y: item.y } : { x: 50, y: 50 };
+  useEffect(() => {
+    setHoveredClusterId(null);
+    setSelectedClusterId(null);
+    setHoveredProcessId(null);
+    setSelectedProcessId(null);
+  }, [topology]);
+
+  const handleHoverCluster = useCallback((itemId: string) => {
+    setHoveredClusterId(itemId);
+  }, []);
+  const handleClearHoveredCluster = useCallback(() => {
+    setHoveredClusterId(null);
+  }, []);
+  const handleActivateCluster = useCallback((itemId: string) => {
+    setSelectedClusterId((currentId) => (currentId === itemId ? null : itemId));
+    setSelectedProcessId(null);
+  }, []);
+  const handleHoverProcess = useCallback((itemId: string) => {
+    setHoveredProcessId(itemId);
+  }, []);
+  const handleClearHoveredProcess = useCallback(() => {
+    setHoveredProcessId(null);
+  }, []);
+  const handleActivateProcess = useCallback((itemId: string) => {
+    setSelectedProcessId((currentId) => (currentId === itemId ? null : itemId));
+  }, []);
+  const renderClusterEdge = (item: FlowTopologyClusterLayoutItem, index: number) => {
+    const isHighlighted = isFlowTopologyItemHighlighted(item, highlightedItem);
+
+    return (
+      <g
+        className={[
+          styles.flowTopologyAggregateEdges,
+          item.relation === 'provider' ? styles.flowTopologyAggregateProvider : '',
+          item.relation === 'consumer' ? styles.flowTopologyAggregateConsumer : '',
+          item.relation === 'both' ? styles.flowTopologyAggregateMixed : '',
+          isHighlighted ? styles.flowTopologyEdgeActive : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        key={item.id}
+        style={
+          {
+            '--edge-delay': `${index * 0.07}s`,
+            '--edge-width': `${getFlowTopologyEdgeWeight(item.strength)}`,
+          } as CSSProperties
+        }
+      >
+        <path className={styles.flowTopologyAggregateHalo} d={getFlowTopologyClusterPath(item)} />
+        <path className={styles.flowTopologyAggregateBeam} d={getFlowTopologyClusterPath(item)} />
+      </g>
+    );
   };
 
   return (
     <div className={styles.flowTopologyGraphShell}>
       <div className={styles.flowTopologyGraphHeader}>
         <div>
-          <span>缓存构建：{topology.buildId}</span>
           <strong>{topology.flow.name}</strong>
         </div>
-        <div className={styles.flowTopologyStats}>
-          <span>
-            Provider <strong>{formatNumber(topology.stats.providers)}</strong>
-          </span>
-          <span>
-            Consumer <strong>{formatNumber(topology.stats.consumers)}</strong>
-          </span>
-          <span>
-            Process <strong>{formatNumber(topology.stats.processCount)}</strong>
-          </span>
+        <div className={styles.flowTopologyHeaderActions}>
+          <div
+            className={styles.flowTopologyStats}
+            style={
+              {
+                alignItems: 'center',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                minWidth: 324,
+                width: 324,
+              } as CSSProperties
+            }
+          >
+            {stats.map((item, index) => (
+              <div
+                aria-label={`${item.label} ${formatNumber(item.count)}`}
+                className={styles.flowTopologyStatCard}
+                key={item.label}
+                style={
+                  {
+                    alignItems: 'center',
+                    columnGap: 6,
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    marginLeft: index === 0 ? 0 : 12,
+                    whiteSpace: 'nowrap',
+                    width: item.label === '输出' ? 92 : 104,
+                  } as CSSProperties
+                }
+              >
+                <span>{item.label}</span>
+                <strong>{formatNumber(item.count)}</strong>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <div className={styles.flowTopologyGraphBody}>
-        <div className={styles.flowTopologyCanvas} onMouseLeave={() => setHoveredProcessId(null)}>
+        <div
+          className={[styles.flowTopologyCanvas, styles.flowTopologyBasinCanvas].join(' ')}
+          onMouseLeave={handleClearHoveredCluster}
+        >
           <div aria-hidden='true' className={styles.flowTopologyCanvasSignal} />
           <svg aria-hidden='true' className={styles.flowTopologyEdges} viewBox='0 0 100 100'>
             <defs>
@@ -2517,76 +2920,69 @@ function FlowTopologyGraph({ topology }: { topology: FlowTopologySnapshot }) {
                 <stop offset='100%' stopColor='#ff9d36' stopOpacity='0.08' />
               </linearGradient>
             </defs>
-            <line className={styles.flowTopologyMidline} x1='10' x2='90' y1='50' y2='50' />
+            <line className={styles.flowTopologyMidline} x1='12' x2='88' y1='50' y2='50' />
             <ellipse className={styles.flowTopologyOrbitOuter} cx='50' cy='50' rx='38' ry='36' />
             <ellipse className={styles.flowTopologyOrbitInner} cx='50' cy='50' rx='22' ry='20' />
-            {topology.edges.map((edge, index) => {
-              const source = getEndpoint(edge.source);
-              const target = getEndpoint(edge.target);
-              const isHighlighted =
-                hoveredProcessId === edge.source || hoveredProcessId === edge.target;
-              const controlX =
-                edge.relation === 'provider'
-                  ? Math.max(Math.min((source.x + target.x) / 2, 43), 34)
-                  : Math.min(Math.max((source.x + target.x) / 2, 57), 66);
-              const path = `M ${source.x} ${source.y} C ${controlX} ${source.y}, ${controlX} ${target.y}, ${target.x} ${target.y}`;
-              return (
-                <g
-                  className={[
-                    styles.flowTopologyEdge,
-                    edge.relation === 'provider'
-                      ? styles.flowTopologyEdgeProvider
-                      : styles.flowTopologyEdgeConsumer,
-                    isHighlighted ? styles.flowTopologyEdgeActive : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  key={edge.id}
-                  style={{ '--edge-delay': `${index * 0.12}s` } as CSSProperties}
-                >
-                  <path className={styles.flowTopologyEdgeHalo} d={path} />
-                  <path className={styles.flowTopologyEdgeBeam} d={path} />
-                </g>
-              );
-            })}
+            {clusterItems.map(renderClusterEdge)}
           </svg>
           <div className={styles.flowTopologyCoreNode}>
-            <span>{topology.flow.flowType}</span>
+            <span>{getFlowTopologyFlowTypeLabel(topology.flow.flowType)}</span>
             <strong>{topology.flow.name}</strong>
             <em>{topology.flow.version}</em>
           </div>
-          {layoutItems.map((item, index) => (
-            <button
-              className={[
-                styles.flowTopologyProcessNode,
-                item.relation === 'provider' ? styles.flowTopologyNodeProvider : '',
-                item.relation === 'consumer' ? styles.flowTopologyNodeConsumer : '',
-                item.relation === 'both' ? styles.flowTopologyNodeBoth : '',
-                hoveredProcessId === item.node.id ? styles.flowTopologyNodeActive : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              key={item.node.id}
-              onFocus={() => setHoveredProcessId(item.node.id)}
-              onBlur={() => setHoveredProcessId(null)}
-              onMouseEnter={() => setHoveredProcessId(item.node.id)}
-              onMouseLeave={() => setHoveredProcessId(null)}
-              style={
-                {
-                  '--node-delay': `${0.18 + index * 0.06}s`,
-                  '--node-x': `${item.x}%`,
-                  '--node-y': `${item.y}%`,
-                } as CSSProperties
-              }
-              type='button'
-            >
-              <i aria-hidden='true' className={styles.flowTopologyProcessAnchor} />
-              <span>{item.relation}</span>
-              <strong>{item.node.name}</strong>
-              <em>{item.node.location ?? '-'}</em>
-            </button>
+          {clusterItems.map((item, index) => (
+            <FlowTopologyClusterButton
+              index={index}
+              isActive={isFlowTopologyItemHighlighted(item, highlightedItem)}
+              item={item}
+              key={item.id}
+              onActivate={handleActivateCluster}
+              onClearHover={handleClearHoveredCluster}
+              onHover={handleHoverCluster}
+            />
           ))}
-          {selectedProcess && <FlowTopologyProcessTooltip selectedProcess={selectedProcess} />}
+          {layoutItems.length === 0 && (
+            <div className={styles.flowTopologyViewEmpty}>
+              <span>全部引用</span>
+              <strong>暂无对应过程</strong>
+            </div>
+          )}
+        </div>
+        <div className={styles.flowTopologyProcessLedger}>
+          <div className={styles.flowTopologyLedgerHeader}>
+            <div className={styles.flowTopologyLedgerSummary}>
+              <span>{getFlowTopologyViewLabel('overview')}</span>
+              <strong>{getFlowTopologyListTitle(selectedFilterItem)}</strong>
+              <p>
+                {formatNumber(visibleProcessItems.length)} / {formatNumber(processItems.length)}{' '}
+                个过程
+              </p>
+            </div>
+          </div>
+          <div className={styles.flowTopologyLedgerColumns} aria-hidden='true'>
+            <span>关系</span>
+            <span>过程</span>
+            <span>分类</span>
+            <span>地区</span>
+            <span>平均量</span>
+            <span>结果量</span>
+            <span>数据推导类型/状态</span>
+          </div>
+          <div className={styles.flowTopologyProcessRows}>
+            {visibleProcessItems.map((item) => (
+              <FlowTopologyProcessRow
+                isActive={isFlowTopologyItemHighlighted(item, highlightedItem)}
+                item={item}
+                key={item.id}
+                onActivate={handleActivateProcess}
+                onClearHover={handleClearHoveredProcess}
+                onHover={handleHoverProcess}
+              />
+            ))}
+            {visibleProcessItems.length === 0 && (
+              <div className={styles.flowTopologyLedgerEmpty}>暂无对应过程</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -2602,11 +2998,9 @@ function FlowTopologyScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
-  const [query, setQuery] = useState('低碳热轧钢卷');
+  const [query, setQuery] = useState('');
   const [searchState, setSearchState] = useState<FlowTopologySearchState>('ready');
-  const [searchResults, setSearchResults] = useState<FlowTable[]>(() =>
-    getInitialFlowTopologySearchResults(),
-  );
+  const [searchResults, setSearchResults] = useState<FlowTable[]>([]);
   const [searchPage, setSearchPage] = useState(1);
   const [selectedFlow, setSelectedFlow] = useState<FlowTable | null>(null);
   const [topologyState, setTopologyState] = useState<FlowTopologyLoadState>('idle');
@@ -2670,10 +3064,7 @@ function FlowTopologyScreen({
         : topologyState === 'loading'
           ? '拓扑信号接入中'
           : '过程网络待激活';
-  const placeholderCaption =
-    topologyState === 'loading'
-      ? 'Provider / consumer signal locking'
-      : 'Provider / consumer network';
+  const placeholderCaption = topologyState === 'loading' ? '供需关系信号接入中' : '供需过程网络';
 
   return (
     <section className={styles.screenPanel}>
@@ -2699,31 +3090,41 @@ function FlowTopologyScreen({
             </button>
           </form>
           <div className={styles.flowTopologyResultList}>
-            {pagedSearchResults.map((flow) => (
-              <FlowTopologySearchResult
-                flow={flow}
-                isSelected={selectedFlow?.id === flow.id && selectedFlow?.version === flow.version}
-                key={`${flow.id}:${flow.version}`}
-                onSelect={handleSelectFlow}
-              />
-            ))}
-            {searchState === 'ready' && searchResults.length === 0 && (
-              <div className={styles.flowTopologyEmpty}>没有可用于拓扑展示的非基础流</div>
+            {searchState === 'loading' ? (
+              <FlowTopologySearchLoading />
+            ) : (
+              <>
+                {pagedSearchResults.map((flow) => (
+                  <FlowTopologySearchResult
+                    flow={flow}
+                    isSelected={
+                      selectedFlow?.id === flow.id && selectedFlow?.version === flow.version
+                    }
+                    key={`${flow.id}:${flow.version}`}
+                    onSelect={handleSelectFlow}
+                  />
+                ))}
+                {searchResults.length === 0 && <FlowTopologySearchEmpty />}
+              </>
             )}
           </div>
           <div className={styles.flowTopologySearchMeta}>
             <span>
-              {searchResults.length > 0
-                ? `${formatNumber(firstResultIndex)}-${formatNumber(lastResultIndex)} / ${formatNumber(searchResults.length)}`
-                : '0 / 0'}
+              {searchState === 'loading'
+                ? '智能推荐中'
+                : searchResults.length > 0
+                  ? `${formatNumber(firstResultIndex)}-${formatNumber(lastResultIndex)} / ${formatNumber(searchResults.length)}`
+                  : '0 / 0'}
             </span>
             <b>
-              {formatNumber(searchPage)} / {formatNumber(searchTotalPages)}
+              {searchState === 'loading'
+                ? 'SCAN'
+                : `${formatNumber(searchPage)} / ${formatNumber(searchTotalPages)}`}
             </b>
             <div className={styles.flowTopologyPagerActions}>
               <button
                 aria-label='上一页'
-                disabled={searchPage <= 1}
+                disabled={searchState === 'loading' || searchPage <= 1}
                 onClick={() => setSearchPage((currentPage) => Math.max(1, currentPage - 1))}
                 type='button'
               >
@@ -2731,7 +3132,7 @@ function FlowTopologyScreen({
               </button>
               <button
                 aria-label='下一页'
-                disabled={searchPage >= searchTotalPages}
+                disabled={searchState === 'loading' || searchPage >= searchTotalPages}
                 onClick={() =>
                   setSearchPage((currentPage) => Math.min(searchTotalPages, currentPage + 1))
                 }
@@ -2790,7 +3191,7 @@ export default function NationalCarbonDashboardPage() {
   const stageLayout = useStageLayout();
 
   useEffect(() => {
-    if (!autoplayEnabled) {
+    if (!autoplayEnabled || activeScreen === 'flow_topology') {
       return undefined;
     }
 

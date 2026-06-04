@@ -112,5 +112,5 @@ export function getFlowTopologyObjectPath(
   flowVersion: string,
 ): string {
   const hashPrefix = getFlowTopologyHashPrefix(flowId);
-  return `builds/${buildId}/by-flow/${hashPrefix}/${flowId}/${flowVersion}/topology.json.gz`;
+  return `builds/${buildId}/by-flow/${hashPrefix}/${flowId}/${flowVersion}/topology.json`;
 }
