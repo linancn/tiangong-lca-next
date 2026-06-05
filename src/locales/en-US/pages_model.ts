@@ -291,6 +291,7 @@ export default {
   'pages.lifecyclemodel.validator.licenseType.required': 'Please input license type',
   'pages.lifecyclemodel.validator.nodes.required': 'Please add node',
   'pages.lifecyclemodel.validator.nodes.quantitativeReference.required': 'Please select a node as reference',
+  'pages.lifecyclemodel.error.missingReferenceProcess': 'The model is missing reference process information. Complete or rebind the reference process, then try again.',
   'pages.lifecyclemodel.review.submitSuccess': 'Review submitted successfully',
   'pages.lifecyclemodel.review.submitError': 'Submit review failed',
   'pages.lifecyclemodel.review.error': 'Referenced data is under review, cannot initiate another review',
