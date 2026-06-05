@@ -1,0 +1,625 @@
+.panelShell {
+  position: relative;
+  display: grid;
+  grid-template-rows: 46px minmax(0, 1fr);
+  grid-template-columns: 286px minmax(0, 1fr) 304px;
+  gap: 14px;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  color: rgba(235, 250, 255, 0.94);
+}
+
+.topHud {
+  position: relative;
+  z-index: 7;
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 14px;
+  align-items: center;
+  min-width: 0;
+}
+
+.modeTabs,
+.graphBadges,
+.leftRail,
+.inspector,
+.selectionStrip,
+.legendBox {
+  background:
+    linear-gradient(180deg, rgba(6, 28, 48, 0.88), rgba(2, 12, 24, 0.82)), rgba(2, 12, 24, 0.72);
+  border: 1px solid rgba(68, 222, 255, 0.2);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 28px rgba(24, 231, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.modeTabs {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  height: 42px;
+  padding: 4px;
+}
+
+.modeTabs button,
+.quickActions button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 13px;
+  color: rgba(186, 208, 218, 0.88);
+  font-weight: 800;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.modeTabs button:hover,
+.modeTabs button:focus-visible,
+.modeTabs .activeMode,
+.quickActions button:hover,
+.quickActions button:focus-visible {
+  color: #eaffff;
+  background:
+    radial-gradient(circle at 22% 50%, rgba(36, 231, 255, 0.25), transparent 38%),
+    linear-gradient(180deg, rgba(18, 70, 103, 0.92), rgba(2, 18, 32, 0.76));
+  border-color: rgba(36, 231, 255, 0.62);
+  box-shadow: 0 0 20px rgba(36, 231, 255, 0.16);
+}
+
+.modeTabs svg,
+.quickActions svg {
+  color: #24e7ff;
+  filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
+}
+
+.graphBadges {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.graphBadges span {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  min-width: 118px;
+  height: 100%;
+  padding: 0 16px;
+  color: rgba(203, 220, 228, 0.9);
+  font-size: 12px;
+  font-weight: 800;
+  border-right: 1px solid rgba(116, 196, 255, 0.14);
+}
+
+.graphBadges span > i {
+  width: 10px;
+  height: 10px;
+  background: #aaf334;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 4px rgba(170, 243, 52, 0.11),
+    0 0 14px rgba(170, 243, 52, 0.36);
+}
+
+.graphBadges b {
+  grid-column: 2;
+  color: #bff747;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.leftRail {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  grid-row: 2;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 13px;
+  overflow: hidden;
+}
+
+.searchBox {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  height: 40px;
+  padding: 0 10px;
+  color: rgba(209, 229, 238, 0.86);
+  background: rgba(2, 16, 31, 0.72);
+  border: 1px solid rgba(116, 196, 255, 0.22);
+  border-radius: 8px;
+}
+
+.searchBox input {
+  min-width: 0;
+  color: #efffff;
+  font-weight: 800;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.searchBox button {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: rgba(203, 220, 228, 0.86);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.searchResults {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.searchResult {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  min-height: 82px;
+  padding: 10px 12px;
+  overflow: hidden;
+  color: rgba(222, 242, 250, 0.9);
+  text-align: left;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 88% 24%, rgba(36, 231, 255, 0.13), transparent 33%),
+    linear-gradient(180deg, rgba(9, 38, 65, 0.82), rgba(2, 16, 31, 0.68));
+  border: 1px solid rgba(116, 196, 255, 0.18);
+  border-radius: 8px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.searchResult::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.18), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.searchResult:hover,
+.searchResult:focus-visible,
+.searchResultActive {
+  border-color: rgba(36, 231, 255, 0.62);
+  box-shadow:
+    0 0 24px rgba(36, 231, 255, 0.13),
+    inset 0 0 18px rgba(36, 231, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.searchResult:hover::before,
+.searchResult:focus-visible::before,
+.searchResultActive::before {
+  opacity: 1;
+  transform: translateX(100%);
+  transition:
+    opacity 160ms ease,
+    transform 420ms ease;
+}
+
+.searchResult span,
+.searchResult strong,
+.searchResult small,
+.searchResult em {
+  position: relative;
+  z-index: 1;
+}
+
+.searchResult span {
+  color: #24e7ff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.searchResult strong {
+  overflow: hidden;
+  color: #f4feff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchResult small,
+.searchResult em {
+  overflow: hidden;
+  color: rgba(184, 207, 218, 0.76);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendBox {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.legendBox span {
+  color: rgba(203, 220, 228, 0.76);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.legendBox p {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 0;
+  color: rgba(226, 242, 248, 0.88);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.selectedDot,
+.processDot,
+.inputDot,
+.outputDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.selectedDot {
+  background: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.62);
+}
+
+.processDot {
+  background: #ffb947;
+  box-shadow: 0 0 14px rgba(255, 185, 71, 0.5);
+}
+
+.inputDot {
+  background: #23f4ff;
+  box-shadow: 0 0 14px rgba(35, 244, 255, 0.5);
+}
+
+.outputDot {
+  background: #b9f63c;
+  box-shadow: 0 0 14px rgba(185, 246, 60, 0.5);
+}
+
+.graphStage {
+  position: relative;
+  grid-row: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(68, 222, 255, 0.13);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 70px rgba(36, 231, 255, 0.08),
+    0 0 34px rgba(36, 231, 255, 0.06);
+}
+
+.canvasHost {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.14), transparent 32%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px), #020b16;
+  background-size:
+    100% 100%,
+    38px 38px,
+    38px 38px,
+    100% 100%;
+}
+
+.canvasHost canvas {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvasGrid {
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 254deg,
+    rgba(36, 231, 255, 0.16) 276deg,
+    transparent 302deg,
+    transparent 360deg
+  );
+  opacity: 0.34;
+  animation: processFlowRadar 9s linear infinite;
+}
+
+.nodeTooltip {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  gap: 4px;
+  max-width: 260px;
+  padding: 9px 11px;
+  pointer-events: none;
+  background: rgba(1, 13, 25, 0.92);
+  border: 1px solid rgba(36, 231, 255, 0.34);
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(36, 231, 255, 0.18);
+  transform: translate(13px, 13px);
+}
+
+.nodeTooltip span {
+  color: #24e7ff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.nodeTooltip strong,
+.nodeTooltip em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeTooltip strong {
+  color: #f4feff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.nodeTooltip em {
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.selectionStrip {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 6;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 12px;
+}
+
+.selectionStrip span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #f4feff;
+  font-size: 16px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectionStrip strong {
+  color: #24e7ff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.selectionStrip em {
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.inspector {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  grid-row: 2;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.inspectorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  color: rgba(203, 220, 228, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+  border-bottom: 1px solid rgba(116, 196, 255, 0.14);
+}
+
+.inspectorHeader svg {
+  color: #24e7ff;
+}
+
+.emptyInspector,
+.nodeIdentity {
+  display: grid;
+  gap: 7px;
+}
+
+.emptyInspector strong,
+.nodeIdentity strong {
+  color: #f4feff;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.emptyInspector span,
+.nodeIdentity span {
+  width: fit-content;
+  padding: 3px 7px;
+  color: #c6a8ff;
+  font-size: 10px;
+  font-weight: 900;
+  background: rgba(119, 84, 255, 0.18);
+  border: 1px solid rgba(198, 168, 255, 0.28);
+  border-radius: 6px;
+}
+
+.nodeDetails {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.nodeDetails div {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.nodeDetails dt,
+.nodeDetails dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeDetails dt {
+  color: rgba(190, 212, 222, 0.68);
+}
+
+.nodeDetails dd {
+  color: rgba(240, 253, 255, 0.9);
+}
+
+.inspectorMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.inspectorMetricGrid div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  background: rgba(4, 27, 47, 0.68);
+  border: 1px solid rgba(36, 231, 255, 0.16);
+  border-radius: 8px;
+}
+
+.inspectorMetricGrid span {
+  overflow: hidden;
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspectorMetricGrid strong {
+  color: #24e7ff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.edgeList {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.edgeList > span {
+  color: rgba(203, 220, 228, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.edgeList div {
+  display: grid;
+  grid-template-columns: auto 48px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 28px;
+  color: rgba(230, 246, 251, 0.88);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.edgeList em,
+.edgeList b {
+  overflow: hidden;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edgeList b {
+  color: #f6db4d;
+  font-weight: 900;
+}
+
+.edgeList small {
+  color: rgba(190, 212, 222, 0.68);
+  font-weight: 800;
+  text-align: right;
+}
+
+@keyframes processFlowRadar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
