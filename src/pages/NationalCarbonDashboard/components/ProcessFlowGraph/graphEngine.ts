@@ -192,15 +192,11 @@ function setGeometryPositionArray(geometry: THREE.BufferGeometry, positions: Flo
 }
 
 function getEdgeTransitionFade(progress: number) {
-  if (progress < 0.38) {
-    return THREE.MathUtils.lerp(1, 0.08, getSmoothStep(0, 0.38, progress));
+  if (progress < 0.44) {
+    return 0;
   }
 
-  if (progress > 0.58) {
-    return THREE.MathUtils.lerp(0.08, 1, getSmoothStep(0.58, 1, progress));
-  }
-
-  return 0.08;
+  return getSmoothStep(0.44, 1, progress);
 }
 
 function createPointTexture() {
@@ -1144,8 +1140,7 @@ export class ProcessFlowGraphEngine {
       edgeMaterial.opacity = transition.edgeOpacity * edgeFade;
     }
     if (highlightedEdgeMaterial) {
-      highlightedEdgeMaterial.opacity =
-        transition.highlightedEdgeOpacity * Math.max(0.14, edgeFade);
+      highlightedEdgeMaterial.opacity = transition.highlightedEdgeOpacity * edgeFade;
     }
     if (this.sphereShell && sphereShellMaterial) {
       this.sphereShell.visible = true;
