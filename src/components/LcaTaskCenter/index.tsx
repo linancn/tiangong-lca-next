@@ -8,7 +8,6 @@ import {
   clearFinishedLcaTasks,
   listLcaTasks,
   refreshLcaTasksFromWorkerJobs,
-  removeLcaTask,
   subscribeLcaTaskCenterOpenRequests,
   subscribeLcaTasks,
 } from '@/services/lca/taskCenter';
@@ -21,7 +20,6 @@ import {
   clearFinishedReviewSubmitTasks,
   listReviewSubmitTasks,
   refreshReviewSubmitTasks,
-  removeReviewSubmitTask,
   retryReviewSubmitTask,
   subscribeReviewSubmitTasks,
 } from '@/services/reviews/taskCenter';
@@ -38,7 +36,6 @@ import {
   downloadTidasPackageExportTask,
   listTidasPackageTasks,
   refreshTidasPackageTasksFromWorkerJobs,
-  removeTidasPackageTask,
   subscribeTidasPackageTasks,
 } from '@/services/tidasPackage/taskCenter';
 import {
@@ -46,16 +43,18 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
   DownloadOutlined,
+  EyeOutlined,
   InfoCircleOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import {
   Button,
   Empty,
-  List,
   Modal,
   Popover,
+  Progress,
   Space,
+  Tabs,
   Tag,
   Tooltip,
   Typography,
@@ -93,6 +92,9 @@ type FormattedReviewSubmitReason = {
   diagnosticMessage?: string;
   diagnosticDetails?: string;
 };
+
+const DIAGNOSTICS_POPOVER_WIDTH = 520;
+const DIAGNOSTICS_POPOVER_MAX_HEIGHT = 520;
 
 function useLcaTasks(): LcaBackgroundTask[] {
   return useSyncExternalStore(subscribeLcaTasks, listLcaTasks, listLcaTasks);
@@ -288,10 +290,6 @@ function phaseLabel(item: TaskCenterItem, intl: IntlShapeLike): string {
   return packagePhaseLabel(item.task.phase, intl);
 }
 
-function shouldShowPhaseTag(item: TaskCenterItem): boolean {
-  return item.kind === 'reviewSubmit' || item.task.state === 'running';
-}
-
 function formatDuration(durationMs: number): string {
   if (durationMs < 1000) {
     return `${durationMs} ms`;
@@ -329,188 +327,503 @@ function getTaskElapsedMs(item: TaskCenterItem): number {
   return Math.max(0, end - created);
 }
 
-type PhaseDurationSegment = {
-  phase: LcaTrackedTaskPhase;
-  label: string;
-  color: string;
-  durationMs: number;
+type ProcessStepState = 'completed' | 'active' | 'waiting' | 'failed';
+
+type ProcessStepItem = {
+  key: string;
+  title: string;
+  description?: React.ReactNode;
+  meta?: React.ReactNode;
+  state: ProcessStepState;
 };
 
-const PHASE_ORDER: LcaTrackedTaskPhase[] = ['submitting', 'building_snapshot', 'solving'];
-function timelineSegments(
-  task: LcaBackgroundTask,
-  intl: IntlShapeLike,
-  phaseColors: Record<LcaTrackedTaskPhase, string>,
-): PhaseDurationSegment[] {
-  const phaseText: Record<LcaTrackedTaskPhase, string> = {
-    submitting: intl.formatMessage({
-      id: 'pages.process.lca.taskCenter.phase.submitting',
-      defaultMessage: 'Submitting',
-    }),
-    building_snapshot: intl.formatMessage({
-      id: 'pages.process.lca.taskCenter.phase.buildingShort',
-      defaultMessage: 'Build',
-    }),
-    solving: intl.formatMessage({
-      id: 'pages.process.lca.taskCenter.phase.solvingShort',
-      defaultMessage: 'Solve',
-    }),
-  };
-  const totals: Record<LcaTrackedTaskPhase, number> = {
-    submitting: 0,
-    building_snapshot: 0,
-    solving: 0,
-  };
-  const nowMs = Date.now();
-  for (const item of task.phaseTimeline) {
-    const startMs = Date.parse(item.startedAt);
-    const endMs = item.endedAt ? Date.parse(item.endedAt) : nowMs;
-    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) {
-      continue;
-    }
-    totals[item.phase] += Math.max(0, endMs - startMs);
-  }
-  const segments = PHASE_ORDER.map((phase) => ({
-    phase,
-    label: phaseText[phase],
-    color: phaseColors[phase],
-    durationMs: totals[phase],
-  })).filter((item) => item.durationMs > 0);
-  if (segments.length > 0) {
-    return segments;
-  }
-  const fallbackPhase = task.phaseTimeline[0]?.phase ?? 'submitting';
-  return [
-    {
-      phase: fallbackPhase,
-      label: phaseText[fallbackPhase],
-      color: phaseColors[fallbackPhase],
-      durationMs: 0,
-    },
-  ];
-}
-
-const TaskTimeline: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> = ({
-  task,
-  intl,
-}) => {
-  const { token } = theme.useToken();
-  const phaseColors: Record<LcaTrackedTaskPhase, string> = {
-    submitting: token.colorTextTertiary,
-    building_snapshot: token.colorPrimary,
-    solving: token.colorSuccess,
-  };
-  const segments = timelineSegments(task, intl, phaseColors);
-  const totalMs = segments.reduce((sum, item) => sum + item.durationMs, 0);
-  const fallbackWidth = 100 / segments.length;
-
-  return (
-    <Space direction='vertical' size={2} style={{ width: '100%' }}>
-      <Space size={8} wrap>
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.stageDuration',
-            defaultMessage: 'Stage duration',
-          })}
-        </Typography.Text>
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage(
-            {
-              id: 'pages.process.lca.taskCenter.totalDuration',
-              defaultMessage: 'Total {duration}',
-            },
-            { duration: formatDuration(totalMs) },
-          )}
-        </Typography.Text>
-      </Space>
-      <div
-        style={{
-          width: '100%',
-          height: 8,
-          display: 'flex',
-          borderRadius: 99,
-          overflow: 'hidden',
-          background: token.colorFillSecondary,
-        }}
-      >
-        {segments.map((segment) => {
-          const width =
-            totalMs > 0 ? `${(segment.durationMs / totalMs) * 100}%` : `${fallbackWidth}%`;
-          return (
-            <Tooltip
-              key={segment.phase}
-              title={`${segment.label}: ${formatDuration(segment.durationMs)}`}
-              placement='top'
-            >
-              <div
-                style={{
-                  width,
-                  minWidth: segments.length > 1 ? 8 : undefined,
-                  background: segment.color,
-                }}
-              />
-            </Tooltip>
-          );
-        })}
-      </div>
-    </Space>
-  );
+type LcaTimelineStats = {
+  startedAt?: string;
+  endedAt?: string;
+  durationMs?: number;
 };
 
-function lcaTaskSummary(task: LcaBackgroundTask, intl: IntlShapeLike): string {
-  if (task.state === 'completed') {
-    if (task.resultId && task.message.toLowerCase().includes('cache hit')) {
-      return intl.formatMessage(
-        {
-          id: 'pages.process.lca.taskCenter.summary.cacheHit',
-          defaultMessage: 'Cache hit (result {resultId})',
-        },
-        { resultId: task.resultId },
-      );
-    }
-    if (task.resultId) {
-      return intl.formatMessage(
-        {
-          id: 'pages.process.lca.taskCenter.summary.completed',
-          defaultMessage: 'Completed (result {resultId})',
-        },
-        { resultId: task.resultId },
-      );
-    }
+function processStateLabel(state: ProcessStepState, intl: IntlShapeLike): string {
+  if (state === 'completed') {
     return intl.formatMessage({
-      id: 'pages.process.lca.taskCenter.summary.completedNoResult',
+      id: 'pages.process.lca.taskCenter.process.status.completed',
       defaultMessage: 'Completed',
     });
   }
-  if (task.phase === 'building_snapshot') {
-    return intl.formatMessage(
-      {
-        id: 'pages.process.lca.taskCenter.summary.buildingSnapshot',
-        defaultMessage: 'Building snapshot ({jobId})',
-      },
-      { jobId: task.buildJobId ?? '-' },
-    );
-  }
-  if (task.phase === 'solving') {
-    return intl.formatMessage(
-      {
-        id: 'pages.process.lca.taskCenter.summary.solving',
-        defaultMessage: 'Solving ({jobId})',
-      },
-      { jobId: task.solveJobId ?? '-' },
-    );
-  }
-  if (task.phase === 'failed') {
+  if (state === 'active') {
     return intl.formatMessage({
-      id: 'pages.process.lca.taskCenter.summary.failed',
-      defaultMessage: 'Task failed',
+      id: 'pages.process.lca.taskCenter.process.status.running',
+      defaultMessage: 'In progress',
+    });
+  }
+  if (state === 'failed') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.process.status.failed',
+      defaultMessage: 'Stopped',
     });
   }
   return intl.formatMessage({
-    id: 'pages.process.lca.taskCenter.summary.submitting',
-    defaultMessage: 'Submitting task',
+    id: 'pages.process.lca.taskCenter.process.status.waiting',
+    defaultMessage: 'Waiting',
   });
 }
+
+const ProcessStepMarker: React.FC<{ index: number; state: ProcessStepState }> = ({
+  index,
+  state,
+}) => {
+  const { token } = theme.useToken();
+
+  if (state === 'completed') {
+    return <CheckCircleOutlined style={{ color: token.colorSuccess, fontSize: 22 }} />;
+  }
+  if (state === 'failed') {
+    return <CloseCircleOutlined style={{ color: token.colorError, fontSize: 22 }} />;
+  }
+  const idleConnectorColor = token.colorBorder;
+  return (
+    <span
+      style={{
+        alignItems: 'center',
+        background: state === 'active' ? token.colorPrimary : token.colorBgContainer,
+        border: `1px solid ${state === 'active' ? token.colorPrimary : idleConnectorColor}`,
+        borderRadius: '50%',
+        color: state === 'active' ? token.colorWhite : token.colorTextTertiary,
+        display: 'inline-flex',
+        fontSize: 12,
+        fontWeight: 600,
+        height: 22,
+        justifyContent: 'center',
+        width: 22,
+      }}
+    >
+      {index + 1}
+    </span>
+  );
+};
+
+const HorizontalProcessSteps: React.FC<{ steps: ProcessStepItem[]; intl: IntlShapeLike }> = ({
+  steps,
+  intl,
+}) => {
+  const { token } = theme.useToken();
+  const idleConnectorColor = token.colorBorder;
+  const connectorColor = (from?: ProcessStepState, to?: ProcessStepState) => {
+    if (from === 'completed' && to && to !== 'waiting') {
+      return token.colorSuccess;
+    }
+    return idleConnectorColor;
+  };
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
+        rowGap: 8,
+      }}
+    >
+      {steps.map((step, index) => (
+        <div key={step.key} style={{ minWidth: 0, position: 'relative', textAlign: 'center' }}>
+          {index > 0 && (
+            <div
+              style={{
+                borderTop: `2px solid ${connectorColor(steps[index - 1]?.state, step.state)}`,
+                left: 0,
+                position: 'absolute',
+                right: 'calc(50% + 14px)',
+                top: 11,
+              }}
+            />
+          )}
+          {index < steps.length - 1 && (
+            <div
+              style={{
+                borderTop: `2px solid ${connectorColor(step.state, steps[index + 1]?.state)}`,
+                left: 'calc(50% + 14px)',
+                position: 'absolute',
+                right: 0,
+                top: 11,
+              }}
+            />
+          )}
+          <span
+            style={{
+              display: 'inline-block',
+              lineHeight: 0,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            <ProcessStepMarker index={index} state={step.state} />
+          </span>
+          <Space direction='vertical' size={1} style={{ display: 'flex', marginTop: 6 }}>
+            <Typography.Text strong style={{ fontSize: 12 }}>
+              {step.title}
+            </Typography.Text>
+            <Typography.Text
+              type={step.state === 'active' ? undefined : 'secondary'}
+              style={{
+                color: step.state === 'active' ? token.colorPrimary : undefined,
+                fontSize: 12,
+              }}
+            >
+              {step.description ?? processStateLabel(step.state, intl)}
+            </Typography.Text>
+            {step.meta && (
+              <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                {step.meta}
+              </Typography.Text>
+            )}
+          </Space>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+function processStepStatus(
+  index: number,
+  currentIndex: number,
+  state: 'running' | 'completed' | 'failed',
+): ProcessStepState {
+  if (state === 'completed') {
+    return 'completed';
+  }
+  if (state === 'failed') {
+    if (index < currentIndex) {
+      return 'completed';
+    }
+    if (index === currentIndex) {
+      return 'failed';
+    }
+    return 'waiting';
+  }
+  if (index < currentIndex) {
+    return 'completed';
+  }
+  if (index === currentIndex) {
+    return 'active';
+  }
+  return 'waiting';
+}
+
+function lcaTimelineStats(task: LcaBackgroundTask, phase: LcaTrackedTaskPhase): LcaTimelineStats {
+  let startedAt: string | undefined;
+  let endedAt: string | undefined;
+  let durationMs = 0;
+  let hasDuration = false;
+  const nowMs = Date.now();
+
+  for (const item of task.phaseTimeline) {
+    if (item.phase !== phase) {
+      continue;
+    }
+    const startMs = Date.parse(item.startedAt);
+    const endMs = item.endedAt ? Date.parse(item.endedAt) : nowMs;
+    if (!startedAt || Date.parse(item.startedAt) < Date.parse(startedAt)) {
+      startedAt = item.startedAt;
+    }
+    if (item.endedAt && (!endedAt || Date.parse(item.endedAt) > Date.parse(endedAt))) {
+      endedAt = item.endedAt;
+    }
+    if (Number.isFinite(startMs) && Number.isFinite(endMs)) {
+      durationMs += Math.max(0, endMs - startMs);
+      hasDuration = true;
+    }
+  }
+
+  return {
+    startedAt,
+    endedAt,
+    durationMs: hasDuration ? durationMs : undefined,
+  };
+}
+
+function processStepMeta(
+  step: ProcessStepItem,
+  durationMs: number | undefined,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  if (step.state === 'active' && durationMs !== undefined) {
+    return intl.formatMessage(
+      {
+        id: 'pages.process.lca.taskCenter.process.runningDuration',
+        defaultMessage: 'Running · {duration}',
+      },
+      { duration: formatDuration(durationMs) },
+    );
+  }
+  if (step.state === 'completed' && durationMs !== undefined) {
+    return intl.formatMessage(
+      {
+        id: 'pages.process.lca.taskCenter.process.duration',
+        defaultMessage: 'Took {duration}',
+      },
+      { duration: formatDuration(durationMs) },
+    );
+  }
+  return undefined;
+}
+
+function lcaProcessStageLabel(
+  phase: LcaTrackedTaskPhase | 'completed',
+  intl: IntlShapeLike,
+): string {
+  if (phase === 'submitting') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.process.step.submitTask',
+      defaultMessage: 'Submit task',
+    });
+  }
+  if (phase === 'building_snapshot') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.process.step.buildSnapshot',
+      defaultMessage: 'Build snapshot',
+    });
+  }
+  if (phase === 'solving') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.process.step.solve',
+      defaultMessage: 'Solve',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.lca.taskCenter.process.step.organizeResult',
+    defaultMessage: 'Organize result',
+  });
+}
+
+function lcaProcessSteps(task: LcaBackgroundTask, intl: IntlShapeLike): ProcessStepItem[] {
+  const hasBuildStage =
+    task.mode === 'all_unit' ||
+    Boolean(task.buildJobId) ||
+    task.phase === 'building_snapshot' ||
+    task.phaseTimeline.some((item) => item.phase === 'building_snapshot');
+  const hasSolveStage =
+    task.state !== 'completed' ||
+    Boolean(task.solveJobId) ||
+    task.phase === 'solving' ||
+    task.phaseTimeline.some((item) => item.phase === 'solving');
+  const phases: Array<LcaTrackedTaskPhase | 'completed'> = [
+    'submitting',
+    ...(hasBuildStage ? (['building_snapshot'] as const) : []),
+    ...(hasSolveStage ? (['solving'] as const) : []),
+    'completed',
+  ];
+  const lastTrackedPhase = task.phaseTimeline[task.phaseTimeline.length - 1]?.phase;
+  const currentPhase =
+    task.phase === 'failed'
+      ? (lastTrackedPhase ?? 'submitting')
+      : task.phase === 'completed'
+        ? 'completed'
+        : task.phase;
+  const currentIndex = Math.max(
+    0,
+    phases.findIndex((phase) => phase === currentPhase),
+  );
+
+  return phases.map((phase, index) => {
+    const state = processStepStatus(index, currentIndex, task.state);
+    const stats = phase === 'completed' ? undefined : lcaTimelineStats(task, phase);
+    const description =
+      phase === 'completed'
+        ? task.state === 'completed'
+          ? formatDateTime(task.updatedAt)
+          : undefined
+        : stats?.startedAt
+          ? formatDateTime(stats.startedAt)
+          : undefined;
+    const step: ProcessStepItem = {
+      key: phase,
+      title: lcaProcessStageLabel(phase, intl),
+      description,
+      state,
+    };
+    return {
+      ...step,
+      meta: processStepMeta(step, stats?.durationMs, intl),
+    };
+  });
+}
+
+function packageProcessStageLabel(
+  task: TidasPackageBackgroundTask,
+  phase: TidasPackageTaskPhase | 'report',
+  intl: IntlShapeLike,
+): string {
+  if (task.kind === 'tidas_package_import') {
+    if (phase === 'submitting') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.process.import.prepareUpload',
+        defaultMessage: 'Prepare upload',
+      });
+    }
+    if (phase === 'queued') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.process.import.validatePackage',
+        defaultMessage: 'Validate package',
+      });
+    }
+    if (phase === 'import_package') {
+      return intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.process.import.importData',
+        defaultMessage: 'Import data',
+      });
+    }
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.process.import.buildReport',
+      defaultMessage: 'Build report',
+    });
+  }
+
+  if (phase === 'submitting') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.process.export.submitTask',
+      defaultMessage: 'Submit task',
+    });
+  }
+  if (phase === 'queued') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.process.export.queued',
+      defaultMessage: 'Queued',
+    });
+  }
+  if (phase === 'collect_refs') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.process.export.collectRefs',
+      defaultMessage: 'Collect related data',
+    });
+  }
+  if (phase === 'finalize_zip') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.process.export.buildZip',
+      defaultMessage: 'Build ZIP',
+    });
+  }
+  return intl.formatMessage({
+    id: 'component.tidasPackage.taskCenter.process.export.ready',
+    defaultMessage: 'Export ready',
+  });
+}
+
+function packageProcessPhases(
+  task: TidasPackageBackgroundTask,
+): Array<TidasPackageTaskPhase | 'report'> {
+  if (task.kind === 'tidas_package_import') {
+    return ['submitting', 'queued', 'import_package', 'report'];
+  }
+  return ['submitting', 'queued', 'collect_refs', 'finalize_zip', 'completed'];
+}
+
+function packageProcessSteps(
+  task: TidasPackageBackgroundTask,
+  intl: IntlShapeLike,
+): ProcessStepItem[] {
+  const phases = packageProcessPhases(task);
+  const currentPhase =
+    task.kind === 'tidas_package_import' && task.phase === 'completed'
+      ? 'report'
+      : task.phase === 'failed'
+        ? phases[phases.length - 1]
+        : task.phase;
+  const currentIndex = Math.max(
+    0,
+    phases.findIndex((phase) => phase === currentPhase),
+  );
+
+  return phases.map((phase, index) => {
+    const state = processStepStatus(index, currentIndex, task.state);
+    const description =
+      index === 0
+        ? formatDateTime(task.createdAt)
+        : index === currentIndex && task.state !== 'completed'
+          ? processStateLabel(state, intl)
+          : state === 'completed'
+            ? processStateLabel(state, intl)
+            : undefined;
+    return {
+      key: phase,
+      title: packageProcessStageLabel(task, phase, intl),
+      description,
+      state,
+    };
+  });
+}
+
+function reviewSubmitProcessStageLabel(
+  phase: 'queued' | 'running' | 'submitting' | 'submitted',
+  intl: IntlShapeLike,
+): string {
+  if (phase === 'queued') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.process.step.queued',
+      defaultMessage: 'Queue task',
+    });
+  }
+  if (phase === 'running') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.process.step.gate',
+      defaultMessage: 'Run gate',
+    });
+  }
+  if (phase === 'submitting') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.process.step.submitReview',
+      defaultMessage: 'Submit review',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.reviewSubmitTaskCenter.process.step.done',
+    defaultMessage: 'Finish',
+  });
+}
+
+function reviewSubmitProcessSteps(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): ProcessStepItem[] {
+  const phases: Array<'queued' | 'running' | 'submitting' | 'submitted'> = [
+    'queued',
+    'running',
+    'submitting',
+    'submitted',
+  ];
+  const currentPhase =
+    task.phase === 'waiting_gate' || task.phase === 'blocked' || task.phase === 'stale'
+      ? 'running'
+      : task.phase === 'passed' || task.phase === 'submitted'
+        ? 'submitted'
+        : task.phase === 'error' || task.phase === 'cancelled'
+          ? 'running'
+          : task.phase;
+  const currentIndex = Math.max(
+    0,
+    phases.findIndex((phase) => phase === currentPhase),
+  );
+
+  return phases.map((phase, index) => {
+    const state = processStepStatus(index, currentIndex, task.state);
+    const description =
+      index === 0
+        ? formatDateTime(task.createdAt)
+        : index === currentIndex && task.state !== 'completed'
+          ? phaseLabel({ kind: 'reviewSubmit', task }, intl)
+          : state === 'completed'
+            ? processStateLabel(state, intl)
+            : undefined;
+    return {
+      key: phase,
+      title: reviewSubmitProcessStageLabel(phase, intl),
+      description,
+      state,
+    };
+  });
+}
+
+const LcaProcessDetail: React.FC<{ task: LcaBackgroundTask; intl: IntlShapeLike }> = ({
+  task,
+  intl,
+}) => <HorizontalProcessSteps steps={lcaProcessSteps(task, intl)} intl={intl} />;
 
 function packageTaskErrorText(
   task: TidasPackageBackgroundTask,
@@ -532,105 +845,6 @@ function packageTaskErrorText(
   }
 
   return task.error;
-}
-
-function packageTaskSummary(task: TidasPackageBackgroundTask, intl: IntlShapeLike): string {
-  if (task.state === 'completed') {
-    if (task.kind === 'tidas_package_import') {
-      return intl.formatMessage({
-        id: 'component.tidasPackage.taskCenter.summary.importCompleted',
-        defaultMessage: 'Import package completed',
-      });
-    }
-    return intl.formatMessage(
-      {
-        id: 'component.tidasPackage.taskCenter.summary.completed',
-        defaultMessage: 'Export package ready ({filename})',
-      },
-      { filename: task.filename ?? 'tidas-package.zip' },
-    );
-  }
-  if (task.state === 'failed') {
-    if (
-      task.kind === 'tidas_package_export' &&
-      classifyTidasPackageExportError(task.error) === TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR
-    ) {
-      return intl.formatMessage({
-        id: 'component.tidasPackage.taskCenter.summary.failedTooLarge',
-        defaultMessage: 'Export package exceeded the storage upload limit',
-      });
-    }
-    if (task.kind === 'tidas_package_import') {
-      return intl.formatMessage({
-        id: 'component.tidasPackage.taskCenter.summary.importFailed',
-        defaultMessage: 'Import package failed',
-      });
-    }
-    return intl.formatMessage({
-      id: 'component.tidasPackage.taskCenter.summary.failed',
-      defaultMessage: 'Export package failed',
-    });
-  }
-  return task.message;
-}
-
-function reviewSubmitTaskSummary(task: ReviewSubmitBackgroundTask, intl: IntlShapeLike): string {
-  if (task.phase === 'submitted') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.submitted',
-      defaultMessage: 'Review submission completed',
-    });
-  }
-  if (task.phase === 'passed') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.passed',
-      defaultMessage: 'Numerical stability gate passed; final submission is being coordinated',
-    });
-  }
-  if (task.phase === 'blocked') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.blocked',
-      defaultMessage: 'Numerical stability gate blocked this process revision',
-    });
-  }
-  if (task.phase === 'stale') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.stale',
-      defaultMessage: 'Gate result is stale; save the latest data and submit again',
-    });
-  }
-  if (task.phase === 'cancelled') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.cancelled',
-      defaultMessage: 'Review submission task was cancelled',
-    });
-  }
-  if (task.phase === 'error') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.error',
-      defaultMessage: 'Review submission task failed',
-    });
-  }
-  if (task.phase === 'submitting') {
-    return intl.formatMessage({
-      id: 'pages.process.reviewSubmitTaskCenter.summary.submitting',
-      defaultMessage: 'Gate passed; submitting review',
-    });
-  }
-  return intl.formatMessage({
-    id: 'pages.process.reviewSubmitTaskCenter.summary.running',
-    defaultMessage: 'Numerical stability gate is running before review submission',
-  });
-}
-
-function taskSummary(item: TaskCenterItem, intl: IntlShapeLike): string {
-  if (item.kind === 'lca') {
-    return lcaTaskSummary(item.task, intl);
-  }
-  if (item.kind === 'reviewSubmit') {
-    return reviewSubmitTaskSummary(item.task, intl);
-  }
-  return packageTaskSummary(item.task, intl);
 }
 
 const REVIEW_SUBMIT_REASON_GUIDANCE: Record<
@@ -813,169 +1027,467 @@ function normalizedReviewSubmitReasons(
   return reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
 }
 
-function lcaDetailContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
+type TaskKindFilter = 'all' | 'lca' | 'tidas_export' | 'tidas_import' | 'review_submit';
+
+type DetailRow = {
+  label: string;
+  value?: React.ReactNode;
+};
+
+type DiagnosticField = {
+  label: string;
+  value?: unknown;
+};
+
+function taskItemKey(item: TaskCenterItem): string {
+  return `${item.kind}:${item.task.id}`;
+}
+
+function taskKindFilter(item: TaskCenterItem): TaskKindFilter {
+  if (item.kind === 'lca') {
+    return 'lca';
+  }
+  if (item.kind === 'reviewSubmit') {
+    return 'review_submit';
+  }
+  return item.task.kind === 'tidas_package_import' ? 'tidas_import' : 'tidas_export';
+}
+
+function lcaModeLabel(mode: LcaBackgroundTask['mode'], intl: IntlShapeLike): string {
+  return mode === 'all_unit'
+    ? intl.formatMessage({
+        id: 'pages.process.lca.mode.allUnit',
+        defaultMessage: 'All Processes (1 Reference Unit)',
+      })
+    : intl.formatMessage({
+        id: 'pages.process.lca.mode.single',
+        defaultMessage: 'Single Demand',
+      });
+}
+
+function tidasScopeLabel(
+  scope: TidasPackageBackgroundTask['scope'] | undefined,
+  intl: IntlShapeLike,
+): string {
+  if (scope === 'current_user') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.scope.currentUser',
+      defaultMessage: 'Current user data',
+    });
+  }
+  if (scope === 'open_data') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.scope.openData',
+      defaultMessage: 'Open data',
+    });
+  }
+  if (scope === 'current_user_and_open_data') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.scope.currentUserAndOpenData',
+      defaultMessage: 'Current user data + open data',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.lca.taskCenter.notSpecified',
+    defaultMessage: 'Not specified',
+  });
+}
+
+function taskTypeLabel(filter: TaskKindFilter, intl: IntlShapeLike): string {
+  if (filter === 'lca') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.type.lca',
+      defaultMessage: 'LCA Calculation',
+    });
+  }
+  if (filter === 'tidas_export') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.kind.packageExport',
+      defaultMessage: 'TIDAS Export',
+    });
+  }
+  if (filter === 'tidas_import') {
+    return intl.formatMessage({
+      id: 'component.tidasPackage.taskCenter.kind.packageImport',
+      defaultMessage: 'TIDAS Import',
+    });
+  }
+  if (filter === 'review_submit') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.kind',
+      defaultMessage: 'Review Submit',
+    });
+  }
+  return intl.formatMessage({
+    id: 'pages.process.lca.taskCenter.filter.all',
+    defaultMessage: 'All',
+  });
+}
+
+function taskTitle(item: TaskCenterItem, intl: IntlShapeLike): string {
+  if (item.kind === 'lca') {
+    return intl.formatMessage({
+      id: 'pages.process.lca.taskCenter.title.lca',
+      defaultMessage: 'LCA calculation',
+    });
+  }
+  if (item.kind === 'reviewSubmit') {
+    return intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.title',
+      defaultMessage: 'Submit for review',
+    });
+  }
+  if (item.task.kind === 'tidas_package_export') {
+    return item.task.filename
+      ? intl.formatMessage(
+          {
+            id: 'component.tidasPackage.taskCenter.title.exportWithFile',
+            defaultMessage: 'Export package: {filename}',
+          },
+          { filename: item.task.filename },
+        )
+      : intl.formatMessage({
+          id: 'component.tidasPackage.taskCenter.title.export',
+          defaultMessage: 'Export TIDAS package',
+        });
+  }
+  return item.task.filename
+    ? intl.formatMessage(
+        {
+          id: 'component.tidasPackage.taskCenter.title.importWithFile',
+          defaultMessage: 'Import package: {filename}',
+        },
+        { filename: item.task.filename },
+      )
+    : intl.formatMessage({
+        id: 'component.tidasPackage.taskCenter.title.import',
+        defaultMessage: 'Import TIDAS package',
+      });
+}
+
+function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
+function reviewSubmitProgressPercent(task: ReviewSubmitBackgroundTask): number | undefined {
+  if (typeof task.progress === 'number') {
+    return clampPercent(task.progress);
+  }
+  if (typeof task.progress === 'string') {
+    const parsed = Number.parseFloat(task.progress);
+    return Number.isFinite(parsed) ? clampPercent(parsed) : undefined;
+  }
+  return undefined;
+}
+
+function taskProgressPercent(item: TaskCenterItem): number {
+  if (item.task.state === 'completed') {
+    return 100;
+  }
+  if (item.task.state === 'failed') {
+    return 0;
+  }
+  if (item.kind === 'lca') {
+    if (item.task.phase === 'solving') {
+      return 65;
+    }
+    if (item.task.phase === 'building_snapshot') {
+      return 38;
+    }
+    return 12;
+  }
+  if (item.kind === 'reviewSubmit') {
+    const progress = reviewSubmitProgressPercent(item.task);
+    if (progress !== undefined) {
+      return progress;
+    }
+    if (item.task.phase === 'submitting') {
+      return 86;
+    }
+    if (item.task.phase === 'waiting_gate') {
+      return 62;
+    }
+    if (item.task.phase === 'running') {
+      return 42;
+    }
+    return 15;
+  }
+  if (item.task.phase === 'finalize_zip' || item.task.phase === 'import_package') {
+    return 82;
+  }
+  if (item.task.phase === 'collect_refs') {
+    return 48;
+  }
+  if (item.task.phase === 'queued') {
+    return 20;
+  }
+  return 12;
+}
+
+function taskProgressStrokeColor(
+  item: TaskCenterItem,
+  token: ReturnType<typeof theme.useToken>['token'],
+): string {
+  if (item.task.state === 'completed') {
+    return token.colorSuccess;
+  }
+  if (item.task.state === 'failed') {
+    return token.colorFillSecondary;
+  }
+  return token.colorPrimary;
+}
+
+function visibleDiagnosticValue(value: unknown): string | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (typeof value === 'string') {
+    return value.trim() || undefined;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return diagnosticJson(value);
+}
+
+function DiagnosticRows({ fields }: { fields: DiagnosticField[] }): React.ReactElement {
+  const visibleFields = fields
+    .map((field) => ({ ...field, value: visibleDiagnosticValue(field.value) }))
+    .filter((field): field is { label: string; value: string } => Boolean(field.value));
+
+  if (visibleFields.length === 0) {
+    return <Typography.Text type='secondary'>No diagnostics</Typography.Text>;
+  }
+
   return (
-    <Space direction='vertical' size={4} style={{ maxWidth: 340 }}>
-      <Space size={6} wrap>
-        <Tag color='blue'>
-          {task.mode === 'all_unit'
-            ? intl.formatMessage({
-                id: 'pages.process.lca.mode.allUnit',
-                defaultMessage: 'All Processes (1 Reference Unit)',
-              })
-            : intl.formatMessage({
-                id: 'pages.process.lca.mode.single',
-                defaultMessage: 'Single Demand',
-              })}
-        </Tag>
-        <Tag>{task.scope}</Tag>
-      </Space>
-      {task.workerJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.detail.workerJobId',
-            defaultMessage: 'worker_job_id',
-          })}
-          : <Typography.Text copyable>{task.workerJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.buildJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.detail.buildJobId',
-            defaultMessage: 'build_job_id',
-          })}
-          : <Typography.Text copyable>{task.buildJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.solveJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.detail.solveJobId',
-            defaultMessage: 'solve_job_id',
-          })}
-          : <Typography.Text copyable>{task.solveJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.snapshotId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.detail.snapshotId',
-            defaultMessage: 'snapshot_id',
-          })}
-          : <Typography.Text copyable>{task.snapshotId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.resultId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.lca.taskCenter.detail.resultId',
-            defaultMessage: 'result_id',
-          })}
-          : <Typography.Text copyable>{task.resultId}</Typography.Text>
-        </Typography.Text>
-      )}
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.createdAt',
-          defaultMessage: 'created_at',
-        })}
-        : {formatDateTime(task.createdAt)}
-      </Typography.Text>
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.updatedAt',
-          defaultMessage: 'updated_at',
-        })}
-        : {formatDateTime(task.updatedAt)}
-      </Typography.Text>
+    <Space direction='vertical' size={6} style={{ maxWidth: 440 }}>
+      {visibleFields.map((field) => (
+        <div key={field.label}>
+          <Typography.Text type='secondary' style={{ display: 'block', fontSize: 12 }}>
+            {field.label}
+          </Typography.Text>
+          <Typography.Text
+            copyable
+            style={{
+              display: 'block',
+              fontSize: 12,
+              maxHeight: 160,
+              overflowY: 'auto',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            {field.value}
+          </Typography.Text>
+        </div>
+      ))}
     </Space>
   );
 }
 
-function packageDetailContent(
+function lcaDiagnosticContent(task: LcaBackgroundTask): React.ReactNode {
+  return (
+    <DiagnosticRows
+      fields={[
+        { label: 'task_id', value: task.id },
+        { label: 'sequence', value: task.sequence },
+        { label: 'worker_job_id', value: task.workerJobId },
+        { label: 'root_job_id', value: task.rootJobId },
+        { label: 'job_kind', value: task.jobKind },
+        { label: 'build_job_id', value: task.buildJobId },
+        { label: 'solve_job_id', value: task.solveJobId },
+        { label: 'snapshot_id', value: task.snapshotId },
+        { label: 'result_id', value: task.resultId },
+        { label: 'request', value: task.request },
+      ]}
+    />
+  );
+}
+
+function packageDiagnosticContent(task: TidasPackageBackgroundTask): React.ReactNode {
+  return (
+    <DiagnosticRows
+      fields={[
+        { label: 'task_id', value: task.id },
+        { label: 'sequence', value: task.sequence },
+        { label: 'kind', value: task.kind },
+        { label: 'worker_job_id', value: task.workerJobId },
+        { label: 'job_kind', value: task.jobKind },
+        { label: 'job_id', value: task.jobId },
+        { label: 'request', value: task.request },
+      ]}
+    />
+  );
+}
+
+const DetailGrid: React.FC<{ rows: DetailRow[] }> = ({ rows }) => {
+  const { token } = theme.useToken();
+  const visibleRows = rows.filter((row) => row.value !== undefined && row.value !== null);
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gap: 10,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
+      }}
+    >
+      {visibleRows.map((row) => (
+        <div
+          key={row.label}
+          style={{
+            background: token.colorFillSecondary,
+            borderRadius: 6,
+            padding: '8px 10px',
+          }}
+        >
+          <Typography.Text type='secondary' style={{ display: 'block', fontSize: 12 }}>
+            {row.label}
+          </Typography.Text>
+          <Typography.Text strong style={{ fontSize: 13 }}>
+            {row.value}
+          </Typography.Text>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const DetailSection: React.FC<{ title: string; children: React.ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <Space direction='vertical' size={8} style={{ width: '100%' }}>
+    <Typography.Text strong>{title}</Typography.Text>
+    {children}
+  </Space>
+);
+
+const PackageProcessDetail: React.FC<{
+  item: Extract<TaskCenterItem, { kind: 'package' }>;
+  intl: IntlShapeLike;
+}> = ({ item, intl }) => (
+  <HorizontalProcessSteps steps={packageProcessSteps(item.task, intl)} intl={intl} />
+);
+
+const ReviewSubmitProcessDetail: React.FC<{
+  item: Extract<TaskCenterItem, { kind: 'reviewSubmit' }>;
+  intl: IntlShapeLike;
+}> = ({ item, intl }) => (
+  <HorizontalProcessSteps steps={reviewSubmitProcessSteps(item.task, intl)} intl={intl} />
+);
+
+function lcaBusinessDetail(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
+  const errorText = task.error?.trim();
+  return (
+    <Space direction='vertical' size={14} style={{ width: '100%' }}>
+      <DetailGrid
+        rows={[
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.taskCenter.detail.mode',
+              defaultMessage: 'Demand type',
+            }),
+            value: lcaModeLabel(task.mode, intl),
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.lca.taskCenter.detail.scope',
+              defaultMessage: 'Data scope',
+            }),
+            value: task.scope,
+          },
+        ]}
+      />
+      {task.state === 'completed' && !task.resultId && (
+        <Typography.Text>
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.noResult',
+            defaultMessage: 'The task completed without a returned result.',
+          })}
+        </Typography.Text>
+      )}
+      {task.state === 'failed' && errorText && (
+        <DetailSection
+          title={intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.failureReason',
+            defaultMessage: 'Failure reason',
+          })}
+        >
+          <Typography.Text type='danger'>{errorText}</Typography.Text>
+        </DetailSection>
+      )}
+    </Space>
+  );
+}
+
+function packageBusinessDetail(
   task: TidasPackageBackgroundTask,
   intl: IntlShapeLike,
 ): React.ReactNode {
   const singleRoot = task.request?.roots?.length === 1 ? task.request.roots[0] : null;
   const isImport = task.kind === 'tidas_package_import';
+  const errorText = packageTaskErrorText(task, intl);
+  const filename =
+    task.filename ??
+    (isImport
+      ? intl.formatMessage({
+          id: 'component.tidasPackage.taskCenter.detail.importFileFallback',
+          defaultMessage: 'Uploaded ZIP package',
+        })
+      : 'tidas-package.zip');
 
   return (
-    <Space direction='vertical' size={4} style={{ maxWidth: 360 }}>
-      <Space size={6} wrap>
-        <Tag color='geekblue'>
-          {isImport
-            ? intl.formatMessage({
-                id: 'component.tidasPackage.taskCenter.detail.importKind',
-                defaultMessage: 'TIDAS Import',
-              })
-            : intl.formatMessage({
-                id: 'component.tidasPackage.taskCenter.detail.exportKind',
-                defaultMessage: 'TIDAS Export',
-              })}
-        </Tag>
-        {task.scope && <Tag>{task.scope}</Tag>}
-        {singleRoot && <Tag>{singleRoot.table}</Tag>}
-      </Space>
-      {task.workerJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.workerJobId',
-            defaultMessage: 'worker_job_id',
-          })}
-          : <Typography.Text copyable>{task.workerJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.jobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.jobId',
-            defaultMessage: 'job_id',
-          })}
-          : <Typography.Text copyable>{task.jobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {typeof task.rootCount === 'number' && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.rootCount',
-            defaultMessage: 'root_count',
-          })}
-          : {task.rootCount}
-        </Typography.Text>
-      )}
-      {task.filename && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'component.tidasPackage.taskCenter.detail.filename',
-            defaultMessage: 'filename',
-          })}
-          : {task.filename}
-        </Typography.Text>
-      )}
+    <Space direction='vertical' size={14} style={{ width: '100%' }}>
+      <DetailGrid
+        rows={[
+          {
+            label: intl.formatMessage({
+              id: 'component.tidasPackage.taskCenter.detail.filename',
+              defaultMessage: 'File name',
+            }),
+            value: filename,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'component.tidasPackage.taskCenter.detail.scope',
+              defaultMessage: 'Data scope',
+            }),
+            value: tidasScopeLabel(task.scope ?? undefined, intl),
+          },
+          {
+            label: intl.formatMessage({
+              id: 'component.tidasPackage.taskCenter.detail.rootCount',
+              defaultMessage: 'Root records',
+            }),
+            value: task.rootCount,
+          },
+        ]}
+      />
       {singleRoot && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
+        <DetailSection
+          title={intl.formatMessage({
             id: 'component.tidasPackage.taskCenter.detail.rootRef',
-            defaultMessage: 'root',
+            defaultMessage: 'Root data',
           })}
-          : {singleRoot.id} @ {singleRoot.version}
-        </Typography.Text>
+        >
+          <Typography.Text>
+            {singleRoot.table} · {singleRoot.id} @ {singleRoot.version}
+          </Typography.Text>
+        </DetailSection>
       )}
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.createdAt',
-          defaultMessage: 'created_at',
-        })}
-        : {formatDateTime(task.createdAt)}
-      </Typography.Text>
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.updatedAt',
-          defaultMessage: 'updated_at',
-        })}
-        : {formatDateTime(task.updatedAt)}
-      </Typography.Text>
+      {task.state === 'failed' && errorText && (
+        <DetailSection
+          title={intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.failureReason',
+            defaultMessage: 'Failure reason',
+          })}
+        >
+          <Typography.Text type='danger'>{errorText}</Typography.Text>
+        </DetailSection>
+      )}
     </Space>
   );
 }
@@ -1021,12 +1533,6 @@ function reviewSubmitErrorSummaryContent(
 
   return (
     <Space direction='vertical' size={2} style={{ maxWidth: 420 }}>
-      <Typography.Text strong>
-        {intl.formatMessage({
-          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.title',
-          defaultMessage: 'Review submission task failed',
-        })}
-      </Typography.Text>
       <Typography.Text>
         {intl.formatMessage({
           id: 'pages.process.reviewSubmitTaskCenter.errorSummary.description',
@@ -1166,123 +1672,179 @@ function reviewSubmitDiagnosticsContent(
   );
 }
 
+function reviewSubmitDiagnosticContent(
+  task: ReviewSubmitBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
+  return (
+    <Space direction='vertical' size={8} style={{ maxWidth: 460 }}>
+      <DiagnosticRows
+        fields={[
+          { label: 'task_id', value: task.id },
+          { label: 'submit_worker_job_id', value: task.submitWorkerJobId },
+          { label: 'root_job_id', value: task.rootJobId },
+          { label: 'gate_worker_job_id', value: task.gateWorkerJobId },
+          { label: 'review_submit_job_id', value: task.reviewSubmitJobId },
+          { label: 'gate_run_id', value: task.gateRunId },
+          { label: 'revision_checksum', value: task.datasetRevision?.revisionChecksum },
+          { label: 'progress', value: task.progress },
+        ]}
+      />
+      {reviewSubmitDiagnosticsContent(task, intl)}
+    </Space>
+  );
+}
+
+function taskDiagnosticContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
+  if (item.kind === 'lca') {
+    return lcaDiagnosticContent(item.task);
+  }
+  if (item.kind === 'reviewSubmit') {
+    return reviewSubmitDiagnosticContent(item.task, intl);
+  }
+  return packageDiagnosticContent(item.task);
+}
+
 function reviewSubmitDetailContent(
   task: ReviewSubmitBackgroundTask,
   intl: IntlShapeLike,
 ): React.ReactNode {
   const revision = task.datasetRevision;
   return (
-    <Space direction='vertical' size={4} style={{ maxWidth: 440 }}>
-      <Space size={6} wrap>
-        <Tag color='gold'>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.kind',
-            defaultMessage: 'Review Submit',
-          })}
-        </Tag>
-        {revision?.table && <Tag>{revision.table}</Tag>}
-      </Space>
-      {task.submitWorkerJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
-            defaultMessage: 'submit_worker_job_id',
-          })}
-          : <Typography.Text copyable>{task.submitWorkerJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.rootJobId && task.rootJobId !== task.submitWorkerJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
-            defaultMessage: 'root_job_id',
-          })}
-          : <Typography.Text copyable>{task.rootJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.reviewSubmitJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId',
-            defaultMessage: 'review_submit_job_id',
-          })}
-          : <Typography.Text copyable>{task.reviewSubmitJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.gateWorkerJobId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId',
-            defaultMessage: 'gate_worker_job_id',
-          })}
-          : <Typography.Text copyable>{task.gateWorkerJobId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {task.gateRunId && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.gateRunId',
-            defaultMessage: 'gate_run_id',
-          })}
-          : <Typography.Text copyable>{task.gateRunId}</Typography.Text>
-        </Typography.Text>
-      )}
-      {revision?.id && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.dataset',
-            defaultMessage: 'dataset',
-          })}
-          : {revision.id} @ {revision.version ?? '-'}
-        </Typography.Text>
-      )}
-      {revision?.revisionChecksum && (
-        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-          {intl.formatMessage({
-            id: 'pages.process.reviewSubmitTaskCenter.detail.revisionChecksum',
-            defaultMessage: 'revision_checksum',
-          })}
-          : <Typography.Text copyable>{revision.revisionChecksum}</Typography.Text>
-        </Typography.Text>
-      )}
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.createdAt',
-          defaultMessage: 'created_at',
-        })}
-        : {formatDateTime(task.createdAt)}
-      </Typography.Text>
-      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-        {intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.detail.updatedAt',
-          defaultMessage: 'updated_at',
-        })}
-        : {formatDateTime(task.updatedAt)}
-      </Typography.Text>
+    <Space direction='vertical' size={14} style={{ width: '100%' }}>
+      <DetailGrid
+        rows={[
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.dataset',
+              defaultMessage: 'Dataset',
+            }),
+            value: revision?.table ?? '-',
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.version',
+              defaultMessage: 'Version',
+            }),
+            value: revision?.version ?? '-',
+          },
+        ]}
+      />
       {reviewSubmitBlockerSummaryContent(task, intl)}
       {reviewSubmitErrorSummaryContent(task, intl)}
-      {reviewSubmitDiagnosticsContent(task, intl)}
     </Space>
   );
 }
 
-function taskDetailContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
+function taskBusinessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
   if (item.kind === 'lca') {
-    return lcaDetailContent(item.task, intl);
+    return lcaBusinessDetail(item.task, intl);
   }
   if (item.kind === 'reviewSubmit') {
     return reviewSubmitDetailContent(item.task, intl);
   }
-  return packageDetailContent(item.task, intl);
+  return packageBusinessDetail(item.task, intl);
 }
+
+function taskProcessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
+  if (item.kind === 'lca') {
+    return (
+      <DetailSection
+        title={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.process.title',
+          defaultMessage: 'Execution stages',
+        })}
+      >
+        <LcaProcessDetail task={item.task} intl={intl} />
+      </DetailSection>
+    );
+  }
+  if (item.kind === 'package') {
+    return (
+      <DetailSection
+        title={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.process.title',
+          defaultMessage: 'Execution stages',
+        })}
+      >
+        <PackageProcessDetail item={item} intl={intl} />
+      </DetailSection>
+    );
+  }
+  return (
+    <DetailSection
+      title={intl.formatMessage({
+        id: 'pages.process.lca.taskCenter.process.title',
+        defaultMessage: 'Execution stages',
+      })}
+    >
+      <ReviewSubmitProcessDetail item={item} intl={intl} />
+    </DetailSection>
+  );
+}
+
+const TaskDetailPopoverContent: React.FC<{
+  item: TaskCenterItem;
+  intl: IntlShapeLike;
+  inline?: boolean;
+}> = ({ item, intl, inline = false }) => {
+  return (
+    <Space
+      direction='vertical'
+      size={12}
+      style={{ maxWidth: inline ? undefined : 520, minWidth: inline ? 0 : 360, width: '100%' }}
+    >
+      <DetailSection
+        title={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.infoTitle',
+          defaultMessage: 'Detail information',
+        })}
+      >
+        {taskBusinessDetailContent(item, intl)}
+      </DetailSection>
+      {taskProcessDetailContent(item, intl)}
+    </Space>
+  );
+};
+
+const TaskDiagnosticsPopoverContent: React.FC<{
+  item: TaskCenterItem;
+  intl: IntlShapeLike;
+}> = ({ item, intl }) => {
+  return (
+    <div
+      style={{
+        maxHeight: DIAGNOSTICS_POPOVER_MAX_HEIGHT,
+        maxWidth: 'calc(100vw - 96px)',
+        minWidth: 360,
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        paddingRight: 4,
+        width: DIAGNOSTICS_POPOVER_WIDTH,
+      }}
+    >
+      <DetailSection
+        title={intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.detail.debugTitle',
+          defaultMessage: 'Debug information',
+        })}
+      >
+        {taskDiagnosticContent(item, intl)}
+      </DetailSection>
+    </div>
+  );
+};
 
 const LcaTaskCenter: React.FC = () => {
   const intl = useIntl();
+  const { token } = theme.useToken();
   const [open, setOpen] = useState(false);
   const [downloadingTaskId, setDownloadingTaskId] = useState<string | null>(null);
   const [cancellingTaskId, setCancellingTaskId] = useState<string | null>(null);
   const [retryingTaskId, setRetryingTaskId] = useState<string | null>(null);
   const [refreshingTasks, setRefreshingTasks] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<TaskKindFilter>('all');
+  const [expandedTaskKeys, setExpandedTaskKeys] = useState<string[]>([]);
   const lcaTasks = useLcaTasks();
   const packageTasks = useTidasPackageTasks();
   const reviewSubmitTasks = useReviewSubmitTasks();
@@ -1333,6 +1895,27 @@ const LcaTaskCenter: React.FC = () => {
       items.filter((item) => item.kind === 'reviewSubmit' && item.task.state === 'failed').length,
     [items],
   );
+  const filteredItems = useMemo(
+    () =>
+      activeFilter === 'all'
+        ? items
+        : items.filter((item) => taskKindFilter(item) === activeFilter),
+    [activeFilter, items],
+  );
+  const filterOptions = useMemo(
+    () =>
+      (['all', 'lca', 'tidas_export', 'tidas_import', 'review_submit'] as const).map((value) => ({
+        value,
+        label: taskTypeLabel(value, intl),
+      })),
+    [intl],
+  );
+
+  useEffect(() => {
+    setExpandedTaskKeys((current) =>
+      current.filter((key) => items.some((item) => taskItemKey(item) === key)),
+    );
+  }, [items]);
 
   const handleDownload = async (task: TidasPackageBackgroundTask) => {
     try {
@@ -1423,6 +2006,51 @@ const LcaTaskCenter: React.FC = () => {
     }
   };
 
+  const modalTitle = (
+    <div
+      style={{
+        alignItems: 'center',
+        display: 'flex',
+        gap: 16,
+        justifyContent: 'space-between',
+        paddingRight: 40,
+      }}
+    >
+      <Typography.Title level={3} style={{ margin: 0 }}>
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.title',
+          defaultMessage: 'Task Center',
+        })}
+      </Typography.Title>
+      <Space size={8}>
+        <Button
+          icon={<ReloadOutlined />}
+          loading={refreshingTasks}
+          onClick={() => {
+            void handleRefreshTasks();
+          }}
+        >
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.refresh',
+            defaultMessage: 'Refresh',
+          })}
+        </Button>
+        <Button
+          onClick={() => {
+            clearFinishedLcaTasks();
+            clearFinishedTidasPackageTasks();
+            clearFinishedReviewSubmitTasks();
+          }}
+        >
+          {intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.clearFinished',
+            defaultMessage: 'Clear finished',
+          })}
+        </Button>
+      </Space>
+    </div>
+  );
+
   return (
     <>
       <HeaderActionIcon
@@ -1439,238 +2067,264 @@ const LcaTaskCenter: React.FC = () => {
         }}
       />
       <Modal
-        title={intl.formatMessage({
-          id: 'pages.process.lca.taskCenter.title',
-          defaultMessage: 'Task Center',
-        })}
+        title={modalTitle}
         open={open}
         onCancel={() => {
           setOpen(false);
         }}
         footer={null}
-        width={760}
+        width={1120}
       >
-        <Space direction='vertical' size={12} style={{ width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button
-              size='small'
-              icon={<ReloadOutlined />}
-              loading={refreshingTasks}
-              onClick={() => {
-                void handleRefreshTasks();
-              }}
-            >
-              {intl.formatMessage({
-                id: 'pages.process.lca.taskCenter.refresh',
-                defaultMessage: 'Refresh',
-              })}
-            </Button>
-            <Button
-              size='small'
-              onClick={() => {
-                clearFinishedLcaTasks();
-                clearFinishedTidasPackageTasks();
-                clearFinishedReviewSubmitTasks();
-              }}
-            >
-              {intl.formatMessage({
-                id: 'pages.process.lca.taskCenter.clearFinished',
-                defaultMessage: 'Clear finished',
-              })}
-            </Button>
-          </div>
-          <div style={{ maxHeight: '68vh', overflowY: 'auto' }}>
-            {items.length === 0 ? (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={intl.formatMessage({
-                  id: 'pages.process.lca.taskCenter.empty',
-                  defaultMessage: 'No tasks',
-                })}
-              />
+        <Space direction='vertical' size={24} style={{ width: '100%' }}>
+          <Tabs
+            activeKey={activeFilter}
+            animated={false}
+            items={filterOptions.map((option) => ({
+              key: option.value,
+              label: option.label,
+            }))}
+            tabBarGutter={24}
+            tabBarStyle={{ marginBottom: 0 }}
+            onChange={(key) => {
+              setActiveFilter(key as TaskKindFilter);
+            }}
+          />
+          <div
+            style={{
+              border: `1px solid ${token.colorBorderSecondary}`,
+              borderRadius: 6,
+              maxHeight: '68vh',
+              overflow: 'auto',
+            }}
+          >
+            {filteredItems.length === 0 ? (
+              <div style={{ padding: 40 }}>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={intl.formatMessage({
+                    id: 'pages.process.lca.taskCenter.empty',
+                    defaultMessage: 'No tasks',
+                  })}
+                />
+              </div>
             ) : (
-              <List
-                dataSource={items}
-                itemLayout='vertical'
-                renderItem={(item) => (
-                  <List.Item
-                    key={item.task.id}
-                    actions={[
-                      item.kind === 'package' &&
-                      item.task.kind === 'tidas_package_export' &&
-                      item.task.state === 'completed' ? (
-                        <Button
-                          key='download'
-                          type='link'
-                          size='small'
-                          icon={<DownloadOutlined />}
-                          loading={downloadingTaskId === item.task.id}
-                          onClick={() => {
-                            void handleDownload(item.task);
+              filteredItems.map((item, index) => {
+                const itemKey = taskItemKey(item);
+                const progressPercent = taskProgressPercent(item);
+                const expanded = expandedTaskKeys.includes(itemKey);
+                return (
+                  <div
+                    key={itemKey}
+                    style={{
+                      alignItems: 'center',
+                      borderTop:
+                        index === 0 ? undefined : `1px solid ${token.colorBorderSecondary}`,
+                      display: 'grid',
+                      gap: 14,
+                      gridTemplateColumns:
+                        'minmax(250px, 1.35fr) minmax(108px, 0.48fr) minmax(230px, 0.9fr) minmax(168px, max-content)',
+                      minHeight: 76,
+                      padding: '12px 16px',
+                    }}
+                  >
+                    <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
+                      <Space size={8} wrap>
+                        <Typography.Text strong style={{ fontSize: 14 }}>
+                          {taskTitle(item, intl)}
+                        </Typography.Text>
+                        {statusTag(item.task.state, intl)}
+                        <Popover
+                          trigger='click'
+                          placement='bottomLeft'
+                          styles={{
+                            body: {
+                              maxHeight: DIAGNOSTICS_POPOVER_MAX_HEIGHT,
+                              overflowX: 'hidden',
+                              overflowY: 'auto',
+                            },
+                            root: {
+                              maxWidth: DIAGNOSTICS_POPOVER_WIDTH + 32,
+                            },
                           }}
+                          content={<TaskDiagnosticsPopoverContent item={item} intl={intl} />}
                         >
+                          <Tooltip
+                            title={intl.formatMessage({
+                              id: 'pages.process.lca.taskCenter.diagnostics',
+                              defaultMessage: 'Diagnostics',
+                            })}
+                          >
+                            <Button
+                              aria-label={intl.formatMessage({
+                                id: 'pages.process.lca.taskCenter.diagnostics',
+                                defaultMessage: 'Diagnostics',
+                              })}
+                              size='small'
+                              type='text'
+                              icon={<InfoCircleOutlined style={{ fontSize: 12 }} />}
+                              style={{
+                                color: token.colorTextTertiary,
+                                height: 18,
+                                minWidth: 18,
+                                paddingInline: 0,
+                                width: 18,
+                              }}
+                            />
+                          </Tooltip>
+                        </Popover>
+                      </Space>
+                      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                        {intl.formatMessage({
+                          id: 'pages.process.lca.taskCenter.updated',
+                          defaultMessage: 'Updated',
+                        })}{' '}
+                        {formatDateTime(item.task.updatedAt)}
+                      </Typography.Text>
+                    </Space>
+                    <Typography.Text style={{ fontSize: 13 }}>
+                      {intl.formatMessage({
+                        id: 'pages.process.lca.taskCenter.elapsedPrefix',
+                        defaultMessage: 'Elapsed',
+                      })}{' '}
+                      {formatDuration(getTaskElapsedMs(item))}
+                    </Typography.Text>
+                    <Space direction='vertical' size={5} style={{ width: '100%' }}>
+                      <Space size={4} wrap>
+                        <Typography.Text style={{ fontSize: 13 }}>
                           {intl.formatMessage({
-                            id: 'component.tidasPackage.taskCenter.download',
-                            defaultMessage: 'Download',
+                            id: 'pages.process.lca.taskCenter.phasePrefix',
+                            defaultMessage: 'Phase:',
                           })}
-                        </Button>
-                      ) : null,
-                      item.kind === 'reviewSubmit' && item.task.state === 'running' ? (
-                        <Button
-                          key='cancel'
-                          type='link'
+                        </Typography.Text>
+                        <Typography.Text style={{ fontSize: 13 }}>
+                          {phaseLabel(item, intl)}
+                        </Typography.Text>
+                      </Space>
+                      <div style={{ alignItems: 'center', display: 'flex', gap: 8 }}>
+                        <Progress
+                          percent={progressPercent}
+                          showInfo={false}
                           size='small'
-                          icon={<CloseCircleOutlined />}
-                          loading={cancellingTaskId === item.task.id}
+                          strokeColor={taskProgressStrokeColor(item, token)}
+                          style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
+                          trailColor={token.colorFillSecondary}
+                        />
+                        <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
+                          {progressPercent}%
+                        </Typography.Text>
+                      </div>
+                    </Space>
+                    <Space size={6} wrap>
+                      <Tooltip
+                        title={intl.formatMessage({
+                          id: 'pages.process.lca.taskCenter.view',
+                          defaultMessage: 'View',
+                        })}
+                      >
+                        <Button
+                          aria-label={intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.view',
+                            defaultMessage: 'View',
+                          })}
+                          icon={<EyeOutlined />}
+                          size='small'
+                          type='text'
+                          style={expanded ? { color: token.colorPrimary } : undefined}
                           onClick={() => {
-                            void handleCancelReviewSubmit(item.task);
+                            setExpandedTaskKeys((current) =>
+                              current.includes(itemKey)
+                                ? current.filter((key) => key !== itemKey)
+                                : [...current, itemKey],
+                            );
                           }}
-                        >
-                          {intl.formatMessage({
+                        />
+                      </Tooltip>
+                      {item.kind === 'package' &&
+                        item.task.kind === 'tidas_package_export' &&
+                        item.task.state === 'completed' && (
+                          <Tooltip
+                            title={intl.formatMessage({
+                              id: 'component.tidasPackage.taskCenter.download',
+                              defaultMessage: 'Download',
+                            })}
+                          >
+                            <Button
+                              aria-label={intl.formatMessage({
+                                id: 'component.tidasPackage.taskCenter.download',
+                                defaultMessage: 'Download',
+                              })}
+                              icon={<DownloadOutlined />}
+                              loading={downloadingTaskId === item.task.id}
+                              size='small'
+                              type='text'
+                              onClick={() => {
+                                void handleDownload(item.task);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      {item.kind === 'reviewSubmit' && item.task.state === 'running' && (
+                        <Tooltip
+                          title={intl.formatMessage({
                             id: 'pages.process.reviewSubmitTaskCenter.cancel',
                             defaultMessage: 'Cancel',
                           })}
-                        </Button>
-                      ) : null,
-                      item.kind === 'reviewSubmit' && item.task.state === 'failed' ? (
-                        <Button
-                          key='retry'
-                          type='link'
-                          size='small'
-                          icon={<ReloadOutlined />}
-                          loading={retryingTaskId === item.task.id}
-                          onClick={() => {
-                            void handleRetryReviewSubmit(item.task);
-                          }}
                         >
-                          {intl.formatMessage({
+                          <Button
+                            aria-label={intl.formatMessage({
+                              id: 'pages.process.reviewSubmitTaskCenter.cancel',
+                              defaultMessage: 'Cancel',
+                            })}
+                            danger
+                            icon={<CloseCircleOutlined />}
+                            loading={cancellingTaskId === item.task.id}
+                            size='small'
+                            type='text'
+                            onClick={() => {
+                              void handleCancelReviewSubmit(item.task);
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                      {item.kind === 'reviewSubmit' && item.task.state === 'failed' && (
+                        <Tooltip
+                          title={intl.formatMessage({
                             id: 'pages.process.reviewSubmitTaskCenter.retry',
                             defaultMessage: 'Retry',
                           })}
-                        </Button>
-                      ) : null,
-                      <Popover
-                        key='details'
-                        trigger='click'
-                        placement='leftTop'
-                        content={taskDetailContent(item, intl)}
-                      >
-                        <Button size='small' type='link' icon={<InfoCircleOutlined />}>
-                          {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.details',
-                            defaultMessage: 'Details',
-                          })}
-                        </Button>
-                      </Popover>,
-                      <Button
-                        key='remove'
-                        type='link'
-                        size='small'
-                        disabled={item.kind === 'reviewSubmit' && item.task.state === 'running'}
-                        onClick={() => {
-                          if (item.kind === 'lca') {
-                            removeLcaTask(item.task.id);
-                            return;
-                          }
-                          if (item.kind === 'reviewSubmit') {
-                            removeReviewSubmitTask(item.task.id);
-                            return;
-                          }
-                          removeTidasPackageTask(item.task.id);
-                        }}
-                      >
-                        {intl.formatMessage({
-                          id: 'pages.process.lca.taskCenter.remove',
-                          defaultMessage: 'Remove',
-                        })}
-                      </Button>,
-                    ].filter(Boolean)}
-                  >
-                    <Space direction='vertical' size={4} style={{ width: '100%' }}>
-                      <Space size={8} wrap>
-                        {'sequence' in item.task && (
-                          <Typography.Text strong>#{item.task.sequence}</Typography.Text>
-                        )}
-                        <Tag
-                          color={
-                            item.kind === 'lca'
-                              ? 'blue'
-                              : item.kind === 'reviewSubmit'
-                                ? 'gold'
-                                : 'geekblue'
-                          }
                         >
-                          {item.kind === 'lca'
-                            ? intl.formatMessage({
-                                id: 'component.tidasPackage.taskCenter.kind.lca',
-                                defaultMessage: 'LCA',
-                              })
-                            : item.kind === 'reviewSubmit'
-                              ? intl.formatMessage({
-                                  id: 'pages.process.reviewSubmitTaskCenter.kind',
-                                  defaultMessage: 'Review Submit',
-                                })
-                              : intl.formatMessage({
-                                  id:
-                                    item.task.kind === 'tidas_package_import'
-                                      ? 'component.tidasPackage.taskCenter.kind.packageImport'
-                                      : 'component.tidasPackage.taskCenter.kind.packageExport',
-                                  defaultMessage:
-                                    item.task.kind === 'tidas_package_import'
-                                      ? 'TIDAS Import'
-                                      : 'TIDAS Export',
-                                })}
-                        </Tag>
-                        {statusTag(item.task.state, intl)}
-                        {shouldShowPhaseTag(item) && (
-                          <Tag color='default'>{phaseLabel(item, intl)}</Tag>
-                        )}
-                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                          {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.updated',
-                            defaultMessage: 'Updated',
-                          })}{' '}
-                          {formatDateTime(item.task.updatedAt)}
-                        </Typography.Text>
-                      </Space>
-                      <Typography.Text>{taskSummary(item, intl)}</Typography.Text>
-                      {item.kind === 'package' && packageTaskErrorText(item.task, intl) && (
-                        <Typography.Text type='danger'>
-                          {packageTaskErrorText(item.task, intl)}
-                        </Typography.Text>
-                      )}
-                      {item.kind === 'lca' && item.task.error && (
-                        <Typography.Text type='danger'>{item.task.error}</Typography.Text>
-                      )}
-                      {item.kind === 'reviewSubmit' &&
-                        item.task.state === 'failed' &&
-                        reviewSubmitBlockerSummaryContent(item.task, intl)}
-                      {item.kind === 'reviewSubmit' &&
-                        item.task.state === 'failed' &&
-                        reviewSubmitErrorSummaryContent(item.task, intl)}
-                      <Space size={12} wrap>
-                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                          {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.created',
-                            defaultMessage: 'Created',
-                          })}{' '}
-                          {formatDateTime(item.task.createdAt)}
-                        </Typography.Text>
-                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                          {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.elapsed',
-                            defaultMessage: 'Elapsed',
-                          })}{' '}
-                          {formatDuration(getTaskElapsedMs(item))}
-                        </Typography.Text>
-                      </Space>
-                      {item.kind === 'lca' && item.task.state === 'completed' && (
-                        <TaskTimeline task={item.task} intl={intl} />
+                          <Button
+                            aria-label={intl.formatMessage({
+                              id: 'pages.process.reviewSubmitTaskCenter.retry',
+                              defaultMessage: 'Retry',
+                            })}
+                            icon={<ReloadOutlined />}
+                            loading={retryingTaskId === item.task.id}
+                            size='small'
+                            type='text'
+                            onClick={() => {
+                              void handleRetryReviewSubmit(item.task);
+                            }}
+                          />
+                        </Tooltip>
                       )}
                     </Space>
-                  </List.Item>
-                )}
-              />
+                    {expanded && (
+                      <div
+                        style={{
+                          background: token.colorFillSecondary,
+                          borderRadius: 6,
+                          gridColumn: '1 / -1',
+                          marginTop: 2,
+                          padding: '12px 14px',
+                        }}
+                      >
+                        <TaskDetailPopoverContent item={item} intl={intl} inline />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
           </div>
         </Space>
