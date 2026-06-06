@@ -19,6 +19,8 @@ type MutableNode = ProcessFlowGraphNode & {
   degree: number;
 };
 
+type Vec3 = [number, number, number];
+
 const clusterIds = [
   'chemicals',
   'metals',
@@ -42,6 +44,18 @@ const clusterLabels: Record<(typeof clusterIds)[number], string> = {
 const flowTypes: ProcessFlowGraphFlowType[] = ['Product flow', 'Waste flow', 'Other flow'];
 const locations = ['CN', 'CN-HB', 'CN-GD', 'CN-JS', 'CN-SD', 'CN-ZJ', 'GLO', 'RER'];
 const units = ['kg', 'MJ', 't*km', 'm3', 'kWh'];
+const sphereRadius = 310;
+const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+const sphereFrontDirection: Vec3 = [0, 0, 1];
+const clusterSphereDirections: Record<(typeof clusterIds)[number], Vec3> = {
+  chemicals: normalizeVector([-0.72, 0.28, 0.64]),
+  energy: normalizeVector([-0.58, -0.5, -0.64]),
+  materials: normalizeVector([0.66, -0.28, 0.7]),
+  metals: normalizeVector([0.74, 0.34, -0.58]),
+  services: normalizeVector([0.08, 0.86, 0.5]),
+  transport: normalizeVector([-0.18, 0.76, -0.62]),
+  waste: normalizeVector([0.2, -0.86, 0.46]),
+};
 
 function getPresetConfig(preset: ProcessFlowGraphPreset): MockGraphConfig {
   if (preset === 'small') {
@@ -64,6 +78,50 @@ function createSeededRandom(seed: number) {
 
 function pick<T>(items: T[], random: () => number): T {
   return items[Math.floor(random() * items.length) % items.length];
+}
+
+function groupByCluster(nodes: MutableNode[]) {
+  return clusterIds.reduce(
+    (groups, clusterId) => ({
+      ...groups,
+      [clusterId]: nodes.filter((node) => node.clusterId === clusterId),
+    }),
+    {} as Record<(typeof clusterIds)[number], MutableNode[]>,
+  );
+}
+
+function getPreferredClusterNodes(
+  nodes: MutableNode[],
+  clusterId: (typeof clusterIds)[number],
+  limit: number,
+) {
+  const preferredNodes = nodes.filter((node) => node.clusterId === clusterId);
+  const fallbackNodes = nodes.filter((node) => node.clusterId !== clusterId);
+
+  return [...preferredNodes, ...fallbackNodes].slice(0, limit);
+}
+
+function pickFlowForProcess({
+  fallbackFlows,
+  flowsByCluster,
+  process,
+  random,
+  sharedFlows,
+}: {
+  fallbackFlows: MutableNode[];
+  flowsByCluster: Record<(typeof clusterIds)[number], MutableNode[]>;
+  process: MutableNode;
+  random: () => number;
+  sharedFlows: MutableNode[];
+}) {
+  if (sharedFlows.length && random() < 0.1) {
+    return pick(sharedFlows, random);
+  }
+
+  const localFlows =
+    flowsByCluster[process.clusterId as (typeof clusterIds)[number]] ?? fallbackFlows;
+
+  return pick(random() < 0.86 && localFlows.length ? localFlows : fallbackFlows, random);
 }
 
 function createFlow(index: number, random: () => number): MutableNode {
@@ -137,20 +195,119 @@ function addExchangeEdge({
   addAdjacency(adjacency, flow.id, edgeId);
 }
 
-function createSphereLayout(nodes: MutableNode[], random: () => number): ProcessFlowGraphLayout {
+function normalizeVector(vector: Vec3): Vec3 {
+  const length = Math.hypot(vector[0], vector[1], vector[2]) || 1;
+  return [vector[0] / length, vector[1] / length, vector[2] / length];
+}
+
+function crossVector(left: Vec3, right: Vec3): Vec3 {
+  return [
+    left[1] * right[2] - left[2] * right[1],
+    left[2] * right[0] - left[0] * right[2],
+    left[0] * right[1] - left[1] * right[0],
+  ];
+}
+
+function createSphereBasis(center: Vec3): { tangentX: Vec3; tangentY: Vec3 } {
+  const reference: Vec3 = Math.abs(center[1]) > 0.82 ? [1, 0, 0] : [0, 1, 0];
+  const tangentX = normalizeVector(crossVector(reference, center));
+  const tangentY = normalizeVector(crossVector(center, tangentX));
+
+  return { tangentX, tangentY };
+}
+
+function getSphereCapDirection(center: Vec3, angle: number, theta: number): Vec3 {
+  const { tangentX, tangentY } = createSphereBasis(center);
+  const cosAngle = Math.cos(angle);
+  const sinAngle = Math.sin(angle);
+  const cosTheta = Math.cos(theta);
+  const sinTheta = Math.sin(theta);
+
+  return normalizeVector([
+    center[0] * cosAngle + (tangentX[0] * cosTheta + tangentY[0] * sinTheta) * sinAngle,
+    center[1] * cosAngle + (tangentX[1] * cosTheta + tangentY[1] * sinTheta) * sinAngle,
+    center[2] * cosAngle + (tangentX[2] * cosTheta + tangentY[2] * sinTheta) * sinAngle,
+  ]);
+}
+
+function getSpherePosition(direction: Vec3, radialJitter = 0): Vec3 {
+  const radius = sphereRadius + radialJitter;
+  return [direction[0] * radius, direction[1] * radius, direction[2] * radius];
+}
+
+function getFlowANeighborhood(edges: ProcessFlowGraphEdge[]) {
+  const relatedProcessIds = new Set<string>();
+  const relatedFlowIds = new Set<string>([demoFlowAId]);
+
+  edges.forEach((edge) => {
+    if (edge.flowId === demoFlowAId) {
+      relatedProcessIds.add(edge.processId);
+    }
+  });
+  edges.forEach((edge) => {
+    if (relatedProcessIds.has(edge.processId)) {
+      relatedFlowIds.add(edge.flowId);
+    }
+  });
+
+  return { relatedFlowIds, relatedProcessIds };
+}
+
+function createSphereLayout(
+  nodes: MutableNode[],
+  edges: ProcessFlowGraphEdge[],
+  random: () => number,
+): ProcessFlowGraphLayout {
   const layout: ProcessFlowGraphLayout = {};
-  const radius = 310;
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  const placedNodeIds = new Set<string>();
+  const { relatedFlowIds, relatedProcessIds } = getFlowANeighborhood(edges);
+  const relatedProcesses = nodes.filter((node) => relatedProcessIds.has(node.id));
+  const relatedFlows = nodes.filter(
+    (node) => relatedFlowIds.has(node.id) && node.id !== demoFlowAId,
+  );
 
-  nodes.forEach((node, index) => {
-    const y = 1 - (index / Math.max(1, nodes.length - 1)) * 2;
-    const projectionRadius = Math.sqrt(1 - y * y);
-    const theta = index * goldenAngle;
-    const jitter = node.kind === 'process' ? 10 : 22;
-    const x = Math.cos(theta) * projectionRadius * radius + (random() - 0.5) * jitter;
-    const z = Math.sin(theta) * projectionRadius * radius + (random() - 0.5) * jitter;
+  layout[demoFlowAId] = getSpherePosition(sphereFrontDirection, 7);
+  placedNodeIds.add(demoFlowAId);
 
-    layout[node.id] = [x, y * radius + (random() - 0.5) * jitter, z];
+  relatedProcesses.forEach((node, index) => {
+    const ring = index % 2;
+    const angle = 0.17 + ring * 0.08 + (random() - 0.5) * 0.028;
+    const theta = index * goldenAngle + (random() - 0.5) * 0.2;
+    const direction = getSphereCapDirection(sphereFrontDirection, angle, theta);
+
+    layout[node.id] = getSpherePosition(direction, 5 + random() * 4);
+    placedNodeIds.add(node.id);
+  });
+
+  relatedFlows.forEach((node, index) => {
+    const angle = 0.34 + (index % 3) * 0.07 + (random() - 0.5) * 0.035;
+    const theta = index * goldenAngle + Math.PI / 7 + (random() - 0.5) * 0.22;
+    const direction = getSphereCapDirection(sphereFrontDirection, angle, theta);
+
+    layout[node.id] = getSpherePosition(direction, 3 + random() * 6);
+    placedNodeIds.add(node.id);
+  });
+
+  clusterIds.forEach((clusterId) => {
+    const clusterNodes = nodes.filter(
+      (node) => node.clusterId === clusterId && !placedNodeIds.has(node.id),
+    );
+    const center = clusterSphereDirections[clusterId];
+
+    clusterNodes.forEach((node, index) => {
+      const densityProgress = Math.sqrt((index + 0.5) / Math.max(1, clusterNodes.length));
+      const angle =
+        0.08 +
+        densityProgress * 0.66 +
+        (node.kind === 'process' ? 0.03 : 0) +
+        (random() - 0.5) * 0.045;
+      const theta = index * goldenAngle + random() * 0.24;
+      const radialJitter = node.kind === 'process' ? random() * 5 : random() * 8;
+      const direction = getSphereCapDirection(center, angle, theta);
+
+      layout[node.id] = getSpherePosition(direction, radialJitter);
+      placedNodeIds.add(node.id);
+    });
   });
 
   return layout;
@@ -254,8 +411,17 @@ export function generateMockProcessFlowGraph(
   const nodes = [flowA, ...flows, ...processes];
   const edges: ProcessFlowGraphEdge[] = [];
   const adjacency: Record<string, string[]> = {};
-  const sharedFlows = flows.slice(0, 18);
-  const flowAProcesses = processes.slice(0, Math.min(14, processes.length));
+  const flowsByCluster = groupByCluster(flows);
+  const sharedFlows = (flowsByCluster.materials.length ? flowsByCluster.materials : flows).slice(
+    0,
+    18,
+  );
+  const flowAProcesses = getPreferredClusterNodes(
+    processes,
+    'materials',
+    Math.min(14, processes.length),
+  );
+  const flowAProcessIds = new Set(flowAProcesses.map((process) => process.id));
 
   flowAProcesses.forEach((process, index) => {
     addExchangeEdge({
@@ -281,26 +447,33 @@ export function generateMockProcessFlowGraph(
     }
   });
 
-  processes.slice(flowAProcesses.length).forEach((process, processIndex) => {
-    const exchangeCount = 7 + Math.floor(random() * 8);
+  processes
+    .filter((process) => !flowAProcessIds.has(process.id))
+    .forEach((process, processIndex) => {
+      const exchangeCount = 7 + Math.floor(random() * 8);
 
-    for (let exchangeIndex = 0; exchangeIndex < exchangeCount; exchangeIndex += 1) {
-      const flowIndex =
-        exchangeIndex % 5 === 0
-          ? processIndex % sharedFlows.length
-          : Math.floor(random() * flows.length);
-      const flow = exchangeIndex % 5 === 0 ? sharedFlows[flowIndex] : flows[flowIndex];
+      for (let exchangeIndex = 0; exchangeIndex < exchangeCount; exchangeIndex += 1) {
+        const flow =
+          exchangeIndex % 6 === 0
+            ? sharedFlows[processIndex % sharedFlows.length]
+            : pickFlowForProcess({
+                fallbackFlows: flows,
+                flowsByCluster,
+                process,
+                random,
+                sharedFlows,
+              });
 
-      addExchangeEdge({
-        adjacency,
-        direction: random() > 0.54 ? 'output' : 'input',
-        edges,
-        flow,
-        process,
-        random,
-      });
-    }
-  });
+        addExchangeEdge({
+          adjacency,
+          direction: random() > 0.54 ? 'output' : 'input',
+          edges,
+          flow,
+          process,
+          random,
+        });
+      }
+    });
 
   const indexes = buildIndexes(nodes, edges);
   const selection = getProcessFlowGraphSelection(
@@ -330,7 +503,7 @@ export function generateMockProcessFlowGraph(
     indexes,
     layouts: {
       expanded2d: createExpandedLayout(nodes, random),
-      sphere3d: createSphereLayout(nodes, random),
+      sphere3d: createSphereLayout(nodes, edges, random),
     },
     nodes,
     schemaVersion: 'process_flow_graph_mock_v1',

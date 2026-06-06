@@ -2049,7 +2049,9 @@ function FlowTopologyScreen({
         subtitle='全量 mock process-flow graph 的球体与展开视图'
         title='过程-流全量关系图谱'
       />
-      <ProcessFlowGraphPanel />
+      <div className={styles.processFlowGraphWorkspace}>
+        <ProcessFlowGraphPanel />
+      </div>
       <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
     </section>
   );

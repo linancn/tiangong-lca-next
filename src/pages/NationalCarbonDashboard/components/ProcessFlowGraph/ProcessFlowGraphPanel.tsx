@@ -228,8 +228,8 @@ function Inspector({
 export default function ProcessFlowGraphPanel() {
   const data = demoProcessFlowGraph;
   const [layoutMode, setLayoutMode] = useState<ProcessFlowGraphLayoutName>('sphere3d');
-  const [query, setQuery] = useState('Flow A');
-  const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>(demoFlowAId);
+  const [query, setQuery] = useState('');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const selectedNode = useMemo(
     () => getProcessFlowGraphNode(data, selectedNodeId),
     [data, selectedNodeId],
