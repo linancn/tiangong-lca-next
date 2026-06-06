@@ -1786,14 +1786,9 @@ function taskProcessDetailContent(item: TaskCenterItem, intl: IntlShapeLike): Re
 const TaskDetailPopoverContent: React.FC<{
   item: TaskCenterItem;
   intl: IntlShapeLike;
-  inline?: boolean;
-}> = ({ item, intl, inline = false }) => {
+}> = ({ item, intl }) => {
   return (
-    <Space
-      direction='vertical'
-      size={12}
-      style={{ maxWidth: inline ? undefined : 520, minWidth: inline ? 0 : 360, width: '100%' }}
-    >
+    <Space direction='vertical' size={12} style={{ minWidth: 0, width: '100%' }}>
       <DetailSection
         title={intl.formatMessage({
           id: 'pages.process.lca.taskCenter.detail.infoTitle',
@@ -2319,7 +2314,7 @@ const LcaTaskCenter: React.FC = () => {
                           padding: '12px 14px',
                         }}
                       >
-                        <TaskDetailPopoverContent item={item} intl={intl} inline />
+                        <TaskDetailPopoverContent item={item} intl={intl} />
                       </div>
                     )}
                   </div>

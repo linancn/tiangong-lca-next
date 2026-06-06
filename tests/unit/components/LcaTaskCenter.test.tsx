@@ -985,6 +985,159 @@ describe('LcaTaskCenter', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
+  it('filters task tabs, collapses inline details, and handles sparse diagnostics and progress', () => {
+    mockTasks = [
+      {
+        id: '',
+        mode: 'single',
+        scope: 'prod',
+        state: 'completed',
+        phase: 'completed',
+        workerJobId: '   ',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:05:00.000Z',
+        phaseTimeline: [],
+      },
+      {
+        id: 'lca-building-filter',
+        mode: 'all_unit',
+        scope: 'prod',
+        state: 'running',
+        phase: 'building_snapshot',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:04:00.000Z',
+        phaseTimeline: [
+          {
+            phase: 'building_snapshot',
+            startedAt: '2026-03-12T12:01:00.000Z',
+            endedAt: '2026-03-12T12:02:00.000Z',
+          },
+          {
+            phase: 'building_snapshot',
+            startedAt: '2026-03-12T12:00:30.000Z',
+            endedAt: '2026-03-12T12:03:00.000Z',
+          },
+        ],
+      },
+    ];
+    mockPackageTasks = [
+      {
+        id: 'pkg-export-combined-scope',
+        kind: 'tidas_package_export',
+        state: 'completed',
+        phase: 'completed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:03:00.000Z',
+        scope: 'current_user_and_open_data',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-import-filter',
+        kind: 'tidas_package_import',
+        state: 'running',
+        phase: 'queued',
+        filename: 'package.zip',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:02:00.000Z',
+        rootCount: 0,
+      },
+    ];
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-progress-string',
+        state: 'running',
+        phase: 'running',
+        progress: '67.4',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:01:00.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-string',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-progress-infinity',
+        state: 'running',
+        phase: 'waiting_gate',
+        progress: Number.POSITIVE_INFINITY,
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:30.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-infinity',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-progress-invalid',
+        state: 'running',
+        phase: 'submitting',
+        progress: 'not-a-number',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:10.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-invalid',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-empty-blocker',
+        state: 'failed',
+        phase: 'blocked',
+        blockingReasons: [{ code: ' ', message: ' ' }],
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-empty-blocker',
+          version: '01.00.000',
+        },
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getAllByRole('progressbar').map((bar) => bar.textContent)).toEqual(
+      expect.arrayContaining(['67%', '0%']),
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'LCA Calculation' }));
+    expect(screen.queryByText('Import TIDAS package')).not.toBeInTheDocument();
+
+    const lcaViewButton = screen.getAllByRole('button', { name: 'View' })[0];
+    fireEvent.click(lcaViewButton);
+    expect(screen.getByText('Detail information')).toBeInTheDocument();
+    fireEvent.click(lcaViewButton);
+    expect(screen.queryByText('Detail information')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[0]);
+    expect(screen.getByText('No diagnostics')).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'View' })[1]);
+    expect(screen.getByText('Build snapshot')).toBeInTheDocument();
+
+    act(() => {
+      mockTasks = [];
+      mockSubscribeLcaTasks.mock.calls[0][0]();
+    });
+    expect(screen.queryByText('Build snapshot')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'TIDAS Export' }));
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    expect(screen.getByText('Current user data + open data')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'TIDAS Import' }));
+    expect(screen.getByText('Import package: package.zip')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Review Submit' }));
+    expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[3]);
+    expect(screen.getByText('No detailed message returned.')).toBeInTheDocument();
+  });
+
   it('renders package tasks, supports download actions, and handles download errors', async () => {
     mockTasks = [
       {
