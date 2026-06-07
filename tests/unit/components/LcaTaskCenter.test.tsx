@@ -9,9 +9,6 @@ const mockClearFinishedLcaTasks = jest.fn();
 const mockClearFinishedTidasPackageTasks = jest.fn();
 const mockClearFinishedReviewSubmitTasks = jest.fn();
 const mockDownloadTidasPackageExportTask = jest.fn();
-const mockRemoveLcaTask = jest.fn();
-const mockRemoveTidasPackageTask = jest.fn();
-const mockRemoveReviewSubmitTask = jest.fn();
 const mockCancelReviewSubmitTask = jest.fn();
 const mockRefreshLcaTasksFromWorkerJobs = jest.fn();
 const mockRefreshTidasPackageTasksFromWorkerJobs = jest.fn();
@@ -32,7 +29,6 @@ jest.mock('@/services/lca/taskCenter', () => ({
   clearFinishedLcaTasks: () => mockClearFinishedLcaTasks(),
   listLcaTasks: () => mockTasks,
   refreshLcaTasksFromWorkerJobs: (...args: any[]) => mockRefreshLcaTasksFromWorkerJobs(...args),
-  removeLcaTask: (...args: any[]) => mockRemoveLcaTask(...args),
   subscribeLcaTaskCenterOpenRequests: (...args: any[]) =>
     mockSubscribeLcaTaskCenterOpenRequests(...args),
   subscribeLcaTasks: (...args: any[]) => mockSubscribeLcaTasks(...args),
@@ -45,7 +41,6 @@ jest.mock('@/services/tidasPackage/taskCenter', () => ({
   listTidasPackageTasks: () => mockPackageTasks,
   refreshTidasPackageTasksFromWorkerJobs: (...args: any[]) =>
     mockRefreshTidasPackageTasksFromWorkerJobs(...args),
-  removeTidasPackageTask: (...args: any[]) => mockRemoveTidasPackageTask(...args),
   subscribeTidasPackageTasks: (...args: any[]) => mockSubscribeTidasPackageTasks(...args),
 }));
 
@@ -55,7 +50,6 @@ jest.mock('@/services/reviews/taskCenter', () => ({
   clearFinishedReviewSubmitTasks: () => mockClearFinishedReviewSubmitTasks(),
   listReviewSubmitTasks: () => mockReviewSubmitTasks,
   refreshReviewSubmitTasks: (...args: any[]) => mockRefreshReviewSubmitTasks(...args),
-  removeReviewSubmitTask: (...args: any[]) => mockRemoveReviewSubmitTask(...args),
   retryReviewSubmitTask: (...args: any[]) => mockRetryReviewSubmitTask(...args),
   subscribeReviewSubmitTasks: (...args: any[]) => mockSubscribeReviewSubmitTasks(...args),
 }));
@@ -78,6 +72,7 @@ jest.mock('@ant-design/icons', () => ({
   ),
   CloseCircleOutlined: () => <span>close-icon</span>,
   DownloadOutlined: () => <span>download-icon</span>,
+  EyeOutlined: () => <span>eye-icon</span>,
   InfoCircleOutlined: () => <span>info-icon</span>,
   ReloadOutlined: () => <span>reload-icon</span>,
 }));
@@ -92,9 +87,10 @@ jest.mock('antd', () => {
     </div>
   );
 
-  const Button = ({ children, onClick, disabled, icon }: any) => (
+  const Button = ({ children, onClick, disabled, icon, 'aria-label': ariaLabel }: any) => (
     <button
       type='button'
+      aria-label={ariaLabel}
       disabled={disabled}
       onClick={() => {
         if (!disabled) {
@@ -149,19 +145,42 @@ jest.mock('antd', () => {
     );
   };
 
-  const Space = ({ children }: any) => <div>{children}</div>;
+  const Progress = ({ percent }: any) => <div role='progressbar'>{percent}%</div>;
+  const Space = ({ children, style }: any) => <div style={style}>{children}</div>;
   const Tag = ({ children }: any) => <span>{children}</span>;
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tabs = ({ activeKey, items = [], onChange }: any) => (
+    <div role='tablist'>
+      {items.map((item: any) => (
+        <button
+          key={item.key}
+          aria-selected={activeKey === item.key}
+          role='tab'
+          type='button'
+          onClick={() => onChange?.(item.key)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+  const Tooltip = ({ children, ...props }: any) =>
+    React.isValidElement(children) ? React.cloneElement(children, props) : <>{children}</>;
   const Typography = {
     Text: ({ children }: any) => <span>{children}</span>,
+    Title: ({ children }: any) => <h2>{children}</h2>,
   };
   const theme = {
     useToken: () => ({
       token: {
+        colorBgContainer: '#fff',
+        colorBorder: '#d9d9d9',
+        colorBorderSecondary: '#d9d9d9',
+        colorError: '#ff4d4f',
         colorFillSecondary: '#fafafa',
-        colorTextTertiary: '#595959',
         colorPrimary: '#1677ff',
         colorSuccess: '#52c41a',
+        colorTextTertiary: '#595959',
+        colorWhite: '#fff',
       },
     }),
   };
@@ -174,8 +193,10 @@ jest.mock('antd', () => {
     List,
     Modal,
     Popover,
+    Progress,
     Space,
     Tag,
+    Tabs,
     Tooltip,
     Typography,
     message: {
@@ -228,7 +249,7 @@ describe('LcaTaskCenter', () => {
     expect(mockSubscribeLcaTaskCenterOpenRequests).toHaveBeenCalled();
   });
 
-  it('renders running and completed tasks, task details, and remove actions', () => {
+  it('renders running and completed tasks, task details, and diagnostics', () => {
     mockTasks = [
       {
         id: 'task-running',
@@ -295,32 +316,46 @@ describe('LcaTaskCenter', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByText('#1')).toBeInTheDocument();
-    expect(screen.getByText('#2')).toBeInTheDocument();
-    expect(screen.getByText('Solving (solve-1)')).toBeInTheDocument();
-    expect(screen.getByText('Cache hit (result result-2)')).toBeInTheDocument();
-    expect(screen.getByText('Solve failed once')).toBeInTheDocument();
-    screen.getAllByRole('button', { name: 'Details' }).forEach((button) => {
+    expect(screen.queryByText('#1')).not.toBeInTheDocument();
+    expect(screen.queryByText('#2')).not.toBeInTheDocument();
+    expect(screen.getAllByText('LCA Calculation').length).toBeGreaterThan(0);
+    expect(screen.getByText('Solving')).toBeInTheDocument();
+    expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('65%').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('100%').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cache hit; result is ready')).not.toBeInTheDocument();
+    expect(screen.queryByText('solve-1')).not.toBeInTheDocument();
+    expect(screen.queryByText('result-2')).not.toBeInTheDocument();
+    expect(screen.queryByText('Solve failed once')).not.toBeInTheDocument();
+
+    const viewButtons = screen.getAllByRole('button', { name: 'View' });
+    fireEvent.click(viewButtons[0]);
+    expect(screen.getByText('Detail information')).toBeInTheDocument();
+    expect(screen.getByText('Demand type')).toBeInTheDocument();
+    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.getByText('Data scope')).toBeInTheDocument();
+    expect(screen.getByText('team')).toBeInTheDocument();
+    expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
+    fireEvent.click(viewButtons[1]);
+    expect(screen.queryByText('Cache hit; result is ready')).not.toBeInTheDocument();
+    expect(screen.queryByText('The calculation result is ready.')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Execution stages').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Submit task').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Solve').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Organize result').length).toBeGreaterThan(0);
+    expect(screen.getByText('Build snapshot')).toBeInTheDocument();
+    expect(screen.getByText('Took 3.00 s')).toBeInTheDocument();
+
+    screen.getAllByRole('button', { name: 'Diagnostics' }).forEach((button) => {
       fireEvent.click(button);
     });
-    expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('build_job_id') ?? false)
-        .length,
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-lca-1'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('result_id') ?? false)
-        .length,
-    ).toBeGreaterThan(0);
-
-    const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
-    fireEvent.click(removeButtons[0]);
-    fireEvent.click(removeButtons[1]);
-
-    expect(mockRemoveLcaTask).toHaveBeenNthCalledWith(1, 'task-running');
-    expect(mockRemoveLcaTask).toHaveBeenNthCalledWith(2, 'task-completed');
+    expect(screen.getAllByText('build_job_id').length).toBeGreaterThan(0);
+    expect(screen.getByText('worker_job_id')).toBeInTheDocument();
+    expect(screen.getByText('worker-lca-1')).toBeInTheDocument();
+    expect(screen.getAllByText('result_id').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Solve failed once')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear finished' }));
     expect(mockClearFinishedLcaTasks).toHaveBeenCalledTimes(1);
@@ -388,18 +423,25 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByTestId('badge-count')).toHaveTextContent('2');
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByText('Building snapshot (build-3)')).toBeInTheDocument();
-    expect(screen.getByText('Submitting task')).toBeInTheDocument();
-    expect(screen.getByText('Task failed')).toBeInTheDocument();
     expect(screen.getByText('Building snapshot')).toBeInTheDocument();
     expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
-    expect(screen.getByText('Failed')).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'Elapsed 500 ms'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getAllByText((_, element) => element?.textContent === 'Elapsed 1m 0s').length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Submitting calculation')).not.toBeInTheDocument();
+    expect(screen.queryByText('Calculation failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('build-3')).not.toBeInTheDocument();
+    expect(screen.queryByText('Server failure')).not.toBeInTheDocument();
+
+    const viewButtons = screen.getAllByRole('button', { name: 'View' });
+    fireEvent.click(viewButtons[0]);
+    expect(screen.getByText('Demand type')).toBeInTheDocument();
+    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
+
+    fireEvent.click(viewButtons[1]);
+    expect(screen.queryByText('Submitting calculation')).not.toBeInTheDocument();
+    fireEvent.click(viewButtons[2]);
+    expect(screen.queryByText('Calculation failed')).not.toBeInTheDocument();
     expect(screen.getByText('Server failure')).toBeInTheDocument();
     nowSpy.mockRestore();
   });
@@ -424,21 +466,21 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
-    expect(screen.getByText('Stage duration')).toBeInTheDocument();
-    expect(screen.getByText('Total 0 ms')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Details' }));
+    expect(screen.queryByText('Calculation completed')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    expect(screen.queryByText('Calculation completed')).not.toBeInTheDocument();
+    expect(screen.getByText('The task completed without a returned result.')).toBeInTheDocument();
+    expect(screen.queryByText('0 ms')).not.toBeInTheDocument();
     expect(
-      screen.getByText((_, element) => element?.textContent === 'created_at: not-a-date'),
-    ).toBeInTheDocument();
+      screen.queryByText((_, element) => element?.textContent === 'Created not-a-date'),
+    ).not.toBeInTheDocument();
     expect(
-      screen.getByText((_, element) => element?.textContent === 'updated_at: still-not-a-date'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'Elapsed 0 ms'),
-    ).toBeInTheDocument();
+      screen.getAllByText((_, element) => element?.textContent === 'Updated still-not-a-date')
+        .length,
+    ).toBeGreaterThan(0);
   });
 
-  it('renders service-backed review-submit tasks with blocker guidance and cancel/remove actions', async () => {
+  it('renders service-backed review-submit tasks with blocker guidance and cancel actions', async () => {
     mockReviewSubmitTasks = [
       {
         id: 'submit-worker-running',
@@ -490,16 +532,14 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
     expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
-    expect(screen.getByText('Waiting for gate')).toBeInTheDocument();
-    expect(screen.getByText('Blocked')).toBeInTheDocument();
-    expect(screen.getAllByText('Input and output flow semantics conflict').length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getAllByText('Waiting for gate').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Blocked').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Input and output flow semantics conflict')).not.toBeInTheDocument();
     expect(
-      screen.getAllByText(
+      screen.queryByText(
         'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
-      ).length,
-    ).toBeGreaterThan(0);
+      ),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('same input/output flow')).not.toBeInTheDocument();
     expect(
       screen.queryByText(
@@ -510,25 +550,29 @@ describe('LcaTaskCenter', () => {
       screen.queryByText((_, element) => element?.textContent?.includes('"flowId"') ?? false),
     ).not.toBeInTheDocument();
 
-    const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
-    fireEvent.click(detailsButtons[1]);
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'dataset: process-2 @ 01.00.000'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        (_, element) => element?.textContent === 'submit_worker_job_id: submit-worker-blocked',
-      ),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'root_job_id: root-worker-blocked'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('same input/output flow')).toBeInTheDocument();
+    const viewButtons = screen.getAllByRole('button', { name: 'View' });
+    fireEvent.click(viewButtons[1]);
+    expect(screen.getByText('Dataset')).toBeInTheDocument();
+    expect(screen.getByText('processes')).toBeInTheDocument();
+    expect(screen.getByText('Version')).toBeInTheDocument();
+    expect(screen.getAllByText('01.00.000').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Input and output flow semantics conflict').length).toBeGreaterThan(
+      0,
+    );
     expect(
       screen.getAllByText(
-        (_, element) => element?.textContent?.includes('flow_lcia_semantic_mismatch') ?? false,
+        'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
       ).length,
     ).toBeGreaterThan(0);
+
+    const diagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
+    fireEvent.click(diagnosticsButtons[1]);
+    expect(screen.getByText('submit_worker_job_id')).toBeInTheDocument();
+    expect(screen.getAllByText('submit-worker-blocked').length).toBeGreaterThan(0);
+    expect(screen.getByText('root_job_id')).toBeInTheDocument();
+    expect(screen.getAllByText('root-worker-blocked').length).toBeGreaterThan(0);
+    expect(screen.getByText('same input/output flow')).toBeInTheDocument();
+    expect(screen.getAllByText('flow_lcia_semantic_mismatch').length).toBeGreaterThan(0);
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('"flowId"') ?? false)
         .length,
@@ -554,10 +598,7 @@ describe('LcaTaskCenter', () => {
     await waitFor(() =>
       expect(message.success).toHaveBeenCalledWith('Review-submit task cancelled'),
     );
-
-    const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
-    fireEvent.click(removeButtons[1]);
-    expect(mockRemoveReviewSubmitTask).toHaveBeenCalledWith('submit-worker-blocked');
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
   });
 
   it('refreshes worker-backed task families on mount, timer, open request, and manual refresh failures', async () => {
@@ -654,6 +695,7 @@ describe('LcaTaskCenter', () => {
         gateRunId: 'gate-run-submitted',
         datasetRevision: {
           id: 'process-no-version',
+          revisionChecksum: 'checksum-submitted',
         },
       },
       {
@@ -718,40 +760,61 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByText('Queued')).toBeInTheDocument();
-    expect(screen.getByText('Gate running')).toBeInTheDocument();
-    expect(screen.getByText('Submitting review')).toBeInTheDocument();
-    expect(screen.getByText('Submitted')).toBeInTheDocument();
-    expect(screen.getByText('Gate passed')).toBeInTheDocument();
-    expect(screen.getByText('Stale')).toBeInTheDocument();
-    expect(screen.getByText('Cancelled')).toBeInTheDocument();
-    expect(screen.getByText('Error')).toBeInTheDocument();
-    expect(screen.getByText('Review submission completed')).toBeInTheDocument();
+    expect(screen.getAllByText('Queued').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Gate running').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Submitting review').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Submitted').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Gate passed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Stale').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Cancelled').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Review submission completed')).not.toBeInTheDocument();
     expect(
-      screen.getByText('Numerical stability gate passed; final submission is being coordinated'),
+      screen.queryByText('Numerical stability gate passed; final submission is being coordinated'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Gate passed; submitting review')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Gate result is stale; save the latest data and submit again'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Gate returned an unmapped blocker')).not.toBeInTheDocument();
+
+    const reviewViewButtons = screen.getAllByRole('button', { name: 'View' });
+    reviewViewButtons.forEach((button) => {
+      fireEvent.click(button);
+    });
+    expect(
+      screen.queryByText('Numerical stability gate passed; final submission is being coordinated'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission completed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Gate passed; submitting review')).not.toBeInTheDocument();
+    expect(screen.getByText('Gate result is stale')).toBeInTheDocument();
+    expect(
+      screen.getByText('Save the latest data and run the submit-review gate again.'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Gate passed; submitting review')).toBeInTheDocument();
-    expect(
-      screen.getAllByText('Gate result is stale; save the latest data and submit again').length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText('Review submission task was cancelled')).toBeInTheDocument();
-    expect(screen.getByText('Review submission task failed')).toBeInTheDocument();
+    expect(screen.getAllByText('Execution stages').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Run gate').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Submit review').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
     expect(screen.getAllByText('Gate returned an unmapped blocker').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(
-        'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
-      ).length,
-    ).toBeGreaterThan(0);
     expect(screen.queryByText('worker failed')).not.toBeInTheDocument();
     expect(screen.queryByText('custom_blocker')).not.toBeInTheDocument();
     expect(screen.queryByText('custom blocker message')).not.toBeInTheDocument();
     expect(screen.queryByText('missing code reason')).not.toBeInTheDocument();
 
-    const reviewDetailsButtons = screen.getAllByRole('button', { name: 'Details' });
-    fireEvent.click(reviewDetailsButtons[0]);
-    expect(screen.getByText('worker failed')).toBeInTheDocument();
-    expect(screen.getByText('worker_error_code')).toBeInTheDocument();
-    expect(screen.getByText('worker backend message')).toBeInTheDocument();
+    expect(
+      screen.getAllByText(
+        'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
+      ).length,
+    ).toBeGreaterThan(0);
+
+    const reviewDiagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
+    fireEvent.click(reviewDiagnosticsButtons[0]);
+    expect(screen.getAllByText('worker failed').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('worker_error_code').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('worker backend message').length).toBeGreaterThan(0);
     expect(screen.getAllByText('custom_blocker').length).toBeGreaterThan(0);
     expect(screen.getAllByText('custom blocker message').length).toBeGreaterThan(0);
     expect(screen.getAllByText('missing code reason').length).toBeGreaterThan(0);
@@ -760,13 +823,16 @@ describe('LcaTaskCenter', () => {
     ).toBeGreaterThan(0);
     expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
 
-    fireEvent.click(reviewDetailsButtons[4]);
+    fireEvent.click(reviewDiagnosticsButtons[4]);
+    expect(screen.getByText('gate_run_id')).toBeInTheDocument();
+    expect(screen.getByText('gate-run-submitted')).toBeInTheDocument();
+    expect(screen.getByText('revision_checksum')).toBeInTheDocument();
+    expect(screen.getByText('checksum-submitted')).toBeInTheDocument();
     expect(
-      screen.getByText((_, element) => element?.textContent === 'gate_run_id: gate-run-submitted'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'dataset: process-no-version @ -'),
-    ).toBeInTheDocument();
+      screen.queryByText(
+        (_, element) => element?.textContent?.includes('process-no-version') ?? false,
+      ),
+    ).not.toBeInTheDocument();
   });
 
   it('reports review-submit refresh, cancel, and retry errors with fallback and explicit messages', async () => {
@@ -799,12 +865,23 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
+    expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
+      ),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('transient worker failure')).not.toBeInTheDocument();
+
+    const viewButtons = screen.getAllByRole('button', { name: 'View' });
+    fireEvent.click(viewButtons[0]);
+    expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
     expect(
       screen.getByText(
         'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
       ),
     ).toBeInTheDocument();
-    expect(screen.queryByText('transient worker failure')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() =>
@@ -889,19 +966,179 @@ describe('LcaTaskCenter', () => {
     render(<LcaTaskCenter />);
     fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
 
-    expect(screen.getByText('Building snapshot (-)')).toBeInTheDocument();
-    expect(screen.getByText('Solving (-)')).toBeInTheDocument();
-    expect(screen.getByText('Completed (result result-10)')).toBeInTheDocument();
+    expect(screen.getByText('Building snapshot')).toBeInTheDocument();
+    expect(screen.getByText('Solving')).toBeInTheDocument();
+    expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
+    expect(screen.queryByText('Calculation completed; result is ready')).not.toBeInTheDocument();
+    screen.getAllByRole('button', { name: 'View' }).forEach((button) => {
+      fireEvent.click(button);
+    });
+    expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
+    expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
+    expect(screen.queryByText('Calculation completed; result is ready')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Detail information').length).toBeGreaterThan(0);
+    expect(screen.queryByText('result-10')).not.toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText((_, element) => element?.textContent === 'Elapsed 0 ms').length,
-    ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('renders package tasks, supports download/remove actions, and handles download errors', async () => {
+  it('filters task tabs, collapses inline details, and handles sparse diagnostics and progress', () => {
+    mockTasks = [
+      {
+        id: '',
+        mode: 'single',
+        scope: 'prod',
+        state: 'completed',
+        phase: 'completed',
+        workerJobId: '   ',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:05:00.000Z',
+        phaseTimeline: [],
+      },
+      {
+        id: 'lca-building-filter',
+        mode: 'all_unit',
+        scope: 'prod',
+        state: 'running',
+        phase: 'building_snapshot',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:04:00.000Z',
+        phaseTimeline: [
+          {
+            phase: 'building_snapshot',
+            startedAt: '2026-03-12T12:01:00.000Z',
+            endedAt: '2026-03-12T12:02:00.000Z',
+          },
+          {
+            phase: 'building_snapshot',
+            startedAt: '2026-03-12T12:00:30.000Z',
+            endedAt: '2026-03-12T12:03:00.000Z',
+          },
+        ],
+      },
+    ];
+    mockPackageTasks = [
+      {
+        id: 'pkg-export-combined-scope',
+        kind: 'tidas_package_export',
+        state: 'completed',
+        phase: 'completed',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:03:00.000Z',
+        scope: 'current_user_and_open_data',
+        rootCount: 0,
+      },
+      {
+        id: 'pkg-import-filter',
+        kind: 'tidas_package_import',
+        state: 'running',
+        phase: 'queued',
+        filename: 'package.zip',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:02:00.000Z',
+        rootCount: 0,
+      },
+    ];
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-progress-string',
+        state: 'running',
+        phase: 'running',
+        progress: '67.4',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:01:00.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-string',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-progress-infinity',
+        state: 'running',
+        phase: 'waiting_gate',
+        progress: Number.POSITIVE_INFINITY,
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:30.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-infinity',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-progress-invalid',
+        state: 'running',
+        phase: 'submitting',
+        progress: 'not-a-number',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:10.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-progress-invalid',
+          version: '01.00.000',
+        },
+      },
+      {
+        id: 'review-empty-blocker',
+        state: 'failed',
+        phase: 'blocked',
+        blockingReasons: [{ code: ' ', message: ' ' }],
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:00:05.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-empty-blocker',
+          version: '01.00.000',
+        },
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getAllByRole('progressbar').map((bar) => bar.textContent)).toEqual(
+      expect.arrayContaining(['67%', '0%']),
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'LCA Calculation' }));
+    expect(screen.queryByText('Import TIDAS package')).not.toBeInTheDocument();
+
+    const lcaViewButton = screen.getAllByRole('button', { name: 'View' })[0];
+    fireEvent.click(lcaViewButton);
+    expect(screen.getByText('Detail information')).toBeInTheDocument();
+    fireEvent.click(lcaViewButton);
+    expect(screen.queryByText('Detail information')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[0]);
+    expect(screen.getByText('No diagnostics')).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'View' })[1]);
+    expect(screen.getByText('Build snapshot')).toBeInTheDocument();
+
+    act(() => {
+      mockTasks = [];
+      mockSubscribeLcaTasks.mock.calls[0][0]();
+    });
+    expect(screen.queryByText('Build snapshot')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'TIDAS Export' }));
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+    expect(screen.getByText('Current user data + open data')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'TIDAS Import' }));
+    expect(screen.getByText('Import package: package.zip')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Review Submit' }));
+    expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[3]);
+    expect(screen.getByText('No detailed message returned.')).toBeInTheDocument();
+  });
+
+  it('renders package tasks, supports download actions, and handles download errors', async () => {
     mockTasks = [
       {
         id: 'lca-task-running',
@@ -1096,23 +1333,48 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByTestId('badge-count')).toHaveTextContent('8');
     expect(screen.getAllByText('TIDAS Export').length).toBeGreaterThan(0);
     expect(screen.getAllByText('TIDAS Import').length).toBeGreaterThan(0);
-    expect(screen.getByText('Queued')).toBeInTheDocument();
+    expect(screen.getAllByText('Queued').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Submitting').length).toBeGreaterThan(0);
     expect(screen.getByText('Collecting related data')).toBeInTheDocument();
     expect(screen.getByText('Importing data')).toBeInTheDocument();
     expect(screen.getByText('Building ZIP')).toBeInTheDocument();
     expect(screen.getAllByText('Completed').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Failed').length).toBeGreaterThan(0);
-    expect(screen.getByText('Export package failed')).toBeInTheDocument();
+    expect(screen.queryByText('Export package failed')).not.toBeInTheDocument();
     expect(
-      screen.getByText('Export package exceeded the storage upload limit'),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Export package ready (custom.zip)')).toBeInTheDocument();
-    expect(screen.getByText('Export package ready (tidas-package.zip)')).toBeInTheDocument();
-    expect(screen.getByText('Import package completed')).toBeInTheDocument();
-    expect(screen.getByText('Import package failed')).toBeInTheDocument();
-    expect(screen.getByText('queueing')).toBeInTheDocument();
-    expect(screen.getByText('importing package data')).toBeInTheDocument();
+      screen.queryByText('Export package exceeded the storage upload limit'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Export package ready (custom.zip)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Export package ready (tidas-package.zip)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import package completed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import package failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('queueing')).not.toBeInTheDocument();
+    expect(screen.queryByText('importing package data')).not.toBeInTheDocument();
+    expect(screen.queryByText('import validation failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('package failed')).not.toBeInTheDocument();
+
+    screen.getAllByRole('button', { name: 'View' }).forEach((button) => {
+      fireEvent.click(button);
+    });
+    expect(screen.queryByText('Export package failed')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Export package exceeded the storage upload limit'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Export package ready (custom.zip)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Export package ready (tidas-package.zip)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import package completed')).not.toBeInTheDocument();
+    expect(screen.queryByText('Import package failed')).not.toBeInTheDocument();
+    expect(screen.queryByText('queueing')).not.toBeInTheDocument();
+    expect(screen.queryByText('importing package data')).not.toBeInTheDocument();
+    expect(screen.getAllByText('File name').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Root records').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Execution stages').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Prepare upload').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Validate package').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Import data').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Build report').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Collect related data').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Build ZIP').length).toBeGreaterThan(0);
     expect(screen.getByText('import validation failed')).toBeInTheDocument();
     expect(screen.getByText('package failed')).toBeInTheDocument();
     expect(
@@ -1121,32 +1383,22 @@ describe('LcaTaskCenter', () => {
       ),
     ).toBeInTheDocument();
 
-    const detailsButtons = screen.getAllByRole('button', { name: 'Details' });
-    detailsButtons.forEach((button) => {
+    const diagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
+    diagnosticsButtons.forEach((button) => {
       fireEvent.click(button);
     });
     expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('root_count') ?? false)
+      screen.queryByText((_, element) => element?.textContent?.includes('root_count') ?? false),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('filename')).not.toBeInTheDocument();
+    expect(screen.getAllByText('job_id').length).toBeGreaterThan(0);
+    expect(screen.getByText('job-1')).toBeInTheDocument();
+    expect(screen.getAllByText('worker_job_id').length).toBeGreaterThan(0);
+    expect(screen.getByText('worker-package-1')).toBeInTheDocument();
+    expect(
+      screen.getAllByText((_, element) => element?.textContent?.includes('"id": "p-1"') ?? false)
         .length,
     ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText((_, element) => element?.textContent?.includes('root:') ?? false).length,
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'root: p-1 @ 01.00.000'),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText((_, element) => element?.textContent?.includes('root: f-1') ?? false),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'filename: custom.zip'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'job_id: job-1'),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, element) => element?.textContent === 'worker_job_id: worker-package-1'),
-    ).toBeInTheDocument();
 
     const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
     expect(downloadButtons).toHaveLength(2);
@@ -1179,13 +1431,6 @@ describe('LcaTaskCenter', () => {
     await waitFor(() => {
       expect(message.error).toHaveBeenCalledWith('download broken');
     });
-
-    const removeButtons = screen.getAllByRole('button', { name: 'Remove' });
-    removeButtons.forEach((button) => {
-      fireEvent.click(button);
-    });
-    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-failed');
-    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-completed');
-    expect(mockRemoveTidasPackageTask).toHaveBeenCalledWith('pkg-running-queued');
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
   });
 });
