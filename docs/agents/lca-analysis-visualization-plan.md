@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-06-03
-lastReviewedCommit: ec057a2a7ad6af62adf48a2f04fdf64801329f7e
+lastReviewedAt: 2026-06-06
+lastReviewedCommit: cee1b2ceb343c9bd5481bbfbc1b7cc5349d19233
 ---
 
 # LCA Analysis And Visualization Plan
