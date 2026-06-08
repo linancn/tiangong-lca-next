@@ -177,5 +177,6 @@ export default defineConfig({
     'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
     'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
     'process.env.FLOW_TOPOLOGY_CACHE_BASE_URL': process.env.FLOW_TOPOLOGY_CACHE_BASE_URL,
+    'process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL': process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL,
   },
 });

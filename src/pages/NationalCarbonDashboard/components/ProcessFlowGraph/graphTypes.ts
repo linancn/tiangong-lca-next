@@ -2,9 +2,19 @@ export type ProcessFlowGraphNodeKind = 'flow' | 'process';
 
 export type ProcessFlowGraphLayoutName = 'sphere3d' | 'expanded2d';
 
-export type ProcessFlowGraphFlowType = 'Product flow' | 'Waste flow' | 'Other flow';
+export type ProcessFlowGraphInteractionMode = 'pan' | 'select';
+
+export type ProcessFlowGraphFlowType = string;
 
 export type ProcessFlowGraphEdgeDirection = 'input' | 'output';
+
+export type ProcessFlowGraphCluster = {
+  color?: string;
+  colorIndex?: number;
+  count?: number;
+  id: string;
+  label: string;
+};
 
 export type ProcessFlowGraphNode = {
   category: string;
@@ -43,6 +53,7 @@ export type ProcessFlowGraphSearchItem = {
 export type ProcessFlowGraphData = {
   adjacency: Record<string, string[]>;
   buildId: string;
+  clusters: ProcessFlowGraphCluster[];
   edges: ProcessFlowGraphEdge[];
   indexes: {
     edgeById: Record<string, number>;
@@ -53,11 +64,10 @@ export type ProcessFlowGraphData = {
   };
   layouts: Record<ProcessFlowGraphLayoutName, ProcessFlowGraphLayout>;
   nodes: ProcessFlowGraphNode[];
-  schemaVersion: 'process_flow_graph_mock_v1';
+  schemaVersion: 'process_flow_graph_v1';
   stats: {
     edgeCount: number;
     flowCount: number;
-    highlightedDemoEdges: number;
     maxDegree: number;
     processCount: number;
   };
@@ -81,7 +91,3 @@ export type ProcessFlowGraphNodeSummary = {
   relatedFlows: number;
   relatedProcesses: number;
 };
-
-export type ProcessFlowGraphPreset = 'small' | 'demo' | 'stress';
-
-export const demoFlowAId = 'flow:A@v1';

@@ -21,6 +21,7 @@
 }
 
 .modeTabs,
+.mouseTools,
 .graphBadges,
 .leftRail,
 .inspector,
@@ -44,7 +45,16 @@
   padding: 4px;
 }
 
+.mouseTools {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  height: 42px;
+  padding: 4px;
+}
+
 .modeTabs button,
+.mouseTools button,
 .quickActions button {
   display: inline-flex;
   gap: 8px;
@@ -68,6 +78,9 @@
 .modeTabs button:hover,
 .modeTabs button:focus-visible,
 .modeTabs .activeMode,
+.mouseTools button:hover,
+.mouseTools button:focus-visible,
+.mouseTools .activeMode,
 .quickActions button:hover,
 .quickActions button:focus-visible {
   color: #eaffff;
@@ -79,9 +92,20 @@
 }
 
 .modeTabs svg,
+.mouseTools svg,
 .quickActions svg {
   color: #24e7ff;
   filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
+}
+
+.modeTabs button:disabled,
+.mouseTools button:disabled,
+.quickActions button:disabled {
+  color: rgba(186, 208, 218, 0.38);
+  cursor: not-allowed;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .graphBadges {
@@ -118,9 +142,13 @@
 
 .graphBadges b {
   grid-column: 2;
+  max-width: 220px;
+  overflow: hidden;
   color: #bff747;
   font-weight: 900;
   line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .leftRail {
@@ -155,6 +183,11 @@
   background: transparent;
   border: 0;
   outline: 0;
+}
+
+.searchBox input:disabled {
+  color: rgba(190, 212, 222, 0.48);
+  cursor: not-allowed;
 }
 
 .searchBox button {
@@ -336,6 +369,42 @@
     0 0 34px rgba(36, 231, 255, 0.06);
 }
 
+.graphLoadState {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 10px;
+  place-content: center;
+  padding: 32px;
+  color: rgba(230, 246, 251, 0.82);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.14), transparent 32%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px), #020b16;
+  background-size:
+    100% 100%,
+    38px 38px,
+    38px 38px,
+    100% 100%;
+}
+
+.graphLoadState strong {
+  color: #f4feff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.graphLoadState span {
+  max-width: 520px;
+  overflow: hidden;
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .canvasHost {
   position: absolute;
   inset: 0;
@@ -505,6 +574,17 @@
   background: rgba(119, 84, 255, 0.18);
   border: 1px solid rgba(198, 168, 255, 0.28);
   border-radius: 6px;
+}
+
+.cacheErrorText {
+  margin: 0;
+  overflow: hidden;
+  color: rgba(255, 205, 121, 0.86);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nodeDetails {

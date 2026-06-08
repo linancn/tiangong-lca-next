@@ -2046,7 +2046,7 @@ function FlowTopologyScreen({
     <section className={styles.screenPanel}>
       <HeaderRibbon
         snapshot={snapshot}
-        subtitle='全量 mock process-flow graph 的球体与展开视图'
+        subtitle='全量 process-flow graph 的球体与展开视图'
         title='过程-流全量关系图谱'
       />
       <div className={styles.processFlowGraphWorkspace}>

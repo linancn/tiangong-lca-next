@@ -4,6 +4,7 @@ import { createEmptyProcessFlowGraphSelection } from './graphSelection';
 import type {
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
+  ProcessFlowGraphInteractionMode,
   ProcessFlowGraphLayoutName,
   ProcessFlowGraphNode,
   ProcessFlowGraphSelection,
@@ -47,15 +48,30 @@ type CameraFocusTransition = {
   targetTo: THREE.Vector3;
 };
 
+type LayoutBounds = {
+  centerX: number;
+  centerY: number;
+  height: number;
+  width: number;
+};
+
 type FlowMarker = {
   arcLift: number;
-  color: THREE.Color;
-  direction: string;
-  id: string;
   phase: number;
   source: string;
   surfaceLift: number;
   target: string;
+};
+
+type BaseEdgeRender = {
+  edge: ProcessFlowGraphEdge;
+  intensityScale: number;
+};
+
+type HighlightedEdgeRender = {
+  edge: ProcessFlowGraphEdge;
+  edgeIndex: number;
+  intensityScale: number;
 };
 
 const clusterColorMap: Record<string, string> = {
@@ -67,15 +83,40 @@ const clusterColorMap: Record<string, string> = {
   transport: '#5194ff',
   waste: '#ff7b72',
 };
+const clusterPalette = [
+  '#24e7ff',
+  '#f6db4d',
+  '#75e66d',
+  '#ffb347',
+  '#a873ff',
+  '#5194ff',
+  '#ff7b72',
+  '#38f2a3',
+  '#ff6dd6',
+  '#d6ff5c',
+  '#6effbc',
+  '#f28482',
+  '#b8f7ff',
+  '#ffc857',
+  '#7b61ff',
+  '#4ecdc4',
+  '#ff9f1c',
+  '#c3f73a',
+  '#ef476f',
+  '#06d6a0',
+  '#118ab2',
+  '#ffd166',
+  '#9b5de5',
+  '#00f5d4',
+];
 
 const mutedColor = new THREE.Color('#5f7684');
-const sphereMutedColor = new THREE.Color('#a8aaa4');
 const sphereMutedEdgeColor = new THREE.Color('#c3c7c1');
+const selectedContextColor = new THREE.Color('#9cafb8');
+const expandedSelectedContextColor = new THREE.Color('#91a9b8');
 const selectedColor = new THREE.Color('#ffffff');
-const processHighlightColor = new THREE.Color('#ffb947');
 const inputHighlightColor = new THREE.Color('#23f4ff');
 const outputHighlightColor = new THREE.Color('#b9f63c');
-const otherHighlightColor = new THREE.Color('#668cff');
 const transitionDustColors = [
   new THREE.Color('#c8fbff'),
   new THREE.Color('#ffd66d'),
@@ -90,8 +131,33 @@ const sphereSelectedEdgeSurfaceLift = 14;
 const sphereSelectedEdgeArcLift = 20;
 const sphereVisualRadius = 318;
 const flowMarkerCycleMs = 1800;
-const flowMarkerMaxCount = 88;
-const flowMarkerPointSize = 8.8;
+const flowMarkerArrowSegments = 3;
+const flowMarkerOpacity = 0.36;
+const sphereFlowMarkerArrowLength = 5.8;
+const sphereFlowMarkerArrowWidth = 2;
+const expandedFlowMarkerArrowLength = 2.6;
+const expandedFlowMarkerArrowWidth = 0.9;
+const selectedEdgeBrightnessStops = [
+  { edgeCount: 80, scale: 1 },
+  { edgeCount: 200, scale: 0.88 },
+  { edgeCount: 500, scale: 0.72 },
+  { edgeCount: 1000, scale: 0.56 },
+  { edgeCount: 2500, scale: 0.42 },
+  { edgeCount: 5000, scale: 0.24 },
+] as const;
+const selectedNodePulseCycleMs = 1450;
+const selectedNodePulseMinOpacity = 0.42;
+const selectedNodePulseMaxOpacity = 0.98;
+const sphereSelectedNodePulseBaseSize = 30;
+const sphereSelectedNodePulseSizeDelta = 15;
+const expandedSelectedNodePulseBaseSize = 26;
+const expandedSelectedNodePulseSizeDelta = 12;
+const expandedCameraDistance = 1040;
+const expandedFocusCameraDistance = 560;
+const expandedFitPadding = 130;
+const expandedFitViewportScale = 0.9;
+const sphereControlsMaxDistance = 1500;
+const expandedControlsMaxDistance = 3200;
 const pointPerspectiveBase = 760;
 const cameraFocusDurationMs = 720;
 const layoutTransitionDurationMs = 1450;
@@ -101,10 +167,15 @@ const transitionRingSegments = 128;
 const nodePointVertexShader = `
 attribute float pointSize;
 attribute vec3 color;
+varying float vFacing;
 varying vec3 vColor;
 
 void main() {
   vColor = color;
+  vec3 worldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+  vec3 worldNormal = normalize(worldPosition + vec3(0.0001));
+  vec3 viewDirection = normalize(cameraPosition - worldPosition);
+  vFacing = smoothstep(-0.12, 0.48, dot(worldNormal, viewDirection));
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_PointSize = pointSize * (${pointPerspectiveBase.toFixed(1)} / max(1.0, -mvPosition.z));
   gl_Position = projectionMatrix * mvPosition;
@@ -113,12 +184,15 @@ void main() {
 
 const nodePointFragmentShader = `
 uniform sampler2D pointTexture;
+uniform float backsideFade;
 uniform float opacity;
+varying float vFacing;
 varying vec3 vColor;
 
 void main() {
   vec4 sprite = texture2D(pointTexture, gl_PointCoord);
-  float alpha = sprite.a * opacity;
+  float facingAlpha = mix(0.16, 1.0, vFacing);
+  float alpha = sprite.a * opacity * mix(1.0, facingAlpha, backsideFade);
   if (alpha < 0.02) {
     discard;
   }
@@ -126,8 +200,61 @@ void main() {
 }
 `;
 
-function getClusterColor(node: ProcessFlowGraphNode): THREE.Color {
-  return new THREE.Color(clusterColorMap[node.clusterId] ?? '#8da2b3');
+function getClusterPaletteColor(index: number): THREE.Color {
+  const normalizedIndex = Math.abs(index) % clusterPalette.length;
+
+  return new THREE.Color(clusterPalette[normalizedIndex]);
+}
+
+function getStableHash(value: string): number {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return hash;
+}
+
+function buildClusterColors(data: ProcessFlowGraphData): Map<string, THREE.Color> {
+  const clusterColors = new Map<string, THREE.Color>();
+
+  data.clusters?.forEach((cluster, index) => {
+    const colorIndex = cluster.colorIndex ?? index;
+    clusterColors.set(
+      cluster.id,
+      cluster.color ? new THREE.Color(cluster.color) : getClusterPaletteColor(colorIndex),
+    );
+  });
+
+  data.nodes.forEach((node) => {
+    if (clusterColors.has(node.clusterId)) {
+      return;
+    }
+
+    clusterColors.set(
+      node.clusterId,
+      clusterColorMap[node.clusterId]
+        ? new THREE.Color(clusterColorMap[node.clusterId])
+        : getClusterPaletteColor(getStableHash(node.clusterId)),
+    );
+  });
+
+  return clusterColors;
+}
+
+function getLineMaterialOpacity(material: THREE.Material | undefined): number | undefined {
+  if (material instanceof THREE.LineBasicMaterial) {
+    return material.opacity;
+  }
+
+  return undefined;
+}
+
+function setLineMaterialOpacity(material: THREE.Material | undefined, opacity: number) {
+  if (material instanceof THREE.LineBasicMaterial) {
+    material.opacity = opacity;
+  }
 }
 
 function getNodePointSize(
@@ -136,13 +263,20 @@ function getNodePointSize(
   highlighted = false,
 ) {
   const isProcess = node?.kind === 'process';
-  const usesSphereScale = layoutMode === 'sphere3d' || layoutMode === 'expanded2d';
 
   if (highlighted) {
-    return usesSphereScale ? (isProcess ? 20 : 15) : isProcess ? 17 : 12;
+    return layoutMode === 'sphere3d' ? (isProcess ? 16 : 12) : isProcess ? 26 : 19;
   }
 
-  return usesSphereScale ? (isProcess ? 20 : 15) : isProcess ? 8.2 : 5.4;
+  if (layoutMode === 'sphere3d') {
+    return isProcess ? 10 : 7.6;
+  }
+
+  return isProcess ? 22 : 16;
+}
+
+function getNodeOverviewIntensity(node: ProcessFlowGraphNode | undefined) {
+  return node?.kind === 'process' ? 0.8 : 0.98;
 }
 
 function getNodePosition(
@@ -211,6 +345,27 @@ function getEdgeTransitionFade(progress: number) {
   }
 
   return getSmoothStep(0.44, 1, progress);
+}
+
+function getSelectedEdgeBrightnessScale(edgeCount: number) {
+  const [firstStop] = selectedEdgeBrightnessStops;
+
+  if (edgeCount <= firstStop.edgeCount) {
+    return firstStop.scale;
+  }
+
+  for (let index = 1; index < selectedEdgeBrightnessStops.length; index += 1) {
+    const previousStop = selectedEdgeBrightnessStops[index - 1];
+    const nextStop = selectedEdgeBrightnessStops[index];
+
+    if (edgeCount <= nextStop.edgeCount) {
+      const progress = getSmoothStep(previousStop.edgeCount, nextStop.edgeCount, edgeCount);
+
+      return THREE.MathUtils.lerp(previousStop.scale, nextStop.scale, progress);
+    }
+  }
+
+  return selectedEdgeBrightnessStops[selectedEdgeBrightnessStops.length - 1].scale;
 }
 
 function createPointTexture() {
@@ -294,11 +449,9 @@ function getSphereArcPoint(
   }
 
   const unitLength = Math.hypot(x, y, z) || 1;
+  const liftProfile = Math.sin(Math.PI * progress) ** 2;
   const radius =
-    sourceLength * (1 - progress) +
-    targetLength * progress +
-    lift +
-    Math.sin(Math.PI * progress) * arcLift;
+    sourceLength * (1 - progress) + targetLength * progress + liftProfile * (lift + arcLift);
 
   return [(x / unitLength) * radius, (y / unitLength) * radius, (z / unitLength) * radius];
 }
@@ -307,30 +460,68 @@ function getEdgeColor(direction: string) {
   return direction === 'input' ? inputHighlightColor : outputHighlightColor;
 }
 
-function getFlowMarkerTuple({
+function setFlowMarkerVector({
+  arcLift,
   layoutMode,
+  output,
   progress,
   source,
-  target,
   surfaceLift,
-  arcLift,
+  target,
 }: {
   arcLift: number;
   layoutMode: ProcessFlowGraphLayoutName;
+  output: THREE.Vector3;
   progress: number;
   source: [number, number, number];
   surfaceLift: number;
   target: [number, number, number];
-}): [number, number, number] {
-  if (layoutMode === 'sphere3d') {
-    return getSphereArcPoint(source, target, progress, surfaceLift, arcLift);
+}) {
+  if (layoutMode !== 'sphere3d') {
+    output.set(
+      source[0] + (target[0] - source[0]) * progress,
+      source[1] + (target[1] - source[1]) * progress,
+      source[2] + (target[2] - source[2]) * progress,
+    );
+    return;
   }
 
-  return [
-    source[0] + (target[0] - source[0]) * progress,
-    source[1] + (target[1] - source[1]) * progress,
-    source[2] + (target[2] - source[2]) * progress,
-  ];
+  const sourceLength = getTupleLength(source);
+  const targetLength = getTupleLength(target);
+  const sourceX = source[0] / sourceLength;
+  const sourceY = source[1] / sourceLength;
+  const sourceZ = source[2] / sourceLength;
+  const targetX = target[0] / targetLength;
+  const targetY = target[1] / targetLength;
+  const targetZ = target[2] / targetLength;
+  const dot = Math.max(
+    -0.999,
+    Math.min(0.999, sourceX * targetX + sourceY * targetY + sourceZ * targetZ),
+  );
+  const angle = Math.acos(dot);
+  const sinAngle = Math.sin(angle);
+  let x = sourceX;
+  let y = sourceY;
+  let z = sourceZ;
+
+  if (Math.abs(sinAngle) > 0.0001) {
+    const sourceWeight = Math.sin((1 - progress) * angle) / sinAngle;
+    const targetWeight = Math.sin(progress * angle) / sinAngle;
+    x = sourceX * sourceWeight + targetX * targetWeight;
+    y = sourceY * sourceWeight + targetY * targetWeight;
+    z = sourceZ * sourceWeight + targetZ * targetWeight;
+  } else {
+    x = sourceX + (targetX - sourceX) * progress;
+    y = sourceY + (targetY - sourceY) * progress;
+    z = sourceZ + (targetZ - sourceZ) * progress;
+  }
+
+  const unitLength = Math.hypot(x, y, z) || 1;
+  const liftProfile = Math.sin(Math.PI * progress) ** 2;
+  const radius =
+    sourceLength * (1 - progress) + targetLength * progress + liftProfile * (surfaceLift + arcLift);
+
+  output.set((x / unitLength) * radius, (y / unitLength) * radius, (z / unitLength) * radius);
 }
 
 function createSphereShell() {
@@ -354,6 +545,7 @@ function createNodePointMaterial(pointTexture: THREE.Texture | undefined, opacit
     fragmentShader: nodePointFragmentShader,
     transparent: true,
     uniforms: {
+      backsideFade: { value: 0 },
       opacity: { value: opacity },
       pointTexture: { value: pointTexture },
     },
@@ -372,6 +564,8 @@ export class ProcessFlowGraphEngine {
 
   private data: ProcessFlowGraphData;
 
+  private clusterColors: Map<string, THREE.Color>;
+
   private edgeGeometry = new THREE.BufferGeometry();
 
   private edgeLines?: THREE.LineSegments;
@@ -384,15 +578,17 @@ export class ProcessFlowGraphEngine {
 
   private flowMarkerGeometry = new THREE.BufferGeometry();
 
-  private flowMarkers: FlowMarker[] = [];
+  private flowMarkerLines?: THREE.LineSegments;
 
-  private flowMarkerPoints?: THREE.Points;
+  private flowMarkers: FlowMarker[] = [];
 
   private highlightedNodeGeometry = new THREE.BufferGeometry();
 
   private highlightedNodePoints?: THREE.Points;
 
   private hoveredNodeId: string | null = null;
+
+  private interactionMode: ProcessFlowGraphInteractionMode;
 
   private layoutMode: ProcessFlowGraphLayoutName;
 
@@ -438,18 +634,22 @@ export class ProcessFlowGraphEngine {
     callbacks,
     container,
     data,
+    interactionMode,
     layoutMode,
   }: {
     callbacks?: EngineCallbacks;
     container: HTMLElement;
     data: ProcessFlowGraphData;
+    interactionMode: ProcessFlowGraphInteractionMode;
     layoutMode: ProcessFlowGraphLayoutName;
   }) {
     this.callbacks = callbacks ?? {};
     this.container = container;
     this.data = data;
+    this.clusterColors = buildClusterColors(data);
+    this.interactionMode = interactionMode;
     this.layoutMode = layoutMode;
-    this.camera = new THREE.PerspectiveCamera(42, 1, 1, 2400);
+    this.camera = new THREE.PerspectiveCamera(42, 1, 1, 5000);
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
@@ -462,7 +662,7 @@ export class ProcessFlowGraphEngine {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.08;
-    this.controls.maxDistance = 1500;
+    this.controls.maxDistance = sphereControlsMaxDistance;
     this.controls.minDistance = 120;
     this.updateControlInteractionMode();
     this.raycaster.params.Points = { threshold: 8 };
@@ -503,8 +703,8 @@ export class ProcessFlowGraphEngine {
     if (this.transitionRing?.material instanceof THREE.Material) {
       this.transitionRing.material.dispose();
     }
-    if (this.flowMarkerPoints?.material instanceof THREE.Material) {
-      this.flowMarkerPoints.material.dispose();
+    if (this.flowMarkerLines?.material instanceof THREE.Material) {
+      this.flowMarkerLines.material.dispose();
     }
     this.pointTexture?.dispose();
     this.renderer.dispose();
@@ -525,10 +725,16 @@ export class ProcessFlowGraphEngine {
     this.callbacks = callbacks;
   }
 
+  setInteractionMode(interactionMode: ProcessFlowGraphInteractionMode) {
+    this.interactionMode = interactionMode;
+    this.renderer.domElement.style.cursor = interactionMode === 'select' ? 'pointer' : 'grab';
+  }
+
   setData(data: ProcessFlowGraphData) {
     this.finishCameraFocusTransition(false);
     this.finishLayoutTransition(false);
     this.data = data;
+    this.clusterColors = buildClusterColors(data);
     this.buildScene();
     this.resetCamera();
   }
@@ -573,7 +779,7 @@ export class ProcessFlowGraphEngine {
       duration: layoutTransitionDurationMs,
       edgeOpacity: edgeMaterial?.opacity ?? 0.16,
       fromLayoutMode,
-      highlightedEdgeOpacity: highlightedEdgeMaterial?.opacity ?? 0.95,
+      highlightedEdgeOpacity: getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0.95,
       highlightedNodeFrom,
       highlightedNodeTo,
       nodeFrom,
@@ -632,15 +838,72 @@ export class ProcessFlowGraphEngine {
       const [x, y] = getNodePosition(this.data, layoutMode, selectedNodeId);
 
       return {
-        position: new THREE.Vector3(x, y, 430),
+        position: new THREE.Vector3(x, y, expandedFocusCameraDistance),
         target: new THREE.Vector3(x, y, 0),
       };
     }
 
+    const bounds = this.getExpandedLayoutBounds();
     return {
-      position: new THREE.Vector3(0, 0, 820),
-      target: new THREE.Vector3(0, 0, 0),
+      position: new THREE.Vector3(bounds.centerX, bounds.centerY, this.getExpandedCameraDistance()),
+      target: new THREE.Vector3(bounds.centerX, bounds.centerY, 0),
     };
+  }
+
+  private getExpandedLayoutBounds(): LayoutBounds {
+    const layout = this.data.layouts.expanded2d;
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (const node of this.data.nodes) {
+      const position = layout[node.id];
+      if (!position) {
+        continue;
+      }
+
+      const [x, y] = position;
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        continue;
+      }
+
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+
+    if (
+      !Number.isFinite(minX) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(minY) ||
+      !Number.isFinite(maxY)
+    ) {
+      return { centerX: 0, centerY: 0, height: 1, width: 1 };
+    }
+
+    return {
+      centerX: (minX + maxX) / 2,
+      centerY: (minY + maxY) / 2,
+      height: Math.max(1, maxY - minY),
+      width: Math.max(1, maxX - minX),
+    };
+  }
+
+  private getExpandedCameraDistance() {
+    const bounds = this.getExpandedLayoutBounds();
+    const rect = this.container.getBoundingClientRect();
+    const aspect = Math.max(0.6, rect.width / Math.max(1, rect.height));
+    const verticalFov = THREE.MathUtils.degToRad(this.camera.fov);
+    const visualHeight = bounds.height + expandedFitPadding * 2;
+    const visualWidth = bounds.width + expandedFitPadding * 2;
+    const verticalDistance =
+      visualHeight / (2 * Math.tan(verticalFov / 2) * expandedFitViewportScale);
+    const horizontalDistance =
+      visualWidth / (2 * Math.tan(verticalFov / 2) * aspect * expandedFitViewportScale);
+
+    return Math.max(expandedCameraDistance, verticalDistance, horizontalDistance);
   }
 
   private getSphereCameraDistance() {
@@ -662,6 +925,9 @@ export class ProcessFlowGraphEngine {
 
     this.controls.enablePan = true;
     this.controls.enableRotate = !isExpanded;
+    this.controls.maxDistance = isExpanded
+      ? Math.max(expandedControlsMaxDistance, this.getExpandedCameraDistance() * 1.5)
+      : sphereControlsMaxDistance;
     this.controls.screenSpacePanning = true;
     this.controls.mouseButtons = {
       LEFT: isExpanded ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE,
@@ -832,9 +1098,15 @@ export class ProcessFlowGraphEngine {
         vertexColors: true,
       }),
     );
-    this.flowMarkerPoints = new THREE.Points(
+    this.flowMarkerLines = new THREE.LineSegments(
       this.flowMarkerGeometry,
-      createNodePointMaterial(this.pointTexture, 0),
+      new THREE.LineBasicMaterial({
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 0,
+        transparent: true,
+        vertexColors: true,
+      }),
     );
     this.highlightedNodePoints = new THREE.Points(
       this.highlightedNodeGeometry,
@@ -849,7 +1121,7 @@ export class ProcessFlowGraphEngine {
         depthWrite: false,
         map: this.pointTexture,
         opacity: 0.98,
-        size: this.layoutMode === 'sphere3d' ? 34 : 22,
+        size: this.getSelectedNodePulseBaseSize(),
         sizeAttenuation: true,
         transparent: true,
       }),
@@ -859,7 +1131,7 @@ export class ProcessFlowGraphEngine {
     this.group.add(this.edgeLines);
     this.group.add(this.nodePoints);
     this.group.add(this.highlightedEdgeLines);
-    this.group.add(this.flowMarkerPoints);
+    this.group.add(this.flowMarkerLines);
     this.group.add(this.highlightedNodePoints);
     this.group.add(this.selectedNodePoint);
     this.updateHighlightedGeometry();
@@ -873,7 +1145,12 @@ export class ProcessFlowGraphEngine {
 
     this.data.nodes.forEach((node, index) => {
       writeTuple(positions, index * 3, getNodePosition(this.data, this.layoutMode, node.id));
-      writeColor(colors, index * 3, getClusterColor(node), node.kind === 'process' ? 0.92 : 1.16);
+      writeColor(
+        colors,
+        index * 3,
+        this.getClusterColor(node),
+        node.kind === 'process' ? 0.92 : 1.16,
+      );
       sizes[index] = getNodePointSize(node, this.layoutMode);
     });
 
@@ -886,29 +1163,35 @@ export class ProcessFlowGraphEngine {
   }
 
   private buildEdgeGeometry() {
+    const usesOverviewEdgeTreatment =
+      this.layoutMode === 'sphere3d' || this.layoutMode === 'expanded2d';
     const segmentCount = this.layoutMode === 'sphere3d' ? sphereEdgeSegments : 1;
-    const positions = new Float32Array(this.data.edges.length * segmentCount * 6);
-    const colors = new Float32Array(this.data.edges.length * segmentCount * 6);
+    const edgeRenders = this.getBaseEdgeRenders();
+    const positions = new Float32Array(edgeRenders.length * segmentCount * 6);
+    const colors = new Float32Array(edgeRenders.length * segmentCount * 6);
     let offset = 0;
 
-    this.data.edges.forEach((edge) => {
+    edgeRenders.forEach(({ edge, intensityScale }) => {
       const hasSelection = Boolean(this.selection.selectedNodeId);
       const source = getNodePosition(this.data, this.layoutMode, edge.source);
       const target = getNodePosition(this.data, this.layoutMode, edge.target);
-      const mutedSource = hasSelection
-        ? getNodePosition(this.data, 'sphere3d', edge.source)
-        : source;
-      const mutedTarget = hasSelection
-        ? getNodePosition(this.data, 'sphere3d', edge.target)
-        : target;
+      const mutedSource =
+        usesOverviewEdgeTreatment || hasSelection
+          ? getNodePosition(this.data, 'sphere3d', edge.source)
+          : source;
+      const mutedTarget =
+        usesOverviewEdgeTreatment || hasSelection
+          ? getNodePosition(this.data, 'sphere3d', edge.target)
+          : target;
       const color =
-        hasSelection || this.layoutMode === 'sphere3d'
+        hasSelection || usesOverviewEdgeTreatment
           ? this.getSphereBaseEdgeColor(edge)
           : getEdgeColor(edge.direction);
       const intensity =
-        hasSelection || this.layoutMode === 'sphere3d'
+        hasSelection || usesOverviewEdgeTreatment
           ? this.getSphereBaseEdgeIntensity(edge, mutedSource, mutedTarget)
           : 0.38;
+      const scaledIntensity = intensity * intensityScale;
 
       for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
         const startProgress = segmentIndex / segmentCount;
@@ -924,8 +1207,8 @@ export class ProcessFlowGraphEngine {
 
         writeTuple(positions, offset, start);
         writeTuple(positions, offset + 3, end);
-        writeColor(colors, offset, color, intensity);
-        writeColor(colors, offset + 3, color, intensity);
+        writeColor(colors, offset, color, scaledIntensity);
+        writeColor(colors, offset + 3, color, scaledIntensity);
         offset += 6;
       }
     });
@@ -935,10 +1218,42 @@ export class ProcessFlowGraphEngine {
     this.edgeGeometry.computeBoundingSphere();
   }
 
+  private getBaseEdgeRenders(): BaseEdgeRender[] {
+    const hasSelection = Boolean(this.selection.selectedNodeId);
+
+    if (hasSelection) {
+      return this.data.edges.map((edge) => ({ edge, intensityScale: 0.72 }));
+    }
+
+    return this.data.edges
+      .map((edge, index) => {
+        const sourceNode = this.getNode(edge.source);
+        const targetNode = this.getNode(edge.target);
+        const isCrossCluster =
+          Boolean(sourceNode && targetNode) && sourceNode?.clusterId !== targetNode?.clusterId;
+        const degreeScore = (sourceNode?.degree ?? 0) + (targetNode?.degree ?? 0);
+        const processScore =
+          sourceNode?.kind === 'process' || targetNode?.kind === 'process' ? 42 : 0;
+        const hashScore = getStableHash(`${edge.id}:${index}`) / 0xffff_ffff;
+        const score = (isCrossCluster ? 900 : 0) + degreeScore + processScore + hashScore;
+
+        return { edge, score };
+      })
+      .sort((left, right) => right.score - left.score)
+      .map(({ edge }) => ({
+        edge,
+        intensityScale: this.layoutMode === 'sphere3d' ? 0.34 : 0.28,
+      }));
+  }
+
   private getNode(nodeId: string) {
     const nodeIndex = this.data.indexes.nodeById[nodeId];
 
     return nodeIndex === undefined ? undefined : this.data.nodes[nodeIndex];
+  }
+
+  private getClusterColor(node: ProcessFlowGraphNode): THREE.Color {
+    return this.clusterColors.get(node.clusterId)?.clone() ?? new THREE.Color('#8da2b3');
   }
 
   private getSphereBaseEdgeColor(edge: ProcessFlowGraphEdge) {
@@ -954,11 +1269,11 @@ export class ProcessFlowGraphEngine {
     }
 
     if (sourceNode.clusterId === targetNode.clusterId) {
-      return getClusterColor(sourceNode.kind === 'flow' ? sourceNode : targetNode);
+      return this.getClusterColor(sourceNode.kind === 'flow' ? sourceNode : targetNode);
     }
 
-    return getClusterColor(sourceNode)
-      .lerp(getClusterColor(targetNode), 0.5)
+    return this.getClusterColor(sourceNode)
+      .lerp(this.getClusterColor(targetNode), 0.5)
       .lerp(mutedColor, 0.22);
   }
 
@@ -982,11 +1297,17 @@ export class ProcessFlowGraphEngine {
 
   private updateMaterialState() {
     const hasSelection = Boolean(this.selection.selectedNodeId);
+    const isSphere = this.layoutMode === 'sphere3d';
+    const selectedEdgeBrightnessScale = hasSelection
+      ? getSelectedEdgeBrightnessScale(this.selection.highlightedEdgeIds.size)
+      : 1;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
       | THREE.LineBasicMaterial
       | undefined;
-    const flowMarkerMaterial = this.flowMarkerPoints?.material;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
     const nodeMaterial = this.nodePoints?.material;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodeMaterial = this.selectedNodePoint?.material as
@@ -997,25 +1318,57 @@ export class ProcessFlowGraphEngine {
       this.sphereShell.visible = false;
     }
 
+    if (this.edgeLines) {
+      this.edgeLines.visible = true;
+    }
     if (edgeMaterial) {
-      edgeMaterial.opacity = hasSelection ? 0.12 : 0.14;
+      edgeMaterial.opacity =
+        isSphere || this.layoutMode === 'expanded2d'
+          ? hasSelection
+            ? 0.02
+            : 0.032
+          : hasSelection
+            ? 0.06
+            : 0.09;
     }
-    if (highlightedEdgeMaterial) {
-      highlightedEdgeMaterial.opacity = 0.98;
-    }
-    if (flowMarkerMaterial instanceof THREE.ShaderMaterial) {
-      flowMarkerMaterial.uniforms.opacity.value = hasSelection ? 0.78 : 0;
+    setLineMaterialOpacity(
+      highlightedEdgeMaterial,
+      (hasSelection && (isSphere || this.layoutMode === 'expanded2d') ? 0.42 : 0.9) *
+        selectedEdgeBrightnessScale,
+    );
+    if (flowMarkerMaterial) {
+      flowMarkerMaterial.opacity = hasSelection
+        ? flowMarkerOpacity * selectedEdgeBrightnessScale
+        : 0;
     }
     if (nodeMaterial instanceof THREE.ShaderMaterial) {
-      nodeMaterial.uniforms.opacity.value = hasSelection ? 0.72 : 0.84;
+      nodeMaterial.uniforms.opacity.value = isSphere
+        ? hasSelection
+          ? 0.64
+          : 0.62
+        : hasSelection
+          ? this.layoutMode === 'expanded2d'
+            ? 0.96
+            : 0.68
+          : 0.84;
+      nodeMaterial.uniforms.backsideFade.value = isSphere && !hasSelection ? 1 : 0;
     }
     if (highlightedNodeMaterial instanceof THREE.ShaderMaterial) {
       highlightedNodeMaterial.uniforms.opacity.value = 1;
+      highlightedNodeMaterial.uniforms.backsideFade.value = 0;
     }
     if (selectedNodeMaterial) {
-      selectedNodeMaterial.size = 34;
-      selectedNodeMaterial.opacity = hasSelection ? 0.98 : 0;
+      const selectedNode = this.selection.selectedNodeId
+        ? this.getNode(this.selection.selectedNodeId)
+        : undefined;
+
+      if (selectedNode) {
+        selectedNodeMaterial.color.copy(this.getClusterColor(selectedNode));
+      }
+      selectedNodeMaterial.size = this.getSelectedNodePulseBaseSize();
+      selectedNodeMaterial.opacity = hasSelection ? selectedNodePulseMaxOpacity : 0;
     }
+    this.updateSelectedNodePulse();
   }
 
   private finishLayoutTransition(applyTarget: boolean) {
@@ -1191,21 +1544,24 @@ export class ProcessFlowGraphEngine {
 
     const sparkle = Math.sin(Math.PI * progress);
     const edgeFade = getEdgeTransitionFade(progress);
+    const selectedEdgeBrightnessScale = this.selection.selectedNodeId
+      ? getSelectedEdgeBrightnessScale(this.selection.highlightedEdgeIds.size)
+      : 1;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
       | THREE.LineBasicMaterial
       | undefined;
-    const flowMarkerMaterial = this.flowMarkerPoints?.material;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
     const sphereShellMaterial = this.sphereShell?.material as THREE.MeshBasicMaterial | undefined;
 
     if (edgeMaterial) {
       edgeMaterial.opacity = transition.edgeOpacity * edgeFade;
     }
-    if (highlightedEdgeMaterial) {
-      highlightedEdgeMaterial.opacity = transition.highlightedEdgeOpacity * edgeFade;
-    }
-    if (flowMarkerMaterial instanceof THREE.ShaderMaterial) {
-      flowMarkerMaterial.uniforms.opacity.value = 0.78 * edgeFade;
+    setLineMaterialOpacity(highlightedEdgeMaterial, transition.highlightedEdgeOpacity * edgeFade);
+    if (flowMarkerMaterial) {
+      flowMarkerMaterial.opacity = flowMarkerOpacity * selectedEdgeBrightnessScale * edgeFade;
     }
     if (this.sphereShell && sphereShellMaterial) {
       this.sphereShell.visible = true;
@@ -1327,31 +1683,26 @@ export class ProcessFlowGraphEngine {
     const colorAttribute = this.nodeGeometry.getAttribute('color') as THREE.BufferAttribute;
     const colorArray = colorAttribute.array as Float32Array;
     const hasSelection = Boolean(this.selection.selectedNodeId);
+    const isExpandedSelected = hasSelection && this.layoutMode === 'expanded2d';
 
     this.data.nodes.forEach((node, index) => {
       const offset = index * 3;
-      let color = getClusterColor(node);
-      let intensity = node.kind === 'process' ? 0.8 : 0.98;
+      let color = this.getClusterColor(node);
+      let intensity = getNodeOverviewIntensity(node);
 
       if (hasSelection) {
-        color = sphereMutedColor;
-        intensity = 0.72;
+        color = isExpandedSelected ? expandedSelectedContextColor : selectedContextColor;
+        intensity = isExpandedSelected
+          ? node.kind === 'process'
+            ? 0.98
+            : 1.08
+          : node.kind === 'process'
+            ? 0.82
+            : 0.9;
       }
-      if (this.selection.relatedFlowIds.has(node.id)) {
-        color = this.selection.inputFlowIds.has(node.id)
-          ? inputHighlightColor
-          : this.selection.outputFlowIds.has(node.id)
-            ? outputHighlightColor
-            : otherHighlightColor;
-        intensity = 1.55;
-      }
-      if (this.selection.relatedProcessIds.has(node.id)) {
-        color = processHighlightColor;
-        intensity = 1.28;
-      }
-      if (node.id === this.selection.selectedNodeId) {
-        color = selectedColor;
-        intensity = 1.9;
+      if (this.selection.highlightedNodeIds.has(node.id)) {
+        color = this.getClusterColor(node);
+        intensity = getNodeOverviewIntensity(node);
       }
 
       writeColor(colorArray, offset, color, intensity);
@@ -1360,41 +1711,75 @@ export class ProcessFlowGraphEngine {
     colorAttribute.needsUpdate = true;
   }
 
-  private getHighlightedNodeColor(nodeId: string) {
-    if (nodeId === this.selection.selectedNodeId) {
-      return selectedColor;
+  private getHighlightedNodeColor(node: ProcessFlowGraphNode | undefined) {
+    return node ? this.getClusterColor(node) : selectedColor;
+  }
+
+  private getHighlightedEdgeRenders(): HighlightedEdgeRender[] {
+    const edgeRenders = Array.from(this.selection.highlightedEdgeIds).reduce<
+      HighlightedEdgeRender[]
+    >((renders, edgeId) => {
+      const edgeIndex = this.data.indexes.edgeById[edgeId];
+      const edge = edgeIndex === undefined ? undefined : this.data.edges[edgeIndex];
+
+      if (edge) {
+        renders.push({ edge, edgeIndex, intensityScale: 1 });
+      }
+
+      return renders;
+    }, []);
+    const hasSelection = Boolean(this.selection.selectedNodeId);
+
+    if (!hasSelection) {
+      return edgeRenders;
     }
-    if (this.selection.relatedProcessIds.has(nodeId)) {
-      return processHighlightColor;
+
+    return edgeRenders.map((render) => ({
+      ...render,
+      intensityScale: this.getHighlightedEdgeIntensityScale(render.edge),
+    }));
+  }
+
+  private getHighlightedEdgeIntensityScale(edge: ProcessFlowGraphEdge): number {
+    const sourceNode = this.getNode(edge.source);
+    const targetNode = this.getNode(edge.target);
+    const selectedNodeId = this.selection.selectedNodeId;
+    const isDirectSelectedEdge =
+      Boolean(selectedNodeId) &&
+      (edge.source === selectedNodeId ||
+        edge.target === selectedNodeId ||
+        edge.flowId === this.selection.selectedFlowId);
+
+    if (isDirectSelectedEdge) {
+      return this.layoutMode === 'sphere3d' ? 0.94 : 1;
     }
-    if (this.selection.inputFlowIds.has(nodeId)) {
-      return inputHighlightColor;
-    }
-    if (this.selection.outputFlowIds.has(nodeId)) {
-      return outputHighlightColor;
-    }
-    if (this.selection.relatedFlowIds.has(nodeId)) {
-      return otherHighlightColor;
-    }
-    return selectedColor;
+
+    const amountBoost =
+      edge.amount === undefined
+        ? 0
+        : THREE.MathUtils.clamp(Math.log1p(Math.abs(edge.amount)) / 26, 0, 0.16);
+    const sameCluster = sourceNode?.clusterId === targetNode?.clusterId;
+    const directionBase = edge.direction === 'input' ? 0.34 : 0.3;
+
+    return directionBase + amountBoost + (sameCluster ? 0.06 : 0.02);
   }
 
   private updateHighlightedGeometry() {
     const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
-    const highlightedEdgeIds = Array.from(this.selection.highlightedEdgeIds);
+    const highlightedEdgeRenders = this.getHighlightedEdgeRenders();
     const nodePositions = new Float32Array(highlightedNodeIds.length * 3);
     const nodeColors = new Float32Array(highlightedNodeIds.length * 3);
     const nodeSizes = new Float32Array(highlightedNodeIds.length);
     const segmentCount = this.layoutMode === 'sphere3d' ? sphereHighlightedEdgeSegments : 1;
-    const edgePositions = new Float32Array(highlightedEdgeIds.length * segmentCount * 6);
-    const edgeColors = new Float32Array(highlightedEdgeIds.length * segmentCount * 6);
-    const markerCount = this.selection.selectedNodeId
-      ? Math.min(highlightedEdgeIds.length, flowMarkerMaxCount)
-      : 0;
-    const markerPositions = new Float32Array(markerCount * 3);
-    const markerColors = new Float32Array(markerCount * 3);
-    const markerSizes = new Float32Array(markerCount);
+    const edgePositions = new Float32Array(highlightedEdgeRenders.length * segmentCount * 6);
+    const edgeColors = new Float32Array(highlightedEdgeRenders.length * segmentCount * 6);
+    const markerCount = this.selection.selectedNodeId ? highlightedEdgeRenders.length : 0;
+    const markerPositions = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
+    const markerColors = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
     const selectedNodePositions = new Float32Array(this.selection.selectedNodeId ? 3 : 0);
+    const selectedEdgeBrightnessScale = this.selection.selectedNodeId
+      ? getSelectedEdgeBrightnessScale(highlightedEdgeRenders.length)
+      : 1;
     let edgeOffset = 0;
     let markerOffset = 0;
     this.flowMarkers = [];
@@ -1403,7 +1788,7 @@ export class ProcessFlowGraphEngine {
       const node = this.getNode(nodeId);
 
       writeTuple(nodePositions, index * 3, getNodePosition(this.data, this.layoutMode, nodeId));
-      writeColor(nodeColors, index * 3, this.getHighlightedNodeColor(nodeId), 1.45);
+      writeColor(nodeColors, index * 3, this.getHighlightedNodeColor(node), 1.45);
       nodeSizes[index] = getNodePointSize(node, this.layoutMode, true);
     });
     if (this.selection.selectedNodeId) {
@@ -1413,22 +1798,18 @@ export class ProcessFlowGraphEngine {
         getNodePosition(this.data, this.layoutMode, this.selection.selectedNodeId),
       );
     }
-    highlightedEdgeIds.forEach((edgeId) => {
-      const edgeIndex = this.data.indexes.edgeById[edgeId];
-      const edge = edgeIndex === undefined ? undefined : this.data.edges[edgeIndex];
-      if (!edge) {
-        return;
-      }
+    highlightedEdgeRenders.forEach(({ edge, edgeIndex, intensityScale }) => {
       const source = getNodePosition(this.data, this.layoutMode, edge.source);
       const target = getNodePosition(this.data, this.layoutMode, edge.target);
       const color = getEdgeColor(edge.direction);
-      const intensity = this.selection.selectedNodeId
+      const baseIntensity = this.selection.selectedNodeId
         ? edge.direction === 'input'
-          ? 2.1
-          : 1.95
+          ? 1.26
+          : 1.12
         : edge.direction === 'input'
-          ? 1.75
-          : 1.55;
+          ? 1.55
+          : 1.38;
+      const intensity = baseIntensity * intensityScale * selectedEdgeBrightnessScale;
 
       for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
         const startProgress = segmentIndex / segmentCount;
@@ -1474,29 +1855,23 @@ export class ProcessFlowGraphEngine {
           ? sphereSelectedEdgeSurfaceLift
           : sphereHighlightedSurfaceLift;
         const highlightedArcLift = isSelectedSphereEdge ? sphereSelectedEdgeArcLift : 0;
-        const markerProgress = 0.2 + getTransitionSeed(edgeIndex + 3) * 0.62;
-        const markerPosition = getFlowMarkerTuple({
-          arcLift: highlightedArcLift,
-          layoutMode: this.layoutMode,
-          progress: markerProgress,
-          source,
-          surfaceLift: highlightedSurfaceLift,
-          target,
-        });
         this.flowMarkers.push({
           arcLift: highlightedArcLift,
-          color,
-          direction: edge.direction,
-          id: edge.id,
           phase: getTransitionSeed(edgeIndex + 11),
           source: edge.source,
           surfaceLift: highlightedSurfaceLift,
           target: edge.target,
         });
 
-        writeTuple(markerPositions, markerOffset * 3, markerPosition);
-        writeColor(markerColors, markerOffset * 3, color, edge.direction === 'input' ? 1.8 : 1.65);
-        markerSizes[markerOffset] = flowMarkerPointSize;
+        const markerColorOffset = markerOffset * flowMarkerArrowSegments * 6;
+        for (let vertexOffset = 0; vertexOffset < flowMarkerArrowSegments * 2; vertexOffset += 1) {
+          writeColor(
+            markerColors,
+            markerColorOffset + vertexOffset * 3,
+            color,
+            (edge.direction === 'input' ? 1.35 : 1.25) * selectedEdgeBrightnessScale,
+          );
+        }
         markerOffset += 1;
       }
     });
@@ -1515,10 +1890,10 @@ export class ProcessFlowGraphEngine {
     markerPositionAttribute.setUsage(THREE.DynamicDrawUsage);
     this.flowMarkerGeometry.setAttribute('position', markerPositionAttribute);
     this.flowMarkerGeometry.setAttribute('color', new THREE.BufferAttribute(markerColors, 3));
-    this.flowMarkerGeometry.setAttribute('pointSize', new THREE.BufferAttribute(markerSizes, 1));
     const selectedPositionAttribute = new THREE.BufferAttribute(selectedNodePositions, 3);
     selectedPositionAttribute.setUsage(THREE.DynamicDrawUsage);
     this.selectedNodeGeometry.setAttribute('position', selectedPositionAttribute);
+    this.updateFlowMarkers();
     this.highlightedNodeGeometry.computeBoundingSphere();
     this.highlightedEdgeGeometry.computeBoundingSphere();
     this.flowMarkerGeometry.computeBoundingSphere();
@@ -1540,25 +1915,147 @@ export class ProcessFlowGraphEngine {
 
     const positions = positionAttribute.array as Float32Array;
     const elapsed = performance.now() / flowMarkerCycleMs;
+    const tipVector = new THREE.Vector3();
+    const previousVector = new THREE.Vector3();
+    const nextVector = new THREE.Vector3();
+    const directionVector = new THREE.Vector3();
+    const viewVector = new THREE.Vector3();
+    const sideVector = new THREE.Vector3();
+    const baseVector = new THREE.Vector3();
+    const leftVector = new THREE.Vector3();
+    const rightVector = new THREE.Vector3();
+    const arrowLength =
+      this.layoutMode === 'expanded2d'
+        ? expandedFlowMarkerArrowLength
+        : sphereFlowMarkerArrowLength;
+    const arrowWidth =
+      this.layoutMode === 'expanded2d' ? expandedFlowMarkerArrowWidth : sphereFlowMarkerArrowWidth;
+    const writeVector = (offset: number, vector: THREE.Vector3) => {
+      positions[offset] = vector.x;
+      positions[offset + 1] = vector.y;
+      positions[offset + 2] = vector.z;
+    };
 
     this.flowMarkers.forEach((marker, index) => {
       const progress = 0.12 + ((elapsed + marker.phase) % 1) * 0.76;
       const source = getNodePosition(this.data, this.layoutMode, marker.source);
       const target = getNodePosition(this.data, this.layoutMode, marker.target);
-      const position = getFlowMarkerTuple({
+      const previousProgress = THREE.MathUtils.clamp(progress - 0.025, 0.02, 0.98);
+      const nextProgress = THREE.MathUtils.clamp(progress + 0.025, 0.02, 0.98);
+      const markerOffset = index * flowMarkerArrowSegments * 6;
+
+      setFlowMarkerVector({
         arcLift: marker.arcLift,
         layoutMode: this.layoutMode,
+        output: previousVector,
+        progress: previousProgress,
+        source,
+        surfaceLift: marker.surfaceLift,
+        target,
+      });
+      setFlowMarkerVector({
+        arcLift: marker.arcLift,
+        layoutMode: this.layoutMode,
+        output: tipVector,
         progress,
         source,
         surfaceLift: marker.surfaceLift,
         target,
       });
+      setFlowMarkerVector({
+        arcLift: marker.arcLift,
+        layoutMode: this.layoutMode,
+        output: nextVector,
+        progress: nextProgress,
+        source,
+        surfaceLift: marker.surfaceLift,
+        target,
+      });
 
-      writeTuple(positions, index * 3, position);
+      directionVector.subVectors(nextVector, previousVector);
+      if (directionVector.lengthSq() < 0.0001) {
+        directionVector.subVectors(tipVector, previousVector);
+      }
+      if (directionVector.lengthSq() < 0.0001) {
+        directionVector.set(1, 0, 0);
+      }
+      directionVector.normalize();
+
+      viewVector.subVectors(this.camera.position, tipVector);
+      if (viewVector.lengthSq() < 0.0001) {
+        viewVector.copy(this.camera.up);
+      }
+      viewVector.normalize();
+
+      sideVector.crossVectors(directionVector, viewVector);
+      if (sideVector.lengthSq() < 0.0001) {
+        sideVector.crossVectors(directionVector, this.camera.up);
+      }
+      if (sideVector.lengthSq() < 0.0001) {
+        sideVector.set(0, 1, 0);
+      }
+      sideVector.normalize();
+
+      baseVector.copy(tipVector).addScaledVector(directionVector, -arrowLength);
+      leftVector.copy(baseVector).addScaledVector(sideVector, arrowWidth);
+      rightVector.copy(baseVector).addScaledVector(sideVector, -arrowWidth);
+
+      writeVector(markerOffset, baseVector);
+      writeVector(markerOffset + 3, tipVector);
+      writeVector(markerOffset + 6, leftVector);
+      writeVector(markerOffset + 9, tipVector);
+      writeVector(markerOffset + 12, rightVector);
+      writeVector(markerOffset + 15, tipVector);
     });
 
     positionAttribute.needsUpdate = true;
-    this.flowMarkerGeometry.computeBoundingSphere();
+  }
+
+  private getSelectedNodePulseBaseSize() {
+    return this.layoutMode === 'sphere3d'
+      ? sphereSelectedNodePulseBaseSize
+      : expandedSelectedNodePulseBaseSize;
+  }
+
+  private getSelectedNodePulseSizeDelta() {
+    return this.layoutMode === 'sphere3d'
+      ? sphereSelectedNodePulseSizeDelta
+      : expandedSelectedNodePulseSizeDelta;
+  }
+
+  private updateSelectedNodePulse() {
+    const selectedNodeMaterial = this.selectedNodePoint?.material as
+      | THREE.PointsMaterial
+      | undefined;
+
+    if (!selectedNodeMaterial) {
+      return;
+    }
+
+    const selectedNodeId = this.selection.selectedNodeId;
+
+    if (!selectedNodeId) {
+      selectedNodeMaterial.opacity = 0;
+      return;
+    }
+
+    const selectedNode = this.getNode(selectedNodeId);
+
+    if (selectedNode) {
+      selectedNodeMaterial.color.copy(this.getClusterColor(selectedNode));
+    }
+
+    const rawProgress = (performance.now() % selectedNodePulseCycleMs) / selectedNodePulseCycleMs;
+    const wave = 0.5 - Math.cos(rawProgress * Math.PI * 2) * 0.5;
+    const easedPulse = getSmoothStep(0, 1, wave);
+
+    selectedNodeMaterial.opacity = THREE.MathUtils.lerp(
+      selectedNodePulseMinOpacity,
+      selectedNodePulseMaxOpacity,
+      easedPulse,
+    );
+    selectedNodeMaterial.size =
+      this.getSelectedNodePulseBaseSize() + this.getSelectedNodePulseSizeDelta() * easedPulse;
   }
 
   private focusNode(nodeId: string) {
@@ -1571,7 +2068,7 @@ export class ProcessFlowGraphEngine {
       this.camera.position.set(x + cameraOffset.x, y + cameraOffset.y, z + cameraOffset.z);
     } else {
       this.focusCameraFrame({
-        position: new THREE.Vector3(x, y, 430),
+        position: new THREE.Vector3(x, y, expandedFocusCameraDistance),
         target: new THREE.Vector3(x, y, 0),
       });
       return;
@@ -1596,7 +2093,8 @@ export class ProcessFlowGraphEngine {
     const node = hitIndex === undefined ? undefined : this.data.nodes[hitIndex];
     const nextNodeId = node?.id ?? null;
 
-    this.renderer.domElement.style.cursor = nextNodeId ? 'pointer' : 'grab';
+    this.renderer.domElement.style.cursor =
+      this.interactionMode === 'select' && nextNodeId ? 'pointer' : 'grab';
     if (nextNodeId !== this.hoveredNodeId) {
       this.hoveredNodeId = nextNodeId;
       this.callbacks.onNodeHover?.(
@@ -1617,7 +2115,7 @@ export class ProcessFlowGraphEngine {
   };
 
   private handleClick = () => {
-    if (this.hoveredNodeId) {
+    if (this.interactionMode === 'select' && this.hoveredNodeId) {
       this.callbacks.onNodeClick?.(this.hoveredNodeId);
     }
   };
@@ -1626,6 +2124,7 @@ export class ProcessFlowGraphEngine {
     this.updateLayoutTransition();
     this.updateCameraFocusTransition();
     this.updateFlowMarkers();
+    this.updateSelectedNodePulse();
 
     if (
       !this.transition &&

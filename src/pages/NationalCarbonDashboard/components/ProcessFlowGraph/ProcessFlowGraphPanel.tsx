@@ -3,12 +3,14 @@ import {
   ApartmentOutlined,
   ClearOutlined,
   ClusterOutlined,
+  DragOutlined,
   FullscreenOutlined,
   GlobalOutlined,
   NodeIndexOutlined,
   SearchOutlined,
+  SelectOutlined,
 } from '@ant-design/icons';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
 import {
   getProcessFlowGraphNode,
@@ -16,20 +18,30 @@ import {
   summarizeProcessFlowSelection,
 } from './graphSelection';
 import {
-  demoFlowAId,
   type ProcessFlowGraphData,
   type ProcessFlowGraphEdge,
+  type ProcessFlowGraphInteractionMode,
   type ProcessFlowGraphLayoutName,
   type ProcessFlowGraphNode,
+  type ProcessFlowGraphNodeSummary,
   type ProcessFlowGraphSearchItem,
 } from './graphTypes';
-import { demoProcessFlowGraph } from './mock/mockGraphPresets';
+import { loadProcessFlowGraphFromCache } from './processFlowGraphCacheLoader';
 import styles from './styles.module.less';
 
 const numberFormatter = new Intl.NumberFormat('zh-CN');
+const maxCacheErrorLength = 96;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value);
+}
+
+function formatCacheError(error: string): string {
+  if (error.length <= maxCacheErrorLength) {
+    return error;
+  }
+
+  return `${error.slice(0, maxCacheErrorLength - 1)}...`;
 }
 
 function getFlowTypeLabel(flowType?: string) {
@@ -70,9 +82,29 @@ function getConnectedNodeName(
   return getProcessFlowGraphNode(data, connectedNodeId)?.name ?? connectedNodeId;
 }
 
-function getSearchResults(data: ProcessFlowGraphData, query: string): ProcessFlowGraphSearchItem[] {
+type GraphDataSource = 'loading' | 'minio' | 'error';
+
+const emptySelectionSummary: ProcessFlowGraphNodeSummary = {
+  highlightedEdges: 0,
+  inputEdges: 0,
+  outputEdges: 0,
+  relatedFlows: 0,
+  relatedProcesses: 0,
+};
+
+function getFeaturedFlow(data: ProcessFlowGraphData): ProcessFlowGraphSearchItem | undefined {
+  return data.indexes.searchFlows[0];
+}
+
+function getSearchResults(
+  data: ProcessFlowGraphData,
+  query: string,
+  featuredFlowId: string | undefined,
+): ProcessFlowGraphSearchItem[] {
   const normalizedQuery = query.trim().toLowerCase();
-  const flowA = data.indexes.searchFlows.find((flow) => flow.id === demoFlowAId);
+  const featuredFlow = featuredFlowId
+    ? data.indexes.searchFlows.find((flow) => flow.id === featuredFlowId)
+    : undefined;
   const source = normalizedQuery
     ? data.indexes.searchFlows.filter(
         (flow) =>
@@ -82,11 +114,11 @@ function getSearchResults(data: ProcessFlowGraphData, query: string): ProcessFlo
     : data.indexes.searchFlows;
   const results = source.slice(0, 9);
 
-  if (!flowA || results.some((flow) => flow.id === flowA.id)) {
+  if (!featuredFlow || results.some((flow) => flow.id === featuredFlow.id)) {
     return results;
   }
 
-  return [flowA, ...results.slice(0, 8)];
+  return [featuredFlow, ...results.slice(0, 8)];
 }
 
 function FlowSearchResult({
@@ -153,8 +185,8 @@ function Inspector({
             <strong>{formatNumber(data.stats.edgeCount)}</strong>
           </div>
           <div>
-            <span>Flow A Highlight</span>
-            <strong>{formatNumber(data.stats.highlightedDemoEdges)}</strong>
+            <span>Max Degree</span>
+            <strong>{formatNumber(data.stats.maxDegree)}</strong>
           </div>
         </div>
       </aside>
@@ -225,24 +257,119 @@ function Inspector({
   );
 }
 
+function EmptyInspectorPanel({
+  dataSource,
+  loadError,
+}: {
+  dataSource: GraphDataSource;
+  loadError?: string;
+}) {
+  const isLoading = dataSource === 'loading';
+
+  return (
+    <aside className={styles.inspector}>
+      <div className={styles.inspectorHeader}>
+        <span>INSPECTOR</span>
+        <ClusterOutlined />
+      </div>
+      <div className={styles.emptyInspector}>
+        <strong>{isLoading ? 'Loading cache' : 'Cache unavailable'}</strong>
+        <span>{isLoading ? 'PROCESS-FLOW GRAPH CACHE' : 'CACHE ERROR'}</span>
+      </div>
+      {loadError && <p className={styles.cacheErrorText}>{formatCacheError(loadError)}</p>}
+    </aside>
+  );
+}
+
+function GraphLoadState({
+  dataSource,
+  loadError,
+}: {
+  dataSource: GraphDataSource;
+  loadError?: string;
+}) {
+  const isLoading = dataSource === 'loading';
+
+  return (
+    <div className={styles.graphLoadState}>
+      <strong>{isLoading ? 'Loading process-flow graph' : 'Process-flow graph unavailable'}</strong>
+      <span>
+        {isLoading
+          ? 'Waiting for worker S3 cache manifest'
+          : loadError
+            ? formatCacheError(loadError)
+            : 'Cache manifest could not be loaded'}
+      </span>
+    </div>
+  );
+}
+
 export default function ProcessFlowGraphPanel() {
-  const data = demoProcessFlowGraph;
+  const [data, setData] = useState<ProcessFlowGraphData | undefined>();
+  const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
+  const [loadError, setLoadError] = useState<string | undefined>();
   const [layoutMode, setLayoutMode] = useState<ProcessFlowGraphLayoutName>('sphere3d');
+  const [interactionMode, setInteractionMode] = useState<ProcessFlowGraphInteractionMode>('select');
   const [query, setQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+  const featuredFlow = useMemo(() => (data ? getFeaturedFlow(data) : undefined), [data]);
   const selectedNode = useMemo(
-    () => getProcessFlowGraphNode(data, selectedNodeId),
+    () => (data ? getProcessFlowGraphNode(data, selectedNodeId) : undefined),
     [data, selectedNodeId],
   );
   const selection = useMemo(
-    () => getProcessFlowGraphSelection(data, selectedNodeId),
+    () => (data ? getProcessFlowGraphSelection(data, selectedNodeId) : undefined),
     [data, selectedNodeId],
   );
-  const searchResults = useMemo(() => getSearchResults(data, query), [data, query]);
+  const searchResults = useMemo(
+    () => (data ? getSearchResults(data, query, featuredFlow?.id) : []),
+    [data, featuredFlow?.id, query],
+  );
   const selectionSummary = useMemo(
-    () => summarizeProcessFlowSelection(data, selection),
+    () =>
+      data && selection ? summarizeProcessFlowSelection(data, selection) : emptySelectionSummary,
     [data, selection],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadProcessFlowGraphFromCache()
+      .then((cacheData) => {
+        if (cancelled) {
+          return;
+        }
+        setData(cacheData);
+        setDataSource('minio');
+        setLoadError(undefined);
+        setSelectedNodeId(undefined);
+        setQuery('');
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setData(undefined);
+        setDataSource('error');
+        setLoadError(error instanceof Error ? error.message : String(error));
+        setSelectedNodeId(undefined);
+        setQuery('');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (data && selectedNodeId && !getProcessFlowGraphNode(data, selectedNodeId)) {
+      setSelectedNodeId(undefined);
+    }
+  }, [data, selectedNodeId]);
+
+  useEffect(() => {
+    setInteractionMode(selectedNodeId ? 'pan' : 'select');
+  }, [selectedNodeId]);
 
   const handleNodeClick = useCallback((nodeId: string) => {
     setSelectedNodeId((currentNodeId) => (currentNodeId === nodeId ? undefined : nodeId));
@@ -250,11 +377,21 @@ export default function ProcessFlowGraphPanel() {
 
   const handleSelectFlow = useCallback(
     (flowId: string) => {
+      if (!data) {
+        return;
+      }
       setSelectedNodeId(flowId);
       setQuery(getProcessFlowGraphNode(data, flowId)?.name ?? flowId);
     },
     [data],
   );
+
+  const sourceBadge =
+    dataSource === 'loading'
+      ? 'Loading Cache'
+      : dataSource === 'minio'
+        ? 'MinIO Cache'
+        : 'Cache Error';
 
   return (
     <div className={styles.panelShell}>
@@ -277,12 +414,41 @@ export default function ProcessFlowGraphPanel() {
             <span>Expanded</span>
           </button>
         </div>
+        <div className={styles.mouseTools}>
+          <button
+            aria-label='拖拽浏览'
+            aria-pressed={interactionMode === 'pan'}
+            className={interactionMode === 'pan' ? styles.activeMode : ''}
+            onClick={() => setInteractionMode('pan')}
+            type='button'
+          >
+            <DragOutlined />
+            <span>Drag</span>
+          </button>
+          <button
+            aria-label='点选节点'
+            aria-pressed={interactionMode === 'select'}
+            className={interactionMode === 'select' ? styles.activeMode : ''}
+            onClick={() => setInteractionMode('select')}
+            type='button'
+          >
+            <SelectOutlined />
+            <span>Pick</span>
+          </button>
+        </div>
         <div className={styles.graphBadges}>
           <span>
             <i />
-            S3 Cache Mock
-            <b>{data.buildId}</b>
+            {sourceBadge}
+            <b>{data?.buildId ?? '-'}</b>
           </span>
+          {loadError && (
+            <span>
+              <i />
+              Cache Error
+              <b title={loadError}>{formatCacheError(loadError)}</b>
+            </span>
+          )}
           <span>
             <i />
             WebGL Active
@@ -290,11 +456,11 @@ export default function ProcessFlowGraphPanel() {
           </span>
           <span>
             Nodes
-            <b>{formatNumber(data.nodes.length)}</b>
+            <b>{formatNumber(data?.nodes.length ?? 0)}</b>
           </span>
           <span>
             Edges
-            <b>{formatNumber(data.edges.length)}</b>
+            <b>{formatNumber(data?.edges.length ?? 0)}</b>
           </span>
         </div>
       </div>
@@ -303,6 +469,7 @@ export default function ProcessFlowGraphPanel() {
           <SearchOutlined />
           <input
             aria-label='搜索非基础流'
+            disabled={!data}
             onChange={(event) => setQuery(event.target.value)}
             placeholder='Search flow'
             value={query}
@@ -314,11 +481,17 @@ export default function ProcessFlowGraphPanel() {
           )}
         </label>
         <div className={styles.quickActions}>
-          <button onClick={() => handleSelectFlow(demoFlowAId)} type='button'>
-            <AimOutlined />
-            Flow A
-          </button>
-          <button onClick={() => setSelectedNodeId(undefined)} type='button'>
+          {featuredFlow && (
+            <button onClick={() => handleSelectFlow(featuredFlow.id)} type='button'>
+              <AimOutlined />
+              Focus Flow
+            </button>
+          )}
+          <button
+            disabled={!data || !selectedNodeId}
+            onClick={() => setSelectedNodeId(undefined)}
+            type='button'
+          >
             <FullscreenOutlined />
             Clear
           </button>
@@ -354,23 +527,34 @@ export default function ProcessFlowGraphPanel() {
         </div>
       </aside>
       <main className={styles.graphStage}>
-        <ProcessFlowGraphCanvas
-          data={data}
-          layoutMode={layoutMode}
-          onNodeClick={handleNodeClick}
-          selection={selection}
-        />
-        <div className={styles.selectionStrip}>
-          <span>{selectedNode ? selectedNode.name : 'Global Graph'}</span>
-          <strong>{formatNumber(selectionSummary.highlightedEdges)}</strong>
-          <em>highlighted exchanges</em>
-          <strong>{formatNumber(selectionSummary.relatedProcesses)}</strong>
-          <em>processes</em>
-          <strong>{formatNumber(selectionSummary.relatedFlows)}</strong>
-          <em>non-basic flows</em>
-        </div>
+        {data && selection ? (
+          <>
+            <ProcessFlowGraphCanvas
+              data={data}
+              interactionMode={interactionMode}
+              layoutMode={layoutMode}
+              onNodeClick={handleNodeClick}
+              selection={selection}
+            />
+            <div className={styles.selectionStrip}>
+              <span>{selectedNode ? selectedNode.name : 'Global Graph'}</span>
+              <strong>{formatNumber(selectionSummary.highlightedEdges)}</strong>
+              <em>highlighted exchanges</em>
+              <strong>{formatNumber(selectionSummary.relatedProcesses)}</strong>
+              <em>processes</em>
+              <strong>{formatNumber(selectionSummary.relatedFlows)}</strong>
+              <em>non-basic flows</em>
+            </div>
+          </>
+        ) : (
+          <GraphLoadState dataSource={dataSource} loadError={loadError} />
+        )}
       </main>
-      <Inspector data={data} node={selectedNode} />
+      {data ? (
+        <Inspector data={data} node={selectedNode} />
+      ) : (
+        <EmptyInspectorPanel dataSource={dataSource} loadError={loadError} />
+      )}
     </div>
   );
 }

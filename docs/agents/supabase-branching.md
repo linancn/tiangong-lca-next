@@ -60,7 +60,7 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
-- `FLOW_TOPOLOGY_CACHE_BASE_URL` is a frontend public read URL for the national-carbon flow topology cache; it is loaded through `config/supabaseEnv.ts` with other frontend environment values and does not create a database schema, Supabase branch, or Edge runtime ownership change
+- `FLOW_TOPOLOGY_CACHE_BASE_URL` and `PROCESS_FLOW_GRAPH_CACHE_BASE_URL` are frontend public read URLs for national-carbon graph caches; they are loaded through `config/supabaseEnv.ts` with other frontend environment values and do not create a database schema, Supabase branch, or Edge runtime ownership change
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 

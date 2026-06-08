@@ -3,6 +3,7 @@ import { ProcessFlowGraphEngine } from './graphEngine';
 import { getProcessFlowGraphNode } from './graphSelection';
 import type {
   ProcessFlowGraphData,
+  ProcessFlowGraphInteractionMode,
   ProcessFlowGraphLayoutName,
   ProcessFlowGraphSelection,
 } from './graphTypes';
@@ -16,11 +17,13 @@ export type ProcessFlowGraphHoverState = {
 
 export default function ProcessFlowGraphCanvas({
   data,
+  interactionMode,
   layoutMode,
   onNodeClick,
   selection,
 }: {
   data: ProcessFlowGraphData;
+  interactionMode: ProcessFlowGraphInteractionMode;
   layoutMode: ProcessFlowGraphLayoutName;
   onNodeClick: (nodeId: string) => void;
   selection: ProcessFlowGraphSelection;
@@ -45,6 +48,7 @@ export default function ProcessFlowGraphCanvas({
       },
       container,
       data,
+      interactionMode,
       layoutMode,
     });
     const resizeObserver = new ResizeObserver(() => engine.resize());
@@ -74,6 +78,10 @@ export default function ProcessFlowGraphCanvas({
   useEffect(() => {
     engineRef.current?.setLayoutMode(layoutMode);
   }, [layoutMode]);
+
+  useEffect(() => {
+    engineRef.current?.setInteractionMode(interactionMode);
+  }, [interactionMode]);
 
   useEffect(() => {
     engineRef.current?.setSelection(selection);

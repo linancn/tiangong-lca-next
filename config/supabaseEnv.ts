@@ -3,7 +3,10 @@ import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 
 const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as const;
-const FLOW_TOPOLOGY_FRONTEND_KEYS = ['FLOW_TOPOLOGY_CACHE_BASE_URL'] as const;
+const FLOW_TOPOLOGY_FRONTEND_KEYS = [
+  'FLOW_TOPOLOGY_CACHE_BASE_URL',
+  'PROCESS_FLOW_GRAPH_CACHE_BASE_URL',
+] as const;
 
 const SUPABASE_ENV_FILE_ORDER = {
   dev: ['.env.development', '.env.local', '.env.development.local'],
