@@ -436,6 +436,8 @@ export default function ProcessFlowGraphPanel() {
   }, []);
 
   const handleToggleMapMode = useCallback(() => {
+    setSelectedNodeId(undefined);
+
     if (layoutMode !== 'geoMap2d') {
       setMapScope('world');
       setLayoutMode('geoMap2d');

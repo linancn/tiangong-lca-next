@@ -105,7 +105,7 @@ export default function ProcessFlowGraphCanvas({
           aria-hidden='true'
         >
           <svg
-            preserveAspectRatio='xMidYMid meet'
+            preserveAspectRatio='none'
             viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
           >
             {geoMapBackground.paths.map((mapPath) => (

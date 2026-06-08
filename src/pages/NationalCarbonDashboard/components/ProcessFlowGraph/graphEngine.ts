@@ -599,6 +599,15 @@ export class ProcessFlowGraphEngine {
 
   private interactionMode: ProcessFlowGraphInteractionMode;
 
+  private geoMapBackdropFrameStyle?: string;
+
+  private geoMapProjectionCorners = [
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+  ];
+
   private layoutMode: ProcessFlowGraphLayoutName;
 
   private cameraFocusTransition?: CameraFocusTransition;
@@ -715,6 +724,7 @@ export class ProcessFlowGraphEngine {
     if (this.flowMarkerLines?.material instanceof THREE.Material) {
       this.flowMarkerLines.material.dispose();
     }
+    this.clearGeoMapBackdropFrame();
     this.pointTexture?.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
@@ -777,7 +787,12 @@ export class ProcessFlowGraphEngine {
     const nodeTo = capturePositionArray(this.nodeGeometry);
     const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
-    const frameTo = this.getCameraFrame(layoutMode, this.selection.selectedNodeId);
+    const frameTo = this.getCameraFrame(
+      layoutMode,
+      layoutMode === 'geoMap2d' && fromLayoutMode !== 'geoMap2d'
+        ? undefined
+        : this.selection.selectedNodeId,
+    );
 
     setGeometryPositionArray(this.nodeGeometry, nodeFrom);
     setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
@@ -963,6 +978,99 @@ export class ProcessFlowGraphEngine {
       ONE: isFlat ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN,
     };
+  }
+
+  private clearGeoMapBackdropFrame() {
+    if (!this.geoMapBackdropFrameStyle) {
+      return;
+    }
+
+    this.geoMapBackdropFrameStyle = undefined;
+    this.container.style.removeProperty('--process-flow-geo-map-left');
+    this.container.style.removeProperty('--process-flow-geo-map-top');
+    this.container.style.removeProperty('--process-flow-geo-map-width');
+    this.container.style.removeProperty('--process-flow-geo-map-height');
+  }
+
+  private updateGeoMapBackdropFrame() {
+    const frame = this.data.geoMapFrame;
+
+    if (this.layoutMode !== 'geoMap2d' || !frame) {
+      this.clearGeoMapBackdropFrame();
+      return;
+    }
+
+    const viewportWidth = this.renderer.domElement.clientWidth || this.container.clientWidth;
+    const viewportHeight = this.renderer.domElement.clientHeight || this.container.clientHeight;
+
+    if (viewportWidth <= 0 || viewportHeight <= 0) {
+      return;
+    }
+
+    const halfWidth = frame.width / 2;
+    const halfHeight = frame.height / 2;
+    const corners = this.geoMapProjectionCorners;
+    corners[0].set(-halfWidth, halfHeight, 0);
+    corners[1].set(halfWidth, halfHeight, 0);
+    corners[2].set(halfWidth, -halfHeight, 0);
+    corners[3].set(-halfWidth, -halfHeight, 0);
+
+    this.camera.updateMatrixWorld();
+
+    let minX = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (const corner of corners) {
+      corner.project(this.camera);
+      if (!Number.isFinite(corner.x) || !Number.isFinite(corner.y)) {
+        this.clearGeoMapBackdropFrame();
+        return;
+      }
+
+      const screenX = ((corner.x + 1) / 2) * viewportWidth;
+      const screenY = ((1 - corner.y) / 2) * viewportHeight;
+      minX = Math.min(minX, screenX);
+      maxX = Math.max(maxX, screenX);
+      minY = Math.min(minY, screenY);
+      maxY = Math.max(maxY, screenY);
+    }
+
+    if (
+      !Number.isFinite(minX) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(minY) ||
+      !Number.isFinite(maxY) ||
+      maxX <= minX ||
+      maxY <= minY
+    ) {
+      this.clearGeoMapBackdropFrame();
+      return;
+    }
+
+    const nextFrameStyle = [
+      minX.toFixed(3),
+      minY.toFixed(3),
+      (maxX - minX).toFixed(3),
+      (maxY - minY).toFixed(3),
+    ].join(':');
+
+    if (nextFrameStyle === this.geoMapBackdropFrameStyle) {
+      return;
+    }
+
+    this.geoMapBackdropFrameStyle = nextFrameStyle;
+    this.container.style.setProperty('--process-flow-geo-map-left', `${minX.toFixed(3)}px`);
+    this.container.style.setProperty('--process-flow-geo-map-top', `${minY.toFixed(3)}px`);
+    this.container.style.setProperty(
+      '--process-flow-geo-map-width',
+      `${(maxX - minX).toFixed(3)}px`,
+    );
+    this.container.style.setProperty(
+      '--process-flow-geo-map-height',
+      `${(maxY - minY).toFixed(3)}px`,
+    );
   }
 
   private attachEvents() {
@@ -2160,6 +2268,7 @@ export class ProcessFlowGraphEngine {
       this.group.rotation.y += 0.0011;
     }
     this.controls.update();
+    this.updateGeoMapBackdropFrame();
     this.renderer.render(this.scene, this.camera);
   };
 }
