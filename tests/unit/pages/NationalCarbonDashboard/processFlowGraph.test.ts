@@ -1,38 +1,225 @@
 import { getProcessFlowGraphSelection } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphSelection';
-import { demoFlowAId } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes';
-import { generateMockProcessFlowGraph } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/mock/generateMockProcessFlowGraph';
+import type {
+  ProcessFlowGraphData,
+  ProcessFlowGraphEdge,
+} from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes';
 
-describe('NationalCarbonDashboard process-flow graph mock', () => {
-  it('builds a deterministic graph with Flow A and two layouts', () => {
-    const graph = generateMockProcessFlowGraph('small');
+const flowAId = 'flow:A@v1';
+const processOneId = 'process:one@v1';
+const processTwoId = 'process:two@v1';
+const byproductFlowId = 'flow:byproduct@v1';
+const outputFlowId = 'flow:output@v1';
 
-    expect(graph.schemaVersion).toBe('process_flow_graph_mock_v1');
-    expect(graph.indexes.flowById[demoFlowAId]).toBeDefined();
-    expect(graph.layouts.sphere3d[demoFlowAId]).toHaveLength(3);
-    expect(graph.layouts.expanded2d[demoFlowAId]).toHaveLength(3);
-    expect(graph.stats.flowCount).toBeGreaterThan(100);
-    expect(graph.stats.processCount).toBeGreaterThan(40);
-    expect(graph.stats.edgeCount).toBeGreaterThan(300);
+const nodes: ProcessFlowGraphData['nodes'] = [
+  {
+    category: '能源',
+    clusterId: 'energy',
+    degree: 2,
+    flowType: 'Product flow',
+    id: flowAId,
+    kind: 'flow',
+    location: 'CN',
+    name: '交流电',
+    version: '01.00.000',
+  },
+  {
+    category: '能源',
+    clusterId: 'energy',
+    degree: 2,
+    id: processOneId,
+    kind: 'process',
+    location: 'CN',
+    name: '电力生产一',
+    version: '01.00.000',
+  },
+  {
+    category: '能源',
+    clusterId: 'energy',
+    degree: 2,
+    id: processTwoId,
+    kind: 'process',
+    location: 'CN',
+    name: '电力生产二',
+    version: '01.00.000',
+  },
+  {
+    category: '材料',
+    clusterId: 'materials',
+    degree: 1,
+    flowType: 'Product flow',
+    id: byproductFlowId,
+    kind: 'flow',
+    location: 'CN',
+    name: '副产物流',
+    version: '01.00.000',
+  },
+  {
+    category: '能源',
+    clusterId: 'energy',
+    degree: 1,
+    flowType: 'Product flow',
+    id: outputFlowId,
+    kind: 'flow',
+    location: 'CN',
+    name: '外供电',
+    version: '01.00.000',
+  },
+];
+
+const edges: ProcessFlowGraphEdge[] = [
+  {
+    amount: 1,
+    direction: 'input',
+    exchangeId: 'exchange:0',
+    flowId: flowAId,
+    id: 'exchange:0',
+    processId: processOneId,
+    source: flowAId,
+    target: processOneId,
+    unit: 'kWh',
+  },
+  {
+    amount: 2,
+    direction: 'output',
+    exchangeId: 'exchange:1',
+    flowId: byproductFlowId,
+    id: 'exchange:1',
+    processId: processOneId,
+    source: processOneId,
+    target: byproductFlowId,
+    unit: 'kg',
+  },
+  {
+    amount: 3,
+    direction: 'input',
+    exchangeId: 'exchange:2',
+    flowId: flowAId,
+    id: 'exchange:2',
+    processId: processTwoId,
+    source: flowAId,
+    target: processTwoId,
+    unit: 'kWh',
+  },
+  {
+    amount: 4,
+    direction: 'output',
+    exchangeId: 'exchange:3',
+    flowId: outputFlowId,
+    id: 'exchange:3',
+    processId: processTwoId,
+    source: processTwoId,
+    target: outputFlowId,
+    unit: 'kWh',
+  },
+];
+
+function createProcessFlowGraphFixture(): ProcessFlowGraphData {
+  return {
+    adjacency: {
+      [byproductFlowId]: ['exchange:1'],
+      [flowAId]: ['exchange:0', 'exchange:2'],
+      [outputFlowId]: ['exchange:3'],
+      [processOneId]: ['exchange:0', 'exchange:1'],
+      [processTwoId]: ['exchange:2', 'exchange:3'],
+    },
+    buildId: 'worker-fixture',
+    clusters: [
+      { count: 4, id: 'energy', label: '能源' },
+      { count: 1, id: 'materials', label: '材料' },
+    ],
+    edges,
+    indexes: {
+      edgeById: {
+        'exchange:0': 0,
+        'exchange:1': 1,
+        'exchange:2': 2,
+        'exchange:3': 3,
+      },
+      flowById: {
+        [byproductFlowId]: 3,
+        [flowAId]: 0,
+        [outputFlowId]: 4,
+      },
+      nodeById: {
+        [byproductFlowId]: 3,
+        [flowAId]: 0,
+        [outputFlowId]: 4,
+        [processOneId]: 1,
+        [processTwoId]: 2,
+      },
+      processById: {
+        [processOneId]: 1,
+        [processTwoId]: 2,
+      },
+      searchFlows: [
+        {
+          degree: 2,
+          flowType: 'Product flow',
+          id: flowAId,
+          name: '交流电',
+          version: '01.00.000',
+        },
+      ],
+    },
+    layouts: {
+      expanded2d: {
+        [byproductFlowId]: [120, 80, 0],
+        [flowAId]: [0, 0, 0],
+        [outputFlowId]: [120, -80, 0],
+        [processOneId]: [60, 40, 6],
+        [processTwoId]: [60, -40, 6],
+      },
+      sphere3d: {
+        [byproductFlowId]: [40, 80, 300],
+        [flowAId]: [0, 0, 310],
+        [outputFlowId]: [40, -80, 300],
+        [processOneId]: [20, 40, 306],
+        [processTwoId]: [20, -40, 306],
+      },
+    },
+    nodes,
+    schemaVersion: 'process_flow_graph_v1',
+    stats: {
+      edgeCount: edges.length,
+      flowCount: 3,
+      maxDegree: 2,
+      processCount: 2,
+    },
+  };
+}
+
+describe('NationalCarbonDashboard process-flow graph', () => {
+  it('uses worker cache schema with global sphere and expanded layouts', () => {
+    const graph = createProcessFlowGraphFixture();
+
+    expect(graph.schemaVersion).toBe('process_flow_graph_v1');
+    expect(graph.indexes.flowById[flowAId]).toBeDefined();
+    expect(graph.layouts.sphere3d[flowAId]).toHaveLength(3);
+    expect(graph.layouts.expanded2d[flowAId]).toHaveLength(3);
+    expect(graph.clusters).toHaveLength(2);
+    expect(graph.stats.edgeCount).toBe(4);
   });
 
-  it('highlights Flow A processes and their other non-basic flow outputs', () => {
-    const graph = generateMockProcessFlowGraph('small');
-    const selection = getProcessFlowGraphSelection(graph, demoFlowAId);
-    const directFlowAEdges = (graph.adjacency[demoFlowAId] ?? [])
+  it('highlights selected flow processes and their other non-basic output flows', () => {
+    const graph = createProcessFlowGraphFixture();
+    const selection = getProcessFlowGraphSelection(graph, flowAId);
+    const directFlowAEdges = (graph.adjacency[flowAId] ?? [])
       .map((edgeId) => graph.edges[graph.indexes.edgeById[edgeId]])
-      .filter(Boolean);
+      .filter((edge): edge is ProcessFlowGraphEdge => Boolean(edge));
     const processOutputEdges = Array.from(selection.relatedProcessIds).flatMap((processId) =>
       (graph.adjacency[processId] ?? [])
         .map((edgeId) => graph.edges[graph.indexes.edgeById[edgeId]])
-        .filter((edge) => edge?.direction === 'output'),
+        .filter(
+          (edge): edge is ProcessFlowGraphEdge => Boolean(edge) && edge.direction === 'output',
+        ),
     );
     const otherOutputFlowIds = processOutputEdges
       .map((edge) => edge.flowId)
-      .filter((flowId) => flowId !== demoFlowAId);
+      .filter((flowId) => flowId !== flowAId);
 
-    expect(directFlowAEdges.length).toBeGreaterThanOrEqual(8);
-    expect(selection.relatedProcessIds.size).toBeGreaterThanOrEqual(8);
-    expect(otherOutputFlowIds.length).toBeGreaterThan(0);
+    expect(directFlowAEdges).toHaveLength(2);
+    expect(selection.relatedProcessIds).toEqual(new Set([processOneId, processTwoId]));
+    expect(otherOutputFlowIds).toEqual([byproductFlowId, outputFlowId]);
     otherOutputFlowIds.forEach((flowId) => {
       expect(selection.relatedFlowIds.has(flowId)).toBe(true);
     });
