@@ -1,5 +1,6 @@
 export default {
   'pages.flowproperty.referenceToReferenceUnitGroup': 'Reference unit',
+  'pages.flowproperty.title.tips': 'Need to add or supplement flow properties? Contact an administrator.',
 
   'pages.flowproperty.drawer.title.view': 'View Flow property',
   'pages.flowproperty.drawer.title.create': 'Create Flow property',

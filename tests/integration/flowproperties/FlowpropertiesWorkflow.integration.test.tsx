@@ -149,6 +149,12 @@ const mockGetFlowpropertyTableAll = jest.fn(async () => ({
   success: true,
   total: 0,
 })) as jest.Mock<any, any[]>;
+const mockGetRoleByUserId = jest.fn(async () => [
+  {
+    team_id: '00000000-0000-0000-0000-000000000000',
+    role: 'admin',
+  },
+]) as jest.Mock<any, any[]>;
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
@@ -232,6 +238,11 @@ jest.mock('@/services/general/api', () => ({
 jest.mock('@/services/teams/api', () => ({
   __esModule: true,
   getTeamById: jest.fn(async () => ({ data: [] })),
+}));
+
+jest.mock('@/services/roles/api', () => ({
+  __esModule: true,
+  getRoleByUserId: (...args: any[]) => mockGetRoleByUserId(...args),
 }));
 
 jest.mock('@/pages/Flowproperties/Components/view', () => {
@@ -318,6 +329,12 @@ describe('Flowproperties workflow integration', () => {
     mockCreateFlowproperties.mockResolvedValue({
       data: [{ id: 'fp-created', version: '1.0.0' }],
     });
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
     mockUpdateFlowproperties.mockResolvedValue([{ rule_verification: true, nonExistent: false }]);
     mockDeleteFlowproperties.mockResolvedValue({ status: 204 });
   });

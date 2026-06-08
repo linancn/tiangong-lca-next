@@ -43,6 +43,7 @@ type Props = {
   version?: string;
   importData?: FlowpropertyImportData | null;
   onClose?: () => void;
+  disabled?: boolean;
   newVersion?: string;
 };
 
@@ -68,6 +69,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
   version,
   importData,
   onClose = () => {},
+  disabled = false,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formRefCreate = useRef<ProFormInstance>();
@@ -194,6 +196,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
       >
         {actionType === 'copy' ? (
           <Button
+            disabled={disabled}
             shape='circle'
             icon={<CopyOutlined />}
             size='small'
@@ -203,6 +206,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
           ></Button>
         ) : (
           <ToolBarButton
+            disabled={disabled}
             icon={<PlusOutlined />}
             tooltip={<FormattedMessage id='pages.button.create' defaultMessage='Create' />}
             onClick={() => {
