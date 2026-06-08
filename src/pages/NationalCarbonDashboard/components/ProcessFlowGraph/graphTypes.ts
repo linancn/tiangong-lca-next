@@ -1,6 +1,8 @@
 export type ProcessFlowGraphNodeKind = 'flow' | 'process';
 
-export type ProcessFlowGraphLayoutName = 'sphere3d' | 'expanded2d';
+export type ProcessFlowGraphLayoutName = 'sphere3d' | 'expanded2d' | 'geoMap2d';
+
+export type ProcessFlowGraphMapScope = 'world' | 'china';
 
 export type ProcessFlowGraphInteractionMode = 'pan' | 'select';
 
@@ -42,6 +44,9 @@ export type ProcessFlowGraphEdge = {
 
 export type ProcessFlowGraphLayout = Record<string, [number, number, number]>;
 
+export type ProcessFlowGraphLayouts = Record<'sphere3d' | 'expanded2d', ProcessFlowGraphLayout> &
+  Partial<Record<'geoMap2d', ProcessFlowGraphLayout>>;
+
 export type ProcessFlowGraphSearchItem = {
   degree: number;
   flowType?: ProcessFlowGraphFlowType;
@@ -62,9 +67,13 @@ export type ProcessFlowGraphData = {
     processById: Record<string, number>;
     searchFlows: ProcessFlowGraphSearchItem[];
   };
-  layouts: Record<ProcessFlowGraphLayoutName, ProcessFlowGraphLayout>;
+  layouts: ProcessFlowGraphLayouts;
   nodes: ProcessFlowGraphNode[];
   schemaVersion: 'process_flow_graph_v1';
+  geoMapFrame?: {
+    height: number;
+    width: number;
+  };
   stats: {
     edgeCount: number;
     flowCount: number;

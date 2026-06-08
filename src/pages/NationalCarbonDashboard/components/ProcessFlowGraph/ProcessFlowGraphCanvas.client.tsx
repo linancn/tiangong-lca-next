@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ProcessFlowGraphMapBackground } from './geoMapLayout';
 import { ProcessFlowGraphEngine } from './graphEngine';
 import { getProcessFlowGraphNode } from './graphSelection';
 import type {
@@ -17,12 +18,14 @@ export type ProcessFlowGraphHoverState = {
 
 export default function ProcessFlowGraphCanvas({
   data,
+  geoMapBackground,
   interactionMode,
   layoutMode,
   onNodeClick,
   selection,
 }: {
   data: ProcessFlowGraphData;
+  geoMapBackground?: ProcessFlowGraphMapBackground;
   interactionMode: ProcessFlowGraphInteractionMode;
   layoutMode: ProcessFlowGraphLayoutName;
   onNodeClick: (nodeId: string) => void;
@@ -89,7 +92,32 @@ export default function ProcessFlowGraphCanvas({
 
   return (
     <div className={styles.canvasHost} ref={containerRef}>
-      <div className={styles.canvasGrid} aria-hidden='true' />
+      {layoutMode === 'geoMap2d' && geoMapBackground ? (
+        <div
+          className={[
+            styles.geoMapBackdrop,
+            geoMapBackground.scope === 'china'
+              ? styles.geoMapBackdropChina
+              : styles.geoMapBackdropWorld,
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-hidden='true'
+        >
+          <svg
+            preserveAspectRatio='xMidYMid meet'
+            viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
+          >
+            {geoMapBackground.paths.map((mapPath) => (
+              <path d={mapPath.path} data-code={mapPath.code} key={mapPath.id}>
+                <title>{mapPath.label}</title>
+              </path>
+            ))}
+          </svg>
+        </div>
+      ) : (
+        <div className={styles.canvasGrid} aria-hidden='true' />
+      )}
       {hover && hoveredNode && (
         <div
           className={styles.nodeTooltip}

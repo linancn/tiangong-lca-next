@@ -445,6 +445,54 @@
   animation: processFlowRadar 9s linear infinite;
 }
 
+.geoMapBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.1), transparent 42%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.045) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    42px 42px,
+    42px 42px;
+}
+
+.geoMapBackdrop svg {
+  width: min(100%, calc(100vh * 1.75));
+  max-width: 100%;
+  height: min(100%, calc(100vw * 0.64));
+  max-height: 100%;
+  opacity: 0.74;
+  filter: drop-shadow(0 0 24px rgba(36, 231, 255, 0.12));
+}
+
+.geoMapBackdrop path {
+  fill: rgba(23, 78, 111, 0.38);
+  stroke: rgba(134, 220, 255, 0.2);
+  stroke-width: 0.75;
+  vector-effect: non-scaling-stroke;
+}
+
+.geoMapBackdropWorld path[data-code='CN'],
+.geoMapBackdropChina path {
+  fill: rgba(33, 101, 126, 0.52);
+  stroke: rgba(168, 238, 255, 0.34);
+}
+
+.geoMapBackdropWorld path[data-code='US'],
+.geoMapBackdropWorld path[data-code='DE'],
+.geoMapBackdropWorld path[data-code='JP'],
+.geoMapBackdropWorld path[data-code='KR'],
+.geoMapBackdropWorld path[data-code='IN'],
+.geoMapBackdropWorld path[data-code='RU'] {
+  fill: rgba(30, 93, 121, 0.46);
+}
+
 .nodeTooltip {
   position: absolute;
   z-index: 8;

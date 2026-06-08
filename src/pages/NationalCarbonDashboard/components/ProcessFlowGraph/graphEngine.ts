@@ -163,6 +163,7 @@ const cameraFocusDurationMs = 720;
 const layoutTransitionDurationMs = 1450;
 const transitionDustCount = 176;
 const transitionRingSegments = 128;
+const geoMapCameraPadding = 72;
 
 const nodePointVertexShader = `
 attribute float pointSize;
@@ -275,6 +276,14 @@ function getNodePointSize(
   return isProcess ? 22 : 16;
 }
 
+function isFlatLayout(layoutMode: ProcessFlowGraphLayoutName) {
+  return layoutMode !== 'sphere3d';
+}
+
+function isExpandedLikeLayout(layoutMode: ProcessFlowGraphLayoutName) {
+  return layoutMode === 'expanded2d' || layoutMode === 'geoMap2d';
+}
+
 function getNodeOverviewIntensity(node: ProcessFlowGraphNode | undefined) {
   return node?.kind === 'process' ? 0.8 : 0.98;
 }
@@ -284,7 +293,7 @@ function getNodePosition(
   layoutMode: ProcessFlowGraphLayoutName,
   nodeId: string,
 ): [number, number, number] {
-  return data.layouts[layoutMode][nodeId] ?? [0, 0, 0];
+  return data.layouts[layoutMode]?.[nodeId] ?? [0, 0, 0];
 }
 
 function writeTuple(target: Float32Array, offset: number, value: [number, number, number]) {
@@ -843,15 +852,30 @@ export class ProcessFlowGraphEngine {
       };
     }
 
-    const bounds = this.getExpandedLayoutBounds();
+    const bounds = this.getExpandedLayoutBounds(layoutMode);
     return {
-      position: new THREE.Vector3(bounds.centerX, bounds.centerY, this.getExpandedCameraDistance()),
+      position: new THREE.Vector3(
+        bounds.centerX,
+        bounds.centerY,
+        this.getExpandedCameraDistance(layoutMode),
+      ),
       target: new THREE.Vector3(bounds.centerX, bounds.centerY, 0),
     };
   }
 
-  private getExpandedLayoutBounds(): LayoutBounds {
-    const layout = this.data.layouts.expanded2d;
+  private getExpandedLayoutBounds(
+    layoutMode: ProcessFlowGraphLayoutName = this.layoutMode,
+  ): LayoutBounds {
+    if (layoutMode === 'geoMap2d' && this.data.geoMapFrame) {
+      return {
+        centerX: 0,
+        centerY: 0,
+        height: this.data.geoMapFrame.height,
+        width: this.data.geoMapFrame.width,
+      };
+    }
+
+    const layout = this.data.layouts[layoutMode] ?? this.data.layouts.expanded2d;
     let minX = Number.POSITIVE_INFINITY;
     let maxX = Number.NEGATIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
@@ -891,13 +915,14 @@ export class ProcessFlowGraphEngine {
     };
   }
 
-  private getExpandedCameraDistance() {
-    const bounds = this.getExpandedLayoutBounds();
+  private getExpandedCameraDistance(layoutMode: ProcessFlowGraphLayoutName = this.layoutMode) {
+    const bounds = this.getExpandedLayoutBounds(layoutMode);
     const rect = this.container.getBoundingClientRect();
     const aspect = Math.max(0.6, rect.width / Math.max(1, rect.height));
     const verticalFov = THREE.MathUtils.degToRad(this.camera.fov);
-    const visualHeight = bounds.height + expandedFitPadding * 2;
-    const visualWidth = bounds.width + expandedFitPadding * 2;
+    const fitPadding = layoutMode === 'geoMap2d' ? geoMapCameraPadding : expandedFitPadding;
+    const visualHeight = bounds.height + fitPadding * 2;
+    const visualWidth = bounds.width + fitPadding * 2;
     const verticalDistance =
       visualHeight / (2 * Math.tan(verticalFov / 2) * expandedFitViewportScale);
     const horizontalDistance =
@@ -921,21 +946,21 @@ export class ProcessFlowGraphEngine {
   }
 
   private updateControlInteractionMode() {
-    const isExpanded = this.layoutMode === 'expanded2d';
+    const isFlat = isFlatLayout(this.layoutMode);
 
     this.controls.enablePan = true;
-    this.controls.enableRotate = !isExpanded;
-    this.controls.maxDistance = isExpanded
+    this.controls.enableRotate = !isFlat;
+    this.controls.maxDistance = isFlat
       ? Math.max(expandedControlsMaxDistance, this.getExpandedCameraDistance() * 1.5)
       : sphereControlsMaxDistance;
     this.controls.screenSpacePanning = true;
     this.controls.mouseButtons = {
-      LEFT: isExpanded ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE,
+      LEFT: isFlat ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE,
       MIDDLE: THREE.MOUSE.DOLLY,
       RIGHT: THREE.MOUSE.PAN,
     };
     this.controls.touches = {
-      ONE: isExpanded ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
+      ONE: isFlat ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN,
     };
   }
@@ -1164,7 +1189,7 @@ export class ProcessFlowGraphEngine {
 
   private buildEdgeGeometry() {
     const usesOverviewEdgeTreatment =
-      this.layoutMode === 'sphere3d' || this.layoutMode === 'expanded2d';
+      this.layoutMode === 'sphere3d' || isExpandedLikeLayout(this.layoutMode);
     const segmentCount = this.layoutMode === 'sphere3d' ? sphereEdgeSegments : 1;
     const edgeRenders = this.getBaseEdgeRenders();
     const positions = new Float32Array(edgeRenders.length * segmentCount * 6);
@@ -1323,7 +1348,7 @@ export class ProcessFlowGraphEngine {
     }
     if (edgeMaterial) {
       edgeMaterial.opacity =
-        isSphere || this.layoutMode === 'expanded2d'
+        isSphere || isExpandedLikeLayout(this.layoutMode)
           ? hasSelection
             ? 0.02
             : 0.032
@@ -1333,7 +1358,7 @@ export class ProcessFlowGraphEngine {
     }
     setLineMaterialOpacity(
       highlightedEdgeMaterial,
-      (hasSelection && (isSphere || this.layoutMode === 'expanded2d') ? 0.42 : 0.9) *
+      (hasSelection && (isSphere || isExpandedLikeLayout(this.layoutMode)) ? 0.42 : 0.9) *
         selectedEdgeBrightnessScale,
     );
     if (flowMarkerMaterial) {
@@ -1347,7 +1372,7 @@ export class ProcessFlowGraphEngine {
           ? 0.64
           : 0.62
         : hasSelection
-          ? this.layoutMode === 'expanded2d'
+          ? isExpandedLikeLayout(this.layoutMode)
             ? 0.96
             : 0.68
           : 0.84;
@@ -1683,7 +1708,7 @@ export class ProcessFlowGraphEngine {
     const colorAttribute = this.nodeGeometry.getAttribute('color') as THREE.BufferAttribute;
     const colorArray = colorAttribute.array as Float32Array;
     const hasSelection = Boolean(this.selection.selectedNodeId);
-    const isExpandedSelected = hasSelection && this.layoutMode === 'expanded2d';
+    const isExpandedSelected = hasSelection && isExpandedLikeLayout(this.layoutMode);
 
     this.data.nodes.forEach((node, index) => {
       const offset = index * 3;
@@ -1924,12 +1949,12 @@ export class ProcessFlowGraphEngine {
     const baseVector = new THREE.Vector3();
     const leftVector = new THREE.Vector3();
     const rightVector = new THREE.Vector3();
-    const arrowLength =
-      this.layoutMode === 'expanded2d'
-        ? expandedFlowMarkerArrowLength
-        : sphereFlowMarkerArrowLength;
-    const arrowWidth =
-      this.layoutMode === 'expanded2d' ? expandedFlowMarkerArrowWidth : sphereFlowMarkerArrowWidth;
+    const arrowLength = isExpandedLikeLayout(this.layoutMode)
+      ? expandedFlowMarkerArrowLength
+      : sphereFlowMarkerArrowLength;
+    const arrowWidth = isExpandedLikeLayout(this.layoutMode)
+      ? expandedFlowMarkerArrowWidth
+      : sphereFlowMarkerArrowWidth;
     const writeVector = (offset: number, vector: THREE.Vector3) => {
       positions[offset] = vector.x;
       positions[offset + 1] = vector.y;

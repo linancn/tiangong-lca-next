@@ -4,6 +4,7 @@ import {
   ClearOutlined,
   ClusterOutlined,
   DragOutlined,
+  EnvironmentOutlined,
   FullscreenOutlined,
   GlobalOutlined,
   NodeIndexOutlined,
@@ -12,6 +13,11 @@ import {
 } from '@ant-design/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
+import {
+  buildProcessFlowGraphGeoMapView,
+  loadProcessFlowGeoMapAssets,
+  type ProcessFlowGraphGeoMapAssets,
+} from './geoMapLayout';
 import {
   getProcessFlowGraphNode,
   getProcessFlowGraphSelection,
@@ -22,6 +28,7 @@ import {
   type ProcessFlowGraphEdge,
   type ProcessFlowGraphInteractionMode,
   type ProcessFlowGraphLayoutName,
+  type ProcessFlowGraphMapScope,
   type ProcessFlowGraphNode,
   type ProcessFlowGraphNodeSummary,
   type ProcessFlowGraphSearchItem,
@@ -283,22 +290,29 @@ function EmptyInspectorPanel({
 
 function GraphLoadState({
   dataSource,
+  description,
   loadError,
+  title,
 }: {
   dataSource: GraphDataSource;
+  description?: string;
   loadError?: string;
+  title?: string;
 }) {
   const isLoading = dataSource === 'loading';
 
   return (
     <div className={styles.graphLoadState}>
-      <strong>{isLoading ? 'Loading process-flow graph' : 'Process-flow graph unavailable'}</strong>
+      <strong>
+        {title ?? (isLoading ? 'Loading process-flow graph' : 'Process-flow graph unavailable')}
+      </strong>
       <span>
-        {isLoading
-          ? 'Waiting for worker S3 cache manifest'
-          : loadError
-            ? formatCacheError(loadError)
-            : 'Cache manifest could not be loaded'}
+        {description ??
+          (isLoading
+            ? 'Waiting for worker S3 cache manifest'
+            : loadError
+              ? formatCacheError(loadError)
+              : 'Cache manifest could not be loaded')}
       </span>
     </div>
   );
@@ -309,26 +323,44 @@ export default function ProcessFlowGraphPanel() {
   const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
   const [loadError, setLoadError] = useState<string | undefined>();
   const [layoutMode, setLayoutMode] = useState<ProcessFlowGraphLayoutName>('sphere3d');
+  const [mapScope, setMapScope] = useState<ProcessFlowGraphMapScope>('world');
+  const [geoMapAssets, setGeoMapAssets] = useState<ProcessFlowGraphGeoMapAssets | undefined>();
+  const [geoMapLoadError, setGeoMapLoadError] = useState<string | undefined>();
   const [interactionMode, setInteractionMode] = useState<ProcessFlowGraphInteractionMode>('select');
   const [query, setQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
-  const featuredFlow = useMemo(() => (data ? getFeaturedFlow(data) : undefined), [data]);
+  const isGeoMapMode = layoutMode === 'geoMap2d';
+  const geoMapView = useMemo(
+    () =>
+      data && geoMapAssets
+        ? buildProcessFlowGraphGeoMapView(data, mapScope, geoMapAssets)
+        : undefined,
+    [data, geoMapAssets, mapScope],
+  );
+  const activeData = isGeoMapMode ? geoMapView?.data : data;
+  const activeMapBackground = isGeoMapMode ? geoMapView?.background : undefined;
+  const featuredFlow = useMemo(
+    () => (activeData ? getFeaturedFlow(activeData) : undefined),
+    [activeData],
+  );
   const selectedNode = useMemo(
-    () => (data ? getProcessFlowGraphNode(data, selectedNodeId) : undefined),
-    [data, selectedNodeId],
+    () => (activeData ? getProcessFlowGraphNode(activeData, selectedNodeId) : undefined),
+    [activeData, selectedNodeId],
   );
   const selection = useMemo(
-    () => (data ? getProcessFlowGraphSelection(data, selectedNodeId) : undefined),
-    [data, selectedNodeId],
+    () => (activeData ? getProcessFlowGraphSelection(activeData, selectedNodeId) : undefined),
+    [activeData, selectedNodeId],
   );
   const searchResults = useMemo(
-    () => (data ? getSearchResults(data, query, featuredFlow?.id) : []),
-    [data, featuredFlow?.id, query],
+    () => (activeData ? getSearchResults(activeData, query, featuredFlow?.id) : []),
+    [activeData, featuredFlow?.id, query],
   );
   const selectionSummary = useMemo(
     () =>
-      data && selection ? summarizeProcessFlowSelection(data, selection) : emptySelectionSummary,
-    [data, selection],
+      activeData && selection
+        ? summarizeProcessFlowSelection(activeData, selection)
+        : emptySelectionSummary,
+    [activeData, selection],
   );
 
   useEffect(() => {
@@ -362,10 +394,38 @@ export default function ProcessFlowGraphPanel() {
   }, []);
 
   useEffect(() => {
-    if (data && selectedNodeId && !getProcessFlowGraphNode(data, selectedNodeId)) {
+    if (!isGeoMapMode || geoMapAssets) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    loadProcessFlowGeoMapAssets()
+      .then((assets) => {
+        if (cancelled) {
+          return;
+        }
+        setGeoMapAssets(assets);
+        setGeoMapLoadError(undefined);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setGeoMapAssets(undefined);
+        setGeoMapLoadError(error instanceof Error ? error.message : String(error));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [geoMapAssets, isGeoMapMode]);
+
+  useEffect(() => {
+    if (activeData && selectedNodeId && !getProcessFlowGraphNode(activeData, selectedNodeId)) {
       setSelectedNodeId(undefined);
     }
-  }, [data, selectedNodeId]);
+  }, [activeData, selectedNodeId]);
 
   useEffect(() => {
     setInteractionMode(selectedNodeId ? 'pan' : 'select');
@@ -375,17 +435,31 @@ export default function ProcessFlowGraphPanel() {
     setSelectedNodeId((currentNodeId) => (currentNodeId === nodeId ? undefined : nodeId));
   }, []);
 
+  const handleToggleMapMode = useCallback(() => {
+    if (layoutMode !== 'geoMap2d') {
+      setMapScope('world');
+      setLayoutMode('geoMap2d');
+      return;
+    }
+
+    setMapScope((currentScope) => (currentScope === 'world' ? 'china' : 'world'));
+  }, [layoutMode]);
+
   const handleSelectFlow = useCallback(
     (flowId: string) => {
-      if (!data) {
+      if (!activeData) {
         return;
       }
       setSelectedNodeId(flowId);
-      setQuery(getProcessFlowGraphNode(data, flowId)?.name ?? flowId);
+      setQuery(getProcessFlowGraphNode(activeData, flowId)?.name ?? flowId);
     },
-    [data],
+    [activeData],
   );
 
+  const mapButtonLabel = isGeoMapMode && mapScope === 'world' ? 'China Map' : 'World Map';
+  const mapLoadDataSource: GraphDataSource =
+    isGeoMapMode && data && !geoMapView ? (geoMapLoadError ? 'error' : 'loading') : dataSource;
+  const mapLoadError = isGeoMapMode && data && !geoMapView ? geoMapLoadError : loadError;
   const sourceBadge =
     dataSource === 'loading'
       ? 'Loading Cache'
@@ -412,6 +486,14 @@ export default function ProcessFlowGraphPanel() {
           >
             <ApartmentOutlined />
             <span>Expanded</span>
+          </button>
+          <button
+            className={layoutMode === 'geoMap2d' ? styles.activeMode : ''}
+            onClick={handleToggleMapMode}
+            type='button'
+          >
+            <EnvironmentOutlined />
+            <span>{mapButtonLabel}</span>
           </button>
         </div>
         <div className={styles.mouseTools}>
@@ -440,7 +522,7 @@ export default function ProcessFlowGraphPanel() {
           <span>
             <i />
             {sourceBadge}
-            <b>{data?.buildId ?? '-'}</b>
+            <b>{activeData?.buildId ?? data?.buildId ?? '-'}</b>
           </span>
           {loadError && (
             <span>
@@ -456,11 +538,11 @@ export default function ProcessFlowGraphPanel() {
           </span>
           <span>
             Nodes
-            <b>{formatNumber(data?.nodes.length ?? 0)}</b>
+            <b>{formatNumber(activeData?.nodes.length ?? 0)}</b>
           </span>
           <span>
             Edges
-            <b>{formatNumber(data?.edges.length ?? 0)}</b>
+            <b>{formatNumber(activeData?.edges.length ?? 0)}</b>
           </span>
         </div>
       </div>
@@ -469,7 +551,7 @@ export default function ProcessFlowGraphPanel() {
           <SearchOutlined />
           <input
             aria-label='搜索非基础流'
-            disabled={!data}
+            disabled={!activeData}
             onChange={(event) => setQuery(event.target.value)}
             placeholder='Search flow'
             value={query}
@@ -488,7 +570,7 @@ export default function ProcessFlowGraphPanel() {
             </button>
           )}
           <button
-            disabled={!data || !selectedNodeId}
+            disabled={!activeData || !selectedNodeId}
             onClick={() => setSelectedNodeId(undefined)}
             type='button'
           >
@@ -527,10 +609,11 @@ export default function ProcessFlowGraphPanel() {
         </div>
       </aside>
       <main className={styles.graphStage}>
-        {data && selection ? (
+        {activeData && selection ? (
           <>
             <ProcessFlowGraphCanvas
-              data={data}
+              data={activeData}
+              geoMapBackground={activeMapBackground}
               interactionMode={interactionMode}
               layoutMode={layoutMode}
               onNodeClick={handleNodeClick}
@@ -547,13 +630,24 @@ export default function ProcessFlowGraphPanel() {
             </div>
           </>
         ) : (
-          <GraphLoadState dataSource={dataSource} loadError={loadError} />
+          <GraphLoadState
+            dataSource={mapLoadDataSource}
+            description={
+              isGeoMapMode && data && !geoMapView
+                ? mapLoadError
+                  ? formatCacheError(mapLoadError)
+                  : 'Preparing world and China map assets'
+                : undefined
+            }
+            loadError={mapLoadError}
+            title={isGeoMapMode && data && !geoMapView ? 'Loading map layout' : undefined}
+          />
         )}
       </main>
-      {data ? (
-        <Inspector data={data} node={selectedNode} />
+      {activeData ? (
+        <Inspector data={activeData} node={selectedNode} />
       ) : (
-        <EmptyInspectorPanel dataSource={dataSource} loadError={loadError} />
+        <EmptyInspectorPanel dataSource={mapLoadDataSource} loadError={mapLoadError} />
       )}
     </div>
   );
