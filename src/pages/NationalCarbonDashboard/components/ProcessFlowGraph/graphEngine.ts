@@ -9,6 +9,7 @@ import type {
   ProcessFlowGraphNode,
   ProcessFlowGraphSelection,
 } from './graphTypes';
+import { shouldRenderProcessFlowBaseEdges } from './graphVisibility';
 
 type EngineCallbacks = {
   onNodeClick?: (nodeId: string) => void;
@@ -1352,6 +1353,10 @@ export class ProcessFlowGraphEngine {
   }
 
   private getBaseEdgeRenders(): BaseEdgeRender[] {
+    if (!shouldRenderProcessFlowBaseEdges(this.layoutMode, this.selection)) {
+      return [];
+    }
+
     const hasSelection = Boolean(this.selection.selectedNodeId);
 
     if (hasSelection) {
@@ -1431,6 +1436,7 @@ export class ProcessFlowGraphEngine {
   private updateMaterialState() {
     const hasSelection = Boolean(this.selection.selectedNodeId);
     const isSphere = this.layoutMode === 'sphere3d';
+    const shouldRenderBaseEdges = shouldRenderProcessFlowBaseEdges(this.layoutMode, this.selection);
     const selectedEdgeBrightnessScale = hasSelection
       ? getSelectedEdgeBrightnessScale(this.selection.highlightedEdgeIds.size)
       : 1;
@@ -1452,17 +1458,18 @@ export class ProcessFlowGraphEngine {
     }
 
     if (this.edgeLines) {
-      this.edgeLines.visible = true;
+      this.edgeLines.visible = shouldRenderBaseEdges;
     }
     if (edgeMaterial) {
-      edgeMaterial.opacity =
-        isSphere || isExpandedLikeLayout(this.layoutMode)
+      edgeMaterial.opacity = shouldRenderBaseEdges
+        ? isSphere || isExpandedLikeLayout(this.layoutMode)
           ? hasSelection
             ? 0.02
             : 0.032
           : hasSelection
             ? 0.06
-            : 0.09;
+            : 0.09
+        : 0;
     }
     setLineMaterialOpacity(
       highlightedEdgeMaterial,

@@ -13,6 +13,7 @@ import type {
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
 } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes';
+import { shouldRenderProcessFlowBaseEdges } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphVisibility';
 import type { FeatureCollection, Geometry } from 'geojson';
 
 const flowAId = 'flow:A@v1';
@@ -885,5 +886,18 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(chinaSelection.highlightedEdgeIds).toEqual(
       new Set(['exchange:0', 'exchange:2', 'exchange:1', 'exchange:3']),
     );
+  });
+
+  it('hides overview base edges in map mode until a node is selected', () => {
+    const emptySelection = createEmptyProcessFlowGraphSelection();
+    const selectedSelection = getProcessFlowGraphSelection(
+      createProcessFlowGraphFixture(),
+      flowAId,
+    );
+
+    expect(shouldRenderProcessFlowBaseEdges('sphere3d', emptySelection)).toBe(true);
+    expect(shouldRenderProcessFlowBaseEdges('expanded2d', emptySelection)).toBe(true);
+    expect(shouldRenderProcessFlowBaseEdges('geoMap2d', emptySelection)).toBe(false);
+    expect(shouldRenderProcessFlowBaseEdges('geoMap2d', selectedSelection)).toBe(true);
   });
 });
