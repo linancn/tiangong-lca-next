@@ -156,6 +156,7 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
               error: 'snapshot_build_queued',
               detail: 'build queued',
               build_job_id: 'build-1',
+              build_worker_job_id: 'worker-build-1',
               build_snapshot_id: 'snapshot-build',
             }),
             409,
@@ -173,6 +174,38 @@ describe('LCA service API (src/services/lca/api.ts)', () => {
         snapshot_id: 'snapshot-build',
         build_job_id: 'build-1',
         build_snapshot_id: 'snapshot-build',
+        build_worker_job_id: 'worker-build-1',
+      });
+    });
+
+    it('keeps legacy snapshot_build_queued responses compatible when worker job ids are absent', async () => {
+      supabaseMock.functions.invoke.mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'invoke_failed',
+          context: createMockResponse(
+            JSON.stringify({
+              error: 'snapshot_build_queued',
+              detail: 'build queued',
+              build_job_id: 'build-legacy',
+              build_snapshot_id: 'snapshot-legacy',
+            }),
+            409,
+          ),
+        },
+      });
+
+      await expect(
+        submitLcaSolve({
+          demand_mode: 'all_unit',
+          solve: { return_h: true },
+        }),
+      ).resolves.toEqual({
+        mode: 'snapshot_building',
+        snapshot_id: 'snapshot-legacy',
+        build_job_id: 'build-legacy',
+        build_snapshot_id: 'snapshot-legacy',
+        build_worker_job_id: null,
       });
     });
 

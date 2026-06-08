@@ -2223,6 +2223,32 @@ describe('ToolbarEdit', () => {
     await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('Error'));
   });
 
+  it('shows a localized missing-reference-process error when create save throws', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    mockCreateLifeCycleModel.mockRejectedValueOnce(
+      new Error('No referenceToReferenceProcess found in lifeCycleModelInformation'),
+    );
+
+    render(
+      <ToolbarEdit
+        {...baseProps}
+        id=''
+        version=''
+        action='create'
+        drawerVisible={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith(
+        'The model is missing reference process information. Complete or rebind the reference process, then try again.',
+      ),
+    );
+  });
+
   it('shows open-data, under-review, and generic errors when edit saves fail', async () => {
     const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
 
@@ -2253,6 +2279,23 @@ describe('ToolbarEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
     await waitFor(() => expect(antMessage.error).toHaveBeenCalledWith('generic failure'));
+  });
+
+  it('shows a localized missing-reference-process error when edit save throws', async () => {
+    const antMessage = jest.requireMock('antd').message as Record<string, jest.Mock>;
+    mockUpdateLifeCycleModel.mockRejectedValueOnce(
+      new Error('No referenceToReferenceProcess found in lifeCycleModelInformation'),
+    );
+
+    render(<ToolbarEdit {...baseProps} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
+
+    await waitFor(() =>
+      expect(antMessage.error).toHaveBeenCalledWith(
+        'The model is missing reference process information. Complete or rebind the reference process, then try again.',
+      ),
+    );
   });
 
   it('falls back to mutation result ids and versions when edit saves omit lifecycleModel payloads', async () => {

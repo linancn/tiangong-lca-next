@@ -112,6 +112,30 @@ type SaveDataResult = {
 };
 
 const VISUAL_ONLY_MUTATION_OPTIONS = { ignoreHistory: true };
+const MISSING_REFERENCE_PROCESS_ERROR_MESSAGE =
+  'No referenceToReferenceProcess found in lifeCycleModelInformation';
+const MISSING_REFERENCE_PROCESS_ERROR_CODE = 'MISSING_REFERENCE_PROCESS';
+
+const toSaveMutationError = (
+  error: unknown,
+): Extract<LifeCycleModelMutationResult, { ok: false }> => {
+  const messageText =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : 'Lifecycle model save failed';
+
+  return {
+    ok: false,
+    code:
+      messageText === MISSING_REFERENCE_PROCESS_ERROR_MESSAGE
+        ? MISSING_REFERENCE_PROCESS_ERROR_CODE
+        : 'SAVE_FAILED',
+    message: messageText,
+    details: error,
+  };
+};
 
 const getProcessInstanceValidationNodeIndex = (detail?: ValidationIssueSdkDetail | null) => {
   const match = detail?.fieldPath?.match(/^processInstance\[#(.+?)\]/);
@@ -923,6 +947,20 @@ const ToolbarEdit: FC<Props> = ({
         },
       });
       const showMutationError = (result: Extract<LifeCycleModelMutationResult, { ok: false }>) => {
+        if (
+          result.code === MISSING_REFERENCE_PROCESS_ERROR_CODE ||
+          result.message === MISSING_REFERENCE_PROCESS_ERROR_MESSAGE
+        ) {
+          message.error(
+            intl.formatMessage({
+              id: 'pages.lifecyclemodel.error.missingReferenceProcess',
+              defaultMessage:
+                'The model is missing reference process information. Complete or rebind the reference process, then try again.',
+            }),
+          );
+          return;
+        }
+
         if (result.code === 'VERSION_CONFLICT') {
           message.error(
             intl.formatMessage({
@@ -955,13 +993,24 @@ const ToolbarEdit: FC<Props> = ({
 
         message.error(result.message ?? 'Error');
       };
+      const runMutation = async (
+        mutation: () => Promise<LifeCycleModelMutationResult>,
+      ): Promise<LifeCycleModelMutationResult> => {
+        try {
+          return await mutation();
+        } catch (error) {
+          return toSaveMutationError(error);
+        }
+      };
       const langOptions = options?.langIntent ? { intent: options.langIntent } : undefined;
 
       if (thisAction === 'edit') {
         const lifecycleModelPayload = { ...newData, id: thisId, version: thisVersion };
-        const result = langOptions
-          ? await updateLifeCycleModel(lifecycleModelPayload, langOptions)
-          : await updateLifeCycleModel(lifecycleModelPayload);
+        const result = await runMutation(() =>
+          langOptions
+            ? updateLifeCycleModel(lifecycleModelPayload, langOptions)
+            : updateLifeCycleModel(lifecycleModelPayload),
+        );
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
@@ -1017,9 +1066,11 @@ const ToolbarEdit: FC<Props> = ({
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
         const lifecycleModelPayload = { ...newData, id: newId };
-        const result = langOptions
-          ? await createLifeCycleModel(lifecycleModelPayload, langOptions)
-          : await createLifeCycleModel(lifecycleModelPayload);
+        const result = await runMutation(() =>
+          langOptions
+            ? createLifeCycleModel(lifecycleModelPayload, langOptions)
+            : createLifeCycleModel(lifecycleModelPayload),
+        );
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;
