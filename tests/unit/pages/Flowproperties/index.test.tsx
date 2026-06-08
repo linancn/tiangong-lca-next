@@ -30,6 +30,7 @@ const mockGetLangText = jest.fn((value: any) => {
   if (typeof value === 'string') return value;
   return value?.['#text'] ?? 'Team title';
 });
+const mockGetRoleByUserId = jest.fn();
 const mockGetTeamById = jest.fn();
 const mockGetUnitData = jest.fn();
 const mockDatasetUuidMentionSearch = jest.fn();
@@ -71,6 +72,11 @@ jest.mock('@/services/teams/api', () => ({
   getTeamById: (...args: any[]) => mockGetTeamById(...args),
 }));
 
+jest.mock('@/services/roles/api', () => ({
+  __esModule: true,
+  getRoleByUserId: (...args: any[]) => mockGetRoleByUserId(...args),
+}));
+
 jest.mock('@/services/general/api', () => ({
   __esModule: true,
   attachStateCodesToRows: jest.fn(async (_table: string, rows: any[]) => rows),
@@ -109,8 +115,12 @@ jest.mock('@/components/ExportData', () => ({
 
 jest.mock('@/components/ImportData', () => ({
   __esModule: true,
-  default: ({ onJsonData }: any) => (
-    <button type='button' onClick={() => onJsonData?.([{ flowPropertyDataSet: {} }])}>
+  default: ({ disabled, onJsonData }: any) => (
+    <button
+      type='button'
+      disabled={disabled}
+      onClick={() => onJsonData?.([{ flowPropertyDataSet: {} }])}
+    >
       import-data
     </button>
   ),
@@ -118,8 +128,8 @@ jest.mock('@/components/ImportData', () => ({
 
 jest.mock('@/components/TableFilter', () => ({
   __esModule: true,
-  default: ({ onChange }: any) => (
-    <button type='button' onClick={() => onChange?.('20')}>
+  default: ({ disabled, onChange }: any) => (
+    <button type='button' disabled={disabled} onClick={() => onChange?.('20')}>
       table-filter
     </button>
   ),
@@ -151,7 +161,7 @@ jest.mock('@/pages/Utils', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/create', () => ({
   __esModule: true,
-  default: ({ importData, actionType, newVersion, id, version, onClose }: any) => (
+  default: ({ disabled, importData, actionType, newVersion, id, version, onClose }: any) => (
     <div>
       <div data-testid='flowproperty-create'>
         {JSON.stringify({
@@ -160,6 +170,7 @@ jest.mock('@/pages/Flowproperties/Components/create', () => ({
           newVersion: newVersion ?? null,
           id: id ?? null,
           version: version ?? null,
+          disabled: !!disabled,
         })}
       </div>
       {onClose ? (
@@ -213,13 +224,14 @@ jest.mock('antd', () => {
 
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Card = ({ children }: any) => <section>{children}</section>;
-  const Checkbox = ({ children, onChange }: any) => {
+  const Checkbox = ({ children, disabled, onChange }: any) => {
     const [checked, setChecked] = React.useState(false);
     return (
       <label>
         <input
           aria-label={toText(children)}
           checked={checked}
+          disabled={disabled}
           type='checkbox'
           onChange={() => {
             const next = !checked;
@@ -235,13 +247,17 @@ jest.mock('antd', () => {
   const Row = ({ children }: any) => <div>{children}</div>;
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ children }: any) => <div>{children}</div>;
-  const Search = ({ onSearch, placeholder }: any) => (
+  const Search = ({ disabled, onSearch, placeholder }: any) => (
     <div>
-      <input aria-label='search-input' placeholder={placeholder} />
-      <button type='button' onClick={() => onSearch?.('climate')}>
+      <input aria-label='search-input' disabled={disabled} placeholder={placeholder} />
+      <button type='button' disabled={disabled} onClick={() => onSearch?.('climate')}>
         search
       </button>
-      <button type='button' onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}>
+      <button
+        type='button'
+        disabled={disabled}
+        onClick={() => onSearch?.('D1380000-0000-4000-8000-000000000001')}
+      >
         uuid-lookup
       </button>
     </div>
@@ -251,6 +267,9 @@ jest.mock('antd', () => {
     useToken: () => ({
       token: {
         colorPrimary: '#1677ff',
+        colorTextDescription: '#6b7280',
+        fontSizeSM: 12,
+        marginXXS: 4,
       },
     }),
   };
@@ -358,6 +377,12 @@ describe('FlowpropertiesPage', () => {
     };
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
+    mockGetRoleByUserId.mockResolvedValue([
+      {
+        team_id: '00000000-0000-0000-0000-000000000000',
+        role: 'admin',
+      },
+    ]);
     mockGetTeamById.mockResolvedValue({
       data: [{ json: { title: [{ '@xml:lang': 'en', '#text': 'Flowproperty Team' }] } }],
     });
@@ -384,6 +409,21 @@ describe('FlowpropertiesPage', () => {
       total: 0,
     });
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
+  });
+
+  it('returns an empty locked table for non-admin my-data users', async () => {
+    mockGetRoleByUserId.mockResolvedValue([]);
+
+    renderWithProviders(<FlowpropertiesPage />);
+
+    await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
+    await waitFor(() => expect(screen.getByRole('button', { name: /search/i })).toBeDisabled());
+
+    expect(mockGetFlowpropertyTableAll).not.toHaveBeenCalled();
+    expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /table-filter/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
+    expect(screen.getAllByTestId('flowproperty-create')[0]).toHaveTextContent('"disabled":true');
   });
 
   it('loads the default table and keeps imported data in the create action', async () => {
@@ -442,7 +482,7 @@ describe('FlowpropertiesPage', () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
-    expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
+    expect(await screen.findByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
   });
@@ -500,6 +540,7 @@ describe('FlowpropertiesPage', () => {
     const { rerender } = renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
+    await screen.findByTestId('flowproperty-view');
     const initialTableCalls = mockGetFlowpropertyTableAll.mock.calls.length;
     await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
 

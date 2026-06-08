@@ -13,9 +13,11 @@ import {
   getUnitData,
   isDataUnderReview,
 } from '@/services/general/util';
+import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
@@ -69,12 +71,14 @@ const TableList: FC = () => {
   const [team, setTeam] = useState<TeamTable | null>(null);
   const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
+  const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
   const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
   const [editId, setEditId] = useState<string>('');
   const [editVersion, setEditVersion] = useState<string>('');
   const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
+  const { token } = theme.useToken();
 
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
@@ -85,6 +89,7 @@ const TableList: FC = () => {
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+  const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -139,6 +144,7 @@ const TableList: FC = () => {
               key: 'copy',
               name: (
                 <FlowpropertiesCreate
+                  disabled={!isSystemAdmin}
                   actionType='copy'
                   id={row.id}
                   version={row.version}
@@ -215,6 +221,7 @@ const TableList: FC = () => {
           version={row.version}
         />
         <FlowpropertiesCreate
+          disabled={!isSystemAdmin}
           actionType='copy'
           id={row.id}
           version={row.version}
@@ -315,6 +322,7 @@ const TableList: FC = () => {
               addVersionComponent={({ newVersion }) => (
                 <FlowpropertiesCreate
                   newVersion={newVersion}
+                  disabled={!isSystemAdmin}
                   actionType='createVersion'
                   id={row.id}
                   version={row.version}
@@ -353,7 +361,19 @@ const TableList: FC = () => {
     getTeamById(tid ?? '').then((res) => {
       if (res.data.length > 0) setTeam(res.data[0] as TeamTable);
     });
+    getRoleByUserId().then((res) => {
+      const systemAdmin = res?.find(
+        (item) => item.team_id === '00000000-0000-0000-0000-000000000000' && item.role === 'admin',
+      );
+      setIsSystemAdmin(!!systemAdmin);
+    });
   }, []);
+
+  useEffect(() => {
+    if (dataSource === 'my' && isSystemAdmin) {
+      actionRef.current?.reload();
+    }
+  }, [dataSource, isSystemAdmin]);
 
   const onSearch: SearchProps['onSearch'] = (value) => {
     keyWordRef.current = value;
@@ -378,6 +398,7 @@ const TableList: FC = () => {
         <Row {...responsiveSearchRowProps}>
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
+              disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
               placeholder={intl.formatMessage({
                 id: referenceLookup
@@ -391,6 +412,7 @@ const TableList: FC = () => {
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               checked={referenceLookup}
+              disabled={dataSource === 'my' && !isSystemAdmin}
               onChange={(e) => setReferenceLookup(e.target.checked)}
             >
               <FormattedMessage
@@ -405,10 +427,31 @@ const TableList: FC = () => {
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
-          <>
-            {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id='menu.tgdata.flowproperties' defaultMessage='Flow Properties' />
-          </>
+          <Space size={8} align='center' wrap>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {getDataTitle(dataSource)} /{' '}
+              <FormattedMessage id='menu.tgdata.flowproperties' defaultMessage='Flow Properties' />
+            </span>
+            {shouldShowFlowpropertyTip && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: token.marginXXS,
+                  color: token.colorTextDescription,
+                  fontSize: token.fontSizeSM,
+                  fontWeight: 400,
+                  lineHeight: 1,
+                }}
+              >
+                <InfoCircleOutlined />
+                <FormattedMessage
+                  id='pages.flowproperty.title.tips'
+                  defaultMessage='Need to add or supplement flow properties? Contact an administrator.'
+                />
+              </span>
+            )}
+          </Space>
         }
         actionRef={actionRef}
         search={false}
@@ -422,6 +465,7 @@ const TableList: FC = () => {
           if (dataSource === 'my') {
             const filters = [
               <TableFilter
+                disabled={!isSystemAdmin}
                 key={2}
                 width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
@@ -434,13 +478,14 @@ const TableList: FC = () => {
             return [
               ...filters,
               <FlowpropertiesCreate
+                disabled={!isSystemAdmin}
                 importData={importData}
                 onClose={() => setImportData(null)}
                 lang={lang}
                 key={0}
                 actionRef={actionRef}
               />,
-              <ImportData onJsonData={handleImportData} key={1} />,
+              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -452,6 +497,13 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
+          if (dataSource === 'my' && !isSystemAdmin) {
+            return {
+              data: [],
+              success: true,
+              total: 0,
+            };
+          }
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
           if (referenceLookup) {

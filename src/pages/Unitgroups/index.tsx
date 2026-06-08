@@ -34,6 +34,7 @@ import {
   getUnitGroupTableUuidMentionSearch,
 } from '@/services/unitgroups/api';
 import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Card, Checkbox, Col, Input, Row, Space, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
@@ -80,6 +81,7 @@ const TableList: FC = () => {
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
+  const shouldShowUnitGroupTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -400,18 +402,31 @@ const TableList: FC = () => {
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
-          <>
-            {getDataTitle(dataSource)} /{' '}
-            <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
-            {((dataSource === 'my' && !isSystemAdmin) || dataSource === 'te') && (
-              <span style={{ color: token.red, fontSize: token.fontSize }}>
+          <Space size={8} align='center' wrap>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {getDataTitle(dataSource)} /{' '}
+              <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
+            </span>
+            {shouldShowUnitGroupTip && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: token.marginXXS,
+                  color: token.colorTextDescription,
+                  fontSize: token.fontSizeSM,
+                  fontWeight: 400,
+                  lineHeight: 1,
+                }}
+              >
+                <InfoCircleOutlined />
                 <FormattedMessage
                   id='pages.unitgroup.title.tips'
-                  defaultMessage='(Note: If you need to supplement the unit group data, please contact the administrator!)'
+                  defaultMessage='Need to add or supplement unit groups? Contact an administrator.'
                 />
               </span>
             )}
-          </>
+          </Space>
         }
         actionRef={actionRef}
         search={false}
