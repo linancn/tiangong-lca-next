@@ -1,4 +1,9 @@
-import { getProcessFlowGraphSelection } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphSelection';
+import {
+  createEmptyProcessFlowGraphSelection,
+  getProcessFlowGraphNode,
+  getProcessFlowGraphSelection,
+  summarizeProcessFlowSelection,
+} from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphSelection';
 import type {
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
@@ -117,7 +122,7 @@ function createProcessFlowGraphFixture(): ProcessFlowGraphData {
   return {
     adjacency: {
       [byproductFlowId]: ['exchange:1'],
-      [flowAId]: ['exchange:0', 'exchange:2'],
+      [flowAId]: ['exchange:0', 'exchange:missing-direct', 'exchange:2'],
       [outputFlowId]: ['exchange:3'],
       [processOneId]: ['exchange:0', 'exchange:1'],
       [processTwoId]: ['exchange:2', 'exchange:3'],
@@ -223,5 +228,72 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     otherOutputFlowIds.forEach((flowId) => {
       expect(selection.relatedFlowIds.has(flowId)).toBe(true);
     });
+  });
+
+  it('returns an empty selection for missing nodes and exposes node lookup fallbacks', () => {
+    const graph = createProcessFlowGraphFixture();
+    const emptySelection = getProcessFlowGraphSelection(graph);
+    const missingSelection = getProcessFlowGraphSelection(graph, 'flow:missing@v1');
+
+    expect(emptySelection).toEqual(createEmptyProcessFlowGraphSelection());
+    expect(missingSelection).toEqual(createEmptyProcessFlowGraphSelection());
+    expect(getProcessFlowGraphNode(graph)).toBeUndefined();
+    expect(getProcessFlowGraphNode(graph, 'flow:missing@v1')).toBeUndefined();
+    expect(getProcessFlowGraphNode(graph, flowAId)?.name).toBe('交流电');
+  });
+
+  it('highlights process selections and summarizes input and output exchanges', () => {
+    const graph = createProcessFlowGraphFixture();
+    const selection = getProcessFlowGraphSelection(graph, processOneId);
+
+    expect(selection.selectedNodeId).toBe(processOneId);
+    expect(selection.highlightedEdgeIds).toEqual(new Set(['exchange:0', 'exchange:1']));
+    expect(selection.inputFlowIds).toEqual(new Set([flowAId]));
+    expect(selection.outputFlowIds).toEqual(new Set([byproductFlowId]));
+    expect(selection.relatedFlowIds).toEqual(new Set([flowAId, byproductFlowId]));
+    expect(selection.relatedProcessIds).toEqual(new Set([processOneId]));
+    expect(summarizeProcessFlowSelection(graph, selection)).toEqual({
+      highlightedEdges: 2,
+      inputEdges: 1,
+      outputEdges: 1,
+      relatedFlows: 2,
+      relatedProcesses: 1,
+    });
+  });
+
+  it('ignores missing edge ids while keeping highlighted edge counts stable', () => {
+    const graph = createProcessFlowGraphFixture();
+    const selection = getProcessFlowGraphSelection(graph, processOneId);
+    selection.highlightedEdgeIds.add('exchange:missing-summary');
+
+    expect(summarizeProcessFlowSelection(graph, selection)).toEqual({
+      highlightedEdges: 3,
+      inputEdges: 1,
+      outputEdges: 1,
+      relatedFlows: 2,
+      relatedProcesses: 1,
+    });
+  });
+
+  it('handles nodes and related processes without adjacency entries', () => {
+    const graph = createProcessFlowGraphFixture();
+    delete graph.adjacency[outputFlowId];
+    delete graph.adjacency[processTwoId];
+
+    const orphanFlowSelection = getProcessFlowGraphSelection(graph, outputFlowId);
+    const flowSelection = getProcessFlowGraphSelection(graph, flowAId);
+
+    expect(orphanFlowSelection.selectedFlowId).toBe(outputFlowId);
+    expect(orphanFlowSelection.highlightedEdgeIds.size).toBe(0);
+    expect(flowSelection.relatedProcessIds).toEqual(new Set([processOneId, processTwoId]));
+    expect(flowSelection.highlightedEdgeIds).toEqual(
+      new Set(['exchange:0', 'exchange:2', 'exchange:1']),
+    );
+
+    delete graph.adjacency[processOneId];
+
+    const orphanProcessSelection = getProcessFlowGraphSelection(graph, processOneId);
+    expect(orphanProcessSelection.selectedNodeId).toBe(processOneId);
+    expect(orphanProcessSelection.highlightedEdgeIds.size).toBe(0);
   });
 });
