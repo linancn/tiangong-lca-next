@@ -689,6 +689,55 @@ function createGraphWithForeignLocation(): ProcessFlowGraphData {
   };
 }
 
+function createDenseLocationGraph(location: string, count: number): ProcessFlowGraphData {
+  const baseGraph = createProcessFlowGraphFixture();
+  const denseNodes: ProcessFlowGraphData['nodes'] = Array.from({ length: count }, (_, index) => ({
+    category: '密集区域',
+    clusterId: 'dense',
+    degree: 0,
+    flowType: 'Product flow',
+    id: `flow:dense-${index}@v1`,
+    kind: 'flow',
+    location,
+    name: `Dense flow ${index}`,
+    version: '01.00.000',
+  }));
+  const nodeById: ProcessFlowGraphData['indexes']['nodeById'] = {};
+  const flowById: ProcessFlowGraphData['indexes']['flowById'] = {};
+
+  denseNodes.forEach((node, index) => {
+    nodeById[node.id] = index;
+    flowById[node.id] = index;
+  });
+
+  return {
+    ...baseGraph,
+    adjacency: Object.fromEntries(denseNodes.map((node) => [node.id, []])),
+    clusters: [{ count, id: 'dense', label: '密集区域' }],
+    edges: [],
+    indexes: {
+      edgeById: {},
+      flowById,
+      nodeById,
+      processById: {},
+      searchFlows: denseNodes.map((node) => ({
+        degree: node.degree,
+        flowType: node.flowType,
+        id: node.id,
+        name: node.name,
+        version: node.version,
+      })),
+    },
+    nodes: denseNodes,
+    stats: {
+      edgeCount: 0,
+      flowCount: denseNodes.length,
+      maxDegree: 0,
+      processCount: 0,
+    },
+  };
+}
+
 const originalFetch = global.fetch;
 
 function createMapFetchResponse(
@@ -886,6 +935,70 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(chinaSelection.highlightedEdgeIds).toEqual(
       new Set(['exchange:0', 'exchange:2', 'exchange:1', 'exchange:3']),
     );
+  });
+
+  it('spreads dense world-map country nodes across the location area instead of a ring', () => {
+    const worldView = buildProcessFlowGraphGeoMapView(
+      createDenseLocationGraph('CN', 32),
+      'world',
+      createGeoMapAssets(),
+    );
+    const positions = Object.values(worldView.data.layouts.geoMap2d ?? {});
+    const xValues = positions.map(([x]) => x);
+    const yValues = positions.map(([, y]) => y);
+    const xRange = Math.max(...xValues) - Math.min(...xValues);
+    const yRange = Math.max(...yValues) - Math.min(...yValues);
+
+    expect(positions).toHaveLength(32);
+    expect(xRange).toBeGreaterThan(70);
+    expect(yRange).toBeGreaterThan(40);
+  });
+
+  it('uses a compact non-ring fallback for unknown world-map regions', () => {
+    const worldView = buildProcessFlowGraphGeoMapView(
+      createDenseLocationGraph('UNKNOWN-REGION', 9),
+      'world',
+      createGeoMapAssets(),
+    );
+    const positions = Object.values(worldView.data.layouts.geoMap2d ?? {});
+    const xValues = positions.map(([x]) => x);
+    const yValues = positions.map(([, y]) => y);
+
+    expect(positions).toHaveLength(9);
+    expect(Math.max(...xValues) - Math.min(...xValues)).toBeLessThan(80);
+    expect(Math.max(...yValues) - Math.min(...yValues)).toBeLessThan(60);
+  });
+
+  it('falls back to compact placement when a world-map country area cannot contain samples', () => {
+    const assets = createGeoMapAssets();
+    const worldView = buildProcessFlowGraphGeoMapView(createDenseLocationGraph('ZZ', 2), 'world', {
+      ...assets,
+      world: {
+        ...assets.world,
+        features: [
+          ...assets.world.features,
+          {
+            geometry: {
+              coordinates: [
+                [20, 20],
+                [24, 24],
+              ],
+              type: 'LineString',
+            },
+            properties: {
+              ISO_A2: 'ZZ',
+              ISO_A2_EH: 'ZZ',
+              LABEL_X: 22,
+              LABEL_Y: 22,
+              NAME: 'Line country',
+            },
+            type: 'Feature',
+          },
+        ],
+      },
+    });
+
+    expect(Object.values(worldView.data.layouts.geoMap2d ?? {})).toHaveLength(2);
   });
 
   it('hides overview base edges in map mode until a node is selected', () => {
