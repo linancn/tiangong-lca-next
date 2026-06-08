@@ -25,6 +25,8 @@ const foreignFlowId = 'flow:foreign@v1';
 const foreignProcessId = 'process:foreign@v1';
 const regionalFlowId = 'flow:regional@v1';
 const unknownCountryFlowId = 'flow:unknown-country@v1';
+const noLocationFlowId = 'flow:no-location@v1';
+const stableNoLocationFlowId = 'flow:stable-no-location@v1';
 const noLocationProcessId = 'process:no-location@v1';
 const malformedChinaFlowId = 'flow:malformed-china@v1';
 const zhejiangFlowId = 'flow:zhejiang@v1';
@@ -573,6 +575,26 @@ function createGraphWithForeignLocation(): ProcessFlowGraphData {
     },
     {
       category: '区域',
+      clusterId: 'energy',
+      degree: 1,
+      flowType: 'Product flow',
+      id: noLocationFlowId,
+      kind: 'flow',
+      name: 'No location flow',
+      version: '01.00.000',
+    },
+    {
+      category: '区域',
+      clusterId: 'energy',
+      degree: 2,
+      flowType: 'Product flow',
+      id: stableNoLocationFlowId,
+      kind: 'flow',
+      name: 'Stable no location flow',
+      version: '01.00.000',
+    },
+    {
+      category: '区域',
       clusterId: 'regions',
       degree: 0,
       id: noLocationProcessId,
@@ -624,10 +646,85 @@ function createGraphWithForeignLocation(): ProcessFlowGraphData {
     target: foreignProcessId,
     unit: 'tkm',
   };
+  const noLocationFlowForeignEdge: ProcessFlowGraphEdge = {
+    amount: 6,
+    direction: 'input',
+    exchangeId: 'exchange:5',
+    flowId: noLocationFlowId,
+    id: 'exchange:5',
+    processId: foreignProcessId,
+    source: noLocationFlowId,
+    target: foreignProcessId,
+    unit: 'kg',
+  };
+  const noLocationFlowEdge: ProcessFlowGraphEdge = {
+    amount: 7,
+    direction: 'input',
+    exchangeId: 'exchange:6',
+    flowId: noLocationFlowId,
+    id: 'exchange:6',
+    processId: processOneId,
+    source: noLocationFlowId,
+    target: processOneId,
+    unit: 'kg',
+  };
+  const noLocationFlowNoLocationProcessEdge: ProcessFlowGraphEdge = {
+    amount: 8,
+    direction: 'input',
+    exchangeId: 'exchange:7',
+    flowId: noLocationFlowId,
+    id: 'exchange:7',
+    processId: noLocationProcessId,
+    source: noLocationFlowId,
+    target: noLocationProcessId,
+    unit: 'kg',
+  };
+  const noLocationFlowMissingProcessEdge: ProcessFlowGraphEdge = {
+    amount: 9,
+    direction: 'input',
+    exchangeId: 'exchange:8',
+    flowId: noLocationFlowId,
+    id: 'exchange:8',
+    processId: 'process:missing@v1',
+    source: noLocationFlowId,
+    target: 'process:missing@v1',
+    unit: 'kg',
+  };
+  const stableNoLocationFlowChinaEdge: ProcessFlowGraphEdge = {
+    amount: 10,
+    direction: 'input',
+    exchangeId: 'exchange:9',
+    flowId: stableNoLocationFlowId,
+    id: 'exchange:9',
+    processId: hongKongProcessId,
+    source: stableNoLocationFlowId,
+    target: hongKongProcessId,
+    unit: 'kg',
+  };
+  const stableNoLocationFlowForeignEdge: ProcessFlowGraphEdge = {
+    amount: 11,
+    direction: 'input',
+    exchangeId: 'exchange:10',
+    flowId: stableNoLocationFlowId,
+    id: 'exchange:10',
+    processId: foreignProcessId,
+    source: stableNoLocationFlowId,
+    target: foreignProcessId,
+    unit: 'kg',
+  };
   const nextNodes = [...graph.nodes, ...foreignNodes].map((node) =>
     node.id === byproductFlowId ? { ...node, location: 'CN-GD-GZO' } : node,
   );
-  const nextEdges = [...graph.edges, foreignEdge];
+  const nextEdges = [
+    ...graph.edges,
+    foreignEdge,
+    noLocationFlowForeignEdge,
+    noLocationFlowEdge,
+    noLocationFlowNoLocationProcessEdge,
+    noLocationFlowMissingProcessEdge,
+    stableNoLocationFlowChinaEdge,
+    stableNoLocationFlowForeignEdge,
+  ];
   const nodeById: ProcessFlowGraphData['indexes']['nodeById'] = {};
   const flowById: ProcessFlowGraphData['indexes']['flowById'] = {};
   const processById: ProcessFlowGraphData['indexes']['processById'] = {};
@@ -646,7 +743,12 @@ function createGraphWithForeignLocation(): ProcessFlowGraphData {
     adjacency: {
       ...graph.adjacency,
       [foreignFlowId]: ['exchange:4'],
-      [foreignProcessId]: ['exchange:4'],
+      [foreignProcessId]: ['exchange:4', 'exchange:5', 'exchange:10'],
+      [hongKongProcessId]: ['exchange:9'],
+      [noLocationFlowId]: ['exchange:5', 'exchange:6', 'exchange:7', 'exchange:8'],
+      [noLocationProcessId]: ['exchange:7'],
+      [processOneId]: [...(graph.adjacency[processOneId] ?? []), 'exchange:6'],
+      [stableNoLocationFlowId]: ['exchange:9', 'exchange:10'],
     },
     clusters: [
       ...graph.clusters,
@@ -904,8 +1006,10 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(worldView.data.layouts.geoMap2d?.[foreignFlowId]).toHaveLength(3);
     expect(worldView.data.layouts.geoMap2d?.[byproductFlowId]).toHaveLength(3);
     expect(worldView.data.layouts.geoMap2d?.[regionalFlowId]).toHaveLength(3);
-    expect(worldView.data.layouts.geoMap2d?.[unknownCountryFlowId]).toHaveLength(3);
-    expect(worldView.data.layouts.geoMap2d?.[noLocationProcessId]).toHaveLength(3);
+    expect(worldView.data.layouts.geoMap2d?.[noLocationFlowId]).toHaveLength(3);
+    expect(worldView.data.layouts.geoMap2d?.[stableNoLocationFlowId]).toHaveLength(3);
+    expect(worldView.data.layouts.geoMap2d?.[unknownCountryFlowId]).toBeUndefined();
+    expect(worldView.data.layouts.geoMap2d?.[noLocationProcessId]).toBeUndefined();
 
     const worldWithoutChinaView = buildProcessFlowGraphGeoMapView(graph, 'world', {
       ...assets,
@@ -920,20 +1024,29 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(chinaView.background.paths.map((mapPath) => mapPath.id)).toEqual(
       expect.arrayContaining(['china:CN-ZJ', 'china:999998', 'china:999999']),
     );
-    expect(chinaView.data.nodes.every((node) => node.location?.startsWith('CN'))).toBe(true);
+    expect(
+      chinaView.data.nodes.every((node) => node.kind === 'flow' || node.location?.startsWith('CN')),
+    ).toBe(true);
     expect(chinaView.data.nodes.map((node) => node.id)).not.toContain(foreignFlowId);
+    expect(chinaView.data.nodes.map((node) => node.id)).not.toContain(malformedChinaFlowId);
     expect(chinaView.data.nodes.map((node) => node.id)).toEqual(
-      expect.arrayContaining([malformedChinaFlowId, zhejiangFlowId, hongKongProcessId]),
+      expect.arrayContaining([
+        noLocationFlowId,
+        stableNoLocationFlowId,
+        zhejiangFlowId,
+        hongKongProcessId,
+      ]),
     );
     expect(chinaView.data.edges.map((edge) => edge.id)).not.toContain('exchange:4');
     expect(chinaView.data.indexes.searchFlows.map((flow) => flow.id)).not.toContain(foreignFlowId);
     expect(chinaView.data.layouts.geoMap2d?.[byproductFlowId]).toHaveLength(3);
-    expect(chinaView.data.layouts.geoMap2d?.[malformedChinaFlowId]).toHaveLength(3);
+    expect(chinaView.data.layouts.geoMap2d?.[malformedChinaFlowId]).toBeUndefined();
+    expect(chinaView.data.layouts.geoMap2d?.[stableNoLocationFlowId]).toHaveLength(3);
     expect(chinaView.data.layouts.geoMap2d?.[zhejiangFlowId]).toHaveLength(3);
 
     const chinaSelection = getProcessFlowGraphSelection(chinaView.data, flowAId);
     expect(chinaSelection.highlightedEdgeIds).toEqual(
-      new Set(['exchange:0', 'exchange:2', 'exchange:1', 'exchange:3']),
+      new Set(['exchange:0', 'exchange:2', 'exchange:1', 'exchange:6', 'exchange:3']),
     );
   });
 
@@ -954,19 +1067,75 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(yRange).toBeGreaterThan(40);
   });
 
-  it('uses a compact non-ring fallback for unknown world-map regions', () => {
+  it('omits unknown world-map regions instead of placing them in a fallback block', () => {
     const worldView = buildProcessFlowGraphGeoMapView(
       createDenseLocationGraph('UNKNOWN-REGION', 9),
       'world',
       createGeoMapAssets(),
     );
     const positions = Object.values(worldView.data.layouts.geoMap2d ?? {});
-    const xValues = positions.map(([x]) => x);
-    const yValues = positions.map(([, y]) => y);
 
-    expect(positions).toHaveLength(9);
-    expect(Math.max(...xValues) - Math.min(...xValues)).toBeLessThan(80);
-    expect(Math.max(...yValues) - Math.min(...yValues)).toBeLessThan(60);
+    expect(worldView.data.nodes).toHaveLength(0);
+    expect(positions).toHaveLength(0);
+  });
+
+  it('keeps China map usable when no province area can be built', () => {
+    const assets = createGeoMapAssets();
+    const chinaView = buildProcessFlowGraphGeoMapView(createDenseLocationGraph('CN', 2), 'china', {
+      ...assets,
+      china: {
+        ...assets.china,
+        features: [],
+      },
+    });
+    const positions = Object.values(chinaView.data.layouts.geoMap2d ?? {});
+
+    expect(chinaView.background.paths).toHaveLength(0);
+    expect(positions).toHaveLength(2);
+  });
+
+  it('samples world-map polygon areas with holes', () => {
+    const assets = createGeoMapAssets();
+    const worldView = buildProcessFlowGraphGeoMapView(createDenseLocationGraph('XY', 24), 'world', {
+      ...assets,
+      world: {
+        ...assets.world,
+        features: [
+          ...assets.world.features,
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [-60, -30],
+                  [60, -30],
+                  [60, 30],
+                  [-60, 30],
+                  [-60, -30],
+                ],
+                [
+                  [-50, -24],
+                  [50, -24],
+                  [50, 24],
+                  [-50, 24],
+                  [-50, -24],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              ISO_A2: 'XY',
+              ISO_A2_EH: 'XY',
+              LABEL_X: 0,
+              LABEL_Y: 0,
+              NAME: 'Holed country',
+            },
+            type: 'Feature',
+          },
+        ],
+      },
+    });
+
+    expect(Object.values(worldView.data.layouts.geoMap2d ?? {})).toHaveLength(24);
   });
 
   it('falls back to compact placement when a world-map country area cannot contain samples', () => {

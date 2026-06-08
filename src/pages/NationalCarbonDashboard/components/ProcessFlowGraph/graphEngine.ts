@@ -267,11 +267,18 @@ function getNodePointSize(
   const isProcess = node?.kind === 'process';
 
   if (highlighted) {
+    if (layoutMode === 'geoMap2d') {
+      return isProcess ? 13 : 9;
+    }
     return layoutMode === 'sphere3d' ? (isProcess ? 16 : 12) : isProcess ? 26 : 19;
   }
 
   if (layoutMode === 'sphere3d') {
     return isProcess ? 10 : 7.6;
+  }
+
+  if (layoutMode === 'geoMap2d') {
+    return isProcess ? 7.8 : 5.8;
   }
 
   return isProcess ? 22 : 16;

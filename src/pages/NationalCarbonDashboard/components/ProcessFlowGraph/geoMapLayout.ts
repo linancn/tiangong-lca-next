@@ -1,4 +1,4 @@
-import { geoContains, geoMercator, geoNaturalEarth1, geoPath } from 'd3-geo';
+import { geoMercator, geoNaturalEarth1, geoPath } from 'd3-geo';
 import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import type {
   ProcessFlowGraphCluster,
@@ -56,6 +56,8 @@ type PlacementArea = {
   bounds: SceneBounds;
   contains: (point: [number, number]) => boolean;
 };
+
+type ScenePolygon = [number, number][][];
 
 type InvertibleProjection = ((coordinate: [number, number]) => [number, number] | null) & {
   invert: (point: [number, number]) => [number, number] | null;
@@ -291,6 +293,85 @@ function projectCoordinate(
   return toSceneCoordinate(projection(coordinate), width, height);
 }
 
+function projectGeometryRing(
+  ring: number[][],
+  projection: (coordinate: [number, number]) => [number, number] | null,
+  width: number,
+  height: number,
+): [number, number][] {
+  return ring.map(
+    (position) => projectCoordinate(projection, [position[0], position[1]], width, height)!,
+  );
+}
+
+function projectGeometryPolygons(
+  geometry: Geometry,
+  projection: (coordinate: [number, number]) => [number, number] | null,
+  width: number,
+  height: number,
+): ScenePolygon[] {
+  if (geometry.type === 'Polygon') {
+    return [
+      geometry.coordinates.map((ring) =>
+        projectGeometryRing(ring as number[][], projection, width, height),
+      ),
+    ];
+  }
+
+  if (geometry.type === 'MultiPolygon') {
+    return geometry.coordinates.map((polygon) =>
+      polygon.map((ring) => projectGeometryRing(ring as number[][], projection, width, height)),
+    );
+  }
+
+  return [];
+}
+
+function isPointInSceneRing([x, y]: [number, number], ring: [number, number][]): boolean {
+  let isInside = false;
+
+  for (
+    let index = 0, previousIndex = ring.length - 1;
+    index < ring.length;
+    previousIndex = index, index += 1
+  ) {
+    const [currentX, currentY] = ring[index];
+    const [previousX, previousY] = ring[previousIndex];
+    const intersects =
+      currentY > y !== previousY > y &&
+      x < ((previousX - currentX) * (y - currentY)) / (previousY - currentY) + currentX;
+
+    if (intersects) {
+      isInside = !isInside;
+    }
+  }
+
+  return isInside;
+}
+
+function isPointInScenePolygon(point: [number, number], polygon: ScenePolygon): boolean {
+  const [outerRing, ...holes] = polygon;
+
+  return Boolean(
+    outerRing &&
+    isPointInSceneRing(point, outerRing) &&
+    !holes.some((hole) => isPointInSceneRing(point, hole)),
+  );
+}
+
+function createSceneContains(
+  features: MapFeature[],
+  projection: (coordinate: [number, number]) => [number, number] | null,
+  width: number,
+  height: number,
+): PlacementArea['contains'] {
+  const polygons = features.flatMap((feature) =>
+    projectGeometryPolygons(feature.geometry, projection, width, height),
+  );
+
+  return (point) => polygons.some((polygon) => isPointInScenePolygon(point, polygon));
+}
+
 function createAnchor({
   area,
   coordinate,
@@ -385,22 +466,49 @@ function createFeaturePlacementArea({
 
   return {
     bounds,
-    contains: ([x, y]) => {
-      const coordinate = projection.invert([x + width / 2, height / 2 - y]);
+    contains: createSceneContains([feature], projection, width, height),
+  };
+}
 
-      return Boolean(coordinate && geoContains(feature, coordinate));
-    },
+function createFeatureCollectionPlacementArea({
+  height,
+  mapData,
+  pathGenerator,
+  projection,
+  width,
+}: {
+  height: number;
+  mapData: MapData;
+  pathGenerator: ReturnType<typeof geoPath>;
+  projection: InvertibleProjection;
+  width: number;
+}): PlacementArea | undefined {
+  const bounds = toSceneBounds(
+    pathGenerator.bounds(mapData) as [[number, number], [number, number]],
+    width,
+    height,
+  );
+
+  if (!bounds) {
+    return undefined;
+  }
+
+  return {
+    bounds,
+    contains: createSceneContains(mapData.features, projection, width, height),
   };
 }
 
 function buildChinaProvinceAnchors({
   china,
   height,
+  pathGenerator,
   projection,
   width,
 }: {
   china: MapData;
   height: number;
+  pathGenerator: ReturnType<typeof geoPath>;
   projection: (coordinate: [number, number]) => [number, number] | null;
   width: number;
 }): Map<string, Anchor> {
@@ -419,6 +527,13 @@ function buildChinaProvinceAnchors({
       ? projectCoordinate(projection, coordinate, width, height)
       : undefined;
     const anchor = createAnchor({
+      area: createFeaturePlacementArea({
+        feature,
+        height,
+        pathGenerator,
+        projection: projection as InvertibleProjection,
+        width,
+      }),
       coordinate: projectedCoordinate,
       key: `province:${provinceCode}`,
       spread: 34,
@@ -547,6 +662,7 @@ function buildWorldProjectionBundle(world: MapData, china: MapData): ProjectionB
   const provinceAnchors = buildChinaProvinceAnchors({
     china,
     height: worldViewBox.height,
+    pathGenerator,
     projection: projection as (coordinate: [number, number]) => [number, number] | null,
     width: worldViewBox.width,
   });
@@ -624,14 +740,29 @@ function buildChinaProjectionBundle(china: MapData): ProjectionBundle {
   const provinceAnchors = buildChinaProvinceAnchors({
     china: displayMapData,
     height: chinaViewBox.height,
+    pathGenerator,
     projection: projection as (coordinate: [number, number]) => [number, number] | null,
     width: chinaViewBox.width,
   });
-  const chinaCountryAnchor = {
+  const chinaCountryArea = createFeatureCollectionPlacementArea({
+    height: chinaViewBox.height,
+    mapData: displayMapData,
+    pathGenerator,
+    projection: projection as InvertibleProjection,
+    width: chinaViewBox.width,
+  });
+  const chinaCountryCoordinate =
+    toSceneCoordinate(
+      pathGenerator.centroid(displayMapData) as [number, number],
+      chinaViewBox.width,
+      chinaViewBox.height,
+    ) ?? ([0, 0] as [number, number]);
+  const chinaCountryAnchor: Anchor = {
+    area: chinaCountryArea,
     key: 'country:CN',
     spread: 40,
-    x: 0,
-    y: 0,
+    x: chinaCountryCoordinate[0],
+    y: chinaCountryCoordinate[1],
   };
   const countryAnchors = new Map<string, Anchor>([['CN', chinaCountryAnchor]]);
   const unknownAnchor = {
@@ -660,21 +791,26 @@ function resolveAnchor(
   node: ProcessFlowGraphNode,
   scope: ProcessFlowGraphMapScope,
   bundle: ProjectionBundle,
-): Anchor {
+  flowAnchorHints?: Map<string, Anchor>,
+): Anchor | undefined {
   const location = normalizeLocation(node.location);
 
   if (!location || location === 'NULL') {
-    return bundle.unknownAnchor;
+    return node.kind === 'flow' ? flowAnchorHints?.get(node.id) : undefined;
   }
 
   if (scope === 'world') {
     const primaryLocation = getWorldPrimaryLocation(location);
 
     if (isCountryCode(primaryLocation)) {
-      return bundle.countryAnchors.get(primaryLocation) ?? bundle.unknownAnchor;
+      if (primaryLocation === 'CN') {
+        return bundle.countryAnchors.get(primaryLocation) ?? bundle.chinaCountryAnchor;
+      }
+
+      return bundle.countryAnchors.get(primaryLocation);
     }
 
-    return bundle.regionAnchors.get(primaryLocation) ?? bundle.unknownAnchor;
+    return bundle.regionAnchors.get(primaryLocation);
   }
 
   if (location === 'CN') {
@@ -686,7 +822,57 @@ function resolveAnchor(
     return bundle.provinceAnchors.get(provinceCode) ?? bundle.chinaCountryAnchor;
   }
 
-  return bundle.unknownAnchor;
+  return undefined;
+}
+
+function buildFlowAnchorHints(
+  data: ProcessFlowGraphData,
+  scope: ProcessFlowGraphMapScope,
+  bundle: ProjectionBundle,
+): Map<string, Anchor> {
+  const countsByFlowId = new Map<string, Map<string, { anchor: Anchor; count: number }>>();
+
+  data.edges.forEach((edge) => {
+    const processNodeIndex = data.indexes.nodeById[edge.processId];
+    const processNode = processNodeIndex === undefined ? undefined : data.nodes[processNodeIndex];
+    const processAnchor = processNode ? resolveAnchor(processNode, scope, bundle) : undefined;
+
+    if (!processAnchor) {
+      return;
+    }
+
+    const counts =
+      countsByFlowId.get(edge.flowId) ?? new Map<string, { anchor: Anchor; count: number }>();
+    const current = counts.get(processAnchor.key);
+    counts.set(processAnchor.key, {
+      anchor: processAnchor,
+      count: (current?.count ?? 0) + 1,
+    });
+    countsByFlowId.set(edge.flowId, counts);
+  });
+
+  return Array.from(countsByFlowId.entries()).reduce<Map<string, Anchor>>(
+    (anchorHints, [flowId, counts]) => {
+      const selected = Array.from(counts.values()).reduce<
+        { anchor: Anchor; count: number } | undefined
+      >((best, candidate) => {
+        if (!best || candidate.count > best.count) {
+          return candidate;
+        }
+        if (candidate.count === best.count && candidate.anchor.key < best.anchor.key) {
+          return candidate;
+        }
+        return best;
+      }, undefined);
+
+      if (selected) {
+        anchorHints.set(flowId, selected.anchor);
+      }
+
+      return anchorHints;
+    },
+    new Map<string, Anchor>(),
+  );
 }
 
 function getHaltonValue(index: number, base: number): number {
@@ -726,32 +912,27 @@ function getCompactDistributedPosition(
   ];
 }
 
-function getAreaDistributedPosition(
-  anchor: Anchor,
-  node: ProcessFlowGraphNode,
-  anchorIndex: number,
-  anchorCount: number,
-): [number, number, number] | undefined {
+function getAreaDistributedPositions(anchor: Anchor, anchorCount: number): [number, number][] {
   if (!anchor.area) {
-    return undefined;
+    return [];
   }
 
   const { bounds } = anchor.area;
-  const hash = getStableHash(`${node.id}:${anchor.key}`);
-  const seed = (hash % 997) + 1;
-  const attempts = Math.max(48, Math.min(240, anchorCount * 10));
+  const seed = (getStableHash(anchor.key) % 997) + 1;
+  const attempts = Math.max(48, Math.min(6000, anchorCount * 24));
+  const positions: [number, number][] = [];
 
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const sampleIndex = seed + anchorIndex + attempt * Math.max(1, anchorCount);
+  for (let attempt = 0; attempt < attempts && positions.length < anchorCount; attempt += 1) {
+    const sampleIndex = seed + attempt;
     const x = bounds.minX + (bounds.maxX - bounds.minX) * getHaltonValue(sampleIndex, 2);
     const y = bounds.minY + (bounds.maxY - bounds.minY) * getHaltonValue(sampleIndex, 3);
 
     if (anchor.area.contains([x, y])) {
-      return [x, y, node.kind === 'process' ? 0.6 : 0];
+      positions.push([x, y]);
     }
   }
 
-  return undefined;
+  return positions;
 }
 
 function getDistributedPosition(
@@ -759,33 +940,47 @@ function getDistributedPosition(
   node: ProcessFlowGraphNode,
   anchorIndex: number,
   anchorCount: number,
+  areaPositions: [number, number][],
 ): [number, number, number] {
-  return (
-    getAreaDistributedPosition(anchor, node, anchorIndex, anchorCount) ??
-    getCompactDistributedPosition(anchor, node, anchorIndex, anchorCount)
-  );
+  const areaPosition = areaPositions[anchorIndex];
+
+  if (areaPosition) {
+    return [areaPosition[0], areaPosition[1], node.kind === 'process' ? 0.6 : 0];
+  }
+
+  return getCompactDistributedPosition(anchor, node, anchorIndex, anchorCount);
 }
 
 function buildGeoMapLayout(
   nodes: ProcessFlowGraphNode[],
   scope: ProcessFlowGraphMapScope,
   bundle: ProjectionBundle,
+  flowAnchorHints: Map<string, Anchor>,
 ): ProcessFlowGraphLayout {
   const resolvedNodes = nodes.map((node) => ({
-    anchor: resolveAnchor(node, scope, bundle),
+    anchor: resolveAnchor(node, scope, bundle, flowAnchorHints)!,
     node,
   }));
   const countByAnchor = resolvedNodes.reduce<Map<string, number>>((counts, { anchor }) => {
     counts.set(anchor.key, (counts.get(anchor.key) ?? 0) + 1);
     return counts;
   }, new Map<string, number>());
+  const areaPositionsByAnchor = new Map(
+    Array.from(countByAnchor.entries()).map(([anchorKey, anchorCount]) => {
+      const anchor = resolvedNodes.find(
+        ({ anchor: candidate }) => candidate.key === anchorKey,
+      )!.anchor;
+      return [anchorKey, getAreaDistributedPositions(anchor, anchorCount)] as const;
+    }),
+  );
   const seenByAnchor = new Map<string, number>();
 
   return resolvedNodes.reduce<ProcessFlowGraphLayout>((layout, { anchor, node }) => {
     const anchorIndex = seenByAnchor.get(anchor.key) ?? 0;
     const anchorCount = countByAnchor.get(anchor.key)!;
+    const areaPositions = areaPositionsByAnchor.get(anchor.key)!;
     seenByAnchor.set(anchor.key, anchorIndex + 1);
-    layout[node.id] = getDistributedPosition(anchor, node, anchorIndex, anchorCount);
+    layout[node.id] = getDistributedPosition(anchor, node, anchorIndex, anchorCount, areaPositions);
     return layout;
   }, {});
 }
@@ -891,18 +1086,15 @@ export function buildProcessFlowGraphGeoMapView(
     scope === 'world'
       ? buildWorldProjectionBundle(assets.world, assets.china)
       : buildChinaProjectionBundle(assets.china);
-  const visibleNodes =
-    scope === 'china'
-      ? data.nodes.filter((node) => isChinaProcessFlowLocation(node.location))
-      : data.nodes;
+  const flowAnchorHints = buildFlowAnchorHints(data, scope, bundle);
+  const visibleNodes = data.nodes.filter((node) =>
+    Boolean(resolveAnchor(node, scope, bundle, flowAnchorHints)),
+  );
   const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
-  const visibleEdges =
-    scope === 'china'
-      ? data.edges.filter(
-          (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
-        )
-      : data.edges;
-  const layout = buildGeoMapLayout(visibleNodes, scope, bundle);
+  const visibleEdges = data.edges.filter(
+    (edge) => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target),
+  );
+  const layout = buildGeoMapLayout(visibleNodes, scope, bundle, flowAnchorHints);
 
   return {
     background: bundle.background,
