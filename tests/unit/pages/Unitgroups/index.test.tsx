@@ -441,7 +441,7 @@ describe('UnitgroupsPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /search/i })).toBeDisabled());
 
     expect(mockGetUnitGroupTableAll).not.toHaveBeenCalled();
-    expect(screen.getByText(/please contact the administrator/i)).toBeInTheDocument();
+    expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
     expect(screen.getAllByTestId('unitgroup-create')[0]).toHaveTextContent('"disabled":true');

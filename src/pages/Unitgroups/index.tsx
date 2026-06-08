@@ -36,7 +36,7 @@ import {
 import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, Typography, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, message, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -408,7 +408,7 @@ const TableList: FC = () => {
               <FormattedMessage id='menu.tgdata.unitgroups' defaultMessage='Unit Groups' />
             </span>
             {shouldShowUnitGroupTip && (
-              <Typography.Text
+              <span
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -424,7 +424,7 @@ const TableList: FC = () => {
                   id='pages.unitgroup.title.tips'
                   defaultMessage='Need to add or supplement unit groups? Contact an administrator.'
                 />
-              </Typography.Text>
+              </span>
             )}
           </Space>
         }
