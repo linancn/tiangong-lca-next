@@ -21,8 +21,8 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-06-06
-lastReviewedCommit: cee1b2ceb343c9bd5481bbfbc1b7cc5349d19233
+lastReviewedAt: 2026-06-08
+lastReviewedCommit: 93f198e624da600981aa7f7a982e111c47c6c689
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
