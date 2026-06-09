@@ -1,4 +1,12 @@
 import type {
+  Feature,
+  FeatureCollection,
+  Geometry,
+  MultiPolygon,
+  Polygon,
+  Position,
+} from 'geojson';
+import type {
   ProcessFlowGraphCluster,
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
@@ -17,6 +25,16 @@ const layoutMagic = 'PFGLAY1\0';
 const u32None = 0xffffffff;
 const processFlowGraphSchemaVersion = 'process_flow_graph_v2';
 const processFlowGraphGeoMapViewSchemaVersion = 'process_flow_graph_geo_map_view_v2';
+const localGeoMapAssetPaths: Record<ProcessFlowGraphMapScope, string> = {
+  china: '/maps/china-province-100000-full.geojson',
+  world: '/maps/world-map-units-50m.geojson',
+};
+const chinaGeoBounds = {
+  latMax: 54,
+  latMin: 18,
+  lonMax: 135,
+  lonMin: 73,
+} as const;
 
 type ActiveManifest = {
   activeBuildId: string;
@@ -90,6 +108,17 @@ type CacheManifests = {
   baseUrl: string;
   buildManifest: BuildManifest;
 };
+type LocalMapFeatureProperties = {
+  adcode?: number | string;
+  ISO_A2?: string;
+  ISO_A3?: string;
+  NAME?: string;
+  NAME_EN?: string;
+  name?: string;
+};
+type LocalMapFeature = Feature<Geometry, LocalMapFeatureProperties>;
+type LocalMapFeatureCollection = FeatureCollection<Geometry, LocalMapFeatureProperties>;
+type CoordinateProjector = (longitude: number, latitude: number) => [number, number];
 
 const geoMapCacheFileKeys: Record<
   ProcessFlowGraphMapScope,
@@ -113,6 +142,186 @@ const geoMapCacheFileKeys: Record<
     view: 'geoMapWorldView',
   },
 };
+const geoMapBackgroundFallbackRequests: Partial<
+  Record<ProcessFlowGraphMapScope, Promise<ProcessFlowGraphMapBackground | undefined>>
+> = {};
+
+function isWorkerFrameOnlyBackground(background: ProcessFlowGraphMapBackground): boolean {
+  if (background.paths.length !== 1) {
+    return false;
+  }
+
+  const [path] = background.paths;
+  return (
+    path.id.endsWith('-frame') ||
+    /map frame/i.test(path.label) ||
+    /^M0 0H\d+(?:\.\d+)?V\d+(?:\.\d+)?H0Z$/.test(path.path)
+  );
+}
+
+function projectWorldCoordinate(width: number, height: number): CoordinateProjector {
+  return (longitude, latitude) => [
+    ((longitude + 180) / 360) * width,
+    height - ((latitude + 90) / 180) * height,
+  ];
+}
+
+function projectChinaCoordinate(width: number, height: number): CoordinateProjector {
+  const longitudeSpan = chinaGeoBounds.lonMax - chinaGeoBounds.lonMin;
+  const latitudeSpan = chinaGeoBounds.latMax - chinaGeoBounds.latMin;
+
+  return (longitude, latitude) => [
+    ((longitude - chinaGeoBounds.lonMin) / longitudeSpan) * width,
+    height - ((latitude - chinaGeoBounds.latMin) / latitudeSpan) * height,
+  ];
+}
+
+function formatPathNumber(value: number): string {
+  return Number.isFinite(value) ? Number(value.toFixed(3)).toString() : '0';
+}
+
+function positionToPoint(position: Position, projectCoordinate: CoordinateProjector): string {
+  const [longitude, latitude] = position;
+  const [x, y] = projectCoordinate(longitude, latitude);
+  return `${formatPathNumber(x)} ${formatPathNumber(y)}`;
+}
+
+function ringToPath(ring: Position[], projectCoordinate: CoordinateProjector): string {
+  if (ring.length < 2) {
+    return '';
+  }
+
+  const [firstPosition, ...restPositions] = ring;
+  const restPath = restPositions
+    .map((position) => `L${positionToPoint(position, projectCoordinate)}`)
+    .join('');
+
+  return `M${positionToPoint(firstPosition, projectCoordinate)}${restPath}Z`;
+}
+
+function polygonToPath(polygon: Polygon, projectCoordinate: CoordinateProjector): string {
+  return polygon.coordinates
+    .map((ring) => ringToPath(ring, projectCoordinate))
+    .filter(Boolean)
+    .join('');
+}
+
+function multiPolygonToPath(
+  multiPolygon: MultiPolygon,
+  projectCoordinate: CoordinateProjector,
+): string {
+  return multiPolygon.coordinates
+    .map((polygonCoordinates) =>
+      polygonToPath({ coordinates: polygonCoordinates, type: 'Polygon' }, projectCoordinate),
+    )
+    .filter(Boolean)
+    .join('');
+}
+
+function featureToPath(feature: LocalMapFeature, projectCoordinate: CoordinateProjector): string {
+  if (feature.geometry.type === 'Polygon') {
+    return polygonToPath(feature.geometry, projectCoordinate);
+  }
+
+  if (feature.geometry.type === 'MultiPolygon') {
+    return multiPolygonToPath(feature.geometry, projectCoordinate);
+  }
+
+  return '';
+}
+
+function getLocalMapPathCode(
+  scope: ProcessFlowGraphMapScope,
+  feature: LocalMapFeature,
+): string | undefined {
+  if (scope === 'china') {
+    const rawAdcode = feature.properties?.adcode;
+    return rawAdcode === undefined ? undefined : String(rawAdcode);
+  }
+
+  return feature.properties?.ISO_A2 || feature.properties?.ISO_A3;
+}
+
+function getLocalMapPathLabel(scope: ProcessFlowGraphMapScope, feature: LocalMapFeature): string {
+  if (scope === 'china') {
+    return feature.properties?.name || 'China region';
+  }
+
+  return feature.properties?.NAME_EN || feature.properties?.NAME || 'World region';
+}
+
+function shouldUseLocalMapFeature(
+  scope: ProcessFlowGraphMapScope,
+  feature: LocalMapFeature,
+): boolean {
+  if (!feature.geometry) {
+    return false;
+  }
+
+  if (scope === 'china') {
+    const rawAdcode = feature.properties?.adcode;
+    return rawAdcode !== undefined && String(rawAdcode) !== '100000';
+  }
+
+  return Boolean(feature.properties?.NAME || feature.properties?.NAME_EN);
+}
+
+async function loadLocalGeoMapBackground(
+  scope: ProcessFlowGraphMapScope,
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
+): Promise<ProcessFlowGraphMapBackground | undefined> {
+  const response = await fetch(localGeoMapAssetPaths[scope], { credentials: 'omit' });
+
+  if (!response.ok) {
+    return undefined;
+  }
+
+  const mapData = (await response.json()) as LocalMapFeatureCollection;
+  const projectCoordinate =
+    scope === 'china'
+      ? projectChinaCoordinate(frame.width, frame.height)
+      : projectWorldCoordinate(frame.width, frame.height);
+  const paths = mapData.features
+    .filter((feature) => shouldUseLocalMapFeature(scope, feature))
+    .map((feature, index) => {
+      const code = getLocalMapPathCode(scope, feature);
+      const path = featureToPath(feature, projectCoordinate);
+
+      return {
+        code,
+        id: `${scope}-${code ?? index}`,
+        label: getLocalMapPathLabel(scope, feature),
+        path,
+      };
+    })
+    .filter((path) => path.path);
+
+  if (!paths.length) {
+    return undefined;
+  }
+
+  return {
+    height: frame.height,
+    paths,
+    scope,
+    width: frame.width,
+  };
+}
+
+async function resolveGeoMapBackground(
+  background: ProcessFlowGraphMapBackground,
+): Promise<ProcessFlowGraphMapBackground> {
+  if (!isWorkerFrameOnlyBackground(background)) {
+    return background;
+  }
+
+  geoMapBackgroundFallbackRequests[background.scope] ??= loadLocalGeoMapBackground(
+    background.scope,
+    background,
+  );
+
+  return (await geoMapBackgroundFallbackRequests[background.scope]) ?? background;
+}
 
 function getProcessFlowGraphCacheBaseUrl(): string {
   const rawBaseUrl =
@@ -300,7 +509,11 @@ function parseAdjacency(
   }, {});
 }
 
-function parseLayout(buffer: ArrayBuffer, nodes: ProcessFlowGraphNode[]): ProcessFlowGraphLayout {
+function parseLayout(
+  buffer: ArrayBuffer,
+  nodes: ProcessFlowGraphNode[],
+  options: { flipY?: boolean } = {},
+): ProcessFlowGraphLayout {
   const view = new DataView(buffer);
   assertMagic(view, layoutMagic, 'layout');
 
@@ -318,7 +531,7 @@ function parseLayout(buffer: ArrayBuffer, nodes: ProcessFlowGraphNode[]): Proces
 
     const node = nodes[index];
     if (node) {
-      layout[node.id] = [x, y, z];
+      layout[node.id] = [x, options.flipY ? -y : y, z];
     }
   }
 
@@ -558,9 +771,10 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
     ...(viewPayload.processLinks ?? []),
   ];
   const indexes = buildNodeIndexes(nodes);
+  const background = await resolveGeoMapBackground(viewPayload.background);
 
   return {
-    background: viewPayload.background,
+    background,
     data: {
       adjacency: viewPayload.adjacency,
       buildId: viewPayload.buildId || buildManifest.buildId || activeManifest.activeBuildId,
@@ -577,7 +791,8 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
       },
       layouts: {
         expanded2d: {},
-        geoMap2d: parseLayout(layoutBuffer, nodes),
+        // Worker geo-map layouts are emitted in map-pixel y-down space; WebGL uses y-up.
+        geoMap2d: parseLayout(layoutBuffer, nodes, { flipY: true }),
         sphere3d: {},
       },
       nodes,
