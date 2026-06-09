@@ -109,12 +109,15 @@ type CacheManifests = {
   buildManifest: BuildManifest;
 };
 type LocalMapFeatureProperties = {
+  ADM0_ISO?: string;
   adcode?: number | string;
   ISO_A2?: string;
+  ISO_A2_EH?: string;
   ISO_A3?: string;
   NAME?: string;
   NAME_EN?: string;
   name?: string;
+  POSTAL?: string;
 };
 type LocalMapFeature = Feature<Geometry, LocalMapFeatureProperties>;
 type LocalMapFeatureCollection = FeatureCollection<Geometry, LocalMapFeatureProperties>;
@@ -239,7 +242,13 @@ function getLocalMapPathCode(
     return rawAdcode === undefined ? undefined : String(rawAdcode);
   }
 
-  return feature.properties?.ISO_A2 || feature.properties?.ISO_A3;
+  return [
+    feature.properties?.ISO_A2_EH,
+    feature.properties?.ISO_A2,
+    feature.properties?.POSTAL,
+    feature.properties?.ADM0_ISO,
+    feature.properties?.ISO_A3,
+  ].find((code) => code && code !== '-99');
 }
 
 function getLocalMapPathLabel(scope: ProcessFlowGraphMapScope, feature: LocalMapFeature): string {
