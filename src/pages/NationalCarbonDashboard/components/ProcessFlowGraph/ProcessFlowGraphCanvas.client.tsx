@@ -33,6 +33,7 @@ export default function ProcessFlowGraphCanvas({
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<ProcessFlowGraphEngine | null>(null);
+  const graphStateRef = useRef({ data, layoutMode, selection });
   const [hover, setHover] = useState<ProcessFlowGraphHoverState | null>(null);
   const hoveredNode = useMemo(() => getProcessFlowGraphNode(data, hover?.nodeId), [data, hover]);
 
@@ -75,20 +76,29 @@ export default function ProcessFlowGraphCanvas({
   }, [onNodeClick]);
 
   useEffect(() => {
-    engineRef.current?.setData(data);
-  }, [data]);
+    const engine = engineRef.current;
+    if (!engine) {
+      graphStateRef.current = { data, layoutMode, selection };
+      return;
+    }
 
-  useEffect(() => {
-    engineRef.current?.setLayoutMode(layoutMode);
-  }, [layoutMode]);
+    const previousState = graphStateRef.current;
+    const dataChanged = previousState.data !== data;
+    const layoutChanged = previousState.layoutMode !== layoutMode;
+    const selectionChanged = previousState.selection !== selection;
+
+    if (dataChanged || layoutChanged) {
+      engine.setDataLayoutAndSelection(data, layoutMode, selection);
+    } else if (selectionChanged) {
+      engine.setSelection(selection);
+    }
+
+    graphStateRef.current = { data, layoutMode, selection };
+  }, [data, layoutMode, selection]);
 
   useEffect(() => {
     engineRef.current?.setInteractionMode(interactionMode);
   }, [interactionMode]);
-
-  useEffect(() => {
-    engineRef.current?.setSelection(selection);
-  }, [selection]);
 
   return (
     <div className={styles.canvasHost} ref={containerRef}>
@@ -109,7 +119,7 @@ export default function ProcessFlowGraphCanvas({
             viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
           >
             {geoMapBackground.paths.map((mapPath) => (
-              <path d={mapPath.path} data-code={mapPath.code} key={mapPath.id}>
+              <path d={mapPath.path} data-code={mapPath.code} key={mapPath.id} pathLength={1}>
                 <title>{mapPath.label}</title>
               </path>
             ))}

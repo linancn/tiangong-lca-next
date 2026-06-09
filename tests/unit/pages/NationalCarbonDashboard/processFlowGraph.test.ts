@@ -1,4 +1,8 @@
 import {
+  buildCategorizedExpandedLayout,
+  summarizeCategorizedExpandedLayout,
+} from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/expandedLayout';
+import {
   buildProcessFlowGraphGeoMapView,
   isChinaProcessFlowLocation,
   loadProcessFlowGeoMapAssets,
@@ -14,7 +18,8 @@ import type {
   ProcessFlowGraphEdge,
 } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes';
 import { shouldRenderProcessFlowBaseEdges } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphVisibility';
-import type { FeatureCollection, Geometry } from 'geojson';
+import { geoNaturalEarth1, geoPath } from 'd3-geo';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 
 const flowAId = 'flow:A@v1';
 const processOneId = 'process:one@v1';
@@ -31,6 +36,11 @@ const noLocationProcessId = 'process:no-location@v1';
 const malformedChinaFlowId = 'flow:malformed-china@v1';
 const zhejiangFlowId = 'flow:zhejiang@v1';
 const hongKongProcessId = 'process:hong-kong@v1';
+const testWorldViewBox = {
+  height: 640,
+  padding: 28,
+  width: 1120,
+} as const;
 
 const nodes: ProcessFlowGraphData['nodes'] = [
   {
@@ -206,6 +216,181 @@ function createProcessFlowGraphFixture(): ProcessFlowGraphData {
       flowCount: 3,
       maxDegree: 2,
       processCount: 2,
+    },
+  };
+}
+
+function createScatteredCategorizedExpandedFixture(): ProcessFlowGraphData {
+  const clusterIds = ['energy', 'materials', 'transport'] as const;
+  const scatteredLayout: Array<{
+    clusterId: (typeof clusterIds)[number];
+    id: string;
+    kind: ProcessFlowGraphData['nodes'][number]['kind'];
+    position: [number, number, number];
+  }> = [
+    { clusterId: 'energy', id: 'energy-a', kind: 'process', position: [-420, -220, 6] },
+    { clusterId: 'materials', id: 'materials-a', kind: 'process', position: [-250, 180, 6] },
+    { clusterId: 'transport', id: 'transport-a', kind: 'process', position: [-40, -260, 6] },
+    { clusterId: 'energy', id: 'energy-b', kind: 'flow', position: [220, 210, 0] },
+    { clusterId: 'materials', id: 'materials-b', kind: 'flow', position: [20, -120, 0] },
+    { clusterId: 'transport', id: 'transport-b', kind: 'flow', position: [390, 160, 0] },
+    { clusterId: 'energy', id: 'energy-c', kind: 'process', position: [460, -180, 6] },
+    { clusterId: 'materials', id: 'materials-c', kind: 'process', position: [300, -260, 6] },
+    { clusterId: 'transport', id: 'transport-c', kind: 'process', position: [-360, 260, 6] },
+  ];
+  const nodes = scatteredLayout.map<ProcessFlowGraphData['nodes'][number]>((item, index) => ({
+    category: item.clusterId,
+    clusterId: item.clusterId,
+    degree: scatteredLayout.length - index,
+    flowType: item.kind === 'flow' ? 'Product flow' : undefined,
+    id: `node:${item.id}`,
+    kind: item.kind,
+    location: 'CN',
+    name: item.id,
+    version: '01.00.000',
+  }));
+  const nodeById = Object.fromEntries(nodes.map((node, index) => [node.id, index]));
+  const flowById = Object.fromEntries(
+    nodes
+      .map((node, index) => [node, index] as const)
+      .filter(([node]) => node.kind === 'flow')
+      .map(([node, index]) => [node.id, index]),
+  );
+  const processById = Object.fromEntries(
+    nodes
+      .map((node, index) => [node, index] as const)
+      .filter(([node]) => node.kind === 'process')
+      .map(([node, index]) => [node.id, index]),
+  );
+  const expanded2d = Object.fromEntries(
+    scatteredLayout.map((item) => [`node:${item.id}`, item.position]),
+  ) as ProcessFlowGraphData['layouts']['expanded2d'];
+
+  return {
+    adjacency: Object.fromEntries(nodes.map((node) => [node.id, []])),
+    buildId: 'categorized-expanded-fixture',
+    clusters: clusterIds.map((clusterId) => ({
+      count: nodes.filter((node) => node.clusterId === clusterId).length,
+      id: clusterId,
+      label: clusterId,
+    })),
+    edges: [],
+    indexes: {
+      edgeById: {},
+      flowById,
+      nodeById,
+      processById,
+      searchFlows: nodes
+        .filter((node) => node.kind === 'flow')
+        .map((node) => ({
+          degree: node.degree,
+          flowType: node.flowType,
+          id: node.id,
+          name: node.name,
+          version: node.version,
+        })),
+    },
+    layouts: {
+      expanded2d,
+      sphere3d: expanded2d,
+    },
+    nodes,
+    schemaVersion: 'process_flow_graph_v1',
+    stats: {
+      edgeCount: 0,
+      flowCount: Object.keys(flowById).length,
+      maxDegree: scatteredLayout.length,
+      processCount: Object.keys(processById).length,
+    },
+  };
+}
+
+function createDenseCategorizedExpandedFixture(): ProcessFlowGraphData {
+  const clusterIds = ['energy', 'materials', 'transport', 'waste', 'water', 'chemical'] as const;
+  const nodeCount = 1200;
+  const nodes = Array.from({ length: nodeCount }, (_, index) => {
+    const clusterId = clusterIds[index % clusterIds.length];
+    const angle = index * 2.399963229728653;
+    const radius = Math.sqrt((index + 0.5) / nodeCount) * 520;
+
+    return {
+      category: clusterId,
+      clusterId,
+      degree: nodeCount - index,
+      flowType: index % 3 === 0 ? 'Product flow' : undefined,
+      id: `dense:${clusterId}:${index}`,
+      kind: index % 3 === 0 ? 'flow' : 'process',
+      location: 'CN',
+      name: `dense ${clusterId} ${index}`,
+      position: [
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius * 0.62,
+        index % 3 === 0 ? 0 : 6,
+      ],
+      version: '01.00.000',
+    } satisfies ProcessFlowGraphData['nodes'][number] & { position: [number, number, number] };
+  });
+  const graphNodes = nodes.map((node) => ({
+    category: node.category,
+    clusterId: node.clusterId,
+    degree: node.degree,
+    flowType: node.flowType,
+    id: node.id,
+    kind: node.kind,
+    location: node.location,
+    name: node.name,
+    version: node.version,
+  }));
+  const nodeById = Object.fromEntries(graphNodes.map((node, index) => [node.id, index]));
+  const flowById = Object.fromEntries(
+    graphNodes
+      .map((node, index) => [node, index] as const)
+      .filter(([node]) => node.kind === 'flow')
+      .map(([node, index]) => [node.id, index]),
+  );
+  const processById = Object.fromEntries(
+    graphNodes
+      .map((node, index) => [node, index] as const)
+      .filter(([node]) => node.kind === 'process')
+      .map(([node, index]) => [node.id, index]),
+  );
+  const expanded2d = Object.fromEntries(nodes.map((node) => [node.id, node.position]));
+
+  return {
+    adjacency: Object.fromEntries(graphNodes.map((node) => [node.id, []])),
+    buildId: 'dense-categorized-expanded-fixture',
+    clusters: clusterIds.map((clusterId) => ({
+      count: graphNodes.filter((node) => node.clusterId === clusterId).length,
+      id: clusterId,
+      label: clusterId,
+    })),
+    edges: [],
+    indexes: {
+      edgeById: {},
+      flowById,
+      nodeById,
+      processById,
+      searchFlows: graphNodes
+        .filter((node) => node.kind === 'flow')
+        .map((node) => ({
+          degree: node.degree,
+          flowType: node.flowType,
+          id: node.id,
+          name: node.name,
+          version: node.version,
+        })),
+    },
+    layouts: {
+      expanded2d: expanded2d as ProcessFlowGraphData['layouts']['expanded2d'],
+      sphere3d: expanded2d as ProcessFlowGraphData['layouts']['sphere3d'],
+    },
+    nodes: graphNodes,
+    schemaVersion: 'process_flow_graph_v1',
+    stats: {
+      edgeCount: 0,
+      flowCount: Object.keys(flowById).length,
+      maxDegree: nodeCount,
+      processCount: Object.keys(processById).length,
     },
   };
 }
@@ -524,6 +709,30 @@ function createGeoMapAssets(): {
       ],
       type: 'FeatureCollection',
     },
+  };
+}
+
+function getWorldFeatureSceneBounds(
+  world: FeatureCollection<Geometry, Record<string, unknown>>,
+  feature: Feature<Geometry, Record<string, unknown>>,
+) {
+  const projection = geoNaturalEarth1().fitExtent(
+    [
+      [testWorldViewBox.padding, testWorldViewBox.padding],
+      [
+        testWorldViewBox.width - testWorldViewBox.padding,
+        testWorldViewBox.height - testWorldViewBox.padding,
+      ],
+    ],
+    world,
+  );
+  const [[left, top], [right, bottom]] = geoPath(projection).bounds(feature);
+
+  return {
+    maxX: right - testWorldViewBox.width / 2,
+    maxY: testWorldViewBox.height / 2 - top,
+    minX: left - testWorldViewBox.width / 2,
+    minY: testWorldViewBox.height / 2 - bottom,
   };
 }
 
@@ -871,6 +1080,34 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(graph.stats.edgeCount).toBe(4);
   });
 
+  it('rebuilds expanded layout into category groups while preserving the graph outline', () => {
+    const graph = createScatteredCategorizedExpandedFixture();
+    const originalSummary = summarizeCategorizedExpandedLayout(graph, graph.layouts.expanded2d);
+    const categorizedLayout = buildCategorizedExpandedLayout(graph);
+    const categorizedSummary = summarizeCategorizedExpandedLayout(graph, categorizedLayout);
+
+    expect(Object.keys(categorizedLayout)).toHaveLength(graph.nodes.length);
+    Object.values(categorizedLayout).forEach((position) => {
+      expect(position.every(Number.isFinite)).toBe(true);
+    });
+    expect(categorizedSummary.clusterCount).toBe(3);
+    expect(categorizedSummary.meanClusterDistance).toBeLessThan(
+      originalSummary.meanClusterDistance * 0.72,
+    );
+    expect(categorizedSummary.width).toBeGreaterThan(originalSummary.width * 0.62);
+    expect(categorizedSummary.height).toBeGreaterThan(originalSummary.height * 0.62);
+  });
+
+  it('fills the expanded outline instead of leaving a central void', () => {
+    const graph = createDenseCategorizedExpandedFixture();
+    const categorizedLayout = buildCategorizedExpandedLayout(graph);
+    const categorizedSummary = summarizeCategorizedExpandedLayout(graph, categorizedLayout);
+
+    expect(categorizedSummary.clusterCount).toBe(6);
+    expect(categorizedSummary.filledCellRatio).toBeGreaterThan(0.82);
+    expect(categorizedSummary.centralFilledCellRatio).toBeGreaterThan(0.9);
+  });
+
   it('classifies China location codes and retries map asset loading after failure', async () => {
     const assets = createGeoMapAssets();
     const failedFetch = jest
@@ -914,6 +1151,9 @@ describe('NationalCarbonDashboard process-flow graph', () => {
       .filter((flowId) => flowId !== flowAId);
 
     expect(directFlowAEdges).toHaveLength(2);
+    expect(selection.highlightedNodeIds).toEqual(
+      new Set([flowAId, processOneId, processTwoId, byproductFlowId, outputFlowId]),
+    );
     expect(selection.relatedProcessIds).toEqual(new Set([processOneId, processTwoId]));
     expect(otherOutputFlowIds).toEqual([byproductFlowId, outputFlowId]);
     otherOutputFlowIds.forEach((flowId) => {
@@ -939,6 +1179,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
 
     expect(selection.selectedNodeId).toBe(processOneId);
     expect(selection.highlightedEdgeIds).toEqual(new Set(['exchange:0', 'exchange:1']));
+    expect(selection.highlightedNodeIds).toEqual(new Set([processOneId, flowAId, byproductFlowId]));
     expect(selection.inputFlowIds).toEqual(new Set([flowAId]));
     expect(selection.outputFlowIds).toEqual(new Set([byproductFlowId]));
     expect(selection.relatedFlowIds).toEqual(new Set([flowAId, byproductFlowId]));
@@ -1067,6 +1308,122 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(yRange).toBeGreaterThan(40);
   });
 
+  it('keeps dense small-country nodes inside the feature bounds', () => {
+    const assets = createGeoMapAssets();
+    const tinyCountry: Feature<Geometry, Record<string, unknown>> = {
+      geometry: {
+        coordinates: [
+          [
+            [20, 10],
+            [20.35, 10],
+            [20.35, 10.35],
+            [20, 10.35],
+            [20, 10],
+          ],
+        ],
+        type: 'Polygon',
+      },
+      properties: {
+        ISO_A2: 'TS',
+        ISO_A2_EH: 'TS',
+        LABEL_X: 20.175,
+        LABEL_Y: 10.175,
+        NAME: 'Tiny sample country',
+      },
+      type: 'Feature',
+    };
+    const world = {
+      ...assets.world,
+      features: [...assets.world.features, tinyCountry],
+    };
+    const worldView = buildProcessFlowGraphGeoMapView(createDenseLocationGraph('TS', 64), 'world', {
+      ...assets,
+      world,
+    });
+    const positions = Object.values(worldView.data.layouts.geoMap2d ?? {});
+    const bounds = getWorldFeatureSceneBounds(world, tinyCountry);
+
+    expect(positions).toHaveLength(64);
+    positions.forEach(([x, y]) => {
+      expect(x).toBeGreaterThanOrEqual(bounds.minX - 0.01);
+      expect(x).toBeLessThanOrEqual(bounds.maxX + 0.01);
+      expect(y).toBeGreaterThanOrEqual(bounds.minY - 0.01);
+      expect(y).toBeLessThanOrEqual(bounds.maxY + 0.01);
+    });
+  });
+
+  it('uses the primary country map unit when a world code has overseas units', () => {
+    const assets = createGeoMapAssets();
+    const mainland: Feature<Geometry, Record<string, unknown>> = {
+      geometry: {
+        coordinates: [
+          [
+            [20, 10],
+            [24, 10],
+            [24, 14],
+            [20, 14],
+            [20, 10],
+          ],
+        ],
+        type: 'Polygon',
+      },
+      properties: {
+        ADMIN: 'Testland',
+        GEOUNIT: 'Testland',
+        HOMEPART: 1,
+        ISO_A2: 'TS',
+        ISO_A2_EH: 'TS',
+        LABEL_X: 22,
+        LABEL_Y: 12,
+        NAME: 'Testland',
+      },
+      type: 'Feature',
+    };
+    const overseasUnit: Feature<Geometry, Record<string, unknown>> = {
+      geometry: {
+        coordinates: [
+          [
+            [-40, -30],
+            [-36, -30],
+            [-36, -26],
+            [-40, -26],
+            [-40, -30],
+          ],
+        ],
+        type: 'Polygon',
+      },
+      properties: {
+        ADMIN: 'Testland',
+        GEOUNIT: 'Testland Island',
+        HOMEPART: -99,
+        ISO_A2: '-99',
+        ISO_A2_EH: 'TS',
+        LABEL_X: -38,
+        LABEL_Y: -28,
+        NAME: 'Testland Island',
+      },
+      type: 'Feature',
+    };
+    const world = {
+      ...assets.world,
+      features: [...assets.world.features, mainland, overseasUnit],
+    };
+    const worldView = buildProcessFlowGraphGeoMapView(createDenseLocationGraph('TS', 8), 'world', {
+      ...assets,
+      world,
+    });
+    const positions = Object.values(worldView.data.layouts.geoMap2d ?? {});
+    const mainlandBounds = getWorldFeatureSceneBounds(world, mainland);
+
+    expect(positions).toHaveLength(8);
+    positions.forEach(([x, y]) => {
+      expect(x).toBeGreaterThanOrEqual(mainlandBounds.minX - 0.01);
+      expect(x).toBeLessThanOrEqual(mainlandBounds.maxX + 0.01);
+      expect(y).toBeGreaterThanOrEqual(mainlandBounds.minY - 0.01);
+      expect(y).toBeLessThanOrEqual(mainlandBounds.maxY + 0.01);
+    });
+  });
+
   it('omits unknown world-map regions instead of placing them in a fallback block', () => {
     const worldView = buildProcessFlowGraphGeoMapView(
       createDenseLocationGraph('UNKNOWN-REGION', 9),
@@ -1170,7 +1527,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(Object.values(worldView.data.layouts.geoMap2d ?? {})).toHaveLength(2);
   });
 
-  it('hides overview base edges in map mode until a node is selected', () => {
+  it('hides base edges in map overview and all selected views', () => {
     const emptySelection = createEmptyProcessFlowGraphSelection();
     const selectedSelection = getProcessFlowGraphSelection(
       createProcessFlowGraphFixture(),
@@ -1180,6 +1537,8 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(shouldRenderProcessFlowBaseEdges('sphere3d', emptySelection)).toBe(true);
     expect(shouldRenderProcessFlowBaseEdges('expanded2d', emptySelection)).toBe(true);
     expect(shouldRenderProcessFlowBaseEdges('geoMap2d', emptySelection)).toBe(false);
-    expect(shouldRenderProcessFlowBaseEdges('geoMap2d', selectedSelection)).toBe(true);
+    expect(shouldRenderProcessFlowBaseEdges('sphere3d', selectedSelection)).toBe(false);
+    expect(shouldRenderProcessFlowBaseEdges('expanded2d', selectedSelection)).toBe(false);
+    expect(shouldRenderProcessFlowBaseEdges('geoMap2d', selectedSelection)).toBe(false);
   });
 });

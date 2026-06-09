@@ -359,16 +359,44 @@ function isPointInScenePolygon(point: [number, number], polygon: ScenePolygon): 
   );
 }
 
-function createSceneContains(
+function createScenePolygons(
   features: MapFeature[],
   projection: (coordinate: [number, number]) => [number, number] | null,
   width: number,
   height: number,
-): PlacementArea['contains'] {
-  const polygons = features.flatMap((feature) =>
+): ScenePolygon[] {
+  return features.flatMap((feature) =>
     projectGeometryPolygons(feature.geometry, projection, width, height),
   );
+}
 
+function getScenePolygonsBounds(polygons: ScenePolygon[]): SceneBounds | undefined {
+  const points = polygons.flatMap((polygon) => polygon.flat());
+
+  if (!points.length) {
+    return undefined;
+  }
+
+  const xValues = points.map(([x]) => x).filter(Number.isFinite);
+  const yValues = points.map(([, y]) => y).filter(Number.isFinite);
+
+  if (!xValues.length || !yValues.length) {
+    return undefined;
+  }
+
+  const minX = Math.min(...xValues);
+  const maxX = Math.max(...xValues);
+  const minY = Math.min(...yValues);
+  const maxY = Math.max(...yValues);
+
+  if (maxX <= minX || maxY <= minY) {
+    return undefined;
+  }
+
+  return { maxX, maxY, minX, minY };
+}
+
+function createSceneContains(polygons: ScenePolygon[]): PlacementArea['contains'] {
   return (point) => polygons.some((polygon) => isPointInScenePolygon(point, polygon));
 }
 
@@ -422,43 +450,19 @@ function getWorldPrimaryLocation(location: string): string {
   return location;
 }
 
-function toSceneBounds(
-  bounds: [[number, number], [number, number]],
-  width: number,
-  height: number,
-): SceneBounds | undefined {
-  const [[left, top], [right, bottom]] = bounds;
-
-  if (![left, top, right, bottom].every(Number.isFinite) || right <= left || bottom <= top) {
-    return undefined;
-  }
-
-  return {
-    maxX: right - width / 2,
-    maxY: height / 2 - top,
-    minX: left - width / 2,
-    minY: height / 2 - bottom,
-  };
-}
-
 function createFeaturePlacementArea({
   feature,
   height,
-  pathGenerator,
   projection,
   width,
 }: {
   feature: MapFeature;
   height: number;
-  pathGenerator: ReturnType<typeof geoPath>;
   projection: InvertibleProjection;
   width: number;
 }): PlacementArea | undefined {
-  const bounds = toSceneBounds(
-    pathGenerator.bounds(feature) as [[number, number], [number, number]],
-    width,
-    height,
-  );
+  const polygons = createScenePolygons([feature], projection, width, height);
+  const bounds = getScenePolygonsBounds(polygons);
 
   if (!bounds) {
     return undefined;
@@ -466,28 +470,23 @@ function createFeaturePlacementArea({
 
   return {
     bounds,
-    contains: createSceneContains([feature], projection, width, height),
+    contains: createSceneContains(polygons),
   };
 }
 
 function createFeatureCollectionPlacementArea({
   height,
   mapData,
-  pathGenerator,
   projection,
   width,
 }: {
   height: number;
   mapData: MapData;
-  pathGenerator: ReturnType<typeof geoPath>;
   projection: InvertibleProjection;
   width: number;
 }): PlacementArea | undefined {
-  const bounds = toSceneBounds(
-    pathGenerator.bounds(mapData) as [[number, number], [number, number]],
-    width,
-    height,
-  );
+  const polygons = createScenePolygons(mapData.features, projection, width, height);
+  const bounds = getScenePolygonsBounds(polygons);
 
   if (!bounds) {
     return undefined;
@@ -495,20 +494,18 @@ function createFeatureCollectionPlacementArea({
 
   return {
     bounds,
-    contains: createSceneContains(mapData.features, projection, width, height),
+    contains: createSceneContains(polygons),
   };
 }
 
 function buildChinaProvinceAnchors({
   china,
   height,
-  pathGenerator,
   projection,
   width,
 }: {
   china: MapData;
   height: number;
-  pathGenerator: ReturnType<typeof geoPath>;
   projection: (coordinate: [number, number]) => [number, number] | null;
   width: number;
 }): Map<string, Anchor> {
@@ -530,7 +527,6 @@ function buildChinaProvinceAnchors({
       area: createFeaturePlacementArea({
         feature,
         height,
-        pathGenerator,
         projection: projection as InvertibleProjection,
         width,
       }),
@@ -545,6 +541,12 @@ function buildChinaProvinceAnchors({
   });
 
   return provinceAnchors;
+}
+
+function getWorldCountryAnchorFeatures(features: MapFeature[]): MapFeature[] {
+  const homepartFeatures = features.filter((feature) => feature.properties?.HOMEPART === 1);
+
+  return homepartFeatures.length ? homepartFeatures : features;
 }
 
 function buildWorldProjectionBundle(world: MapData, china: MapData): ProjectionBundle {
@@ -571,24 +573,43 @@ function buildWorldProjectionBundle(world: MapData, china: MapData): ProjectionB
     return [
       {
         code,
-        id: `world:${code ?? index}`,
+        id: code ? `world:${code}:${index}` : `world:${index}`,
         label: getWorldLabel(feature),
         path,
       },
     ];
   });
   const countryAnchors = new Map<string, Anchor>();
+  const featuresByCountryCode = displayFeatures.reduce<Map<string, MapFeature[]>>(
+    (featuresByCode, feature) => {
+      const code = getWorldCode(feature);
+      if (!code) {
+        return featuresByCode;
+      }
 
-  displayFeatures.forEach((feature) => {
-    const code = getWorldCode(feature);
-    if (!code) {
-      return;
-    }
+      const features = featuresByCode.get(code) ?? [];
+      features.push(feature);
+      featuresByCode.set(code, features);
 
-    const labelCoordinate = getCoordinate([
-      getNumber(feature.properties?.LABEL_X),
-      getNumber(feature.properties?.LABEL_Y),
-    ]);
+      return featuresByCode;
+    },
+    new Map<string, MapFeature[]>(),
+  );
+
+  featuresByCountryCode.forEach((features, code) => {
+    const anchorFeatures = getWorldCountryAnchorFeatures(features);
+    const anchorMapData: MapData = {
+      ...displayMapData,
+      features: anchorFeatures,
+    };
+    const primaryFeature = anchorFeatures.length === 1 ? anchorFeatures[0] : undefined;
+
+    const labelCoordinate = primaryFeature
+      ? getCoordinate([
+          getNumber(primaryFeature.properties?.LABEL_X),
+          getNumber(primaryFeature.properties?.LABEL_Y),
+        ])
+      : undefined;
     const projectedLabelCoordinate = labelCoordinate
       ? projectCoordinate(
           projection as (coordinate: [number, number]) => [number, number] | null,
@@ -598,15 +619,14 @@ function buildWorldProjectionBundle(world: MapData, china: MapData): ProjectionB
         )
       : undefined;
     const centroidCoordinate = toSceneCoordinate(
-      pathGenerator.centroid(feature) as [number, number],
+      pathGenerator.centroid(anchorMapData) as [number, number],
       worldViewBox.width,
       worldViewBox.height,
     );
     const anchor = createAnchor({
-      area: createFeaturePlacementArea({
-        feature,
+      area: createFeatureCollectionPlacementArea({
         height: worldViewBox.height,
-        pathGenerator,
+        mapData: anchorMapData,
         projection: projection as InvertibleProjection,
         width: worldViewBox.width,
       }),
@@ -662,7 +682,6 @@ function buildWorldProjectionBundle(world: MapData, china: MapData): ProjectionB
   const provinceAnchors = buildChinaProvinceAnchors({
     china,
     height: worldViewBox.height,
-    pathGenerator,
     projection: projection as (coordinate: [number, number]) => [number, number] | null,
     width: worldViewBox.width,
   });
@@ -740,14 +759,12 @@ function buildChinaProjectionBundle(china: MapData): ProjectionBundle {
   const provinceAnchors = buildChinaProvinceAnchors({
     china: displayMapData,
     height: chinaViewBox.height,
-    pathGenerator,
     projection: projection as (coordinate: [number, number]) => [number, number] | null,
     width: chinaViewBox.width,
   });
   const chinaCountryArea = createFeatureCollectionPlacementArea({
     height: chinaViewBox.height,
     mapData: displayMapData,
-    pathGenerator,
     projection: projection as InvertibleProjection,
     width: chinaViewBox.width,
   });
@@ -919,7 +936,7 @@ function getAreaDistributedPositions(anchor: Anchor, anchorCount: number): [numb
 
   const { bounds } = anchor.area;
   const seed = (getStableHash(anchor.key) % 997) + 1;
-  const attempts = Math.max(48, Math.min(6000, anchorCount * 24));
+  const attempts = Math.max(128, Math.min(240000, anchorCount * 160));
   const positions: [number, number][] = [];
 
   for (let attempt = 0; attempt < attempts && positions.length < anchorCount; attempt += 1) {
@@ -929,6 +946,33 @@ function getAreaDistributedPositions(anchor: Anchor, anchorCount: number): [numb
 
     if (anchor.area.contains([x, y])) {
       positions.push([x, y]);
+    }
+  }
+
+  if (positions.length > 0 && positions.length < anchorCount) {
+    const xNudge = Math.min(1.6, Math.max(0.18, (bounds.maxX - bounds.minX) / 900));
+    const yNudge = Math.min(1.6, Math.max(0.18, (bounds.maxY - bounds.minY) / 900));
+
+    for (let index = positions.length; index < anchorCount; index += 1) {
+      const source = positions[index % positions.length];
+      let nextPosition = source;
+
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const sampleIndex = seed + index * 11 + attempt;
+        const angle = getHaltonValue(sampleIndex, 5) * Math.PI * 2;
+        const radius = 0.35 + getHaltonValue(sampleIndex, 7) * 0.65;
+        const candidate: [number, number] = [
+          source[0] + Math.cos(angle) * xNudge * radius,
+          source[1] + Math.sin(angle) * yNudge * radius,
+        ];
+
+        if (anchor.area.contains(candidate)) {
+          nextPosition = candidate;
+          break;
+        }
+      }
+
+      positions.push(nextPosition);
     }
   }
 

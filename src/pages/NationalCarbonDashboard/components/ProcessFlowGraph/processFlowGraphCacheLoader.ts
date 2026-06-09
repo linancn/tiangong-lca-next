@@ -1,8 +1,10 @@
+import type { ProcessFlowGraphGeoMapView, ProcessFlowGraphMapBackground } from './geoMapLayout';
 import type {
   ProcessFlowGraphCluster,
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
   ProcessFlowGraphLayout,
+  ProcessFlowGraphMapScope,
   ProcessFlowGraphNode,
   ProcessFlowGraphSearchItem,
 } from './graphTypes';
@@ -56,6 +58,52 @@ type LookupPayload = {
   flowById: Record<string, number>;
   nodeById: Record<string, number>;
   processById: Record<string, number>;
+};
+
+type GeoMapViewPayload = {
+  background: ProcessFlowGraphMapBackground;
+  buildId: string;
+  clusters: ProcessFlowGraphCluster[];
+  geoMapFrame: {
+    height: number;
+    width: number;
+  };
+  nodes: ProcessFlowGraphNode[];
+  schemaVersion: 'process_flow_graph_geo_map_view_v1';
+  scope: ProcessFlowGraphMapScope;
+  processLinks?: ProcessFlowGraphEdge[];
+  searchFlows: ProcessFlowGraphSearchItem[];
+  stats: ProcessFlowGraphData['stats'];
+  units?: string[];
+};
+
+type CacheManifests = {
+  activeManifest: ActiveManifest;
+  baseUrl: string;
+  buildManifest: BuildManifest;
+};
+
+const geoMapCacheFileKeys: Record<
+  ProcessFlowGraphMapScope,
+  {
+    adjacency: string;
+    edges: string;
+    layout: string;
+    view: string;
+  }
+> = {
+  china: {
+    adjacency: 'geoMapChinaAdjacency',
+    edges: 'geoMapChinaEdges',
+    layout: 'geoMapChinaLayout',
+    view: 'geoMapChinaView',
+  },
+  world: {
+    adjacency: 'geoMapWorldAdjacency',
+    edges: 'geoMapWorldEdges',
+    layout: 'geoMapWorldLayout',
+    view: 'geoMapWorldView',
+  },
 };
 
 function getProcessFlowGraphCacheBaseUrl(): string {
@@ -278,6 +326,61 @@ function getBuildFilePath(
   return `${getBuildRootPath(activeManifest)}/${filePath.replace(/^\/+/, '')}`;
 }
 
+async function loadCacheManifests(): Promise<CacheManifests> {
+  const baseUrl = getProcessFlowGraphCacheBaseUrl();
+
+  if (!baseUrl) {
+    throw new Error('PROCESS_FLOW_GRAPH_CACHE_BASE_URL is not configured');
+  }
+
+  const activeManifest = await fetchJson<ActiveManifest>(resolveCacheUrl(baseUrl, 'manifest.json'));
+  const buildManifest = await fetchJson<BuildManifest>(
+    resolveCacheUrl(baseUrl, activeManifest.buildManifestPath),
+  );
+
+  return { activeManifest, baseUrl, buildManifest };
+}
+
+function hasBuildFile(buildManifest: BuildManifest, fileKey: string): boolean {
+  return Boolean(buildManifest.files[fileKey]?.path);
+}
+
+function buildNodeIndexes(nodes: ProcessFlowGraphNode[]) {
+  return nodes.reduce<{
+    flowById: Record<string, number>;
+    nodeById: Record<string, number>;
+    processById: Record<string, number>;
+  }>(
+    (indexes, node, index) => {
+      indexes.nodeById[node.id] = index;
+      if (node.kind === 'flow') {
+        indexes.flowById[node.id] = index;
+      } else {
+        indexes.processById[node.id] = index;
+      }
+      return indexes;
+    },
+    { flowById: {}, nodeById: {}, processById: {} },
+  );
+}
+
+function buildAdjacency(
+  nodes: ProcessFlowGraphNode[],
+  edges: ProcessFlowGraphEdge[],
+): Record<string, string[]> {
+  const adjacency = nodes.reduce<Record<string, string[]>>((nextAdjacency, node) => {
+    nextAdjacency[node.id] = [];
+    return nextAdjacency;
+  }, {});
+
+  edges.forEach((edge) => {
+    adjacency[edge.source]?.push(edge.id);
+    adjacency[edge.target]?.push(edge.id);
+  });
+
+  return adjacency;
+}
+
 function normalizeClusters(
   clusters: ProcessFlowGraphCluster[],
   nodes: ProcessFlowGraphNode[],
@@ -306,16 +409,7 @@ function normalizeClusters(
 }
 
 export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphData> {
-  const baseUrl = getProcessFlowGraphCacheBaseUrl();
-
-  if (!baseUrl) {
-    throw new Error('PROCESS_FLOW_GRAPH_CACHE_BASE_URL is not configured');
-  }
-
-  const activeManifest = await fetchJson<ActiveManifest>(resolveCacheUrl(baseUrl, 'manifest.json'));
-  const buildManifest = await fetchJson<BuildManifest>(
-    resolveCacheUrl(baseUrl, activeManifest.buildManifestPath),
-  );
+  const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
 
   const [
     nodesPayload,
@@ -383,6 +477,78 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
       flowCount: buildManifest.stats.flowCount,
       maxDegree: buildManifest.stats.maxDegree,
       processCount: buildManifest.stats.processCount,
+    },
+  };
+}
+
+export async function loadProcessFlowGraphGeoMapViewFromCache(
+  scope: ProcessFlowGraphMapScope,
+): Promise<ProcessFlowGraphGeoMapView | undefined> {
+  const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
+  const fileKeys = geoMapCacheFileKeys[scope];
+  const requiredFileKeys = [fileKeys.view, fileKeys.edges, fileKeys.adjacency, fileKeys.layout];
+
+  if (!requiredFileKeys.every((fileKey) => hasBuildFile(buildManifest, fileKey))) {
+    return undefined;
+  }
+
+  const [viewPayload, edgesBuffer, adjacencyBuffer, layoutBuffer] = await Promise.all([
+    fetchGzipJson<GeoMapViewPayload>(
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.view)),
+    ),
+    fetchGzipBinary(
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.edges)),
+    ),
+    fetchGzipBinary(
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.adjacency)),
+    ),
+    fetchGzipBinary(
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.layout)),
+    ),
+  ]);
+
+  if (
+    viewPayload.schemaVersion !== 'process_flow_graph_geo_map_view_v1' ||
+    viewPayload.scope !== scope
+  ) {
+    throw new Error(`invalid process-flow geo map cache payload: ${scope}`);
+  }
+
+  const nodes = viewPayload.nodes;
+  const edges = [
+    ...parseEdges(edgesBuffer, nodes, viewPayload.units),
+    ...(viewPayload.processLinks ?? []),
+  ];
+  const indexes = buildNodeIndexes(nodes);
+
+  return {
+    background: viewPayload.background,
+    data: {
+      adjacency: viewPayload.processLinks?.length
+        ? buildAdjacency(nodes, edges)
+        : parseAdjacency(adjacencyBuffer, nodes),
+      buildId: viewPayload.buildId || buildManifest.buildId || activeManifest.activeBuildId,
+      clusters: normalizeClusters(viewPayload.clusters, nodes),
+      edges,
+      geoMapFrame: viewPayload.geoMapFrame,
+      indexes: {
+        ...indexes,
+        edgeById: buildEdgeById(edges),
+        searchFlows: viewPayload.searchFlows.filter(
+          (flow) => indexes.flowById[flow.id] !== undefined,
+        ),
+      },
+      layouts: {
+        expanded2d: {},
+        geoMap2d: parseLayout(layoutBuffer, nodes),
+        sphere3d: {},
+      },
+      nodes,
+      schemaVersion: 'process_flow_graph_v1',
+      stats: {
+        ...viewPayload.stats,
+        edgeCount: edges.length,
+      },
     },
   };
 }

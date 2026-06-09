@@ -26,6 +26,7 @@ type LayoutTransition = {
   cameraTo: THREE.Vector3;
   duration: number;
   edgeOpacity: number;
+  deferredLayoutMode?: ProcessFlowGraphLayoutName;
   fromLayoutMode: ProcessFlowGraphLayoutName;
   highlightedEdgeOpacity: number;
   highlightedNodeFrom: Float32Array;
@@ -34,6 +35,7 @@ type LayoutTransition = {
   nodeTo: Float32Array;
   selectedNodeFrom: Float32Array;
   selectedNodeTo: Float32Array;
+  sourceLayoutNodeIds?: Set<string>;
   startedAt: number;
   targetFrom: THREE.Vector3;
   targetTo: THREE.Vector3;
@@ -44,6 +46,26 @@ type CameraFocusTransition = {
   cameraFrom: THREE.Vector3;
   cameraTo: THREE.Vector3;
   duration: number;
+  startedAt: number;
+  targetFrom: THREE.Vector3;
+  targetTo: THREE.Vector3;
+};
+
+type SphereSelectionTransition = {
+  cameraFrom: THREE.Vector3;
+  cameraTo: THREE.Vector3;
+  duration: number;
+  edgeOpacityFrom: number;
+  edgeOpacityTo: number;
+  flowMarkerOpacityFrom: number;
+  flowMarkerOpacityTo: number;
+  highlightedEdgeOpacityFrom: number;
+  highlightedEdgeOpacityTo: number;
+  highlightedNodeOpacityFrom: number;
+  highlightedNodeOpacityTo: number;
+  isFlatSelection?: boolean;
+  selectedNodeFrom: Float32Array;
+  selectedNodeTo: Float32Array;
   startedAt: number;
   targetFrom: THREE.Vector3;
   targetTo: THREE.Vector3;
@@ -161,9 +183,16 @@ const sphereControlsMaxDistance = 1500;
 const expandedControlsMaxDistance = 3200;
 const pointPerspectiveBase = 760;
 const cameraFocusDurationMs = 720;
+const sphereSelectionTransitionDurationMs = 760;
+const flatSelectionTransitionDurationMs = 520;
 const layoutTransitionDurationMs = 1450;
+const geoMapScopeTransitionDurationMs = 1280;
 const transitionDustCount = 176;
 const transitionRingSegments = 128;
+const projectionGridMeridianCount = 11;
+const projectionGridParallelCount = 7;
+const projectionGridSegments = 48;
+const projectionGridLineCount = projectionGridMeridianCount + projectionGridParallelCount;
 const geoMapCameraPadding = 72;
 
 const nodePointVertexShader = `
@@ -284,6 +313,22 @@ function getNodePointSize(
   return isProcess ? 22 : 16;
 }
 
+function getNodeMaterialOpacity(layoutMode: ProcessFlowGraphLayoutName, hasSelection: boolean) {
+  if (layoutMode === 'sphere3d') {
+    return hasSelection ? 0.64 : 0.62;
+  }
+
+  return hasSelection
+    ? layoutMode === 'expanded2d' || layoutMode === 'geoMap2d'
+      ? 0.96
+      : 0.68
+    : 0.84;
+}
+
+function getNodeBacksideFade(layoutMode: ProcessFlowGraphLayoutName, hasSelection: boolean) {
+  return layoutMode === 'sphere3d' && !hasSelection ? 1 : 0;
+}
+
 function isFlatLayout(layoutMode: ProcessFlowGraphLayoutName) {
   return layoutMode !== 'sphere3d';
 }
@@ -362,6 +407,90 @@ function getEdgeTransitionFade(progress: number) {
   }
 
   return getSmoothStep(0.44, 1, progress);
+}
+
+function isSphereToGeoMapTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'sphere3d' && transition.toLayoutMode === 'geoMap2d';
+}
+
+function isGeoMapToSphereTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'geoMap2d' && transition.toLayoutMode === 'sphere3d';
+}
+
+function getGeoProjectionForwardProgress(
+  progress: number,
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return isGeoMapToSphereTransition(transition) ? 1 - progress : progress;
+}
+
+function isSphereToExpandedTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'sphere3d' && transition.toLayoutMode === 'expanded2d';
+}
+
+function isExpandedToSphereTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'expanded2d' && transition.toLayoutMode === 'sphere3d';
+}
+
+function isSphereExpandedTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return isSphereToExpandedTransition(transition) || isExpandedToSphereTransition(transition);
+}
+
+function getSphereExpandedForwardProgress(
+  progress: number,
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return isExpandedToSphereTransition(transition) ? 1 - progress : progress;
+}
+
+function isExpandedGeoMapTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return (
+    (transition.fromLayoutMode === 'expanded2d' && transition.toLayoutMode === 'geoMap2d') ||
+    (transition.fromLayoutMode === 'geoMap2d' && transition.toLayoutMode === 'expanded2d')
+  );
+}
+
+function isGeoMapToExpandedTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'geoMap2d' && transition.toLayoutMode === 'expanded2d';
+}
+
+function getExpandedGeoMapForwardProgress(
+  progress: number,
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return isGeoMapToExpandedTransition(transition) ? 1 - progress : progress;
+}
+
+function isGeoMapScopeTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'geoMap2d' && transition.toLayoutMode === 'geoMap2d';
+}
+
+function isGeoProjectionTransition(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return isSphereToGeoMapTransition(transition) || isGeoMapToSphereTransition(transition);
+}
+
+function doesTransitionInvolveSphere(
+  transition: Pick<LayoutTransition, 'fromLayoutMode' | 'toLayoutMode'>,
+) {
+  return transition.fromLayoutMode === 'sphere3d' || transition.toLayoutMode === 'sphere3d';
 }
 
 function getSelectedEdgeBrightnessScale(edgeCount: number) {
@@ -632,6 +761,10 @@ export class ProcessFlowGraphEngine {
 
   private transitionGateLines?: THREE.LineSegments;
 
+  private transitionProjectionGeometry = new THREE.BufferGeometry();
+
+  private transitionProjectionLines?: THREE.LineSegments;
+
   private transitionRingGeometry = new THREE.BufferGeometry();
 
   private transitionRing?: THREE.Line;
@@ -653,6 +786,10 @@ export class ProcessFlowGraphEngine {
   private selectedNodePoint?: THREE.Points;
 
   private selection: ProcessFlowGraphSelection = createEmptyProcessFlowGraphSelection();
+
+  private selectedNodeRevealProgress = 1;
+
+  private sphereSelectionTransition?: SphereSelectionTransition;
 
   private sphereShell?: THREE.Mesh;
 
@@ -715,6 +852,7 @@ export class ProcessFlowGraphEngine {
     this.selectedNodeGeometry.dispose();
     this.transitionDustGeometry.dispose();
     this.transitionGateGeometry.dispose();
+    this.transitionProjectionGeometry.dispose();
     this.transitionRingGeometry.dispose();
     this.sphereShell?.geometry.dispose();
     if (this.sphereShell?.material instanceof THREE.Material) {
@@ -725,6 +863,9 @@ export class ProcessFlowGraphEngine {
     }
     if (this.transitionGateLines?.material instanceof THREE.Material) {
       this.transitionGateLines.material.dispose();
+    }
+    if (this.transitionProjectionLines?.material instanceof THREE.Material) {
+      this.transitionProjectionLines.material.dispose();
     }
     if (this.transitionRing?.material instanceof THREE.Material) {
       this.transitionRing.material.dispose();
@@ -757,13 +898,352 @@ export class ProcessFlowGraphEngine {
     this.renderer.domElement.style.cursor = interactionMode === 'select' ? 'pointer' : 'grab';
   }
 
+  private captureNodePositionMap() {
+    const positionMap = new Map<string, [number, number, number]>();
+    const positionAttribute = this.nodeGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (!positionAttribute) {
+      return positionMap;
+    }
+
+    const positions = positionAttribute.array as Float32Array;
+    const vector = new THREE.Vector3();
+
+    this.data.nodes.forEach((node, index) => {
+      vector.fromArray(positions, index * 3);
+      vector.applyEuler(this.group.rotation);
+      positionMap.set(node.id, [vector.x, vector.y, vector.z]);
+    });
+
+    return positionMap;
+  }
+
+  private buildMappedNodePositions(
+    nodeIds: string[],
+    positionMap: Map<string, [number, number, number]>,
+    fallbackPositions: Float32Array,
+    fallbackPosition?: [number, number, number],
+  ) {
+    const mappedPositions = new Float32Array(nodeIds.length * 3);
+
+    nodeIds.forEach((nodeId, index) => {
+      const offset = index * 3;
+      const position = positionMap.get(nodeId);
+
+      if (position) {
+        writeTuple(mappedPositions, offset, position);
+        return;
+      }
+
+      if (fallbackPosition) {
+        writeTuple(mappedPositions, offset, fallbackPosition);
+        return;
+      }
+
+      mappedPositions[offset] = fallbackPositions[offset] ?? 0;
+      mappedPositions[offset + 1] = fallbackPositions[offset + 1] ?? 0;
+      mappedPositions[offset + 2] = fallbackPositions[offset + 2] ?? 0;
+    });
+
+    return mappedPositions;
+  }
+
+  private buildLayoutNodePositions(nodeIds: string[], layoutMode: ProcessFlowGraphLayoutName) {
+    const positions = new Float32Array(nodeIds.length * 3);
+
+    nodeIds.forEach((nodeId, index) => {
+      writeTuple(positions, index * 3, getNodePosition(this.data, layoutMode, nodeId));
+    });
+
+    return positions;
+  }
+
+  private keepMissingSourceNodesAtTarget(
+    nodeIds: string[],
+    sourceNodeIds: Set<string> | undefined,
+    fromPositions: Float32Array,
+    toPositions: Float32Array,
+  ) {
+    if (!sourceNodeIds) {
+      return;
+    }
+
+    nodeIds.forEach((nodeId, index) => {
+      if (sourceNodeIds.has(nodeId)) {
+        return;
+      }
+
+      const offset = index * 3;
+      fromPositions[offset] = toPositions[offset] ?? fromPositions[offset];
+      fromPositions[offset + 1] = toPositions[offset + 1] ?? fromPositions[offset + 1];
+      fromPositions[offset + 2] = toPositions[offset + 2] ?? fromPositions[offset + 2];
+    });
+  }
+
   setData(data: ProcessFlowGraphData) {
     this.finishCameraFocusTransition(false);
     this.finishLayoutTransition(false);
+    this.finishSphereSelectionTransition(false);
     this.data = data;
     this.clusterColors = buildClusterColors(data);
     this.buildScene();
     this.resetCamera();
+  }
+
+  setDataLayoutAndSelection(
+    data: ProcessFlowGraphData,
+    layoutMode: ProcessFlowGraphLayoutName,
+    selection: ProcessFlowGraphSelection,
+  ) {
+    if (this.data === data && this.layoutMode === layoutMode) {
+      this.setSelection(selection);
+      return;
+    }
+
+    const shouldTransitionLayout = this.layoutMode !== layoutMode;
+
+    if (!shouldTransitionLayout) {
+      if (this.layoutMode === 'geoMap2d' && layoutMode === 'geoMap2d') {
+        const fromLayoutMode = this.layoutMode;
+        const nodePositionMap = this.captureNodePositionMap();
+        const frameFrom: CameraFrame = {
+          position: this.camera.position.clone(),
+          target: this.controls.target.clone(),
+        };
+
+        this.finishCameraFocusTransition(false);
+        this.finishLayoutTransition(false);
+        this.data = data;
+        this.clusterColors = buildClusterColors(data);
+        this.selection = selection;
+        this.layoutMode = layoutMode;
+        this.updateControlInteractionMode();
+        this.group.rotation.set(0, 0, 0);
+        this.buildScene();
+
+        const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+        const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+          | THREE.LineBasicMaterial
+          | undefined;
+        const nodeTo = capturePositionArray(this.nodeGeometry);
+        const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
+        const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
+        const fallbackPosition: [number, number, number] = [
+          frameFrom.target.x,
+          frameFrom.target.y,
+          0,
+        ];
+        const nodeFrom = this.buildMappedNodePositions(
+          this.data.nodes.map((node) => node.id),
+          nodePositionMap,
+          nodeTo,
+          fallbackPosition,
+        );
+        const highlightedNodeFrom = this.buildMappedNodePositions(
+          Array.from(this.selection.highlightedNodeIds),
+          nodePositionMap,
+          highlightedNodeTo,
+          fallbackPosition,
+        );
+        const selectedNodeFrom = this.buildMappedNodePositions(
+          this.selection.selectedNodeId ? [this.selection.selectedNodeId] : [],
+          nodePositionMap,
+          selectedNodeTo,
+          fallbackPosition,
+        );
+        const frameTo = this.getCameraFrame(layoutMode);
+
+        setGeometryPositionArray(this.nodeGeometry, nodeFrom);
+        setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
+        setGeometryPositionArray(this.selectedNodeGeometry, selectedNodeFrom);
+        this.transition = {
+          cameraFrom: frameFrom.position,
+          cameraTo: frameTo.position,
+          duration: geoMapScopeTransitionDurationMs,
+          edgeOpacity: edgeMaterial?.opacity ?? 0.12,
+          fromLayoutMode,
+          highlightedEdgeOpacity: getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0.9,
+          highlightedNodeFrom,
+          highlightedNodeTo,
+          nodeFrom,
+          nodeTo,
+          selectedNodeFrom,
+          selectedNodeTo,
+          startedAt: performance.now(),
+          targetFrom: frameFrom.target,
+          targetTo: frameTo.target,
+          toLayoutMode: layoutMode,
+        };
+        this.controls.enabled = false;
+        this.transitionEffectGroup.visible = true;
+        this.updateLayoutTransition(0);
+        return;
+      }
+
+      this.finishCameraFocusTransition(false);
+      this.finishLayoutTransition(false);
+      this.finishSphereSelectionTransition(false);
+      this.data = data;
+      this.clusterColors = buildClusterColors(data);
+      this.selection = selection;
+      this.buildScene();
+      this.resetCamera();
+      return;
+    }
+
+    const fromLayoutMode = this.layoutMode;
+    const nodePositionMap = this.captureNodePositionMap();
+    const frameFrom: CameraFrame = {
+      position: this.camera.position.clone(),
+      target: this.controls.target.clone(),
+    };
+    const shouldDeferSourceScene =
+      (fromLayoutMode === 'expanded2d' && layoutMode === 'sphere3d') ||
+      (fromLayoutMode === 'geoMap2d' && (layoutMode === 'sphere3d' || layoutMode === 'expanded2d'));
+
+    if (shouldDeferSourceScene) {
+      this.finishCameraFocusTransition(false);
+      this.finishLayoutTransition(false);
+      this.finishSphereSelectionTransition(false);
+      this.data = data;
+      this.clusterColors = buildClusterColors(data);
+      this.selection = selection;
+      this.layoutMode = fromLayoutMode;
+      this.updateControlInteractionMode();
+      this.group.rotation.set(0, 0, 0);
+      this.buildScene();
+
+      const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+      const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+        | THREE.LineBasicMaterial
+        | undefined;
+      const nodeFromFallback = capturePositionArray(this.nodeGeometry);
+      const highlightedNodeFromFallback = capturePositionArray(this.highlightedNodeGeometry);
+      const selectedNodeFromFallback = capturePositionArray(this.selectedNodeGeometry);
+      const allNodeIds = this.data.nodes.map((node) => node.id);
+      const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
+      const selectedNodeIds = this.selection.selectedNodeId ? [this.selection.selectedNodeId] : [];
+      const sourceLayoutNodeIds =
+        fromLayoutMode === 'geoMap2d' ? new Set(nodePositionMap.keys()) : undefined;
+      const nodeFrom = this.buildMappedNodePositions(allNodeIds, nodePositionMap, nodeFromFallback);
+      const highlightedNodeFrom = this.buildMappedNodePositions(
+        highlightedNodeIds,
+        nodePositionMap,
+        highlightedNodeFromFallback,
+      );
+      const selectedNodeFrom = this.buildMappedNodePositions(
+        selectedNodeIds,
+        nodePositionMap,
+        selectedNodeFromFallback,
+      );
+      const nodeTo = this.buildLayoutNodePositions(allNodeIds, layoutMode);
+      const highlightedNodeTo = this.buildLayoutNodePositions(highlightedNodeIds, layoutMode);
+      const selectedNodeTo = this.buildLayoutNodePositions(selectedNodeIds, layoutMode);
+      const frameTo = this.getCameraFrame(layoutMode);
+
+      this.keepMissingSourceNodesAtTarget(allNodeIds, sourceLayoutNodeIds, nodeFrom, nodeTo);
+      this.keepMissingSourceNodesAtTarget(
+        highlightedNodeIds,
+        sourceLayoutNodeIds,
+        highlightedNodeFrom,
+        highlightedNodeTo,
+      );
+      this.keepMissingSourceNodesAtTarget(
+        selectedNodeIds,
+        sourceLayoutNodeIds,
+        selectedNodeFrom,
+        selectedNodeTo,
+      );
+      setGeometryPositionArray(this.nodeGeometry, nodeFrom);
+      setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
+      setGeometryPositionArray(this.selectedNodeGeometry, selectedNodeFrom);
+      this.transition = {
+        cameraFrom: frameFrom.position,
+        cameraTo: frameTo.position,
+        deferredLayoutMode: layoutMode,
+        duration: layoutTransitionDurationMs,
+        edgeOpacity: edgeMaterial?.opacity ?? 0.16,
+        fromLayoutMode,
+        highlightedEdgeOpacity: getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0.95,
+        highlightedNodeFrom,
+        highlightedNodeTo,
+        nodeFrom,
+        nodeTo,
+        selectedNodeFrom,
+        selectedNodeTo,
+        sourceLayoutNodeIds,
+        startedAt: performance.now(),
+        targetFrom: frameFrom.target,
+        targetTo: frameTo.target,
+        toLayoutMode: layoutMode,
+      };
+      this.controls.enabled = false;
+      this.transitionEffectGroup.visible = true;
+      this.updateLayoutTransition(0);
+      return;
+    }
+
+    this.finishCameraFocusTransition(false);
+    this.finishLayoutTransition(false);
+    this.finishSphereSelectionTransition(false);
+    this.data = data;
+    this.clusterColors = buildClusterColors(data);
+    this.selection = selection;
+    this.layoutMode = layoutMode;
+    this.updateControlInteractionMode();
+    this.group.rotation.set(0, 0, 0);
+    this.buildScene();
+
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const nodeTo = capturePositionArray(this.nodeGeometry);
+    const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
+    const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
+    const nodeFrom = this.buildMappedNodePositions(
+      this.data.nodes.map((node) => node.id),
+      nodePositionMap,
+      nodeTo,
+    );
+    const highlightedNodeFrom = this.buildMappedNodePositions(
+      Array.from(this.selection.highlightedNodeIds),
+      nodePositionMap,
+      highlightedNodeTo,
+    );
+    const selectedNodeFrom = this.buildMappedNodePositions(
+      this.selection.selectedNodeId ? [this.selection.selectedNodeId] : [],
+      nodePositionMap,
+      selectedNodeTo,
+    );
+    const frameTo = this.getCameraFrame(layoutMode);
+
+    setGeometryPositionArray(this.nodeGeometry, nodeFrom);
+    setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
+    setGeometryPositionArray(this.selectedNodeGeometry, selectedNodeFrom);
+    this.transition = {
+      cameraFrom: frameFrom.position,
+      cameraTo: frameTo.position,
+      duration: layoutTransitionDurationMs,
+      edgeOpacity: edgeMaterial?.opacity ?? 0.16,
+      fromLayoutMode,
+      highlightedEdgeOpacity: getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0.95,
+      highlightedNodeFrom,
+      highlightedNodeTo,
+      nodeFrom,
+      nodeTo,
+      selectedNodeFrom,
+      selectedNodeTo,
+      startedAt: performance.now(),
+      targetFrom: frameFrom.target,
+      targetTo: frameTo.target,
+      toLayoutMode: layoutMode,
+    };
+    this.controls.enabled = false;
+    this.transitionEffectGroup.visible = true;
+    this.updateLayoutTransition(0);
   }
 
   setLayoutMode(layoutMode: ProcessFlowGraphLayoutName) {
@@ -782,6 +1262,7 @@ export class ProcessFlowGraphEngine {
 
     this.finishCameraFocusTransition(false);
     this.finishLayoutTransition(false);
+    this.finishSphereSelectionTransition(false);
     this.layoutMode = layoutMode;
     this.updateControlInteractionMode();
     this.group.rotation.set(0, 0, 0);
@@ -795,12 +1276,7 @@ export class ProcessFlowGraphEngine {
     const nodeTo = capturePositionArray(this.nodeGeometry);
     const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
-    const frameTo = this.getCameraFrame(
-      layoutMode,
-      layoutMode === 'geoMap2d' && fromLayoutMode !== 'geoMap2d'
-        ? undefined
-        : this.selection.selectedNodeId,
-    );
+    const frameTo = this.getCameraFrame(layoutMode);
 
     setGeometryPositionArray(this.nodeGeometry, nodeFrom);
     setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
@@ -829,9 +1305,39 @@ export class ProcessFlowGraphEngine {
   }
 
   setSelection(selection: ProcessFlowGraphSelection) {
+    const previousSelectedNodeId = this.selection.selectedNodeId;
+    const selectedNodeFrom = capturePositionArray(this.selectedNodeGeometry);
     this.finishCameraFocusTransition(true);
     this.finishLayoutTransition(true);
-    const hadSelection = Boolean(this.selection.selectedNodeId);
+    this.finishSphereSelectionTransition(false);
+    const shouldRevealSphereSelection =
+      this.layoutMode === 'sphere3d' &&
+      Boolean(selection.selectedNodeId) &&
+      previousSelectedNodeId !== selection.selectedNodeId;
+    const shouldRevealFlatSelection =
+      isExpandedLikeLayout(this.layoutMode) &&
+      Boolean(selection.selectedNodeId) &&
+      previousSelectedNodeId !== selection.selectedNodeId;
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const highlightedNodeMaterial = this.highlightedNodePoints?.material;
+    const edgeOpacityFrom = edgeMaterial?.opacity ?? 0;
+    const highlightedEdgeOpacityFrom = shouldRevealSphereSelection
+      ? 0
+      : (getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0);
+    const flowMarkerOpacityFrom = shouldRevealSphereSelection
+      ? 0
+      : (flowMarkerMaterial?.opacity ?? 0);
+    const highlightedNodeOpacityFrom =
+      shouldRevealSphereSelection || !(highlightedNodeMaterial instanceof THREE.ShaderMaterial)
+        ? 0
+        : highlightedNodeMaterial.uniforms.opacity.value;
+
     this.selection = selection;
 
     this.buildEdgeGeometry();
@@ -839,15 +1345,31 @@ export class ProcessFlowGraphEngine {
     this.updateHighlightedGeometry();
     this.updateMaterialState();
 
-    if (selection.selectedNodeId && this.layoutMode !== 'sphere3d') {
-      this.focusNode(selection.selectedNodeId);
-    } else if (hadSelection && this.layoutMode !== 'sphere3d') {
-      this.focusCameraFrame(this.getCameraFrame(this.layoutMode));
+    if (shouldRevealSphereSelection && selection.selectedNodeId) {
+      this.startSphereSelectionTransition({
+        edgeOpacityFrom,
+        flowMarkerOpacityFrom,
+        highlightedEdgeOpacityFrom,
+        highlightedNodeOpacityFrom,
+        selectedNodeFrom,
+        selectedNodeId: selection.selectedNodeId,
+      });
+      return;
+    }
+
+    if (shouldRevealFlatSelection) {
+      this.startFlatSelectionTransition({
+        edgeOpacityFrom,
+        flowMarkerOpacityFrom,
+        highlightedEdgeOpacityFrom,
+        highlightedNodeOpacityFrom,
+        selectedNodeFrom,
+      });
     }
   }
 
   resetCamera() {
-    const frame = this.getCameraFrame(this.layoutMode, this.selection.selectedNodeId);
+    const frame = this.getCameraFrame(this.layoutMode);
 
     this.camera.position.copy(frame.position);
     this.controls.target.copy(frame.target);
@@ -855,23 +1377,11 @@ export class ProcessFlowGraphEngine {
     this.controls.update();
   }
 
-  private getCameraFrame(
-    layoutMode: ProcessFlowGraphLayoutName,
-    selectedNodeId?: string,
-  ): CameraFrame {
+  private getCameraFrame(layoutMode: ProcessFlowGraphLayoutName): CameraFrame {
     if (layoutMode === 'sphere3d') {
       return {
         position: new THREE.Vector3(0, 0, this.getSphereCameraDistance()),
         target: new THREE.Vector3(0, 0, 0),
-      };
-    }
-
-    if (selectedNodeId) {
-      const [x, y] = getNodePosition(this.data, layoutMode, selectedNodeId);
-
-      return {
-        position: new THREE.Vector3(x, y, expandedFocusCameraDistance),
-        target: new THREE.Vector3(x, y, 0),
       };
     }
 
@@ -1186,10 +1696,37 @@ export class ProcessFlowGraphEngine {
       }),
     );
 
+    const projectionVertexCount = projectionGridLineCount * projectionGridSegments * 2;
+    const projectionPositions = new Float32Array(projectionVertexCount * 3);
+    const projectionColors = new Float32Array(projectionVertexCount * 3);
+    const projectionPositionAttribute = new THREE.BufferAttribute(projectionPositions, 3);
+    projectionPositionAttribute.setUsage(THREE.DynamicDrawUsage);
+    for (let index = 0; index < projectionVertexCount; index += 1) {
+      const color = transitionDustColors[index % transitionDustColors.length];
+      writeColor(projectionColors, index * 3, color, index % 2 === 0 ? 0.72 : 1.28);
+    }
+    this.transitionProjectionGeometry.setAttribute('position', projectionPositionAttribute);
+    this.transitionProjectionGeometry.setAttribute(
+      'color',
+      new THREE.BufferAttribute(projectionColors, 3),
+    );
+    this.transitionProjectionGeometry.computeBoundingSphere();
+    this.transitionProjectionLines = new THREE.LineSegments(
+      this.transitionProjectionGeometry,
+      new THREE.LineBasicMaterial({
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 0,
+        transparent: true,
+        vertexColors: true,
+      }),
+    );
+
     this.transitionEffectGroup.visible = false;
     this.transitionEffectGroup.add(this.transitionDustPoints);
     this.transitionEffectGroup.add(this.transitionRing);
     this.transitionEffectGroup.add(this.transitionGateLines);
+    this.transitionEffectGroup.add(this.transitionProjectionLines);
   }
 
   private buildScene() {
@@ -1489,16 +2026,8 @@ export class ProcessFlowGraphEngine {
         : 0;
     }
     if (nodeMaterial instanceof THREE.ShaderMaterial) {
-      nodeMaterial.uniforms.opacity.value = isSphere
-        ? hasSelection
-          ? 0.64
-          : 0.62
-        : hasSelection
-          ? isExpandedLikeLayout(this.layoutMode)
-            ? 0.96
-            : 0.68
-          : 0.84;
-      nodeMaterial.uniforms.backsideFade.value = isSphere && !hasSelection ? 1 : 0;
+      nodeMaterial.uniforms.opacity.value = getNodeMaterialOpacity(this.layoutMode, hasSelection);
+      nodeMaterial.uniforms.backsideFade.value = getNodeBacksideFade(this.layoutMode, hasSelection);
     }
     if (highlightedNodeMaterial instanceof THREE.ShaderMaterial) {
       highlightedNodeMaterial.uniforms.opacity.value = 1;
@@ -1522,9 +2051,16 @@ export class ProcessFlowGraphEngine {
     const transition = this.transition;
 
     if (transition && applyTarget) {
-      setGeometryPositionArray(this.nodeGeometry, transition.nodeTo);
-      setGeometryPositionArray(this.highlightedNodeGeometry, transition.highlightedNodeTo);
-      setGeometryPositionArray(this.selectedNodeGeometry, transition.selectedNodeTo);
+      if (transition.deferredLayoutMode) {
+        this.layoutMode = transition.deferredLayoutMode;
+        this.updateControlInteractionMode();
+        this.group.rotation.set(0, 0, 0);
+        this.buildScene();
+      } else {
+        setGeometryPositionArray(this.nodeGeometry, transition.nodeTo);
+        setGeometryPositionArray(this.highlightedNodeGeometry, transition.highlightedNodeTo);
+        setGeometryPositionArray(this.selectedNodeGeometry, transition.selectedNodeTo);
+      }
       this.camera.position.copy(transition.cameraTo);
       this.controls.target.copy(transition.targetTo);
       this.camera.updateProjectionMatrix();
@@ -1532,7 +2068,7 @@ export class ProcessFlowGraphEngine {
     }
 
     this.transition = undefined;
-    this.controls.enabled = true;
+    this.controls.enabled = !this.sphereSelectionTransition;
     this.transitionEffectGroup.visible = false;
     this.updateTransitionEffectOpacity(0);
 
@@ -1552,7 +2088,7 @@ export class ProcessFlowGraphEngine {
     }
 
     this.cameraFocusTransition = undefined;
-    if (!this.transition) {
+    if (!this.transition && !this.sphereSelectionTransition) {
       this.controls.enabled = true;
     }
   }
@@ -1568,6 +2104,265 @@ export class ProcessFlowGraphEngine {
     };
     this.controls.enabled = false;
     this.updateCameraFocusTransition(0);
+  }
+
+  private getRenderedNodePosition(nodeId: string) {
+    const [x, y, z] = getNodePosition(this.data, this.layoutMode, nodeId);
+
+    return new THREE.Vector3(x, y, z).applyEuler(this.group.rotation);
+  }
+
+  private getSphereSelectionCameraFrame(nodeId: string): CameraFrame {
+    const selectedPosition = this.getRenderedNodePosition(nodeId);
+    const cameraDirection = this.camera.position.clone().sub(this.controls.target);
+    const currentDistance = Math.max(1, cameraDirection.length());
+
+    if (cameraDirection.lengthSq() < 0.0001) {
+      cameraDirection.set(0, 0, 1);
+    } else {
+      cameraDirection.normalize();
+    }
+
+    const target = selectedPosition.multiplyScalar(0.14);
+    const distance = THREE.MathUtils.clamp(currentDistance * 0.94, 900, sphereControlsMaxDistance);
+
+    return {
+      position: target.clone().addScaledVector(cameraDirection, distance),
+      target,
+    };
+  }
+
+  private startSphereSelectionTransition({
+    edgeOpacityFrom,
+    flowMarkerOpacityFrom,
+    highlightedEdgeOpacityFrom,
+    highlightedNodeOpacityFrom,
+    selectedNodeFrom,
+    selectedNodeId,
+  }: {
+    edgeOpacityFrom: number;
+    flowMarkerOpacityFrom: number;
+    highlightedEdgeOpacityFrom: number;
+    highlightedNodeOpacityFrom: number;
+    selectedNodeFrom: Float32Array;
+    selectedNodeId: string;
+  }) {
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const highlightedNodeMaterial = this.highlightedNodePoints?.material;
+    const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
+    const normalizedSelectedNodeFrom =
+      selectedNodeFrom.length === selectedNodeTo.length ? selectedNodeFrom : selectedNodeTo;
+    const frameTo = this.getSphereSelectionCameraFrame(selectedNodeId);
+
+    this.selectedNodeRevealProgress = 0;
+    setGeometryPositionArray(this.selectedNodeGeometry, normalizedSelectedNodeFrom);
+    this.sphereSelectionTransition = {
+      cameraFrom: this.camera.position.clone(),
+      cameraTo: frameTo.position,
+      duration: sphereSelectionTransitionDurationMs,
+      edgeOpacityFrom,
+      edgeOpacityTo: edgeMaterial?.opacity ?? edgeOpacityFrom,
+      flowMarkerOpacityFrom,
+      flowMarkerOpacityTo: flowMarkerMaterial?.opacity ?? flowMarkerOpacityFrom,
+      highlightedEdgeOpacityFrom,
+      highlightedEdgeOpacityTo:
+        getLineMaterialOpacity(highlightedEdgeMaterial) ?? highlightedEdgeOpacityFrom,
+      highlightedNodeOpacityFrom,
+      highlightedNodeOpacityTo:
+        highlightedNodeMaterial instanceof THREE.ShaderMaterial
+          ? highlightedNodeMaterial.uniforms.opacity.value
+          : highlightedNodeOpacityFrom,
+      selectedNodeFrom: normalizedSelectedNodeFrom,
+      selectedNodeTo,
+      startedAt: performance.now(),
+      targetFrom: this.controls.target.clone(),
+      targetTo: frameTo.target,
+    };
+    this.controls.enabled = false;
+    this.updateSphereSelectionTransition(0);
+  }
+
+  private startFlatSelectionTransition({
+    edgeOpacityFrom,
+    flowMarkerOpacityFrom,
+    highlightedEdgeOpacityFrom,
+    highlightedNodeOpacityFrom,
+    selectedNodeFrom,
+  }: {
+    edgeOpacityFrom: number;
+    flowMarkerOpacityFrom: number;
+    highlightedEdgeOpacityFrom: number;
+    highlightedNodeOpacityFrom: number;
+    selectedNodeFrom: Float32Array;
+  }) {
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const highlightedNodeMaterial = this.highlightedNodePoints?.material;
+    const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
+    const normalizedSelectedNodeFrom =
+      selectedNodeFrom.length === selectedNodeTo.length ? selectedNodeFrom : selectedNodeTo;
+    const currentCameraPosition = this.camera.position.clone();
+    const currentTarget = this.controls.target.clone();
+
+    this.selectedNodeRevealProgress = 0;
+    setGeometryPositionArray(this.selectedNodeGeometry, normalizedSelectedNodeFrom);
+    this.sphereSelectionTransition = {
+      cameraFrom: currentCameraPosition,
+      cameraTo: currentCameraPosition.clone(),
+      duration: flatSelectionTransitionDurationMs,
+      edgeOpacityFrom,
+      edgeOpacityTo: edgeMaterial?.opacity ?? edgeOpacityFrom,
+      flowMarkerOpacityFrom: 0,
+      flowMarkerOpacityTo: flowMarkerMaterial?.opacity ?? flowMarkerOpacityFrom,
+      highlightedEdgeOpacityFrom: 0,
+      highlightedEdgeOpacityTo:
+        getLineMaterialOpacity(highlightedEdgeMaterial) ?? highlightedEdgeOpacityFrom,
+      highlightedNodeOpacityFrom: 0,
+      highlightedNodeOpacityTo:
+        highlightedNodeMaterial instanceof THREE.ShaderMaterial
+          ? highlightedNodeMaterial.uniforms.opacity.value
+          : highlightedNodeOpacityFrom,
+      isFlatSelection: true,
+      selectedNodeFrom: normalizedSelectedNodeFrom,
+      selectedNodeTo,
+      startedAt: performance.now(),
+      targetFrom: currentTarget,
+      targetTo: currentTarget.clone(),
+    };
+    this.controls.enabled = false;
+    this.updateSphereSelectionTransition(0);
+  }
+
+  private finishSphereSelectionTransition(applyTarget: boolean) {
+    const transition = this.sphereSelectionTransition;
+
+    if (transition && applyTarget) {
+      this.camera.position.copy(transition.cameraTo);
+      this.controls.target.copy(transition.targetTo);
+      this.camera.updateProjectionMatrix();
+      this.controls.update();
+    }
+
+    this.sphereSelectionTransition = undefined;
+    this.selectedNodeRevealProgress = 1;
+    if (applyTarget) {
+      this.updateMaterialState();
+    }
+    if (!this.transition && !this.cameraFocusTransition) {
+      this.controls.enabled = true;
+    }
+  }
+
+  private updateSphereSelectionTransition(forcedProgress?: number) {
+    const transition = this.sphereSelectionTransition;
+
+    if (!transition) {
+      return;
+    }
+
+    const rawProgress =
+      forcedProgress ??
+      THREE.MathUtils.clamp((performance.now() - transition.startedAt) / transition.duration, 0, 1);
+    const isFlatSelection = transition.isFlatSelection === true;
+    const cameraProgress = getFairyEase(rawProgress);
+    const highlightProgress = isFlatSelection
+      ? getSmoothStep(0, 0.86, rawProgress)
+      : getSmoothStep(0.08, 1, rawProgress);
+    const markerProgress = isFlatSelection
+      ? getSmoothStep(0.12, 1, rawProgress)
+      : getSmoothStep(0.32, 1, rawProgress);
+    const nodeProgress = isFlatSelection
+      ? getSmoothStep(0, 0.46, rawProgress)
+      : getSmoothStep(0, 0.7, rawProgress);
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const flowMarkerMaterial = this.flowMarkerLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const highlightedNodeMaterial = this.highlightedNodePoints?.material;
+    const selectedNodePositionAttribute = this.selectedNodeGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    this.camera.position.lerpVectors(transition.cameraFrom, transition.cameraTo, cameraProgress);
+    this.controls.target.lerpVectors(transition.targetFrom, transition.targetTo, cameraProgress);
+    this.camera.updateProjectionMatrix();
+
+    if (
+      selectedNodePositionAttribute &&
+      transition.selectedNodeFrom.length === transition.selectedNodeTo.length &&
+      selectedNodePositionAttribute.array.length === transition.selectedNodeFrom.length
+    ) {
+      const selectedPositions = selectedNodePositionAttribute.array as Float32Array;
+      for (let offset = 0; offset < selectedPositions.length; offset += 3) {
+        selectedPositions[offset] = THREE.MathUtils.lerp(
+          transition.selectedNodeFrom[offset],
+          transition.selectedNodeTo[offset],
+          cameraProgress,
+        );
+        selectedPositions[offset + 1] = THREE.MathUtils.lerp(
+          transition.selectedNodeFrom[offset + 1],
+          transition.selectedNodeTo[offset + 1],
+          cameraProgress,
+        );
+        selectedPositions[offset + 2] = THREE.MathUtils.lerp(
+          transition.selectedNodeFrom[offset + 2],
+          transition.selectedNodeTo[offset + 2],
+          cameraProgress,
+        );
+      }
+      selectedNodePositionAttribute.needsUpdate = true;
+      this.selectedNodeGeometry.computeBoundingSphere();
+    }
+
+    if (edgeMaterial) {
+      edgeMaterial.opacity = THREE.MathUtils.lerp(
+        transition.edgeOpacityFrom,
+        transition.edgeOpacityTo,
+        highlightProgress,
+      );
+    }
+    setLineMaterialOpacity(
+      highlightedEdgeMaterial,
+      THREE.MathUtils.lerp(
+        transition.highlightedEdgeOpacityFrom,
+        transition.highlightedEdgeOpacityTo,
+        highlightProgress,
+      ),
+    );
+    if (flowMarkerMaterial) {
+      flowMarkerMaterial.opacity = THREE.MathUtils.lerp(
+        transition.flowMarkerOpacityFrom,
+        transition.flowMarkerOpacityTo,
+        markerProgress,
+      );
+    }
+    if (highlightedNodeMaterial instanceof THREE.ShaderMaterial) {
+      highlightedNodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        transition.highlightedNodeOpacityFrom,
+        transition.highlightedNodeOpacityTo,
+        nodeProgress,
+      );
+    }
+    this.selectedNodeRevealProgress = nodeProgress;
+    this.updateSelectedNodePulse();
+
+    if (rawProgress >= 1) {
+      this.finishSphereSelectionTransition(true);
+    }
   }
 
   private updateCameraFocusTransition(forcedProgress?: number) {
@@ -1610,6 +2405,7 @@ export class ProcessFlowGraphEngine {
       easedProgress,
       rawProgress,
       0,
+      transition,
     );
     this.applyMorphPositions(
       this.highlightedNodeGeometry,
@@ -1618,6 +2414,7 @@ export class ProcessFlowGraphEngine {
       easedProgress,
       rawProgress,
       2000,
+      transition,
     );
     this.applyMorphPositions(
       this.selectedNodeGeometry,
@@ -1626,9 +2423,66 @@ export class ProcessFlowGraphEngine {
       easedProgress,
       rawProgress,
       4000,
+      transition,
     );
-    this.camera.position.lerpVectors(transition.cameraFrom, transition.cameraTo, easedProgress);
-    this.controls.target.lerpVectors(transition.targetFrom, transition.targetTo, easedProgress);
+    if (isSphereExpandedTransition(transition)) {
+      const forwardProgress = getSphereExpandedForwardProgress(rawProgress, transition);
+      const cameraProgress = getFairyEase(forwardProgress);
+      const sphereCamera = isExpandedToSphereTransition(transition)
+        ? transition.cameraTo
+        : transition.cameraFrom;
+      const expandedCamera = isExpandedToSphereTransition(transition)
+        ? transition.cameraFrom
+        : transition.cameraTo;
+      const sphereTarget = isExpandedToSphereTransition(transition)
+        ? transition.targetTo
+        : transition.targetFrom;
+      const expandedTarget = isExpandedToSphereTransition(transition)
+        ? transition.targetFrom
+        : transition.targetTo;
+
+      this.camera.position.lerpVectors(sphereCamera, expandedCamera, cameraProgress);
+      this.controls.target.lerpVectors(sphereTarget, expandedTarget, cameraProgress);
+    } else if (isGeoProjectionTransition(transition)) {
+      const forwardProgress = getGeoProjectionForwardProgress(rawProgress, transition);
+      const cameraProgress = getFairyEase(forwardProgress);
+      const sphereCamera = isGeoMapToSphereTransition(transition)
+        ? transition.cameraTo
+        : transition.cameraFrom;
+      const mapCamera = isGeoMapToSphereTransition(transition)
+        ? transition.cameraFrom
+        : transition.cameraTo;
+      const sphereTarget = isGeoMapToSphereTransition(transition)
+        ? transition.targetTo
+        : transition.targetFrom;
+      const mapTarget = isGeoMapToSphereTransition(transition)
+        ? transition.targetFrom
+        : transition.targetTo;
+
+      this.camera.position.lerpVectors(sphereCamera, mapCamera, cameraProgress);
+      this.controls.target.lerpVectors(sphereTarget, mapTarget, cameraProgress);
+    } else if (isExpandedGeoMapTransition(transition)) {
+      const forwardProgress = getExpandedGeoMapForwardProgress(rawProgress, transition);
+      const cameraProgress = getFairyEase(forwardProgress);
+      const expandedCamera = isGeoMapToExpandedTransition(transition)
+        ? transition.cameraTo
+        : transition.cameraFrom;
+      const mapCamera = isGeoMapToExpandedTransition(transition)
+        ? transition.cameraFrom
+        : transition.cameraTo;
+      const expandedTarget = isGeoMapToExpandedTransition(transition)
+        ? transition.targetTo
+        : transition.targetFrom;
+      const mapTarget = isGeoMapToExpandedTransition(transition)
+        ? transition.targetFrom
+        : transition.targetTo;
+
+      this.camera.position.lerpVectors(expandedCamera, mapCamera, cameraProgress);
+      this.controls.target.lerpVectors(expandedTarget, mapTarget, cameraProgress);
+    } else {
+      this.camera.position.lerpVectors(transition.cameraFrom, transition.cameraTo, easedProgress);
+      this.controls.target.lerpVectors(transition.targetFrom, transition.targetTo, easedProgress);
+    }
     this.camera.updateProjectionMatrix();
     this.updateTransitionMaterialState(rawProgress);
     this.updateFairyTransitionEffect(rawProgress, transition);
@@ -1645,6 +2499,7 @@ export class ProcessFlowGraphEngine {
     easedProgress: number,
     rawProgress: number,
     seedOffset: number,
+    transition: LayoutTransition,
   ) {
     const positionAttribute = geometry.getAttribute('position') as
       | THREE.BufferAttribute
@@ -1659,6 +2514,63 @@ export class ProcessFlowGraphEngine {
     }
 
     const positionArray = positionAttribute.array as Float32Array;
+
+    if (isSphereExpandedTransition(transition)) {
+      this.applySphereExpandedMorphPositions(
+        positionArray,
+        from,
+        to,
+        rawProgress,
+        seedOffset,
+        transition,
+      );
+      positionAttribute.needsUpdate = true;
+      geometry.computeBoundingSphere();
+      return;
+    }
+
+    if (isGeoProjectionTransition(transition)) {
+      this.applyProjectionMorphPositions(
+        positionArray,
+        from,
+        to,
+        rawProgress,
+        seedOffset,
+        transition,
+      );
+      positionAttribute.needsUpdate = true;
+      geometry.computeBoundingSphere();
+      return;
+    }
+
+    if (isExpandedGeoMapTransition(transition)) {
+      this.applyPlanarMapMorphPositions(
+        positionArray,
+        from,
+        to,
+        rawProgress,
+        seedOffset,
+        transition,
+      );
+      positionAttribute.needsUpdate = true;
+      geometry.computeBoundingSphere();
+      return;
+    }
+
+    if (isGeoMapScopeTransition(transition)) {
+      this.applyGeoMapZoomMorphPositions(
+        positionArray,
+        from,
+        to,
+        rawProgress,
+        seedOffset,
+        transition,
+      );
+      positionAttribute.needsUpdate = true;
+      geometry.computeBoundingSphere();
+      return;
+    }
+
     const sparkle = Math.sin(Math.PI * rawProgress);
     const modeScale = this.layoutMode === 'sphere3d' ? 1.04 : 0.78;
 
@@ -1682,6 +2594,156 @@ export class ProcessFlowGraphEngine {
     geometry.computeBoundingSphere();
   }
 
+  private applySphereExpandedMorphPositions(
+    positionArray: Float32Array,
+    from: Float32Array,
+    to: Float32Array,
+    rawProgress: number,
+    seedOffset: number,
+    transition: LayoutTransition,
+  ) {
+    const forwardProgress = getSphereExpandedForwardProgress(rawProgress, transition);
+    const easedProgress = getFairyEase(forwardProgress);
+    const sparkle = Math.sin(Math.PI * forwardProgress);
+    const sphere = isExpandedToSphereTransition(transition) ? to : from;
+    const expanded = isExpandedToSphereTransition(transition) ? from : to;
+    const modeScale = 0.78;
+
+    for (let offset = 0; offset < positionArray.length; offset += 3) {
+      const vertexIndex = offset / 3 + seedOffset;
+      const seed = getTransitionSeed(vertexIndex);
+      const waveAngle = seed * Math.PI * 8 + forwardProgress * Math.PI * 2.4;
+      const xDrift = Math.sin(waveAngle) * sparkle * (5 + seed * 10) * modeScale;
+      const yLift = sparkle * (18 + seed * 34);
+      const zDrift = Math.cos(waveAngle * 1.27) * sparkle * (10 + seed * 18) * modeScale;
+
+      positionArray[offset] =
+        THREE.MathUtils.lerp(sphere[offset], expanded[offset], easedProgress) + xDrift;
+      positionArray[offset + 1] =
+        THREE.MathUtils.lerp(sphere[offset + 1], expanded[offset + 1], easedProgress) + yLift;
+      positionArray[offset + 2] =
+        THREE.MathUtils.lerp(sphere[offset + 2], expanded[offset + 2], easedProgress) + zDrift;
+    }
+  }
+
+  private applyProjectionMorphPositions(
+    positionArray: Float32Array,
+    from: Float32Array,
+    to: Float32Array,
+    rawProgress: number,
+    seedOffset: number,
+    transition: LayoutTransition,
+  ) {
+    const forwardProgress = getGeoProjectionForwardProgress(rawProgress, transition);
+    const projectionProgress = getFairyEase(forwardProgress);
+    const flattenProgress = getSmoothStep(0.04, 0.58, forwardProgress);
+    const flare = Math.sin(Math.PI * forwardProgress);
+    const sphere = isGeoMapToSphereTransition(transition) ? to : from;
+    const map = isGeoMapToSphereTransition(transition) ? from : to;
+
+    for (let offset = 0; offset < positionArray.length; offset += 3) {
+      const vertexIndex = offset / 3 + seedOffset;
+      const seed = getTransitionSeed(vertexIndex);
+      const landingProgress = getFairyEase(
+        THREE.MathUtils.clamp((forwardProgress - seed * 0.13) / 0.87, 0, 1),
+      );
+      const sourceX = sphere[offset];
+      const sourceY = sphere[offset + 1];
+      const sourceZ = sphere[offset + 2];
+      const flattenedX = sourceX * (1 + flattenProgress * 0.22);
+      const flattenedY = sourceY * (1 - flattenProgress * 0.1);
+      const flattenedZ = sourceZ * (1 - flattenProgress * 0.94);
+      const waveAngle = seed * Math.PI * 10 + forwardProgress * Math.PI * 3.2;
+      const scanLift = flare * (24 + seed * 42);
+      const sidewaysDrift = Math.sin(waveAngle) * flare * (8 + seed * 14);
+      const depthDrift = Math.cos(waveAngle * 1.21) * flare * (18 + seed * 36);
+      const settle = getSmoothStep(0.72, 1, forwardProgress);
+
+      positionArray[offset] =
+        THREE.MathUtils.lerp(flattenedX, map[offset], landingProgress) +
+        sidewaysDrift * (1 - settle);
+      positionArray[offset + 1] =
+        THREE.MathUtils.lerp(flattenedY, map[offset + 1], landingProgress) +
+        scanLift * (1 - settle);
+      positionArray[offset + 2] =
+        THREE.MathUtils.lerp(flattenedZ, map[offset + 2], projectionProgress) +
+        depthDrift * (1 - settle);
+    }
+  }
+
+  private applyPlanarMapMorphPositions(
+    positionArray: Float32Array,
+    from: Float32Array,
+    to: Float32Array,
+    rawProgress: number,
+    seedOffset: number,
+    transition: LayoutTransition,
+  ) {
+    const forwardProgress = getExpandedGeoMapForwardProgress(rawProgress, transition);
+    const flare = Math.sin(Math.PI * forwardProgress);
+    const routeProgress = getFairyEase(getSmoothStep(0.02, 0.96, forwardProgress));
+    const settle = getSmoothStep(0.72, 1, forwardProgress);
+    const expanded = isGeoMapToExpandedTransition(transition) ? to : from;
+    const map = isGeoMapToExpandedTransition(transition) ? from : to;
+
+    for (let offset = 0; offset < positionArray.length; offset += 3) {
+      const vertexIndex = offset / 3 + seedOffset;
+      const seed = getTransitionSeed(vertexIndex);
+      const sweepProgress = getFairyEase(
+        THREE.MathUtils.clamp((forwardProgress - seed * 0.16) / 0.84, 0, 1),
+      );
+      const pulseAngle =
+        seed * Math.PI * 9 +
+        forwardProgress * Math.PI * 4 +
+        (map[offset] + map[offset + 1]) * 0.003;
+      const routeBend = Math.sin(pulseAngle) * flare * (10 + seed * 18) * (1 - settle);
+      const scanLift = Math.cos(pulseAngle * 0.72) * flare * (8 + seed * 14) * (1 - settle);
+
+      positionArray[offset] = THREE.MathUtils.lerp(expanded[offset], map[offset], sweepProgress);
+      positionArray[offset + 1] =
+        THREE.MathUtils.lerp(expanded[offset + 1], map[offset + 1], routeProgress) + routeBend;
+      positionArray[offset + 2] =
+        THREE.MathUtils.lerp(expanded[offset + 2], map[offset + 2], routeProgress) + scanLift;
+    }
+  }
+
+  private applyGeoMapZoomMorphPositions(
+    positionArray: Float32Array,
+    from: Float32Array,
+    to: Float32Array,
+    rawProgress: number,
+    seedOffset: number,
+    transition: LayoutTransition,
+  ) {
+    const zoomProgress = getFairyEase(rawProgress);
+    const flare = Math.sin(Math.PI * rawProgress);
+    const settle = getSmoothStep(0.7, 1, rawProgress);
+    const isZoomIn = transition.cameraTo.z < transition.cameraFrom.z;
+    const focusX = transition.targetTo.x;
+    const focusY = transition.targetTo.y;
+
+    for (let offset = 0; offset < positionArray.length; offset += 3) {
+      const vertexIndex = offset / 3 + seedOffset;
+      const seed = getTransitionSeed(vertexIndex);
+      const delayedProgress = getFairyEase(
+        THREE.MathUtils.clamp((rawProgress - seed * 0.1) / 0.9, 0, 1),
+      );
+      const pulseAngle = seed * Math.PI * 8 + rawProgress * Math.PI * (isZoomIn ? 3.6 : -3.2);
+      const focusPull = flare * (isZoomIn ? -0.1 : 0.08) * (1 - settle);
+      const driftX = Math.sin(pulseAngle) * flare * (7 + seed * 16) * (1 - settle);
+      const driftY = Math.cos(pulseAngle * 0.82) * flare * (6 + seed * 13) * (1 - settle);
+      const sourceX = from[offset] + (from[offset] - focusX) * focusPull;
+      const sourceY = from[offset + 1] + (from[offset + 1] - focusY) * focusPull;
+
+      positionArray[offset] = THREE.MathUtils.lerp(sourceX, to[offset], delayedProgress) + driftX;
+      positionArray[offset + 1] =
+        THREE.MathUtils.lerp(sourceY, to[offset + 1], zoomProgress) + driftY;
+      positionArray[offset + 2] =
+        THREE.MathUtils.lerp(from[offset + 2], to[offset + 2], zoomProgress) +
+        flare * (isZoomIn ? 16 : 9) * (1 - settle);
+    }
+  }
+
   private updateTransitionMaterialState(progress: number) {
     const transition = this.transition;
 
@@ -1689,8 +2751,21 @@ export class ProcessFlowGraphEngine {
       return;
     }
 
-    const sparkle = Math.sin(Math.PI * progress);
-    const edgeFade = getEdgeTransitionFade(progress);
+    const sphereExpandedTransition = isSphereExpandedTransition(transition);
+    const geoProjectionTransition = isGeoProjectionTransition(transition);
+    const geoMapToSphereTransition = isGeoMapToSphereTransition(transition);
+    const geoMapToExpandedTransition = isGeoMapToExpandedTransition(transition);
+    const geoProjectionProgress = geoProjectionTransition
+      ? getGeoProjectionForwardProgress(progress, transition)
+      : progress;
+    const materialProgress = sphereExpandedTransition
+      ? getSphereExpandedForwardProgress(progress, transition)
+      : geoProjectionTransition
+        ? geoProjectionProgress
+        : progress;
+    const sphereExpandedVisualProgress = getFairyEase(materialProgress);
+    const sparkle = Math.sin(Math.PI * materialProgress);
+    const edgeFade = getEdgeTransitionFade(materialProgress);
     const selectedEdgeBrightnessScale = this.selection.selectedNodeId
       ? getSelectedEdgeBrightnessScale(this.selection.highlightedEdgeIds.size)
       : 1;
@@ -1701,8 +2776,16 @@ export class ProcessFlowGraphEngine {
     const flowMarkerMaterial = this.flowMarkerLines?.material as
       | THREE.LineBasicMaterial
       | undefined;
+    const nodeMaterial = this.nodePoints?.material;
     const sphereShellMaterial = this.sphereShell?.material as THREE.MeshBasicMaterial | undefined;
 
+    if (sphereExpandedTransition) {
+      this.updateSphereExpandedNodeVisualState(sphereExpandedVisualProgress);
+    } else if (geoMapToSphereTransition) {
+      this.updateGeoMapSphereNodeVisualState(getFairyEase(progress), transition);
+    } else if (geoMapToExpandedTransition) {
+      this.updateGeoMapExpandedNodeVisualState(getFairyEase(progress), transition);
+    }
     if (edgeMaterial) {
       edgeMaterial.opacity = transition.edgeOpacity * edgeFade;
     }
@@ -1711,13 +2794,275 @@ export class ProcessFlowGraphEngine {
       flowMarkerMaterial.opacity = flowMarkerOpacity * selectedEdgeBrightnessScale * edgeFade;
     }
     if (this.sphereShell && sphereShellMaterial) {
-      this.sphereShell.visible = true;
-      this.sphereShell.scale.setScalar(
-        transition.toLayoutMode === 'sphere3d'
-          ? THREE.MathUtils.lerp(0.66, 0.96, getFairyEase(progress))
-          : THREE.MathUtils.lerp(0.96, 0.72, getFairyEase(progress)),
+      const shouldShowSphereShell = doesTransitionInvolveSphere(transition);
+      this.sphereShell.visible = shouldShowSphereShell;
+      if (!shouldShowSphereShell) {
+        sphereShellMaterial.opacity = 0;
+      } else if (geoProjectionTransition) {
+        const flattenProgress = getSmoothStep(0.04, 0.72, geoProjectionProgress);
+        this.sphereShell.scale.set(
+          THREE.MathUtils.lerp(0.96, 1.18, flattenProgress),
+          THREE.MathUtils.lerp(0.96, 0.72, flattenProgress),
+          THREE.MathUtils.lerp(0.96, 0.08, flattenProgress),
+        );
+        sphereShellMaterial.opacity = 0.016 + sparkle * 0.07;
+      } else if (isSphereExpandedTransition(transition)) {
+        this.sphereShell.scale.setScalar(
+          THREE.MathUtils.lerp(0.96, 0.72, sphereExpandedVisualProgress),
+        );
+        sphereShellMaterial.opacity = 0.012 + sparkle * 0.042;
+      } else {
+        this.sphereShell.scale.setScalar(
+          transition.toLayoutMode === 'sphere3d'
+            ? THREE.MathUtils.lerp(0.66, 0.96, getFairyEase(progress))
+            : THREE.MathUtils.lerp(0.96, 0.72, getFairyEase(progress)),
+        );
+        sphereShellMaterial.opacity = 0.012 + sparkle * 0.042;
+      }
+    }
+
+    if (
+      !sphereExpandedTransition &&
+      !geoMapToSphereTransition &&
+      !geoMapToExpandedTransition &&
+      nodeMaterial instanceof THREE.ShaderMaterial
+    ) {
+      nodeMaterial.uniforms.opacity.value = getNodeMaterialOpacity(
+        this.layoutMode,
+        Boolean(this.selection.selectedNodeId),
       );
-      sphereShellMaterial.opacity = 0.012 + sparkle * 0.042;
+      nodeMaterial.uniforms.backsideFade.value = getNodeBacksideFade(
+        this.layoutMode,
+        Boolean(this.selection.selectedNodeId),
+      );
+    }
+  }
+
+  private updateSphereExpandedNodeVisualState(sphereToExpandedProgress: number) {
+    const hasSelection = Boolean(this.selection.selectedNodeId);
+    const nodeMaterial = this.nodePoints?.material;
+    const sphereOpacity = getNodeMaterialOpacity('sphere3d', hasSelection);
+    const expandedOpacity = getNodeMaterialOpacity('expanded2d', hasSelection);
+    const sphereBacksideFade = getNodeBacksideFade('sphere3d', hasSelection);
+    const expandedBacksideFade = getNodeBacksideFade('expanded2d', hasSelection);
+
+    if (nodeMaterial instanceof THREE.ShaderMaterial) {
+      nodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        sphereOpacity,
+        expandedOpacity,
+        sphereToExpandedProgress,
+      );
+      nodeMaterial.uniforms.backsideFade.value = THREE.MathUtils.lerp(
+        sphereBacksideFade,
+        expandedBacksideFade,
+        sphereToExpandedProgress,
+      );
+    }
+
+    this.updateSphereExpandedNodeSizes(sphereToExpandedProgress);
+  }
+
+  private updateGeoMapSphereNodeVisualState(sphereProgress: number, transition: LayoutTransition) {
+    const hasSelection = Boolean(this.selection.selectedNodeId);
+    const nodeMaterial = this.nodePoints?.material;
+    const mapOpacity = getNodeMaterialOpacity('geoMap2d', hasSelection);
+    const sphereOpacity = getNodeMaterialOpacity('sphere3d', hasSelection);
+    const mapBacksideFade = getNodeBacksideFade('geoMap2d', hasSelection);
+    const sphereBacksideFade = getNodeBacksideFade('sphere3d', hasSelection);
+
+    if (nodeMaterial instanceof THREE.ShaderMaterial) {
+      nodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        mapOpacity,
+        sphereOpacity,
+        sphereProgress,
+      );
+      nodeMaterial.uniforms.backsideFade.value = THREE.MathUtils.lerp(
+        mapBacksideFade,
+        sphereBacksideFade,
+        sphereProgress,
+      );
+    }
+
+    this.updateGeoMapSphereNodeSizes(sphereProgress, transition.sourceLayoutNodeIds);
+  }
+
+  private updateGeoMapSphereNodeSizes(
+    sphereProgress: number,
+    sourceLayoutNodeIds: Set<string> | undefined,
+  ) {
+    const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (sizeAttribute) {
+      const sizeArray = sizeAttribute.array as Float32Array;
+      this.data.nodes.forEach((node, index) => {
+        const isSourceNode = sourceLayoutNodeIds?.has(node.id) ?? true;
+        const revealProgress = isSourceNode
+          ? sphereProgress
+          : getSmoothStep(0.76, 1, sphereProgress);
+        const sourceSize = isSourceNode ? getNodePointSize(node, 'geoMap2d') : 0;
+
+        sizeArray[index] = THREE.MathUtils.lerp(
+          sourceSize,
+          getNodePointSize(node, 'sphere3d'),
+          revealProgress,
+        );
+      });
+      sizeAttribute.needsUpdate = true;
+    }
+
+    const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (highlightedSizeAttribute) {
+      const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
+      const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
+
+      highlightedNodeIds.forEach((nodeId, index) => {
+        if (index >= highlightedSizeArray.length) {
+          return;
+        }
+
+        const node = this.getNode(nodeId);
+        const isSourceNode = sourceLayoutNodeIds?.has(nodeId) ?? true;
+        const revealProgress = isSourceNode
+          ? sphereProgress
+          : getSmoothStep(0.76, 1, sphereProgress);
+        const sourceSize = isSourceNode ? getNodePointSize(node, 'geoMap2d', true) : 0;
+
+        highlightedSizeArray[index] = THREE.MathUtils.lerp(
+          sourceSize,
+          getNodePointSize(node, 'sphere3d', true),
+          revealProgress,
+        );
+      });
+      highlightedSizeAttribute.needsUpdate = true;
+    }
+  }
+
+  private updateGeoMapExpandedNodeVisualState(
+    expandedProgress: number,
+    transition: LayoutTransition,
+  ) {
+    const hasSelection = Boolean(this.selection.selectedNodeId);
+    const nodeMaterial = this.nodePoints?.material;
+    const mapOpacity = getNodeMaterialOpacity('geoMap2d', hasSelection);
+    const expandedOpacity = getNodeMaterialOpacity('expanded2d', hasSelection);
+    const mapBacksideFade = getNodeBacksideFade('geoMap2d', hasSelection);
+    const expandedBacksideFade = getNodeBacksideFade('expanded2d', hasSelection);
+
+    if (nodeMaterial instanceof THREE.ShaderMaterial) {
+      nodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        mapOpacity,
+        expandedOpacity,
+        expandedProgress,
+      );
+      nodeMaterial.uniforms.backsideFade.value = THREE.MathUtils.lerp(
+        mapBacksideFade,
+        expandedBacksideFade,
+        expandedProgress,
+      );
+    }
+
+    this.updateGeoMapExpandedNodeSizes(expandedProgress, transition.sourceLayoutNodeIds);
+  }
+
+  private updateGeoMapExpandedNodeSizes(
+    expandedProgress: number,
+    sourceLayoutNodeIds: Set<string> | undefined,
+  ) {
+    const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (sizeAttribute) {
+      const sizeArray = sizeAttribute.array as Float32Array;
+      this.data.nodes.forEach((node, index) => {
+        const isSourceNode = sourceLayoutNodeIds?.has(node.id) ?? true;
+        const revealProgress = isSourceNode
+          ? expandedProgress
+          : getSmoothStep(0.76, 1, expandedProgress);
+        const sourceSize = isSourceNode ? getNodePointSize(node, 'geoMap2d') : 0;
+
+        sizeArray[index] = THREE.MathUtils.lerp(
+          sourceSize,
+          getNodePointSize(node, 'expanded2d'),
+          revealProgress,
+        );
+      });
+      sizeAttribute.needsUpdate = true;
+    }
+
+    const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (highlightedSizeAttribute) {
+      const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
+      const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
+
+      highlightedNodeIds.forEach((nodeId, index) => {
+        if (index >= highlightedSizeArray.length) {
+          return;
+        }
+
+        const node = this.getNode(nodeId);
+        const isSourceNode = sourceLayoutNodeIds?.has(nodeId) ?? true;
+        const revealProgress = isSourceNode
+          ? expandedProgress
+          : getSmoothStep(0.76, 1, expandedProgress);
+        const sourceSize = isSourceNode ? getNodePointSize(node, 'geoMap2d', true) : 0;
+
+        highlightedSizeArray[index] = THREE.MathUtils.lerp(
+          sourceSize,
+          getNodePointSize(node, 'expanded2d', true),
+          revealProgress,
+        );
+      });
+      highlightedSizeAttribute.needsUpdate = true;
+    }
+  }
+
+  private updateSphereExpandedNodeSizes(sphereToExpandedProgress: number) {
+    const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (sizeAttribute) {
+      const sizeArray = sizeAttribute.array as Float32Array;
+      this.data.nodes.forEach((node, index) => {
+        sizeArray[index] = THREE.MathUtils.lerp(
+          getNodePointSize(node, 'sphere3d'),
+          getNodePointSize(node, 'expanded2d'),
+          sphereToExpandedProgress,
+        );
+      });
+      sizeAttribute.needsUpdate = true;
+    }
+
+    const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (highlightedSizeAttribute) {
+      const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
+      const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
+
+      highlightedNodeIds.forEach((nodeId, index) => {
+        if (index >= highlightedSizeArray.length) {
+          return;
+        }
+
+        const node = this.getNode(nodeId);
+        highlightedSizeArray[index] = THREE.MathUtils.lerp(
+          getNodePointSize(node, 'sphere3d', true),
+          getNodePointSize(node, 'expanded2d', true),
+          sphereToExpandedProgress,
+        );
+      });
+      highlightedSizeAttribute.needsUpdate = true;
     }
   }
 
@@ -1725,6 +3070,9 @@ export class ProcessFlowGraphEngine {
     const dustMaterial = this.transitionDustPoints?.material;
     const ringMaterial = this.transitionRing?.material as THREE.LineBasicMaterial | undefined;
     const gateMaterial = this.transitionGateLines?.material as THREE.LineBasicMaterial | undefined;
+    const projectionMaterial = this.transitionProjectionLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
 
     if (dustMaterial instanceof THREE.ShaderMaterial) {
       dustMaterial.uniforms.opacity.value = opacity;
@@ -1735,24 +3083,48 @@ export class ProcessFlowGraphEngine {
     if (gateMaterial) {
       gateMaterial.opacity = opacity * 0.36;
     }
+    if (projectionMaterial) {
+      projectionMaterial.opacity = 0;
+    }
   }
 
   private updateFairyTransitionEffect(progress: number, transition: LayoutTransition) {
-    const sparkle = Math.sin(Math.PI * progress);
-    const easedProgress = getFairyEase(progress);
-    const direction = transition.toLayoutMode === 'sphere3d' ? -1 : 1;
+    const sphereExpandedTransition = isSphereExpandedTransition(transition);
+    const projectionTransition = isGeoProjectionTransition(transition);
+    const planarMapTransition = isExpandedGeoMapTransition(transition);
+    const effectProgress = sphereExpandedTransition
+      ? getSphereExpandedForwardProgress(progress, transition)
+      : projectionTransition
+        ? getGeoProjectionForwardProgress(progress, transition)
+        : planarMapTransition
+          ? getExpandedGeoMapForwardProgress(progress, transition)
+          : progress;
+    const sparkle = Math.sin(Math.PI * effectProgress);
+    const easedProgress = getFairyEase(effectProgress);
+    const mapZoomTransition = isGeoMapScopeTransition(transition);
+    const restrainedMapTransition =
+      projectionTransition || planarMapTransition || mapZoomTransition;
+    const direction =
+      sphereExpandedTransition || projectionTransition
+        ? 1
+        : transition.toLayoutMode === 'sphere3d' ||
+            (transition.fromLayoutMode === 'geoMap2d' && transition.toLayoutMode === 'expanded2d')
+          ? -1
+          : 1;
     const dustPositionAttribute = this.transitionDustGeometry.getAttribute('position') as
       | THREE.BufferAttribute
       | undefined;
 
     if (dustPositionAttribute) {
       const positionArray = dustPositionAttribute.array as Float32Array;
-      const baseSpread =
-        transition.toLayoutMode === 'sphere3d'
+      const baseSpread = sphereExpandedTransition
+        ? THREE.MathUtils.lerp(260, 500, easedProgress)
+        : transition.toLayoutMode === 'sphere3d'
           ? THREE.MathUtils.lerp(470, 290, easedProgress)
           : THREE.MathUtils.lerp(260, 500, easedProgress);
-      const depthScale =
-        transition.toLayoutMode === 'sphere3d'
+      const depthScale = sphereExpandedTransition
+        ? THREE.MathUtils.lerp(0.94, 0.34, easedProgress)
+        : transition.toLayoutMode === 'sphere3d'
           ? THREE.MathUtils.lerp(0.62, 0.94, easedProgress)
           : THREE.MathUtils.lerp(0.94, 0.34, easedProgress);
 
@@ -1760,37 +3132,309 @@ export class ProcessFlowGraphEngine {
         const seed = getTransitionSeed(index);
         const orbitSeed = getTransitionSeed(index + 21);
         const radius = baseSpread * (0.28 + orbitSeed * 0.72);
-        const angle = seed * Math.PI * 2 + progress * direction * (1.7 + orbitSeed * 1.8);
+        const angle = seed * Math.PI * 2 + effectProgress * direction * (1.7 + orbitSeed * 1.8);
         const offset = index * 3;
 
         positionArray[offset] =
-          Math.cos(angle) * radius + Math.sin(progress * Math.PI * 2 + seed * 9) * sparkle * 24;
+          Math.cos(angle) * radius +
+          Math.sin(effectProgress * Math.PI * 2 + seed * 9) * sparkle * 24;
         positionArray[offset + 1] =
           (getTransitionSeed(index + 17) - 0.5) * 190 + sparkle * (52 + seed * 78);
         positionArray[offset + 2] =
           Math.sin(angle) * radius * depthScale +
-          Math.cos(progress * Math.PI * 2.2 + seed * 11) * sparkle * 42;
+          Math.cos(effectProgress * Math.PI * 2.2 + seed * 11) * sparkle * 42;
       }
 
       dustPositionAttribute.needsUpdate = true;
       this.transitionDustGeometry.computeBoundingSphere();
     }
 
-    this.transitionEffectGroup.rotation.y = progress * direction * 0.62;
-    this.transitionEffectGroup.rotation.z = Math.sin(progress * Math.PI) * 0.035 * direction;
-    this.transitionEffectGroup.scale.setScalar(1 + sparkle * 0.08);
+    this.transitionEffectGroup.rotation.y =
+      effectProgress * direction * (restrainedMapTransition ? 0.18 : 0.62);
+    this.transitionEffectGroup.rotation.z =
+      Math.sin(effectProgress * Math.PI) * (restrainedMapTransition ? 0.014 : 0.035) * direction;
+    this.transitionEffectGroup.scale.setScalar(
+      1 + sparkle * (restrainedMapTransition ? 0.04 : 0.08),
+    );
     if (this.transitionRing) {
-      this.transitionRing.rotation.z = progress * direction * 0.28;
-      this.transitionRing.scale.set(
-        0.86 + easedProgress * 0.3,
-        0.8 + sparkle * 0.18,
-        1 + sparkle * 0.08,
-      );
+      this.transitionRing.rotation.z = effectProgress * direction * 0.28;
+      if (projectionTransition) {
+        const flattenProgress = getSmoothStep(0.08, 0.78, effectProgress);
+        this.transitionRing.scale.set(
+          THREE.MathUtils.lerp(0.88, 1.34, flattenProgress),
+          THREE.MathUtils.lerp(0.8, 0.18, flattenProgress) + sparkle * 0.05,
+          THREE.MathUtils.lerp(1, 0.16, flattenProgress),
+        );
+      } else if (planarMapTransition) {
+        const sweepProgress = getSmoothStep(0.04, 0.82, effectProgress);
+        this.transitionRing.scale.set(
+          THREE.MathUtils.lerp(0.72, 1.2, sweepProgress),
+          0.22 + sparkle * 0.08,
+          0.18 + sparkle * 0.04,
+        );
+      } else if (mapZoomTransition) {
+        const isZoomIn = transition.cameraTo.z < transition.cameraFrom.z;
+        const zoomProgress = getSmoothStep(0.02, 0.86, progress);
+        this.transitionRing.scale.set(
+          isZoomIn
+            ? THREE.MathUtils.lerp(1.85, 0.62, zoomProgress)
+            : THREE.MathUtils.lerp(0.62, 1.72, zoomProgress),
+          isZoomIn
+            ? THREE.MathUtils.lerp(1.18, 0.34, zoomProgress) + sparkle * 0.05
+            : THREE.MathUtils.lerp(0.34, 1.08, zoomProgress) + sparkle * 0.06,
+          0.18 + sparkle * 0.04,
+        );
+      } else if (sphereExpandedTransition) {
+        this.transitionRing.scale.set(
+          0.86 + easedProgress * 0.3,
+          0.8 + sparkle * 0.18,
+          1 + sparkle * 0.08,
+        );
+      } else {
+        this.transitionRing.scale.set(
+          0.86 + easedProgress * 0.3,
+          0.8 + sparkle * 0.18,
+          1 + sparkle * 0.08,
+        );
+      }
     }
     if (this.transitionGateLines) {
-      this.transitionGateLines.rotation.y = progress * direction * -0.34;
+      this.transitionGateLines.rotation.y = effectProgress * direction * -0.34;
     }
     this.updateTransitionEffectOpacity(sparkle);
+    if (planarMapTransition) {
+      this.updatePlanarMapGridEffect(progress, transition);
+    } else if (mapZoomTransition) {
+      this.updateGeoMapZoomGridEffect(progress, transition);
+    } else {
+      this.updateProjectionGridEffect(progress, transition);
+    }
+  }
+
+  private updateGeoMapZoomGridEffect(progress: number, transition: LayoutTransition) {
+    const projectionMaterial = this.transitionProjectionLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (!projectionMaterial || !positionAttribute || !isGeoMapScopeTransition(transition)) {
+      if (projectionMaterial) {
+        projectionMaterial.opacity = 0;
+      }
+      return;
+    }
+
+    const bounds = this.getExpandedLayoutBounds('geoMap2d');
+    const positions = positionAttribute.array as Float32Array;
+    const zoomProgress = getFairyEase(getSmoothStep(0.04, 0.9, progress));
+    const flare = Math.sin(Math.PI * progress);
+    const isZoomIn = transition.cameraTo.z < transition.cameraFrom.z;
+    const startScale = isZoomIn ? 2.2 : 0.42;
+    const endScale = isZoomIn ? 0.94 : 1.86;
+    const scale = THREE.MathUtils.lerp(startScale, endScale, zoomProgress);
+    const reveal = getSmoothStep(0.02, 0.2, progress) * (1 - getSmoothStep(0.84, 1, progress));
+    let offset = 0;
+    const writeZoomPoint = (xProgress: number, yProgress: number, phase: number) => {
+      const localX = (xProgress - 0.5) * bounds.width * 0.92 * scale;
+      const localY = (yProgress - 0.5) * bounds.height * 0.82 * scale;
+      const pulse = Math.sin(progress * Math.PI * 4 + phase * Math.PI * 2) * flare * 5;
+
+      positions[offset] = bounds.centerX + localX;
+      positions[offset + 1] = bounds.centerY + localY + pulse;
+      positions[offset + 2] = flare * (8 + phase * 10);
+      offset += 3;
+    };
+
+    for (let meridianIndex = 0; meridianIndex < projectionGridMeridianCount; meridianIndex += 1) {
+      const xProgress = meridianIndex / (projectionGridMeridianCount - 1);
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startProgress = segmentIndex / projectionGridSegments;
+        const endProgress = (segmentIndex + 1) / projectionGridSegments;
+
+        writeZoomPoint(xProgress, startProgress, xProgress);
+        writeZoomPoint(xProgress, endProgress, xProgress);
+      }
+    }
+
+    for (let parallelIndex = 0; parallelIndex < projectionGridParallelCount; parallelIndex += 1) {
+      const yProgress = (parallelIndex + 1) / (projectionGridParallelCount + 1);
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startProgress = segmentIndex / projectionGridSegments;
+        const endProgress = (segmentIndex + 1) / projectionGridSegments;
+
+        writeZoomPoint(startProgress, yProgress, yProgress);
+        writeZoomPoint(endProgress, yProgress, yProgress);
+      }
+    }
+
+    positionAttribute.needsUpdate = true;
+    this.transitionProjectionGeometry.computeBoundingSphere();
+    projectionMaterial.opacity = reveal * 0.38;
+  }
+
+  private updatePlanarMapGridEffect(progress: number, transition: LayoutTransition) {
+    const projectionMaterial = this.transitionProjectionLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (!projectionMaterial || !positionAttribute || !isExpandedGeoMapTransition(transition)) {
+      if (projectionMaterial) {
+        projectionMaterial.opacity = 0;
+      }
+      return;
+    }
+
+    const isMapToExpanded = isGeoMapToExpandedTransition(transition);
+    const fromBounds = this.getExpandedLayoutBounds(
+      isMapToExpanded ? 'expanded2d' : transition.fromLayoutMode,
+    );
+    const toBounds = this.getExpandedLayoutBounds(
+      isMapToExpanded ? 'geoMap2d' : transition.toLayoutMode,
+    );
+    const positions = positionAttribute.array as Float32Array;
+    const effectProgress = getExpandedGeoMapForwardProgress(progress, transition);
+    const sweepProgress = getFairyEase(getSmoothStep(0.04, 0.94, effectProgress));
+    const flare = Math.sin(Math.PI * effectProgress);
+    const reveal = getSmoothStep(0.02, 0.22, progress) * (1 - getSmoothStep(0.88, 1, progress));
+    let offset = 0;
+    const writePlanarPoint = (
+      fromX: number,
+      fromY: number,
+      toX: number,
+      toY: number,
+      phase: number,
+    ) => {
+      const pulse = Math.sin(effectProgress * Math.PI * 4 + phase * Math.PI * 2) * flare * 6;
+
+      positions[offset] = THREE.MathUtils.lerp(fromX, toX, sweepProgress);
+      positions[offset + 1] = THREE.MathUtils.lerp(fromY, toY, sweepProgress) + pulse;
+      positions[offset + 2] = flare * (7 + phase * 9);
+      offset += 3;
+    };
+
+    for (let meridianIndex = 0; meridianIndex < projectionGridMeridianCount; meridianIndex += 1) {
+      const xProgress = meridianIndex / (projectionGridMeridianCount - 1);
+      const fromX =
+        fromBounds.centerX - fromBounds.width * 0.48 + fromBounds.width * 0.96 * xProgress;
+      const toX = toBounds.centerX - toBounds.width * 0.48 + toBounds.width * 0.96 * xProgress;
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startProgress = segmentIndex / projectionGridSegments;
+        const endProgress = (segmentIndex + 1) / projectionGridSegments;
+        const fromStartY =
+          fromBounds.centerY - fromBounds.height * 0.42 + fromBounds.height * 0.84 * startProgress;
+        const fromEndY =
+          fromBounds.centerY - fromBounds.height * 0.42 + fromBounds.height * 0.84 * endProgress;
+        const toStartY =
+          toBounds.centerY - toBounds.height * 0.42 + toBounds.height * 0.84 * startProgress;
+        const toEndY =
+          toBounds.centerY - toBounds.height * 0.42 + toBounds.height * 0.84 * endProgress;
+
+        writePlanarPoint(fromX, fromStartY, toX, toStartY, xProgress);
+        writePlanarPoint(fromX, fromEndY, toX, toEndY, xProgress);
+      }
+    }
+
+    for (let parallelIndex = 0; parallelIndex < projectionGridParallelCount; parallelIndex += 1) {
+      const yProgress = (parallelIndex + 1) / (projectionGridParallelCount + 1);
+      const fromY =
+        fromBounds.centerY - fromBounds.height * 0.42 + fromBounds.height * 0.84 * yProgress;
+      const toY = toBounds.centerY - toBounds.height * 0.42 + toBounds.height * 0.84 * yProgress;
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startProgress = segmentIndex / projectionGridSegments;
+        const endProgress = (segmentIndex + 1) / projectionGridSegments;
+        const fromStartX =
+          fromBounds.centerX - fromBounds.width * 0.48 + fromBounds.width * 0.96 * startProgress;
+        const fromEndX =
+          fromBounds.centerX - fromBounds.width * 0.48 + fromBounds.width * 0.96 * endProgress;
+        const toStartX =
+          toBounds.centerX - toBounds.width * 0.48 + toBounds.width * 0.96 * startProgress;
+        const toEndX =
+          toBounds.centerX - toBounds.width * 0.48 + toBounds.width * 0.96 * endProgress;
+
+        writePlanarPoint(fromStartX, fromY, toStartX, toY, yProgress);
+        writePlanarPoint(fromEndX, fromY, toEndX, toY, yProgress);
+      }
+    }
+
+    positionAttribute.needsUpdate = true;
+    this.transitionProjectionGeometry.computeBoundingSphere();
+    projectionMaterial.opacity = reveal * 0.34;
+  }
+
+  private updateProjectionGridEffect(progress: number, transition: LayoutTransition) {
+    const projectionMaterial = this.transitionProjectionLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+
+    if (!projectionMaterial || !positionAttribute || !isGeoProjectionTransition(transition)) {
+      if (projectionMaterial) {
+        projectionMaterial.opacity = 0;
+      }
+      return;
+    }
+
+    const bounds = this.getExpandedLayoutBounds('geoMap2d');
+    const projectionProgress = getGeoProjectionForwardProgress(progress, transition);
+    const positions = positionAttribute.array as Float32Array;
+    const flattenProgress = getSmoothStep(0.08, 0.78, projectionProgress);
+    const targetProgress = getFairyEase(getSmoothStep(0.18, 0.94, projectionProgress));
+    const reveal = getSmoothStep(0.02, 0.28, progress) * (1 - getSmoothStep(0.86, 1, progress));
+    let offset = 0;
+    const writeProjectionPoint = (longitude: number, latitude: number) => {
+      const sphereX = Math.cos(latitude) * Math.cos(longitude) * sphereVisualRadius;
+      const sphereY = Math.sin(latitude) * sphereVisualRadius;
+      const sphereZ = Math.cos(latitude) * Math.sin(longitude) * sphereVisualRadius;
+      const flatX = (longitude / Math.PI) * bounds.width * 0.48;
+      const flatY = (latitude / (Math.PI / 2)) * bounds.height * 0.42;
+      const compressedX = sphereX * (1 + flattenProgress * 0.18);
+      const compressedY = sphereY * (1 - flattenProgress * 0.08);
+      const compressedZ = sphereZ * (1 - flattenProgress * 0.94);
+
+      positions[offset] = THREE.MathUtils.lerp(compressedX, flatX, targetProgress);
+      positions[offset + 1] = THREE.MathUtils.lerp(compressedY, flatY, targetProgress);
+      positions[offset + 2] = THREE.MathUtils.lerp(compressedZ, 0, targetProgress);
+      offset += 3;
+    };
+
+    for (let meridianIndex = 0; meridianIndex < projectionGridMeridianCount; meridianIndex += 1) {
+      const longitude =
+        -Math.PI + (meridianIndex / (projectionGridMeridianCount - 1)) * Math.PI * 2;
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startLatitude = -Math.PI / 2 + (segmentIndex / projectionGridSegments) * Math.PI;
+        const endLatitude = -Math.PI / 2 + ((segmentIndex + 1) / projectionGridSegments) * Math.PI;
+        writeProjectionPoint(longitude, startLatitude);
+        writeProjectionPoint(longitude, endLatitude);
+      }
+    }
+
+    for (let parallelIndex = 0; parallelIndex < projectionGridParallelCount; parallelIndex += 1) {
+      const latitude =
+        -Math.PI / 2 + ((parallelIndex + 1) / (projectionGridParallelCount + 1)) * Math.PI;
+
+      for (let segmentIndex = 0; segmentIndex < projectionGridSegments; segmentIndex += 1) {
+        const startLongitude = -Math.PI + (segmentIndex / projectionGridSegments) * Math.PI * 2;
+        const endLongitude = -Math.PI + ((segmentIndex + 1) / projectionGridSegments) * Math.PI * 2;
+        writeProjectionPoint(startLongitude, latitude);
+        writeProjectionPoint(endLongitude, latitude);
+      }
+    }
+
+    positionAttribute.needsUpdate = true;
+    this.transitionProjectionGeometry.computeBoundingSphere();
+    projectionMaterial.opacity = reveal * 0.42;
   }
 
   private updateGeometryPositions() {
@@ -1829,7 +3473,8 @@ export class ProcessFlowGraphEngine {
   private updateNodeColors() {
     const colorAttribute = this.nodeGeometry.getAttribute('color') as THREE.BufferAttribute;
     const colorArray = colorAttribute.array as Float32Array;
-    const hasSelection = Boolean(this.selection.selectedNodeId);
+    const selectedNodeId = this.selection.selectedNodeId;
+    const hasSelection = Boolean(selectedNodeId);
     const isExpandedSelected = hasSelection && isExpandedLikeLayout(this.layoutMode);
 
     this.data.nodes.forEach((node, index) => {
@@ -1837,7 +3482,7 @@ export class ProcessFlowGraphEngine {
       let color = this.getClusterColor(node);
       let intensity = getNodeOverviewIntensity(node);
 
-      if (hasSelection) {
+      if (hasSelection && node.id !== selectedNodeId) {
         color = isExpandedSelected ? expandedSelectedContextColor : selectedContextColor;
         intensity = isExpandedSelected
           ? node.kind === 'process'
@@ -1847,10 +3492,6 @@ export class ProcessFlowGraphEngine {
             ? 0.82
             : 0.9;
       }
-      if (this.selection.highlightedNodeIds.has(node.id)) {
-        color = this.getClusterColor(node);
-        intensity = getNodeOverviewIntensity(node);
-      }
 
       writeColor(colorArray, offset, color, intensity);
     });
@@ -1859,7 +3500,11 @@ export class ProcessFlowGraphEngine {
   }
 
   private getHighlightedNodeColor(node: ProcessFlowGraphNode | undefined) {
-    return node ? this.getClusterColor(node) : selectedColor;
+    if (!node) {
+      return selectedColor;
+    }
+
+    return this.getClusterColor(node);
   }
 
   private getHighlightedEdgeRenders(): HighlightedEdgeRender[] {
@@ -1887,6 +3532,34 @@ export class ProcessFlowGraphEngine {
     }));
   }
 
+  private getHighlightedEdgeVisualDirection(
+    edge: ProcessFlowGraphEdge,
+  ): ProcessFlowGraphEdge['direction'] {
+    const selectedNodeId = this.selection.selectedNodeId;
+
+    if (!selectedNodeId || this.layoutMode !== 'geoMap2d') {
+      return edge.direction;
+    }
+
+    const sourceNode = this.getNode(edge.source);
+    const targetNode = this.getNode(edge.target);
+    const isProcessLink = sourceNode?.kind === 'process' && targetNode?.kind === 'process';
+
+    if (!isProcessLink) {
+      return edge.direction;
+    }
+
+    if (edge.target === selectedNodeId) {
+      return 'input';
+    }
+
+    if (edge.source === selectedNodeId) {
+      return 'output';
+    }
+
+    return edge.direction;
+  }
+
   private getHighlightedEdgeIntensityScale(edge: ProcessFlowGraphEdge): number {
     const sourceNode = this.getNode(edge.source);
     const targetNode = this.getNode(edge.target);
@@ -1906,7 +3579,8 @@ export class ProcessFlowGraphEngine {
         ? 0
         : THREE.MathUtils.clamp(Math.log1p(Math.abs(edge.amount)) / 26, 0, 0.16);
     const sameCluster = sourceNode?.clusterId === targetNode?.clusterId;
-    const directionBase = edge.direction === 'input' ? 0.34 : 0.3;
+    const visualDirection = this.getHighlightedEdgeVisualDirection(edge);
+    const directionBase = visualDirection === 'input' ? 0.34 : 0.3;
 
     return directionBase + amountBoost + (sameCluster ? 0.06 : 0.02);
   }
@@ -1924,6 +3598,7 @@ export class ProcessFlowGraphEngine {
     const markerPositions = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
     const markerColors = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
     const selectedNodePositions = new Float32Array(this.selection.selectedNodeId ? 3 : 0);
+    const selectedNodeId = this.selection.selectedNodeId;
     const selectedEdgeBrightnessScale = this.selection.selectedNodeId
       ? getSelectedEdgeBrightnessScale(highlightedEdgeRenders.length)
       : 1;
@@ -1933,9 +3608,10 @@ export class ProcessFlowGraphEngine {
 
     highlightedNodeIds.forEach((nodeId, index) => {
       const node = this.getNode(nodeId);
+      const highlightIntensity = selectedNodeId && nodeId !== selectedNodeId ? 1.28 : 1.45;
 
       writeTuple(nodePositions, index * 3, getNodePosition(this.data, this.layoutMode, nodeId));
-      writeColor(nodeColors, index * 3, this.getHighlightedNodeColor(node), 1.45);
+      writeColor(nodeColors, index * 3, this.getHighlightedNodeColor(node), highlightIntensity);
       nodeSizes[index] = getNodePointSize(node, this.layoutMode, true);
     });
     if (this.selection.selectedNodeId) {
@@ -1948,12 +3624,13 @@ export class ProcessFlowGraphEngine {
     highlightedEdgeRenders.forEach(({ edge, edgeIndex, intensityScale }) => {
       const source = getNodePosition(this.data, this.layoutMode, edge.source);
       const target = getNodePosition(this.data, this.layoutMode, edge.target);
-      const color = getEdgeColor(edge.direction);
+      const visualDirection = this.getHighlightedEdgeVisualDirection(edge);
+      const color = getEdgeColor(visualDirection);
       const baseIntensity = this.selection.selectedNodeId
-        ? edge.direction === 'input'
+        ? visualDirection === 'input'
           ? 1.26
           : 1.12
-        : edge.direction === 'input'
+        : visualDirection === 'input'
           ? 1.55
           : 1.38;
       const intensity = baseIntensity * intensityScale * selectedEdgeBrightnessScale;
@@ -2016,7 +3693,7 @@ export class ProcessFlowGraphEngine {
             markerColors,
             markerColorOffset + vertexOffset * 3,
             color,
-            (edge.direction === 'input' ? 1.35 : 1.25) * selectedEdgeBrightnessScale,
+            (visualDirection === 'input' ? 1.35 : 1.25) * selectedEdgeBrightnessScale,
           );
         }
         markerOffset += 1;
@@ -2159,15 +3836,88 @@ export class ProcessFlowGraphEngine {
   }
 
   private getSelectedNodePulseBaseSize() {
+    const transition = this.transition;
+
+    if (transition && isSphereExpandedTransition(transition)) {
+      return THREE.MathUtils.lerp(
+        sphereSelectedNodePulseBaseSize,
+        expandedSelectedNodePulseBaseSize,
+        this.getCurrentSphereExpandedVisualProgress(transition),
+      );
+    }
+    if (transition && isGeoMapToSphereTransition(transition)) {
+      return THREE.MathUtils.lerp(
+        expandedSelectedNodePulseBaseSize,
+        sphereSelectedNodePulseBaseSize,
+        this.getCurrentTransitionVisualProgress(transition),
+      );
+    }
+
     return this.layoutMode === 'sphere3d'
       ? sphereSelectedNodePulseBaseSize
       : expandedSelectedNodePulseBaseSize;
   }
 
   private getSelectedNodePulseSizeDelta() {
+    const transition = this.transition;
+
+    if (transition && isSphereExpandedTransition(transition)) {
+      return THREE.MathUtils.lerp(
+        sphereSelectedNodePulseSizeDelta,
+        expandedSelectedNodePulseSizeDelta,
+        this.getCurrentSphereExpandedVisualProgress(transition),
+      );
+    }
+    if (transition && isGeoMapToSphereTransition(transition)) {
+      return THREE.MathUtils.lerp(
+        expandedSelectedNodePulseSizeDelta,
+        sphereSelectedNodePulseSizeDelta,
+        this.getCurrentTransitionVisualProgress(transition),
+      );
+    }
+
     return this.layoutMode === 'sphere3d'
       ? sphereSelectedNodePulseSizeDelta
       : expandedSelectedNodePulseSizeDelta;
+  }
+
+  private getCurrentSphereExpandedVisualProgress(transition: LayoutTransition) {
+    return getFairyEase(
+      getSphereExpandedForwardProgress(
+        this.getCurrentTransitionRawProgress(transition),
+        transition,
+      ),
+    );
+  }
+
+  private getCurrentTransitionVisualProgress(transition: LayoutTransition) {
+    return getFairyEase(this.getCurrentTransitionRawProgress(transition));
+  }
+
+  private getCurrentTransitionRawProgress(transition: LayoutTransition) {
+    const rawProgress = THREE.MathUtils.clamp(
+      (performance.now() - transition.startedAt) / transition.duration,
+      0,
+      1,
+    );
+
+    return rawProgress;
+  }
+
+  private getFlatSelectionPulseBoost() {
+    const transition = this.sphereSelectionTransition;
+
+    if (!transition?.isFlatSelection) {
+      return 0;
+    }
+
+    const rawProgress = THREE.MathUtils.clamp(
+      (performance.now() - transition.startedAt) / transition.duration,
+      0,
+      1,
+    );
+
+    return Math.sin(Math.PI * rawProgress) * (this.layoutMode === 'geoMap2d' ? 7 : 10);
   }
 
   private updateSelectedNodePulse() {
@@ -2196,13 +3946,13 @@ export class ProcessFlowGraphEngine {
     const wave = 0.5 - Math.cos(rawProgress * Math.PI * 2) * 0.5;
     const easedPulse = getSmoothStep(0, 1, wave);
 
-    selectedNodeMaterial.opacity = THREE.MathUtils.lerp(
-      selectedNodePulseMinOpacity,
-      selectedNodePulseMaxOpacity,
-      easedPulse,
-    );
+    selectedNodeMaterial.opacity =
+      THREE.MathUtils.lerp(selectedNodePulseMinOpacity, selectedNodePulseMaxOpacity, easedPulse) *
+      this.selectedNodeRevealProgress;
     selectedNodeMaterial.size =
-      this.getSelectedNodePulseBaseSize() + this.getSelectedNodePulseSizeDelta() * easedPulse;
+      this.getSelectedNodePulseBaseSize() +
+      this.getSelectedNodePulseSizeDelta() * easedPulse +
+      this.getFlatSelectionPulseBoost();
   }
 
   private focusNode(nodeId: string) {
@@ -2270,12 +4020,14 @@ export class ProcessFlowGraphEngine {
   private render = () => {
     this.updateLayoutTransition();
     this.updateCameraFocusTransition();
+    this.updateSphereSelectionTransition();
     this.updateFlowMarkers();
     this.updateSelectedNodePulse();
 
     if (
       !this.transition &&
       !this.cameraFocusTransition &&
+      !this.sphereSelectionTransition &&
       this.layoutMode === 'sphere3d' &&
       !this.selection.selectedNodeId
     ) {

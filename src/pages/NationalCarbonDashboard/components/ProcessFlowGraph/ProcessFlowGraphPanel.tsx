@@ -1,11 +1,10 @@
 import {
-  AimOutlined,
   ApartmentOutlined,
   ClearOutlined,
+  CloseCircleOutlined,
   ClusterOutlined,
   DragOutlined,
   EnvironmentOutlined,
-  FullscreenOutlined,
   GlobalOutlined,
   NodeIndexOutlined,
   SearchOutlined,
@@ -13,11 +12,7 @@ import {
 } from '@ant-design/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
-import {
-  buildProcessFlowGraphGeoMapView,
-  loadProcessFlowGeoMapAssets,
-  type ProcessFlowGraphGeoMapAssets,
-} from './geoMapLayout';
+import { type ProcessFlowGraphGeoMapView } from './geoMapLayout';
 import {
   getProcessFlowGraphNode,
   getProcessFlowGraphSelection,
@@ -30,13 +25,19 @@ import {
   type ProcessFlowGraphLayoutName,
   type ProcessFlowGraphMapScope,
   type ProcessFlowGraphNode,
-  type ProcessFlowGraphNodeSummary,
   type ProcessFlowGraphSearchItem,
 } from './graphTypes';
-import { loadProcessFlowGraphFromCache } from './processFlowGraphCacheLoader';
+import {
+  loadProcessFlowGraphFromCache,
+  loadProcessFlowGraphGeoMapViewFromCache,
+} from './processFlowGraphCacheLoader';
 import styles from './styles.module.less';
 
 const numberFormatter = new Intl.NumberFormat('zh-CN');
+const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
+  maximumFractionDigits: 8,
+});
+const geoMapCacheSoftTimeoutMs = 4500;
 const maxCacheErrorLength = 96;
 
 function formatNumber(value: number): string {
@@ -62,6 +63,52 @@ function getFlowTypeLabel(flowType?: string) {
     return '其他流';
   }
   return '非基础流';
+}
+
+const categoryLabelTranslations: Record<string, string> = {
+  'Agriculture, forestry and fishing': '农业、林业和渔业',
+  'Electricity, gas, steam and air conditioning supply': '电力、燃气、蒸汽和空调供应',
+  'Manufacture of chemicals and chemical products': '化学品及化学制品制造',
+  'Manufacture of computer, electronic and optical products': '计算机、电子和光学产品制造',
+  Manufacturing: '制造业',
+  'Ores and minerals': '矿石与矿物',
+  Transport: '运输',
+  'Water supply; sewerage, waste management and remediation activities':
+    '供水、污水处理、废弃物管理和修复活动',
+};
+
+function getCategoryLabel(category?: string) {
+  if (!category) {
+    return '-';
+  }
+
+  return category
+    .split(';')
+    .map((part) => {
+      const trimmedPart = part.trim();
+      return categoryLabelTranslations[trimmedPart] ?? trimmedPart;
+    })
+    .join('；');
+}
+
+function getLocationLabel(location?: string) {
+  if (!location || location === '-') {
+    return '-';
+  }
+
+  if (location.toLowerCase() === 'global') {
+    return '全球';
+  }
+
+  return location;
+}
+
+function getExchangeDirectionLabel(direction: ProcessFlowGraphEdge['direction']) {
+  return direction === 'input' ? '输入' : '输出';
+}
+
+function formatExchangeAmount(amount?: number) {
+  return Number.isFinite(amount) ? exchangeAmountFormatter.format(amount as number) : '-';
 }
 
 function getNodeEdgeRows(
@@ -90,42 +137,42 @@ function getConnectedNodeName(
 }
 
 type GraphDataSource = 'loading' | 'minio' | 'error';
+type GeoMapCacheStatus = 'idle' | 'loading' | 'hit' | 'miss' | 'error';
+type GeoMapPendingSourceLayoutMode = Exclude<ProcessFlowGraphLayoutName, 'geoMap2d'>;
 
-const emptySelectionSummary: ProcessFlowGraphNodeSummary = {
-  highlightedEdges: 0,
-  inputEdges: 0,
-  outputEdges: 0,
-  relatedFlows: 0,
-  relatedProcesses: 0,
-};
-
-function getFeaturedFlow(data: ProcessFlowGraphData): ProcessFlowGraphSearchItem | undefined {
-  return data.indexes.searchFlows[0];
-}
-
-function getSearchResults(
-  data: ProcessFlowGraphData,
-  query: string,
-  featuredFlowId: string | undefined,
-): ProcessFlowGraphSearchItem[] {
+function getSearchResults(data: ProcessFlowGraphData, query: string): ProcessFlowGraphSearchItem[] {
   const normalizedQuery = query.trim().toLowerCase();
-  const featuredFlow = featuredFlowId
-    ? data.indexes.searchFlows.find((flow) => flow.id === featuredFlowId)
-    : undefined;
-  const source = normalizedQuery
+  return normalizedQuery
     ? data.indexes.searchFlows.filter(
         (flow) =>
           flow.id.toLowerCase().includes(normalizedQuery) ||
           flow.name.toLowerCase().includes(normalizedQuery),
       )
     : data.indexes.searchFlows;
-  const results = source.slice(0, 9);
+}
 
-  if (!featuredFlow || results.some((flow) => flow.id === featuredFlow.id)) {
-    return results;
-  }
+function getProcessSearchResults(
+  data: ProcessFlowGraphData,
+  query: string,
+): ProcessFlowGraphNode[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  const source = data.nodes
+    .filter((node) => node.kind === 'process')
+    .filter((node) => {
+      if (!normalizedQuery) {
+        return true;
+      }
 
-  return [featuredFlow, ...results.slice(0, 8)];
+      return (
+        node.id.toLowerCase().includes(normalizedQuery) ||
+        node.name.toLowerCase().includes(normalizedQuery) ||
+        node.category.toLowerCase().includes(normalizedQuery) ||
+        (node.location?.toLowerCase().includes(normalizedQuery) ?? false)
+      );
+    })
+    .sort((left, right) => right.degree - left.degree || left.name.localeCompare(right.name));
+
+  return source;
 }
 
 function FlowSearchResult({
@@ -154,6 +201,34 @@ function FlowSearchResult({
   );
 }
 
+function ProcessSearchResult({
+  isSelected,
+  onSelect,
+  processNode,
+}: {
+  isSelected: boolean;
+  onSelect: (processId: string) => void;
+  processNode: ProcessFlowGraphNode;
+}) {
+  return (
+    <button
+      aria-pressed={isSelected}
+      className={[styles.searchResult, isSelected ? styles.searchResultActive : '']
+        .filter(Boolean)
+        .join(' ')}
+      onClick={() => onSelect(processNode.id)}
+      type='button'
+    >
+      <span>Process</span>
+      <strong>{processNode.name}</strong>
+      <small>{processNode.category}</small>
+      <em>
+        {processNode.location ?? 'global'} / {formatNumber(processNode.degree)} exchanges
+      </em>
+    </button>
+  );
+}
+
 function Inspector({
   data,
   node,
@@ -171,28 +246,28 @@ function Inspector({
     return (
       <aside className={styles.inspector}>
         <div className={styles.inspectorHeader}>
-          <span>INSPECTOR</span>
+          <span>详情面板</span>
           <ClusterOutlined />
         </div>
         <div className={styles.emptyInspector}>
-          <strong>No selection</strong>
-          <span>GLOBAL PROCESS-FLOW GRAPH</span>
+          <strong>未选择节点</strong>
+          <span>全局过程-流关系图</span>
         </div>
         <div className={styles.inspectorMetricGrid}>
           <div>
-            <span>Flow Nodes</span>
+            <span>流节点</span>
             <strong>{formatNumber(data.stats.flowCount)}</strong>
           </div>
           <div>
-            <span>Process Nodes</span>
+            <span>过程节点</span>
             <strong>{formatNumber(data.stats.processCount)}</strong>
           </div>
           <div>
-            <span>Exchange Edges</span>
+            <span>输入/输出</span>
             <strong>{formatNumber(data.stats.edgeCount)}</strong>
           </div>
           <div>
-            <span>Max Degree</span>
+            <span>最大连接数</span>
             <strong>{formatNumber(data.stats.maxDegree)}</strong>
           </div>
         </div>
@@ -203,7 +278,7 @@ function Inspector({
   return (
     <aside className={styles.inspector}>
       <div className={styles.inspectorHeader}>
-        <span>{node.kind === 'flow' ? 'SELECTED FLOW' : 'SELECTED PROCESS'}</span>
+        <span>{node.kind === 'flow' ? '已选流' : '已选过程'}</span>
         <NodeIndexOutlined />
       </div>
       <div className={styles.nodeIdentity}>
@@ -216,49 +291,55 @@ function Inspector({
           <dd>{node.id}</dd>
         </div>
         <div>
-          <dt>Version</dt>
+          <dt>版本</dt>
           <dd>{node.version}</dd>
         </div>
         <div>
-          <dt>Category</dt>
-          <dd>{node.category}</dd>
+          <dt>分类</dt>
+          <dd title={node.category}>{getCategoryLabel(node.category)}</dd>
         </div>
         <div>
-          <dt>Location</dt>
-          <dd>{node.location ?? '-'}</dd>
+          <dt>位置</dt>
+          <dd>{getLocationLabel(node.location)}</dd>
         </div>
       </dl>
       <div className={styles.inspectorMetricGrid}>
         <div>
-          <span>Referenced Processes</span>
+          <span>关联过程</span>
           <strong>{formatNumber(summary.relatedProcesses)}</strong>
         </div>
         <div>
-          <span>Related Flows</span>
+          <span>关联流</span>
           <strong>{formatNumber(summary.relatedFlows)}</strong>
         </div>
         <div>
-          <span>Input Edges</span>
+          <span>输入</span>
           <strong>{formatNumber(summary.inputEdges || inputEdges.length)}</strong>
         </div>
         <div>
-          <span>Output Edges</span>
+          <span>输出</span>
           <strong>{formatNumber(summary.outputEdges || outputEdges.length)}</strong>
         </div>
       </div>
       <div className={styles.edgeList}>
-        <span>Highlighted exchanges</span>
-        {edgeRows.slice(0, 7).map((edge) => (
-          <div key={edge.id}>
-            <i className={edge.direction === 'input' ? styles.inputDot : styles.outputDot} />
-            <strong>{edge.direction === 'input' ? 'Input' : 'Output'}</strong>
-            <em>{getConnectedNodeName(data, edge, node.id)}</em>
-            <b>
-              {edge.amount?.toFixed(2)} {edge.unit}
-            </b>
-          </div>
-        ))}
-        {edgeRows.length > 7 && <small>... and {formatNumber(edgeRows.length - 7)} more</small>}
+        <span>输入/输出（{formatNumber(edgeRows.length)}）</span>
+        <div aria-label='输入/输出明细列表' className={styles.edgeRows}>
+          {edgeRows.map((edge) => {
+            const connectedNodeName = getConnectedNodeName(data, edge, node.id);
+            return (
+              <div key={edge.id} title={connectedNodeName}>
+                <i className={edge.direction === 'input' ? styles.inputDot : styles.outputDot} />
+                <strong>{getExchangeDirectionLabel(edge.direction)}</strong>
+                <em>{connectedNodeName}</em>
+                <b>
+                  {formatExchangeAmount(edge.amount)}
+                  {edge.unit ? ` ${edge.unit}` : ''}
+                </b>
+              </div>
+            );
+          })}
+          {!edgeRows.length && <small>暂无高亮交换</small>}
+        </div>
       </div>
     </aside>
   );
@@ -276,12 +357,12 @@ function EmptyInspectorPanel({
   return (
     <aside className={styles.inspector}>
       <div className={styles.inspectorHeader}>
-        <span>INSPECTOR</span>
+        <span>详情面板</span>
         <ClusterOutlined />
       </div>
       <div className={styles.emptyInspector}>
-        <strong>{isLoading ? 'Loading cache' : 'Cache unavailable'}</strong>
-        <span>{isLoading ? 'PROCESS-FLOW GRAPH CACHE' : 'CACHE ERROR'}</span>
+        <strong>{isLoading ? '正在加载缓存' : '缓存不可用'}</strong>
+        <span>{isLoading ? '过程-流关系图缓存' : '缓存错误'}</span>
       </div>
       {loadError && <p className={styles.cacheErrorText}>{formatCacheError(loadError)}</p>}
     </aside>
@@ -323,26 +404,43 @@ export default function ProcessFlowGraphPanel() {
   const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
   const [loadError, setLoadError] = useState<string | undefined>();
   const [layoutMode, setLayoutMode] = useState<ProcessFlowGraphLayoutName>('sphere3d');
+  const [geoMapPendingSourceLayoutMode, setGeoMapPendingSourceLayoutMode] =
+    useState<GeoMapPendingSourceLayoutMode>('sphere3d');
   const [mapScope, setMapScope] = useState<ProcessFlowGraphMapScope>('world');
-  const [geoMapAssets, setGeoMapAssets] = useState<ProcessFlowGraphGeoMapAssets | undefined>();
+  const [geoMapCacheStatus, setGeoMapCacheStatus] = useState<
+    Partial<Record<ProcessFlowGraphMapScope, GeoMapCacheStatus>>
+  >({});
+  const [geoMapCachedViews, setGeoMapCachedViews] = useState<
+    Partial<Record<ProcessFlowGraphMapScope, ProcessFlowGraphGeoMapView>>
+  >({});
+  const [visibleGeoMapScope, setVisibleGeoMapScope] = useState<
+    ProcessFlowGraphMapScope | undefined
+  >();
   const [geoMapLoadError, setGeoMapLoadError] = useState<string | undefined>();
   const [interactionMode, setInteractionMode] = useState<ProcessFlowGraphInteractionMode>('select');
   const [query, setQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
-  const geoMapView = useMemo(
-    () =>
-      data && geoMapAssets
-        ? buildProcessFlowGraphGeoMapView(data, mapScope, geoMapAssets)
-        : undefined,
-    [data, geoMapAssets, mapScope],
-  );
-  const activeData = isGeoMapMode ? geoMapView?.data : data;
-  const activeMapBackground = isGeoMapMode ? geoMapView?.background : undefined;
-  const featuredFlow = useMemo(
-    () => (activeData ? getFeaturedFlow(activeData) : undefined),
-    [activeData],
-  );
+  const cachedGeoMapView = geoMapCachedViews[mapScope];
+  const retainedGeoMapView = visibleGeoMapScope ? geoMapCachedViews[visibleGeoMapScope] : undefined;
+  const currentGeoMapCacheStatus = geoMapCacheStatus[mapScope] ?? 'idle';
+  const geoMapView = cachedGeoMapView;
+  const displayedGeoMapView = geoMapView ?? retainedGeoMapView;
+  const isGeoMapPending =
+    isGeoMapMode &&
+    Boolean(data) &&
+    !geoMapView &&
+    (currentGeoMapCacheStatus === 'idle' || currentGeoMapCacheStatus === 'loading');
+  const activeData = isGeoMapMode
+    ? (displayedGeoMapView?.data ?? (isGeoMapPending ? data : undefined))
+    : data;
+  const activeMapBackground = isGeoMapMode ? displayedGeoMapView?.background : undefined;
+  const activeLayoutMode: ProcessFlowGraphLayoutName = isGeoMapPending
+    ? displayedGeoMapView
+      ? 'geoMap2d'
+      : geoMapPendingSourceLayoutMode
+    : layoutMode;
+  const shouldShowProcessSearch = activeLayoutMode === 'geoMap2d';
   const selectedNode = useMemo(
     () => (activeData ? getProcessFlowGraphNode(activeData, selectedNodeId) : undefined),
     [activeData, selectedNodeId],
@@ -352,17 +450,18 @@ export default function ProcessFlowGraphPanel() {
     [activeData, selectedNodeId],
   );
   const searchResults = useMemo(
-    () => (activeData ? getSearchResults(activeData, query, featuredFlow?.id) : []),
-    [activeData, featuredFlow?.id, query],
+    () => (activeData && !shouldShowProcessSearch ? getSearchResults(activeData, query) : []),
+    [activeData, query, shouldShowProcessSearch],
   );
-  const selectionSummary = useMemo(
-    () =>
-      activeData && selection
-        ? summarizeProcessFlowSelection(activeData, selection)
-        : emptySelectionSummary,
-    [activeData, selection],
+  const processSearchResults = useMemo(
+    () => (activeData && shouldShowProcessSearch ? getProcessSearchResults(activeData, query) : []),
+    [activeData, query, shouldShowProcessSearch],
   );
-
+  const searchPlaceholder = shouldShowProcessSearch ? 'Search process' : 'Search flow';
+  const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
+  const handleSelectProcess = useCallback((processId: string) => {
+    setSelectedNodeId(processId);
+  }, []);
   useEffect(() => {
     let cancelled = false;
 
@@ -394,32 +493,89 @@ export default function ProcessFlowGraphPanel() {
   }, []);
 
   useEffect(() => {
-    if (!isGeoMapMode || geoMapAssets) {
+    if (!isGeoMapMode || !data || cachedGeoMapView) {
       return undefined;
     }
 
     let cancelled = false;
+    let settled = false;
 
-    loadProcessFlowGeoMapAssets()
-      .then((assets) => {
-        if (cancelled) {
+    setGeoMapCacheStatus((currentStatus) => ({
+      ...currentStatus,
+      [mapScope]: 'loading',
+    }));
+
+    const timeoutId = window.setTimeout(() => {
+      if (cancelled || settled) {
+        return;
+      }
+
+      settled = true;
+      setGeoMapCacheStatus((currentStatus) => ({
+        ...currentStatus,
+        [mapScope]: 'miss',
+      }));
+      setGeoMapLoadError(`Missing or timed out ${mapScope} map layout cache`);
+    }, geoMapCacheSoftTimeoutMs);
+
+    loadProcessFlowGraphGeoMapViewFromCache(mapScope)
+      .then((cachedView) => {
+        if (cancelled || settled) {
           return;
         }
-        setGeoMapAssets(assets);
+
+        settled = true;
+        window.clearTimeout(timeoutId);
+
+        if (!cachedView) {
+          setGeoMapCacheStatus((currentStatus) => ({
+            ...currentStatus,
+            [mapScope]: 'miss',
+          }));
+          setGeoMapLoadError(`Missing or timed out ${mapScope} map layout cache`);
+          return;
+        }
+
+        setGeoMapCachedViews((currentViews) => ({
+          ...currentViews,
+          [mapScope]: cachedView,
+        }));
+        setGeoMapCacheStatus((currentStatus) => ({
+          ...currentStatus,
+          [mapScope]: 'hit',
+        }));
         setGeoMapLoadError(undefined);
       })
-      .catch((error: unknown) => {
-        if (cancelled) {
+      .catch(() => {
+        if (cancelled || settled) {
           return;
         }
-        setGeoMapAssets(undefined);
-        setGeoMapLoadError(error instanceof Error ? error.message : String(error));
+
+        settled = true;
+        window.clearTimeout(timeoutId);
+        setGeoMapCacheStatus((currentStatus) => ({
+          ...currentStatus,
+          [mapScope]: 'error',
+        }));
+        setGeoMapLoadError(`Unable to load ${mapScope} map layout cache`);
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(timeoutId);
     };
-  }, [geoMapAssets, isGeoMapMode]);
+  }, [cachedGeoMapView, data, isGeoMapMode, mapScope]);
+
+  useEffect(() => {
+    if (!isGeoMapMode) {
+      setVisibleGeoMapScope(undefined);
+      return;
+    }
+
+    if (cachedGeoMapView) {
+      setVisibleGeoMapScope(mapScope);
+    }
+  }, [cachedGeoMapView, isGeoMapMode, mapScope]);
 
   useEffect(() => {
     if (activeData && selectedNodeId && !getProcessFlowGraphNode(activeData, selectedNodeId)) {
@@ -439,24 +595,32 @@ export default function ProcessFlowGraphPanel() {
     setSelectedNodeId(undefined);
 
     if (layoutMode !== 'geoMap2d') {
+      setGeoMapPendingSourceLayoutMode(layoutMode);
       setMapScope('world');
       setLayoutMode('geoMap2d');
+      setQuery('');
       return;
     }
 
     setMapScope((currentScope) => (currentScope === 'world' ? 'china' : 'world'));
+    setQuery('');
   }, [layoutMode]);
 
-  const handleSelectFlow = useCallback(
-    (flowId: string) => {
-      if (!activeData) {
-        return;
-      }
-      setSelectedNodeId(flowId);
-      setQuery(getProcessFlowGraphNode(activeData, flowId)?.name ?? flowId);
-    },
-    [activeData],
-  );
+  const handleSelectSphereMode = useCallback(() => {
+    setGeoMapPendingSourceLayoutMode('sphere3d');
+    setLayoutMode('sphere3d');
+    setQuery('');
+  }, []);
+
+  const handleSelectExpandedMode = useCallback(() => {
+    setGeoMapPendingSourceLayoutMode('expanded2d');
+    setLayoutMode('expanded2d');
+    setQuery('');
+  }, []);
+
+  const handleSelectFlow = useCallback((flowId: string) => {
+    setSelectedNodeId(flowId);
+  }, []);
 
   const mapButtonLabel = isGeoMapMode && mapScope === 'world' ? 'China Map' : 'World Map';
   const mapLoadDataSource: GraphDataSource =
@@ -474,28 +638,34 @@ export default function ProcessFlowGraphPanel() {
       <div className={styles.topHud}>
         <div className={styles.modeTabs}>
           <button
+            aria-label='Sphere'
+            aria-pressed={layoutMode === 'sphere3d'}
             className={layoutMode === 'sphere3d' ? styles.activeMode : ''}
-            onClick={() => setLayoutMode('sphere3d')}
+            onClick={handleSelectSphereMode}
+            title='Sphere'
             type='button'
           >
             <GlobalOutlined />
-            <span>Sphere</span>
           </button>
           <button
+            aria-label='Expanded'
+            aria-pressed={layoutMode === 'expanded2d'}
             className={layoutMode === 'expanded2d' ? styles.activeMode : ''}
-            onClick={() => setLayoutMode('expanded2d')}
+            onClick={handleSelectExpandedMode}
+            title='Expanded'
             type='button'
           >
             <ApartmentOutlined />
-            <span>Expanded</span>
           </button>
           <button
+            aria-label={mapButtonLabel}
+            aria-pressed={layoutMode === 'geoMap2d'}
             className={layoutMode === 'geoMap2d' ? styles.activeMode : ''}
             onClick={handleToggleMapMode}
+            title={mapButtonLabel}
             type='button'
           >
             <EnvironmentOutlined />
-            <span>{mapButtonLabel}</span>
           </button>
         </div>
         <div className={styles.mouseTools}>
@@ -504,20 +674,20 @@ export default function ProcessFlowGraphPanel() {
             aria-pressed={interactionMode === 'pan'}
             className={interactionMode === 'pan' ? styles.activeMode : ''}
             onClick={() => setInteractionMode('pan')}
+            title='Drag'
             type='button'
           >
             <DragOutlined />
-            <span>Drag</span>
           </button>
           <button
             aria-label='点选节点'
             aria-pressed={interactionMode === 'select'}
             className={interactionMode === 'select' ? styles.activeMode : ''}
             onClick={() => setInteractionMode('select')}
+            title='Pick'
             type='button'
           >
             <SelectOutlined />
-            <span>Pick</span>
           </button>
         </div>
         <div className={styles.graphBadges}>
@@ -549,65 +719,50 @@ export default function ProcessFlowGraphPanel() {
         </div>
       </div>
       <aside className={styles.leftRail}>
-        <label className={styles.searchBox}>
-          <SearchOutlined />
-          <input
-            aria-label='搜索非基础流'
-            disabled={!activeData}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder='Search flow'
-            value={query}
-          />
-          {query && (
-            <button aria-label='清除搜索' onClick={() => setQuery('')} type='button'>
-              <ClearOutlined />
-            </button>
-          )}
-        </label>
-        <div className={styles.quickActions}>
-          {featuredFlow && (
-            <button onClick={() => handleSelectFlow(featuredFlow.id)} type='button'>
-              <AimOutlined />
-              Focus Flow
-            </button>
-          )}
+        <div className={styles.leftRailHeader}>
+          <label className={styles.searchBox}>
+            <SearchOutlined />
+            <input
+              aria-label={searchAriaLabel}
+              disabled={!activeData}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              value={query}
+            />
+            {query && (
+              <button aria-label='清除搜索' onClick={() => setQuery('')} type='button'>
+                <CloseCircleOutlined />
+              </button>
+            )}
+          </label>
           <button
+            aria-label='清除选中'
             disabled={!activeData || !selectedNodeId}
             onClick={() => setSelectedNodeId(undefined)}
+            title='清除选中'
             type='button'
           >
-            <FullscreenOutlined />
-            Clear
+            <ClearOutlined />
           </button>
         </div>
         <div className={styles.searchResults}>
-          {searchResults.map((flow) => (
-            <FlowSearchResult
-              flow={flow}
-              isSelected={selectedNodeId === flow.id}
-              key={flow.id}
-              onSelect={handleSelectFlow}
-            />
-          ))}
-        </div>
-        <div className={styles.legendBox}>
-          <span>LEGEND</span>
-          <p>
-            <i className={styles.selectedDot} />
-            Selected Flow
-          </p>
-          <p>
-            <i className={styles.processDot} />
-            Process
-          </p>
-          <p>
-            <i className={styles.inputDot} />
-            Input Flow
-          </p>
-          <p>
-            <i className={styles.outputDot} />
-            Output Flow
-          </p>
+          {shouldShowProcessSearch
+            ? processSearchResults.map((processNode) => (
+                <ProcessSearchResult
+                  isSelected={selectedNodeId === processNode.id}
+                  key={processNode.id}
+                  onSelect={handleSelectProcess}
+                  processNode={processNode}
+                />
+              ))
+            : searchResults.map((flow) => (
+                <FlowSearchResult
+                  flow={flow}
+                  isSelected={selectedNodeId === flow.id}
+                  key={flow.id}
+                  onSelect={handleSelectFlow}
+                />
+              ))}
         </div>
       </aside>
       <main className={styles.graphStage}>
@@ -617,19 +772,16 @@ export default function ProcessFlowGraphPanel() {
               data={activeData}
               geoMapBackground={activeMapBackground}
               interactionMode={interactionMode}
-              layoutMode={layoutMode}
+              layoutMode={activeLayoutMode}
               onNodeClick={handleNodeClick}
               selection={selection}
             />
-            <div className={styles.selectionStrip}>
-              <span>{selectedNode ? selectedNode.name : 'Global Graph'}</span>
-              <strong>{formatNumber(selectionSummary.highlightedEdges)}</strong>
-              <em>highlighted exchanges</em>
-              <strong>{formatNumber(selectionSummary.relatedProcesses)}</strong>
-              <em>processes</em>
-              <strong>{formatNumber(selectionSummary.relatedFlows)}</strong>
-              <em>non-basic flows</em>
-            </div>
+            {isGeoMapPending && (
+              <div className={styles.mapPreparingOverlay}>
+                <strong>Projecting map</strong>
+                <span>Preparing cached geo anchors</span>
+              </div>
+            )}
           </>
         ) : (
           <GraphLoadState

@@ -24,9 +24,7 @@
 .mouseTools,
 .graphBadges,
 .leftRail,
-.inspector,
-.selectionStrip,
-.legendBox {
+.inspector {
   background:
     linear-gradient(180deg, rgba(6, 28, 48, 0.88), rgba(2, 12, 24, 0.82)), rgba(2, 12, 24, 0.72);
   border: 1px solid rgba(68, 222, 255, 0.2);
@@ -54,14 +52,11 @@
 }
 
 .modeTabs button,
-.mouseTools button,
-.quickActions button {
+.mouseTools button {
   display: inline-flex;
-  gap: 8px;
   align-items: center;
   justify-content: center;
   height: 34px;
-  padding: 0 13px;
   color: rgba(186, 208, 218, 0.88);
   font-weight: 800;
   cursor: pointer;
@@ -75,14 +70,18 @@
     box-shadow 160ms ease;
 }
 
+.modeTabs button,
+.mouseTools button {
+  width: 34px;
+  padding: 0;
+}
+
 .modeTabs button:hover,
 .modeTabs button:focus-visible,
 .modeTabs .activeMode,
 .mouseTools button:hover,
 .mouseTools button:focus-visible,
-.mouseTools .activeMode,
-.quickActions button:hover,
-.quickActions button:focus-visible {
+.mouseTools .activeMode {
   color: #eaffff;
   background:
     radial-gradient(circle at 22% 50%, rgba(36, 231, 255, 0.25), transparent 38%),
@@ -92,15 +91,13 @@
 }
 
 .modeTabs svg,
-.mouseTools svg,
-.quickActions svg {
+.mouseTools svg {
   color: #24e7ff;
   filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
 }
 
 .modeTabs button:disabled,
-.mouseTools button:disabled,
-.quickActions button:disabled {
+.mouseTools button:disabled {
   color: rgba(186, 208, 218, 0.38);
   cursor: not-allowed;
   background: transparent;
@@ -163,11 +160,59 @@
   overflow: hidden;
 }
 
+.leftRailHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.leftRailHeader > button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: #24e7ff;
+  cursor: pointer;
+  background: rgba(2, 16, 31, 0.72);
+  border: 1px solid rgba(116, 196, 255, 0.22);
+  border-radius: 8px;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.leftRailHeader > button:hover,
+.leftRailHeader > button:focus-visible {
+  color: #eaffff;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.25), transparent 42%),
+    linear-gradient(180deg, rgba(18, 70, 103, 0.92), rgba(2, 18, 32, 0.76));
+  border-color: rgba(36, 231, 255, 0.62);
+  box-shadow: 0 0 20px rgba(36, 231, 255, 0.16);
+}
+
+.leftRailHeader > button:disabled {
+  color: rgba(186, 208, 218, 0.38);
+  cursor: not-allowed;
+  background: rgba(2, 16, 31, 0.58);
+  border-color: rgba(116, 196, 255, 0.12);
+  box-shadow: none;
+}
+
+.leftRailHeader > button svg {
+  filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
+}
+
 .searchBox {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
+  min-width: 0;
   height: 40px;
   padding: 0 10px;
   color: rgba(209, 229, 238, 0.86);
@@ -199,12 +244,6 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-}
-
-.quickActions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
 }
 
 .searchResults {
@@ -304,46 +343,12 @@
   white-space: nowrap;
 }
 
-.legendBox {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-}
-
-.legendBox span {
-  color: rgba(203, 220, 228, 0.76);
-  font-size: 11px;
-  font-weight: 900;
-}
-
-.legendBox p {
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  margin: 0;
-  color: rgba(226, 242, 248, 0.88);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.selectedDot,
-.processDot,
 .inputDot,
 .outputDot {
   display: inline-block;
   width: 9px;
   height: 9px;
   border-radius: 50%;
-}
-
-.selectedDot {
-  background: #ffffff;
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.62);
-}
-
-.processDot {
-  background: #ffb947;
-  box-shadow: 0 0 14px rgba(255, 185, 71, 0.5);
 }
 
 .inputDot {
@@ -449,6 +454,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  overflow: hidden;
   pointer-events: none;
   background:
     radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.1), transparent 42%),
@@ -458,6 +464,28 @@
     100% 100%,
     42px 42px,
     42px 42px;
+  opacity: 0;
+  animation: geoMapBackdropReveal 900ms cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.geoMapBackdrop::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -18%;
+  width: 18%;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(36, 231, 255, 0.22),
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  filter: blur(2px);
+  transform: skewX(-18deg);
+  animation: geoMapScanSweep 1100ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
 }
 
 .geoMapBackdrop svg {
@@ -473,9 +501,27 @@
 
 .geoMapBackdrop path {
   fill: rgba(23, 78, 111, 0.38);
+  fill-opacity: 0;
   stroke: rgba(134, 220, 255, 0.2);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   stroke-width: 0.75;
   vector-effect: non-scaling-stroke;
+  animation:
+    geoMapPathTrace 980ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    geoMapFillSettle 780ms ease-out 280ms forwards;
+}
+
+.geoMapBackdrop path:nth-child(4n + 1) {
+  animation-delay: 40ms, 320ms;
+}
+
+.geoMapBackdrop path:nth-child(4n + 2) {
+  animation-delay: 90ms, 370ms;
+}
+
+.geoMapBackdrop path:nth-child(4n + 3) {
+  animation-delay: 140ms, 420ms;
 }
 
 .geoMapBackdropWorld path[data-code='CN'],
@@ -491,6 +537,38 @@
 .geoMapBackdropWorld path[data-code='IN'],
 .geoMapBackdropWorld path[data-code='RU'] {
   fill: rgba(30, 93, 121, 0.46);
+}
+
+.mapPreparingOverlay {
+  position: absolute;
+  right: 18px;
+  bottom: 70px;
+  z-index: 6;
+  display: grid;
+  gap: 3px;
+  min-width: 184px;
+  padding: 10px 12px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(9, 38, 65, 0.86), rgba(2, 14, 26, 0.72)), rgba(2, 12, 24, 0.74);
+  border: 1px solid rgba(36, 231, 255, 0.28);
+  border-radius: 8px;
+  box-shadow:
+    0 0 24px rgba(36, 231, 255, 0.12),
+    inset 0 0 18px rgba(36, 231, 255, 0.05);
+  animation: mapPreparingPulse 1200ms ease-in-out infinite;
+}
+
+.mapPreparingOverlay strong {
+  color: #eaffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mapPreparingOverlay span {
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .nodeTooltip {
@@ -531,44 +609,6 @@
   color: rgba(190, 212, 222, 0.78);
   font-size: 11px;
   font-style: normal;
-}
-
-.selectionStrip {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  left: 16px;
-  z-index: 6;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-height: 42px;
-  padding: 8px 12px;
-}
-
-.selectionStrip span {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: #f4feff;
-  font-size: 16px;
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.selectionStrip strong {
-  color: #24e7ff;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.selectionStrip em {
-  color: rgba(190, 212, 222, 0.78);
-  font-size: 11px;
-  font-style: normal;
-  font-weight: 800;
-  white-space: nowrap;
 }
 
 .inspector {
@@ -700,12 +740,12 @@
 }
 
 .edgeList {
-  display: flex;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   flex: 1;
-  flex-direction: column;
   gap: 8px;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .edgeList > span {
@@ -714,34 +754,59 @@
   font-weight: 900;
 }
 
-.edgeList div {
+.edgeRows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding-right: 5px;
+  overflow: auto;
+}
+
+.edgeRows div {
   display: grid;
-  grid-template-columns: auto 48px minmax(0, 1fr) auto;
+  grid-template-columns: auto 34px minmax(0, 1fr) minmax(48px, auto);
   gap: 8px;
   align-items: center;
-  min-height: 28px;
+  min-height: 31px;
+  padding-bottom: 6px;
   color: rgba(230, 246, 251, 0.88);
   font-size: 11px;
   font-weight: 800;
+  border-bottom: 1px solid rgba(116, 196, 255, 0.1);
 }
 
-.edgeList em,
-.edgeList b {
+.edgeRows div:last-child {
+  border-bottom: 0;
+}
+
+.edgeRows i {
+  flex: 0 0 auto;
+}
+
+.edgeRows em,
+.edgeRows b {
+  min-width: 0;
   overflow: hidden;
   font-style: normal;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.edgeList b {
-  color: #f6db4d;
-  font-weight: 900;
+.edgeRows em {
+  color: rgba(230, 246, 251, 0.9);
 }
 
-.edgeList small {
+.edgeRows b {
+  color: #f6db4d;
+  font-weight: 900;
+  text-align: right;
+}
+
+.edgeRows small {
   color: rgba(190, 212, 222, 0.68);
   font-weight: 800;
-  text-align: right;
 }
 
 @keyframes processFlowRadar {
@@ -750,5 +815,62 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes geoMapBackdropReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes geoMapScanSweep {
+  from {
+    opacity: 0;
+    transform: translateX(0) skewX(-18deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(720%) skewX(-18deg);
+  }
+}
+
+@keyframes geoMapPathTrace {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes geoMapFillSettle {
+  from {
+    fill-opacity: 0;
+  }
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes mapPreparingPulse {
+  0%,
+  100% {
+    border-color: rgba(36, 231, 255, 0.24);
+    box-shadow:
+      0 0 20px rgba(36, 231, 255, 0.1),
+      inset 0 0 16px rgba(36, 231, 255, 0.04);
+  }
+  50% {
+    border-color: rgba(255, 214, 109, 0.42);
+    box-shadow:
+      0 0 30px rgba(255, 214, 109, 0.12),
+      inset 0 0 22px rgba(36, 231, 255, 0.07);
   }
 }
