@@ -12,7 +12,6 @@ import {
 } from '@ant-design/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
-import { type ProcessFlowGraphGeoMapView } from './geoMapLayout';
 import {
   getProcessFlowGraphNode,
   getProcessFlowGraphSelection,
@@ -21,6 +20,7 @@ import {
 import {
   type ProcessFlowGraphData,
   type ProcessFlowGraphEdge,
+  type ProcessFlowGraphGeoMapView,
   type ProcessFlowGraphInteractionMode,
   type ProcessFlowGraphLayoutName,
   type ProcessFlowGraphMapScope,
@@ -778,8 +778,8 @@ export default function ProcessFlowGraphPanel() {
             />
             {isGeoMapPending && (
               <div className={styles.mapPreparingOverlay}>
-                <strong>Projecting map</strong>
-                <span>Preparing cached geo anchors</span>
+                <strong>Loading map cache</strong>
+                <span>Waiting for worker-generated geoMap view</span>
               </div>
             )}
           </>
@@ -790,7 +790,7 @@ export default function ProcessFlowGraphPanel() {
               isGeoMapMode && data && !geoMapView
                 ? mapLoadError
                   ? formatCacheError(mapLoadError)
-                  : 'Preparing world and China map assets'
+                  : 'Waiting for worker-generated world and China map cache'
                 : undefined
             }
             loadError={mapLoadError}

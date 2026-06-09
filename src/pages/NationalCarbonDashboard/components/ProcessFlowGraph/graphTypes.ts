@@ -4,6 +4,20 @@ export type ProcessFlowGraphLayoutName = 'sphere3d' | 'expanded2d' | 'geoMap2d';
 
 export type ProcessFlowGraphMapScope = 'world' | 'china';
 
+export type ProcessFlowGraphMapPath = {
+  code?: string;
+  id: string;
+  label: string;
+  path: string;
+};
+
+export type ProcessFlowGraphMapBackground = {
+  height: number;
+  paths: ProcessFlowGraphMapPath[];
+  scope: ProcessFlowGraphMapScope;
+  width: number;
+};
+
 export type ProcessFlowGraphInteractionMode = 'pan' | 'select';
 
 export type ProcessFlowGraphFlowType = string;
@@ -20,7 +34,10 @@ export type ProcessFlowGraphCluster = {
 
 export type ProcessFlowGraphNode = {
   category: string;
-  clusterId: string;
+  clusterIdLevel1: string;
+  clusterIdLevel3: string;
+  clusterLabelLevel1?: string;
+  clusterLabelLevel3?: string;
   degree: number;
   flowType?: ProcessFlowGraphFlowType;
   id: string;
@@ -58,7 +75,8 @@ export type ProcessFlowGraphSearchItem = {
 export type ProcessFlowGraphData = {
   adjacency: Record<string, string[]>;
   buildId: string;
-  clusters: ProcessFlowGraphCluster[];
+  clustersLevel1: ProcessFlowGraphCluster[];
+  clustersLevel3: ProcessFlowGraphCluster[];
   edges: ProcessFlowGraphEdge[];
   indexes: {
     edgeById: Record<string, number>;
@@ -69,7 +87,7 @@ export type ProcessFlowGraphData = {
   };
   layouts: ProcessFlowGraphLayouts;
   nodes: ProcessFlowGraphNode[];
-  schemaVersion: 'process_flow_graph_v1';
+  schemaVersion: 'process_flow_graph_v2';
   geoMapFrame?: {
     height: number;
     width: number;
@@ -80,6 +98,11 @@ export type ProcessFlowGraphData = {
     maxDegree: number;
     processCount: number;
   };
+};
+
+export type ProcessFlowGraphGeoMapView = {
+  background: ProcessFlowGraphMapBackground;
+  data: ProcessFlowGraphData;
 };
 
 export type ProcessFlowGraphSelection = {

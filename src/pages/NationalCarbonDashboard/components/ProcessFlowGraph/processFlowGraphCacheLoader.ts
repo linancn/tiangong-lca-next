@@ -1,9 +1,10 @@
-import type { ProcessFlowGraphGeoMapView, ProcessFlowGraphMapBackground } from './geoMapLayout';
 import type {
   ProcessFlowGraphCluster,
   ProcessFlowGraphData,
   ProcessFlowGraphEdge,
+  ProcessFlowGraphGeoMapView,
   ProcessFlowGraphLayout,
+  ProcessFlowGraphMapBackground,
   ProcessFlowGraphMapScope,
   ProcessFlowGraphNode,
   ProcessFlowGraphSearchItem,
@@ -14,6 +15,8 @@ const edgeMagic = 'PFGEDG1\0';
 const adjacencyMagic = 'PFGCSR1\0';
 const layoutMagic = 'PFGLAY1\0';
 const u32None = 0xffffffff;
+const processFlowGraphSchemaVersion = 'process_flow_graph_v2';
+const processFlowGraphGeoMapViewSchemaVersion = 'process_flow_graph_geo_map_view_v2';
 
 type ActiveManifest = {
   activeBuildId: string;
@@ -24,7 +27,7 @@ type ActiveManifest = {
 type BuildManifest = {
   buildId: string;
   files: Record<string, { path: string }>;
-  schemaVersion: 'process_flow_graph_v1';
+  schemaVersion: typeof processFlowGraphSchemaVersion;
   stats: {
     edgeCount: number;
     flowCount: number;
@@ -36,7 +39,7 @@ type BuildManifest = {
 type NodesPayload = {
   buildId: string;
   nodes: ProcessFlowGraphNode[];
-  schemaVersion: 'process_flow_graph_v1';
+  schemaVersion: typeof processFlowGraphSchemaVersion;
 };
 
 type DictionariesPayload = {
@@ -45,8 +48,10 @@ type DictionariesPayload = {
 
 type ClustersPayload = {
   buildId: string;
-  clusters: ProcessFlowGraphCluster[];
-  schemaVersion?: 'process_flow_graph_v1';
+  clusters?: ProcessFlowGraphCluster[];
+  clustersLevel1?: ProcessFlowGraphCluster[];
+  clustersLevel3?: ProcessFlowGraphCluster[];
+  schemaVersion?: typeof processFlowGraphSchemaVersion;
 };
 
 type SearchPayload = {
@@ -61,15 +66,18 @@ type LookupPayload = {
 };
 
 type GeoMapViewPayload = {
+  adjacency: Record<string, string[]>;
+  adjacencyIncludesProcessLinks?: boolean;
   background: ProcessFlowGraphMapBackground;
   buildId: string;
-  clusters: ProcessFlowGraphCluster[];
+  clustersLevel1: ProcessFlowGraphCluster[];
+  clustersLevel3: ProcessFlowGraphCluster[];
   geoMapFrame: {
     height: number;
     width: number;
   };
   nodes: ProcessFlowGraphNode[];
-  schemaVersion: 'process_flow_graph_geo_map_view_v1';
+  schemaVersion: typeof processFlowGraphGeoMapViewSchemaVersion;
   scope: ProcessFlowGraphMapScope;
   processLinks?: ProcessFlowGraphEdge[];
   searchFlows: ProcessFlowGraphSearchItem[];
@@ -137,7 +145,13 @@ async function gunzip(buffer: ArrayBuffer): Promise<ArrayBuffer> {
     throw new Error('browser does not support gzip decompression streams');
   }
 
-  const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStreamCtor('gzip'));
+  const compressedStream = new Response(buffer).body;
+
+  if (!compressedStream) {
+    throw new Error('browser does not support response body streams');
+  }
+
+  const stream = compressedStream.pipeThrough(new DecompressionStreamCtor('gzip'));
   return new Response(stream).arrayBuffer();
 }
 
@@ -168,6 +182,16 @@ function assertMagic(view: DataView, expected: string, label: string) {
   if (actual !== expected) {
     throw new Error(`invalid ${label} magic: ${actual}`);
   }
+}
+
+function assertSchemaVersion(actual: string | undefined, expected: string, label: string) {
+  if (actual !== expected) {
+    throw new Error(`invalid ${label} schema version: ${actual ?? 'missing'}`);
+  }
+}
+
+function assertBinaryMagic(buffer: ArrayBuffer, expected: string, label: string) {
+  assertMagic(new DataView(buffer), expected, label);
 }
 
 function finiteNumber(value: number): number | undefined {
@@ -364,29 +388,14 @@ function buildNodeIndexes(nodes: ProcessFlowGraphNode[]) {
   );
 }
 
-function buildAdjacency(
-  nodes: ProcessFlowGraphNode[],
-  edges: ProcessFlowGraphEdge[],
-): Record<string, string[]> {
-  const adjacency = nodes.reduce<Record<string, string[]>>((nextAdjacency, node) => {
-    nextAdjacency[node.id] = [];
-    return nextAdjacency;
-  }, {});
-
-  edges.forEach((edge) => {
-    adjacency[edge.source]?.push(edge.id);
-    adjacency[edge.target]?.push(edge.id);
-  });
-
-  return adjacency;
-}
-
 function normalizeClusters(
   clusters: ProcessFlowGraphCluster[],
   nodes: ProcessFlowGraphNode[],
+  clusterIdField: 'clusterIdLevel1' | 'clusterIdLevel3',
 ): ProcessFlowGraphCluster[] {
   const counts = nodes.reduce<Record<string, number>>((countByClusterId, node) => {
-    countByClusterId[node.clusterId] = (countByClusterId[node.clusterId] ?? 0) + 1;
+    const clusterId = node[clusterIdField];
+    countByClusterId[clusterId] = (countByClusterId[clusterId] ?? 0) + 1;
     return countByClusterId;
   }, {});
   const normalizedClusters = clusters.map((cluster) => ({
@@ -410,11 +419,13 @@ function normalizeClusters(
 
 export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphData> {
   const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
+  assertSchemaVersion(buildManifest.schemaVersion, processFlowGraphSchemaVersion, 'build manifest');
 
   const [
     nodesPayload,
     dictionariesPayload,
-    clustersPayload,
+    clustersLevel1Payload,
+    clustersLevel3Payload,
     searchPayload,
     lookupPayload,
     edgesBuffer,
@@ -429,7 +440,10 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
       resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'dictionaries')),
     ),
     fetchGzipJson<ClustersPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'clusters')),
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'clustersLevel1')),
+    ),
+    fetchGzipJson<ClustersPayload>(
+      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'clustersLevel3')),
     ),
     fetchGzipJson<SearchPayload>(
       resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'searchFlows')),
@@ -450,14 +464,32 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
       resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'expanded2d')),
     ),
   ]);
+  assertSchemaVersion(nodesPayload.schemaVersion, processFlowGraphSchemaVersion, 'nodes payload');
+  assertSchemaVersion(
+    clustersLevel1Payload.schemaVersion,
+    processFlowGraphSchemaVersion,
+    'clustersLevel1 payload',
+  );
+  assertSchemaVersion(
+    clustersLevel3Payload.schemaVersion,
+    processFlowGraphSchemaVersion,
+    'clustersLevel3 payload',
+  );
 
   const nodes = nodesPayload.nodes;
   const edges = parseEdges(edgesBuffer, nodes, dictionariesPayload.units);
+  const clustersLevel1 = clustersLevel1Payload.clustersLevel1 ?? clustersLevel1Payload.clusters;
+  const clustersLevel3 = clustersLevel3Payload.clustersLevel3 ?? clustersLevel3Payload.clusters;
+
+  if (!clustersLevel1?.length || !clustersLevel3?.length) {
+    throw new Error('missing process-flow graph v2 cluster payloads');
+  }
 
   return {
     adjacency: parseAdjacency(adjacencyBuffer, nodes),
     buildId: buildManifest.buildId || activeManifest.activeBuildId,
-    clusters: normalizeClusters(clustersPayload.clusters, nodes),
+    clustersLevel1: normalizeClusters(clustersLevel1, nodes, 'clusterIdLevel1'),
+    clustersLevel3: normalizeClusters(clustersLevel3, nodes, 'clusterIdLevel3'),
     edges,
     indexes: {
       edgeById: buildEdgeById(edges),
@@ -471,7 +503,7 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
       sphere3d: parseLayout(sphereLayoutBuffer, nodes),
     },
     nodes,
-    schemaVersion: 'process_flow_graph_v1',
+    schemaVersion: processFlowGraphSchemaVersion,
     stats: {
       edgeCount: buildManifest.stats.edgeCount,
       flowCount: buildManifest.stats.flowCount,
@@ -491,6 +523,7 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
   if (!requiredFileKeys.every((fileKey) => hasBuildFile(buildManifest, fileKey))) {
     return undefined;
   }
+  assertSchemaVersion(buildManifest.schemaVersion, processFlowGraphSchemaVersion, 'build manifest');
 
   const [viewPayload, edgesBuffer, adjacencyBuffer, layoutBuffer] = await Promise.all([
     fetchGzipJson<GeoMapViewPayload>(
@@ -508,10 +541,15 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
   ]);
 
   if (
-    viewPayload.schemaVersion !== 'process_flow_graph_geo_map_view_v1' ||
+    viewPayload.schemaVersion !== processFlowGraphGeoMapViewSchemaVersion ||
     viewPayload.scope !== scope
   ) {
     throw new Error(`invalid process-flow geo map cache payload: ${scope}`);
+  }
+  assertBinaryMagic(adjacencyBuffer, adjacencyMagic, 'geo map adjacency');
+
+  if (!viewPayload.adjacency || !viewPayload.adjacencyIncludesProcessLinks) {
+    throw new Error(`missing worker-provided process-flow geo map adjacency: ${scope}`);
   }
 
   const nodes = viewPayload.nodes;
@@ -524,11 +562,10 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
   return {
     background: viewPayload.background,
     data: {
-      adjacency: viewPayload.processLinks?.length
-        ? buildAdjacency(nodes, edges)
-        : parseAdjacency(adjacencyBuffer, nodes),
+      adjacency: viewPayload.adjacency,
       buildId: viewPayload.buildId || buildManifest.buildId || activeManifest.activeBuildId,
-      clusters: normalizeClusters(viewPayload.clusters, nodes),
+      clustersLevel1: normalizeClusters(viewPayload.clustersLevel1, nodes, 'clusterIdLevel1'),
+      clustersLevel3: normalizeClusters(viewPayload.clustersLevel3, nodes, 'clusterIdLevel3'),
       edges,
       geoMapFrame: viewPayload.geoMapFrame,
       indexes: {
@@ -544,11 +581,8 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
         sphere3d: {},
       },
       nodes,
-      schemaVersion: 'process_flow_graph_v1',
-      stats: {
-        ...viewPayload.stats,
-        edgeCount: edges.length,
-      },
+      schemaVersion: processFlowGraphSchemaVersion,
+      stats: viewPayload.stats,
     },
   };
 }

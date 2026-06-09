@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ProcessFlowGraphMapBackground } from './geoMapLayout';
 import { ProcessFlowGraphEngine } from './graphEngine';
 import { getProcessFlowGraphNode } from './graphSelection';
 import type {
   ProcessFlowGraphData,
   ProcessFlowGraphInteractionMode,
   ProcessFlowGraphLayoutName,
+  ProcessFlowGraphMapBackground,
   ProcessFlowGraphSelection,
 } from './graphTypes';
 import styles from './styles.module.less';

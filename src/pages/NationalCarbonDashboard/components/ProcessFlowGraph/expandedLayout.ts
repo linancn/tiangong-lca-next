@@ -200,11 +200,13 @@ function buildClusterLayouts(
   data: ProcessFlowGraphData,
   positionedNodes: PositionedNode[],
 ): ClusterLayout[] {
-  const clusterOrder = new Map(data.clusters.map((cluster, index) => [cluster.id, index] as const));
+  const clusterOrder = new Map(
+    data.clustersLevel3.map((cluster, index) => [cluster.id, index] as const),
+  );
   const clustersById = positionedNodes.reduce<Map<string, PositionedNode[]>>((clusters, node) => {
-    const nodes = clusters.get(node.node.clusterId) ?? [];
+    const nodes = clusters.get(node.node.clusterIdLevel3) ?? [];
     nodes.push(node);
-    clusters.set(node.node.clusterId, nodes);
+    clusters.set(node.node.clusterIdLevel3, nodes);
     return clusters;
   }, new Map<string, PositionedNode[]>());
   return Array.from(clustersById.entries())
@@ -218,12 +220,7 @@ function buildClusterLayouts(
       );
       const centroidX = centroid.x / nodes.length;
       const centroidY = centroid.y / nodes.length;
-      const fallbackOrder =
-        ((clusterOrder.get(id) ?? clustersById.size) + hashToUnit(id) * 0.2) /
-        Math.max(1, clustersById.size);
-      const order = Number.isFinite(centroidX + centroidY)
-        ? getNormalizedHilbertIndex(centroidX, centroidY)
-        : fallbackOrder;
+      const order = getNormalizedHilbertIndex(centroidX, centroidY);
 
       return {
         centroidX,
@@ -324,7 +321,7 @@ function getDraftCategorizedPositions(clusters: ClusterLayout[]): Record<string,
     });
 
     nodes.forEach((item, index) => {
-      const point = sortedClusterPoints[index] ?? clusterPoints[index] ?? { x: 0, y: 0 };
+      const point = sortedClusterPoints[index] as FillPoint;
       const outlineBlend = 0.04;
 
       layout[item.node.id] = {
@@ -401,13 +398,12 @@ export function buildCategorizedExpandedLayout(data: ProcessFlowGraphData): Proc
   const draftLayout = normalizeDraftBounds(getDraftCategorizedPositions(clusters));
 
   return data.nodes.reduce<ProcessFlowGraphLayout>((layout, node) => {
-    const draft = draftLayout[node.id];
-    const base = getLayoutPoint(baseLayout, node, data.indexes.nodeById[node.id] ?? 0, totalNodes);
+    const draft = draftLayout[node.id] as LayoutPoint;
 
     layout[node.id] = [
-      bounds.centerX + (draft?.x ?? 0) * (bounds.width / 2),
-      bounds.centerY + (draft?.y ?? 0) * (bounds.height / 2),
-      draft?.z ?? base.z,
+      bounds.centerX + draft.x * (bounds.width / 2),
+      bounds.centerY + draft.y * (bounds.height / 2),
+      draft.z,
     ];
     return layout;
   }, {});
@@ -479,11 +475,11 @@ export function summarizeCategorizedExpandedLayout(
     Record<string, { count: number; x: number; y: number }>
   >((centroids, node, index) => {
     const point = points[index];
-    const centroid = centroids[node.clusterId] ?? { count: 0, x: 0, y: 0 };
+    const centroid = centroids[node.clusterIdLevel3] ?? { count: 0, x: 0, y: 0 };
     centroid.count += 1;
     centroid.x += point.x;
     centroid.y += point.y;
-    centroids[node.clusterId] = centroid;
+    centroids[node.clusterIdLevel3] = centroid;
     return centroids;
   }, {});
   Object.values(clusterCentroids).forEach((centroid) => {
@@ -493,7 +489,7 @@ export function summarizeCategorizedExpandedLayout(
   const meanClusterDistance =
     data.nodes.reduce((totalDistance, node, index) => {
       const point = points[index];
-      const centroid = clusterCentroids[node.clusterId];
+      const centroid = clusterCentroids[node.clusterIdLevel3];
       return totalDistance + Math.hypot(point.x - centroid.x, point.y - centroid.y);
     }, 0) / Math.max(1, data.nodes.length);
   const filledCellSummary = summarizeFilledCellRatio(points, bounds);
