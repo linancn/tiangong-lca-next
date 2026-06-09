@@ -3,10 +3,7 @@ import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 
 const SUPABASE_FRONTEND_KEYS = ['SUPABASE_URL', 'SUPABASE_PUBLISHABLE_KEY'] as const;
-const FLOW_TOPOLOGY_FRONTEND_KEYS = [
-  'FLOW_TOPOLOGY_CACHE_BASE_URL',
-  'PROCESS_FLOW_GRAPH_CACHE_BASE_URL',
-] as const;
+const PROCESS_FLOW_GRAPH_FRONTEND_KEYS = ['PROCESS_FLOW_GRAPH_CACHE_BASE_URL'] as const;
 
 const SUPABASE_ENV_FILE_ORDER = {
   dev: ['.env.development', '.env.local', '.env.development.local'],
@@ -17,8 +14,8 @@ type FrontendSupabaseTarget = keyof typeof SUPABASE_ENV_FILE_ORDER;
 type FrontendRuntimeEnv = string | false | undefined;
 
 type SupabaseFrontendEnv = Record<(typeof SUPABASE_FRONTEND_KEYS)[number], string | undefined>;
-type FlowTopologyFrontendEnv = Record<
-  (typeof FLOW_TOPOLOGY_FRONTEND_KEYS)[number],
+type ProcessFlowGraphFrontendEnv = Record<
+  (typeof PROCESS_FLOW_GRAPH_FRONTEND_KEYS)[number],
   string | undefined
 >;
 
@@ -81,14 +78,14 @@ export const applySupabaseFrontendEnv = (
   }, {} as SupabaseFrontendEnv);
 };
 
-export const applyFlowTopologyFrontendEnv = (
+export const applyProcessFlowGraphFrontendEnv = (
   rootDir: string,
   appEnv: FrontendRuntimeEnv,
-): FlowTopologyFrontendEnv => {
+): ProcessFlowGraphFrontendEnv => {
   const target = resolveSupabaseFrontendTarget(appEnv);
   const fileEnv = readMergedEnvFiles(rootDir, SUPABASE_ENV_FILE_ORDER[target]);
 
-  return FLOW_TOPOLOGY_FRONTEND_KEYS.reduce<FlowTopologyFrontendEnv>((merged, key) => {
+  return PROCESS_FLOW_GRAPH_FRONTEND_KEYS.reduce<ProcessFlowGraphFrontendEnv>((merged, key) => {
     const runtimeValue = process.env[key];
     const value = hasEnvValue(fileEnv[key]) ? fileEnv[key] : runtimeValue;
 
@@ -98,5 +95,5 @@ export const applyFlowTopologyFrontendEnv = (
 
     merged[key] = value;
     return merged;
-  }, {} as FlowTopologyFrontendEnv);
+  }, {} as ProcessFlowGraphFrontendEnv);
 };
