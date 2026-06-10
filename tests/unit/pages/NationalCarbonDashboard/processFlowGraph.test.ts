@@ -612,6 +612,14 @@ describe('NationalCarbonDashboard process-flow graph', () => {
 
     const graph = await loadProcessFlowGraphFromCache();
 
+    expect(global.fetch).toHaveBeenCalledWith(`${cacheBaseUrl}/manifest.json`, {
+      cache: 'no-store',
+      credentials: 'omit',
+    });
+    expect(global.fetch).toHaveBeenCalledWith(`${cacheBaseUrl}/builds/test-build/manifest.json`, {
+      cache: 'no-store',
+      credentials: 'omit',
+    });
     expect(graph.schemaVersion).toBe('process_flow_graph_v2');
     expect(graph.nodes[0]).toMatchObject({
       clusterIdLevel1: 'energy',
@@ -731,7 +739,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(view?.data.edges).toHaveLength(1);
     expect(view?.data.indexes.edgeById[processLinkId]).toBe(0);
     expect(view?.data.stats.edgeCount).toBe(1);
-    expect(view?.data.layouts.geoMap2d?.['process:consumer@v1']).toEqual([20, 24, 6]);
+    expect(view?.data.layouts.geoMap2d?.['process:consumer@v1']).toEqual([20, -24, 6]);
   });
 
   it('highlights selected flow processes and their other non-basic output flows', () => {

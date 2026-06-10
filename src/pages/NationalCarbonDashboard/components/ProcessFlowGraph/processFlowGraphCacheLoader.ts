@@ -346,8 +346,8 @@ function resolveCacheUrl(baseUrl: string, pathOrUrl: string): string {
   return `${baseUrl}/${pathOrUrl.replace(/^\/+/, '')}`;
 }
 
-async function fetchRequired(url: string): Promise<Response> {
-  const response = await fetch(url, { credentials: 'omit' });
+async function fetchRequired(url: string, init?: RequestInit): Promise<Response> {
+  const response = await fetch(url, { credentials: 'omit', ...init });
 
   if (!response.ok) {
     throw new Error(`failed to fetch process-flow graph object: ${response.status} ${url}`);
@@ -373,8 +373,8 @@ async function gunzip(buffer: ArrayBuffer): Promise<ArrayBuffer> {
   return new Response(stream).arrayBuffer();
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-  return (await fetchRequired(url)).json() as Promise<T>;
+async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+  return (await fetchRequired(url, init)).json() as Promise<T>;
 }
 
 async function fetchGzipJson<T>(url: string): Promise<T> {
@@ -579,9 +579,15 @@ async function loadCacheManifests(): Promise<CacheManifests> {
     throw new Error('PROCESS_FLOW_GRAPH_CACHE_BASE_URL is not configured');
   }
 
-  const activeManifest = await fetchJson<ActiveManifest>(resolveCacheUrl(baseUrl, 'manifest.json'));
+  const activeManifest = await fetchJson<ActiveManifest>(
+    resolveCacheUrl(baseUrl, 'manifest.json'),
+    {
+      cache: 'no-store',
+    },
+  );
   const buildManifest = await fetchJson<BuildManifest>(
     resolveCacheUrl(baseUrl, activeManifest.buildManifestPath),
+    { cache: 'no-store' },
   );
 
   return { activeManifest, baseUrl, buildManifest };
