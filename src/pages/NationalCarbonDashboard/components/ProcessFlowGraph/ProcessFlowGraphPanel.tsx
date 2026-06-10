@@ -41,6 +41,7 @@ const geoMapCacheSoftTimeoutMs = 4500;
 const geoMapInitialPrefetchTimeoutMs = 1800;
 const geoMapFollowupPrefetchTimeoutMs = 2400;
 const maxCacheErrorLength = 96;
+const maxRenderedSearchResults = 96;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value);
@@ -158,40 +159,114 @@ function getConnectedNodeName(
 type GraphDataSource = 'loading' | 'minio' | 'error';
 type GeoMapCacheStatus = 'idle' | 'loading' | 'hit' | 'miss' | 'error';
 type GeoMapPendingSourceLayoutMode = Exclude<ProcessFlowGraphLayoutName, 'geoMap2d'>;
+type SearchResultSlice<T> = {
+  hasMore: boolean;
+  items: T[];
+};
+const emptyFlowSearchResultSlice: SearchResultSlice<ProcessFlowGraphSearchItem> = {
+  hasMore: false,
+  items: [],
+};
+const emptyProcessSearchResultSlice: SearchResultSlice<ProcessFlowGraphNode> = {
+  hasMore: false,
+  items: [],
+};
 
-function getSearchResults(data: ProcessFlowGraphData, query: string): ProcessFlowGraphSearchItem[] {
+function getSearchResults(
+  data: ProcessFlowGraphData,
+  query: string,
+  limit = maxRenderedSearchResults,
+): SearchResultSlice<ProcessFlowGraphSearchItem> {
   const normalizedQuery = query.trim().toLowerCase();
-  return normalizedQuery
-    ? data.indexes.searchFlows.filter(
-        (flow) =>
-          flow.id.toLowerCase().includes(normalizedQuery) ||
-          flow.name.toLowerCase().includes(normalizedQuery),
-      )
-    : data.indexes.searchFlows;
+
+  if (!normalizedQuery) {
+    return {
+      hasMore: data.indexes.searchFlows.length > limit,
+      items: data.indexes.searchFlows.slice(0, limit),
+    };
+  }
+
+  const results: ProcessFlowGraphSearchItem[] = [];
+  let hasMore = false;
+
+  for (const flow of data.indexes.searchFlows) {
+    if (
+      flow.id.toLowerCase().includes(normalizedQuery) ||
+      flow.name.toLowerCase().includes(normalizedQuery)
+    ) {
+      if (results.length < limit) {
+        results.push(flow);
+      } else {
+        hasMore = true;
+        break;
+      }
+    }
+  }
+
+  return {
+    hasMore,
+    items: results,
+  };
+}
+
+function compareProcessSearchResult(left: ProcessFlowGraphNode, right: ProcessFlowGraphNode) {
+  return right.degree - left.degree || left.name.localeCompare(right.name);
+}
+
+function appendLimitedProcessSearchResult(
+  results: ProcessFlowGraphNode[],
+  processNode: ProcessFlowGraphNode,
+  limit: number,
+) {
+  const insertIndex = results.findIndex(
+    (currentProcessNode) => compareProcessSearchResult(processNode, currentProcessNode) < 0,
+  );
+
+  if (insertIndex === -1) {
+    if (results.length < limit) {
+      results.push(processNode);
+    }
+    return;
+  }
+
+  results.splice(insertIndex, 0, processNode);
+  if (results.length > limit) {
+    results.pop();
+  }
 }
 
 function getProcessSearchResults(
   data: ProcessFlowGraphData,
   query: string,
-): ProcessFlowGraphNode[] {
+  limit = maxRenderedSearchResults,
+): SearchResultSlice<ProcessFlowGraphNode> {
   const normalizedQuery = query.trim().toLowerCase();
-  const source = data.nodes
-    .filter((node) => node.kind === 'process')
-    .filter((node) => {
-      if (!normalizedQuery) {
-        return true;
-      }
+  const results: ProcessFlowGraphNode[] = [];
+  let matchedCount = 0;
 
-      return (
-        node.id.toLowerCase().includes(normalizedQuery) ||
-        node.name.toLowerCase().includes(normalizedQuery) ||
-        node.category.toLowerCase().includes(normalizedQuery) ||
-        (node.location?.toLowerCase().includes(normalizedQuery) ?? false)
-      );
-    })
-    .sort((left, right) => right.degree - left.degree || left.name.localeCompare(right.name));
+  for (const node of data.nodes) {
+    if (node.kind !== 'process') {
+      continue;
+    }
 
-  return source;
+    if (
+      normalizedQuery &&
+      !node.id.toLowerCase().includes(normalizedQuery) &&
+      !node.name.toLowerCase().includes(normalizedQuery) &&
+      !node.category.toLowerCase().includes(normalizedQuery) &&
+      !(node.location?.toLowerCase().includes(normalizedQuery) ?? false)
+    ) {
+      continue;
+    }
+
+    matchedCount += 1;
+    appendLimitedProcessSearchResult(results, node, limit);
+  }
+
+  return {
+    hasMore: matchedCount > limit,
+    items: results,
+  };
 }
 
 function FlowSearchResult({
@@ -508,14 +583,25 @@ export default function ProcessFlowGraphPanel() {
     () => (activeData ? getProcessFlowGraphSelection(activeData, selectedNodeId) : undefined),
     [activeData, selectedNodeId],
   );
-  const searchResults = useMemo(
-    () => (activeData && !shouldShowProcessSearch ? getSearchResults(activeData, query) : []),
+  const searchResultSlice = useMemo(
+    () =>
+      activeData && !shouldShowProcessSearch
+        ? getSearchResults(activeData, query)
+        : emptyFlowSearchResultSlice,
     [activeData, query, shouldShowProcessSearch],
   );
-  const processSearchResults = useMemo(
-    () => (activeData && shouldShowProcessSearch ? getProcessSearchResults(activeData, query) : []),
+  const processSearchResultSlice = useMemo(
+    () =>
+      activeData && shouldShowProcessSearch
+        ? getProcessSearchResults(activeData, query)
+        : emptyProcessSearchResultSlice,
     [activeData, query, shouldShowProcessSearch],
   );
+  const searchResults = shouldShowProcessSearch ? [] : searchResultSlice.items;
+  const processSearchResults = shouldShowProcessSearch ? processSearchResultSlice.items : [];
+  const hasMoreSearchResults = shouldShowProcessSearch
+    ? processSearchResultSlice.hasMore
+    : searchResultSlice.hasMore;
   const searchPlaceholder = shouldShowProcessSearch ? 'Search process' : 'Search flow';
   const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
   const handleSelectProcess = useCallback((processId: string) => {
@@ -911,6 +997,12 @@ export default function ProcessFlowGraphPanel() {
                   onSelect={handleSelectFlow}
                 />
               ))}
+          {hasMoreSearchResults && (
+            <div className={styles.searchMoreHint} role='status'>
+              <span>仅显示前 {formatNumber(maxRenderedSearchResults)} 条</span>
+              <strong>更多数据，请输入关键词查询查看</strong>
+            </div>
+          )}
         </div>
       </aside>
       <main className={styles.graphStage}>
