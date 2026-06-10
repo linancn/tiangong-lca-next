@@ -1,5 +1,6 @@
 export default {
   'pages.flowproperty.referenceToReferenceUnitGroup': '参考单位',
+  'pages.flowproperty.title.tips': '需要新增或补充流属性？请联系管理员。',
 
   'pages.flowproperty.drawer.title.view': '查看流属性',
   'pages.flowproperty.drawer.title.create': '创建流属性',
