@@ -655,7 +655,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
         degree: 1,
         id: 'process:provider@v1',
         kind: 'process',
-        location: 'CN-GD',
+        location: 'US',
         name: 'Provider',
         version: '01.00.000',
       },
@@ -668,12 +668,109 @@ describe('NationalCarbonDashboard process-flow graph', () => {
         degree: 1,
         id: 'process:consumer@v1',
         kind: 'process',
-        location: 'CN-GD',
+        location: 'PT',
         name: 'Consumer',
         version: '01.00.000',
       },
     ];
     const geoMapFiles = {
+      '/maps/world-map-units-50m.geojson': createJsonResponse({
+        features: [
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [-125, 25],
+                  [-125, 49],
+                  [-67, 49],
+                  [-67, 25],
+                  [-125, 25],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              ISO_A2: 'US',
+              ISO_A2_EH: 'US',
+              LABEL_X: -97,
+              LABEL_Y: 39,
+              NAME: 'United States of America',
+              NAME_EN: 'United States of America',
+            },
+            type: 'Feature',
+          },
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [-17.4, 32.4],
+                  [-17.4, 33],
+                  [-16.4, 33],
+                  [-16.4, 32.4],
+                  [-17.4, 32.4],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              ISO_A2: '-99',
+              ISO_A2_EH: 'PT',
+              LABEL_X: -16.9,
+              LABEL_Y: 32.7,
+              NAME: 'Madeira',
+              NAME_EN: 'Madeira',
+            },
+            type: 'Feature',
+          },
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [-10, 36],
+                  [-10, 42],
+                  [-6, 42],
+                  [-6, 36],
+                  [-10, 36],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              ISO_A2: '-99',
+              ISO_A2_EH: 'PT',
+              LABEL_X: -8,
+              LABEL_Y: 39,
+              NAME: 'Portugal',
+              NAME_EN: 'Portugal',
+            },
+            type: 'Feature',
+          },
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [-31, 37],
+                  [-31, 39],
+                  [-26, 39],
+                  [-26, 37],
+                  [-31, 37],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              ISO_A2: '-99',
+              ISO_A2_EH: 'PT',
+              LABEL_X: -28.5,
+              LABEL_Y: 38,
+              NAME: 'Azores',
+              NAME_EN: 'Azores',
+            },
+            type: 'Feature',
+          },
+        ],
+        type: 'FeatureCollection',
+      }),
       'builds/test-build/geo-map/world/adjacency.csr.bin.gz': createArrayBufferResponse(
         gzipBinary(createAdjacencyBinary(2, [[], []])),
       ),
@@ -734,12 +831,26 @@ describe('NationalCarbonDashboard process-flow graph', () => {
 
     const view = await loadProcessFlowGraphGeoMapViewFromCache('world');
 
+    expect(global.fetch).toHaveBeenCalledWith('/maps/world-map-units-50m.geojson', {
+      credentials: 'omit',
+    });
     expect(view?.background.scope).toBe('world');
+    expect(view?.background.paths.map((path) => path.code)).toEqual(['US', 'PT', 'PT', 'PT']);
     expect(view?.data.adjacency['process:provider@v1']).toEqual([processLinkId]);
     expect(view?.data.edges).toHaveLength(1);
     expect(view?.data.indexes.edgeById[processLinkId]).toBe(0);
     expect(view?.data.stats.edgeCount).toBe(1);
-    expect(view?.data.layouts.geoMap2d?.['process:consumer@v1']).toEqual([20, -24, 6]);
+    const portugalPoint = view?.data.layouts.geoMap2d?.['process:consumer@v1'];
+    expect(portugalPoint).toBeDefined();
+    expect(portugalPoint).not.toEqual([20, -24, 6]);
+    expect(portugalPoint?.[2]).toBe(6);
+    const [portugalX = NaN, portugalY = NaN] = portugalPoint ?? [];
+    const longitude = ((portugalX + 1120 / 2) / 1120) * 360 - 180;
+    const latitude = 90 - ((-portugalY + 640 / 2) / 640) * 180;
+    expect(longitude).toBeGreaterThanOrEqual(-10);
+    expect(longitude).toBeLessThanOrEqual(-6);
+    expect(latitude).toBeGreaterThanOrEqual(36);
+    expect(latitude).toBeLessThanOrEqual(42);
   });
 
   it('replaces worker China map paths with the local China outline and projects nodes with the same map projection', async () => {

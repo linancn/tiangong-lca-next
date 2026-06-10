@@ -1,4 +1,4 @@
-import type { GeoProjection } from 'd3-geo';
+import { geoContains, type GeoProjection } from 'd3-geo';
 import type {
   Feature,
   FeatureCollection,
@@ -41,6 +41,42 @@ const chinaGeoBounds = {
   lonMax: 135,
   lonMin: 73,
 } as const;
+const chinaProvinceLocationAdcodes: Record<string, string> = {
+  'CN-AH': '340000',
+  'CN-BJ': '110000',
+  'CN-CQ': '500000',
+  'CN-FJ': '350000',
+  'CN-GD': '440000',
+  'CN-GS': '620000',
+  'CN-GX': '450000',
+  'CN-GZ': '520000',
+  'CN-HA': '410000',
+  'CN-HB': '420000',
+  'CN-HE': '130000',
+  'CN-HI': '460000',
+  'CN-HK': '810000',
+  'CN-HL': '230000',
+  'CN-HN': '430000',
+  'CN-JL': '220000',
+  'CN-JS': '320000',
+  'CN-JX': '360000',
+  'CN-LN': '210000',
+  'CN-MO': '820000',
+  'CN-NM': '150000',
+  'CN-NX': '640000',
+  'CN-QH': '630000',
+  'CN-SC': '510000',
+  'CN-SD': '370000',
+  'CN-SH': '310000',
+  'CN-SN': '610000',
+  'CN-SX': '140000',
+  'CN-TJ': '120000',
+  'CN-TW': '710000',
+  'CN-XJ': '650000',
+  'CN-XZ': '540000',
+  'CN-YN': '530000',
+  'CN-ZJ': '330000',
+};
 
 type ActiveManifest = {
   activeBuildId: string;
@@ -117,21 +153,43 @@ type CacheManifests = {
 type LocalMapFeatureProperties = {
   ADM0_ISO?: string;
   adcode?: number | string;
+  center?: Position;
+  centroid?: Position;
   ISO_A2?: string;
   ISO_A2_EH?: string;
   ISO_A3?: string;
+  LABEL_X?: number | string;
+  LABEL_Y?: number | string;
   NAME?: string;
   NAME_EN?: string;
   name?: string;
   POSTAL?: string;
 };
 type LocalMapFeature = Feature<Geometry, LocalMapFeatureProperties>;
+type LocalPolygonMapFeature = Feature<Polygon | MultiPolygon, LocalMapFeatureProperties>;
 type LocalMapFeatureCollection = FeatureCollection<Geometry, LocalMapFeatureProperties>;
 type CoordinateProjector = (longitude: number, latitude: number) => [number, number];
-type LayoutPositionTransform = (x: number, y: number, z: number) => [number, number, number];
+type LayoutPositionTransform = (
+  x: number,
+  y: number,
+  z: number,
+  node: ProcessFlowGraphNode,
+  nodeIndex: number,
+) => [number, number, number];
+type LayoutPositionTransformFactory = (nodes: ProcessFlowGraphNode[]) => LayoutPositionTransform;
+type LonLatBounds = {
+  latMax: number;
+  latMin: number;
+  lonMax: number;
+  lonMin: number;
+};
+type GeoRegionPlacement = {
+  bounds: LonLatBounds;
+  feature: LocalPolygonMapFeature;
+};
 type GeoMapBackgroundResolution = {
   background: ProcessFlowGraphMapBackground;
-  layoutPositionTransform?: LayoutPositionTransform;
+  createLayoutPositionTransform?: LayoutPositionTransformFactory;
 };
 
 const geoMapCacheFileKeys: Record<
@@ -268,7 +326,299 @@ function shouldUseLocalWorldMapFeature(feature: LocalMapFeature): boolean {
   return Boolean(feature.properties?.NAME || feature.properties?.NAME_EN);
 }
 
-function createChinaMercatorLayoutTransform(
+function isPolygonMapFeature(feature: LocalMapFeature): feature is LocalPolygonMapFeature {
+  return feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
+}
+
+function createInitialBounds(): LonLatBounds {
+  return {
+    latMax: -Infinity,
+    latMin: Infinity,
+    lonMax: -Infinity,
+    lonMin: Infinity,
+  };
+}
+
+function extendBounds(bounds: LonLatBounds, position: Position): void {
+  const [longitude, latitude] = position;
+
+  if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+    return;
+  }
+
+  bounds.lonMin = Math.min(bounds.lonMin, longitude);
+  bounds.lonMax = Math.max(bounds.lonMax, longitude);
+  bounds.latMin = Math.min(bounds.latMin, latitude);
+  bounds.latMax = Math.max(bounds.latMax, latitude);
+}
+
+function hasUsableBounds(bounds: LonLatBounds): boolean {
+  return (
+    Number.isFinite(bounds.lonMin) &&
+    Number.isFinite(bounds.lonMax) &&
+    Number.isFinite(bounds.latMin) &&
+    Number.isFinite(bounds.latMax) &&
+    bounds.lonMax > bounds.lonMin &&
+    bounds.latMax > bounds.latMin
+  );
+}
+
+function getPolygonLonLatBounds(polygonCoordinates: Position[][]): LonLatBounds | undefined {
+  const bounds = createInitialBounds();
+  polygonCoordinates.forEach((ring) => {
+    ring.forEach((position) => extendBounds(bounds, position));
+  });
+  return hasUsableBounds(bounds) ? bounds : undefined;
+}
+
+function getFeatureLonLatBounds(feature: LocalPolygonMapFeature): LonLatBounds | undefined {
+  if (feature.geometry.type === 'Polygon') {
+    return getPolygonLonLatBounds(feature.geometry.coordinates);
+  }
+
+  const bounds = createInitialBounds();
+  feature.geometry.coordinates.forEach((polygonCoordinates) => {
+    polygonCoordinates.forEach((ring) => {
+      ring.forEach((position) => extendBounds(bounds, position));
+    });
+  });
+  return hasUsableBounds(bounds) ? bounds : undefined;
+}
+
+function getBoundsArea(bounds: LonLatBounds): number {
+  return (bounds.lonMax - bounds.lonMin) * (bounds.latMax - bounds.latMin);
+}
+
+function getLargestPolygonPlacementFeature(
+  feature: LocalPolygonMapFeature,
+): LocalPolygonMapFeature | undefined {
+  if (feature.geometry.type === 'Polygon') {
+    return getFeatureLonLatBounds(feature) ? feature : undefined;
+  }
+
+  const largestPolygon = feature.geometry.coordinates.reduce<{
+    area: number;
+    coordinates: Position[][] | undefined;
+  }>(
+    (largest, polygonCoordinates) => {
+      const bounds = getPolygonLonLatBounds(polygonCoordinates);
+      if (!bounds) {
+        return largest;
+      }
+
+      const area = getBoundsArea(bounds);
+      return area > largest.area ? { area, coordinates: polygonCoordinates } : largest;
+    },
+    { area: -Infinity, coordinates: undefined },
+  );
+
+  if (!largestPolygon.coordinates) {
+    return undefined;
+  }
+
+  return {
+    ...feature,
+    geometry: {
+      coordinates: largestPolygon.coordinates,
+      type: 'Polygon',
+    },
+  };
+}
+
+function createRegionPlacementMap(
+  features: LocalMapFeature[],
+  getRegionCode: (feature: LocalMapFeature) => string | undefined,
+): Map<string, GeoRegionPlacement> {
+  return features.reduce<Map<string, GeoRegionPlacement>>((placementByCode, feature) => {
+    if (!isPolygonMapFeature(feature)) {
+      return placementByCode;
+    }
+
+    const code = getRegionCode(feature);
+    const placementFeature = getLargestPolygonPlacementFeature(feature);
+    const bounds = placementFeature ? getFeatureLonLatBounds(placementFeature) : undefined;
+
+    if (code && placementFeature && bounds) {
+      const existingPlacement = placementByCode.get(code);
+      if (!existingPlacement || getBoundsArea(bounds) > getBoundsArea(existingPlacement.bounds)) {
+        placementByCode.set(code, {
+          bounds,
+          feature: placementFeature,
+        });
+      }
+    }
+
+    return placementByCode;
+  }, new Map());
+}
+
+function normalizeNodeLocation(location: string | undefined): string | undefined {
+  const normalized = location?.trim().toUpperCase();
+  return normalized || undefined;
+}
+
+function getWorldNodeRegionCode(node: ProcessFlowGraphNode): string | undefined {
+  const normalized = normalizeNodeLocation(node.location);
+  const countryCode = normalized?.split('-')[0];
+  return countryCode && /^[A-Z]{2}$/.test(countryCode) ? countryCode : undefined;
+}
+
+function getChinaNodeRegionCode(node: ProcessFlowGraphNode): string | undefined {
+  const normalized = normalizeNodeLocation(node.location);
+  const provinceMatch = normalized?.match(/^(CN-[A-Z]{2})(?:-|$)/);
+  return provinceMatch ? chinaProvinceLocationAdcodes[provinceMatch[1]] : undefined;
+}
+
+function hashStringToUnit(value: string): number {
+  let hash = 2166136261;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0) / 0x100000000;
+}
+
+function parseFiniteCoordinate(value: number | string | undefined): number | undefined {
+  const numericValue = typeof value === 'string' ? Number.parseFloat(value) : value;
+  return Number.isFinite(numericValue) ? numericValue : undefined;
+}
+
+function getPropertyPoint(feature: LocalPolygonMapFeature): [number, number] | undefined {
+  const labelLongitude = parseFiniteCoordinate(feature.properties?.LABEL_X);
+  const labelLatitude = parseFiniteCoordinate(feature.properties?.LABEL_Y);
+
+  if (labelLongitude !== undefined && labelLatitude !== undefined) {
+    return [labelLongitude, labelLatitude];
+  }
+
+  const center = feature.properties?.center;
+  if (center && center.length >= 2) {
+    const [longitude, latitude] = center;
+    if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+      return [longitude, latitude];
+    }
+  }
+
+  const centroid = feature.properties?.centroid;
+  if (centroid && centroid.length >= 2) {
+    const [longitude, latitude] = centroid;
+    if (Number.isFinite(longitude) && Number.isFinite(latitude)) {
+      return [longitude, latitude];
+    }
+  }
+
+  return undefined;
+}
+
+function getRegionNodeIndexes(
+  nodes: ProcessFlowGraphNode[],
+  placements: Map<string, GeoRegionPlacement>,
+  getNodeRegionCode: (node: ProcessFlowGraphNode) => string | undefined,
+): Map<string, number> {
+  const countByRegionCode = new Map<string, number>();
+
+  return nodes.reduce<Map<string, number>>((indexByNodeId, node) => {
+    const regionCode = getNodeRegionCode(node);
+    if (!regionCode || !placements.has(regionCode)) {
+      return indexByNodeId;
+    }
+
+    const regionIndex = countByRegionCode.get(regionCode) ?? 0;
+    countByRegionCode.set(regionCode, regionIndex + 1);
+    indexByNodeId.set(node.id, regionIndex);
+    return indexByNodeId;
+  }, new Map());
+}
+
+function projectFiniteGeoPoint(
+  projectCoordinate: CoordinateProjector,
+  longitude: number,
+  latitude: number,
+): [number, number] | undefined {
+  const [x, y] = projectCoordinate(longitude, latitude);
+  return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : undefined;
+}
+
+function findProjectedPointInRegion(
+  placement: GeoRegionPlacement,
+  regionCode: string,
+  regionIndex: number,
+  node: ProcessFlowGraphNode,
+  projectCoordinate: CoordinateProjector,
+): [number, number] | undefined {
+  const bounds = placement.bounds;
+  const lonSpan = bounds.lonMax - bounds.lonMin;
+  const latSpan = bounds.latMax - bounds.latMin;
+  const seedX = hashStringToUnit(`${regionCode}:${node.id}:x`);
+  const seedY = hashStringToUnit(`${regionCode}:${node.id}:y`);
+  const xStep = 0.618033988749895;
+  const yStep = 0.754877666246693;
+
+  for (let attempt = 0; attempt < 256; attempt += 1) {
+    const longitude = bounds.lonMin + ((seedX + (regionIndex + attempt) * xStep) % 1) * lonSpan;
+    const latitude = bounds.latMin + ((seedY + (regionIndex + attempt) * yStep) % 1) * latSpan;
+
+    if (geoContains(placement.feature, [longitude, latitude])) {
+      const projectedPoint = projectFiniteGeoPoint(projectCoordinate, longitude, latitude);
+      if (projectedPoint) {
+        return projectedPoint;
+      }
+    }
+  }
+
+  const propertyPoint = getPropertyPoint(placement.feature);
+  if (propertyPoint && geoContains(placement.feature, propertyPoint)) {
+    const projectedPoint = projectFiniteGeoPoint(
+      projectCoordinate,
+      propertyPoint[0],
+      propertyPoint[1],
+    );
+    if (projectedPoint) {
+      return projectedPoint;
+    }
+  }
+
+  const centerPoint: [number, number] = [
+    (bounds.lonMin + bounds.lonMax) / 2,
+    (bounds.latMin + bounds.latMax) / 2,
+  ];
+  if (geoContains(placement.feature, centerPoint)) {
+    return projectFiniteGeoPoint(projectCoordinate, centerPoint[0], centerPoint[1]);
+  }
+
+  return undefined;
+}
+
+function createRegionPlacementLayoutTransform(
+  nodes: ProcessFlowGraphNode[],
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
+  placements: Map<string, GeoRegionPlacement>,
+  getNodeRegionCode: (node: ProcessFlowGraphNode) => string | undefined,
+  projectCoordinate: CoordinateProjector,
+  fallbackPosition?: LayoutPositionTransform,
+): LayoutPositionTransform {
+  const regionIndexByNodeId = getRegionNodeIndexes(nodes, placements, getNodeRegionCode);
+
+  return (x, y, z, node, nodeIndex) => {
+    const regionCode = getNodeRegionCode(node);
+    const placement = regionCode ? placements.get(regionCode) : undefined;
+    const regionIndex = regionIndexByNodeId.get(node.id);
+    const projectedPoint =
+      regionCode && placement && regionIndex !== undefined
+        ? findProjectedPointInRegion(placement, regionCode, regionIndex, node, projectCoordinate)
+        : undefined;
+
+    if (!projectedPoint) {
+      return fallbackPosition?.(x, y, z, node, nodeIndex) ?? [x, y, z];
+    }
+
+    return [projectedPoint[0] - frame.width / 2, projectedPoint[1] - frame.height / 2, z];
+  };
+}
+
+function createChinaMercatorFallbackLayoutTransform(
   frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
   projection: GeoProjection,
 ): LayoutPositionTransform {
@@ -338,13 +688,35 @@ async function loadLocalGeoMapBackground(
         scope,
         width: frame.width,
       },
-      layoutPositionTransform: createChinaMercatorLayoutTransform(frame, chinaMap.projection),
+      createLayoutPositionTransform: (nodes) => {
+        const placements = createRegionPlacementMap(
+          chinaMap.features as LocalMapFeature[],
+          (feature) => getLocalMapPathCode('china', feature),
+        );
+        const projectCoordinate: CoordinateProjector = (longitude, latitude) => {
+          const projected = chinaMap.projection([longitude, latitude]);
+          return projected ? [projected[0], projected[1]] : [NaN, NaN];
+        };
+        const fallbackPosition = createChinaMercatorFallbackLayoutTransform(
+          frame,
+          chinaMap.projection,
+        );
+
+        return createRegionPlacementLayoutTransform(
+          nodes,
+          frame,
+          placements,
+          getChinaNodeRegionCode,
+          projectCoordinate,
+          fallbackPosition,
+        );
+      },
     };
   }
 
   const projectCoordinate = projectWorldCoordinate(frame.width, frame.height);
-  const paths = mapData.features
-    .filter(shouldUseLocalWorldMapFeature)
+  const worldFeatures = mapData.features.filter(shouldUseLocalWorldMapFeature);
+  const paths = worldFeatures
     .map((feature, index) => {
       const code = getLocalMapPathCode(scope, feature);
       const path = featureToPath(feature, projectCoordinate);
@@ -369,6 +741,14 @@ async function loadLocalGeoMapBackground(
       scope,
       width: frame.width,
     },
+    createLayoutPositionTransform: (nodes) =>
+      createRegionPlacementLayoutTransform(
+        nodes,
+        frame,
+        createRegionPlacementMap(worldFeatures, (feature) => getLocalMapPathCode(scope, feature)),
+        getWorldNodeRegionCode,
+        projectCoordinate,
+      ),
   };
 }
 
@@ -605,7 +985,11 @@ function parseLayout(
 
     const node = nodes[index];
     if (node) {
-      const [layoutX, layoutY, layoutZ] = options.transformPosition?.(x, y, z) ?? [x, y, z];
+      const [layoutX, layoutY, layoutZ] = options.transformPosition?.(x, y, z, node, index) ?? [
+        x,
+        y,
+        z,
+      ];
       layout[node.id] = [layoutX, options.flipY ? -layoutY : layoutY, layoutZ];
     }
   }
@@ -857,6 +1241,7 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
     viewPayload.geoMapFrame,
     viewPayload.background,
   );
+  const layoutPositionTransform = backgroundResolution.createLayoutPositionTransform?.(nodes);
 
   return {
     background: backgroundResolution.background,
@@ -879,7 +1264,7 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
         // Worker geo-map layouts are emitted in map-pixel y-down space; WebGL uses y-up.
         geoMap2d: parseLayout(layoutBuffer, nodes, {
           flipY: true,
-          transformPosition: backgroundResolution.layoutPositionTransform,
+          transformPosition: layoutPositionTransform,
         }),
         sphere3d: {},
       },
