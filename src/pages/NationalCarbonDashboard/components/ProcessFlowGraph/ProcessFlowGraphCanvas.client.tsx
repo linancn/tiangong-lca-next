@@ -16,6 +16,25 @@ export type ProcessFlowGraphHoverState = {
   y: number;
 };
 
+type CanvasIdleWindow = Window & {
+  cancelIdleCallback?: (handle: number) => void;
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+};
+
+const overviewGeometryPrewarmTimeoutMs = 2200;
+
+function scheduleCanvasIdleWork(callback: () => void, timeoutMs: number): () => void {
+  const idleWindow = window as CanvasIdleWindow;
+
+  if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
+    const handle = idleWindow.requestIdleCallback(callback, { timeout: timeoutMs });
+    return () => idleWindow.cancelIdleCallback?.(handle);
+  }
+
+  const timeoutId = window.setTimeout(callback, timeoutMs);
+  return () => window.clearTimeout(timeoutId);
+}
+
 export default function ProcessFlowGraphCanvas({
   data,
   geoMapBackground,
@@ -99,6 +118,28 @@ export default function ProcessFlowGraphCanvas({
   useEffect(() => {
     engineRef.current?.setInteractionMode(interactionMode);
   }, [interactionMode]);
+
+  useEffect(() => {
+    const engine = engineRef.current;
+    if (!engine || data.geoMapFrame) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const cancelPrewarm = scheduleCanvasIdleWork(() => {
+      if (cancelled) {
+        return;
+      }
+
+      engine.prewarmOverviewLayoutGeometry('sphere3d');
+      engine.prewarmOverviewLayoutGeometry('expanded2d');
+    }, overviewGeometryPrewarmTimeoutMs);
+
+    return () => {
+      cancelled = true;
+      cancelPrewarm();
+    };
+  }, [data]);
 
   const geoMapBackgroundKey = geoMapBackground
     ? `${geoMapBackground.scope}:${geoMapBackground.width}:${geoMapBackground.height}:${geoMapBackground.paths.length}`

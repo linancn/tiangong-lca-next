@@ -97,6 +97,24 @@ type HighlightedEdgeRender = {
   intensityScale: number;
 };
 
+type NodeGeometrySnapshot = {
+  boundingSphere?: THREE.Sphere;
+  colors: Float32Array;
+  positions: Float32Array;
+  sizes: Float32Array;
+};
+
+type LineGeometrySnapshot = {
+  boundingSphere?: THREE.Sphere;
+  colors: Float32Array;
+  positions: Float32Array;
+};
+
+type OverviewGeometrySnapshot = {
+  edge?: LineGeometrySnapshot;
+  node?: NodeGeometrySnapshot;
+};
+
 const clusterColorMap: Record<string, string> = {
   chemicals: '#24e7ff',
   energy: '#f6db4d',
@@ -194,6 +212,11 @@ const projectionGridParallelCount = 7;
 const projectionGridSegments = 48;
 const projectionGridLineCount = projectionGridMeridianCount + projectionGridParallelCount;
 const geoMapCameraPadding = 72;
+const overviewGeometryCache = new WeakMap<
+  ProcessFlowGraphData,
+  Partial<Record<ProcessFlowGraphLayoutName, OverviewGeometrySnapshot>>
+>();
+const overviewBaseEdgeCache = new WeakMap<ProcessFlowGraphData, ProcessFlowGraphEdge[]>();
 
 const nodePointVertexShader = `
 attribute float pointSize;
@@ -398,6 +421,26 @@ function setGeometryPositionArray(geometry: THREE.BufferGeometry, positions: Flo
 
   (positionAttribute.array as Float32Array).set(positions);
   positionAttribute.needsUpdate = true;
+  geometry.computeBoundingSphere();
+}
+
+function cloneFloat32Array(source: Float32Array) {
+  return new Float32Array(source);
+}
+
+function captureBoundingSphere(geometry: THREE.BufferGeometry) {
+  return geometry.boundingSphere?.clone();
+}
+
+function applyCachedBoundingSphere(
+  geometry: THREE.BufferGeometry,
+  boundingSphere: THREE.Sphere | undefined,
+) {
+  if (boundingSphere) {
+    geometry.boundingSphere = boundingSphere.clone();
+    return;
+  }
+
   geometry.computeBoundingSphere();
 }
 
@@ -898,6 +941,213 @@ export class ProcessFlowGraphEngine {
     this.renderer.domElement.style.cursor = interactionMode === 'select' ? 'pointer' : 'grab';
   }
 
+  prewarmOverviewLayoutGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+    if (!this.canUseOverviewGeometryCache(layoutMode)) {
+      return;
+    }
+
+    const snapshot = this.getOverviewGeometrySnapshot(layoutMode);
+
+    if (!snapshot.node) {
+      snapshot.node = this.createOverviewNodeGeometrySnapshot(layoutMode);
+    }
+    if (!snapshot.edge) {
+      snapshot.edge = this.createOverviewEdgeGeometrySnapshot(layoutMode);
+    }
+  }
+
+  private canUseOverviewGeometryCache(layoutMode: ProcessFlowGraphLayoutName = this.layoutMode) {
+    return (
+      layoutMode !== 'geoMap2d' &&
+      !this.data.geoMapFrame &&
+      !this.selection.selectedNodeId &&
+      this.selection.highlightedNodeIds.size === 0 &&
+      this.selection.highlightedEdgeIds.size === 0
+    );
+  }
+
+  private getOverviewGeometrySnapshot(layoutMode: ProcessFlowGraphLayoutName) {
+    let snapshotsByLayout = overviewGeometryCache.get(this.data);
+
+    if (!snapshotsByLayout) {
+      snapshotsByLayout = {};
+      overviewGeometryCache.set(this.data, snapshotsByLayout);
+    }
+
+    snapshotsByLayout[layoutMode] ??= {};
+    return snapshotsByLayout[layoutMode] as OverviewGeometrySnapshot;
+  }
+
+  private getCachedOverviewNodeGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+    if (!this.canUseOverviewGeometryCache(layoutMode)) {
+      return undefined;
+    }
+
+    const snapshot = this.getOverviewGeometrySnapshot(layoutMode);
+    snapshot.node ??= this.createOverviewNodeGeometrySnapshot(layoutMode);
+    return snapshot.node;
+  }
+
+  private getCachedOverviewEdgeGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+    if (!this.canUseOverviewGeometryCache(layoutMode)) {
+      return undefined;
+    }
+
+    const snapshot = this.getOverviewGeometrySnapshot(layoutMode);
+    snapshot.edge ??= this.createOverviewEdgeGeometrySnapshot(layoutMode);
+    return snapshot.edge;
+  }
+
+  private getSortedOverviewBaseEdges() {
+    const cachedEdges = overviewBaseEdgeCache.get(this.data);
+    if (cachedEdges) {
+      return cachedEdges;
+    }
+
+    const sortedEdges = this.data.edges
+      .map((edge, index) => {
+        const sourceNode = this.getNode(edge.source);
+        const targetNode = this.getNode(edge.target);
+        const isCrossCluster =
+          Boolean(sourceNode && targetNode) &&
+          sourceNode?.clusterIdLevel1 !== targetNode?.clusterIdLevel1;
+        const degreeScore = (sourceNode?.degree ?? 0) + (targetNode?.degree ?? 0);
+        const processScore =
+          sourceNode?.kind === 'process' || targetNode?.kind === 'process' ? 42 : 0;
+        const hashScore = getStableHash(`${edge.id}:${index}`) / 0xffff_ffff;
+        const score = (isCrossCluster ? 900 : 0) + degreeScore + processScore + hashScore;
+
+        return { edge, score };
+      })
+      .sort((left, right) => right.score - left.score)
+      .map(({ edge }) => edge);
+
+    overviewBaseEdgeCache.set(this.data, sortedEdges);
+    return sortedEdges;
+  }
+
+  private getOverviewBaseEdgeRenders(layoutMode: ProcessFlowGraphLayoutName): BaseEdgeRender[] {
+    return this.getSortedOverviewBaseEdges().map((edge) => ({
+      edge,
+      intensityScale: layoutMode === 'sphere3d' ? 0.34 : 0.28,
+    }));
+  }
+
+  private createOverviewNodeGeometrySnapshot(
+    layoutMode: ProcessFlowGraphLayoutName,
+  ): NodeGeometrySnapshot {
+    const positions = new Float32Array(this.data.nodes.length * 3);
+    const colors = new Float32Array(this.data.nodes.length * 3);
+    const sizes = new Float32Array(this.data.nodes.length);
+
+    this.data.nodes.forEach((node, index) => {
+      const colorOffset = index * 3;
+
+      writeTuple(positions, colorOffset, getNodePosition(this.data, layoutMode, node.id));
+      writeColor(
+        colors,
+        colorOffset,
+        this.getClusterColor(node),
+        node.kind === 'process' ? 0.92 : 1.16,
+      );
+      sizes[index] = getNodePointSize(node, layoutMode);
+    });
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.computeBoundingSphere();
+    const boundingSphere = captureBoundingSphere(geometry);
+    geometry.dispose();
+
+    return {
+      boundingSphere,
+      colors,
+      positions,
+      sizes,
+    };
+  }
+
+  private createOverviewEdgeGeometrySnapshot(
+    layoutMode: ProcessFlowGraphLayoutName,
+  ): LineGeometrySnapshot {
+    const usesOverviewEdgeTreatment = layoutMode === 'sphere3d' || isExpandedLikeLayout(layoutMode);
+    const segmentCount = layoutMode === 'sphere3d' ? sphereEdgeSegments : 1;
+    const edgeRenders = this.getOverviewBaseEdgeRenders(layoutMode);
+    const positions = new Float32Array(edgeRenders.length * segmentCount * 6);
+    const colors = new Float32Array(edgeRenders.length * segmentCount * 6);
+    let offset = 0;
+
+    edgeRenders.forEach(({ edge, intensityScale }) => {
+      const source = getNodePosition(this.data, layoutMode, edge.source);
+      const target = getNodePosition(this.data, layoutMode, edge.target);
+      const mutedSource = usesOverviewEdgeTreatment
+        ? getNodePosition(this.data, 'sphere3d', edge.source)
+        : source;
+      const mutedTarget = usesOverviewEdgeTreatment
+        ? getNodePosition(this.data, 'sphere3d', edge.target)
+        : target;
+      const color = usesOverviewEdgeTreatment
+        ? this.getSphereBaseEdgeColor(edge)
+        : getEdgeColor(edge.direction);
+      const intensity = usesOverviewEdgeTreatment
+        ? this.getSphereBaseEdgeIntensity(edge, mutedSource, mutedTarget)
+        : 0.38;
+      const scaledIntensity = intensity * intensityScale;
+
+      for (let segmentIndex = 0; segmentIndex < segmentCount; segmentIndex += 1) {
+        const startProgress = segmentIndex / segmentCount;
+        const endProgress = (segmentIndex + 1) / segmentCount;
+        const start =
+          layoutMode === 'sphere3d'
+            ? getSphereArcPoint(source, target, startProgress, sphereSurfaceLift)
+            : source;
+        const end =
+          layoutMode === 'sphere3d'
+            ? getSphereArcPoint(source, target, endProgress, sphereSurfaceLift)
+            : target;
+
+        writeTuple(positions, offset, start);
+        writeTuple(positions, offset + 3, end);
+        writeColor(colors, offset, color, scaledIntensity);
+        writeColor(colors, offset + 3, color, scaledIntensity);
+        offset += 6;
+      }
+    });
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.computeBoundingSphere();
+    const boundingSphere = captureBoundingSphere(geometry);
+    geometry.dispose();
+
+    return {
+      boundingSphere,
+      colors,
+      positions,
+    };
+  }
+
+  private applyNodeGeometrySnapshot(snapshot: NodeGeometrySnapshot) {
+    const positionAttribute = new THREE.BufferAttribute(cloneFloat32Array(snapshot.positions), 3);
+    positionAttribute.setUsage(THREE.DynamicDrawUsage);
+    this.nodeGeometry.setAttribute('position', positionAttribute);
+    this.nodeGeometry.setAttribute(
+      'color',
+      new THREE.BufferAttribute(cloneFloat32Array(snapshot.colors), 3),
+    );
+    this.nodeGeometry.setAttribute(
+      'pointSize',
+      new THREE.BufferAttribute(cloneFloat32Array(snapshot.sizes), 1),
+    );
+    applyCachedBoundingSphere(this.nodeGeometry, snapshot.boundingSphere);
+  }
+
+  private applyEdgeGeometrySnapshot(snapshot: LineGeometrySnapshot) {
+    this.edgeGeometry.setAttribute('position', new THREE.BufferAttribute(snapshot.positions, 3));
+    this.edgeGeometry.setAttribute('color', new THREE.BufferAttribute(snapshot.colors, 3));
+    applyCachedBoundingSphere(this.edgeGeometry, snapshot.boundingSphere);
+  }
+
   private captureNodePositionMap() {
     const positionMap = new Map<string, [number, number, number]>();
     const positionAttribute = this.nodeGeometry.getAttribute('position') as
@@ -1099,9 +1349,88 @@ export class ProcessFlowGraphEngine {
       position: this.camera.position.clone(),
       target: this.controls.target.clone(),
     };
+    const shouldUseCachedTargetScene =
+      fromLayoutMode === 'geoMap2d' && (layoutMode === 'sphere3d' || layoutMode === 'expanded2d');
     const shouldDeferSourceScene =
       (fromLayoutMode === 'expanded2d' && layoutMode === 'sphere3d') ||
       (fromLayoutMode === 'geoMap2d' && (layoutMode === 'sphere3d' || layoutMode === 'expanded2d'));
+
+    if (shouldUseCachedTargetScene) {
+      this.finishCameraFocusTransition(false);
+      this.finishLayoutTransition(false);
+      this.finishSphereSelectionTransition(false);
+      this.data = data;
+      this.clusterColors = buildClusterColors(data);
+      this.selection = selection;
+      this.layoutMode = layoutMode;
+      this.updateControlInteractionMode();
+      this.group.rotation.set(0, 0, 0);
+      this.buildScene();
+
+      const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+      const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
+        | THREE.LineBasicMaterial
+        | undefined;
+      const nodeTo = capturePositionArray(this.nodeGeometry);
+      const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
+      const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
+      const allNodeIds = this.data.nodes.map((node) => node.id);
+      const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
+      const selectedNodeIds = this.selection.selectedNodeId ? [this.selection.selectedNodeId] : [];
+      const sourceLayoutNodeIds = new Set(nodePositionMap.keys());
+      const nodeFrom = this.buildMappedNodePositions(allNodeIds, nodePositionMap, nodeTo);
+      const highlightedNodeFrom = this.buildMappedNodePositions(
+        highlightedNodeIds,
+        nodePositionMap,
+        highlightedNodeTo,
+      );
+      const selectedNodeFrom = this.buildMappedNodePositions(
+        selectedNodeIds,
+        nodePositionMap,
+        selectedNodeTo,
+      );
+      const frameTo = this.getCameraFrame(layoutMode);
+
+      this.keepMissingSourceNodesAtTarget(allNodeIds, sourceLayoutNodeIds, nodeFrom, nodeTo);
+      this.keepMissingSourceNodesAtTarget(
+        highlightedNodeIds,
+        sourceLayoutNodeIds,
+        highlightedNodeFrom,
+        highlightedNodeTo,
+      );
+      this.keepMissingSourceNodesAtTarget(
+        selectedNodeIds,
+        sourceLayoutNodeIds,
+        selectedNodeFrom,
+        selectedNodeTo,
+      );
+      setGeometryPositionArray(this.nodeGeometry, nodeFrom);
+      setGeometryPositionArray(this.highlightedNodeGeometry, highlightedNodeFrom);
+      setGeometryPositionArray(this.selectedNodeGeometry, selectedNodeFrom);
+      this.transition = {
+        cameraFrom: frameFrom.position,
+        cameraTo: frameTo.position,
+        duration: layoutTransitionDurationMs,
+        edgeOpacity: edgeMaterial?.opacity ?? 0.16,
+        fromLayoutMode,
+        highlightedEdgeOpacity: getLineMaterialOpacity(highlightedEdgeMaterial) ?? 0.95,
+        highlightedNodeFrom,
+        highlightedNodeTo,
+        nodeFrom,
+        nodeTo,
+        selectedNodeFrom,
+        selectedNodeTo,
+        sourceLayoutNodeIds,
+        startedAt: performance.now(),
+        targetFrom: frameFrom.target,
+        targetTo: frameTo.target,
+        toLayoutMode: layoutMode,
+      };
+      this.controls.enabled = false;
+      this.transitionEffectGroup.visible = true;
+      this.updateLayoutTransition(0);
+      return;
+    }
 
     if (shouldDeferSourceScene) {
       this.finishCameraFocusTransition(false);
@@ -1817,6 +2146,12 @@ export class ProcessFlowGraphEngine {
   }
 
   private buildNodeGeometry() {
+    const cachedSnapshot = this.getCachedOverviewNodeGeometry(this.layoutMode);
+    if (cachedSnapshot) {
+      this.applyNodeGeometrySnapshot(cachedSnapshot);
+      return;
+    }
+
     const positions = new Float32Array(this.data.nodes.length * 3);
     const colors = new Float32Array(this.data.nodes.length * 3);
     const sizes = new Float32Array(this.data.nodes.length);
@@ -1848,6 +2183,12 @@ export class ProcessFlowGraphEngine {
   }
 
   private buildEdgeGeometry() {
+    const cachedSnapshot = this.getCachedOverviewEdgeGeometry(this.layoutMode);
+    if (cachedSnapshot) {
+      this.applyEdgeGeometrySnapshot(cachedSnapshot);
+      return;
+    }
+
     const usesOverviewEdgeTreatment =
       this.layoutMode === 'sphere3d' || isExpandedLikeLayout(this.layoutMode);
     const segmentCount = this.layoutMode === 'sphere3d' ? sphereEdgeSegments : 1;
@@ -1914,26 +2255,7 @@ export class ProcessFlowGraphEngine {
       return this.data.edges.map((edge) => ({ edge, intensityScale: 0.72 }));
     }
 
-    return this.data.edges
-      .map((edge, index) => {
-        const sourceNode = this.getNode(edge.source);
-        const targetNode = this.getNode(edge.target);
-        const isCrossCluster =
-          Boolean(sourceNode && targetNode) &&
-          sourceNode?.clusterIdLevel1 !== targetNode?.clusterIdLevel1;
-        const degreeScore = (sourceNode?.degree ?? 0) + (targetNode?.degree ?? 0);
-        const processScore =
-          sourceNode?.kind === 'process' || targetNode?.kind === 'process' ? 42 : 0;
-        const hashScore = getStableHash(`${edge.id}:${index}`) / 0xffff_ffff;
-        const score = (isCrossCluster ? 900 : 0) + degreeScore + processScore + hashScore;
-
-        return { edge, score };
-      })
-      .sort((left, right) => right.score - left.score)
-      .map(({ edge }) => ({
-        edge,
-        intensityScale: this.layoutMode === 'sphere3d' ? 0.34 : 0.28,
-      }));
+    return this.getOverviewBaseEdgeRenders(this.layoutMode);
   }
 
   private getNode(nodeId: string) {
