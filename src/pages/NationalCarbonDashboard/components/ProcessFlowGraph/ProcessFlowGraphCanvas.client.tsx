@@ -21,7 +21,7 @@ type CanvasIdleWindow = Window & {
   requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
 };
 
-const overviewGeometryPrewarmTimeoutMs = 2200;
+const overviewGeometryPrewarmTimeoutMs = 900;
 
 function scheduleCanvasIdleWork(callback: () => void, timeoutMs: number): () => void {
   const idleWindow = window as CanvasIdleWindow;

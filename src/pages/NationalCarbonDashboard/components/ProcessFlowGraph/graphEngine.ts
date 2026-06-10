@@ -794,6 +794,8 @@ export class ProcessFlowGraphEngine {
 
   private transition?: LayoutTransition;
 
+  private deferredOverviewEdgeTimer?: number;
+
   private transitionDustGeometry = new THREE.BufferGeometry();
 
   private transitionDustPoints?: THREE.Points;
@@ -886,6 +888,7 @@ export class ProcessFlowGraphEngine {
   destroy() {
     this.renderer.setAnimationLoop(null);
     this.detachEvents();
+    this.cancelDeferredOverviewEdgeGeometry();
     this.controls.dispose();
     this.nodeGeometry.dispose();
     this.edgeGeometry.dispose();
@@ -1200,6 +1203,23 @@ export class ProcessFlowGraphEngine {
     return mappedPositions;
   }
 
+  private buildSeededTargetNodePositions(
+    positionMap: Map<string, [number, number, number]>,
+    targetPositions: Float32Array,
+  ) {
+    const seededPositions = cloneFloat32Array(targetPositions);
+
+    positionMap.forEach((position, nodeId) => {
+      const nodeIndex = this.data.indexes.nodeById[nodeId];
+
+      if (nodeIndex !== undefined) {
+        writeTuple(seededPositions, nodeIndex * 3, position);
+      }
+    });
+
+    return seededPositions;
+  }
+
   private buildLayoutNodePositions(nodeIds: string[], layoutMode: ProcessFlowGraphLayoutName) {
     const positions = new Float32Array(nodeIds.length * 3);
 
@@ -1365,7 +1385,7 @@ export class ProcessFlowGraphEngine {
       this.layoutMode = layoutMode;
       this.updateControlInteractionMode();
       this.group.rotation.set(0, 0, 0);
-      this.buildScene();
+      this.buildScene({ deferOverviewEdges: true });
 
       const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
       const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
@@ -1374,11 +1394,10 @@ export class ProcessFlowGraphEngine {
       const nodeTo = capturePositionArray(this.nodeGeometry);
       const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
       const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
-      const allNodeIds = this.data.nodes.map((node) => node.id);
       const highlightedNodeIds = Array.from(this.selection.highlightedNodeIds);
       const selectedNodeIds = this.selection.selectedNodeId ? [this.selection.selectedNodeId] : [];
       const sourceLayoutNodeIds = new Set(nodePositionMap.keys());
-      const nodeFrom = this.buildMappedNodePositions(allNodeIds, nodePositionMap, nodeTo);
+      const nodeFrom = this.buildSeededTargetNodePositions(nodePositionMap, nodeTo);
       const highlightedNodeFrom = this.buildMappedNodePositions(
         highlightedNodeIds,
         nodePositionMap,
@@ -1391,7 +1410,6 @@ export class ProcessFlowGraphEngine {
       );
       const frameTo = this.getCameraFrame(layoutMode);
 
-      this.keepMissingSourceNodesAtTarget(allNodeIds, sourceLayoutNodeIds, nodeFrom, nodeTo);
       this.keepMissingSourceNodesAtTarget(
         highlightedNodeIds,
         sourceLayoutNodeIds,
@@ -1428,6 +1446,7 @@ export class ProcessFlowGraphEngine {
       };
       this.controls.enabled = false;
       this.transitionEffectGroup.visible = true;
+      this.scheduleDeferredOverviewEdgeGeometry(layoutMode);
       this.updateLayoutTransition(0);
       return;
     }
@@ -2058,7 +2077,8 @@ export class ProcessFlowGraphEngine {
     this.transitionEffectGroup.add(this.transitionProjectionLines);
   }
 
-  private buildScene() {
+  private buildScene({ deferOverviewEdges = false }: { deferOverviewEdges?: boolean } = {}) {
+    this.cancelDeferredOverviewEdgeGeometry();
     this.group.clear();
     this.nodeGeometry.dispose();
     this.edgeGeometry.dispose();
@@ -2079,7 +2099,11 @@ export class ProcessFlowGraphEngine {
     this.sphereShell = createSphereShell();
 
     this.buildNodeGeometry();
-    this.buildEdgeGeometry();
+    if (deferOverviewEdges && this.canUseOverviewGeometryCache(this.layoutMode)) {
+      this.buildEmptyEdgeGeometry();
+    } else {
+      this.buildEdgeGeometry();
+    }
 
     this.edgeLines = new THREE.LineSegments(
       this.edgeGeometry,
@@ -2143,6 +2167,42 @@ export class ProcessFlowGraphEngine {
     this.group.add(this.selectedNodePoint);
     this.updateHighlightedGeometry();
     this.updateMaterialState();
+  }
+
+  private buildEmptyEdgeGeometry() {
+    this.edgeGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(), 3));
+    this.edgeGeometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(), 3));
+    this.edgeGeometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 0);
+  }
+
+  private cancelDeferredOverviewEdgeGeometry() {
+    if (this.deferredOverviewEdgeTimer !== undefined) {
+      window.clearTimeout(this.deferredOverviewEdgeTimer);
+      this.deferredOverviewEdgeTimer = undefined;
+    }
+  }
+
+  private flushDeferredOverviewEdgeGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+    this.cancelDeferredOverviewEdgeGeometry();
+
+    if (
+      this.layoutMode !== layoutMode ||
+      !this.edgeLines ||
+      !this.canUseOverviewGeometryCache(layoutMode)
+    ) {
+      return;
+    }
+
+    this.buildEdgeGeometry();
+    this.updateMaterialState();
+  }
+
+  private scheduleDeferredOverviewEdgeGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+    this.cancelDeferredOverviewEdgeGeometry();
+    this.deferredOverviewEdgeTimer = window.setTimeout(() => {
+      this.deferredOverviewEdgeTimer = undefined;
+      this.flushDeferredOverviewEdgeGeometry(layoutMode);
+    }, 96);
   }
 
   private buildNodeGeometry() {
@@ -2387,6 +2447,7 @@ export class ProcessFlowGraphEngine {
         this.group.rotation.set(0, 0, 0);
         this.buildScene();
       } else {
+        this.flushDeferredOverviewEdgeGeometry(transition.toLayoutMode);
         setGeometryPositionArray(this.nodeGeometry, transition.nodeTo);
         setGeometryPositionArray(this.highlightedNodeGeometry, transition.highlightedNodeTo);
         setGeometryPositionArray(this.selectedNodeGeometry, transition.selectedNodeTo);
