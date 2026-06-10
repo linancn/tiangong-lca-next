@@ -217,6 +217,22 @@ const geoMapCacheFileKeys: Record<
 const geoMapBackgroundFallbackRequests: Partial<
   Record<string, Promise<GeoMapBackgroundResolution | undefined>>
 > = {};
+const geoMapViewCache: Partial<Record<ProcessFlowGraphMapScope, ProcessFlowGraphGeoMapView>> = {};
+const geoMapViewRequests: Partial<
+  Record<ProcessFlowGraphMapScope, Promise<ProcessFlowGraphGeoMapView | undefined>>
+> = {};
+
+export function resetProcessFlowGraphCacheLoaderStateForTest(): void {
+  Object.keys(geoMapBackgroundFallbackRequests).forEach((cacheKey) => {
+    delete geoMapBackgroundFallbackRequests[cacheKey];
+  });
+  Object.keys(geoMapViewCache).forEach((scope) => {
+    delete geoMapViewCache[scope as ProcessFlowGraphMapScope];
+  });
+  Object.keys(geoMapViewRequests).forEach((scope) => {
+    delete geoMapViewRequests[scope as ProcessFlowGraphMapScope];
+  });
+}
 
 function isWorkerFrameOnlyBackground(background: ProcessFlowGraphMapBackground): boolean {
   if (background.paths.length !== 1) {
@@ -1191,7 +1207,7 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
   };
 }
 
-export async function loadProcessFlowGraphGeoMapViewFromCache(
+async function loadProcessFlowGraphGeoMapViewFromCacheUncached(
   scope: ProcessFlowGraphMapScope,
 ): Promise<ProcessFlowGraphGeoMapView | undefined> {
   const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
@@ -1273,4 +1289,35 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
       stats: viewPayload.stats,
     },
   };
+}
+
+export function loadProcessFlowGraphGeoMapViewFromCache(
+  scope: ProcessFlowGraphMapScope,
+): Promise<ProcessFlowGraphGeoMapView | undefined> {
+  const cachedView = geoMapViewCache[scope];
+  if (cachedView) {
+    return Promise.resolve(cachedView);
+  }
+
+  const pendingRequest = geoMapViewRequests[scope];
+  if (pendingRequest) {
+    return pendingRequest;
+  }
+
+  const request = loadProcessFlowGraphGeoMapViewFromCacheUncached(scope)
+    .then((cachedGeoMapView) => {
+      if (cachedGeoMapView) {
+        geoMapViewCache[scope] = cachedGeoMapView;
+      }
+
+      return cachedGeoMapView;
+    })
+    .finally(() => {
+      if (geoMapViewRequests[scope] === request) {
+        delete geoMapViewRequests[scope];
+      }
+    });
+
+  geoMapViewRequests[scope] = request;
+  return request;
 }

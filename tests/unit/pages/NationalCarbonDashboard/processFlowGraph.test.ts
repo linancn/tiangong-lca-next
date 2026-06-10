@@ -12,6 +12,7 @@ import { shouldRenderProcessFlowBaseEdges } from '@/pages/NationalCarbonDashboar
 import {
   loadProcessFlowGraphFromCache,
   loadProcessFlowGraphGeoMapViewFromCache,
+  resetProcessFlowGraphCacheLoaderStateForTest,
 } from '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/processFlowGraphCacheLoader';
 import {
   DecompressionStream as NodeDecompressionStream,
@@ -586,6 +587,7 @@ function createWorkerV2CacheFiles(extraFiles: Record<string, Response> = {}) {
 
 describe('NationalCarbonDashboard process-flow graph', () => {
   afterEach(() => {
+    resetProcessFlowGraphCacheLoaderStateForTest();
     jest.restoreAllMocks();
     global.fetch = originalFetch;
     globalThis.DecompressionStream = originalDecompressionStream;
@@ -851,6 +853,83 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(longitude).toBeLessThanOrEqual(-6);
     expect(latitude).toBeGreaterThanOrEqual(36);
     expect(latitude).toBeLessThanOrEqual(42);
+  });
+
+  it('deduplicates in-flight geoMap cache requests and reuses successful map views', async () => {
+    globalThis.DecompressionStream =
+      NodeDecompressionStream as unknown as typeof DecompressionStream;
+    globalThis.Response = TestResponse as unknown as typeof Response;
+    const geoMapFiles = {
+      'builds/test-build/geo-map/world/adjacency.csr.bin.gz': createArrayBufferResponse(
+        gzipBinary(createAdjacencyBinary(1, [[]])),
+      ),
+      'builds/test-build/geo-map/world/edges.bin.gz': createArrayBufferResponse(
+        gzipBinary(createEdgeBinary(0)),
+      ),
+      'builds/test-build/geo-map/world/layout.f32.bin.gz': createArrayBufferResponse(
+        gzipBinary(createLayoutBinary([[10, 12, 6]])),
+      ),
+      'builds/test-build/geo-map/world/view.json.gz': createArrayBufferResponse(
+        gzipJson({
+          adjacency: {
+            'process:cached@v1': [],
+          },
+          adjacencyIncludesProcessLinks: true,
+          background: {
+            height: 640,
+            paths: [{ code: 'US', id: 'world-US', label: 'United States', path: 'M0 0H1V1H0Z' }],
+            scope: 'world',
+            width: 1120,
+          },
+          buildId: 'test-build',
+          clustersLevel1: [{ id: 'energy', label: 'Energy' }],
+          clustersLevel3: [{ id: 'energy-power-solar', label: 'Energy / Power / Solar' }],
+          geoMapFrame: { height: 640, width: 1120 },
+          nodes: [
+            {
+              category: 'Energy / Power / Solar',
+              clusterIdLevel1: 'energy',
+              clusterIdLevel3: 'energy-power-solar',
+              clusterLabelLevel1: 'Energy',
+              clusterLabelLevel3: 'Energy / Power / Solar',
+              degree: 0,
+              id: 'process:cached@v1',
+              kind: 'process',
+              location: 'US',
+              name: 'Cached Process',
+              version: '01.00.000',
+            },
+          ],
+          processLinks: [],
+          schemaVersion: 'process_flow_graph_geo_map_view_v2',
+          scope: 'world',
+          searchFlows: [],
+          stats: {
+            edgeCount: 0,
+            flowCount: 0,
+            maxDegree: 0,
+            processCount: 1,
+          },
+          units: ['kg'],
+        }),
+      ),
+    };
+    mockProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
+
+    const [firstView, secondView] = await Promise.all([
+      loadProcessFlowGraphGeoMapViewFromCache('world'),
+      loadProcessFlowGraphGeoMapViewFromCache('world'),
+    ]);
+    const thirdView = await loadProcessFlowGraphGeoMapViewFromCache('world');
+    const fetchMock = global.fetch as jest.Mock;
+    const viewCalls = fetchMock.mock.calls.filter(
+      ([input]) => String(input) === `${cacheBaseUrl}/builds/test-build/geo-map/world/view.json.gz`,
+    );
+
+    expect(firstView).toBeDefined();
+    expect(secondView).toBe(firstView);
+    expect(thirdView).toBe(firstView);
+    expect(viewCalls).toHaveLength(1);
   });
 
   it('replaces worker China map paths with the local China outline and projects nodes with the same map projection', async () => {

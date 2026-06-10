@@ -38,10 +38,29 @@ const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
   maximumFractionDigits: 8,
 });
 const geoMapCacheSoftTimeoutMs = 4500;
+const geoMapInitialPrefetchTimeoutMs = 1800;
+const geoMapFollowupPrefetchTimeoutMs = 2400;
 const maxCacheErrorLength = 96;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value);
+}
+
+type GeoMapPrefetchWindow = Window & {
+  cancelIdleCallback?: (handle: number) => void;
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+};
+
+function scheduleGeoMapPrefetch(callback: () => void, timeoutMs: number): () => void {
+  const prefetchWindow = window as GeoMapPrefetchWindow;
+
+  if (prefetchWindow.requestIdleCallback && prefetchWindow.cancelIdleCallback) {
+    const handle = prefetchWindow.requestIdleCallback(callback, { timeout: timeoutMs });
+    return () => prefetchWindow.cancelIdleCallback?.(handle);
+  }
+
+  const timeoutId = window.setTimeout(callback, timeoutMs);
+  return () => window.clearTimeout(timeoutId);
 }
 
 function formatCacheError(error: string): string {
@@ -531,6 +550,95 @@ export default function ProcessFlowGraphPanel() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!data || dataSource !== 'minio') {
+      return undefined;
+    }
+
+    let cancelled = false;
+    let cancelChinaPrefetch: (() => void) | undefined;
+
+    const markGeoMapPrefetchLoading = (scope: ProcessFlowGraphMapScope) => {
+      setGeoMapCacheStatus((currentStatus) => {
+        if (currentStatus[scope] === 'hit' || currentStatus[scope] === 'loading') {
+          return currentStatus;
+        }
+
+        return {
+          ...currentStatus,
+          [scope]: 'loading',
+        };
+      });
+    };
+
+    const markGeoMapPrefetchIdle = (scope: ProcessFlowGraphMapScope) => {
+      setGeoMapCacheStatus((currentStatus) => {
+        if (currentStatus[scope] !== 'loading') {
+          return currentStatus;
+        }
+
+        return {
+          ...currentStatus,
+          [scope]: 'idle',
+        };
+      });
+    };
+
+    const prefetchGeoMapScope = (scope: ProcessFlowGraphMapScope) => {
+      markGeoMapPrefetchLoading(scope);
+
+      void loadProcessFlowGraphGeoMapViewFromCache(scope)
+        .then((cachedView) => {
+          if (cancelled) {
+            return;
+          }
+
+          if (!cachedView) {
+            markGeoMapPrefetchIdle(scope);
+            return;
+          }
+
+          setGeoMapCachedViews((currentViews) => {
+            if (currentViews[scope]) {
+              return currentViews;
+            }
+
+            return {
+              ...currentViews,
+              [scope]: cachedView,
+            };
+          });
+          setGeoMapCacheStatus((currentStatus) => ({
+            ...currentStatus,
+            [scope]: 'hit',
+          }));
+
+          if (scope === 'world') {
+            cancelChinaPrefetch = scheduleGeoMapPrefetch(
+              () => prefetchGeoMapScope('china'),
+              geoMapFollowupPrefetchTimeoutMs,
+            );
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            markGeoMapPrefetchIdle(scope);
+          }
+        });
+    };
+
+    const cancelWorldPrefetch = scheduleGeoMapPrefetch(
+      () => prefetchGeoMapScope('world'),
+      geoMapInitialPrefetchTimeoutMs,
+    );
+
+    return () => {
+      cancelled = true;
+      cancelWorldPrefetch();
+      cancelChinaPrefetch?.();
+    };
+  }, [data, dataSource]);
 
   useEffect(() => {
     if (!isGeoMapMode || !data || cachedGeoMapView) {
