@@ -1820,15 +1820,22 @@ export class ProcessFlowGraphEngine {
     const positions = new Float32Array(this.data.nodes.length * 3);
     const colors = new Float32Array(this.data.nodes.length * 3);
     const sizes = new Float32Array(this.data.nodes.length);
+    const hasSelection = Boolean(this.selection.selectedNodeId);
 
     this.data.nodes.forEach((node, index) => {
-      writeTuple(positions, index * 3, getNodePosition(this.data, this.layoutMode, node.id));
-      writeColor(
-        colors,
-        index * 3,
-        this.getClusterColor(node),
-        node.kind === 'process' ? 0.92 : 1.16,
-      );
+      const colorOffset = index * 3;
+
+      writeTuple(positions, colorOffset, getNodePosition(this.data, this.layoutMode, node.id));
+      if (hasSelection) {
+        this.writeSelectionAwareNodeColor(colors, colorOffset, node);
+      } else {
+        writeColor(
+          colors,
+          colorOffset,
+          this.getClusterColor(node),
+          node.kind === 'process' ? 0.92 : 1.16,
+        );
+      }
       sizes[index] = getNodePointSize(node, this.layoutMode);
     });
 
@@ -3455,6 +3462,31 @@ export class ProcessFlowGraphEngine {
     this.updateMaterialState();
   }
 
+  private writeSelectionAwareNodeColor(
+    colorArray: Float32Array,
+    offset: number,
+    node: ProcessFlowGraphNode,
+  ) {
+    const selectedNodeId = this.selection.selectedNodeId;
+    const hasSelection = Boolean(selectedNodeId);
+    const isExpandedSelected = hasSelection && isExpandedLikeLayout(this.layoutMode);
+    let color = this.getClusterColor(node);
+    let intensity = getNodeOverviewIntensity(node);
+
+    if (hasSelection && node.id !== selectedNodeId) {
+      color = isExpandedSelected ? expandedSelectedContextColor : selectedContextColor;
+      intensity = isExpandedSelected
+        ? node.kind === 'process'
+          ? 0.98
+          : 1.08
+        : node.kind === 'process'
+          ? 0.82
+          : 0.9;
+    }
+
+    writeColor(colorArray, offset, color, intensity);
+  }
+
   private updateNodeSizes() {
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
       | THREE.BufferAttribute
@@ -3474,27 +3506,9 @@ export class ProcessFlowGraphEngine {
   private updateNodeColors() {
     const colorAttribute = this.nodeGeometry.getAttribute('color') as THREE.BufferAttribute;
     const colorArray = colorAttribute.array as Float32Array;
-    const selectedNodeId = this.selection.selectedNodeId;
-    const hasSelection = Boolean(selectedNodeId);
-    const isExpandedSelected = hasSelection && isExpandedLikeLayout(this.layoutMode);
 
     this.data.nodes.forEach((node, index) => {
-      const offset = index * 3;
-      let color = this.getClusterColor(node);
-      let intensity = getNodeOverviewIntensity(node);
-
-      if (hasSelection && node.id !== selectedNodeId) {
-        color = isExpandedSelected ? expandedSelectedContextColor : selectedContextColor;
-        intensity = isExpandedSelected
-          ? node.kind === 'process'
-            ? 0.98
-            : 1.08
-          : node.kind === 'process'
-            ? 0.82
-            : 0.9;
-      }
-
-      writeColor(colorArray, offset, color, intensity);
+      this.writeSelectionAwareNodeColor(colorArray, index * 3, node);
     });
 
     colorAttribute.needsUpdate = true;
