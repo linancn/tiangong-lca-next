@@ -1,16 +1,19 @@
 import {
+  AimOutlined,
   ApartmentOutlined,
   ClearOutlined,
   CloseCircleOutlined,
-  ClusterOutlined,
+  DotChartOutlined,
   DragOutlined,
   EnvironmentOutlined,
   GlobalOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   NodeIndexOutlined,
   SearchOutlined,
   SelectOutlined,
 } from '@ant-design/icons';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
 import {
   getProcessFlowGraphNode,
@@ -40,10 +43,41 @@ const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
 const geoMapCacheSoftTimeoutMs = 4500;
 const initialGeoMapPrefetchGraceMs = 900;
 const maxCacheErrorLength = 96;
+const inspectorExitAnimationMs = 320;
 const maxRenderedSearchResults = 96;
+const quickSelectOverviewFlowNodeId = 'flow:c431c0c3-3f5e-4b7b-af99-2ebbdcaf5f98@01.01.002';
+const quickSelectWorldMapProcessNodeId = 'process:1714bb7f-ced9-4c3f-8fac-af40ef8dd5fb@01.01.000';
+const quickSelectChinaMapProcessNodeId = 'process:9c3a6c6e-1010-41a6-b1f8-a3a52d2d62a3@01.01.000';
+
+type QuickSelectTarget = {
+  label: string;
+  nodeId: string;
+};
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value);
+}
+
+function getQuickSelectTarget(
+  layoutMode: ProcessFlowGraphLayoutName,
+  mapScope: ProcessFlowGraphMapScope,
+): QuickSelectTarget {
+  if (layoutMode === 'geoMap2d') {
+    return mapScope === 'china'
+      ? {
+          label: '粗钢生产',
+          nodeId: quickSelectChinaMapProcessNodeId,
+        }
+      : {
+          label: '多晶硅光伏系统',
+          nodeId: quickSelectWorldMapProcessNodeId,
+        };
+  }
+
+  return {
+    label: '石灰石',
+    nodeId: quickSelectOverviewFlowNodeId,
+  };
 }
 
 function formatCacheError(error: string): string {
@@ -305,54 +339,31 @@ function ProcessSearchResult({
   );
 }
 
+type InspectorSnapshot = {
+  data: ProcessFlowGraphData;
+  node: ProcessFlowGraphNode;
+};
+
 function Inspector({
   data,
+  isExiting = false,
   node,
 }: {
   data: ProcessFlowGraphData;
-  node: ProcessFlowGraphNode | undefined;
+  isExiting?: boolean;
+  node: ProcessFlowGraphNode;
 }) {
   const edgeRows = useMemo(() => getNodeEdgeRows(data, node), [data, node]);
-  const selection = useMemo(() => getProcessFlowGraphSelection(data, node?.id), [data, node]);
+  const selection = useMemo(() => getProcessFlowGraphSelection(data, node.id), [data, node]);
   const summary = useMemo(() => summarizeProcessFlowSelection(data, selection), [data, selection]);
   const inputEdges = edgeRows.filter((edge) => edge.direction === 'input');
   const outputEdges = edgeRows.filter((edge) => edge.direction === 'output');
-
-  if (!node) {
-    return (
-      <aside className={styles.inspector}>
-        <div className={styles.inspectorHeader}>
-          <span>详情面板</span>
-          <ClusterOutlined />
-        </div>
-        <div className={styles.emptyInspector}>
-          <strong>未选择节点</strong>
-          <span>全局过程-流关系图</span>
-        </div>
-        <div className={styles.inspectorMetricGrid}>
-          <div>
-            <span>流节点</span>
-            <strong>{formatNumber(data.stats.flowCount)}</strong>
-          </div>
-          <div>
-            <span>过程节点</span>
-            <strong>{formatNumber(data.stats.processCount)}</strong>
-          </div>
-          <div>
-            <span>输入/输出</span>
-            <strong>{formatNumber(data.stats.edgeCount)}</strong>
-          </div>
-          <div>
-            <span>最大连接数</span>
-            <strong>{formatNumber(data.stats.maxDegree)}</strong>
-          </div>
-        </div>
-      </aside>
-    );
-  }
+  const inspectorClassName = [styles.inspector, isExiting ? styles.inspectorExiting : '']
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <aside className={styles.inspector}>
+    <aside aria-hidden={isExiting} className={inspectorClassName}>
       <div className={styles.inspectorHeader}>
         <span>{node.kind === 'flow' ? '已选流' : '已选过程'}</span>
         <NodeIndexOutlined />
@@ -417,30 +428,6 @@ function Inspector({
           {!edgeRows.length && <small>暂无高亮交换</small>}
         </div>
       </div>
-    </aside>
-  );
-}
-
-function EmptyInspectorPanel({
-  dataSource,
-  loadError,
-}: {
-  dataSource: GraphDataSource;
-  loadError?: string;
-}) {
-  const isLoading = dataSource === 'loading';
-
-  return (
-    <aside className={styles.inspector}>
-      <div className={styles.inspectorHeader}>
-        <span>详情面板</span>
-        <ClusterOutlined />
-      </div>
-      <div className={styles.emptyInspector}>
-        <strong>{isLoading ? '正在加载缓存' : '缓存不可用'}</strong>
-        <span>{isLoading ? '过程-流关系图缓存' : '缓存错误'}</span>
-      </div>
-      {loadError && <p className={styles.cacheErrorText}>{formatCacheError(loadError)}</p>}
     </aside>
   );
 }
@@ -531,6 +518,9 @@ export default function ProcessFlowGraphPanel() {
   const [interactionMode, setInteractionMode] = useState<ProcessFlowGraphInteractionMode>('select');
   const [query, setQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+  const [exitingInspector, setExitingInspector] = useState<InspectorSnapshot | undefined>();
+  const [isLeftRailCollapsed, setIsLeftRailCollapsed] = useState(true);
+  const inspectorExitTimeoutRef = useRef<number | undefined>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
   const rawCachedGeoMapView = geoMapCachedViews[mapScope];
   const cachedGeoMapView =
@@ -586,9 +576,61 @@ export default function ProcessFlowGraphPanel() {
     : searchResultSlice.hasMore;
   const searchPlaceholder = shouldShowProcessSearch ? '搜索过程' : '搜索流';
   const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
-  const handleSelectProcess = useCallback((processId: string) => {
-    setSelectedNodeId(processId);
+  const quickSelectTarget = useMemo(
+    () => getQuickSelectTarget(layoutMode, mapScope),
+    [layoutMode, mapScope],
+  );
+  const quickSelectNode = useMemo(
+    () => (activeData ? getProcessFlowGraphNode(activeData, quickSelectTarget.nodeId) : undefined),
+    [activeData, quickSelectTarget.nodeId],
+  );
+  const quickSelectTitle = `快速选中：${quickSelectTarget.label}`;
+
+  const cancelInspectorExit = useCallback(() => {
+    if (inspectorExitTimeoutRef.current !== undefined) {
+      window.clearTimeout(inspectorExitTimeoutRef.current);
+      inspectorExitTimeoutRef.current = undefined;
+    }
+
+    setExitingInspector(undefined);
   }, []);
+
+  const selectNode = useCallback(
+    (nodeId: string) => {
+      cancelInspectorExit();
+      setSelectedNodeId(nodeId);
+    },
+    [cancelInspectorExit],
+  );
+
+  const clearSelectedNodeWithInspectorExit = useCallback(() => {
+    if (inspectorExitTimeoutRef.current !== undefined) {
+      window.clearTimeout(inspectorExitTimeoutRef.current);
+      inspectorExitTimeoutRef.current = undefined;
+    }
+
+    if (activeData && selectedNode) {
+      setExitingInspector({
+        data: activeData,
+        node: selectedNode,
+      });
+      inspectorExitTimeoutRef.current = window.setTimeout(() => {
+        setExitingInspector(undefined);
+        inspectorExitTimeoutRef.current = undefined;
+      }, inspectorExitAnimationMs);
+    } else {
+      setExitingInspector(undefined);
+    }
+
+    setSelectedNodeId(undefined);
+  }, [activeData, selectedNode]);
+
+  const handleSelectProcess = useCallback(
+    (processId: string) => {
+      selectNode(processId);
+    },
+    [selectNode],
+  );
   useEffect(() => {
     let cancelled = false;
     let initialGeoMapPrefetchGraceTimeoutId: number | undefined;
@@ -714,6 +756,15 @@ export default function ProcessFlowGraphPanel() {
     };
   }, []);
 
+  useEffect(
+    () => () => {
+      if (inspectorExitTimeoutRef.current !== undefined) {
+        window.clearTimeout(inspectorExitTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!isGeoMapMode || !data || cachedGeoMapView) {
       return undefined;
@@ -809,9 +860,17 @@ export default function ProcessFlowGraphPanel() {
     setInteractionMode(selectedNodeId ? 'pan' : 'select');
   }, [selectedNodeId]);
 
-  const handleNodeClick = useCallback((nodeId: string) => {
-    setSelectedNodeId((currentNodeId) => (currentNodeId === nodeId ? undefined : nodeId));
-  }, []);
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      if (selectedNodeId === nodeId) {
+        clearSelectedNodeWithInspectorExit();
+        return;
+      }
+
+      selectNode(nodeId);
+    },
+    [clearSelectedNodeWithInspectorExit, selectedNodeId, selectNode],
+  );
 
   const handleToggleMapMode = useCallback(() => {
     setSelectedNodeId(undefined);
@@ -840,132 +899,76 @@ export default function ProcessFlowGraphPanel() {
     setQuery('');
   }, []);
 
-  const handleSelectFlow = useCallback((flowId: string) => {
-    setSelectedNodeId(flowId);
+  const handleSelectFlow = useCallback(
+    (flowId: string) => {
+      selectNode(flowId);
+    },
+    [selectNode],
+  );
+
+  const handleQuickSelectNode = useCallback(() => {
+    if (quickSelectNode) {
+      selectNode(quickSelectNode.id);
+    }
+  }, [quickSelectNode, selectNode]);
+
+  const handleToggleLeftRail = useCallback(() => {
+    setIsLeftRailCollapsed((currentCollapsed) => !currentCollapsed);
   }, []);
 
   const mapButtonLabel = isGeoMapMode && mapScope === 'world' ? 'China Map' : 'World Map';
   const mapLoadDataSource: GraphDataSource =
     isGeoMapMode && data && !geoMapView ? (geoMapLoadError ? 'error' : 'loading') : dataSource;
   const mapLoadError = isGeoMapMode && data && !geoMapView ? geoMapLoadError : loadError;
-  const sourceBadge =
-    dataSource === 'loading'
-      ? 'Loading Cache'
-      : dataSource === 'minio'
-        ? 'MinIO Cache'
-        : 'Cache Error';
+  const leftRailToggleLabel = isLeftRailCollapsed ? '展开左侧区域' : '折叠左侧区域';
+  const panelShellClassName = [
+    styles.panelShell,
+    isLeftRailCollapsed ? styles.panelShellLeftCollapsed : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const leftRailClassName = [styles.leftRail, isLeftRailCollapsed ? styles.leftRailCollapsed : '']
+    .filter(Boolean)
+    .join(' ');
+  const inspectorView =
+    selectedNode && activeData
+      ? {
+          data: activeData,
+          isExiting: false,
+          node: selectedNode,
+        }
+      : exitingInspector
+        ? {
+            data: exitingInspector.data,
+            isExiting: true,
+            node: exitingInspector.node,
+          }
+        : undefined;
 
   return (
-    <div className={styles.panelShell}>
-      <div className={styles.topHud}>
-        <div className={styles.modeTabs}>
-          <button
-            aria-label='Sphere'
-            aria-pressed={layoutMode === 'sphere3d'}
-            className={layoutMode === 'sphere3d' ? styles.activeMode : ''}
-            onClick={handleSelectSphereMode}
-            title='Sphere'
-            type='button'
-          >
-            <GlobalOutlined />
-          </button>
-          <button
-            aria-label='Expanded'
-            aria-pressed={layoutMode === 'expanded2d'}
-            className={layoutMode === 'expanded2d' ? styles.activeMode : ''}
-            onClick={handleSelectExpandedMode}
-            title='Expanded'
-            type='button'
-          >
-            <ApartmentOutlined />
-          </button>
-          <button
-            aria-label={mapButtonLabel}
-            aria-pressed={layoutMode === 'geoMap2d'}
-            className={layoutMode === 'geoMap2d' ? styles.activeMode : ''}
-            onClick={handleToggleMapMode}
-            title={mapButtonLabel}
-            type='button'
-          >
-            <EnvironmentOutlined />
-          </button>
-        </div>
-        <div className={styles.mouseTools}>
-          <button
-            aria-label='拖拽浏览'
-            aria-pressed={interactionMode === 'pan'}
-            className={interactionMode === 'pan' ? styles.activeMode : ''}
-            onClick={() => setInteractionMode('pan')}
-            title='Drag'
-            type='button'
-          >
-            <DragOutlined />
-          </button>
-          <button
-            aria-label='点选节点'
-            aria-pressed={interactionMode === 'select'}
-            className={interactionMode === 'select' ? styles.activeMode : ''}
-            onClick={() => setInteractionMode('select')}
-            title='Pick'
-            type='button'
-          >
-            <SelectOutlined />
-          </button>
-        </div>
-        <div className={styles.graphBadges}>
-          <span>
-            <i />
-            {sourceBadge}
-            <b>{activeData?.buildId ?? data?.buildId ?? '-'}</b>
-          </span>
-          {loadError && (
-            <span>
-              <i />
-              Cache Error
-              <b title={loadError}>{formatCacheError(loadError)}</b>
-            </span>
-          )}
-          <span>
-            <i />
-            WebGL Active
-            <b>Three.js</b>
-          </span>
-          <span>
-            Nodes
-            <b>{formatNumber(activeData?.nodes.length ?? 0)}</b>
-          </span>
-          <span>
-            Edges
-            <b>{formatNumber(activeData?.edges.length ?? 0)}</b>
-          </span>
-        </div>
-      </div>
-      <aside className={styles.leftRail}>
+    <div className={panelShellClassName}>
+      <aside aria-hidden={isLeftRailCollapsed} className={leftRailClassName}>
         <div className={styles.leftRailHeader}>
           <label className={styles.searchBox}>
             <SearchOutlined />
             <input
               aria-label={searchAriaLabel}
-              disabled={!activeData}
+              disabled={!activeData || isLeftRailCollapsed}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={searchPlaceholder}
               value={query}
             />
             {query && (
-              <button aria-label='清除搜索' onClick={() => setQuery('')} type='button'>
+              <button
+                aria-label='清除搜索'
+                disabled={isLeftRailCollapsed}
+                onClick={() => setQuery('')}
+                type='button'
+              >
                 <CloseCircleOutlined />
               </button>
             )}
           </label>
-          <button
-            aria-label='清除选中'
-            disabled={!activeData || !selectedNodeId}
-            onClick={() => setSelectedNodeId(undefined)}
-            title='清除选中'
-            type='button'
-          >
-            <ClearOutlined />
-          </button>
         </div>
         <div className={styles.searchResults}>
           {shouldShowProcessSearch
@@ -994,6 +997,109 @@ export default function ProcessFlowGraphPanel() {
         </div>
       </aside>
       <main className={styles.graphStage}>
+        <div aria-label='图谱工具栏' className={styles.canvasToolbar}>
+          <div className={styles.railToggleTools}>
+            <button
+              aria-label={leftRailToggleLabel}
+              aria-pressed={isLeftRailCollapsed}
+              onClick={handleToggleLeftRail}
+              title={leftRailToggleLabel}
+              type='button'
+            >
+              {isLeftRailCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </button>
+          </div>
+          <div className={styles.modeTabs}>
+            <button
+              aria-label='Sphere'
+              aria-pressed={layoutMode === 'sphere3d'}
+              className={layoutMode === 'sphere3d' ? styles.activeMode : ''}
+              onClick={handleSelectSphereMode}
+              title='Sphere'
+              type='button'
+            >
+              <GlobalOutlined />
+            </button>
+            <button
+              aria-label='Expanded'
+              aria-pressed={layoutMode === 'expanded2d'}
+              className={layoutMode === 'expanded2d' ? styles.activeMode : ''}
+              onClick={handleSelectExpandedMode}
+              title='Expanded'
+              type='button'
+            >
+              <ApartmentOutlined />
+            </button>
+            <button
+              aria-label={mapButtonLabel}
+              aria-pressed={layoutMode === 'geoMap2d'}
+              className={layoutMode === 'geoMap2d' ? styles.activeMode : ''}
+              onClick={handleToggleMapMode}
+              title={mapButtonLabel}
+              type='button'
+            >
+              <EnvironmentOutlined />
+            </button>
+          </div>
+          <div className={styles.mouseTools}>
+            <button
+              aria-label='拖拽浏览'
+              aria-pressed={interactionMode === 'pan'}
+              className={interactionMode === 'pan' ? styles.activeMode : ''}
+              onClick={() => setInteractionMode('pan')}
+              title='Drag'
+              type='button'
+            >
+              <DragOutlined />
+            </button>
+            <button
+              aria-label='点选节点'
+              aria-pressed={interactionMode === 'select'}
+              className={interactionMode === 'select' ? styles.activeMode : ''}
+              onClick={() => setInteractionMode('select')}
+              title='Pick'
+              type='button'
+            >
+              <SelectOutlined />
+            </button>
+          </div>
+          <div className={styles.selectionTools}>
+            <button
+              aria-label={quickSelectTitle}
+              disabled={!quickSelectNode}
+              onClick={handleQuickSelectNode}
+              title={quickSelectTitle}
+              type='button'
+            >
+              <AimOutlined />
+            </button>
+            <button
+              aria-label='清除选中'
+              disabled={!activeData || !selectedNodeId}
+              onClick={clearSelectedNodeWithInspectorExit}
+              title='清除选中'
+              type='button'
+            >
+              <ClearOutlined />
+            </button>
+          </div>
+          <dl aria-label='图谱规模' className={styles.graphBadges}>
+            <div title='节点'>
+              <dt className={styles.graphMetricLabel}>节点</dt>
+              <dd className={styles.graphMetricValue}>
+                <DotChartOutlined aria-hidden='true' />
+                <b>{formatNumber(activeData?.nodes.length ?? 0)}</b>
+              </dd>
+            </div>
+            <div title='连接'>
+              <dt className={styles.graphMetricLabel}>连接</dt>
+              <dd className={styles.graphMetricValue}>
+                <NodeIndexOutlined aria-hidden='true' />
+                <b>{formatNumber(activeData?.edges.length ?? 0)}</b>
+              </dd>
+            </div>
+          </dl>
+        </div>
         {activeData && selection ? (
           <>
             <ProcessFlowGraphCanvas
@@ -1009,6 +1115,14 @@ export default function ProcessFlowGraphPanel() {
                 <strong>Loading map cache</strong>
                 <span>Waiting for worker-generated geoMap view</span>
               </div>
+            )}
+            {inspectorView && (
+              <Inspector
+                data={inspectorView.data}
+                isExiting={inspectorView.isExiting}
+                key={`${inspectorView.isExiting ? 'exiting' : 'selected'}-${inspectorView.node.id}`}
+                node={inspectorView.node}
+              />
             )}
           </>
         ) : (
@@ -1026,11 +1140,6 @@ export default function ProcessFlowGraphPanel() {
           />
         )}
       </main>
-      {activeData ? (
-        <Inspector data={activeData} node={selectedNode} />
-      ) : (
-        <EmptyInspectorPanel dataSource={mapLoadDataSource} loadError={mapLoadError} />
-      )}
     </div>
   );
 }

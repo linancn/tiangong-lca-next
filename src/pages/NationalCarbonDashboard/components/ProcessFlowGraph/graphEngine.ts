@@ -63,10 +63,18 @@ type SphereSelectionTransition = {
   highlightedEdgeOpacityTo: number;
   highlightedNodeOpacityFrom: number;
   highlightedNodeOpacityTo: number;
+  isClearingSelection?: boolean;
   isFlatSelection?: boolean;
+  nodeBacksideFadeFrom?: number;
+  nodeBacksideFadeTo?: number;
+  nodeColorFrom?: Float32Array;
+  nodeColorTo?: Float32Array;
+  nodeOpacityFrom?: number;
+  nodeOpacityTo?: number;
   selectedNodeFrom: Float32Array;
   selectedNodeTo: Float32Array;
   startedAt: number;
+  targetSelection?: ProcessFlowGraphSelection;
   targetFrom: THREE.Vector3;
   targetTo: THREE.Vector3;
 };
@@ -203,6 +211,8 @@ const pointPerspectiveBase = 760;
 const cameraFocusDurationMs = 720;
 const sphereSelectionTransitionDurationMs = 760;
 const flatSelectionTransitionDurationMs = 520;
+const selectionClearTransitionDurationMs = 520;
+const sphereSelectionClearTransitionDurationMs = sphereSelectionTransitionDurationMs;
 const layoutTransitionDurationMs = 1450;
 const geoMapScopeTransitionDurationMs = 1280;
 const transitionDustCount = 176;
@@ -1739,6 +1749,7 @@ export class ProcessFlowGraphEngine {
       isExpandedLikeLayout(this.layoutMode) &&
       Boolean(selection.selectedNodeId) &&
       previousSelectedNodeId !== selection.selectedNodeId;
+    const shouldClearSelection = Boolean(previousSelectedNodeId) && !selection.selectedNodeId;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
       | THREE.LineBasicMaterial
@@ -1758,6 +1769,18 @@ export class ProcessFlowGraphEngine {
       shouldRevealSphereSelection || !(highlightedNodeMaterial instanceof THREE.ShaderMaterial)
         ? 0
         : highlightedNodeMaterial.uniforms.opacity.value;
+
+    if (shouldClearSelection) {
+      this.startSelectionClearTransition({
+        edgeOpacityFrom,
+        flowMarkerOpacityFrom,
+        highlightedEdgeOpacityFrom,
+        highlightedNodeOpacityFrom,
+        selectedNodeFrom,
+        targetSelection: selection,
+      });
+      return;
+    }
 
     this.selection = selection;
 
@@ -2518,6 +2541,20 @@ export class ProcessFlowGraphEngine {
     this.updateSelectedNodePulse();
   }
 
+  private getBaseEdgeOpacity(selection: ProcessFlowGraphSelection) {
+    if (!shouldRenderProcessFlowBaseEdges(this.layoutMode, selection)) {
+      return 0;
+    }
+
+    const hasSelection = Boolean(selection.selectedNodeId);
+
+    if (this.layoutMode === 'sphere3d' || isExpandedLikeLayout(this.layoutMode)) {
+      return hasSelection ? 0.02 : 0.032;
+    }
+
+    return hasSelection ? 0.06 : 0.09;
+  }
+
   private finishLayoutTransition(applyTarget: boolean) {
     const transition = this.transition;
 
@@ -2716,10 +2753,106 @@ export class ProcessFlowGraphEngine {
     this.updateSphereSelectionTransition(0);
   }
 
+  private startSelectionClearTransition({
+    edgeOpacityFrom,
+    flowMarkerOpacityFrom,
+    highlightedEdgeOpacityFrom,
+    highlightedNodeOpacityFrom,
+    selectedNodeFrom,
+    targetSelection,
+  }: {
+    edgeOpacityFrom: number;
+    flowMarkerOpacityFrom: number;
+    highlightedEdgeOpacityFrom: number;
+    highlightedNodeOpacityFrom: number;
+    selectedNodeFrom: Float32Array;
+    targetSelection: ProcessFlowGraphSelection;
+  }) {
+    const currentCameraPosition = this.camera.position.clone();
+    const currentTarget = this.controls.target.clone();
+    const frameTo =
+      this.layoutMode === 'sphere3d'
+        ? this.getCameraFrame('sphere3d')
+        : {
+            position: currentCameraPosition.clone(),
+            target: currentTarget.clone(),
+          };
+    const nodeColorAttribute = this.nodeGeometry.getAttribute('color') as
+      | THREE.BufferAttribute
+      | undefined;
+    const nodeColorFrom = nodeColorAttribute
+      ? new Float32Array(nodeColorAttribute.array as Float32Array)
+      : undefined;
+    const nodeColorTo = nodeColorFrom ? this.buildNodeColorArray(targetSelection) : undefined;
+    const nodeMaterial = this.nodePoints?.material;
+    const nodeOpacityFrom =
+      nodeMaterial instanceof THREE.ShaderMaterial
+        ? nodeMaterial.uniforms.opacity.value
+        : undefined;
+    const nodeOpacityTo =
+      nodeMaterial instanceof THREE.ShaderMaterial
+        ? getNodeMaterialOpacity(this.layoutMode, Boolean(targetSelection.selectedNodeId))
+        : undefined;
+    const nodeBacksideFadeFrom =
+      nodeMaterial instanceof THREE.ShaderMaterial
+        ? nodeMaterial.uniforms.backsideFade.value
+        : undefined;
+    const nodeBacksideFadeTo =
+      nodeMaterial instanceof THREE.ShaderMaterial
+        ? getNodeBacksideFade(this.layoutMode, Boolean(targetSelection.selectedNodeId))
+        : undefined;
+
+    this.selectedNodeRevealProgress = 1;
+    this.sphereSelectionTransition = {
+      cameraFrom: currentCameraPosition,
+      cameraTo: frameTo.position,
+      duration:
+        this.layoutMode === 'sphere3d'
+          ? sphereSelectionClearTransitionDurationMs
+          : selectionClearTransitionDurationMs,
+      edgeOpacityFrom,
+      edgeOpacityTo: this.getBaseEdgeOpacity(targetSelection),
+      flowMarkerOpacityFrom,
+      flowMarkerOpacityTo: 0,
+      highlightedEdgeOpacityFrom,
+      highlightedEdgeOpacityTo: 0,
+      highlightedNodeOpacityFrom,
+      highlightedNodeOpacityTo: 0,
+      isClearingSelection: true,
+      isFlatSelection: true,
+      nodeBacksideFadeFrom,
+      nodeBacksideFadeTo,
+      nodeColorFrom:
+        nodeColorFrom && nodeColorTo && nodeColorFrom.length === nodeColorTo.length
+          ? nodeColorFrom
+          : undefined,
+      nodeColorTo:
+        nodeColorFrom && nodeColorTo && nodeColorFrom.length === nodeColorTo.length
+          ? nodeColorTo
+          : undefined,
+      nodeOpacityFrom,
+      nodeOpacityTo,
+      selectedNodeFrom,
+      selectedNodeTo: selectedNodeFrom,
+      startedAt: performance.now(),
+      targetFrom: currentTarget,
+      targetSelection,
+      targetTo: frameTo.target,
+    };
+    this.controls.enabled = false;
+    this.updateSphereSelectionTransition(0);
+  }
+
   private finishSphereSelectionTransition(applyTarget: boolean) {
     const transition = this.sphereSelectionTransition;
 
     if (transition && applyTarget) {
+      if (transition.targetSelection) {
+        this.selection = transition.targetSelection;
+        this.buildEdgeGeometry();
+        this.updateNodeColors();
+        this.updateHighlightedGeometry();
+      }
       this.camera.position.copy(transition.cameraTo);
       this.controls.target.copy(transition.targetTo);
       this.camera.updateProjectionMatrix();
@@ -2747,16 +2880,30 @@ export class ProcessFlowGraphEngine {
       forcedProgress ??
       THREE.MathUtils.clamp((performance.now() - transition.startedAt) / transition.duration, 0, 1);
     const isFlatSelection = transition.isFlatSelection === true;
+    const isClearingSelection = transition.isClearingSelection === true;
+    const isClearingSphereSelection = isClearingSelection && this.layoutMode === 'sphere3d';
     const cameraProgress = getFairyEase(rawProgress);
-    const highlightProgress = isFlatSelection
-      ? getSmoothStep(0, 0.86, rawProgress)
-      : getSmoothStep(0.08, 1, rawProgress);
-    const markerProgress = isFlatSelection
-      ? getSmoothStep(0.12, 1, rawProgress)
-      : getSmoothStep(0.32, 1, rawProgress);
-    const nodeProgress = isFlatSelection
-      ? getSmoothStep(0, 0.46, rawProgress)
-      : getSmoothStep(0, 0.7, rawProgress);
+    const highlightProgress = isClearingSelection
+      ? isClearingSphereSelection
+        ? 1 - getSmoothStep(0.08, 1, 1 - rawProgress)
+        : getSmoothStep(0, 1, rawProgress)
+      : isFlatSelection
+        ? getSmoothStep(0, 0.86, rawProgress)
+        : getSmoothStep(0.08, 1, rawProgress);
+    const markerProgress = isClearingSelection
+      ? isClearingSphereSelection
+        ? 1 - getSmoothStep(0.32, 1, 1 - rawProgress)
+        : getSmoothStep(0, 1, rawProgress)
+      : isFlatSelection
+        ? getSmoothStep(0.12, 1, rawProgress)
+        : getSmoothStep(0.32, 1, rawProgress);
+    const nodeProgress = isClearingSelection
+      ? isClearingSphereSelection
+        ? 1 - getSmoothStep(0, 0.7, 1 - rawProgress)
+        : getSmoothStep(0, 0.92, rawProgress)
+      : isFlatSelection
+        ? getSmoothStep(0, 0.46, rawProgress)
+        : getSmoothStep(0, 0.7, rawProgress);
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
       | THREE.LineBasicMaterial
@@ -2764,8 +2911,12 @@ export class ProcessFlowGraphEngine {
     const flowMarkerMaterial = this.flowMarkerLines?.material as
       | THREE.LineBasicMaterial
       | undefined;
+    const nodeMaterial = this.nodePoints?.material;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodePositionAttribute = this.selectedNodeGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+    const nodeColorAttribute = this.nodeGeometry.getAttribute('color') as
       | THREE.BufferAttribute
       | undefined;
 
@@ -2822,6 +2973,47 @@ export class ProcessFlowGraphEngine {
         markerProgress,
       );
     }
+    if (
+      isClearingSelection &&
+      nodeColorAttribute &&
+      transition.nodeColorFrom &&
+      transition.nodeColorTo &&
+      nodeColorAttribute.array.length === transition.nodeColorFrom.length
+    ) {
+      const nodeColors = nodeColorAttribute.array as Float32Array;
+      for (let index = 0; index < nodeColors.length; index += 1) {
+        nodeColors[index] = THREE.MathUtils.lerp(
+          transition.nodeColorFrom[index],
+          transition.nodeColorTo[index],
+          highlightProgress,
+        );
+      }
+      nodeColorAttribute.needsUpdate = true;
+    }
+    if (
+      isClearingSelection &&
+      nodeMaterial instanceof THREE.ShaderMaterial &&
+      transition.nodeOpacityFrom !== undefined &&
+      transition.nodeOpacityTo !== undefined
+    ) {
+      nodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        transition.nodeOpacityFrom,
+        transition.nodeOpacityTo,
+        highlightProgress,
+      );
+    }
+    if (
+      isClearingSelection &&
+      nodeMaterial instanceof THREE.ShaderMaterial &&
+      transition.nodeBacksideFadeFrom !== undefined &&
+      transition.nodeBacksideFadeTo !== undefined
+    ) {
+      nodeMaterial.uniforms.backsideFade.value = THREE.MathUtils.lerp(
+        transition.nodeBacksideFadeFrom,
+        transition.nodeBacksideFadeTo,
+        highlightProgress,
+      );
+    }
     if (highlightedNodeMaterial instanceof THREE.ShaderMaterial) {
       highlightedNodeMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
         transition.highlightedNodeOpacityFrom,
@@ -2829,7 +3021,7 @@ export class ProcessFlowGraphEngine {
         nodeProgress,
       );
     }
-    this.selectedNodeRevealProgress = nodeProgress;
+    this.selectedNodeRevealProgress = isClearingSelection ? 1 - nodeProgress : nodeProgress;
     this.updateSelectedNodePulse();
 
     if (rawProgress >= 1) {
@@ -3930,8 +4122,9 @@ export class ProcessFlowGraphEngine {
     colorArray: Float32Array,
     offset: number,
     node: ProcessFlowGraphNode,
+    selection: ProcessFlowGraphSelection = this.selection,
   ) {
-    const selectedNodeId = this.selection.selectedNodeId;
+    const selectedNodeId = selection.selectedNodeId;
     const hasSelection = Boolean(selectedNodeId);
     const isExpandedSelected = hasSelection && isExpandedLikeLayout(this.layoutMode);
     let color = this.getClusterColor(node);
@@ -3949,6 +4142,16 @@ export class ProcessFlowGraphEngine {
     }
 
     writeColor(colorArray, offset, color, intensity);
+  }
+
+  private buildNodeColorArray(selection: ProcessFlowGraphSelection) {
+    const colors = new Float32Array(this.data.nodes.length * 3);
+
+    this.data.nodes.forEach((node, index) => {
+      this.writeSelectionAwareNodeColor(colors, index * 3, node, selection);
+    });
+
+    return colors;
   }
 
   private updateNodeSizes() {
@@ -4389,7 +4592,7 @@ export class ProcessFlowGraphEngine {
   private getFlatSelectionPulseBoost() {
     const transition = this.sphereSelectionTransition;
 
-    if (!transition?.isFlatSelection) {
+    if (!transition?.isFlatSelection || transition.isClearingSelection) {
       return 0;
     }
 
