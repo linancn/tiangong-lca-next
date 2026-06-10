@@ -1,3 +1,4 @@
+import { geoMercator, geoPath, type GeoProjection } from 'd3-geo';
 import type {
   Feature,
   FeatureCollection,
@@ -122,6 +123,11 @@ type LocalMapFeatureProperties = {
 type LocalMapFeature = Feature<Geometry, LocalMapFeatureProperties>;
 type LocalMapFeatureCollection = FeatureCollection<Geometry, LocalMapFeatureProperties>;
 type CoordinateProjector = (longitude: number, latitude: number) => [number, number];
+type LayoutPositionTransform = (x: number, y: number, z: number) => [number, number, number];
+type GeoMapBackgroundResolution = {
+  background: ProcessFlowGraphMapBackground;
+  layoutPositionTransform?: LayoutPositionTransform;
+};
 
 const geoMapCacheFileKeys: Record<
   ProcessFlowGraphMapScope,
@@ -146,7 +152,7 @@ const geoMapCacheFileKeys: Record<
   },
 };
 const geoMapBackgroundFallbackRequests: Partial<
-  Record<ProcessFlowGraphMapScope, Promise<ProcessFlowGraphMapBackground | undefined>>
+  Record<ProcessFlowGraphMapScope, Promise<GeoMapBackgroundResolution | undefined>>
 > = {};
 
 function isWorkerFrameOnlyBackground(background: ProcessFlowGraphMapBackground): boolean {
@@ -166,16 +172,6 @@ function projectWorldCoordinate(width: number, height: number): CoordinateProjec
   return (longitude, latitude) => [
     ((longitude + 180) / 360) * width,
     height - ((latitude + 90) / 180) * height,
-  ];
-}
-
-function projectChinaCoordinate(width: number, height: number): CoordinateProjector {
-  const longitudeSpan = chinaGeoBounds.lonMax - chinaGeoBounds.lonMin;
-  const latitudeSpan = chinaGeoBounds.latMax - chinaGeoBounds.latMin;
-
-  return (longitude, latitude) => [
-    ((longitude - chinaGeoBounds.lonMin) / longitudeSpan) * width,
-    height - ((latitude - chinaGeoBounds.latMin) / latitudeSpan) * height,
   ];
 }
 
@@ -259,6 +255,40 @@ function getLocalMapPathLabel(scope: ProcessFlowGraphMapScope, feature: LocalMap
   return feature.properties?.NAME_EN || feature.properties?.NAME || 'World region';
 }
 
+function getLocalChinaFeatureAdcode(feature: LocalMapFeature): number | undefined {
+  const rawAdcode = feature.properties?.adcode;
+  if (typeof rawAdcode === 'number') {
+    return rawAdcode;
+  }
+  if (typeof rawAdcode === 'string') {
+    const parsed = Number.parseInt(rawAdcode, 10);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function rewindLocalMapFeature(feature: LocalMapFeature): LocalMapFeature {
+  if (feature.geometry.type === 'Polygon') {
+    const geometry: Polygon = {
+      ...feature.geometry,
+      coordinates: feature.geometry.coordinates.map((ring) => ring.slice().reverse()),
+    };
+    return { ...feature, geometry };
+  }
+
+  if (feature.geometry.type === 'MultiPolygon') {
+    const geometry: MultiPolygon = {
+      ...feature.geometry,
+      coordinates: feature.geometry.coordinates.map((polygon) =>
+        polygon.map((ring) => ring.slice().reverse()),
+      ),
+    };
+    return { ...feature, geometry };
+  }
+
+  return feature;
+}
+
 function shouldUseLocalMapFeature(
   scope: ProcessFlowGraphMapScope,
   feature: LocalMapFeature,
@@ -268,17 +298,72 @@ function shouldUseLocalMapFeature(
   }
 
   if (scope === 'china') {
-    const rawAdcode = feature.properties?.adcode;
-    return rawAdcode !== undefined && String(rawAdcode) !== '100000';
+    const adcode = getLocalChinaFeatureAdcode(feature);
+    return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
   }
 
   return Boolean(feature.properties?.NAME || feature.properties?.NAME_EN);
 }
 
+function buildChinaMercatorMap(
+  mapData: LocalMapFeatureCollection,
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
+):
+  | {
+      features: LocalMapFeature[];
+      projection: GeoProjection;
+    }
+  | undefined {
+  const features = mapData.features
+    .filter((feature) => shouldUseLocalMapFeature('china', feature))
+    .map(rewindLocalMapFeature);
+
+  if (!features.length) {
+    return undefined;
+  }
+
+  const displayMapData: LocalMapFeatureCollection = {
+    ...mapData,
+    features,
+  };
+  const padding = 18;
+  const projection = geoMercator().fitExtent(
+    [
+      [padding, padding],
+      [Math.max(padding + 1, frame.width - 20), Math.max(padding + 1, frame.height - 20)],
+    ],
+    displayMapData,
+  );
+
+  return { features, projection };
+}
+
+function createChinaMercatorLayoutTransform(
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
+  projection: GeoProjection,
+): LayoutPositionTransform {
+  const longitudeSpan = chinaGeoBounds.lonMax - chinaGeoBounds.lonMin;
+  const latitudeSpan = chinaGeoBounds.latMax - chinaGeoBounds.latMin;
+
+  return (x, y, z) => {
+    const screenX = x + frame.width / 2;
+    const screenY = y + frame.height / 2;
+    const longitude = chinaGeoBounds.lonMin + (screenX / frame.width) * longitudeSpan;
+    const latitude = chinaGeoBounds.latMax - (screenY / frame.height) * latitudeSpan;
+    const projected = projection([longitude, latitude]);
+
+    if (!projected) {
+      return [x, y, z];
+    }
+
+    return [projected[0] - frame.width / 2, projected[1] - frame.height / 2, z];
+  };
+}
+
 async function loadLocalGeoMapBackground(
   scope: ProcessFlowGraphMapScope,
   frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
-): Promise<ProcessFlowGraphMapBackground | undefined> {
+): Promise<GeoMapBackgroundResolution | undefined> {
   const response = await fetch(localGeoMapAssetPaths[scope], { credentials: 'omit' });
 
   if (!response.ok) {
@@ -286,10 +371,44 @@ async function loadLocalGeoMapBackground(
   }
 
   const mapData = (await response.json()) as LocalMapFeatureCollection;
-  const projectCoordinate =
-    scope === 'china'
-      ? projectChinaCoordinate(frame.width, frame.height)
-      : projectWorldCoordinate(frame.width, frame.height);
+
+  if (scope === 'china') {
+    const chinaMap = buildChinaMercatorMap(mapData, frame);
+    if (!chinaMap) {
+      return undefined;
+    }
+
+    const pathGenerator = geoPath(chinaMap.projection);
+    const paths = chinaMap.features
+      .map((feature, index) => {
+        const code = getLocalMapPathCode(scope, feature);
+        const path = pathGenerator(feature) ?? '';
+
+        return {
+          code,
+          id: `${scope}-${code ?? index}`,
+          label: getLocalMapPathLabel(scope, feature),
+          path,
+        };
+      })
+      .filter((path) => path.path);
+
+    if (!paths.length) {
+      return undefined;
+    }
+
+    return {
+      background: {
+        height: frame.height,
+        paths,
+        scope,
+        width: frame.width,
+      },
+      layoutPositionTransform: createChinaMercatorLayoutTransform(frame, chinaMap.projection),
+    };
+  }
+
+  const projectCoordinate = projectWorldCoordinate(frame.width, frame.height);
   const paths = mapData.features
     .filter((feature) => shouldUseLocalMapFeature(scope, feature))
     .map((feature, index) => {
@@ -310,18 +429,20 @@ async function loadLocalGeoMapBackground(
   }
 
   return {
-    height: frame.height,
-    paths,
-    scope,
-    width: frame.width,
+    background: {
+      height: frame.height,
+      paths,
+      scope,
+      width: frame.width,
+    },
   };
 }
 
 async function resolveGeoMapBackground(
   background: ProcessFlowGraphMapBackground,
-): Promise<ProcessFlowGraphMapBackground> {
+): Promise<GeoMapBackgroundResolution> {
   if (!isWorkerFrameOnlyBackground(background)) {
-    return background;
+    return { background };
   }
 
   geoMapBackgroundFallbackRequests[background.scope] ??= loadLocalGeoMapBackground(
@@ -329,7 +450,7 @@ async function resolveGeoMapBackground(
     background,
   );
 
-  return (await geoMapBackgroundFallbackRequests[background.scope]) ?? background;
+  return (await geoMapBackgroundFallbackRequests[background.scope]) ?? { background };
 }
 
 function getProcessFlowGraphCacheBaseUrl(): string {
@@ -521,7 +642,7 @@ function parseAdjacency(
 function parseLayout(
   buffer: ArrayBuffer,
   nodes: ProcessFlowGraphNode[],
-  options: { flipY?: boolean } = {},
+  options: { flipY?: boolean; transformPosition?: LayoutPositionTransform } = {},
 ): ProcessFlowGraphLayout {
   const view = new DataView(buffer);
   assertMagic(view, layoutMagic, 'layout');
@@ -540,7 +661,8 @@ function parseLayout(
 
     const node = nodes[index];
     if (node) {
-      layout[node.id] = [x, options.flipY ? -y : y, z];
+      const [layoutX, layoutY, layoutZ] = options.transformPosition?.(x, y, z) ?? [x, y, z];
+      layout[node.id] = [layoutX, options.flipY ? -layoutY : layoutY, layoutZ];
     }
   }
 
@@ -786,10 +908,10 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
     ...(viewPayload.processLinks ?? []),
   ];
   const indexes = buildNodeIndexes(nodes);
-  const background = await resolveGeoMapBackground(viewPayload.background);
+  const backgroundResolution = await resolveGeoMapBackground(viewPayload.background);
 
   return {
-    background,
+    background: backgroundResolution.background,
     data: {
       adjacency: viewPayload.adjacency,
       buildId: viewPayload.buildId || buildManifest.buildId || activeManifest.activeBuildId,
@@ -807,7 +929,10 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
       layouts: {
         expanded2d: {},
         // Worker geo-map layouts are emitted in map-pixel y-down space; WebGL uses y-up.
-        geoMap2d: parseLayout(layoutBuffer, nodes, { flipY: true }),
+        geoMap2d: parseLayout(layoutBuffer, nodes, {
+          flipY: true,
+          transformPosition: backgroundResolution.layoutPositionTransform,
+        }),
         sphere3d: {},
       },
       nodes,

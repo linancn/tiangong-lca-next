@@ -742,6 +742,144 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(view?.data.layouts.geoMap2d?.['process:consumer@v1']).toEqual([20, -24, 6]);
   });
 
+  it('uses the local China map outline and projects China geoMap nodes with the same map projection', async () => {
+    globalThis.DecompressionStream =
+      NodeDecompressionStream as unknown as typeof DecompressionStream;
+    globalThis.Response = TestResponse as unknown as typeof Response;
+    const geoMapNodes: ProcessFlowGraphData['nodes'] = [
+      {
+        category: 'Energy / Power / Solar',
+        clusterIdLevel1: 'energy',
+        clusterIdLevel3: 'energy-power-solar',
+        clusterLabelLevel1: 'Energy',
+        clusterLabelLevel3: 'Energy / Power / Solar',
+        degree: 1,
+        id: 'process:provider@v1',
+        kind: 'process',
+        location: 'CN-GD',
+        name: 'Provider',
+        version: '01.00.000',
+      },
+      {
+        category: 'Energy / Power / Solar',
+        clusterIdLevel1: 'energy',
+        clusterIdLevel3: 'energy-power-solar',
+        clusterLabelLevel1: 'Energy',
+        clusterLabelLevel3: 'Energy / Power / Solar',
+        degree: 1,
+        id: 'process:consumer@v1',
+        kind: 'process',
+        location: 'CN-GD',
+        name: 'Consumer',
+        version: '01.00.000',
+      },
+    ];
+    const rawLinearChinaPoint: [number, number, number] = [159.6774, 270, 6];
+    const geoMapFiles = {
+      '/maps/china-province-100000-full.geojson': createJsonResponse({
+        features: [
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [110, 20],
+                  [116, 20],
+                  [116, 25],
+                  [110, 25],
+                  [110, 20],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              adcode: 440000,
+              name: '广东',
+            },
+            type: 'Feature',
+          },
+          {
+            geometry: {
+              coordinates: [
+                [
+                  [73, 18],
+                  [135, 18],
+                  [135, 54],
+                  [73, 54],
+                  [73, 18],
+                ],
+              ],
+              type: 'Polygon',
+            },
+            properties: {
+              adcode: 100000,
+              name: '中国',
+            },
+            type: 'Feature',
+          },
+        ],
+        type: 'FeatureCollection',
+      }),
+      'builds/test-build/geo-map/china/adjacency.csr.bin.gz': createArrayBufferResponse(
+        gzipBinary(createAdjacencyBinary(2, [[], []])),
+      ),
+      'builds/test-build/geo-map/china/edges.bin.gz': createArrayBufferResponse(
+        gzipBinary(createEdgeBinary(0)),
+      ),
+      'builds/test-build/geo-map/china/layout.f32.bin.gz': createArrayBufferResponse(
+        gzipBinary(createLayoutBinary([[0, 0, 6], rawLinearChinaPoint])),
+      ),
+      'builds/test-build/geo-map/china/view.json.gz': createArrayBufferResponse(
+        gzipJson({
+          adjacency: {
+            'process:consumer@v1': [],
+            'process:provider@v1': [],
+          },
+          adjacencyIncludesProcessLinks: true,
+          background: {
+            height: 720,
+            paths: [{ id: 'china-frame', label: 'China', path: 'M0 0H1100V720H0Z' }],
+            scope: 'china',
+            width: 1100,
+          },
+          buildId: 'test-build',
+          clustersLevel1: [{ id: 'energy', label: 'Energy' }],
+          clustersLevel3: [{ id: 'energy-power-solar', label: 'Energy / Power / Solar' }],
+          geoMapFrame: { height: 720, width: 1100 },
+          nodes: geoMapNodes,
+          processLinks: [],
+          schemaVersion: 'process_flow_graph_geo_map_view_v2',
+          scope: 'china',
+          searchFlows: [],
+          stats: {
+            edgeCount: 0,
+            flowCount: 0,
+            maxDegree: 0,
+            processCount: 2,
+          },
+          units: ['kg'],
+        }),
+      ),
+    };
+    mockProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
+
+    const view = await loadProcessFlowGraphGeoMapViewFromCache('china');
+
+    expect(global.fetch).toHaveBeenCalledWith('/maps/china-province-100000-full.geojson', {
+      credentials: 'omit',
+    });
+    expect(view?.background.scope).toBe('china');
+    expect(view?.background.paths).toHaveLength(1);
+    expect(view?.background.paths[0]).toMatchObject({
+      code: '440000',
+      label: '广东',
+    });
+    expect(view?.background.paths[0].path).not.toBe('M0 0H1100V720H0Z');
+    const projectedPoint = view?.data.layouts.geoMap2d?.['process:consumer@v1'];
+    expect(projectedPoint?.[0]).not.toBeCloseTo(rawLinearChinaPoint[0], 3);
+    expect(projectedPoint?.[1]).not.toBeCloseTo(-rawLinearChinaPoint[1], 3);
+    expect(projectedPoint?.[2]).toBe(6);
+  });
+
   it('highlights selected flow processes and their other non-basic output flows', () => {
     const graph = createProcessFlowGraphFixture();
     const selection = getProcessFlowGraphSelection(graph, flowAId);
