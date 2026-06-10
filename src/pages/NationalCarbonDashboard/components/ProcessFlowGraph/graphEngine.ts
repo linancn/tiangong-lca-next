@@ -212,6 +212,8 @@ const projectionGridParallelCount = 7;
 const projectionGridSegments = 48;
 const projectionGridLineCount = projectionGridMeridianCount + projectionGridParallelCount;
 const geoMapCameraPadding = 72;
+const initialOverviewEdgeDelayMs = 1200;
+const deferredOverviewEdgeDelayMs = 96;
 const overviewGeometryCache = new WeakMap<
   ProcessFlowGraphData,
   Partial<Record<ProcessFlowGraphLayoutName, OverviewGeometrySnapshot>>
@@ -944,7 +946,11 @@ export class ProcessFlowGraphEngine {
     this.scene.add(this.transitionEffectGroup);
     this.scene.add(new THREE.AmbientLight(0x8ccfff, 1.4));
     this.buildTransitionEffect();
-    this.buildScene();
+    const shouldDeferInitialOverviewEdges = this.canUseOverviewGeometryCache(layoutMode);
+    this.buildScene({ deferOverviewEdges: shouldDeferInitialOverviewEdges });
+    if (shouldDeferInitialOverviewEdges) {
+      this.scheduleDeferredOverviewEdgeGeometry(layoutMode, initialOverviewEdgeDelayMs);
+    }
     this.attachEvents();
     this.resize();
     this.resetCamera();
@@ -2264,12 +2270,15 @@ export class ProcessFlowGraphEngine {
     this.updateMaterialState();
   }
 
-  private scheduleDeferredOverviewEdgeGeometry(layoutMode: ProcessFlowGraphLayoutName) {
+  private scheduleDeferredOverviewEdgeGeometry(
+    layoutMode: ProcessFlowGraphLayoutName,
+    delayMs = deferredOverviewEdgeDelayMs,
+  ) {
     this.cancelDeferredOverviewEdgeGeometry();
     this.deferredOverviewEdgeTimer = window.setTimeout(() => {
       this.deferredOverviewEdgeTimer = undefined;
       this.flushDeferredOverviewEdgeGeometry(layoutMode);
-    }, 96);
+    }, delayMs);
   }
 
   private buildNodeGeometry() {

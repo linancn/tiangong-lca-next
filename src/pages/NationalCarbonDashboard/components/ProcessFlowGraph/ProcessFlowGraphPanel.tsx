@@ -38,8 +38,8 @@ const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
   maximumFractionDigits: 8,
 });
 const geoMapCacheSoftTimeoutMs = 4500;
-const geoMapInitialPrefetchTimeoutMs = 1800;
-const geoMapFollowupPrefetchTimeoutMs = 2400;
+const geoMapInitialPrefetchTimeoutMs = 5200;
+const geoMapFollowupPrefetchTimeoutMs = 3200;
 const maxCacheErrorLength = 96;
 const maxRenderedSearchResults = 96;
 
