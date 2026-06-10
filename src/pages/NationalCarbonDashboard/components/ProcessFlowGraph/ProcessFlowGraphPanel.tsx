@@ -602,7 +602,7 @@ export default function ProcessFlowGraphPanel() {
   const hasMoreSearchResults = shouldShowProcessSearch
     ? processSearchResultSlice.hasMore
     : searchResultSlice.hasMore;
-  const searchPlaceholder = shouldShowProcessSearch ? 'Search process' : 'Search flow';
+  const searchPlaceholder = shouldShowProcessSearch ? '搜索过程' : '搜索流';
   const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
   const handleSelectProcess = useCallback((processId: string) => {
     setSelectedNodeId(processId);
