@@ -152,7 +152,7 @@ const geoMapCacheFileKeys: Record<
   },
 };
 const geoMapBackgroundFallbackRequests: Partial<
-  Record<ProcessFlowGraphMapScope, Promise<GeoMapBackgroundResolution | undefined>>
+  Record<string, Promise<GeoMapBackgroundResolution | undefined>>
 > = {};
 
 function isWorkerFrameOnlyBackground(background: ProcessFlowGraphMapBackground): boolean {
@@ -438,19 +438,27 @@ async function loadLocalGeoMapBackground(
   };
 }
 
+async function loadCachedLocalGeoMapBackground(
+  scope: ProcessFlowGraphMapScope,
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
+): Promise<GeoMapBackgroundResolution | undefined> {
+  const cacheKey = `${scope}:${frame.width}:${frame.height}`;
+  geoMapBackgroundFallbackRequests[cacheKey] ??= loadLocalGeoMapBackground(scope, frame);
+  return geoMapBackgroundFallbackRequests[cacheKey];
+}
+
 async function resolveGeoMapBackground(
   background: ProcessFlowGraphMapBackground,
 ): Promise<GeoMapBackgroundResolution> {
+  if (background.scope === 'china') {
+    return (await loadCachedLocalGeoMapBackground(background.scope, background)) ?? { background };
+  }
+
   if (!isWorkerFrameOnlyBackground(background)) {
     return { background };
   }
 
-  geoMapBackgroundFallbackRequests[background.scope] ??= loadLocalGeoMapBackground(
-    background.scope,
-    background,
-  );
-
-  return (await geoMapBackgroundFallbackRequests[background.scope]) ?? { background };
+  return (await loadCachedLocalGeoMapBackground(background.scope, background)) ?? { background };
 }
 
 function getProcessFlowGraphCacheBaseUrl(): string {

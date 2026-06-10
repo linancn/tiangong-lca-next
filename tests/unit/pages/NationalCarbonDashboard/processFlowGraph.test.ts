@@ -742,7 +742,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(view?.data.layouts.geoMap2d?.['process:consumer@v1']).toEqual([20, -24, 6]);
   });
 
-  it('uses the local China map outline and projects China geoMap nodes with the same map projection', async () => {
+  it('replaces worker China map paths with the local China outline and projects nodes with the same map projection', async () => {
     globalThis.DecompressionStream =
       NodeDecompressionStream as unknown as typeof DecompressionStream;
     globalThis.Response = TestResponse as unknown as typeof Response;
@@ -837,7 +837,14 @@ describe('NationalCarbonDashboard process-flow graph', () => {
           adjacencyIncludesProcessLinks: true,
           background: {
             height: 720,
-            paths: [{ id: 'china-frame', label: 'China', path: 'M0 0H1100V720H0Z' }],
+            paths: [
+              {
+                code: 'AU',
+                id: 'worker-australia-leak',
+                label: 'Australia',
+                path: 'M940 440L1040 470L1010 560L900 540Z',
+              },
+            ],
             scope: 'china',
             width: 1100,
           },
@@ -873,7 +880,8 @@ describe('NationalCarbonDashboard process-flow graph', () => {
       code: '440000',
       label: '广东',
     });
-    expect(view?.background.paths[0].path).not.toBe('M0 0H1100V720H0Z');
+    expect(view?.background.paths[0].id).not.toBe('worker-australia-leak');
+    expect(view?.background.paths[0].path).not.toBe('M940 440L1040 470L1010 560L900 540Z');
     const projectedPoint = view?.data.layouts.geoMap2d?.['process:consumer@v1'];
     expect(projectedPoint?.[0]).not.toBeCloseTo(rawLinearChinaPoint[0], 3);
     expect(projectedPoint?.[1]).not.toBeCloseTo(-rawLinearChinaPoint[1], 3);
