@@ -448,17 +448,19 @@ async function loadCachedLocalGeoMapBackground(
 }
 
 async function resolveGeoMapBackground(
+  scope: ProcessFlowGraphMapScope,
+  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
   background: ProcessFlowGraphMapBackground,
 ): Promise<GeoMapBackgroundResolution> {
-  if (background.scope === 'china') {
-    return (await loadCachedLocalGeoMapBackground(background.scope, background)) ?? { background };
+  if (scope === 'china') {
+    return (await loadCachedLocalGeoMapBackground(scope, frame)) ?? { background };
   }
 
   if (!isWorkerFrameOnlyBackground(background)) {
     return { background };
   }
 
-  return (await loadCachedLocalGeoMapBackground(background.scope, background)) ?? { background };
+  return (await loadCachedLocalGeoMapBackground(scope, frame)) ?? { background };
 }
 
 function getProcessFlowGraphCacheBaseUrl(): string {
@@ -916,7 +918,11 @@ export async function loadProcessFlowGraphGeoMapViewFromCache(
     ...(viewPayload.processLinks ?? []),
   ];
   const indexes = buildNodeIndexes(nodes);
-  const backgroundResolution = await resolveGeoMapBackground(viewPayload.background);
+  const backgroundResolution = await resolveGeoMapBackground(
+    scope,
+    viewPayload.geoMapFrame,
+    viewPayload.background,
+  );
 
   return {
     background: backgroundResolution.background,

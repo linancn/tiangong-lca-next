@@ -836,7 +836,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
           },
           adjacencyIncludesProcessLinks: true,
           background: {
-            height: 720,
+            height: 900,
             paths: [
               {
                 code: 'AU',
@@ -845,8 +845,8 @@ describe('NationalCarbonDashboard process-flow graph', () => {
                 path: 'M940 440L1040 470L1010 560L900 540Z',
               },
             ],
-            scope: 'china',
-            width: 1100,
+            scope: 'world',
+            width: 1600,
           },
           buildId: 'test-build',
           clustersLevel1: [{ id: 'energy', label: 'Energy' }],
@@ -875,6 +875,8 @@ describe('NationalCarbonDashboard process-flow graph', () => {
       credentials: 'omit',
     });
     expect(view?.background.scope).toBe('china');
+    expect(view?.background.width).toBe(1100);
+    expect(view?.background.height).toBe(720);
     expect(view?.background.paths).toHaveLength(1);
     expect(view?.background.paths[0]).toMatchObject({
       code: '440000',
