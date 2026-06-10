@@ -6,6 +6,7 @@ import type {
   ProcessFlowGraphEdge,
   ProcessFlowGraphInteractionMode,
   ProcessFlowGraphLayoutName,
+  ProcessFlowGraphMapScope,
   ProcessFlowGraphNode,
   ProcessFlowGraphSelection,
 } from './graphTypes';
@@ -202,9 +203,14 @@ const sphereSelectedNodePulseSizeDelta = 15;
 const expandedSelectedNodePulseBaseSize = 26;
 const expandedSelectedNodePulseSizeDelta = 12;
 const expandedCameraDistance = 1040;
+const expandedTightCameraDistance = 900;
 const expandedFocusCameraDistance = 560;
-const expandedFitPadding = 130;
-const expandedFitViewportScale = 0.9;
+const expandedFitPadding = 72;
+const expandedFitViewportScale = 0.96;
+const chinaGeoMapCameraDistance = 760;
+const chinaGeoMapCameraPadding = 0;
+const chinaGeoMapFitViewportScale = 1.16;
+const chinaGeoMapCenterYOffsetRatio = 0.09;
 const sphereControlsMaxDistance = 1500;
 const expandedControlsMaxDistance = 3200;
 const pointPerspectiveBase = 760;
@@ -222,6 +228,7 @@ const projectionGridParallelCount = 7;
 const projectionGridSegments = 48;
 const projectionGridLineCount = projectionGridMeridianCount + projectionGridParallelCount;
 const geoMapCameraPadding = 72;
+const worldGeoMapFitViewportScale = 0.9;
 const initialOverviewEdgeDelayMs = 1200;
 const deferredOverviewEdgeDelayMs = 96;
 const overviewGeometryCache = new WeakMap<
@@ -857,6 +864,8 @@ export class ProcessFlowGraphEngine {
 
   private interactionMode: ProcessFlowGraphInteractionMode;
 
+  private geoMapScope?: ProcessFlowGraphMapScope;
+
   private geoMapBackdropFrameStyle?: string;
 
   private geoMapProjectionCorners = [
@@ -920,18 +929,21 @@ export class ProcessFlowGraphEngine {
     callbacks,
     container,
     data,
+    geoMapScope,
     interactionMode,
     layoutMode,
   }: {
     callbacks?: EngineCallbacks;
     container: HTMLElement;
     data: ProcessFlowGraphData;
+    geoMapScope?: ProcessFlowGraphMapScope;
     interactionMode: ProcessFlowGraphInteractionMode;
     layoutMode: ProcessFlowGraphLayoutName;
   }) {
     this.callbacks = callbacks ?? {};
     this.container = container;
     this.data = data;
+    this.geoMapScope = geoMapScope;
     this.clusterColors = buildClusterColors(data);
     this.interactionMode = interactionMode;
     this.layoutMode = layoutMode;
@@ -1349,8 +1361,12 @@ export class ProcessFlowGraphEngine {
     data: ProcessFlowGraphData,
     layoutMode: ProcessFlowGraphLayoutName,
     selection: ProcessFlowGraphSelection,
+    geoMapScope?: ProcessFlowGraphMapScope,
   ) {
-    if (this.data === data && this.layoutMode === layoutMode) {
+    const geoMapScopeChanged = this.geoMapScope !== geoMapScope;
+    this.geoMapScope = geoMapScope;
+
+    if (this.data === data && this.layoutMode === layoutMode && !geoMapScopeChanged) {
       this.setSelection(selection);
       return;
     }
@@ -1830,14 +1846,26 @@ export class ProcessFlowGraphEngine {
     }
 
     const bounds = this.getExpandedLayoutBounds(layoutMode);
+    const centerYOffset = this.getCameraFrameCenterYOffset(layoutMode, bounds);
+    const centerY = bounds.centerY + centerYOffset;
+
     return {
       position: new THREE.Vector3(
         bounds.centerX,
-        bounds.centerY,
+        centerY,
         this.getExpandedCameraDistance(layoutMode),
       ),
-      target: new THREE.Vector3(bounds.centerX, bounds.centerY, 0),
+      target: new THREE.Vector3(bounds.centerX, centerY, 0),
     };
+  }
+
+  private getCameraFrameCenterYOffset(
+    layoutMode: ProcessFlowGraphLayoutName,
+    bounds: LayoutBounds,
+  ) {
+    return layoutMode === 'geoMap2d' && this.geoMapScope === 'china'
+      ? bounds.height * chinaGeoMapCenterYOffsetRatio
+      : 0;
   }
 
   private getExpandedLayoutBounds(
@@ -1897,15 +1925,45 @@ export class ProcessFlowGraphEngine {
     const rect = this.container.getBoundingClientRect();
     const aspect = Math.max(0.6, rect.width / Math.max(1, rect.height));
     const verticalFov = THREE.MathUtils.degToRad(this.camera.fov);
-    const fitPadding = layoutMode === 'geoMap2d' ? geoMapCameraPadding : expandedFitPadding;
+    const fitPadding = this.getFitPadding(layoutMode);
+    const fitViewportScale = this.getFitViewportScale(layoutMode);
     const visualHeight = bounds.height + fitPadding * 2;
     const visualWidth = bounds.width + fitPadding * 2;
-    const verticalDistance =
-      visualHeight / (2 * Math.tan(verticalFov / 2) * expandedFitViewportScale);
+    const verticalDistance = visualHeight / (2 * Math.tan(verticalFov / 2) * fitViewportScale);
     const horizontalDistance =
-      visualWidth / (2 * Math.tan(verticalFov / 2) * aspect * expandedFitViewportScale);
+      visualWidth / (2 * Math.tan(verticalFov / 2) * aspect * fitViewportScale);
 
-    return Math.max(expandedCameraDistance, verticalDistance, horizontalDistance);
+    return Math.max(
+      this.getMinimumCameraDistance(layoutMode),
+      verticalDistance,
+      horizontalDistance,
+    );
+  }
+
+  private getFitPadding(layoutMode: ProcessFlowGraphLayoutName) {
+    if (layoutMode === 'geoMap2d') {
+      return this.geoMapScope === 'china' ? chinaGeoMapCameraPadding : geoMapCameraPadding;
+    }
+
+    return expandedFitPadding;
+  }
+
+  private getFitViewportScale(layoutMode: ProcessFlowGraphLayoutName) {
+    if (layoutMode === 'geoMap2d') {
+      return this.geoMapScope === 'china'
+        ? chinaGeoMapFitViewportScale
+        : worldGeoMapFitViewportScale;
+    }
+
+    return expandedFitViewportScale;
+  }
+
+  private getMinimumCameraDistance(layoutMode: ProcessFlowGraphLayoutName) {
+    if (layoutMode === 'geoMap2d') {
+      return this.geoMapScope === 'china' ? chinaGeoMapCameraDistance : expandedCameraDistance;
+    }
+
+    return expandedTightCameraDistance;
   }
 
   private getSphereCameraDistance() {

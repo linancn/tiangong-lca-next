@@ -52,7 +52,8 @@ export default function ProcessFlowGraphCanvas({
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const engineRef = useRef<ProcessFlowGraphEngine | null>(null);
-  const graphStateRef = useRef({ data, layoutMode, selection });
+  const geoMapScope = geoMapBackground?.scope;
+  const graphStateRef = useRef({ data, geoMapScope, layoutMode, selection });
   const [hover, setHover] = useState<ProcessFlowGraphHoverState | null>(null);
   const hoveredNode = useMemo(() => getProcessFlowGraphNode(data, hover?.nodeId), [data, hover]);
 
@@ -71,6 +72,7 @@ export default function ProcessFlowGraphCanvas({
       },
       container,
       data,
+      geoMapScope,
       interactionMode,
       layoutMode,
     });
@@ -97,23 +99,24 @@ export default function ProcessFlowGraphCanvas({
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine) {
-      graphStateRef.current = { data, layoutMode, selection };
+      graphStateRef.current = { data, geoMapScope, layoutMode, selection };
       return;
     }
 
     const previousState = graphStateRef.current;
     const dataChanged = previousState.data !== data;
+    const geoMapScopeChanged = previousState.geoMapScope !== geoMapScope;
     const layoutChanged = previousState.layoutMode !== layoutMode;
     const selectionChanged = previousState.selection !== selection;
 
-    if (dataChanged || layoutChanged) {
-      engine.setDataLayoutAndSelection(data, layoutMode, selection);
+    if (dataChanged || layoutChanged || geoMapScopeChanged) {
+      engine.setDataLayoutAndSelection(data, layoutMode, selection, geoMapScope);
     } else if (selectionChanged) {
       engine.setSelection(selection);
     }
 
-    graphStateRef.current = { data, layoutMode, selection };
-  }, [data, layoutMode, selection]);
+    graphStateRef.current = { data, geoMapScope, layoutMode, selection };
+  }, [data, geoMapScope, layoutMode, selection]);
 
   useEffect(() => {
     engineRef.current?.setInteractionMode(interactionMode);
