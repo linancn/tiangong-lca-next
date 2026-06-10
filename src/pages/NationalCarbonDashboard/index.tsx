@@ -1,5 +1,3 @@
-import { geoMercator, geoPath } from 'd3-geo';
-import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
@@ -10,6 +8,11 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
+import {
+  buildChinaMercatorMap,
+  getChinaRegionAdcode as getRegionAdcode,
+  type ChinaMapData,
+} from './chinaMapProjection';
 import ProcessFlowGraphPanel from './components/ProcessFlowGraph/ProcessFlowGraphPanel';
 import rawSnapshot from './data/mockDashboardSnapshot.json';
 import {
@@ -37,12 +40,6 @@ type ProvinceTooltipState = {
   x: number;
   y: number;
 };
-type ChinaFeatureProperties = {
-  adcode?: number | string;
-  name?: string;
-};
-type ChinaMapFeature = Feature<Geometry, ChinaFeatureProperties>;
-type ChinaMapData = FeatureCollection<Geometry, ChinaFeatureProperties>;
 type StatusTone = {
   dark: string;
   glow: string;
@@ -220,40 +217,6 @@ function loadChinaMapData(): Promise<ChinaMapData> {
   }
 
   return chinaMapDataRequest;
-}
-
-function getRegionAdcode(feature: ChinaMapFeature): number | undefined {
-  const rawAdcode = feature.properties?.adcode;
-  if (typeof rawAdcode === 'number') {
-    return rawAdcode;
-  }
-  if (typeof rawAdcode === 'string') {
-    const parsed = Number.parseInt(rawAdcode, 10);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-}
-
-function rewindMapFeature(feature: ChinaMapFeature): ChinaMapFeature {
-  if (feature.geometry.type === 'Polygon') {
-    const geometry: Polygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((ring) => ring.slice().reverse()),
-    };
-    return { ...feature, geometry };
-  }
-
-  if (feature.geometry.type === 'MultiPolygon') {
-    const geometry: MultiPolygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((polygon) =>
-        polygon.map((ring) => ring.slice().reverse()),
-      ),
-    };
-    return { ...feature, geometry };
-  }
-
-  return feature;
 }
 
 function getMapColor(statusKey: StatusFilterKey, value: number, maxValue: number): string {
@@ -596,25 +559,14 @@ function ChinaStatusMap({
       return [];
     }
 
-    const displayFeatures = mapData.features
-      .filter((feature) => {
-        const adcode = getRegionAdcode(feature);
-        return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
-      })
-      .map(rewindMapFeature);
-    const displayMapData: ChinaMapData = {
-      ...mapData,
-      features: displayFeatures,
-    };
-
-    const projection = geoMercator().fitExtent(
-      [
-        [18, 18],
-        [variant === 'overview' ? 1010 : 1080, variant === 'overview' ? 560 : 700],
-      ],
-      displayMapData,
-    );
-    const pathGenerator = geoPath(projection);
+    const chinaMap = buildChinaMercatorMap(mapData, [
+      [18, 18],
+      [variant === 'overview' ? 1010 : 1080, variant === 'overview' ? 560 : 700],
+    ]);
+    if (!chinaMap) {
+      return [];
+    }
+    const { features: displayFeatures, pathGenerator } = chinaMap;
 
     return displayFeatures.map((feature) => {
       const adcode = getRegionAdcode(feature);
@@ -796,30 +748,19 @@ function OverviewScreen({
       return [];
     }
 
-    const displayFeatures = mapData.features
-      .filter((feature) => {
-        const adcode = getRegionAdcode(feature);
-        return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
-      })
-      .map(rewindMapFeature);
+    const chinaMap = buildChinaMercatorMap(mapData, [
+      [18, 18],
+      [1010, 560],
+    ]);
+    if (!chinaMap) {
+      return [];
+    }
     const featureMap = new Map(
-      displayFeatures.flatMap((feature) => {
+      chinaMap.features.flatMap((feature) => {
         const adcode = getRegionAdcode(feature);
         return adcode ? [[adcode, feature] as const] : [];
       }),
     );
-    const displayMapData: ChinaMapData = {
-      ...mapData,
-      features: displayFeatures,
-    };
-    const projection = geoMercator().fitExtent(
-      [
-        [18, 18],
-        [1010, 560],
-      ],
-      displayMapData,
-    );
-    const pathGenerator = geoPath(projection);
 
     return overviewTopRegions.flatMap((region) => {
       const feature = featureMap.get(region.adcode);
@@ -827,7 +768,7 @@ function OverviewScreen({
         return [];
       }
 
-      const centroid = pathGenerator.centroid(feature) as [number, number];
+      const centroid = chinaMap.pathGenerator.centroid(feature) as [number, number];
       if (!centroid.every(Number.isFinite)) {
         return [];
       }

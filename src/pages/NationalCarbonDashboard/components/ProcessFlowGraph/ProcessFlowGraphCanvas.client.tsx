@@ -100,6 +100,10 @@ export default function ProcessFlowGraphCanvas({
     engineRef.current?.setInteractionMode(interactionMode);
   }, [interactionMode]);
 
+  const geoMapBackgroundKey = geoMapBackground
+    ? `${geoMapBackground.scope}:${geoMapBackground.width}:${geoMapBackground.height}:${geoMapBackground.paths.length}`
+    : undefined;
+
   return (
     <div className={styles.canvasHost} ref={containerRef}>
       {layoutMode === 'geoMap2d' && geoMapBackground ? (
@@ -113,8 +117,10 @@ export default function ProcessFlowGraphCanvas({
             .filter(Boolean)
             .join(' ')}
           aria-hidden='true'
+          key={geoMapBackgroundKey}
         >
           <svg
+            key={geoMapBackgroundKey}
             preserveAspectRatio='none'
             viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
           >

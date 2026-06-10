@@ -1,4 +1,4 @@
-import { geoMercator, geoPath, type GeoProjection } from 'd3-geo';
+import type { GeoProjection } from 'd3-geo';
 import type {
   Feature,
   FeatureCollection,
@@ -7,6 +7,11 @@ import type {
   Polygon,
   Position,
 } from 'geojson';
+import {
+  buildChinaMercatorMap,
+  getChinaRegionAdcode,
+  type ChinaMapData,
+} from '../../chinaMapProjection';
 import type {
   ProcessFlowGraphCluster,
   ProcessFlowGraphData,
@@ -255,87 +260,12 @@ function getLocalMapPathLabel(scope: ProcessFlowGraphMapScope, feature: LocalMap
   return feature.properties?.NAME_EN || feature.properties?.NAME || 'World region';
 }
 
-function getLocalChinaFeatureAdcode(feature: LocalMapFeature): number | undefined {
-  const rawAdcode = feature.properties?.adcode;
-  if (typeof rawAdcode === 'number') {
-    return rawAdcode;
-  }
-  if (typeof rawAdcode === 'string') {
-    const parsed = Number.parseInt(rawAdcode, 10);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-}
-
-function rewindLocalMapFeature(feature: LocalMapFeature): LocalMapFeature {
-  if (feature.geometry.type === 'Polygon') {
-    const geometry: Polygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((ring) => ring.slice().reverse()),
-    };
-    return { ...feature, geometry };
-  }
-
-  if (feature.geometry.type === 'MultiPolygon') {
-    const geometry: MultiPolygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((polygon) =>
-        polygon.map((ring) => ring.slice().reverse()),
-      ),
-    };
-    return { ...feature, geometry };
-  }
-
-  return feature;
-}
-
-function shouldUseLocalMapFeature(
-  scope: ProcessFlowGraphMapScope,
-  feature: LocalMapFeature,
-): boolean {
+function shouldUseLocalWorldMapFeature(feature: LocalMapFeature): boolean {
   if (!feature.geometry) {
     return false;
   }
 
-  if (scope === 'china') {
-    const adcode = getLocalChinaFeatureAdcode(feature);
-    return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
-  }
-
   return Boolean(feature.properties?.NAME || feature.properties?.NAME_EN);
-}
-
-function buildChinaMercatorMap(
-  mapData: LocalMapFeatureCollection,
-  frame: Pick<ProcessFlowGraphMapBackground, 'height' | 'width'>,
-):
-  | {
-      features: LocalMapFeature[];
-      projection: GeoProjection;
-    }
-  | undefined {
-  const features = mapData.features
-    .filter((feature) => shouldUseLocalMapFeature('china', feature))
-    .map(rewindLocalMapFeature);
-
-  if (!features.length) {
-    return undefined;
-  }
-
-  const displayMapData: LocalMapFeatureCollection = {
-    ...mapData,
-    features,
-  };
-  const padding = 18;
-  const projection = geoMercator().fitExtent(
-    [
-      [padding, padding],
-      [Math.max(padding + 1, frame.width - 20), Math.max(padding + 1, frame.height - 20)],
-    ],
-    displayMapData,
-  );
-
-  return { features, projection };
 }
 
 function createChinaMercatorLayoutTransform(
@@ -373,21 +303,25 @@ async function loadLocalGeoMapBackground(
   const mapData = (await response.json()) as LocalMapFeatureCollection;
 
   if (scope === 'china') {
-    const chinaMap = buildChinaMercatorMap(mapData, frame);
+    const padding = 18;
+    const chinaMap = buildChinaMercatorMap(mapData as ChinaMapData, [
+      [padding, padding],
+      [Math.max(padding + 1, frame.width - 20), Math.max(padding + 1, frame.height - 20)],
+    ]);
     if (!chinaMap) {
       return undefined;
     }
 
-    const pathGenerator = geoPath(chinaMap.projection);
     const paths = chinaMap.features
       .map((feature, index) => {
-        const code = getLocalMapPathCode(scope, feature);
-        const path = pathGenerator(feature) ?? '';
+        const adcode = getChinaRegionAdcode(feature);
+        const code = adcode === undefined ? undefined : String(adcode);
+        const path = chinaMap.pathGenerator(feature) ?? '';
 
         return {
           code,
           id: `${scope}-${code ?? index}`,
-          label: getLocalMapPathLabel(scope, feature),
+          label: feature.properties?.name || 'China region',
           path,
         };
       })
@@ -410,7 +344,7 @@ async function loadLocalGeoMapBackground(
 
   const projectCoordinate = projectWorldCoordinate(frame.width, frame.height);
   const paths = mapData.features
-    .filter((feature) => shouldUseLocalMapFeature(scope, feature))
+    .filter(shouldUseLocalWorldMapFeature)
     .map((feature, index) => {
       const code = getLocalMapPathCode(scope, feature);
       const path = featureToPath(feature, projectCoordinate);

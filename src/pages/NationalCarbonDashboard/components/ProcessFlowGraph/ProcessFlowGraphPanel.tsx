@@ -421,8 +421,13 @@ export default function ProcessFlowGraphPanel() {
   const [query, setQuery] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
-  const cachedGeoMapView = geoMapCachedViews[mapScope];
-  const retainedGeoMapView = visibleGeoMapScope ? geoMapCachedViews[visibleGeoMapScope] : undefined;
+  const rawCachedGeoMapView = geoMapCachedViews[mapScope];
+  const cachedGeoMapView =
+    rawCachedGeoMapView?.background.scope === mapScope ? rawCachedGeoMapView : undefined;
+  const rawRetainedGeoMapView =
+    visibleGeoMapScope === mapScope ? geoMapCachedViews[visibleGeoMapScope] : undefined;
+  const retainedGeoMapView =
+    rawRetainedGeoMapView?.background.scope === mapScope ? rawRetainedGeoMapView : undefined;
   const currentGeoMapCacheStatus = geoMapCacheStatus[mapScope] ?? 'idle';
   const geoMapView = cachedGeoMapView;
   const displayedGeoMapView = geoMapView ?? retainedGeoMapView;
