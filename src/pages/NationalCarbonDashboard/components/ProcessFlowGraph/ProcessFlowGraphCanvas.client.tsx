@@ -124,8 +124,13 @@ export default function ProcessFlowGraphCanvas({
             preserveAspectRatio='none'
             viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
           >
-            {geoMapBackground.paths.map((mapPath) => (
-              <path d={mapPath.path} data-code={mapPath.code} key={mapPath.id} pathLength={1}>
+            {geoMapBackground.paths.map((mapPath, pathIndex) => (
+              <path
+                d={mapPath.path}
+                data-code={mapPath.code}
+                key={`${mapPath.id}:${pathIndex}`}
+                pathLength={1}
+              >
                 <title>{mapPath.label}</title>
               </path>
             ))}
