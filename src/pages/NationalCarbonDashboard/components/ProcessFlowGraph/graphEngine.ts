@@ -270,10 +270,14 @@ function getStableHash(value: string): number {
   return hash;
 }
 
+function getNodeColorClusterId(node: ProcessFlowGraphNode): string {
+  return node.clusterIdLevel3 || node.clusterIdLevel1;
+}
+
 function buildClusterColors(data: ProcessFlowGraphData): Map<string, THREE.Color> {
   const clusterColors = new Map<string, THREE.Color>();
 
-  data.clustersLevel1?.forEach((cluster, index) => {
+  data.clustersLevel3?.forEach((cluster, index) => {
     const colorIndex = cluster.colorIndex ?? index;
     clusterColors.set(
       cluster.id,
@@ -282,15 +286,17 @@ function buildClusterColors(data: ProcessFlowGraphData): Map<string, THREE.Color
   });
 
   data.nodes.forEach((node) => {
-    if (clusterColors.has(node.clusterIdLevel1)) {
+    const colorClusterId = getNodeColorClusterId(node);
+
+    if (clusterColors.has(colorClusterId)) {
       return;
     }
 
     clusterColors.set(
-      node.clusterIdLevel1,
-      clusterColorMap[node.clusterIdLevel1]
-        ? new THREE.Color(clusterColorMap[node.clusterIdLevel1])
-        : getClusterPaletteColor(getStableHash(node.clusterIdLevel1)),
+      colorClusterId,
+      clusterColorMap[colorClusterId]
+        ? new THREE.Color(clusterColorMap[colorClusterId])
+        : getClusterPaletteColor(getStableHash(colorClusterId)),
     );
   });
 
@@ -1012,8 +1018,9 @@ export class ProcessFlowGraphEngine {
         const sourceNode = this.getNode(edge.source);
         const targetNode = this.getNode(edge.target);
         const isCrossCluster =
-          Boolean(sourceNode && targetNode) &&
-          sourceNode?.clusterIdLevel1 !== targetNode?.clusterIdLevel1;
+          sourceNode && targetNode
+            ? getNodeColorClusterId(sourceNode) !== getNodeColorClusterId(targetNode)
+            : false;
         const degreeScore = (sourceNode?.degree ?? 0) + (targetNode?.degree ?? 0);
         const processScore =
           sourceNode?.kind === 'process' || targetNode?.kind === 'process' ? 42 : 0;
@@ -2325,7 +2332,9 @@ export class ProcessFlowGraphEngine {
   }
 
   private getClusterColor(node: ProcessFlowGraphNode): THREE.Color {
-    return this.clusterColors.get(node.clusterIdLevel1)?.clone() ?? new THREE.Color('#8da2b3');
+    return (
+      this.clusterColors.get(getNodeColorClusterId(node))?.clone() ?? new THREE.Color('#8da2b3')
+    );
   }
 
   private getSphereBaseEdgeColor(edge: ProcessFlowGraphEdge) {
@@ -2340,7 +2349,7 @@ export class ProcessFlowGraphEngine {
       return getEdgeColor(edge.direction);
     }
 
-    if (sourceNode.clusterIdLevel1 === targetNode.clusterIdLevel1) {
+    if (getNodeColorClusterId(sourceNode) === getNodeColorClusterId(targetNode)) {
       return this.getClusterColor(sourceNode.kind === 'flow' ? sourceNode : targetNode);
     }
 
@@ -2356,7 +2365,10 @@ export class ProcessFlowGraphEngine {
   ) {
     const sourceNode = this.getNode(edge.source);
     const targetNode = this.getNode(edge.target);
-    const sameCluster = sourceNode?.clusterIdLevel1 === targetNode?.clusterIdLevel1;
+    const sameCluster =
+      sourceNode && targetNode
+        ? getNodeColorClusterId(sourceNode) === getNodeColorClusterId(targetNode)
+        : false;
     const directionDot = Math.max(-1, Math.min(1, getTupleDot(source, target)));
     const localFactor = 0.22 + Math.pow((directionDot + 1) / 2, 3) * 0.78;
 
@@ -3976,7 +3988,10 @@ export class ProcessFlowGraphEngine {
       edge.amount === undefined
         ? 0
         : THREE.MathUtils.clamp(Math.log1p(Math.abs(edge.amount)) / 26, 0, 0.16);
-    const sameCluster = sourceNode?.clusterIdLevel1 === targetNode?.clusterIdLevel1;
+    const sameCluster =
+      sourceNode && targetNode
+        ? getNodeColorClusterId(sourceNode) === getNodeColorClusterId(targetNode)
+        : false;
     const visualDirection = this.getHighlightedEdgeVisualDirection(edge);
     const directionBase = visualDirection === 'input' ? 0.34 : 0.3;
 
