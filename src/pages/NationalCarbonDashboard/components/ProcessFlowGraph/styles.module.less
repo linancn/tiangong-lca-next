@@ -378,13 +378,17 @@
   position: absolute;
   inset: 0;
   display: grid;
-  gap: 10px;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 18px;
   place-content: center;
+  place-items: center;
   padding: 32px;
+  overflow: hidden;
   color: rgba(230, 246, 251, 0.82);
   text-align: center;
   background:
-    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.14), transparent 32%),
+    radial-gradient(circle at 50% 44%, rgba(36, 231, 255, 0.18), transparent 29%),
+    radial-gradient(circle at 50% 76%, rgba(191, 247, 71, 0.1), transparent 22%),
     linear-gradient(90deg, rgba(36, 231, 255, 0.06) 1px, transparent 1px),
     linear-gradient(0deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px), #020b16;
   background-size:
@@ -394,20 +398,310 @@
     100% 100%;
 }
 
-.graphLoadState strong {
-  color: #f4feff;
-  font-size: 22px;
-  font-weight: 900;
+.graphLoadState::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.16), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 58px,
+      rgba(191, 247, 71, 0.12) 59px,
+      transparent 61px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  transform: translateX(-100%);
+  animation: graphLoadSweep 2600ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-.graphLoadState span {
-  max-width: 520px;
+.graphLoadState::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(rgba(36, 231, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(
+      circle at 50% 52%,
+      transparent 0 34%,
+      rgba(36, 231, 255, 0.1) 35%,
+      transparent 38%
+    );
+  background-size:
+    100% 9px,
+    100% 100%;
+  opacity: 0.54;
+}
+
+.graphLoadStateError {
+  grid-template-rows: auto;
+  gap: 10px;
+}
+
+.graphLoadStateError::before,
+.graphLoadStateError::after {
+  display: none;
+}
+
+.graphLoadStateActive {
+  isolation: isolate;
+}
+
+.graphLoaderScene {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(430px, 80%);
+  height: 286px;
+}
+
+.graphLoaderScene::before,
+.graphLoaderScene::after {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+  border-radius: 50%;
+}
+
+.graphLoaderScene::before {
+  width: 330px;
+  height: 120px;
+  border: 1px solid rgba(36, 231, 255, 0.24);
+  box-shadow:
+    0 0 34px rgba(36, 231, 255, 0.12),
+    inset 0 0 26px rgba(36, 231, 255, 0.06);
+  transform: rotateX(62deg);
+  animation: graphLoaderDisk 2200ms ease-in-out infinite;
+}
+
+.graphLoaderScene::after {
+  width: 228px;
+  height: 228px;
+  background: conic-gradient(
+    from 90deg,
+    transparent,
+    rgba(36, 231, 255, 0.34),
+    transparent 34%,
+    rgba(191, 247, 71, 0.22),
+    transparent 68%,
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  opacity: 0.56;
+  filter: blur(9px);
+  animation: graphLoaderHalo 5200ms linear infinite;
+}
+
+.graphLoaderGrid {
+  position: absolute;
+  width: 310px;
+  height: 172px;
+  background:
+    linear-gradient(90deg, rgba(36, 231, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.1) 1px, transparent 1px);
+  background-size: 31px 31px;
+  opacity: 0.42;
+  transform: perspective(460px) rotateX(66deg);
+  mask-image: radial-gradient(ellipse at center, #000 0 54%, transparent 72%);
+  animation: graphLoaderGridPulse 1800ms ease-in-out infinite;
+}
+
+.graphLoaderOrbit {
+  position: absolute;
+  z-index: 2;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(36, 231, 255, 0.34);
+  border-radius: 50%;
+  box-shadow:
+    0 0 36px rgba(36, 231, 255, 0.13),
+    inset 0 0 38px rgba(36, 231, 255, 0.08);
+  animation: graphLoaderOrbitSpin 4200ms linear infinite;
+}
+
+.graphLoaderOrbit::before,
+.graphLoaderOrbit::after {
+  position: absolute;
+  inset: 22px;
+  pointer-events: none;
+  content: '';
+  border: 1px dashed rgba(191, 247, 71, 0.28);
+  border-radius: 50%;
+}
+
+.graphLoaderOrbit::after {
+  inset: 49px;
+  border-color: rgba(255, 214, 109, 0.24);
+  transform: rotate(28deg);
+}
+
+.graphLoaderOrbit i {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #24e7ff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5px rgba(36, 231, 255, 0.12),
+    0 0 18px rgba(36, 231, 255, 0.68);
+  animation: graphLoaderNodePulse 1400ms ease-in-out infinite;
+}
+
+.graphLoaderOrbit i:nth-child(1) {
+  top: -5px;
+  left: 105px;
+}
+
+.graphLoaderOrbit i:nth-child(2) {
+  top: 49px;
+  right: 10px;
+  background: #bff747;
+  box-shadow:
+    0 0 0 5px rgba(191, 247, 71, 0.12),
+    0 0 18px rgba(191, 247, 71, 0.58);
+  animation-delay: 160ms;
+}
+
+.graphLoaderOrbit i:nth-child(3) {
+  right: 10px;
+  bottom: 49px;
+  animation-delay: 320ms;
+}
+
+.graphLoaderOrbit i:nth-child(4) {
+  bottom: -5px;
+  left: 105px;
+  background: #ffd66d;
+  box-shadow:
+    0 0 0 5px rgba(255, 214, 109, 0.12),
+    0 0 18px rgba(255, 214, 109, 0.5);
+  animation-delay: 480ms;
+}
+
+.graphLoaderOrbit i:nth-child(5) {
+  bottom: 49px;
+  left: 10px;
+  animation-delay: 640ms;
+}
+
+.graphLoaderOrbit i:nth-child(6) {
+  top: 49px;
+  left: 10px;
+  background: #bff747;
+  box-shadow:
+    0 0 0 5px rgba(191, 247, 71, 0.12),
+    0 0 18px rgba(191, 247, 71, 0.58);
+  animation-delay: 800ms;
+}
+
+.graphLoaderCore {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  color: #eaffff;
+  font-size: 34px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(191, 247, 71, 0.22), transparent 32%),
+    linear-gradient(180deg, rgba(18, 70, 103, 0.92), rgba(2, 18, 32, 0.86));
+  border: 1px solid rgba(36, 231, 255, 0.62);
+  border-radius: 50%;
+  box-shadow:
+    0 0 38px rgba(36, 231, 255, 0.24),
+    inset 0 0 26px rgba(36, 231, 255, 0.12);
+  animation: graphLoaderCorePulse 1500ms ease-in-out infinite;
+}
+
+.graphLoaderCore svg {
+  filter: drop-shadow(0 0 12px rgba(36, 231, 255, 0.72));
+}
+
+.graphLoaderBeam {
+  position: absolute;
+  z-index: 4;
+  width: 360px;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(36, 231, 255, 0.3),
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  filter: blur(2px);
+  transform: translateX(-58%) skewX(-18deg);
+  animation: graphLoaderBeam 1700ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.graphLoaderCopy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 9px;
+  max-width: min(640px, 80%);
+}
+
+.graphLoaderCopy strong {
+  color: #f4feff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(36, 231, 255, 0.24);
+}
+
+.graphLoaderCopy span {
   overflow: hidden;
   color: rgba(190, 212, 222, 0.78);
   font-size: 12px;
   font-weight: 800;
+  line-height: 1.5;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.graphLoaderSteps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.graphLoaderSteps i {
+  position: relative;
+  display: block;
+  width: 92px;
+  height: 4px;
+  overflow: hidden;
+  background: rgba(116, 196, 255, 0.14);
+  border-radius: 999px;
+}
+
+.graphLoaderSteps i::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(90deg, #24e7ff, #bff747, #ffd66d);
+  border-radius: inherit;
+  transform: translateX(-100%);
+  animation: graphLoaderStep 1500ms ease-in-out infinite;
+}
+
+.graphLoaderSteps i:nth-child(2)::after {
+  animation-delay: 180ms;
+}
+
+.graphLoaderSteps i:nth-child(3)::after {
+  animation-delay: 360ms;
 }
 
 .canvasHost {
@@ -809,6 +1103,114 @@
   font-weight: 800;
 }
 
+@keyframes graphLoadSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  18% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes graphLoaderDisk {
+  0%,
+  100% {
+    opacity: 0.64;
+    transform: rotateX(62deg) scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: rotateX(62deg) scale(1.02);
+  }
+}
+
+@keyframes graphLoaderHalo {
+  from {
+    transform: rotate(0deg) scale(0.98);
+  }
+  to {
+    transform: rotate(360deg) scale(0.98);
+  }
+}
+
+@keyframes graphLoaderGridPulse {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: perspective(460px) rotateX(66deg) translateY(4px);
+  }
+  50% {
+    opacity: 0.58;
+    transform: perspective(460px) rotateX(66deg) translateY(-2px);
+  }
+}
+
+@keyframes graphLoaderOrbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes graphLoaderNodePulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.76);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes graphLoaderCorePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 30px rgba(36, 231, 255, 0.18),
+      inset 0 0 22px rgba(36, 231, 255, 0.1);
+    transform: scale(0.98);
+  }
+  50% {
+    box-shadow:
+      0 0 48px rgba(36, 231, 255, 0.32),
+      inset 0 0 30px rgba(191, 247, 71, 0.1);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes graphLoaderBeam {
+  0% {
+    opacity: 0;
+    transform: translateX(-58%) skewX(-18deg);
+  }
+  24% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(58%) skewX(-18deg);
+  }
+}
+
+@keyframes graphLoaderStep {
+  0% {
+    transform: translateX(-100%);
+  }
+  54%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes processFlowRadar {
   from {
     transform: rotate(0deg);
@@ -872,5 +1274,20 @@
     box-shadow:
       0 0 30px rgba(255, 214, 109, 0.12),
       inset 0 0 22px rgba(36, 231, 255, 0.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graphLoadState::before,
+  .graphLoaderScene::before,
+  .graphLoaderScene::after,
+  .graphLoaderGrid,
+  .graphLoaderOrbit,
+  .graphLoaderOrbit i,
+  .graphLoaderCore,
+  .graphLoaderBeam,
+  .graphLoaderSteps i::after {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
   }
 }

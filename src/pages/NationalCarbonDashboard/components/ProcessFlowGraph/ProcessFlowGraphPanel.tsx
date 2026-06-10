@@ -381,20 +381,55 @@ function GraphLoadState({
   title?: string;
 }) {
   const isLoading = dataSource === 'loading';
+  const displayTitle = title ?? (isLoading ? '正在唤醒全量图谱' : 'Process-flow graph unavailable');
+  const displayDescription =
+    description ??
+    (isLoading
+      ? '读取 worker manifest / 解压拓扑索引 / 点亮三维关系场'
+      : loadError
+        ? formatCacheError(loadError)
+        : 'Cache manifest could not be loaded');
 
   return (
-    <div className={styles.graphLoadState}>
-      <strong>
-        {title ?? (isLoading ? 'Loading process-flow graph' : 'Process-flow graph unavailable')}
-      </strong>
-      <span>
-        {description ??
-          (isLoading
-            ? 'Waiting for worker S3 cache manifest'
-            : loadError
-              ? formatCacheError(loadError)
-              : 'Cache manifest could not be loaded')}
-      </span>
+    <div
+      aria-busy={isLoading}
+      aria-live={isLoading ? 'polite' : 'assertive'}
+      className={[
+        styles.graphLoadState,
+        isLoading ? styles.graphLoadStateActive : styles.graphLoadStateError,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      role={isLoading ? 'status' : 'alert'}
+    >
+      {isLoading && (
+        <div aria-hidden='true' className={styles.graphLoaderScene}>
+          <div className={styles.graphLoaderGrid} />
+          <div className={styles.graphLoaderOrbit}>
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className={styles.graphLoaderCore}>
+            <NodeIndexOutlined />
+          </div>
+          <div className={styles.graphLoaderBeam} />
+        </div>
+      )}
+      <div className={styles.graphLoaderCopy}>
+        <strong>{displayTitle}</strong>
+        <span>{displayDescription}</span>
+      </div>
+      {isLoading && (
+        <div aria-hidden='true' className={styles.graphLoaderSteps}>
+          <i />
+          <i />
+          <i />
+        </div>
+      )}
     </div>
   );
 }
