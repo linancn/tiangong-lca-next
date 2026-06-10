@@ -255,9 +255,18 @@ void main() {
 `;
 
 function getClusterPaletteColor(index: number): THREE.Color {
-  const normalizedIndex = Math.abs(index) % clusterPalette.length;
+  const normalizedIndex = Math.abs(index);
 
-  return new THREE.Color(clusterPalette[normalizedIndex]);
+  if (normalizedIndex < clusterPalette.length) {
+    return new THREE.Color(clusterPalette[normalizedIndex]);
+  }
+
+  const generatedIndex = normalizedIndex - clusterPalette.length;
+  const hue = (generatedIndex * 0.618033988749895) % 1;
+  const saturation = [0.72, 0.82, 0.92][generatedIndex % 3];
+  const lightness = [0.56, 0.66, 0.48, 0.72][Math.floor(generatedIndex / 3) % 4];
+
+  return new THREE.Color().setHSL(hue, saturation, lightness);
 }
 
 function getStableHash(value: string): number {
@@ -274,14 +283,60 @@ function getNodeColorClusterId(node: ProcessFlowGraphNode): string {
   return node.clusterIdLevel3 || node.clusterIdLevel1;
 }
 
+function getClusterColorKey(color: THREE.Color): string {
+  return color.getHexString();
+}
+
+function getUniqueClusterColor(
+  clusterId: string,
+  preferredColor: THREE.Color,
+  seedIndex: number,
+  usedColorKeys: Set<string>,
+): THREE.Color {
+  const preferredColorKey = getClusterColorKey(preferredColor);
+  if (!usedColorKeys.has(preferredColorKey)) {
+    usedColorKeys.add(preferredColorKey);
+    return preferredColor;
+  }
+
+  for (let attempt = 0; attempt < 1024; attempt += 1) {
+    const generatedColor = getClusterPaletteColor(
+      getStableHash(`${clusterId}:${seedIndex}:${attempt}`),
+    );
+    const generatedColorKey = getClusterColorKey(generatedColor);
+
+    if (!usedColorKeys.has(generatedColorKey)) {
+      usedColorKeys.add(generatedColorKey);
+      return generatedColor;
+    }
+  }
+
+  for (let fallbackHex = 1; fallbackHex <= 0xffffff; fallbackHex += 1) {
+    const fallbackColorKey = fallbackHex.toString(16).padStart(6, '0');
+
+    if (!usedColorKeys.has(fallbackColorKey)) {
+      usedColorKeys.add(fallbackColorKey);
+      return new THREE.Color(`#${fallbackColorKey}`);
+    }
+  }
+
+  return preferredColor;
+}
+
 function buildClusterColors(data: ProcessFlowGraphData): Map<string, THREE.Color> {
   const clusterColors = new Map<string, THREE.Color>();
+  const usedColorKeys = new Set<string>();
 
   data.clustersLevel3?.forEach((cluster, index) => {
     const colorIndex = cluster.colorIndex ?? index;
     clusterColors.set(
       cluster.id,
-      cluster.color ? new THREE.Color(cluster.color) : getClusterPaletteColor(colorIndex),
+      getUniqueClusterColor(
+        cluster.id,
+        cluster.color ? new THREE.Color(cluster.color) : getClusterPaletteColor(colorIndex),
+        colorIndex,
+        usedColorKeys,
+      ),
     );
   });
 
@@ -294,9 +349,14 @@ function buildClusterColors(data: ProcessFlowGraphData): Map<string, THREE.Color
 
     clusterColors.set(
       colorClusterId,
-      clusterColorMap[colorClusterId]
-        ? new THREE.Color(clusterColorMap[colorClusterId])
-        : getClusterPaletteColor(getStableHash(colorClusterId)),
+      getUniqueClusterColor(
+        colorClusterId,
+        clusterColorMap[colorClusterId]
+          ? new THREE.Color(clusterColorMap[colorClusterId])
+          : getClusterPaletteColor(getStableHash(colorClusterId)),
+        getStableHash(colorClusterId),
+        usedColorKeys,
+      ),
     );
   });
 
