@@ -38,30 +38,12 @@ const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
   maximumFractionDigits: 8,
 });
 const geoMapCacheSoftTimeoutMs = 4500;
-const geoMapInitialPrefetchTimeoutMs = 5200;
-const geoMapFollowupPrefetchTimeoutMs = 3200;
+const initialGeoMapPrefetchGraceMs = 900;
 const maxCacheErrorLength = 96;
 const maxRenderedSearchResults = 96;
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value);
-}
-
-type GeoMapPrefetchWindow = Window & {
-  cancelIdleCallback?: (handle: number) => void;
-  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-};
-
-function scheduleGeoMapPrefetch(callback: () => void, timeoutMs: number): () => void {
-  const prefetchWindow = window as GeoMapPrefetchWindow;
-
-  if (prefetchWindow.requestIdleCallback && prefetchWindow.cancelIdleCallback) {
-    const handle = prefetchWindow.requestIdleCallback(callback, { timeout: timeoutMs });
-    return () => prefetchWindow.cancelIdleCallback?.(handle);
-  }
-
-  const timeoutId = window.setTimeout(callback, timeoutMs);
-  return () => window.clearTimeout(timeoutId);
 }
 
 function formatCacheError(error: string): string {
@@ -479,7 +461,7 @@ function GraphLoadState({
   const displayDescription =
     description ??
     (isLoading
-      ? '读取 worker manifest / 解压拓扑索引 / 点亮三维关系场'
+      ? '读取 worker manifest / 解压拓扑索引 / 预热地图缓存'
       : loadError
         ? formatCacheError(loadError)
         : 'Cache manifest could not be loaded');
@@ -609,41 +591,7 @@ export default function ProcessFlowGraphPanel() {
   }, []);
   useEffect(() => {
     let cancelled = false;
-
-    loadProcessFlowGraphFromCache()
-      .then((cacheData) => {
-        if (cancelled) {
-          return;
-        }
-        setData(cacheData);
-        setDataSource('minio');
-        setLoadError(undefined);
-        setSelectedNodeId(undefined);
-        setQuery('');
-      })
-      .catch((error: unknown) => {
-        if (cancelled) {
-          return;
-        }
-        setData(undefined);
-        setDataSource('error');
-        setLoadError(error instanceof Error ? error.message : String(error));
-        setSelectedNodeId(undefined);
-        setQuery('');
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!data || dataSource !== 'minio') {
-      return undefined;
-    }
-
-    let cancelled = false;
-    let cancelChinaPrefetch: (() => void) | undefined;
+    let initialGeoMapPrefetchGraceTimeoutId: number | undefined;
 
     const markGeoMapPrefetchLoading = (scope: ProcessFlowGraphMapScope) => {
       setGeoMapCacheStatus((currentStatus) => {
@@ -671,60 +619,100 @@ export default function ProcessFlowGraphPanel() {
       });
     };
 
-    const prefetchGeoMapScope = (scope: ProcessFlowGraphMapScope) => {
+    const prefetchGeoMapScope = async (
+      scope: ProcessFlowGraphMapScope,
+    ): Promise<ProcessFlowGraphGeoMapView | undefined> => {
       markGeoMapPrefetchLoading(scope);
 
-      void loadProcessFlowGraphGeoMapViewFromCache(scope)
-        .then((cachedView) => {
-          if (cancelled) {
-            return;
+      try {
+        const cachedView = await loadProcessFlowGraphGeoMapViewFromCache(scope);
+        if (cancelled) {
+          return cachedView;
+        }
+
+        if (!cachedView) {
+          markGeoMapPrefetchIdle(scope);
+          return undefined;
+        }
+
+        setGeoMapCachedViews((currentViews) => {
+          if (currentViews[scope]) {
+            return currentViews;
           }
 
-          if (!cachedView) {
-            markGeoMapPrefetchIdle(scope);
-            return;
-          }
-
-          setGeoMapCachedViews((currentViews) => {
-            if (currentViews[scope]) {
-              return currentViews;
-            }
-
-            return {
-              ...currentViews,
-              [scope]: cachedView,
-            };
-          });
-          setGeoMapCacheStatus((currentStatus) => ({
-            ...currentStatus,
-            [scope]: 'hit',
-          }));
-
-          if (scope === 'world') {
-            cancelChinaPrefetch = scheduleGeoMapPrefetch(
-              () => prefetchGeoMapScope('china'),
-              geoMapFollowupPrefetchTimeoutMs,
-            );
-          }
-        })
-        .catch(() => {
-          if (!cancelled) {
-            markGeoMapPrefetchIdle(scope);
-          }
+          return {
+            ...currentViews,
+            [scope]: cachedView,
+          };
         });
+        setGeoMapCacheStatus((currentStatus) => ({
+          ...currentStatus,
+          [scope]: 'hit',
+        }));
+        return cachedView;
+      } catch {
+        if (!cancelled) {
+          markGeoMapPrefetchIdle(scope);
+        }
+        return undefined;
+      }
     };
 
-    const cancelWorldPrefetch = scheduleGeoMapPrefetch(
-      () => prefetchGeoMapScope('world'),
-      geoMapInitialPrefetchTimeoutMs,
-    );
+    const worldGeoMapPrefetch = prefetchGeoMapScope('world');
+    void worldGeoMapPrefetch.finally(() => {
+      if (!cancelled) {
+        void prefetchGeoMapScope('china');
+      }
+    });
+
+    const initialGeoMapPrefetchWindow = new Promise<void>((resolve) => {
+      let settled = false;
+      const settle = () => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (initialGeoMapPrefetchGraceTimeoutId !== undefined) {
+          window.clearTimeout(initialGeoMapPrefetchGraceTimeoutId);
+        }
+        resolve();
+      };
+
+      initialGeoMapPrefetchGraceTimeoutId = window.setTimeout(settle, initialGeoMapPrefetchGraceMs);
+      void worldGeoMapPrefetch.finally(settle);
+    });
+
+    loadProcessFlowGraphFromCache()
+      .then(async (cacheData) => {
+        await initialGeoMapPrefetchWindow;
+        if (cancelled) {
+          return;
+        }
+        setData(cacheData);
+        setDataSource('minio');
+        setLoadError(undefined);
+        setSelectedNodeId(undefined);
+        setQuery('');
+      })
+      .catch((error: unknown) => {
+        if (cancelled) {
+          return;
+        }
+        setData(undefined);
+        setDataSource('error');
+        setLoadError(error instanceof Error ? error.message : String(error));
+        setSelectedNodeId(undefined);
+        setQuery('');
+      });
 
     return () => {
       cancelled = true;
-      cancelWorldPrefetch();
-      cancelChinaPrefetch?.();
+      if (initialGeoMapPrefetchGraceTimeoutId !== undefined) {
+        window.clearTimeout(initialGeoMapPrefetchGraceTimeoutId);
+      }
     };
-  }, [data, dataSource]);
+  }, []);
 
   useEffect(() => {
     if (!isGeoMapMode || !data || cachedGeoMapView) {
