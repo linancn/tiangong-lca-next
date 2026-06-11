@@ -5,7 +5,11 @@ import {
   getImportedId,
   isSupabaseDuplicateKeyError,
 } from '@/services/general/util';
-import { createUnitGroup, getUnitGroupDetail } from '@/services/unitgroups/api';
+import {
+  createUnitGroup,
+  createUnitGroupVersion,
+  getUnitGroupDetail,
+} from '@/services/unitgroups/api';
 import {
   FormUnitGroup,
   UnitDraft,
@@ -310,7 +314,10 @@ const UnitGroupCreate: FC<CreateProps> = ({
                   ...formRefCreate.current?.getFieldsValue(),
                   units,
                 };
-                const result = await createUnitGroup(paramsId, formFieldsValue);
+                const result =
+                  actionType === 'createVersion'
+                    ? await createUnitGroupVersion(id ?? '', version ?? '', formFieldsValue)
+                    : await createUnitGroup(paramsId, formFieldsValue);
                 if (result.data) {
                   message.success(
                     intl.formatMessage({
@@ -326,7 +333,7 @@ const UnitGroupCreate: FC<CreateProps> = ({
                     isSupabaseDuplicateKeyError(result.error)
                       ? intl.formatMessage({
                           id: 'pages.button.create.error.duplicateId',
-                          defaultMessage: 'Data with the same ID already exists.',
+                          defaultMessage: 'Data with the same ID and version already exists.',
                         })
                       : (result.error?.message ?? 'Error'),
                   );

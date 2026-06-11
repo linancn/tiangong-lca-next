@@ -25,6 +25,7 @@ describe('Contacts API Service', () => {
     buildLangNormalizationMetadata,
     getTeamIdByUserId,
     invokeDatasetCommand,
+    invokeDatasetCreateVersion,
     normalizeLangPayloadForSave,
   } = jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
@@ -162,6 +163,79 @@ describe('Contacts API Service', () => {
       const result = await createContact('contact-123', {});
 
       expect(result.data?.[0].rule_verification).toBe(false);
+    });
+
+    it('should create a new contact version through the create-version command', async () => {
+      const { createContactVersion } = require('@/services/contacts/api');
+      invokeDatasetCreateVersion.mockResolvedValue({
+        data: [{ id: 'contact-123', version: '01.00.001', rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await createContactVersion('contact-123', '01.00.000', {});
+
+      expect(invokeDatasetCreateVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'contact-123',
+          table: 'contacts',
+          sourceVersion: '01.00.000',
+          jsonOrdered: expect.any(Object),
+          ruleVerification: true,
+        }),
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result.data?.[0].version).toBe('01.00.001');
+    });
+
+    it('should create a new contact version when the user has no team id', async () => {
+      const { createContactVersion } = require('@/services/contacts/api');
+      getTeamIdByUserId.mockResolvedValue(null);
+      invokeDatasetCreateVersion.mockResolvedValue({
+        data: [{ id: 'contact-no-team', version: '01.00.001' }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      });
+
+      const result = await createContactVersion('contact-no-team', '01.00.000', {});
+
+      expect(invokeDatasetCreateVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'contact-no-team',
+          table: 'contacts',
+          sourceVersion: '01.00.000',
+        }),
+        expect.any(Object),
+      );
+      expect(result.data?.[0].version).toBe('01.00.001');
+    });
+
+    it('should return a validation error when language normalization fails during create-version', async () => {
+      const { createContactVersion } = require('@/services/contacts/api');
+
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: 'invalid_multilang_contact_version',
+      });
+
+      const result = await createContactVersion('contact-123', '01.00.000', {});
+
+      expect(invokeDatasetCreateVersion).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: {
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'invalid_multilang_contact_version',
+        },
+      });
     });
 
     it('should return a validation error when language normalization fails during create', async () => {

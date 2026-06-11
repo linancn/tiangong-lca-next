@@ -16,6 +16,7 @@ const toText = (node: any): string => {
 // eslint-disable-next-line no-var
 var mockMessage: any;
 const mockCreateFlows = jest.fn();
+const mockCreateFlowsVersion = jest.fn();
 const mockGetFlowDetail = jest.fn();
 const mockGenFlowFromData = jest.fn();
 const mockFormatDateTime = jest.fn(() => 'formatted-time');
@@ -132,6 +133,7 @@ jest.mock('@/components/ToolBarButton', () => ({
 jest.mock('@/services/flows/api', () => ({
   __esModule: true,
   createFlows: (...args: any[]) => mockCreateFlows(...args),
+  createFlowsVersion: (...args: any[]) => mockCreateFlowsVersion(...args),
   getFlowDetail: (...args: any[]) => mockGetFlowDetail(...args),
 }));
 
@@ -205,6 +207,7 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
       data: { json: { flowDataSet: { from: 'detail' } }, version: 'v1' },
     });
     mockCreateFlows.mockResolvedValue({ data: {} });
+    mockCreateFlowsVersion.mockResolvedValue({ data: {} });
   });
 
   const renderComponent = (props: any = {}) => {
@@ -360,9 +363,24 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
     fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
-      expect(mockCreateFlows).toHaveBeenCalled();
+      expect(mockCreateFlowsVersion).toHaveBeenCalled();
     });
-    expect(mockCreateFlows).toHaveBeenCalledWith('flow-1', expect.any(Object));
+    expect(mockCreateFlowsVersion).toHaveBeenCalledWith('flow-1', '1.0', expect.any(Object));
+  });
+
+  it('falls back to empty create-version identifiers when runtime props are missing', async () => {
+    renderComponent({
+      actionType: 'createVersion',
+      id: undefined,
+      version: undefined,
+    });
+
+    fireEvent.click(screen.getByText('Create'));
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(mockCreateFlowsVersion).toHaveBeenCalledWith('', '', expect.any(Object));
+    });
   });
 
   it('falls back to an empty flow dataset payload when detail data is missing', async () => {
@@ -440,7 +458,9 @@ describe('FlowsCreate (src/pages/Flows/Components/create.tsx)', () => {
     fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
-      expect(mockMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.');
+      expect(mockMessage.error).toHaveBeenCalledWith(
+        'Data with the same ID and version already exists.',
+      );
     });
   });
 

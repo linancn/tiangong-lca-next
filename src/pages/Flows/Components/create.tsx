@@ -1,4 +1,4 @@
-import { createFlows, getFlowDetail } from '@/services/flows/api';
+import { createFlows, createFlowsVersion, getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData } from '@/services/flows/util';
 import {
   formatDateTime,
@@ -371,10 +371,14 @@ const FlowsCreate: FC<CreateProps> = ({
                 //   );
                 //   return false;
                 // }
-                const result = await createFlows(paramsId, {
+                const flowPayload = {
                   ...fieldsValue,
                   flowProperties,
-                });
+                };
+                const result =
+                  actionType === 'createVersion'
+                    ? await createFlowsVersion(id ?? '', version ?? '', flowPayload)
+                    : await createFlows(paramsId, flowPayload);
                 if (result.data) {
                   message.success(
                     intl.formatMessage({
@@ -392,7 +396,7 @@ const FlowsCreate: FC<CreateProps> = ({
                     isSupabaseDuplicateKeyError(result.error)
                       ? intl.formatMessage({
                           id: 'pages.button.create.error.duplicateId',
-                          defaultMessage: 'Data with the same ID already exists.',
+                          defaultMessage: 'Data with the same ID and version already exists.',
                         })
                       : (result.error?.message ?? 'Error'),
                   );

@@ -1,3 +1,4 @@
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
@@ -397,8 +398,8 @@ export const FlowpropertyForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
-            required={false}
+          <DatasetCreateVersionFormItem
+            createVersion={formType === 'createVersion'}
             label={
               <RequiredMark
                 showError={false}
@@ -417,8 +418,8 @@ export const FlowpropertyForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input disabled={formType === 'createVersion'} />
-          </Form.Item>
+            <Input />
+          </DatasetCreateVersionFormItem>
           {/* <FlowpropertiesSelectForm
             name={[
               'administrativeInformation',

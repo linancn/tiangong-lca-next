@@ -5,6 +5,7 @@
 
 import {
   createFlows,
+  createFlowsVersion,
   deleteFlows,
   flow_hybrid_search,
   getFlowDetail,
@@ -76,6 +77,7 @@ jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
+  invokeDatasetCreateVersion: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -85,6 +87,7 @@ const {
   getDataDetail: mockGetDataDetail,
   getTeamIdByUserId: mockGetTeamIdByUserId,
   invokeDatasetCommand: mockInvokeDatasetCommand,
+  invokeDatasetCreateVersion: mockInvokeDatasetCreateVersion,
   normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 
@@ -324,6 +327,13 @@ beforeEach(() => {
     status: 200,
     statusText: 'OK',
   });
+  mockInvokeDatasetCreateVersion.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
   mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
     payload,
     validationError: undefined,
@@ -388,6 +398,58 @@ describe('createFlows', () => {
     const result = await createFlows('flow-id', { name: 'Flow payload' });
 
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'English translation required',
+        }),
+      }),
+    );
+  });
+});
+
+describe('createFlowsVersion', () => {
+  it('stores a new flow version through the create-version command', async () => {
+    const createResult = {
+      data: [{ id: 'flow-id', version: '01.00.001' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCreateVersion.mockResolvedValue(createResult as any);
+
+    const result = await createFlowsVersion('flow-id', '01.00.000', { name: 'Flow payload' });
+
+    expect(mockGenFlowJsonOrdered).toHaveBeenCalledWith('flow-id', { name: 'Flow payload' });
+    expect(mockInvokeDatasetCreateVersion).toHaveBeenCalledWith(
+      {
+        id: 'flow-id',
+        table: 'flows',
+        sourceVersion: '01.00.000',
+        jsonOrdered: expect.objectContaining({ id: 'flow-id' }),
+        ruleVerification: true,
+      },
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
+  });
+
+  it('returns a language validation error before invoking create-version', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'English translation required',
+    });
+
+    const result = await createFlowsVersion('flow-id', '01.00.000', { name: 'Flow payload' });
+
+    expect(mockInvokeDatasetCreateVersion).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
         data: null,

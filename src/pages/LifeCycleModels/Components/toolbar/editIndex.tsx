@@ -965,7 +965,7 @@ const ToolbarEdit: FC<Props> = ({
           message.error(
             intl.formatMessage({
               id: 'pages.button.create.error.duplicateId',
-              defaultMessage: 'Data with the same ID already exists.',
+              defaultMessage: 'Data with the same ID and version already exists.',
             }),
           );
           return;
@@ -1066,11 +1066,16 @@ const ToolbarEdit: FC<Props> = ({
       } else if (thisAction === 'create') {
         const newId = actionType === 'createVersion' ? thisId : (importedId ?? v4());
         const lifecycleModelPayload = { ...newData, id: newId };
-        const result = await runMutation(() =>
-          langOptions
+        const createVersionOptions =
+          actionType === 'createVersion' ? { sourceVersion: thisVersion } : undefined;
+        const result = await runMutation(() => {
+          if (createVersionOptions) {
+            return createLifeCycleModel(lifecycleModelPayload, langOptions, createVersionOptions);
+          }
+          return langOptions
             ? createLifeCycleModel(lifecycleModelPayload, langOptions)
-            : createLifeCycleModel(lifecycleModelPayload),
-        );
+            : createLifeCycleModel(lifecycleModelPayload);
+        });
         if (result.ok) {
           const savedLifeCycleModel = result.lifecycleModel;
           const savedModelId = savedLifeCycleModel?.id ?? result.modelId;

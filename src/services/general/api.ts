@@ -188,6 +188,7 @@ export type TidasPackageRoot = {
 
 type DatasetCommandFunctionName =
   | 'app_dataset_create'
+  | 'app_dataset_create_version'
   | 'app_dataset_delete'
   | 'app_dataset_save_draft'
   | 'app_dataset_assign_team'
@@ -983,6 +984,20 @@ export async function invokeDatasetCommand<Row extends Record<string, unknown>>(
     status: 200,
     statusText: 'OK',
   };
+}
+
+export async function invokeDatasetCreateVersion<Row extends Record<string, unknown>>(
+  body: {
+    id: string;
+    table: Exclude<TidasPackageRootTable, 'lifecyclemodels'>;
+    sourceVersion: string;
+    jsonOrdered: unknown;
+    modelId?: string | null;
+    ruleVerification?: boolean | null;
+  },
+  options: { ruleVerification?: boolean | null } = {},
+): Promise<SupabaseMutationResult<Row>> {
+  return invokeDatasetCommand<Row>('app_dataset_create_version', body, options);
 }
 
 export async function getDataDetail(id: string, version: string, table: string) {

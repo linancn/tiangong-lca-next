@@ -2,6 +2,7 @@ import { FileType, getBase64, getOriginalFileUrl, isImage } from '@/services/sup
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
 import { FC, useState } from 'react';
 
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import { UploadButton } from '@/components/FileViewer/upload';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
@@ -380,8 +381,8 @@ export const SourceForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
-            required={false}
+          <DatasetCreateVersionFormItem
+            createVersion={formType === 'createVersion'}
             label={
               <RequiredMark
                 showError={false}
@@ -400,8 +401,8 @@ export const SourceForm: FC<Props> = ({
               ]['rules'] ?? [],
             )}
           >
-            <Input disabled={formType === 'createVersion'} />
-          </Form.Item>
+            <Input />
+          </DatasetCreateVersionFormItem>
           <ContactSelectForm
             label={
               <FormattedMessage

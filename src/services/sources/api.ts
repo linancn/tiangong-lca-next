@@ -21,6 +21,7 @@ import {
   getDataDetail,
   getTeamIdByUserId,
   invokeDatasetCommand,
+  invokeDatasetCreateVersion,
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
@@ -166,6 +167,57 @@ export async function createSource(
     {
       id,
       table: 'sources',
+      jsonOrdered: newData,
+      ruleVerification: rule_verification,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
+}
+
+export async function createSourceVersion(
+  id: string,
+  sourceVersion: string,
+  data: any,
+  options?: NormalizeLangPayloadForSaveOptions,
+) {
+  const rawData = genSourceJsonOrdered(id, data);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
+  if (validationError) {
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
+      },
+      langMetadata,
+      options,
+    );
+  }
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'source data set',
+    newData,
+    userTeamId,
+  );
+  const result = await invokeDatasetCreateVersion(
+    {
+      id,
+      table: 'sources',
+      sourceVersion,
       jsonOrdered: newData,
       ruleVerification: rule_verification,
     },
