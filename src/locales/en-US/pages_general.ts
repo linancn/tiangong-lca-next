@@ -12,6 +12,7 @@ export default {
 
   'pages.button.add': 'Add',
   'pages.button.createVersion': 'Create Version',
+  'pages.createVersion.versionAutoAllocationNotice': 'The new version will be generated automatically.',
   'pages.button.createVersion.fail': 'Please change the data version and submit',
   'pages.button.allVersion': 'All Versions',
   'pages.button.create': 'Create',

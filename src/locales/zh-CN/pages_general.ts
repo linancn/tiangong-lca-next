@@ -11,6 +11,7 @@ export default {
   'pages.table.title.version': '版本',
   'pages.button.add': '添加',
   'pages.button.createVersion': '新增版本',
+  'pages.createVersion.versionAutoAllocationNotice': '新版本自动计算后生成',
   'pages.button.createVersion.fail': '请更改数据集版本后提交',
   'pages.button.allVersion': '所有版本',
   'pages.button.view': '查看',
