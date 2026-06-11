@@ -19,6 +19,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 
 import {
   createSource,
+  createSourceVersion,
   deleteSource,
   getSourceDetail,
   getSourcesByIdsAndVersions,
@@ -78,6 +79,7 @@ jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
+  invokeDatasetCreateVersion: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -95,6 +97,7 @@ const {
   getDataDetail,
   getTeamIdByUserId,
   invokeDatasetCommand,
+  invokeDatasetCreateVersion,
   normalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 const { genSourceJsonOrdered } = jest.requireMock('@/services/sources/util');
@@ -107,6 +110,13 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
     invokeDatasetCommand.mockResolvedValue({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+    invokeDatasetCreateVersion.mockResolvedValue({
       data: [],
       error: null,
       count: null,
@@ -263,6 +273,57 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
           ruleVerification: true,
         },
       );
+    });
+  });
+
+  describe('createSourceVersion', () => {
+    it('should create a new source version through the create-version command', async () => {
+      const mockId = 'source-123';
+      const mockData = { sourceDataSet: {} };
+      const mockOrderedData = { ordered: true };
+      const mockCommandResult = createMockSuccessResponse([
+        { id: mockId, version: '01.00.001', rule_verification: true },
+      ]);
+
+      genSourceJsonOrdered.mockReturnValue(mockOrderedData);
+      invokeDatasetCreateVersion.mockResolvedValue(mockCommandResult);
+
+      const result = await createSourceVersion(mockId, '01.00.000', mockData);
+
+      expect(genSourceJsonOrdered).toHaveBeenCalledWith(mockId, mockData);
+      expect(invokeDatasetCreateVersion).toHaveBeenCalledWith(
+        {
+          id: mockId,
+          table: 'sources',
+          sourceVersion: '01.00.000',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
+        },
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockCommandResult);
+    });
+
+    it('should return a language validation error before invoking create-version', async () => {
+      genSourceJsonOrdered.mockReturnValue({ ordered: true });
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: 'Source title language payload is invalid',
+      });
+
+      const result = await createSourceVersion('source-123', '01.00.000', { sourceDataSet: {} });
+
+      expect(invokeDatasetCreateVersion).not.toHaveBeenCalled();
+      expect(result).toMatchObject({
+        data: null,
+        error: {
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'Source title language payload is invalid',
+        },
+        status: 400,
+      });
     });
   });
 

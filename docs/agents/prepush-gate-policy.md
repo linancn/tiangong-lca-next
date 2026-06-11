@@ -22,8 +22,8 @@ checkPaths:
   - scripts/docpact
   - scripts/docpact-gate.js
   - .github/workflows/**
-lastReviewedAt: 2026-06-08
-lastReviewedCommit: 95d2993c9be650918ec326d3e2d6ce960d5818f7
+lastReviewedAt: 2026-06-11
+lastReviewedCommit: e1707b3fe2e802b95f19e7d5fad71cebbcd15f7a
 ---
 
 # Pre-Push Gate Policy

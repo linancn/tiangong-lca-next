@@ -2114,7 +2114,9 @@ describe('ToolbarEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: 'save-icon' }));
 
     await waitFor(() =>
-      expect(antMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+      expect(antMessage.error).toHaveBeenCalledWith(
+        'Data with the same ID and version already exists.',
+      ),
     );
   });
 
@@ -2146,6 +2148,8 @@ describe('ToolbarEdit', () => {
         expect.objectContaining({
           id: 'model-1',
         }),
+        undefined,
+        { sourceVersion: '1.0' },
       ),
     );
     expect(mockUpdateEdge).not.toHaveBeenCalledWith(

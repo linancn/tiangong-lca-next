@@ -300,6 +300,7 @@ jest.mock('@/pages/Contacts/Components/form', () => {
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   createContact: jest.fn(),
+  createContactVersion: jest.fn(),
   getContactDetail: jest.fn(),
 }));
 
@@ -308,8 +309,11 @@ jest.mock('@/services/contacts/util', () => ({
   genContactFromData: jest.fn(() => ({})),
 }));
 
-const { createContact: mockCreateContact, getContactDetail: mockGetContactDetail } =
-  jest.requireMock('@/services/contacts/api');
+const {
+  createContact: mockCreateContact,
+  createContactVersion: mockCreateContactVersion,
+  getContactDetail: mockGetContactDetail,
+} = jest.requireMock('@/services/contacts/api');
 const { genContactFromData: mockGenContactFromData } = jest.requireMock('@/services/contacts/util');
 const {
   getImportedId: mockGetImportedId,
@@ -320,6 +324,7 @@ describe('ContactCreate component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateContact.mockResolvedValue({ data: [{ id: 'contact-new' }] });
+    mockCreateContactVersion.mockResolvedValue({ data: [{ id: 'contact-new' }] });
     mockGetContactDetail.mockResolvedValue({
       data: { json: { contactDataSet: {} } },
     });
@@ -405,8 +410,9 @@ describe('ContactCreate component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
-      expect(mockCreateContact).toHaveBeenCalledWith(
+      expect(mockCreateContactVersion).toHaveBeenCalledWith(
         'contact-1',
+        '1.0.0',
         expect.objectContaining({
           contactInformation: expect.objectContaining({
             dataSetInformation: expect.objectContaining({
@@ -483,7 +489,7 @@ describe('ContactCreate component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Data with the same ID already exists.',
+        'Data with the same ID and version already exists.',
       ),
     );
     expect(actionRef.current.reload).not.toHaveBeenCalled();
@@ -607,7 +613,7 @@ describe('ContactCreate component', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => {
-      expect(mockCreateContact).toHaveBeenCalledWith('', expect.anything());
+      expect(mockCreateContactVersion).toHaveBeenCalledWith('', '', expect.anything());
     });
   });
 

@@ -85,6 +85,7 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 const mockCreateUnitGroup = jest.fn();
+const mockCreateUnitGroupVersion = jest.fn();
 const mockDeleteUnitGroup = jest.fn();
 const mockGetUnitGroupDetail = jest.fn();
 const mockGetReferenceUnit = jest.fn();
@@ -93,6 +94,7 @@ let lastUnitEditFormApi: any = null;
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   createUnitGroup: (...args: any[]) => mockCreateUnitGroup(...args),
+  createUnitGroupVersion: (...args: any[]) => mockCreateUnitGroupVersion(...args),
   deleteUnitGroup: (...args: any[]) => mockDeleteUnitGroup(...args),
   getUnitGroupDetail: (...args: any[]) => mockGetUnitGroupDetail(...args),
   getReferenceUnit: (...args: any[]) => mockGetReferenceUnit(...args),
@@ -598,6 +600,10 @@ describe('Unitgroups unit components', () => {
       data: [{ id: 'generated-unit-group-id', version: '1.0' }],
       error: null,
     });
+    mockCreateUnitGroupVersion.mockResolvedValue({
+      data: [{ id: 'generated-unit-group-id', version: '1.0' }],
+      error: null,
+    });
     mockDeleteUnitGroup.mockResolvedValue({
       status: 204,
       error: null,
@@ -721,8 +727,9 @@ describe('Unitgroups unit components', () => {
     await user.click(within(drawer).getByRole('button', { name: /save/i }));
 
     await waitFor(() =>
-      expect(mockCreateUnitGroup).toHaveBeenCalledWith(
+      expect(mockCreateUnitGroupVersion).toHaveBeenCalledWith(
         'unit-group-1',
+        '1.0.0',
         expect.objectContaining({
           administrativeInformation: expect.objectContaining({
             publicationAndOwnership: expect.objectContaining({
@@ -795,7 +802,9 @@ describe('Unitgroups unit components', () => {
     await user.click(within(drawer).getByRole('button', { name: /save/i }));
 
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+      expect(message.error).toHaveBeenCalledWith(
+        'Data with the same ID and version already exists.',
+      ),
     );
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByRole('dialog', { name: /create/i })).toBeInTheDocument();
@@ -934,7 +943,7 @@ describe('Unitgroups unit components', () => {
     expect(within(drawer).getByText('Units: 0')).toBeInTheDocument();
   });
 
-  it('skips detail loading when createVersion props are missing at runtime and falls back to an empty id', async () => {
+  it('skips detail loading when createVersion props are missing at runtime and falls back to empty identifiers', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(
@@ -942,7 +951,7 @@ describe('Unitgroups unit components', () => {
         lang='en'
         actionRef={{ current: { reload: jest.fn() } } as any}
         actionType='createVersion'
-        version='1.0.0'
+        version={undefined as any}
         {...({ id: undefined } as any)}
       />,
     );
@@ -954,8 +963,8 @@ describe('Unitgroups unit components', () => {
 
     await user.click(within(drawer).getByRole('button', { name: /save/i }));
 
-    await waitFor(() => expect(mockCreateUnitGroup).toHaveBeenCalled());
-    expect(mockCreateUnitGroup).toHaveBeenCalledWith('', expect.any(Object));
+    await waitFor(() => expect(mockCreateUnitGroupVersion).toHaveBeenCalled());
+    expect(mockCreateUnitGroupVersion).toHaveBeenCalledWith('', '', expect.any(Object));
   });
 
   it('closes unit group creation without saving when cancelled', async () => {

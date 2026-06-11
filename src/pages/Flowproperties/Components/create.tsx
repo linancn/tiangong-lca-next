@@ -1,4 +1,8 @@
-import { createFlowproperties, getFlowpropertyDetail } from '@/services/flowproperties/api';
+import {
+  createFlowproperties,
+  createFlowpropertiesVersion,
+  getFlowpropertyDetail,
+} from '@/services/flowproperties/api';
 import { genFlowpropertyFromData } from '@/services/flowproperties/util';
 // import { langOptions } from '@/services/general/data';
 import styles from '@/style/custom.less';
@@ -274,10 +278,10 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
               try {
                 const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
                 const formFieldsValue = formRefCreate.current?.getFieldsValue();
-                const result: SupabaseMutationResult<unknown> = await createFlowproperties(
-                  paramsId,
-                  formFieldsValue,
-                );
+                const result: SupabaseMutationResult<unknown> =
+                  actionType === 'createVersion'
+                    ? await createFlowpropertiesVersion(id ?? '', version ?? '', formFieldsValue)
+                    : await createFlowproperties(paramsId, formFieldsValue);
                 if (result.data) {
                   message.success(
                     intl.formatMessage({
@@ -295,7 +299,7 @@ const FlowpropertiesCreate: FC<CreateProps> = ({
                     isSupabaseDuplicateKeyError(result.error)
                       ? intl.formatMessage({
                           id: 'pages.button.create.error.duplicateId',
-                          defaultMessage: 'Data with the same ID already exists.',
+                          defaultMessage: 'Data with the same ID and version already exists.',
                         })
                       : (result.error?.message ?? 'Error'),
                   );

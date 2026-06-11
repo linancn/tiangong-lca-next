@@ -311,6 +311,8 @@ export type LifeCycleModelPersistencePlan = {
   mode: 'create' | 'update';
   modelId: string;
   version?: string;
+  allocateVersion?: boolean;
+  sourceVersion?: string;
   parent: {
     jsonOrdered: unknown;
     jsonTg: LifeCycleModelJsonTg;

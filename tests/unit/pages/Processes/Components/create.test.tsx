@@ -197,11 +197,13 @@ jest.mock('@/services/general/util', () => {
 });
 
 const mockCreateProcess = jest.fn();
+const mockCreateProcessVersion = jest.fn();
 const mockGetProcessDetail = jest.fn();
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   createProcess: (...args: any[]) => mockCreateProcess(...args),
+  createProcessVersion: (...args: any[]) => mockCreateProcessVersion(...args),
   getProcessDetail: (...args: any[]) => mockGetProcessDetail(...args),
 }));
 
@@ -237,6 +239,7 @@ describe('ProcessCreate component', () => {
     jest.clearAllMocks();
     actionRef.current.reload.mockClear();
     mockCreateProcess.mockResolvedValue({ data: { id: 'generated-id' } });
+    mockCreateProcessVersion.mockResolvedValue({ data: { id: 'generated-id' } });
   });
 
   it('submits new process and normalizes allocations when no fraction is set', async () => {
@@ -380,7 +383,9 @@ describe('ProcessCreate component', () => {
     });
 
     expect(mockCreateProcess).toHaveBeenCalledWith('generated-id', expect.any(Object));
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data with the same ID already exists.');
+    expect(mockAntdMessage.error).toHaveBeenCalledWith(
+      'Data with the same ID and version already exists.',
+    );
     expect(actionRef.current.reload).not.toHaveBeenCalled();
   });
 
@@ -474,7 +479,7 @@ describe('ProcessCreate component', () => {
         exchange: [],
       },
     });
-    mockCreateProcess.mockResolvedValueOnce({
+    mockCreateProcessVersion.mockResolvedValueOnce({
       data: null,
       error: {},
     });
@@ -562,8 +567,9 @@ describe('ProcessCreate component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
-      expect(mockCreateProcess).toHaveBeenCalledWith(
+      expect(mockCreateProcessVersion).toHaveBeenCalledWith(
         'process-1',
+        '1.0.0',
         expect.not.objectContaining({
           LCIAResults: expect.anything(),
         }),
@@ -619,13 +625,13 @@ describe('ProcessCreate component', () => {
     expect(latestProcessFormProps.exchangeDataSource).toEqual([]);
   });
 
-  it('falls back to an empty id when createVersion is opened without an id at runtime', async () => {
+  it('falls back to empty create-version identifiers when runtime props are missing', async () => {
     render(
       <ProcessCreate
         {...baseProps}
         actionType={'createVersion' as any}
         id={undefined as any}
-        version='1.0.0'
+        version={undefined as any}
         newVersion='03.00.000'
       />,
     );
@@ -633,7 +639,9 @@ describe('ProcessCreate component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'create' }));
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(mockCreateProcess).toHaveBeenCalledWith('', expect.anything()));
+    await waitFor(() =>
+      expect(mockCreateProcessVersion).toHaveBeenCalledWith('', '', expect.anything()),
+    );
   });
 
   it('opens automatically from imported data and reuses the imported UUID on submit', async () => {

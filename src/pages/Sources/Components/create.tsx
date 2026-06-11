@@ -5,7 +5,7 @@ import {
   getImportedId,
   isSupabaseDuplicateKeyError,
 } from '@/services/general/util';
-import { createSource, getSourceDetail } from '@/services/sources/api';
+import { createSource, createSourceVersion, getSourceDetail } from '@/services/sources/api';
 import {
   FormSource,
   SourceDataSetObjectKeys,
@@ -130,7 +130,7 @@ const SourceCreate: FC<CreateProps> = ({
 
       const paramsId = actionType === 'createVersion' ? id! : (importedId ?? v4());
       const formFieldsValue = formRefCreate.current?.getFieldsValue();
-      const result: SupabaseMutationResult<unknown> = await createSource(paramsId, {
+      const sourcePayload = {
         ...formFieldsValue,
         sourceInformation: {
           ...fromData?.sourceInformation,
@@ -139,7 +139,11 @@ const SourceCreate: FC<CreateProps> = ({
             referenceToDigitalFile: filePaths,
           },
         },
-      });
+      };
+      const result: SupabaseMutationResult<unknown> =
+        actionType === 'createVersion'
+          ? await createSourceVersion(id ?? '', version ?? '', sourcePayload)
+          : await createSource(paramsId, sourcePayload);
 
       if (result?.data) {
         if (fileListWithUUID.length > 0) {
@@ -166,7 +170,7 @@ const SourceCreate: FC<CreateProps> = ({
           isSupabaseDuplicateKeyError(result.error)
             ? intl.formatMessage({
                 id: 'pages.button.create.error.duplicateId',
-                defaultMessage: 'Data with the same ID already exists.',
+                defaultMessage: 'Data with the same ID and version already exists.',
               })
             : (result.error?.message ?? 'Error'),
         );

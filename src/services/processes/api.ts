@@ -11,6 +11,7 @@ import {
   createLegacyMutationRemovedError,
   getRefData,
   invokeDatasetCommand,
+  invokeDatasetCreateVersion,
   normalizeLangPayloadForSave,
   type LangNormalizationMetadata,
   type NormalizeLangPayloadForSaveOptions,
@@ -300,6 +301,59 @@ export async function createProcess(
     {
       id,
       table: 'processes',
+      jsonOrdered: newData,
+      modelId: modelId ?? null,
+      ruleVerification: rule_verification,
+    },
+    {
+      ruleVerification: rule_verification,
+    },
+  );
+  return attachLangNormalizationMetadata(result, langMetadata, options);
+}
+
+export async function createProcessVersion(
+  id: string,
+  sourceVersion: string,
+  data: any,
+  modelId?: string,
+  options?: NormalizeLangPayloadForSaveOptions,
+) {
+  const rawData = genProcessJsonOrdered(id, data);
+  const normalizedResult = await normalizeLangPayloadForSave(rawData, options);
+  const newData = normalizedResult?.payload ?? rawData;
+  const validationError = normalizedResult?.validationError;
+  const langMetadata = buildLangNormalizationMetadata(normalizedResult, rawData);
+  if (validationError) {
+    return attachLangNormalizationMetadata(
+      {
+        data: null,
+        error: {
+          message: validationError,
+          code: 'LANG_VALIDATION_ERROR',
+          details: '',
+          hint: '',
+          name: 'LangValidationError',
+        },
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        count: null,
+      },
+      langMetadata,
+      options,
+    );
+  }
+  const userTeamId = (await getTeamIdByUserId()) ?? '';
+  const { ruleVerification: rule_verification } = await validateDatasetRuleVerification(
+    'process data set',
+    newData,
+    userTeamId,
+  );
+  const result = await invokeDatasetCreateVersion<ProcessCommandRow>(
+    {
+      id,
+      table: 'processes',
+      sourceVersion,
       jsonOrdered: newData,
       modelId: modelId ?? null,
       ruleVerification: rule_verification,
