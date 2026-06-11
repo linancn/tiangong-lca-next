@@ -1,3 +1,4 @@
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
@@ -424,8 +425,8 @@ export const ContactForm: FC<Props> = ({
               />
             }
           >
-            <Form.Item
-              required={false}
+            <DatasetCreateVersionFormItem
+              createVersion={formType === 'createVersion'}
               label={
                 <RequiredMark
                   showError={false}
@@ -448,8 +449,8 @@ export const ContactForm: FC<Props> = ({
                 ]['rules'] ?? [],
               )}
             >
-              <Input disabled={formType === 'createVersion'} />
-            </Form.Item>
+              <Input />
+            </DatasetCreateVersionFormItem>
             <ContactSelectForm
               label={
                 <FormattedMessage

@@ -716,6 +716,84 @@ describe('invokeDatasetCommand', () => {
     });
   });
 
+  it('invokes the create-version command boundary with the supplied body', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_create_version',
+        data: {
+          id: sampleId,
+          version: '01.00.001',
+        },
+      },
+      error: null,
+    });
+
+    const body = {
+      id: sampleId,
+      table: 'flows' as const,
+      sourceVersion: sampleVersion,
+      jsonOrdered: { ordered: true },
+      ruleVerification: true,
+    };
+
+    const result = await generalApi.invokeDatasetCreateVersion(body, {
+      ruleVerification: true,
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_dataset_create_version', {
+      headers: { Authorization: 'Bearer token-cmd' },
+      body,
+      region: expect.anything(),
+    });
+    expect(result).toEqual({
+      data: [
+        {
+          id: sampleId,
+          version: '01.00.001',
+          rule_verification: true,
+        },
+      ],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+  });
+
+  it('uses default create-version command options when omitted', async () => {
+    mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
+    mockFunctionsInvoke.mockResolvedValue({
+      data: {
+        ok: true,
+        command: 'dataset_create_version',
+        data: {
+          id: sampleId,
+          version: '01.00.001',
+        },
+      },
+      error: null,
+    });
+
+    await generalApi.invokeDatasetCreateVersion({
+      id: sampleId,
+      table: 'flows',
+      sourceVersion: sampleVersion,
+      jsonOrdered: { ordered: true },
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'app_dataset_create_version',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          id: sampleId,
+          sourceVersion: sampleVersion,
+        }),
+      }),
+    );
+  });
+
   it('returns an empty normalized array when the command envelope has null data', async () => {
     mockAuthGetSession.mockResolvedValue({ data: { session: { access_token: 'token-cmd' } } });
     mockFunctionsInvoke.mockResolvedValue({

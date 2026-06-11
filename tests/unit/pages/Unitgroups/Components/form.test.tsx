@@ -439,7 +439,10 @@ describe('UnitGroupForm', () => {
       />,
     );
 
-    expect(screen.getAllByRole('textbox')[1]).toBeDisabled();
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toBeDisabled();
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toHaveValue(
+      'The new version will be generated automatically.',
+    );
     expect(screen.getByTestId('contact-select')).toHaveTextContent('"showRequiredLabel":true');
   });
 
@@ -552,7 +555,10 @@ describe('UnitGroupForm', () => {
           formType='createVersion'
         />,
       );
-      expect(screen.getAllByRole('textbox')[1]).toBeDisabled();
+      expect(screen.getByTestId('dataset-create-version-auto-message')).toBeDisabled();
+      expect(screen.getByTestId('dataset-create-version-auto-message')).toHaveValue(
+        'The new version will be generated automatically.',
+      );
       expect(screen.getByTestId('contact-select')).toHaveTextContent('"rulesCount":0');
     });
   });

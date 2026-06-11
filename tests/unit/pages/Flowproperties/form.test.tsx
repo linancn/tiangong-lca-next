@@ -271,7 +271,7 @@ describe('FlowpropertyForm', () => {
     expect(sourceSelectCalls[sourceSelectCalls.length - 1].defaultSourceName).toBe('ILCD format');
   });
 
-  it('marks the unit group field as required and disables version editing in createVersion mode', async () => {
+  it('marks the unit group field as required and shows auto-version copy in createVersion mode', async () => {
     const formRef = {
       current: {
         setFieldsValue: jest.fn(),
@@ -307,9 +307,10 @@ describe('FlowpropertyForm', () => {
       />,
     );
 
-    expect(
-      screen.getAllByRole('textbox').every((element) => element.hasAttribute('disabled')),
-    ).toBe(true);
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toBeDisabled();
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toHaveValue(
+      'The new version will be generated automatically.',
+    );
 
     rerender(
       <FlowpropertyForm

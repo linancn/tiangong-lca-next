@@ -1,5 +1,5 @@
 import ToolBarButton from '@/components/ToolBarButton';
-import { createContact, getContactDetail } from '@/services/contacts/api';
+import { createContact, createContactVersion, getContactDetail } from '@/services/contacts/api';
 import {
   ContactDataSetObjectKeys,
   ContactDetailResponse,
@@ -256,10 +256,10 @@ const ContactCreate: FC<CreateProps> = ({
               try {
                 const paramsId = actionType === 'createVersion' ? (id ?? '') : (importedId ?? v4());
                 const formFieldsValue = formRefCreate.current?.getFieldsValue();
-                const result: SupabaseMutationResult<unknown> = await createContact(
-                  paramsId,
-                  formFieldsValue,
-                );
+                const result: SupabaseMutationResult<unknown> =
+                  actionType === 'createVersion'
+                    ? await createContactVersion(id ?? '', version ?? '', formFieldsValue)
+                    : await createContact(paramsId, formFieldsValue);
                 if (result.data) {
                   message.success(
                     intl.formatMessage({
@@ -275,7 +275,7 @@ const ContactCreate: FC<CreateProps> = ({
                     isSupabaseDuplicateKeyError(result.error)
                       ? intl.formatMessage({
                           id: 'pages.button.create.error.duplicateId',
-                          defaultMessage: 'Data with the same ID already exists.',
+                          defaultMessage: 'Data with the same ID and version already exists.',
                         })
                       : (result.error?.message ?? 'Error'),
                   );

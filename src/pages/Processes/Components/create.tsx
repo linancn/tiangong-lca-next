@@ -6,7 +6,7 @@ import {
   isSupabaseDuplicateKeyError,
   jsonToList,
 } from '@/services/general/util';
-import { createProcess, getProcessDetail } from '@/services/processes/api';
+import { createProcess, createProcessVersion, getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, CopyOutlined, PlusOutlined } from '@ant-design/icons';
@@ -378,9 +378,13 @@ const ProcessCreate: FC<CreateProps> = ({
                 setSpinning(false);
                 return;
               }
-              const result = await createProcess(paramsId, {
+              const processPayload = {
                 ...fromData,
-              });
+              };
+              const result =
+                actionType === 'createVersion'
+                  ? await createProcessVersion(id ?? '', version ?? '', processPayload)
+                  : await createProcess(paramsId, processPayload);
               if (result.data) {
                 message.success(
                   intl.formatMessage({
@@ -396,7 +400,7 @@ const ProcessCreate: FC<CreateProps> = ({
                   isSupabaseDuplicateKeyError(result.error)
                     ? intl.formatMessage({
                         id: 'pages.button.create.error.duplicateId',
-                        defaultMessage: 'Data with the same ID already exists.',
+                        defaultMessage: 'Data with the same ID and version already exists.',
                       })
                     : (result.error?.message ?? 'Error'),
                 );

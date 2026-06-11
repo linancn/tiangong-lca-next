@@ -26,8 +26,8 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-06-08
-lastReviewedCommit: 858e8922d6387a09bdaa343748c6177b6cd9a0eb
+lastReviewedAt: 2026-06-11
+lastReviewedCommit: c77383f05f4349d99d0708b12ca707b91b12ac19
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

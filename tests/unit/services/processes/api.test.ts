@@ -37,6 +37,7 @@ const mockGetTeamIdByUserId = jest.fn();
 const mockGetRefData = jest.fn();
 const mockContributeSource = jest.fn();
 const mockInvokeDatasetCommand = jest.fn();
+const mockInvokeDatasetCreateVersion = jest.fn();
 const mockNormalizeLangPayloadForSave = jest.fn();
 const mockResolveFunctionInvokeError = jest.fn();
 const mockBuildLangNormalizationMetadata = jest.fn();
@@ -58,6 +59,7 @@ jest.mock('@/services/general/api', () => ({
   getRefData: (...args: any[]) => mockGetRefData.apply(null, args),
   contributeSource: (...args: any[]) => mockContributeSource.apply(null, args),
   invokeDatasetCommand: (...args: any[]) => mockInvokeDatasetCommand.apply(null, args),
+  invokeDatasetCreateVersion: (...args: any[]) => mockInvokeDatasetCreateVersion.apply(null, args),
   normalizeLangPayloadForSave: (...args: any[]) =>
     mockNormalizeLangPayloadForSave.apply(null, args),
   resolveFunctionInvokeError: (...args: any[]) => mockResolveFunctionInvokeError.apply(null, args),
@@ -190,6 +192,7 @@ beforeEach(() => {
   mockRpc.mockReset();
   mockGetTeamIdByUserId.mockReset();
   mockInvokeDatasetCommand.mockReset();
+  mockInvokeDatasetCreateVersion.mockReset();
   mockNormalizeLangPayloadForSave.mockReset();
   mockResolveFunctionInvokeError.mockReset();
   mockBuildLangNormalizationMetadata.mockReset();
@@ -219,6 +222,13 @@ beforeEach(() => {
   mockGetCachedClassificationData.mockResolvedValue({});
   mockGetLifeCyclesByIdAndVersion.mockResolvedValue({ data: [] });
   mockInvokeDatasetCommand.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
+  mockInvokeDatasetCreateVersion.mockResolvedValue({
     data: [],
     error: null,
     count: null,
@@ -456,6 +466,79 @@ describe('createProcess', () => {
       count: null,
     });
     expect(mockFrom).not.toHaveBeenCalled();
+  });
+});
+
+describe('createProcessVersion', () => {
+  it('creates a new process version with server-owned version allocation', async () => {
+    const createResult = {
+      data: [{ id: sampleId, version: '01.00.001' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockInvokeDatasetCreateVersion.mockResolvedValue(createResult);
+
+    const withModelResult = await processesApi.createProcessVersion(
+      sampleId,
+      sampleVersion,
+      { raw: true },
+      'model-1',
+    );
+
+    expect(mockGenProcessJsonOrdered).toHaveBeenCalledWith(sampleId, { raw: true });
+    expect(mockInvokeDatasetCreateVersion).toHaveBeenCalledWith(
+      {
+        id: sampleId,
+        table: 'processes',
+        sourceVersion: sampleVersion,
+        jsonOrdered: { ordered: true },
+        modelId: 'model-1',
+        ruleVerification: true,
+      },
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(withModelResult).toBe(createResult);
+
+    mockInvokeDatasetCreateVersion.mockClear();
+
+    await processesApi.createProcessVersion(sampleId, sampleVersion, { raw: true });
+
+    expect(mockInvokeDatasetCreateVersion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelId: null,
+      }),
+      {
+        ruleVerification: true,
+      },
+    );
+  });
+
+  it('returns a structured validation error before invoking create-version', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: { normalized: true },
+      validationError: 'invalid_language_payload',
+    });
+
+    const result = await processesApi.createProcessVersion(sampleId, sampleVersion, { raw: true });
+
+    expect(mockInvokeDatasetCreateVersion).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      data: null,
+      error: {
+        message: 'invalid_language_payload',
+        code: 'LANG_VALIDATION_ERROR',
+        details: '',
+        hint: '',
+        name: 'LangValidationError',
+      },
+      status: 400,
+      statusText: 'LANG_VALIDATION_ERROR',
+      count: null,
+    });
   });
 });
 
