@@ -2,16 +2,23 @@ import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
   ApartmentOutlined,
+  BranchesOutlined,
   BuildOutlined,
   DeploymentUnitOutlined,
+  ExperimentOutlined,
+  FileSearchOutlined,
+  FolderOpenOutlined,
   GlobalOutlined,
   InteractionOutlined,
+  NodeIndexOutlined,
+  PaperClipOutlined,
   ProductOutlined,
   ShareAltOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import {
+  Avatar,
   Button,
   Card,
   Col,
@@ -21,6 +28,7 @@ import {
   Spin,
   Statistic,
   StatisticProps,
+  Steps,
   Typography,
   theme,
 } from 'antd';
@@ -30,15 +38,248 @@ import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
-import { FormattedMessage, history, useIntl } from 'umi';
+import { FormattedMessage, history, useIntl, useLocation } from 'umi';
+
+const CARBON_FOOTPRINT_VIEW = 'carbon-footprint';
+
+type WelcomeView = 'overview' | 'carbonFootprintGuide';
+type SchemaItemKey =
+  | 'model'
+  | 'process'
+  | 'flow'
+  | 'flowProperty'
+  | 'unitGroup'
+  | 'source'
+  | 'contact';
+
+const carbonFootprintGuideContent: Record<
+  'en' | 'zh',
+  {
+    entryLabel: string;
+    title: string;
+    intro: string;
+    videoTitle: string;
+    videoFallback: string;
+    workflowTitle: string;
+    schemaTitle: string;
+    actions: {
+      browsePublicData: string;
+      enterMyData: string;
+    };
+    teachingSteps: Array<{ title: string; description: string }>;
+    preparationItems: Array<{ title: string; description: string }>;
+    schemaItems: Array<{ key: SchemaItemKey; title: string; description: string }>;
+  }
+> = {
+  zh: {
+    entryLabel: '数据研制指南',
+    title: '天工生命周期数据库',
+    intro:
+      '面向产品碳足迹数据报送、背景数据管理和生命周期建模。数据填报从过程开始，先记录过程边界、输入输出、数量单位和来源，再按需要选择已有流或新增产品流，最后完成验证、审核和模型串接。',
+    videoTitle: '操作演示视频',
+    videoFallback: '当前浏览器不支持视频播放。',
+    workflowTitle: '过程数据研制流程',
+    schemaTitle: '数据对象',
+    actions: {
+      browsePublicData: '浏览开放数据',
+      enterMyData: '进入我的数据',
+    },
+    teachingSteps: [
+      { title: '登录首页', description: '查看新手入口、教学视频和数据对象说明。' },
+      { title: '新建过程', description: '从我的数据进入过程，先录入单元过程基本信息。' },
+      { title: '填写基础信息', description: '补充过程名称、边界、年份、地区、来源和产品系统。' },
+      { title: '录入输入/输出', description: '记录物料、能源、排放和产品流的方向、数量和单位。' },
+      { title: '选择或新增流', description: '平台已有流直接选择；缺少的产品流再新建并关联。' },
+      { title: '验证与提交', description: '检查必填项、单位和逻辑关系，通过后提交审核。' },
+    ],
+    preparationItems: [
+      {
+        title: '收集原始数据',
+        description: '明确产品、功能单位、时间范围、地理范围和工艺边界。',
+      },
+      {
+        title: '梳理单元过程',
+        description: '把制造、运输、能源使用、废弃物处理等环节拆成可录入的单元过程。',
+      },
+      {
+        title: '核对流与单位',
+        description: '先匹配已有流；确实缺少的产品流再新增，并统一数量单位。',
+      },
+      {
+        title: '提交验证审核',
+        description: '完成过程必填项、输入输出和来源说明后，再进入验证与审核。',
+      },
+    ],
+    schemaItems: [
+      {
+        key: 'model',
+        title: '模型',
+        description: '描述产品系统的完整或部分生命周期，由多个相互连接的过程组成。',
+      },
+      {
+        key: 'process',
+        title: '过程',
+        description: '记录单个生产或处理过程的输入输出流、时间、地理和技术代表性。',
+      },
+      {
+        key: 'flow',
+        title: '流',
+        description: '定义生命周期评估中的物质、能量或废弃物，是过程和模型的连接基础。',
+      },
+      {
+        key: 'flowProperty',
+        title: '流属性',
+        description: '定义流的计量方式，例如质量、能量、体积、经济价值等。',
+      },
+      {
+        key: 'unitGroup',
+        title: '单位组',
+        description: '定义相关计量单位及其换算关系，支撑跨数据集的单位转换。',
+      },
+      {
+        key: 'source',
+        title: '来源',
+        description: '记录文献、数据库、合规系统等引用信息，支撑透明性和可追溯性。',
+      },
+      {
+        key: 'contact',
+        title: '联系人',
+        description: '记录与数据集相关的个人、工作组、组织或数据库网络联系信息。',
+      },
+    ],
+  },
+  en: {
+    entryLabel: 'Data Development Guide',
+    title: 'TianGong Life Cycle Database',
+    intro:
+      'Built for product carbon footprint reporting, background data management, and lifecycle modeling. Data entry starts with processes: record boundaries, inputs and outputs, quantities, units, and sources; choose existing flows or add product flows as needed; then complete validation, review, and model linking.',
+    videoTitle: 'Operation Demo Video',
+    videoFallback: 'Your browser does not support video playback.',
+    workflowTitle: 'Process Data Development Workflow',
+    schemaTitle: 'Data Objects',
+    actions: {
+      browsePublicData: 'Browse Open Data',
+      enterMyData: 'My Data',
+    },
+    teachingSteps: [
+      {
+        title: 'Open Home',
+        description: 'Review starter entry points, tutorial videos, and data objects.',
+      },
+      {
+        title: 'Create Process',
+        description: 'Enter My Data and start with basic unit process information.',
+      },
+      {
+        title: 'Fill Basics',
+        description: 'Add name, boundary, year, region, source, and product system.',
+      },
+      {
+        title: 'Enter Inputs/Outputs',
+        description:
+          'Record materials, energy, emissions, and product flows with direction, quantity, and unit.',
+      },
+      {
+        title: 'Select Or Add Flows',
+        description:
+          'Select existing platform flows first; add missing product flows only when needed.',
+      },
+      {
+        title: 'Validate And Submit',
+        description: 'Check required fields, units, and logic before submitting for review.',
+      },
+    ],
+    preparationItems: [
+      {
+        title: 'Collect Raw Data',
+        description:
+          'Clarify product, functional unit, time span, geography, and process boundary.',
+      },
+      {
+        title: 'Map Unit Processes',
+        description:
+          'Break manufacturing, transport, energy use, and waste treatment into enterable unit processes.',
+      },
+      {
+        title: 'Check Flows And Units',
+        description:
+          'Match existing flows first; add missing product flows only when needed and keep units consistent.',
+      },
+      {
+        title: 'Submit For Review',
+        description:
+          'Complete required process fields, inputs and outputs, and sources before validation and review.',
+      },
+    ],
+    schemaItems: [
+      {
+        key: 'model',
+        title: 'Model',
+        description:
+          'Describes a full or partial product system lifecycle made of connected processes.',
+      },
+      {
+        key: 'process',
+        title: 'Process',
+        description:
+          'Records inputs, outputs, time, geography, and technical representativeness for one production or treatment process.',
+      },
+      {
+        key: 'flow',
+        title: 'Flow',
+        description:
+          'Defines material, energy, or waste exchanged in lifecycle assessment, connecting processes and models.',
+      },
+      {
+        key: 'flowProperty',
+        title: 'Flow Property',
+        description:
+          'Defines how a flow is measured, such as mass, energy, volume, or economic value.',
+      },
+      {
+        key: 'unitGroup',
+        title: 'Unit Group',
+        description:
+          'Defines related measurement units and conversions for consistent cross-dataset unit handling.',
+      },
+      {
+        key: 'source',
+        title: 'Source',
+        description:
+          'Records literature, database, compliance, or other references for transparency and traceability.',
+      },
+      {
+        key: 'contact',
+        title: 'Contact',
+        description:
+          'Records people, working groups, organizations, or database networks related to datasets.',
+      },
+    ],
+  },
+};
+
+const schemaIconMap: Record<SchemaItemKey, React.ReactNode> = {
+  model: <ExperimentOutlined />,
+  process: <BranchesOutlined />,
+  flow: <NodeIndexOutlined />,
+  flowProperty: <FileSearchOutlined />,
+  unitGroup: <ApartmentOutlined />,
+  source: <PaperClipOutlined />,
+  contact: <TeamOutlined />,
+};
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
   const { Meta } = Card;
+  const location = useLocation();
 
   const { locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
+  const activeViewFromLocation: WelcomeView = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search ?? '');
+    return searchParams.get('view') === CARBON_FOOTPRINT_VIEW ? 'carbonFootprintGuide' : 'overview';
+  }, [location.search]);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -48,6 +289,11 @@ const Welcome: React.FC = () => {
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
   const [isTidasModalOpen, setIsTidasModalOpen] = useState(false);
+  const [activeWelcomeView, setActiveWelcomeView] = useState<WelcomeView>(activeViewFromLocation);
+
+  useEffect(() => {
+    setActiveWelcomeView(activeViewFromLocation);
+  }, [activeViewFromLocation]);
 
   const handleOpenDataModal = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>) => {
@@ -56,6 +302,13 @@ const Welcome: React.FC = () => {
     },
     [setIsDataModalOpen],
   );
+
+  const handleOpenCarbonFootprintGuide = React.useCallback(() => {
+    setIsDataModalOpen(false);
+    setIsTidasModalOpen(false);
+    setActiveWelcomeView('carbonFootprintGuide');
+    history.push(`/welcome?view=${CARBON_FOOTPRINT_VIEW}`);
+  }, []);
 
   const loadTeams = React.useCallback(async () => {
     if (teams || isTeamsLoading) {
@@ -106,12 +359,15 @@ const Welcome: React.FC = () => {
   };
 
   useEffect(() => {
+    if (activeWelcomeView !== 'overview') {
+      return;
+    }
     if (isDataModalOpen) {
       loadTeams();
     } else {
       getTeamCount();
     }
-  }, [isDataModalOpen, loadTeams]);
+  }, [activeWelcomeView, isDataModalOpen, loadTeams]);
 
   useEffect(() => {
     if (!isDataModalOpen && !isTidasModalOpen) {
@@ -286,6 +542,7 @@ const Welcome: React.FC = () => {
   };
 
   const currentContent = tidasContent[lang] ?? tidasContent.en;
+  const currentGuideContent = carbonFootprintGuideContent[lang] ?? carbonFootprintGuideContent.en;
 
   const metrics = [
     {
@@ -349,130 +606,276 @@ const Welcome: React.FC = () => {
   const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), []);
 
   const modalStyles = useMemo(() => ({ content: { borderRadius: WELCOME_RADIUS } }), []);
+  const guidePanelStyle = useMemo<React.CSSProperties>(
+    () => ({
+      height: '100%',
+      padding: 12,
+      border: `1px solid ${token.colorBorderSecondary}`,
+      borderRadius: WELCOME_RADIUS,
+      background: token.colorFillQuaternary ?? token.colorFillTertiary,
+    }),
+    [token.colorBorderSecondary, token.colorFillQuaternary, token.colorFillTertiary],
+  );
+  const guideAvatarStyle = useMemo<React.CSSProperties>(
+    () => ({
+      flex: '0 0 auto',
+      color: primaryColor,
+      background: token.colorPrimaryBg ?? token.colorFillTertiary,
+    }),
+    [primaryColor, token.colorFillTertiary, token.colorPrimaryBg],
+  );
+  const guideVideoStyle = useMemo<React.CSSProperties>(
+    () => ({
+      width: '100%',
+      aspectRatio: '16 / 9',
+      background: token.colorFillQuaternary ?? token.colorFillTertiary,
+      borderRadius: WELCOME_RADIUS,
+    }),
+    [token.colorFillQuaternary, token.colorFillTertiary],
+  );
+
+  const renderCarbonFootprintGuide = () => (
+    <>
+      <Row gutter={[16, 16]} align='stretch'>
+        <Col xs={24} xl={13} style={{ display: 'flex' }}>
+          <Card
+            title={currentGuideContent.title}
+            className={styles.welcome_card}
+            style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
+          >
+            <Space
+              direction='vertical'
+              size={20}
+              style={{
+                width: '100%',
+              }}
+            >
+              <Typography.Paragraph style={{ margin: 0, fontSize: 16, lineHeight: 1.9 }}>
+                {currentGuideContent.intro}
+              </Typography.Paragraph>
+              <Row gutter={[12, 12]}>
+                {currentGuideContent.preparationItems.map((item) => (
+                  <Col xs={24} md={12} key={item.title}>
+                    <div style={guidePanelStyle}>
+                      <Space direction='vertical' size={8}>
+                        <Typography.Text strong>{item.title}</Typography.Text>
+                        <Typography.Paragraph
+                          type='secondary'
+                          style={{ margin: 0, color: token.colorTextSecondary }}
+                        >
+                          {item.description}
+                        </Typography.Paragraph>
+                      </Space>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+              <Space wrap>
+                <Button icon={<FolderOpenOutlined />} onClick={() => history.push('/tgdata/flows')}>
+                  {currentGuideContent.actions.browsePublicData}
+                </Button>
+                <Button
+                  type='primary'
+                  icon={<UserOutlined />}
+                  onClick={() => history.push('/mydata/processes')}
+                >
+                  {currentGuideContent.actions.enterMyData}
+                </Button>
+              </Space>
+            </Space>
+          </Card>
+        </Col>
+        <Col xs={24} xl={11} style={{ display: 'flex' }}>
+          <Card
+            title={currentGuideContent.videoTitle}
+            className={styles.welcome_card}
+            style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
+          >
+            <Space direction='vertical' size={20} style={{ width: '100%' }}>
+              <video controls preload='metadata' style={guideVideoStyle}>
+                <source
+                  src='/tutorials/platform_usage_process_first_matched.mp4?v=fast130precise'
+                  type='video/mp4'
+                />
+                {currentGuideContent.videoFallback}
+              </video>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+
+      <Card
+        title={currentGuideContent.workflowTitle}
+        className={styles.welcome_card}
+        style={cardBorderRadiusStyle}
+      >
+        <Steps
+          current={-1}
+          items={currentGuideContent.teachingSteps.map((item) => ({
+            title: item.title,
+            description: item.description,
+          }))}
+        />
+      </Card>
+
+      <Card
+        title={currentGuideContent.schemaTitle}
+        className={styles.welcome_card}
+        style={cardBorderRadiusStyle}
+      >
+        <Row gutter={[12, 12]}>
+          {currentGuideContent.schemaItems.map((item) => (
+            <Col xs={24} sm={12} xl={8} key={item.key}>
+              <div style={guidePanelStyle}>
+                <Space align='start' size='middle'>
+                  <Avatar icon={schemaIconMap[item.key]} style={guideAvatarStyle} />
+                  <Space direction='vertical' size={4}>
+                    <Typography.Text strong>{item.title}</Typography.Text>
+                    <Typography.Text type='secondary'>{item.description}</Typography.Text>
+                  </Space>
+                </Space>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </Card>
+    </>
+  );
+
+  const renderOverview = () => (
+    <>
+      <Row gutter={[16, 16]} wrap>
+        {metrics.map((metric) => (
+          <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
+            <Card
+              className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
+              styles={{
+                body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
+              }}
+              style={{ ...cardBorderRadiusStyle, width: '100%' }}
+            >
+              <div className={styles.welcome_metric_content}>
+                <div className={styles.welcome_metric_header}>
+                  <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
+                    {metric.icon}
+                  </span>
+                  {metric.key === 'data5' ? (
+                    <Typography.Link
+                      strong
+                      href='#'
+                      onClick={handleOpenDataModal}
+                      style={{
+                        color: primaryColor,
+                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {metric.title}
+                    </Typography.Link>
+                  ) : (
+                    <Typography.Text
+                      strong
+                      style={{
+                        color: primaryColor,
+                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {metric.title}
+                    </Typography.Text>
+                  )}
+                </div>
+                <Statistic
+                  value={metric.value}
+                  formatter={formatter}
+                  valueStyle={{
+                    fontSize: '1.25rem',
+                    color: token.colorText,
+                    lineHeight: 1.1,
+                    fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                  }}
+                  style={{ width: '100%', textAlign: 'center' }}
+                />
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card
+        className={styles.welcome_card}
+        styles={{ body: { padding: 24 } }}
+        style={cardBorderRadiusStyle}
+      >
+        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+          <Typography.Paragraph
+            style={{
+              margin: 0,
+              color: token.colorText,
+              fontSize: '1rem',
+              lineHeight: 1.7,
+            }}
+          >
+            {currentContent.intro}
+          </Typography.Paragraph>
+          <Space size={12} wrap>
+            <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
+              {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
+            </Button>
+            <Button onClick={handleOpenDataModal}>
+              {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
+            </Button>
+            <Button onClick={handleOpenCarbonFootprintGuide}>
+              {currentGuideContent.entryLabel}
+            </Button>
+          </Space>
+        </Space>
+      </Card>
+
+      <Row gutter={[16, 16]} align='stretch'>
+        {currentContent.sections.map((section) => (
+          <Col xs={24} md={12} key={section.key}>
+            <Card
+              className={`${styles.welcome_card} ${styles.welcome_section_card}`}
+              styles={{ body: { padding: 24 } }}
+              style={cardBorderRadiusStyle}
+            >
+              <Space direction='vertical' size={12}>
+                <div className={styles.welcome_section_header}>
+                  <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
+                    {sectionIconMap[section.key]}
+                  </span>
+                  <Typography.Text
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      lineHeight: '20px',
+                      fontSize: '1rem',
+                      margin: 0,
+                    }}
+                  >
+                    {section.heading}
+                  </Typography.Text>
+                </div>
+                <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+                  {section.description}
+                </Typography.Paragraph>
+              </Space>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </>
+  );
 
   return (
     <PageContainer title={false} className={styles.welcome_page}>
       <Space direction='vertical' size={24} className={styles.welcome_content}>
-        <Row gutter={[16, 16]} wrap>
-          {metrics.map((metric) => (
-            <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
-              <Card
-                className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-                styles={{
-                  body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
-                }}
-                style={{ ...cardBorderRadiusStyle, width: '100%' }}
-              >
-                <div className={styles.welcome_metric_content}>
-                  <div className={styles.welcome_metric_header}>
-                    <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
-                      {metric.icon}
-                    </span>
-                    {metric.key === 'data5' ? (
-                      <Typography.Link
-                        strong
-                        href='#'
-                        onClick={handleOpenDataModal}
-                        style={{
-                          color: primaryColor,
-                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                        }}
-                      >
-                        {metric.title}
-                      </Typography.Link>
-                    ) : (
-                      <Typography.Text
-                        strong
-                        style={{
-                          color: primaryColor,
-                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                        }}
-                      >
-                        {metric.title}
-                      </Typography.Text>
-                    )}
-                  </div>
-                  <Statistic
-                    value={metric.value}
-                    formatter={formatter}
-                    valueStyle={{
-                      fontSize: '1.25rem',
-                      color: token.colorText,
-                      lineHeight: 1.1,
-                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                    }}
-                    style={{ width: '100%', textAlign: 'center' }}
-                  />
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-
-        <Card
-          className={styles.welcome_card}
-          styles={{ body: { padding: 24 } }}
-          style={cardBorderRadiusStyle}
-        >
-          <Space direction='vertical' size={16} style={{ width: '100%' }}>
-            <Typography.Paragraph
-              style={{
-                margin: 0,
-                color: token.colorText,
-                fontSize: '1rem',
-                lineHeight: 1.7,
-              }}
-            >
-              {currentContent.intro}
-            </Typography.Paragraph>
-            <Space size={12} wrap>
-              <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
-                {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
-              </Button>
-              <Button onClick={handleOpenDataModal}>
-                {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
-              </Button>
-            </Space>
-          </Space>
-        </Card>
-
-        <Row gutter={[16, 16]} align='stretch'>
-          {currentContent.sections.map((section) => (
-            <Col xs={24} md={12} key={section.key}>
-              <Card
-                className={`${styles.welcome_card} ${styles.welcome_section_card}`}
-                styles={{ body: { padding: 24 } }}
-                style={cardBorderRadiusStyle}
-              >
-                <Space direction='vertical' size={12}>
-                  <div className={styles.welcome_section_header}>
-                    <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
-                      {sectionIconMap[section.key]}
-                    </span>
-                    <Typography.Text
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        lineHeight: '20px',
-                        fontSize: '1rem',
-                        margin: 0,
-                      }}
-                    >
-                      {section.heading}
-                    </Typography.Text>
-                  </div>
-                  <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-                    {section.description}
-                  </Typography.Paragraph>
-                </Space>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        {activeWelcomeView === 'carbonFootprintGuide'
+          ? renderCarbonFootprintGuide()
+          : renderOverview()}
       </Space>
       <Modal
         open={isDataModalOpen}
