@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-06-11'
-lastReviewedCommit: 'c77383f05f4349d99d0708b12ca707b91b12ac19'
+lastReviewedAt: "2026-06-12"
+lastReviewedCommit: "835bab5db7070c5c021561d058d15694df947088"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -336,6 +336,8 @@ rules:
         kind: shared-ui
       - path: src/locales/**
         kind: ui-locale
+      - path: public/tutorials/**
+        kind: tutorial-static-resource
       - path: src/requestErrorConfig.ts
         kind: app-runtime
       - path: src/service-worker.js

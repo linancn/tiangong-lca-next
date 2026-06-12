@@ -448,6 +448,17 @@ export const createAntdMock = () => {
     </div>
   );
 
+  const Steps = ({ items = [], current, ...rest }: any) => (
+    <ol data-testid='steps' data-current={String(current ?? '')} {...rest}>
+      {(items ?? []).map((item: any, index: number) => (
+        <li key={item.key ?? item.title ?? index}>
+          <span>{item.title}</span>
+          {item.description ? <span>{item.description}</span> : null}
+        </li>
+      ))}
+    </ol>
+  );
+
   const Drawer = ({ open, children, extra, title, footer, onClose }: any) => {
     if (!open) return null;
     const label = toText(title) || 'drawer';
@@ -776,6 +787,7 @@ export const createAntdMock = () => {
     Modal,
     Progress,
     Skeleton,
+    Steps,
     Row,
     Select,
     Space,
