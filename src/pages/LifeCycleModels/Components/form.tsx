@@ -1,3 +1,4 @@
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
@@ -640,8 +641,8 @@ export const LifeCycleModelForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
-            required={false}
+          <DatasetCreateVersionFormItem
+            createVersion={actionType === 'createVersion'}
             label={
               <RequiredMark
                 label={
@@ -660,8 +661,8 @@ export const LifeCycleModelForm: FC<Props> = ({
               ]['common:dataSetVersion']['rules'],
             )}
           >
-            <Input disabled={actionType === 'createVersion'} />
-          </Form.Item>
+            <Input />
+          </DatasetCreateVersionFormItem>
           <Form.Item
             required={false}
             label={

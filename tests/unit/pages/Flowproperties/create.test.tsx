@@ -237,11 +237,15 @@ jest.mock('@/pages/Flowproperties/Components/form', () => {
 const mockCreateFlowproperties = jest.fn(async () => ({
   data: [{ id: 'fp-created', version: '1.0.0' }],
 }));
+const mockCreateFlowpropertiesVersion = jest.fn(async () => ({
+  data: [{ id: 'fp-created', version: '1.0.0' }],
+}));
 const mockGenFlowpropertyFromData = jest.fn((payload: any) => payload ?? {});
 
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
   createFlowproperties: (...args: any[]) => mockCreateFlowproperties(...args),
+  createFlowpropertiesVersion: (...args: any[]) => mockCreateFlowpropertiesVersion(...args),
   getFlowpropertyDetail: (...args: any[]) => mockGetFlowpropertyDetail(...args),
 }));
 
@@ -263,6 +267,9 @@ describe('FlowpropertiesCreate', () => {
     mockGetImportedId.mockReturnValue(undefined);
     mockIsSupabaseDuplicateKeyError.mockReturnValue(false);
     mockCreateFlowproperties.mockResolvedValue({ data: [{ id: 'fp-created', version: '1.0.0' }] });
+    mockCreateFlowpropertiesVersion.mockResolvedValue({
+      data: [{ id: 'fp-created', version: '1.0.0' }],
+    });
   });
 
   it('creates a flow property and reloads table on success', async () => {
@@ -323,12 +330,35 @@ describe('FlowpropertiesCreate', () => {
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() =>
-      expect(mockCreateFlowproperties).toHaveBeenCalledWith(
+      expect(mockCreateFlowpropertiesVersion).toHaveBeenCalledWith(
         'fp-1',
+        '1.0.0',
         expect.objectContaining({
           flowPropertiesInformation: expect.any(Object),
         }),
       ),
+    );
+  });
+
+  it('falls back to empty create-version identifiers when runtime props are missing', async () => {
+    const actionRef: any = { current: { reload: jest.fn() } };
+
+    await act(async () => {
+      renderWithProviders(
+        <FlowpropertiesCreate
+          actionRef={actionRef}
+          lang='en'
+          actionType='createVersion'
+          {...({ id: undefined, version: undefined } as any)}
+        />,
+      );
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() =>
+      expect(mockCreateFlowpropertiesVersion).toHaveBeenCalledWith('', '', expect.any(Object)),
     );
   });
 
@@ -391,7 +421,9 @@ describe('FlowpropertiesCreate', () => {
 
     const { message } = jest.requireMock('antd');
     await waitFor(() =>
-      expect(message.error).toHaveBeenCalledWith('Data with the same ID already exists.'),
+      expect(message.error).toHaveBeenCalledWith(
+        'Data with the same ID and version already exists.',
+      ),
     );
     expect(actionRef.current.reload).not.toHaveBeenCalled();
   });

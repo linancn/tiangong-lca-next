@@ -1,3 +1,4 @@
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
@@ -2333,7 +2334,8 @@ export const ProcessForm: FC<Props> = ({
             <Input />
           </Form.Item>
 
-          <Form.Item
+          <DatasetCreateVersionFormItem
+            createVersion={formType === 'createVersion'}
             label={
               <FormattedMessage
                 id='pages.process.view.administrativeInformation.dataSetVersion'
@@ -2348,7 +2350,7 @@ export const ProcessForm: FC<Props> = ({
             )}
           >
             <Input disabled={actionFrom === 'modelResult'} />
-          </Form.Item>
+          </DatasetCreateVersionFormItem>
 
           <Form.Item
             label={

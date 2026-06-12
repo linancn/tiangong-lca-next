@@ -266,6 +266,7 @@ async function applyReferenceAwareRuleVerification(
 export async function createLifeCycleModel(
   data: any,
   options?: NormalizeLangPayloadForSaveOptions,
+  createVersionOptions?: { sourceVersion: string },
 ): Promise<LifeCycleModelMutationResult> {
   const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
   const normalizedCreateResult = await normalizeLangPayloadForSave(
@@ -314,7 +315,14 @@ export async function createLifeCycleModel(
   }
   const userTeamId = (await getTeamIdByUserId()) ?? '';
   const plan = await applyReferenceAwareRuleVerification(planResult.plan, userTeamId);
-  const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', plan);
+  const savePlan = createVersionOptions?.sourceVersion
+    ? {
+        ...plan,
+        allocateVersion: true,
+        sourceVersion: createVersionOptions.sourceVersion,
+      }
+    : plan;
+  const result = await invokeLifecycleModelBundleFunction('save_lifecycle_model_bundle', savePlan);
   return attachLangNormalizationMetadata(result, langMetadata, options);
 }
 

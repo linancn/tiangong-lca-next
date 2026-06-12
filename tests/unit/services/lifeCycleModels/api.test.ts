@@ -1099,6 +1099,48 @@ describe('createLifeCycleModel', () => {
     });
     expect(result).toEqual(edgePayload);
   });
+
+  it('passes allocateVersion metadata when creating a lifecycle model version', async () => {
+    const rawJson = buildLifecycleModelJsonOrdered();
+    const edgePayload = buildSaveResult({
+      version: '01.00.001',
+      lifecycleModel: {
+        id: sampleModelId,
+        version: '01.00.001',
+        json: {},
+        json_tg: { submodels: [] },
+        ruleVerification: true,
+      },
+    });
+    mockGenLifeCycleModelJsonOrdered.mockReturnValueOnce(rawJson);
+    mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
+      payload: rawJson,
+      validationError: undefined,
+    });
+    mockGetTeamIdByUserId.mockResolvedValueOnce(undefined);
+    mockGenLifeCycleModelProcesses.mockResolvedValueOnce({
+      lifeCycleModelProcesses: [],
+      up2DownEdges: [],
+    });
+    mockFunctionsInvoke.mockResolvedValueOnce(createMockEdgeFunctionResponse(edgePayload));
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel(
+      {
+        id: sampleModelId,
+        model: { nodes: [], edges: [] },
+      },
+      undefined,
+      { sourceVersion: '01.00.000' },
+    );
+
+    expect(mockFunctionsInvoke.mock.calls[0][1].body).toMatchObject({
+      mode: 'create',
+      modelId: sampleModelId,
+      allocateVersion: true,
+      sourceVersion: '01.00.000',
+    });
+    expect(result).toEqual(edgePayload);
+  });
 });
 
 describe('updateLifeCycleModel', () => {
