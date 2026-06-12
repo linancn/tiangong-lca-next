@@ -226,7 +226,7 @@ const geoMapViewRequests: Partial<
   Record<ProcessFlowGraphMapScope, Promise<ProcessFlowGraphGeoMapView | undefined>>
 > = {};
 
-export function resetProcessFlowGraphCacheLoaderStateForTest(): void {
+export function resetProcessFlowGraphCacheLoaderState(): void {
   Object.keys(geoMapBackgroundFallbackRequests).forEach((cacheKey) => {
     delete geoMapBackgroundFallbackRequests[cacheKey];
   });
@@ -236,6 +236,10 @@ export function resetProcessFlowGraphCacheLoaderStateForTest(): void {
   Object.keys(geoMapViewRequests).forEach((scope) => {
     delete geoMapViewRequests[scope as ProcessFlowGraphMapScope];
   });
+}
+
+export function resetProcessFlowGraphCacheLoaderStateForTest(): void {
+  resetProcessFlowGraphCacheLoaderState();
 }
 
 function isWorkerFrameOnlyBackground(background: ProcessFlowGraphMapBackground): boolean {

@@ -1,4 +1,9 @@
 import {
+  requestNationalCarbonGraphCacheJobsApi,
+  type NationalCarbonGraphCacheWorkerJobResult,
+  type NationalCarbonGraphCacheWorkerJobStatus,
+} from '@/services/nationalCarbonGraphCacheJobs/api';
+import {
   AimOutlined,
   ApartmentOutlined,
   CaretDownOutlined,
@@ -9,12 +14,15 @@ import {
   DragOutlined,
   EnvironmentOutlined,
   GlobalOutlined,
+  LoadingOutlined,
   NodeIndexOutlined,
   RightOutlined,
   SearchOutlined,
   SelectOutlined,
+  SyncOutlined,
 } from '@ant-design/icons';
-import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, message } from 'antd';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
 import {
   getProcessFlowGraphNode,
@@ -33,6 +41,7 @@ import {
 import {
   loadProcessFlowGraphFromCache,
   loadProcessFlowGraphGeoMapViewFromCache,
+  resetProcessFlowGraphCacheLoaderState,
 } from './processFlowGraphCacheLoader';
 import styles from './styles.module.less';
 
@@ -42,6 +51,7 @@ const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
 });
 const geoMapCacheSoftTimeoutMs = 4500;
 const initialGeoMapPrefetchGraceMs = 900;
+const graphCacheJobPollDelayMs = 3500;
 const maxCacheErrorLength = 96;
 const inspectorExitAnimationMs = 320;
 const categoryPathDelimiter = ' / ';
@@ -53,6 +63,17 @@ const minCategoryMenuWidth = 226;
 const quickSelectOverviewFlowNodeId = 'flow:c431c0c3-3f5e-4b7b-af99-2ebbdcaf5f98@01.01.002';
 const quickSelectWorldMapProcessNodeId = 'process:1714bb7f-ced9-4c3f-8fac-af40ef8dd5fb@01.01.000';
 const quickSelectChinaMapProcessNodeId = 'process:9c3a6c6e-1010-41a6-b1f8-a3a52d2d62a3@01.01.000';
+const graphCacheJobActiveStatuses: NationalCarbonGraphCacheWorkerJobStatus[] = [
+  'queued',
+  'running',
+  'waiting',
+  'stale',
+];
+const graphCacheJobFailureStatuses: NationalCarbonGraphCacheWorkerJobStatus[] = [
+  'blocked',
+  'failed',
+  'cancelled',
+];
 
 type QuickSelectTarget = {
   label: string;
@@ -91,6 +112,53 @@ function formatCacheError(error: string): string {
   }
 
   return `${error.slice(0, maxCacheErrorLength - 1)}...`;
+}
+
+function getFirstGraphCacheJob(
+  jobs: NationalCarbonGraphCacheWorkerJobResult[] | null,
+): NationalCarbonGraphCacheWorkerJobResult | undefined {
+  return jobs?.[0];
+}
+
+function isGraphCacheJobActive(job?: NationalCarbonGraphCacheWorkerJobResult): boolean {
+  return Boolean(job && graphCacheJobActiveStatuses.includes(job.status));
+}
+
+function isGraphCacheJobFailure(job?: NationalCarbonGraphCacheWorkerJobResult): boolean {
+  return Boolean(job && graphCacheJobFailureStatuses.includes(job.status));
+}
+
+function getGraphCacheJobStatusLabel(job?: NationalCarbonGraphCacheWorkerJobResult): string {
+  if (!job) {
+    return '未提交';
+  }
+
+  if (job.status === 'queued') {
+    return '排队中';
+  }
+  if (job.status === 'running') {
+    return job.phase ? `运行中：${job.phase}` : '运行中';
+  }
+  if (job.status === 'waiting') {
+    return '等待中';
+  }
+  if (job.status === 'stale') {
+    return '待恢复';
+  }
+  if (job.status === 'completed') {
+    return '已完成';
+  }
+  if (job.status === 'blocked') {
+    return '已阻塞';
+  }
+  if (job.status === 'failed') {
+    return '失败';
+  }
+  if (job.status === 'cancelled') {
+    return '已取消';
+  }
+
+  return job.status;
 }
 
 function getFlowTypeLabel(flowType?: string) {
@@ -830,6 +898,13 @@ export default function ProcessFlowGraphPanel() {
   const [data, setData] = useState<ProcessFlowGraphData | undefined>();
   const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
   const [loadError, setLoadError] = useState<string | undefined>();
+  const [graphCacheReloadToken, setGraphCacheReloadToken] = useState(0);
+  const [graphCacheJob, setGraphCacheJob] = useState<
+    NationalCarbonGraphCacheWorkerJobResult | undefined
+  >();
+  const [graphCacheJobError, setGraphCacheJobError] = useState<string | undefined>();
+  const [isGraphCacheJobSubmitting, setIsGraphCacheJobSubmitting] = useState(false);
+  const [canManageGraphCacheJob, setCanManageGraphCacheJob] = useState(true);
   const [layoutMode, setLayoutMode] = useState<ProcessFlowGraphLayoutName>('sphere3d');
   const [geoMapPendingSourceLayoutMode, setGeoMapPendingSourceLayoutMode] =
     useState<GeoMapPendingSourceLayoutMode>('sphere3d');
@@ -851,6 +926,7 @@ export default function ProcessFlowGraphPanel() {
   const [exitingInspector, setExitingInspector] = useState<InspectorSnapshot | undefined>();
   const [isLeftRailCollapsed, setIsLeftRailCollapsed] = useState(true);
   const inspectorExitTimeoutRef = useRef<number | undefined>();
+  const graphCacheJobCompletionRefreshRef = useRef<string | undefined>();
   const canvasToolbarRef = useRef<HTMLDivElement | null>(null);
   const [canvasToolbarWidth, setCanvasToolbarWidth] = useState<number>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
@@ -946,6 +1022,25 @@ export default function ProcessFlowGraphPanel() {
     [activeData, quickSelectTarget.nodeId],
   );
   const quickSelectTitle = `快速选中：${quickSelectTarget.label}`;
+  const graphCacheJobStatusLabel = getGraphCacheJobStatusLabel(graphCacheJob);
+  const graphCacheJobIsActive = isGraphCacheJobActive(graphCacheJob);
+  const graphCacheJobHasFailure =
+    isGraphCacheJobFailure(graphCacheJob) || Boolean(graphCacheJobError);
+  const graphCacheJobButtonTitle = graphCacheJobError
+    ? `图谱缓存构建异常：${formatCacheError(graphCacheJobError)}`
+    : graphCacheJobIsActive
+      ? `图谱缓存构建${graphCacheJobStatusLabel}`
+      : graphCacheJob?.status === 'completed'
+        ? '重新运行图谱缓存构建 worker'
+        : '运行图谱缓存构建 worker';
+  const graphCacheJobButtonClassName = [
+    styles.cacheJobButton,
+    graphCacheJobIsActive || isGraphCacheJobSubmitting ? styles.cacheJobButtonActive : '',
+    graphCacheJob?.status === 'completed' ? styles.cacheJobButtonComplete : '',
+    graphCacheJobHasFailure ? styles.cacheJobButtonError : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const cancelInspectorExit = useCallback(() => {
     if (inspectorExitTimeoutRef.current !== undefined) {
@@ -963,6 +1058,20 @@ export default function ProcessFlowGraphPanel() {
     },
     [cancelInspectorExit],
   );
+
+  const reloadProcessFlowGraphCacheView = useCallback(() => {
+    resetProcessFlowGraphCacheLoaderState();
+    setGeoMapCachedViews({});
+    setGeoMapCacheStatus({});
+    setVisibleGeoMapScope(undefined);
+    setGeoMapLoadError(undefined);
+    setData(undefined);
+    setDataSource('loading');
+    setLoadError(undefined);
+    setSelectedNodeId(undefined);
+    setQuery('');
+    setGraphCacheReloadToken((currentToken) => currentToken + 1);
+  }, []);
 
   const clearSelectedNodeWithInspectorExit = useCallback(() => {
     if (inspectorExitTimeoutRef.current !== undefined) {
@@ -1031,6 +1140,9 @@ export default function ProcessFlowGraphPanel() {
   useEffect(() => {
     let cancelled = false;
     let initialGeoMapPrefetchGraceTimeoutId: number | undefined;
+
+    setDataSource('loading');
+    setLoadError(undefined);
 
     const markGeoMapPrefetchLoading = (scope: ProcessFlowGraphMapScope) => {
       setGeoMapCacheStatus((currentStatus) => {
@@ -1151,7 +1263,7 @@ export default function ProcessFlowGraphPanel() {
         window.clearTimeout(initialGeoMapPrefetchGraceTimeoutId);
       }
     };
-  }, []);
+  }, [graphCacheReloadToken]);
 
   useEffect(
     () => () => {
@@ -1317,6 +1429,153 @@ export default function ProcessFlowGraphPanel() {
   const handleToggleLeftRail = useCallback(() => {
     setIsLeftRailCollapsed((currentCollapsed) => !currentCollapsed);
   }, []);
+
+  const handleTriggerGraphCacheJob = useCallback(() => {
+    Modal.confirm({
+      title: '运行图谱缓存 worker',
+      content: '将提交全国碳过程流图谱缓存构建任务；如果已有任务在运行，将复用当前任务。',
+      okText: '运行',
+      cancelText: '取消',
+      centered: true,
+      onOk: async () => {
+        setIsGraphCacheJobSubmitting(true);
+        setGraphCacheJobError(undefined);
+
+        try {
+          const result = await requestNationalCarbonGraphCacheJobsApi({
+            action: 'enqueue',
+          });
+
+          if (result.error) {
+            if (result.status === 401 || result.status === 403) {
+              setCanManageGraphCacheJob(false);
+            }
+            setGraphCacheJobError(result.error.message);
+            message.error(`图谱缓存任务提交失败：${result.error.message}`);
+            return;
+          }
+
+          const nextJob = getFirstGraphCacheJob(result.data);
+          setGraphCacheJob(nextJob);
+          if (nextJob?.id && nextJob.status !== 'completed') {
+            graphCacheJobCompletionRefreshRef.current = undefined;
+          }
+          message.success(
+            isGraphCacheJobActive(nextJob) ? '图谱缓存任务已在队列中' : '图谱缓存任务已提交',
+          );
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          setGraphCacheJobError(errorMessage);
+          message.error(`图谱缓存任务提交失败：${errorMessage}`);
+        } finally {
+          setIsGraphCacheJobSubmitting(false);
+        }
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    requestNationalCarbonGraphCacheJobsApi({
+      action: 'read_latest',
+      limit: 1,
+    })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (result.error) {
+          if (result.status === 401 || result.status === 403) {
+            setCanManageGraphCacheJob(false);
+          }
+          return;
+        }
+
+        const latestJob = getFirstGraphCacheJob(result.data);
+        if (latestJob?.id && latestJob.status === 'completed') {
+          graphCacheJobCompletionRefreshRef.current = latestJob.id;
+        }
+        setGraphCacheJob(latestJob);
+        setCanManageGraphCacheJob(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGraphCacheJob(undefined);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!graphCacheJob?.id || !isGraphCacheJobActive(graphCacheJob)) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      requestNationalCarbonGraphCacheJobsApi({
+        action: 'read',
+        jobId: graphCacheJob.id as string,
+      })
+        .then((result) => {
+          if (cancelled) {
+            return;
+          }
+
+          if (result.error) {
+            if (result.status === 401 || result.status === 403) {
+              setCanManageGraphCacheJob(false);
+            }
+            setGraphCacheJobError(result.error.message);
+            return;
+          }
+
+          const nextJob = getFirstGraphCacheJob(result.data);
+          if (nextJob) {
+            setGraphCacheJob(nextJob);
+            setGraphCacheJobError(undefined);
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setGraphCacheJobError(error instanceof Error ? error.message : String(error));
+          }
+        });
+    }, graphCacheJobPollDelayMs);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [graphCacheJob]);
+
+  useEffect(() => {
+    if (!graphCacheJob?.id) {
+      return;
+    }
+
+    if (graphCacheJob.status === 'completed') {
+      if (graphCacheJobCompletionRefreshRef.current === graphCacheJob.id) {
+        return;
+      }
+
+      graphCacheJobCompletionRefreshRef.current = graphCacheJob.id;
+      message.success('图谱缓存构建完成，正在刷新视图');
+      reloadProcessFlowGraphCacheView();
+      return;
+    }
+
+    if (isGraphCacheJobFailure(graphCacheJob)) {
+      setGraphCacheJobError(
+        graphCacheJob.errorMessage || getGraphCacheJobStatusLabel(graphCacheJob),
+      );
+    }
+  }, [graphCacheJob, reloadProcessFlowGraphCacheView]);
 
   const mapButtonLabel = isGeoMapMode && mapScope === 'world' ? 'China Map' : 'World Map';
   const mapLoadDataSource: GraphDataSource =
@@ -1495,6 +1754,25 @@ export default function ProcessFlowGraphPanel() {
               <ClearOutlined />
             </button>
           </div>
+          {canManageGraphCacheJob && (
+            <div className={styles.cacheJobTools}>
+              <button
+                aria-label={graphCacheJobButtonTitle}
+                aria-pressed={graphCacheJobIsActive}
+                className={graphCacheJobButtonClassName}
+                disabled={isGraphCacheJobSubmitting || graphCacheJobIsActive}
+                onClick={handleTriggerGraphCacheJob}
+                title={graphCacheJobButtonTitle}
+                type='button'
+              >
+                {isGraphCacheJobSubmitting || graphCacheJobIsActive ? (
+                  <LoadingOutlined spin />
+                ) : (
+                  <SyncOutlined />
+                )}
+              </button>
+            </div>
+          )}
           <dl aria-label='图谱规模' className={styles.graphBadges}>
             <div title='节点'>
               <dt className={styles.graphMetricLabel}>节点</dt>
