@@ -13,7 +13,7 @@ import { gzipSync } from 'zlib';
 
 const mockRequestNationalCarbonGraphCacheObjectsApi = jest.fn();
 
-jest.mock('@/services/nationalCarbonGraphCacheObjects/api', () => ({
+jest.mock('@/services/nationalCarbonGraphCache/objects', () => ({
   __esModule: true,
   requestNationalCarbonGraphCacheObjectsApi: (...args: any[]) =>
     mockRequestNationalCarbonGraphCacheObjectsApi(...args),

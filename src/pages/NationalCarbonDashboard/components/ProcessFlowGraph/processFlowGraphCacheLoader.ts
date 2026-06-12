@@ -1,4 +1,4 @@
-import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCacheObjects/api';
+import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCache/objects';
 import { geoContains, type GeoProjection } from 'd3-geo';
 import type {
   Feature,

@@ -15,7 +15,7 @@ jest.mock(
   }),
 );
 
-jest.mock('@/services/nationalCarbonGraphCacheJobs/api', () => ({
+jest.mock('@/services/nationalCarbonGraphCache/jobs', () => ({
   requestNationalCarbonGraphCacheJobsApi: (...args: unknown[]) =>
     mockRequestNationalCarbonGraphCacheJobsApi(...args),
 }));

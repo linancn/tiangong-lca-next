@@ -15,7 +15,7 @@ jest.mock('@/services/supabase', () => ({
   },
 }));
 
-import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCacheObjects/api';
+import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCache/objects';
 
 function createBundle() {
   return {
@@ -46,7 +46,7 @@ function createBundle() {
   };
 }
 
-describe('nationalCarbonGraphCacheObjects api', () => {
+describe('nationalCarbonGraphCache objects api', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthGetSession.mockResolvedValue({

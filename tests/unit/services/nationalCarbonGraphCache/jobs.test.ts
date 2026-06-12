@@ -15,11 +15,11 @@ jest.mock('@/services/supabase', () => ({
   },
 }));
 
-import { requestNationalCarbonGraphCacheJobsApi } from '@/services/nationalCarbonGraphCacheJobs/api';
+import { requestNationalCarbonGraphCacheJobsApi } from '@/services/nationalCarbonGraphCache/jobs';
 
 const testJobId = '66666666-6666-4666-8666-666666666666';
 
-describe('nationalCarbonGraphCacheJobs api', () => {
+describe('nationalCarbonGraphCache jobs api', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthGetSession.mockResolvedValue({

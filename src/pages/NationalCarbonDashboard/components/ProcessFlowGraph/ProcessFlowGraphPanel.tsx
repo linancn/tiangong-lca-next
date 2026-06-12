@@ -2,7 +2,7 @@ import {
   requestNationalCarbonGraphCacheJobsApi,
   type NationalCarbonGraphCacheWorkerJobResult,
   type NationalCarbonGraphCacheWorkerJobStatus,
-} from '@/services/nationalCarbonGraphCacheJobs/api';
+} from '@/services/nationalCarbonGraphCache/jobs';
 import {
   AimOutlined,
   ApartmentOutlined,
