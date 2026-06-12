@@ -36,9 +36,6 @@ const processOneId = 'process:one@v1';
 const processTwoId = 'process:two@v1';
 const byproductFlowId = 'flow:byproduct@v1';
 const outputFlowId = 'flow:output@v1';
-const cacheBaseUrl = 'https://cache.test/process-flow-graph';
-const supabaseS3CacheBaseUrl =
-  'https://fotofiyqnuyvgtotswie.supabase.co/storage/v1/s3/lca_results/national-carbon/process-flow-graph/v1';
 
 const nodes: ProcessFlowGraphData['nodes'] = [
   {
@@ -230,7 +227,6 @@ function createProcessFlowGraphFixture(): ProcessFlowGraphData {
 const originalFetch = global.fetch;
 const originalDecompressionStream = globalThis.DecompressionStream;
 const originalResponse = globalThis.Response;
-const originalProcessFlowGraphCacheBaseUrl = process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL;
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const arrayBuffer = new ArrayBuffer(bytes.byteLength);
@@ -426,50 +422,31 @@ function createLayoutBinary(layout: Array<[number, number, number]>): Uint8Array
   return bytes;
 }
 
-function mockProcessFlowGraphCache(files: Record<string, Response>) {
-  process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL = cacheBaseUrl;
-  global.fetch = jest.fn(async (input: RequestInfo | URL) => {
-    const url = String(input);
-    const path = url.replace(`${cacheBaseUrl}/`, '');
-    const response = files[path];
-
-    if (response) {
-      return response;
-    }
-
-    return {
-      ok: false,
-      status: 404,
-    } as Response;
-  }) as typeof fetch;
-}
-
 function createSignedUrl(path: string): string {
   return `https://signed.test/${path.replace(/^builds\/test-build\//, '')}`;
 }
 
-function mockSignedProcessFlowGraphCache(files: Record<string, Response>) {
-  process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL = supabaseS3CacheBaseUrl;
-  global.fetch = jest.fn(async (input: RequestInfo | URL) => {
-    const url = String(input);
-
-    if (url.startsWith('https://signed.test/')) {
-      const path = `builds/test-build/${url.replace('https://signed.test/', '')}`;
-      const response = files[path];
-
-      if (response) {
-        return response;
-      }
-    }
-
-    return {
-      ok: false,
-      status: 404,
-    } as Response;
-  }) as typeof fetch;
+function getWorkerV2BuildManifestFileKey(path: string): string {
+  return path.includes('/view.json.gz')
+    ? path.includes('/world/')
+      ? 'geoMapWorldView'
+      : 'geoMapChinaView'
+    : path.includes('/edges.bin.gz')
+      ? path.includes('/world/')
+        ? 'geoMapWorldEdges'
+        : 'geoMapChinaEdges'
+      : path.includes('/adjacency.csr.bin.gz')
+        ? path.includes('/world/')
+          ? 'geoMapWorldAdjacency'
+          : 'geoMapChinaAdjacency'
+        : path.includes('/layout.f32.bin.gz')
+          ? path.includes('/world/')
+            ? 'geoMapWorldLayout'
+            : 'geoMapChinaLayout'
+          : path;
 }
 
-function createWorkerV2SignedCacheBundle() {
+function createWorkerV2SignedCacheBundle(extraFiles: Record<string, Response> = {}) {
   return {
     activeManifest: {
       activeBuildId: 'test-build',
@@ -519,6 +496,17 @@ function createWorkerV2SignedCacheBundle() {
           path: 'layout/sphere3d.f32.bin.gz',
           signedUrl: createSignedUrl('builds/test-build/layout/sphere3d.f32.bin.gz'),
         },
+        ...Object.fromEntries(
+          Object.keys(extraFiles)
+            .filter((path) => path.startsWith('builds/test-build/'))
+            .map((path) => [
+              getWorkerV2BuildManifestFileKey(path),
+              {
+                path: path.replace(/^builds\/test-build\//, ''),
+                signedUrl: createSignedUrl(path),
+              },
+            ]),
+        ),
       },
       schemaVersion: 'process_flow_graph_v2',
       stats: {
@@ -532,6 +520,39 @@ function createWorkerV2SignedCacheBundle() {
     expiresIn: 3600,
     prefix: 'national-carbon/process-flow-graph/v1',
   };
+}
+
+function mockSignedProcessFlowGraphCache(files: Record<string, Response>) {
+  global.fetch = jest.fn(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const directResponse = files[url];
+
+    if (directResponse) {
+      return directResponse;
+    }
+
+    if (url.startsWith('https://signed.test/')) {
+      const path = `builds/test-build/${url.replace('https://signed.test/', '')}`;
+      const response = files[path];
+
+      if (response) {
+        return response;
+      }
+    }
+
+    return {
+      ok: false,
+      status: 404,
+    } as Response;
+  }) as typeof fetch;
+
+  mockRequestNationalCarbonGraphCacheObjectsApi.mockResolvedValue({
+    data: createWorkerV2SignedCacheBundle(files),
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
 }
 
 function createWorkerV2CacheFiles(extraFiles: Record<string, Response> = {}) {
@@ -585,23 +606,7 @@ function createWorkerV2CacheFiles(extraFiles: Record<string, Response> = {}) {
         sphere3d: { path: 'layout/sphere3d.f32.bin.gz' },
         ...Object.fromEntries(
           Object.keys(extraFiles).map((path) => [
-            path.includes('/view.json.gz')
-              ? path.includes('/world/')
-                ? 'geoMapWorldView'
-                : 'geoMapChinaView'
-              : path.includes('/edges.bin.gz')
-                ? path.includes('/world/')
-                  ? 'geoMapWorldEdges'
-                  : 'geoMapChinaEdges'
-                : path.includes('/adjacency.csr.bin.gz')
-                  ? path.includes('/world/')
-                    ? 'geoMapWorldAdjacency'
-                    : 'geoMapChinaAdjacency'
-                  : path.includes('/layout.f32.bin.gz')
-                    ? path.includes('/world/')
-                      ? 'geoMapWorldLayout'
-                      : 'geoMapChinaLayout'
-                    : path,
+            getWorkerV2BuildManifestFileKey(path),
             { path: path.replace(/^builds\/test-build\//, '') },
           ]),
         ),
@@ -699,7 +704,6 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     global.fetch = originalFetch;
     globalThis.DecompressionStream = originalDecompressionStream;
     globalThis.Response = originalResponse;
-    process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL = originalProcessFlowGraphCacheBaseUrl;
   });
 
   it('uses worker cache schema with global sphere and expanded layouts', () => {
@@ -717,17 +721,14 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     globalThis.DecompressionStream =
       NodeDecompressionStream as unknown as typeof DecompressionStream;
     globalThis.Response = TestResponse as unknown as typeof Response;
-    mockProcessFlowGraphCache(createWorkerV2CacheFiles());
+    mockSignedProcessFlowGraphCache(createWorkerV2CacheFiles());
 
     const graph = await loadProcessFlowGraphFromCache();
 
-    expect(mockRequestNationalCarbonGraphCacheObjectsApi).not.toHaveBeenCalled();
-    expect(global.fetch).toHaveBeenCalledWith(`${cacheBaseUrl}/manifest.json`, {
-      cache: 'no-store',
-      credentials: 'omit',
+    expect(mockRequestNationalCarbonGraphCacheObjectsApi).toHaveBeenCalledWith({
+      action: 'read_manifest_bundle',
     });
-    expect(global.fetch).toHaveBeenCalledWith(`${cacheBaseUrl}/builds/test-build/manifest.json`, {
-      cache: 'no-store',
+    expect(global.fetch).toHaveBeenCalledWith('https://signed.test/graph/nodes.json.gz', {
       credentials: 'omit',
     });
     expect(graph.schemaVersion).toBe('process_flow_graph_v2');
@@ -755,13 +756,6 @@ describe('NationalCarbonDashboard process-flow graph', () => {
       NodeDecompressionStream as unknown as typeof DecompressionStream;
     globalThis.Response = TestResponse as unknown as typeof Response;
     mockSignedProcessFlowGraphCache(createWorkerV2CacheFiles());
-    mockRequestNationalCarbonGraphCacheObjectsApi.mockResolvedValue({
-      data: createWorkerV2SignedCacheBundle(),
-      error: null,
-      count: null,
-      status: 200,
-      statusText: 'OK',
-    });
 
     const graph = await loadProcessFlowGraphFromCache();
     const fetchMock = global.fetch as jest.Mock;
@@ -771,7 +765,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
       action: 'read_manifest_bundle',
     });
     expect(requestedUrls).toContain('https://signed.test/graph/nodes.json.gz');
-    expect(requestedUrls).not.toContain(`${supabaseS3CacheBaseUrl}/manifest.json`);
+    expect(requestedUrls.some((url) => url.endsWith('/manifest.json'))).toBe(false);
     expect(graph.buildId).toBe('test-build');
     expect(graph.nodes[0].name).toBe('Cache Flow A');
   });
@@ -963,7 +957,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
         }),
       ),
     };
-    mockProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
+    mockSignedProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
 
     const view = await loadProcessFlowGraphGeoMapViewFromCache('world');
 
@@ -1048,7 +1042,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
         }),
       ),
     };
-    mockProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
+    mockSignedProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
 
     const [firstView, secondView] = await Promise.all([
       loadProcessFlowGraphGeoMapViewFromCache('world'),
@@ -1057,7 +1051,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     const thirdView = await loadProcessFlowGraphGeoMapViewFromCache('world');
     const fetchMock = global.fetch as jest.Mock;
     const viewCalls = fetchMock.mock.calls.filter(
-      ([input]) => String(input) === `${cacheBaseUrl}/builds/test-build/geo-map/world/view.json.gz`,
+      ([input]) => String(input) === 'https://signed.test/geo-map/world/view.json.gz',
     );
 
     expect(firstView).toBeDefined();
@@ -1191,7 +1185,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
         }),
       ),
     };
-    mockProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
+    mockSignedProcessFlowGraphCache(createWorkerV2CacheFiles(geoMapFiles));
 
     const view = await loadProcessFlowGraphGeoMapViewFromCache('china');
 

@@ -4,12 +4,11 @@ import defaultSettings from './defaultSettings';
 import { defineConfig } from '@umijs/max';
 import proxy from './proxy';
 import routes from './routes';
-import { applyProcessFlowGraphFrontendEnv, applySupabaseFrontendEnv } from './supabaseEnv';
+import { applySupabaseFrontendEnv } from './supabaseEnv';
 
 const { REACT_APP_ENV = 'main' } = process.env;
 
 applySupabaseFrontendEnv(process.cwd(), REACT_APP_ENV);
-applyProcessFlowGraphFrontendEnv(process.cwd(), REACT_APP_ENV);
 
 export default defineConfig({
   /**
@@ -176,6 +175,5 @@ export default defineConfig({
     'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
     'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
     'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
-    'process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL': process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL,
   },
 });

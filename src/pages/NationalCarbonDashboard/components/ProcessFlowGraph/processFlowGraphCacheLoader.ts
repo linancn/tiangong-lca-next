@@ -27,7 +27,6 @@ import type {
   ProcessFlowGraphSearchItem,
 } from './graphTypes';
 
-const defaultProcessFlowGraphCacheBaseUrl = '';
 const edgeMagic = 'PFGEDG1\0';
 const adjacencyMagic = 'PFGCSR1\0';
 const layoutMagic = 'PFGLAY1\0';
@@ -151,7 +150,6 @@ type GeoMapViewPayload = {
 
 type CacheManifests = {
   activeManifest: ActiveManifest;
-  baseUrl?: string;
   buildManifest: BuildManifest;
 };
 type LocalMapFeatureProperties = {
@@ -820,24 +818,6 @@ async function resolveGeoMapBackground(
   return (await loadCachedLocalGeoMapBackground(scope, frame)) ?? { background };
 }
 
-function getProcessFlowGraphCacheBaseUrl(): string {
-  const rawBaseUrl =
-    process.env.PROCESS_FLOW_GRAPH_CACHE_BASE_URL || defaultProcessFlowGraphCacheBaseUrl;
-  return rawBaseUrl.replace(/\/+$/, '');
-}
-
-function resolveCacheUrl(baseUrl: string, pathOrUrl: string): string {
-  if (/^https?:\/\//i.test(pathOrUrl)) {
-    return pathOrUrl;
-  }
-
-  return `${baseUrl}/${pathOrUrl.replace(/^\/+/, '')}`;
-}
-
-function shouldUseGraphCacheObjectsApi(baseUrl: string): boolean {
-  return !baseUrl || /\/storage\/v1\/s3\//i.test(baseUrl);
-}
-
 async function fetchRequired(url: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(url, { credentials: 'omit', ...init });
 
@@ -863,10 +843,6 @@ async function gunzip(buffer: ArrayBuffer): Promise<ArrayBuffer> {
 
   const stream = compressedStream.pipeThrough(new DecompressionStreamCtor('gzip'));
   return new Response(stream).arrayBuffer();
-}
-
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  return (await fetchRequired(url, init)).json() as Promise<T>;
 }
 
 async function fetchGzipJson<T>(url: string): Promise<T> {
@@ -1051,58 +1027,23 @@ function buildEdgeById(edges: ProcessFlowGraphEdge[]): Record<string, number> {
   }, {});
 }
 
-function getBuildRootPath(activeManifest: ActiveManifest): string {
-  return activeManifest.buildManifestPath.replace(/\/manifest\.json$/, '');
-}
-
-function getBuildFilePath(
-  activeManifest: ActiveManifest,
-  buildManifest: BuildManifest,
-  fileKey: string,
-): string {
-  const filePath = buildManifest.files[fileKey]?.path;
-
-  if (!filePath) {
-    throw new Error(`missing process-flow graph file entry: ${fileKey}`);
-  }
-
-  return `${getBuildRootPath(activeManifest)}/${filePath.replace(/^\/+/, '')}`;
-}
-
 async function loadCacheManifests(): Promise<CacheManifests> {
-  const baseUrl = getProcessFlowGraphCacheBaseUrl();
+  const result = await requestNationalCarbonGraphCacheObjectsApi({
+    action: 'read_manifest_bundle',
+  });
 
-  if (shouldUseGraphCacheObjectsApi(baseUrl)) {
-    const result = await requestNationalCarbonGraphCacheObjectsApi({
-      action: 'read_manifest_bundle',
-    });
-
-    if (result.error || !result.data) {
-      throw new Error(
-        `failed to read process-flow graph cache manifest bundle: ${
-          result.error?.message ?? 'missing response'
-        }`,
-      );
-    }
-
-    return {
-      activeManifest: result.data.activeManifest,
-      buildManifest: result.data.buildManifest,
-    };
+  if (result.error || !result.data) {
+    throw new Error(
+      `failed to read process-flow graph cache manifest bundle: ${
+        result.error?.message ?? 'missing response'
+      }`,
+    );
   }
 
-  const activeManifest = await fetchJson<ActiveManifest>(
-    resolveCacheUrl(baseUrl, 'manifest.json'),
-    {
-      cache: 'no-store',
-    },
-  );
-  const buildManifest = await fetchJson<BuildManifest>(
-    resolveCacheUrl(baseUrl, activeManifest.buildManifestPath),
-    { cache: 'no-store' },
-  );
-
-  return { activeManifest, baseUrl, buildManifest };
+  return {
+    activeManifest: result.data.activeManifest,
+    buildManifest: result.data.buildManifest,
+  };
 }
 
 function resolveBuildFileUrl(manifests: CacheManifests, fileKey: string): string {
@@ -1111,14 +1052,7 @@ function resolveBuildFileUrl(manifests: CacheManifests, fileKey: string): string
     return signedUrl;
   }
 
-  if (!manifests.baseUrl) {
-    throw new Error(`missing process-flow graph signed URL: ${fileKey}`);
-  }
-
-  return resolveCacheUrl(
-    manifests.baseUrl,
-    getBuildFilePath(manifests.activeManifest, manifests.buildManifest, fileKey),
-  );
+  throw new Error(`missing process-flow graph signed URL: ${fileKey}`);
 }
 
 function hasBuildFile(buildManifest: BuildManifest, fileKey: string): boolean {
