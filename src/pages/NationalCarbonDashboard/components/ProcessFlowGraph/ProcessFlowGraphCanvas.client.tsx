@@ -22,6 +22,66 @@ type CanvasIdleWindow = Window & {
 };
 
 const overviewGeometryPrewarmTimeoutMs = 3200;
+const chinaInsetPathCode = '100000_JD';
+const chinaInsetFocusPathCodes = new Set(['460000', chinaInsetPathCode]);
+const svgPathNumberPattern = /-?\d*\.?\d+(?:e[-+]?\d+)?/gi;
+
+type SvgPathBounds = {
+  height: number;
+  minX: number;
+  minY: number;
+  width: number;
+};
+
+function getSvgPathBounds(
+  paths: ProcessFlowGraphMapBackground['paths'],
+  paddingRatio = 0.12,
+): SvgPathBounds | undefined {
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  paths.forEach((mapPath) => {
+    const values = mapPath.path.match(svgPathNumberPattern)?.map(Number) ?? [];
+
+    for (let index = 0; index < values.length - 1; index += 2) {
+      const x = values[index];
+      const y = values[index + 1];
+
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        continue;
+      }
+
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+  });
+
+  if (
+    !Number.isFinite(minX) ||
+    !Number.isFinite(maxX) ||
+    !Number.isFinite(minY) ||
+    !Number.isFinite(maxY) ||
+    maxX <= minX ||
+    maxY <= minY
+  ) {
+    return undefined;
+  }
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const padding = Math.max(width, height) * paddingRatio;
+
+  return {
+    height: height + padding * 2,
+    minX: minX - padding,
+    minY: minY - padding,
+    width: width + padding * 2,
+  };
+}
 
 function scheduleCanvasIdleWork(callback: () => void, timeoutMs: number): () => void {
   const idleWindow = window as CanvasIdleWindow;
@@ -147,6 +207,47 @@ export default function ProcessFlowGraphCanvas({
   const geoMapBackgroundKey = geoMapBackground
     ? `${geoMapBackground.scope}:${geoMapBackground.width}:${geoMapBackground.height}:${geoMapBackground.paths.length}`
     : undefined;
+  const chinaInsetMapPaths = useMemo(
+    () => (geoMapBackground?.scope === 'china' ? geoMapBackground.paths : []),
+    [geoMapBackground],
+  );
+  const chinaInsetFocusPaths = useMemo(
+    () =>
+      chinaInsetMapPaths.filter(
+        (mapPath) =>
+          (mapPath.code ? chinaInsetFocusPathCodes.has(mapPath.code) : false) ||
+          mapPath.id.includes(chinaInsetPathCode),
+      ),
+    [chinaInsetMapPaths],
+  );
+  const chinaInsetBounds = useMemo(() => {
+    const bounds = getSvgPathBounds(
+      chinaInsetFocusPaths.length ? chinaInsetFocusPaths : chinaInsetMapPaths,
+    );
+    const hainanBounds = getSvgPathBounds(
+      chinaInsetMapPaths.filter((mapPath) => mapPath.code === '460000'),
+      0,
+    );
+
+    if (!bounds || !hainanBounds) {
+      return bounds;
+    }
+
+    const bottom = bounds.minY + bounds.height;
+    const top = Math.max(
+      bounds.minY,
+      hainanBounds.minY - Math.max(bounds.width, bounds.height) * 0.08,
+    );
+
+    return {
+      ...bounds,
+      height: bottom - top,
+      minY: top,
+    };
+  }, [chinaInsetFocusPaths, chinaInsetMapPaths]);
+  const chinaInsetViewBox = chinaInsetBounds
+    ? `${chinaInsetBounds.minX} ${chinaInsetBounds.minY} ${chinaInsetBounds.width} ${chinaInsetBounds.height}`
+    : undefined;
 
   return (
     <div className={styles.canvasHost} ref={containerRef}>
@@ -164,6 +265,7 @@ export default function ProcessFlowGraphCanvas({
           key={geoMapBackgroundKey}
         >
           <svg
+            className={styles.geoMapBackdropMap}
             key={geoMapBackgroundKey}
             preserveAspectRatio='none'
             viewBox={`0 0 ${geoMapBackground.width} ${geoMapBackground.height}`}
@@ -179,6 +281,36 @@ export default function ProcessFlowGraphCanvas({
               </path>
             ))}
           </svg>
+          {geoMapBackground.scope === 'china' &&
+          chinaInsetBounds &&
+          chinaInsetViewBox &&
+          chinaInsetMapPaths.length ? (
+            <div className={styles.geoMapChinaInset}>
+              <svg
+                className={styles.geoMapInsetMap}
+                preserveAspectRatio='xMidYMid meet'
+                viewBox={chinaInsetViewBox}
+              >
+                <rect
+                  className={styles.geoMapInsetSea}
+                  height={chinaInsetBounds.height}
+                  width={chinaInsetBounds.width}
+                  x={chinaInsetBounds.minX}
+                  y={chinaInsetBounds.minY}
+                />
+                {chinaInsetMapPaths.map((mapPath, pathIndex) => (
+                  <path
+                    d={mapPath.path}
+                    data-code={mapPath.code}
+                    key={`inset-${mapPath.id}:${pathIndex}`}
+                    pathLength={1}
+                  >
+                    <title>{mapPath.label}</title>
+                  </path>
+                ))}
+              </svg>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className={styles.canvasGrid} aria-hidden='true' />

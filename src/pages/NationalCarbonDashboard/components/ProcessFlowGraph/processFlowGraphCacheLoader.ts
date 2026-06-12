@@ -10,7 +10,9 @@ import type {
 import {
   buildChinaMercatorMap,
   getChinaRegionAdcode,
+  rewindChinaMapFeature,
   type ChinaMapData,
+  type ChinaMapFeature,
 } from '../../chinaMapProjection';
 import type {
   ProcessFlowGraphCluster,
@@ -31,6 +33,7 @@ const layoutMagic = 'PFGLAY1\0';
 const u32None = 0xffffffff;
 const processFlowGraphSchemaVersion = 'process_flow_graph_v2';
 const processFlowGraphGeoMapViewSchemaVersion = 'process_flow_graph_geo_map_view_v2';
+const chinaInsetMapPathCode = '100000_JD';
 const localGeoMapAssetPaths: Record<ProcessFlowGraphMapScope, string> = {
   china: '/maps/china-province-100000-full.geojson',
   world: '/maps/world-map-units-50m.geojson',
@@ -152,6 +155,7 @@ type CacheManifests = {
 };
 type LocalMapFeatureProperties = {
   ADM0_ISO?: string;
+  adchar?: string;
   adcode?: number | string;
   center?: Position;
   centroid?: Position;
@@ -678,7 +682,7 @@ async function loadLocalGeoMapBackground(
       return undefined;
     }
 
-    const paths = chinaMap.features
+    const displayPaths = chinaMap.features
       .map((feature, index) => {
         const adcode = getChinaRegionAdcode(feature);
         const code = adcode === undefined ? undefined : String(adcode);
@@ -692,6 +696,24 @@ async function loadLocalGeoMapBackground(
         };
       })
       .filter((path) => path.path);
+    const chinaInsetFeature = mapData.features.find(
+      (feature) =>
+        feature.properties?.adcode === chinaInsetMapPathCode || feature.properties?.adchar === 'JD',
+    );
+    const chinaInsetPath = chinaInsetFeature
+      ? (chinaMap.pathGenerator(rewindChinaMapFeature(chinaInsetFeature as ChinaMapFeature)) ?? '')
+      : '';
+    const paths = chinaInsetPath
+      ? [
+          ...displayPaths,
+          {
+            code: chinaInsetMapPathCode,
+            id: `china-${chinaInsetMapPathCode}`,
+            label: '南海诸岛',
+            path: chinaInsetPath,
+          },
+        ]
+      : displayPaths;
 
     if (!paths.length) {
       return undefined;

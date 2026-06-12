@@ -80,6 +80,19 @@ type SphereSelectionTransition = {
   targetTo: THREE.Vector3;
 };
 
+type SphereIntroTransition = {
+  cameraFrom: THREE.Vector3;
+  cameraPunch: THREE.Vector3;
+  cameraTo: THREE.Vector3;
+  duration: number;
+  edgeOpacityTo: number;
+  nodeFrom: Float32Array;
+  nodeTo: Float32Array;
+  startedAt: number;
+  targetFrom: THREE.Vector3;
+  targetTo: THREE.Vector3;
+};
+
 type LayoutBounds = {
   centerX: number;
   centerY: number;
@@ -167,6 +180,7 @@ const expandedSelectedContextColor = new THREE.Color('#91a9b8');
 const selectedColor = new THREE.Color('#ffffff');
 const inputHighlightColor = new THREE.Color('#23f4ff');
 const outputHighlightColor = new THREE.Color('#b9f63c');
+const selectedOutputHighlightColor = new THREE.Color('#ff8a3d');
 const transitionDustColors = [
   new THREE.Color('#c8fbff'),
   new THREE.Color('#ffd66d'),
@@ -180,26 +194,28 @@ const sphereHighlightedSurfaceLift = 5;
 const sphereSelectedEdgeSurfaceLift = 14;
 const sphereSelectedEdgeArcLift = 20;
 const sphereVisualRadius = 318;
-const flowMarkerCycleMs = 1800;
-const flowMarkerArrowSegments = 3;
-const flowMarkerOpacity = 0.36;
-const sphereFlowMarkerArrowLength = 5.8;
-const sphereFlowMarkerArrowWidth = 2;
-const expandedFlowMarkerArrowLength = 2.6;
-const expandedFlowMarkerArrowWidth = 0.9;
+const flowMarkerCycleMs = 3300;
+const flowTrailSegments = 9;
+const flowTrailOpacity = 0.78;
+const sphereFlowTrailLength = 0.18;
+const expandedFlowTrailLength = 0.14;
+const flowTrailCyclePadding = 0.2;
 const selectedEdgeBrightnessStops = [
   { edgeCount: 80, scale: 1 },
-  { edgeCount: 200, scale: 0.88 },
-  { edgeCount: 500, scale: 0.72 },
-  { edgeCount: 1000, scale: 0.56 },
-  { edgeCount: 2500, scale: 0.42 },
-  { edgeCount: 5000, scale: 0.24 },
+  { edgeCount: 200, scale: 1 },
+  { edgeCount: 500, scale: 1 },
+  { edgeCount: 1000, scale: 1 },
+  { edgeCount: 2500, scale: 1 },
+  { edgeCount: 5000, scale: 1 },
 ] as const;
 const selectedNodePulseCycleMs = 1450;
 const selectedNodePulseMinOpacity = 0.42;
 const selectedNodePulseMaxOpacity = 0.98;
 const sphereSelectedNodePulseBaseSize = 30;
 const sphereSelectedNodePulseSizeDelta = 15;
+const sphereIdleRotationSpeed = 0.0011;
+const sphereIntroRotationSpeed = 0.0092;
+const sphereIntroDurationMs = 3200;
 const expandedSelectedNodePulseBaseSize = 26;
 const expandedSelectedNodePulseSizeDelta = 12;
 const expandedCameraDistance = 1040;
@@ -730,8 +746,12 @@ function getSphereArcPoint(
   return [(x / unitLength) * radius, (y / unitLength) * radius, (z / unitLength) * radius];
 }
 
-function getEdgeColor(direction: string) {
-  return direction === 'input' ? inputHighlightColor : outputHighlightColor;
+function getEdgeColor(direction: string, options?: { selected?: boolean }) {
+  if (direction === 'input') {
+    return inputHighlightColor;
+  }
+
+  return options?.selected ? selectedOutputHighlightColor : outputHighlightColor;
 }
 
 function setFlowMarkerVector({
@@ -901,6 +921,10 @@ export class ProcessFlowGraphEngine {
 
   private transitionRing?: THREE.Line;
 
+  private sphereIntroImpactRingA?: THREE.Line;
+
+  private sphereIntroImpactRingB?: THREE.Line;
+
   private nodeGeometry = new THREE.BufferGeometry();
 
   private nodePoints?: THREE.Points;
@@ -922,6 +946,8 @@ export class ProcessFlowGraphEngine {
   private selectedNodeRevealProgress = 1;
 
   private sphereSelectionTransition?: SphereSelectionTransition;
+
+  private sphereIntroTransition?: SphereIntroTransition;
 
   private sphereShell?: THREE.Mesh;
 
@@ -976,6 +1002,7 @@ export class ProcessFlowGraphEngine {
     this.attachEvents();
     this.resize();
     this.resetCamera();
+    this.startInitialSphereIntroTransition();
     this.renderer.setAnimationLoop(this.render);
   }
 
@@ -1009,6 +1036,12 @@ export class ProcessFlowGraphEngine {
     }
     if (this.transitionRing?.material instanceof THREE.Material) {
       this.transitionRing.material.dispose();
+    }
+    if (this.sphereIntroImpactRingA?.material instanceof THREE.Material) {
+      this.sphereIntroImpactRingA.material.dispose();
+    }
+    if (this.sphereIntroImpactRingB?.material instanceof THREE.Material) {
+      this.sphereIntroImpactRingB.material.dispose();
     }
     if (this.flowMarkerLines?.material instanceof THREE.Material) {
       this.flowMarkerLines.material.dispose();
@@ -1351,6 +1384,7 @@ export class ProcessFlowGraphEngine {
     this.finishCameraFocusTransition(false);
     this.finishLayoutTransition(false);
     this.finishSphereSelectionTransition(false);
+    this.finishSphereIntroTransition(false);
     this.data = data;
     this.clusterColors = buildClusterColors(data);
     this.buildScene();
@@ -1454,6 +1488,7 @@ export class ProcessFlowGraphEngine {
       this.finishCameraFocusTransition(false);
       this.finishLayoutTransition(false);
       this.finishSphereSelectionTransition(false);
+      this.finishSphereIntroTransition(false);
       this.data = data;
       this.clusterColors = buildClusterColors(data);
       this.selection = selection;
@@ -1463,6 +1498,7 @@ export class ProcessFlowGraphEngine {
     }
 
     const fromLayoutMode = this.layoutMode;
+    this.finishSphereIntroTransition(true);
     const nodePositionMap = this.captureNodePositionMap();
     const frameFrom: CameraFrame = {
       position: this.camera.position.clone(),
@@ -1698,6 +1734,7 @@ export class ProcessFlowGraphEngine {
       return;
     }
 
+    this.finishSphereIntroTransition(true);
     const fromLayoutMode = this.layoutMode;
     const nodeFrom = capturePositionArray(this.nodeGeometry);
     const highlightedNodeFrom = capturePositionArray(this.highlightedNodeGeometry);
@@ -1753,6 +1790,7 @@ export class ProcessFlowGraphEngine {
 
   setSelection(selection: ProcessFlowGraphSelection) {
     const previousSelectedNodeId = this.selection.selectedNodeId;
+    this.finishSphereIntroTransition(true);
     const selectedNodeFrom = capturePositionArray(this.selectedNodeGeometry);
     this.finishCameraFocusTransition(true);
     this.finishLayoutTransition(true);
@@ -1982,20 +2020,26 @@ export class ProcessFlowGraphEngine {
 
   private updateControlInteractionMode() {
     const isFlat = isFlatLayout(this.layoutMode);
+    const isFixedChinaMap = this.layoutMode === 'geoMap2d' && this.geoMapScope === 'china';
+    const fixedChinaMapDistance = isFixedChinaMap ? this.getExpandedCameraDistance('geoMap2d') : 0;
 
-    this.controls.enablePan = true;
+    this.controls.enablePan = !isFixedChinaMap;
     this.controls.enableRotate = !isFlat;
-    this.controls.maxDistance = isFlat
-      ? Math.max(expandedControlsMaxDistance, this.getExpandedCameraDistance() * 1.5)
-      : sphereControlsMaxDistance;
+    this.controls.enableZoom = !isFixedChinaMap;
+    this.controls.minDistance = isFixedChinaMap ? fixedChinaMapDistance : 120;
+    this.controls.maxDistance = isFixedChinaMap
+      ? fixedChinaMapDistance
+      : isFlat
+        ? Math.max(expandedControlsMaxDistance, this.getExpandedCameraDistance() * 1.5)
+        : sphereControlsMaxDistance;
     this.controls.screenSpacePanning = true;
     this.controls.mouseButtons = {
-      LEFT: isFlat ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE,
+      LEFT: isFixedChinaMap ? THREE.MOUSE.ROTATE : isFlat ? THREE.MOUSE.PAN : THREE.MOUSE.ROTATE,
       MIDDLE: THREE.MOUSE.DOLLY,
-      RIGHT: THREE.MOUSE.PAN,
+      RIGHT: isFixedChinaMap ? THREE.MOUSE.ROTATE : THREE.MOUSE.PAN,
     };
     this.controls.touches = {
-      ONE: isFlat ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
+      ONE: isFixedChinaMap ? THREE.TOUCH.ROTATE : isFlat ? THREE.TOUCH.PAN : THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN,
     };
   }
@@ -2158,6 +2202,26 @@ export class ProcessFlowGraphEngine {
         transparent: true,
       }),
     );
+    this.sphereIntroImpactRingA = new THREE.Line(
+      this.transitionRingGeometry,
+      new THREE.LineBasicMaterial({
+        blending: THREE.AdditiveBlending,
+        color: '#23f4ff',
+        depthWrite: false,
+        opacity: 0,
+        transparent: true,
+      }),
+    );
+    this.sphereIntroImpactRingB = new THREE.Line(
+      this.transitionRingGeometry,
+      new THREE.LineBasicMaterial({
+        blending: THREE.AdditiveBlending,
+        color: '#fff4cc',
+        depthWrite: false,
+        opacity: 0,
+        transparent: true,
+      }),
+    );
 
     const gateCount = 13;
     const gatePositions = new Float32Array(gateCount * 6);
@@ -2223,10 +2287,11 @@ export class ProcessFlowGraphEngine {
         vertexColors: true,
       }),
     );
-
     this.transitionEffectGroup.visible = false;
     this.transitionEffectGroup.add(this.transitionDustPoints);
     this.transitionEffectGroup.add(this.transitionRing);
+    this.transitionEffectGroup.add(this.sphereIntroImpactRingA);
+    this.transitionEffectGroup.add(this.sphereIntroImpactRingB);
     this.transitionEffectGroup.add(this.transitionGateLines);
     this.transitionEffectGroup.add(this.transitionProjectionLines);
   }
@@ -2293,6 +2358,7 @@ export class ProcessFlowGraphEngine {
         vertexColors: true,
       }),
     );
+    this.flowMarkerLines.frustumCulled = false;
     this.highlightedNodePoints = new THREE.Points(
       this.highlightedNodeGeometry,
       createNodePointMaterial(this.pointTexture, 0.98),
@@ -2349,6 +2415,7 @@ export class ProcessFlowGraphEngine {
 
     this.buildEdgeGeometry();
     this.updateMaterialState();
+    this.updateSphereIntroTransition();
   }
 
   private scheduleDeferredOverviewEdgeGeometry(
@@ -2569,12 +2636,12 @@ export class ProcessFlowGraphEngine {
     }
     setLineMaterialOpacity(
       highlightedEdgeMaterial,
-      (hasSelection && (isSphere || isExpandedLikeLayout(this.layoutMode)) ? 0.42 : 0.9) *
+      (hasSelection && (isSphere || isExpandedLikeLayout(this.layoutMode)) ? 0.14 : 0.9) *
         selectedEdgeBrightnessScale,
     );
     if (flowMarkerMaterial) {
       flowMarkerMaterial.opacity = hasSelection
-        ? flowMarkerOpacity * selectedEdgeBrightnessScale
+        ? flowTrailOpacity * selectedEdgeBrightnessScale
         : 0;
     }
     if (nodeMaterial instanceof THREE.ShaderMaterial) {
@@ -2613,6 +2680,143 @@ export class ProcessFlowGraphEngine {
     return hasSelection ? 0.06 : 0.09;
   }
 
+  private shouldRunSphereIntroTransition() {
+    return (
+      this.layoutMode === 'sphere3d' &&
+      !this.selection.selectedNodeId &&
+      this.selection.highlightedNodeIds.size === 0 &&
+      this.selection.highlightedEdgeIds.size === 0
+    );
+  }
+
+  private buildSphereIntroNodePositions(targetPositions: Float32Array) {
+    const positions = new Float32Array(targetPositions.length);
+    const nodeCount = Math.max(1, targetPositions.length / 3);
+    const distance =
+      this.camera.position.distanceTo(this.controls.target) || this.getSphereCameraDistance();
+    const visibleHeight = Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * distance * 2;
+    const visibleWidth = visibleHeight * this.camera.aspect;
+    const fillWidth = visibleWidth * 1.42;
+    const fillHeight = visibleHeight * 1.28;
+
+    for (let index = 0; index < nodeCount; index += 1) {
+      const offset = index * 3;
+      const seed = getTransitionSeed(index + 13);
+      const orbitSeed = getTransitionSeed(index + 29);
+      const depthSeed = getTransitionSeed(index + 47);
+      const armSeed = getTransitionSeed(index + 83);
+      const radius = Math.pow(seed, 0.58);
+      const arm = Math.floor(armSeed * 5);
+      const angle = radius * Math.PI * 4.8 + arm * ((Math.PI * 2) / 5) + (orbitSeed - 0.5) * 0.72;
+      const halo = getTransitionSeed(index + 113) > 0.84 ? 1.28 : 1;
+      const x = Math.cos(angle) * radius * fillWidth * 0.5 * halo;
+      const y =
+        Math.sin(angle) * radius * fillHeight * 0.5 * halo +
+        (getTransitionSeed(index + 61) - 0.5) * visibleHeight * 0.16;
+      const z = (depthSeed - 0.5) * 520 + (1 - radius) * 170;
+
+      positions[offset] = x;
+      positions[offset + 1] = y;
+      positions[offset + 2] = z;
+    }
+
+    return positions;
+  }
+
+  private startInitialSphereIntroTransition() {
+    if (!this.shouldRunSphereIntroTransition()) {
+      return;
+    }
+
+    const nodeTo = capturePositionArray(this.nodeGeometry);
+
+    if (nodeTo.length === 0) {
+      return;
+    }
+
+    const nodeFrom = this.buildSphereIntroNodePositions(nodeTo);
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+    const frame = this.getCameraFrame('sphere3d');
+    const cameraDirection = frame.position.clone().sub(frame.target).normalize();
+
+    this.group.rotation.set(0, 0, 0);
+    setGeometryPositionArray(this.nodeGeometry, nodeFrom);
+    if (this.nodePoints) {
+      this.nodePoints.frustumCulled = false;
+    }
+    if (edgeMaterial) {
+      edgeMaterial.opacity = 0;
+    }
+    this.sphereIntroTransition = {
+      cameraFrom: frame.target
+        .clone()
+        .addScaledVector(cameraDirection, this.getSphereCameraDistance() * 1.24),
+      cameraPunch: frame.target
+        .clone()
+        .addScaledVector(cameraDirection, this.getSphereCameraDistance() * 0.82),
+      cameraTo: frame.position,
+      duration: sphereIntroDurationMs,
+      edgeOpacityTo: this.getBaseEdgeOpacity(this.selection),
+      nodeFrom,
+      nodeTo,
+      startedAt: performance.now(),
+      targetFrom: frame.target.clone(),
+      targetTo: frame.target,
+    };
+    this.controls.enabled = false;
+    this.updateSphereIntroTransition(0);
+  }
+
+  private finishSphereIntroTransition(applyTarget: boolean) {
+    const transition = this.sphereIntroTransition;
+
+    if (!transition) {
+      return;
+    }
+
+    if (applyTarget) {
+      setGeometryPositionArray(this.nodeGeometry, transition.nodeTo);
+      this.updateNodeSizes();
+      const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+
+      this.camera.position.copy(transition.cameraTo);
+      this.controls.target.copy(transition.targetTo);
+      this.camera.updateProjectionMatrix();
+      this.controls.update();
+      if (this.nodePoints) {
+        this.nodePoints.frustumCulled = true;
+      }
+      if (edgeMaterial) {
+        edgeMaterial.opacity = transition.edgeOpacityTo;
+      }
+    }
+
+    this.sphereIntroTransition = undefined;
+    this.transitionEffectGroup.visible = false;
+    this.updateTransitionEffectOpacity(0);
+    const impactMaterialA = this.sphereIntroImpactRingA?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const impactMaterialB = this.sphereIntroImpactRingB?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+
+    if (impactMaterialA) {
+      impactMaterialA.opacity = 0;
+    }
+    if (impactMaterialB) {
+      impactMaterialB.opacity = 0;
+    }
+    if (this.sphereShell?.material instanceof THREE.MeshBasicMaterial) {
+      this.sphereShell.visible = false;
+      this.sphereShell.material.opacity = 0;
+      this.sphereShell.scale.setScalar(1);
+    }
+    if (!this.transition && !this.cameraFocusTransition && !this.sphereSelectionTransition) {
+      this.controls.enabled = true;
+    }
+  }
+
   private finishLayoutTransition(applyTarget: boolean) {
     const transition = this.transition;
 
@@ -2635,7 +2839,7 @@ export class ProcessFlowGraphEngine {
     }
 
     this.transition = undefined;
-    this.controls.enabled = !this.sphereSelectionTransition;
+    this.controls.enabled = !this.sphereSelectionTransition && !this.sphereIntroTransition;
     this.transitionEffectGroup.visible = false;
     this.updateTransitionEffectOpacity(0);
 
@@ -2655,7 +2859,7 @@ export class ProcessFlowGraphEngine {
     }
 
     this.cameraFocusTransition = undefined;
-    if (!this.transition && !this.sphereSelectionTransition) {
+    if (!this.transition && !this.sphereSelectionTransition && !this.sphereIntroTransition) {
       this.controls.enabled = true;
     }
   }
@@ -2922,7 +3126,7 @@ export class ProcessFlowGraphEngine {
     if (applyTarget) {
       this.updateMaterialState();
     }
-    if (!this.transition && !this.cameraFocusTransition) {
+    if (!this.transition && !this.cameraFocusTransition && !this.sphereIntroTransition) {
       this.controls.enabled = true;
     }
   }
@@ -3085,6 +3289,276 @@ export class ProcessFlowGraphEngine {
     if (rawProgress >= 1) {
       this.finishSphereSelectionTransition(true);
     }
+  }
+
+  private updateSphereIntroTransition(forcedProgress?: number) {
+    const transition = this.sphereIntroTransition;
+
+    if (!transition) {
+      return;
+    }
+
+    if (!this.shouldRunSphereIntroTransition()) {
+      this.finishSphereIntroTransition(true);
+      return;
+    }
+
+    const rawProgress =
+      forcedProgress ??
+      THREE.MathUtils.clamp((performance.now() - transition.startedAt) / transition.duration, 0, 1);
+    const cameraLaunchProgress = getFairyEase(getSmoothStep(0, 0.52, rawProgress));
+    const cameraRecoverProgress = getFairyEase(getSmoothStep(0.52, 1, rawProgress));
+    const positionAttribute = this.nodeGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+    const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
+      | THREE.BufferAttribute
+      | undefined;
+    const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
+
+    if (rawProgress < 0.52) {
+      this.camera.position.lerpVectors(
+        transition.cameraFrom,
+        transition.cameraPunch,
+        cameraLaunchProgress,
+      );
+    } else {
+      this.camera.position.lerpVectors(
+        transition.cameraPunch,
+        transition.cameraTo,
+        cameraRecoverProgress,
+      );
+    }
+    this.controls.target.lerpVectors(
+      transition.targetFrom,
+      transition.targetTo,
+      getFairyEase(rawProgress),
+    );
+    this.camera.updateProjectionMatrix();
+
+    if (
+      positionAttribute &&
+      positionAttribute.array.length === transition.nodeFrom.length &&
+      transition.nodeFrom.length === transition.nodeTo.length
+    ) {
+      const positions = positionAttribute.array as Float32Array;
+      const sizes = sizeAttribute?.array as Float32Array | undefined;
+
+      for (let offset = 0; offset < positions.length; offset += 3) {
+        const vertexIndex = offset / 3;
+        const seed = getTransitionSeed(vertexIndex + 5);
+        const orbitSeed = getTransitionSeed(vertexIndex + 37);
+        const gatherProgress = getFairyEase(getSmoothStep(seed * 0.2, 1, rawProgress));
+        const orbitProgress = getSmoothStep(seed * 0.08, 0.92, rawProgress);
+        const magneticPull =
+          Math.sin(Math.PI * gatherProgress) * (1 - getSmoothStep(0.78, 1, gatherProgress));
+        const targetX = transition.nodeTo[offset];
+        const targetY = transition.nodeTo[offset + 1];
+        const targetZ = transition.nodeTo[offset + 2];
+        const targetLength = Math.hypot(targetX, targetY, targetZ) || 1;
+        const radialX = targetX / targetLength;
+        const radialY = targetY / targetLength;
+        const radialZ = targetZ / targetLength;
+        let tangentX = -radialZ;
+        let tangentY = (getTransitionSeed(vertexIndex + 71) - 0.5) * 0.42;
+        let tangentZ = radialX;
+        const tangentLength = Math.hypot(tangentX, tangentY, tangentZ) || 1;
+
+        tangentX /= tangentLength;
+        tangentY /= tangentLength;
+        tangentZ /= tangentLength;
+        let sideX = radialY * tangentZ - radialZ * tangentY;
+        let sideY = radialZ * tangentX - radialX * tangentZ;
+        let sideZ = radialX * tangentY - radialY * tangentX;
+        const sideLength = Math.hypot(sideX, sideY, sideZ) || 1;
+
+        sideX /= sideLength;
+        sideY /= sideLength;
+        sideZ /= sideLength;
+        const orbitAngle =
+          seed * Math.PI * 2 + (1 - orbitProgress) * Math.PI * (4.2 + orbitSeed * 3.8);
+        const orbitRadius = magneticPull * (150 + orbitSeed * 270);
+        const orbitX =
+          (Math.cos(orbitAngle) * tangentX + Math.sin(orbitAngle) * sideX) * orbitRadius;
+        const orbitY =
+          (Math.cos(orbitAngle) * tangentY + Math.sin(orbitAngle) * sideY) * orbitRadius;
+        const orbitZ =
+          (Math.cos(orbitAngle) * tangentZ + Math.sin(orbitAngle) * sideZ) * orbitRadius;
+        const surfacePulse = Math.sin(Math.PI * gatherProgress) * 42 * (1 - gatherProgress);
+        const currentX =
+          THREE.MathUtils.lerp(transition.nodeFrom[offset], targetX, gatherProgress) +
+          orbitX +
+          radialX * surfacePulse;
+        const currentY =
+          THREE.MathUtils.lerp(transition.nodeFrom[offset + 1], targetY, gatherProgress) +
+          orbitY +
+          radialY * surfacePulse;
+        const currentZ =
+          THREE.MathUtils.lerp(transition.nodeFrom[offset + 2], targetZ, gatherProgress) +
+          orbitZ +
+          radialZ * surfacePulse;
+
+        positions[offset] = currentX;
+        positions[offset + 1] = currentY;
+        positions[offset + 2] = currentZ;
+        if (sizes && vertexIndex < sizes.length) {
+          const node = this.data.nodes[vertexIndex];
+          const baseSize = getNodePointSize(node, 'sphere3d');
+          const glint = Math.sin(Math.PI * gatherProgress) * (0.32 + seed * 0.38);
+
+          sizes[vertexIndex] = baseSize * (1 + glint);
+        }
+      }
+      positionAttribute.needsUpdate = true;
+      if (sizeAttribute) {
+        sizeAttribute.needsUpdate = true;
+      }
+    }
+
+    if (edgeMaterial) {
+      edgeMaterial.opacity = transition.edgeOpacityTo * getSmoothStep(0.72, 1, rawProgress);
+    }
+    this.updateSphereIntroEffect(rawProgress);
+
+    if (rawProgress >= 1) {
+      this.finishSphereIntroTransition(true);
+    }
+  }
+
+  private updateSphereIntroEffect(rawProgress: number) {
+    const easedProgress = getFairyEase(rawProgress);
+    const sparkle = Math.sin(Math.PI * rawProgress);
+    const reveal = getSmoothStep(0, 0.18, rawProgress) * (1 - getSmoothStep(0.9, 1, rawProgress));
+    const dustPositionAttribute = this.transitionDustGeometry.getAttribute('position') as
+      | THREE.BufferAttribute
+      | undefined;
+    const dustMaterial = this.transitionDustPoints?.material;
+    const ringMaterial = this.transitionRing?.material as THREE.LineBasicMaterial | undefined;
+    const gateMaterial = this.transitionGateLines?.material as THREE.LineBasicMaterial | undefined;
+    const projectionMaterial = this.transitionProjectionLines?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const impactMaterialA = this.sphereIntroImpactRingA?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const impactMaterialB = this.sphereIntroImpactRingB?.material as
+      | THREE.LineBasicMaterial
+      | undefined;
+    const sphereShellMaterial = this.sphereShell?.material as THREE.MeshBasicMaterial | undefined;
+    const impactProgressA = getSmoothStep(0.52, 0.66, rawProgress);
+    const impactProgressB = getSmoothStep(0.62, 0.82, rawProgress);
+    const impactOpacityA = impactProgressA * (1 - getSmoothStep(0.7, 0.86, rawProgress));
+    const impactOpacityB = impactProgressB * (1 - getSmoothStep(0.84, 1, rawProgress));
+
+    this.transitionEffectGroup.visible = true;
+    if (dustPositionAttribute) {
+      const positionArray = dustPositionAttribute.array as Float32Array;
+      const baseSpread = THREE.MathUtils.lerp(620, 270, easedProgress);
+      const heightSpread = THREE.MathUtils.lerp(340, 160, easedProgress);
+      const depthScale = THREE.MathUtils.lerp(0.42, 0.92, easedProgress);
+
+      for (let index = 0; index < transitionDustCount; index += 1) {
+        const seed = getTransitionSeed(index);
+        const orbitSeed = getTransitionSeed(index + 21);
+        const radius = baseSpread * (0.2 + orbitSeed * 0.86);
+        const angle = seed * Math.PI * 2 + rawProgress * (3.8 + orbitSeed * 4.8);
+        const offset = index * 3;
+
+        positionArray[offset] =
+          Math.cos(angle) * radius + Math.sin(rawProgress * Math.PI * 4 + seed * 12) * sparkle * 42;
+        positionArray[offset + 1] =
+          (getTransitionSeed(index + 17) - 0.5) * heightSpread +
+          Math.sin(rawProgress * Math.PI * 5 + seed * 7) * sparkle * 36;
+        positionArray[offset + 2] =
+          Math.sin(angle) * radius * depthScale +
+          Math.cos(rawProgress * Math.PI * 4.4 + seed * 9) * sparkle * 58;
+      }
+
+      dustPositionAttribute.needsUpdate = true;
+      this.transitionDustGeometry.computeBoundingSphere();
+    }
+    if (dustMaterial instanceof THREE.ShaderMaterial) {
+      dustMaterial.uniforms.opacity.value = reveal * 0.64;
+    }
+    if (ringMaterial) {
+      const pulse =
+        getSmoothStep(0.2, 0.76, rawProgress) * (1 - getSmoothStep(0.88, 1, rawProgress));
+
+      ringMaterial.opacity = pulse * 0.76;
+    }
+    if (gateMaterial) {
+      gateMaterial.opacity = reveal * 0.22;
+      if (this.transitionGateLines) {
+        this.transitionGateLines.rotation.y = rawProgress * -0.86;
+      }
+    }
+    if (projectionMaterial) {
+      projectionMaterial.opacity = 0;
+    }
+    if (this.transitionRing) {
+      const ringPulse = Math.sin(Math.PI * getSmoothStep(0.2, 0.86, rawProgress));
+
+      this.transitionRing.rotation.z = rawProgress * 0.76;
+      this.transitionRing.rotation.x = 0.08 + sparkle * 0.16;
+      this.transitionRing.scale.set(
+        THREE.MathUtils.lerp(1.78, 0.9, easedProgress) + ringPulse * 0.12,
+        THREE.MathUtils.lerp(1.28, 0.76, easedProgress) + ringPulse * 0.18,
+        THREE.MathUtils.lerp(0.42, 1.04, easedProgress),
+      );
+    }
+    if (this.sphereIntroImpactRingA && impactMaterialA) {
+      impactMaterialA.opacity = impactOpacityA * 0.96;
+      this.sphereIntroImpactRingA.rotation.z = rawProgress * -1.35;
+      this.sphereIntroImpactRingA.rotation.x = 0.18 + impactProgressA * 0.24;
+      this.sphereIntroImpactRingA.scale.set(
+        THREE.MathUtils.lerp(0.42, 1.72, impactProgressA),
+        THREE.MathUtils.lerp(0.28, 1.18, impactProgressA),
+        THREE.MathUtils.lerp(0.3, 1.12, impactProgressA),
+      );
+    }
+    if (this.sphereIntroImpactRingB && impactMaterialB) {
+      impactMaterialB.opacity = impactOpacityB * 0.72;
+      this.sphereIntroImpactRingB.rotation.z = rawProgress * 1.62;
+      this.sphereIntroImpactRingB.rotation.x = -0.12 - impactProgressB * 0.16;
+      this.sphereIntroImpactRingB.scale.set(
+        THREE.MathUtils.lerp(0.28, 2.08, impactProgressB),
+        THREE.MathUtils.lerp(0.22, 1.42, impactProgressB),
+        THREE.MathUtils.lerp(0.24, 1.2, impactProgressB),
+      );
+    }
+    this.transitionEffectGroup.rotation.y = rawProgress * 1.55;
+    this.transitionEffectGroup.rotation.z = Math.sin(rawProgress * Math.PI) * 0.05;
+    this.transitionEffectGroup.scale.setScalar(1 + sparkle * 0.09);
+    if (this.sphereShell && sphereShellMaterial) {
+      const shellReveal =
+        getSmoothStep(0.12, 0.55, rawProgress) * (1 - getSmoothStep(0.9, 1, rawProgress));
+
+      this.sphereShell.visible = true;
+      this.sphereShell.scale.setScalar(
+        THREE.MathUtils.lerp(1.32, 1, easedProgress) + sparkle * 0.03,
+      );
+      sphereShellMaterial.opacity = 0.016 + shellReveal * 0.08;
+    }
+  }
+
+  private getSphereAutoRotationSpeed() {
+    const transition = this.sphereIntroTransition;
+
+    if (!transition) {
+      return sphereIdleRotationSpeed;
+    }
+
+    const progress = THREE.MathUtils.clamp(
+      (performance.now() - transition.startedAt) / transition.duration,
+      0,
+      1,
+    );
+
+    return THREE.MathUtils.lerp(
+      sphereIntroRotationSpeed,
+      sphereIdleRotationSpeed,
+      getSmoothStep(0, 1, progress),
+    );
   }
 
   private updateCameraFocusTransition(forcedProgress?: number) {
@@ -3513,7 +3987,7 @@ export class ProcessFlowGraphEngine {
     }
     setLineMaterialOpacity(highlightedEdgeMaterial, transition.highlightedEdgeOpacity * edgeFade);
     if (flowMarkerMaterial) {
-      flowMarkerMaterial.opacity = flowMarkerOpacity * selectedEdgeBrightnessScale * edgeFade;
+      flowMarkerMaterial.opacity = flowTrailOpacity * selectedEdgeBrightnessScale * edgeFade;
     }
     if (this.sphereShell && sphereShellMaterial) {
       const shouldShowSphereShell = doesTransitionInvolveSphere(transition);
@@ -4338,8 +4812,8 @@ export class ProcessFlowGraphEngine {
     const edgePositions = new Float32Array(highlightedEdgeRenders.length * segmentCount * 6);
     const edgeColors = new Float32Array(highlightedEdgeRenders.length * segmentCount * 6);
     const markerCount = this.selection.selectedNodeId ? highlightedEdgeRenders.length : 0;
-    const markerPositions = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
-    const markerColors = new Float32Array(markerCount * flowMarkerArrowSegments * 6);
+    const markerPositions = new Float32Array(markerCount * flowTrailSegments * 6);
+    const markerColors = new Float32Array(markerCount * flowTrailSegments * 6);
     const selectedNodePositions = new Float32Array(this.selection.selectedNodeId ? 3 : 0);
     const selectedNodeId = this.selection.selectedNodeId;
     const selectedEdgeBrightnessScale = this.selection.selectedNodeId
@@ -4368,7 +4842,9 @@ export class ProcessFlowGraphEngine {
       const source = getNodePosition(this.data, this.layoutMode, edge.source);
       const target = getNodePosition(this.data, this.layoutMode, edge.target);
       const visualDirection = this.getHighlightedEdgeVisualDirection(edge);
-      const color = getEdgeColor(visualDirection);
+      const color = getEdgeColor(visualDirection, {
+        selected: Boolean(this.selection.selectedNodeId),
+      });
       const baseIntensity = this.selection.selectedNodeId
         ? visualDirection === 'input'
           ? 1.26
@@ -4430,13 +4906,26 @@ export class ProcessFlowGraphEngine {
           target: edge.target,
         });
 
-        const markerColorOffset = markerOffset * flowMarkerArrowSegments * 6;
-        for (let vertexOffset = 0; vertexOffset < flowMarkerArrowSegments * 2; vertexOffset += 1) {
+        const markerColorOffset = markerOffset * flowTrailSegments * 6;
+        const trailIntensityScale = intensityScale * selectedEdgeBrightnessScale;
+        const tailIntensity = visualDirection === 'input' ? 0.2 : 0.18;
+        const headIntensity = visualDirection === 'input' ? 1.85 : 1.75;
+
+        for (let segmentIndex = 0; segmentIndex < flowTrailSegments; segmentIndex += 1) {
+          const startRatio = segmentIndex / flowTrailSegments;
+          const endRatio = (segmentIndex + 1) / flowTrailSegments;
+          const startIntensity =
+            tailIntensity + Math.pow(startRatio, 1.8) * (headIntensity - tailIntensity);
+          const endIntensity =
+            tailIntensity + Math.pow(endRatio, 1.8) * (headIntensity - tailIntensity);
+          const segmentColorOffset = markerColorOffset + segmentIndex * 6;
+
+          writeColor(markerColors, segmentColorOffset, color, startIntensity * trailIntensityScale);
           writeColor(
             markerColors,
-            markerColorOffset + vertexOffset * 3,
+            segmentColorOffset + 3,
             color,
-            (visualDirection === 'input' ? 1.35 : 1.25) * selectedEdgeBrightnessScale,
+            endIntensity * trailIntensityScale,
           );
         }
         markerOffset += 1;
@@ -4482,97 +4971,71 @@ export class ProcessFlowGraphEngine {
 
     const positions = positionAttribute.array as Float32Array;
     const elapsed = performance.now() / flowMarkerCycleMs;
-    const tipVector = new THREE.Vector3();
-    const previousVector = new THREE.Vector3();
-    const nextVector = new THREE.Vector3();
-    const directionVector = new THREE.Vector3();
-    const viewVector = new THREE.Vector3();
-    const sideVector = new THREE.Vector3();
-    const baseVector = new THREE.Vector3();
-    const leftVector = new THREE.Vector3();
-    const rightVector = new THREE.Vector3();
-    const arrowLength = isExpandedLikeLayout(this.layoutMode)
-      ? expandedFlowMarkerArrowLength
-      : sphereFlowMarkerArrowLength;
-    const arrowWidth = isExpandedLikeLayout(this.layoutMode)
-      ? expandedFlowMarkerArrowWidth
-      : sphereFlowMarkerArrowWidth;
+    const startVector = new THREE.Vector3();
+    const endVector = new THREE.Vector3();
+    const flowTrailLength = isExpandedLikeLayout(this.layoutMode)
+      ? expandedFlowTrailLength
+      : sphereFlowTrailLength;
+    const cycleSpan = 1 + flowTrailCyclePadding * 2;
     const writeVector = (offset: number, vector: THREE.Vector3) => {
       positions[offset] = vector.x;
       positions[offset + 1] = vector.y;
       positions[offset + 2] = vector.z;
     };
 
-    this.flowMarkers.forEach((marker, index) => {
-      const progress = 0.12 + ((elapsed + marker.phase) % 1) * 0.76;
-      const source = getNodePosition(this.data, this.layoutMode, marker.source);
-      const target = getNodePosition(this.data, this.layoutMode, marker.target);
-      const previousProgress = THREE.MathUtils.clamp(progress - 0.025, 0.02, 0.98);
-      const nextProgress = THREE.MathUtils.clamp(progress + 0.025, 0.02, 0.98);
-      const markerOffset = index * flowMarkerArrowSegments * 6;
-
+    const writeTrailVector = (
+      marker: FlowMarker,
+      source: [number, number, number],
+      target: [number, number, number],
+      output: THREE.Vector3,
+      progress: number,
+    ) => {
       setFlowMarkerVector({
         arcLift: marker.arcLift,
         layoutMode: this.layoutMode,
-        output: previousVector,
-        progress: previousProgress,
-        source,
-        surfaceLift: marker.surfaceLift,
-        target,
-      });
-      setFlowMarkerVector({
-        arcLift: marker.arcLift,
-        layoutMode: this.layoutMode,
-        output: tipVector,
+        output,
         progress,
         source,
         surfaceLift: marker.surfaceLift,
         target,
       });
-      setFlowMarkerVector({
-        arcLift: marker.arcLift,
-        layoutMode: this.layoutMode,
-        output: nextVector,
-        progress: nextProgress,
-        source,
-        surfaceLift: marker.surfaceLift,
-        target,
-      });
+    };
 
-      directionVector.subVectors(nextVector, previousVector);
-      if (directionVector.lengthSq() < 0.0001) {
-        directionVector.subVectors(tipVector, previousVector);
-      }
-      if (directionVector.lengthSq() < 0.0001) {
-        directionVector.set(1, 0, 0);
-      }
-      directionVector.normalize();
+    this.flowMarkers.forEach((marker, index) => {
+      const headProgress = ((elapsed + marker.phase) % 1) * cycleSpan - flowTrailCyclePadding;
+      const source = getNodePosition(this.data, this.layoutMode, marker.source);
+      const target = getNodePosition(this.data, this.layoutMode, marker.target);
+      const markerOffset = index * flowTrailSegments * 6;
 
-      viewVector.subVectors(this.camera.position, tipVector);
-      if (viewVector.lengthSq() < 0.0001) {
-        viewVector.copy(this.camera.up);
-      }
-      viewVector.normalize();
+      for (let segmentIndex = 0; segmentIndex < flowTrailSegments; segmentIndex += 1) {
+        const trailStartRatio = segmentIndex / flowTrailSegments;
+        const trailEndRatio = (segmentIndex + 1) / flowTrailSegments;
+        const segmentStart = headProgress - flowTrailLength + trailStartRatio * flowTrailLength;
+        const segmentEnd = headProgress - flowTrailLength + trailEndRatio * flowTrailLength;
+        const segmentOffset = markerOffset + segmentIndex * 6;
 
-      sideVector.crossVectors(directionVector, viewVector);
-      if (sideVector.lengthSq() < 0.0001) {
-        sideVector.crossVectors(directionVector, this.camera.up);
-      }
-      if (sideVector.lengthSq() < 0.0001) {
-        sideVector.set(0, 1, 0);
-      }
-      sideVector.normalize();
+        if (segmentEnd <= 0 || segmentStart >= 1) {
+          writeTrailVector(marker, source, target, startVector, segmentStart >= 1 ? 1 : 0);
+          writeVector(segmentOffset, startVector);
+          writeVector(segmentOffset + 3, startVector);
+          continue;
+        }
 
-      baseVector.copy(tipVector).addScaledVector(directionVector, -arrowLength);
-      leftVector.copy(baseVector).addScaledVector(sideVector, arrowWidth);
-      rightVector.copy(baseVector).addScaledVector(sideVector, -arrowWidth);
+        const startProgress = THREE.MathUtils.clamp(segmentStart, 0, 1);
+        const endProgress = THREE.MathUtils.clamp(segmentEnd, 0, 1);
 
-      writeVector(markerOffset, baseVector);
-      writeVector(markerOffset + 3, tipVector);
-      writeVector(markerOffset + 6, leftVector);
-      writeVector(markerOffset + 9, tipVector);
-      writeVector(markerOffset + 12, rightVector);
-      writeVector(markerOffset + 15, tipVector);
+        if (endProgress - startProgress < 0.001) {
+          writeTrailVector(marker, source, target, startVector, startProgress);
+          writeVector(segmentOffset, startVector);
+          writeVector(segmentOffset + 3, startVector);
+          continue;
+        }
+
+        writeTrailVector(marker, source, target, startVector, startProgress);
+        writeTrailVector(marker, source, target, endVector, endProgress);
+        writeVector(segmentOffset, startVector);
+        writeVector(segmentOffset + 3, endVector);
+      }
     });
 
     positionAttribute.needsUpdate = true;
@@ -4764,6 +5227,7 @@ export class ProcessFlowGraphEngine {
     this.updateLayoutTransition();
     this.updateCameraFocusTransition();
     this.updateSphereSelectionTransition();
+    this.updateSphereIntroTransition();
     this.updateFlowMarkers();
     this.updateSelectedNodePulse();
 
@@ -4774,7 +5238,7 @@ export class ProcessFlowGraphEngine {
       this.layoutMode === 'sphere3d' &&
       !this.selection.selectedNodeId
     ) {
-      this.group.rotation.y += 0.0011;
+      this.group.rotation.y += this.getSphereAutoRotationSpeed();
     }
     this.controls.update();
     this.updateGeoMapBackdropFrame();

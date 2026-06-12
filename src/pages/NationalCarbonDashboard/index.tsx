@@ -1,12 +1,14 @@
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react';
 import {
   buildChinaMercatorMap,
@@ -50,6 +52,10 @@ type StatusTone = {
   soft: string;
 };
 type ConnectivitySnapshot = DashboardSnapshot['connectivity'];
+type FloatingNavigatorPosition = {
+  x: number;
+  y: number;
+};
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
 
@@ -61,6 +67,15 @@ const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
   { key: 'flow_topology', label: '流图谱', shortLabel: '05' },
 ];
 
+const dashboardStageWidth = 1920;
+const dashboardStageHeight = 1080;
+const floatingNavigatorMargin = 18;
+const floatingNavigatorOrbSize = 58;
+const floatingNavigatorStorageKey = 'national-carbon-dashboard-floating-navigator-v2';
+const floatingNavigatorDefaultPosition: FloatingNavigatorPosition = {
+  x: dashboardStageWidth - floatingNavigatorOrbSize - floatingNavigatorMargin,
+  y: dashboardStageHeight - floatingNavigatorOrbSize - floatingNavigatorMargin,
+};
 const statusFilterKeys: StatusFilterKey[] = ['all', ...dashboardStatusKeys];
 const overviewMapViewBox = { height: 580, width: 1030 } as const;
 const overviewHotspotLabelSize = { height: 21, width: 104 } as const;
@@ -392,28 +407,56 @@ function MetricIcon({ type }: { type: string }) {
   );
 }
 
-function HeaderRibbon({
-  snapshot,
-  title,
-  subtitle,
-}: {
-  snapshot: DashboardSnapshot;
-  title?: string;
-  subtitle?: string;
-}) {
-  return (
-    <header className={styles.headerRibbon}>
-      <div className={styles.headerFlow} />
-      <div className={styles.headerText}>
-        <h1>{title ?? snapshot.title}</h1>
-        <p>{subtitle ?? snapshot.subtitle}</p>
-      </div>
-      <div className={styles.headerMeta}>
-        <strong>{snapshot.dataVersion}</strong>
-        <span>数据更新：{snapshot.generatedAt.slice(0, 16).replace('T', ' ')}</span>
-      </div>
-    </header>
-  );
+function clampFloatingNavigatorPosition(
+  position: FloatingNavigatorPosition,
+): FloatingNavigatorPosition {
+  return {
+    x: Math.min(
+      Math.max(position.x, floatingNavigatorMargin),
+      dashboardStageWidth - floatingNavigatorOrbSize - floatingNavigatorMargin,
+    ),
+    y: Math.min(
+      Math.max(position.y, floatingNavigatorMargin),
+      dashboardStageHeight - floatingNavigatorOrbSize - floatingNavigatorMargin,
+    ),
+  };
+}
+
+function getInitialFloatingNavigatorPosition(): FloatingNavigatorPosition {
+  if (typeof window === 'undefined') {
+    return floatingNavigatorDefaultPosition;
+  }
+
+  try {
+    const rawPosition = window.localStorage.getItem(floatingNavigatorStorageKey);
+    if (!rawPosition) {
+      return floatingNavigatorDefaultPosition;
+    }
+
+    const parsedPosition = JSON.parse(rawPosition) as Partial<FloatingNavigatorPosition>;
+    if (!Number.isFinite(parsedPosition.x) || !Number.isFinite(parsedPosition.y)) {
+      return floatingNavigatorDefaultPosition;
+    }
+
+    return clampFloatingNavigatorPosition({
+      x: Number(parsedPosition.x),
+      y: Number(parsedPosition.y),
+    });
+  } catch {
+    return floatingNavigatorDefaultPosition;
+  }
+}
+
+function storeFloatingNavigatorPosition(position: FloatingNavigatorPosition) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(floatingNavigatorStorageKey, JSON.stringify(position));
+  } catch {
+    // The navigator position is a convenience preference; losing it should not affect the dashboard.
+  }
 }
 
 function ScreenNavigator({
@@ -423,19 +466,142 @@ function ScreenNavigator({
   activeScreen: ScreenKey;
   onChange: (screen: ScreenKey) => void;
 }) {
+  const activeScreenInfo = screens.find((screen) => screen.key === activeScreen) ?? screens[0];
+  const [position, setPosition] = useState<FloatingNavigatorPosition>(
+    getInitialFloatingNavigatorPosition,
+  );
+  const [isDragging, setIsDragging] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const positionRef = useRef(position);
+  const dragRef = useRef<{
+    offsetX: number;
+    offsetY: number;
+    pointerId: number;
+  } | null>(null);
+  const flyoutSideClassName =
+    position.x > dashboardStageWidth - 430 ? styles.screenNavigatorFlyoutLeft : '';
+  const navClassName = [
+    styles.screenNavigator,
+    flyoutSideClassName,
+    isDragging ? styles.screenNavigatorDragging : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  const getStagePoint = useCallback((event: { clientX: number; clientY: number }) => {
+    const bounds = navRef.current?.parentElement?.getBoundingClientRect();
+    if (!bounds?.width || !bounds.height) {
+      return positionRef.current;
+    }
+
+    return {
+      x: ((event.clientX - bounds.left) / bounds.width) * dashboardStageWidth,
+      y: ((event.clientY - bounds.top) / bounds.height) * dashboardStageHeight,
+    };
+  }, []);
+
+  const handleOrbPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      const stagePoint = getStagePoint(event);
+      const currentPosition = positionRef.current;
+      dragRef.current = {
+        offsetX: stagePoint.x - currentPosition.x,
+        offsetY: stagePoint.y - currentPosition.y,
+        pointerId: event.pointerId,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setIsDragging(true);
+      event.preventDefault();
+    },
+    [getStagePoint],
+  );
+
+  const handleOrbPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      const dragState = dragRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const stagePoint = getStagePoint(event);
+      const nextPosition = clampFloatingNavigatorPosition({
+        x: stagePoint.x - dragState.offsetX,
+        y: stagePoint.y - dragState.offsetY,
+      });
+      positionRef.current = nextPosition;
+      setPosition(nextPosition);
+      event.preventDefault();
+    },
+    [getStagePoint],
+  );
+
+  const handleOrbPointerEnd = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    const dragState = dragRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragRef.current = null;
+    setIsDragging(false);
+    storeFloatingNavigatorPosition(positionRef.current);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }, []);
+
   return (
-    <nav className={styles.screenNavigator} aria-label='大屏切换'>
-      {screens.map((screen) => (
-        <button
-          className={screen.key === activeScreen ? styles.screenNavActive : ''}
-          key={screen.key}
-          onClick={() => onChange(screen.key)}
-          type='button'
-        >
-          <span>{screen.shortLabel}</span>
-          {screen.label}
-        </button>
-      ))}
+    <nav
+      aria-label='大屏切换'
+      className={navClassName}
+      ref={navRef}
+      style={
+        {
+          '--screen-nav-x': `${position.x}px`,
+          '--screen-nav-y': `${position.y}px`,
+        } as CSSProperties
+      }
+    >
+      <button
+        aria-label={`当前形态：${activeScreenInfo.shortLabel} ${activeScreenInfo.label}，按住拖动`}
+        className={styles.screenNavOrb}
+        onPointerCancel={handleOrbPointerEnd}
+        onPointerDown={handleOrbPointerDown}
+        onPointerMove={handleOrbPointerMove}
+        onPointerUp={handleOrbPointerEnd}
+        type='button'
+      >
+        <span className={styles.screenNavOrbIndex}>{activeScreenInfo.shortLabel}</span>
+      </button>
+      <span className={styles.screenNavHoverBridge} aria-hidden='true' />
+      <div className={styles.screenNavFlyout}>
+        <div className={styles.screenNavOptions}>
+          {screens.map((screen) => (
+            <button
+              aria-current={screen.key === activeScreen ? 'page' : undefined}
+              className={[
+                styles.screenNavOption,
+                screen.key === activeScreen ? styles.screenNavActive : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              key={screen.key}
+              onClick={() => onChange(screen.key)}
+              type='button'
+            >
+              <span>{screen.shortLabel}</span>
+              <strong>{screen.label}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
     </nav>
   );
 }
@@ -804,13 +970,6 @@ function OverviewScreen({
 
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle={`${snapshot.summary.coveredRegions}省覆盖 / ${formatNumber(
-          sumStatus(snapshot.regions, 'all'),
-        )}条建设数据 / ${snapshot.summary.connectivityRate.toFixed(1)}%可计算连接`}
-        title='天工数据库建设成果总览'
-      />
       <div className={styles.overviewStage}>
         <div className={styles.overviewMetricsLeft}>
           <CountMetric
@@ -1025,11 +1184,6 @@ function MapStatusScreen({
 
   return (
     <section className={styles.screenPanel} style={getStatusToneStyle(activeStatus)}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='按数据生命周期状态查看各省份/地区建设进展'
-        title='全国数据建设态势'
-      />
       <StatusSwitch
         activeStatus={activeStatus}
         onChange={handleStatusChange}
@@ -1196,11 +1350,6 @@ function OutcomeMetricsScreen({
 
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='天工数据库建设成果总览'
-        title='建设成果与发布成果'
-      />
       <div className={styles.outcomeTopGrid}>
         <div className={styles.metricCluster}>
           <h2>建设成果</h2>
@@ -1923,11 +2072,6 @@ function ConnectivityScreen({
 }) {
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='过程输入输出匹配成熟度总览'
-        title='供应链连接与可计算性'
-      />
       <div className={styles.connectivityGrid}>
         <aside className={styles.connectivitySummary}>
           <span>供应链闭合率</span>
@@ -1975,21 +2119,14 @@ function ConnectivityScreen({
 }
 
 function FlowTopologyScreen({
-  snapshot,
   activeScreen,
   onChangeScreen,
 }: {
-  snapshot: DashboardSnapshot;
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='全量 process-flow graph 的球体与展开视图'
-        title='过程-流全量关系图谱'
-      />
       <div className={styles.processFlowGraphWorkspace}>
         <ProcessFlowGraphPanel />
       </div>
@@ -2101,11 +2238,7 @@ export default function NationalCarbonDashboardPage() {
           />
         )}
         {activeScreen === 'flow_topology' && (
-          <FlowTopologyScreen
-            activeScreen={activeScreen}
-            onChangeScreen={setActiveScreen}
-            snapshot={dashboardSnapshot}
-          />
+          <FlowTopologyScreen activeScreen={activeScreen} onChangeScreen={setActiveScreen} />
         )}
       </div>
     </main>

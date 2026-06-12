@@ -27,7 +27,7 @@ export function getChinaRegionAdcode(feature: ChinaMapFeature): number | undefin
   return undefined;
 }
 
-function rewindChinaMapFeature(feature: ChinaMapFeature): ChinaMapFeature {
+export function rewindChinaMapFeature(feature: ChinaMapFeature): ChinaMapFeature {
   if (feature.geometry.type === 'Polygon') {
     const geometry: Polygon = {
       ...feature.geometry,

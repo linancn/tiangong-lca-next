@@ -1,19 +1,20 @@
 import {
   AimOutlined,
   ApartmentOutlined,
+  CaretDownOutlined,
+  CaretUpOutlined,
   ClearOutlined,
   CloseCircleOutlined,
   DotChartOutlined,
   DragOutlined,
   EnvironmentOutlined,
   GlobalOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   NodeIndexOutlined,
+  RightOutlined,
   SearchOutlined,
   SelectOutlined,
 } from '@ant-design/icons';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
 import {
   getProcessFlowGraphNode,
@@ -28,7 +29,6 @@ import {
   type ProcessFlowGraphLayoutName,
   type ProcessFlowGraphMapScope,
   type ProcessFlowGraphNode,
-  type ProcessFlowGraphSearchItem,
 } from './graphTypes';
 import {
   loadProcessFlowGraphFromCache,
@@ -44,7 +44,12 @@ const geoMapCacheSoftTimeoutMs = 4500;
 const initialGeoMapPrefetchGraceMs = 900;
 const maxCacheErrorLength = 96;
 const inspectorExitAnimationMs = 320;
-const maxRenderedSearchResults = 96;
+const categoryPathDelimiter = ' / ';
+const categoryTreeKeyDelimiter = '\u001f';
+const maxCategoryTreeDepth = 5;
+const maxCategorySearchResults = 50;
+const maxNodeSearchResults = 50;
+const minCategoryMenuWidth = 226;
 const quickSelectOverviewFlowNodeId = 'flow:c431c0c3-3f5e-4b7b-af99-2ebbdcaf5f98@01.01.002';
 const quickSelectWorldMapProcessNodeId = 'process:1714bb7f-ced9-4c3f-8fac-af40ef8dd5fb@01.01.000';
 const quickSelectChinaMapProcessNodeId = 'process:9c3a6c6e-1010-41a6-b1f8-a3a52d2d62a3@01.01.000';
@@ -113,30 +118,71 @@ const categoryLabelTranslations: Record<string, string> = {
     '供水、污水处理、废弃物管理和修复活动',
 };
 
+function getCategoryPartLabel(categoryPart: string) {
+  const trimmedPart = categoryPart.trim();
+  return categoryLabelTranslations[trimmedPart] ?? trimmedPart;
+}
+
+function getLegacyCategoryParts(category?: string) {
+  const categoryParts =
+    category
+      ?.split(categoryPathDelimiter)
+      .map((part) => part.trim())
+      .filter(Boolean) ?? [];
+
+  if (!categoryParts.length) {
+    return ['未分类'];
+  }
+
+  const cappedCategoryParts =
+    categoryParts.length <= maxCategoryTreeDepth
+      ? categoryParts
+      : [
+          ...categoryParts.slice(0, maxCategoryTreeDepth - 1),
+          categoryParts.slice(maxCategoryTreeDepth - 1).join(categoryPathDelimiter),
+        ];
+
+  return cappedCategoryParts.map(getCategoryPartLabel);
+}
+
 function getCategoryLabel(category?: string) {
   if (!category) {
     return '-';
   }
 
-  return category
-    .split(';')
-    .map((part) => {
-      const trimmedPart = part.trim();
-      return categoryLabelTranslations[trimmedPart] ?? trimmedPart;
-    })
-    .join('；');
+  return getLegacyCategoryParts(category).join(categoryPathDelimiter);
 }
 
-function getLocationLabel(location?: string) {
-  if (!location || location === '-') {
-    return '-';
+function getNodeCategoryParts(node: ProcessFlowGraphNode) {
+  const structuredParts =
+    node.categoryPath?.map((item) => (item.zhName || item.name).trim()).filter(Boolean) ?? [];
+
+  return structuredParts.length ? structuredParts : getLegacyCategoryParts(node.category);
+}
+
+function getNodeCategoryDisplayPath(node: ProcessFlowGraphNode) {
+  const categoryDisplayPath = node.categoryDisplayPath?.trim();
+  if (categoryDisplayPath) {
+    return categoryDisplayPath;
   }
 
-  if (location.toLowerCase() === 'global') {
-    return '全球';
-  }
+  return getNodeCategoryParts(node).join(categoryPathDelimiter) || '-';
+}
 
-  return location;
+function getNodeCategorySearchValues(node: ProcessFlowGraphNode) {
+  return [
+    node.category,
+    getCategoryLabel(node.category),
+    node.categoryDisplayPath,
+    getNodeCategoryDisplayPath(node),
+    node.categorySystem,
+    ...(node.categoryPath?.flatMap((item) => [
+      item.id,
+      item.name,
+      item.zhName,
+      String(item.level),
+    ]) ?? []),
+  ];
 }
 
 function getExchangeDirectionLabel(direction: ProcessFlowGraphEdge['direction']) {
@@ -175,167 +221,473 @@ function getConnectedNodeName(
 type GraphDataSource = 'loading' | 'minio' | 'error';
 type GeoMapCacheStatus = 'idle' | 'loading' | 'hit' | 'miss' | 'error';
 type GeoMapPendingSourceLayoutMode = Exclude<ProcessFlowGraphLayoutName, 'geoMap2d'>;
-type SearchResultSlice<T> = {
-  hasMore: boolean;
-  items: T[];
+type CategoryTreeNode = {
+  children: CategoryTreeNode[];
+  count: number;
+  depth: number;
+  exchangeCount: number;
+  items: ProcessFlowGraphNode[];
+  key: string;
+  label: string;
+  path: string[];
+  rawLabel: string;
 };
-const emptyFlowSearchResultSlice: SearchResultSlice<ProcessFlowGraphSearchItem> = {
-  hasMore: false,
-  items: [],
-};
-const emptyProcessSearchResultSlice: SearchResultSlice<ProcessFlowGraphNode> = {
-  hasMore: false,
-  items: [],
+type MutableCategoryTreeNode = CategoryTreeNode & {
+  childrenByRawLabel: Map<string, MutableCategoryTreeNode>;
 };
 
-function getSearchResults(
-  data: ProcessFlowGraphData,
-  query: string,
-  limit = maxRenderedSearchResults,
-): SearchResultSlice<ProcessFlowGraphSearchItem> {
-  const normalizedQuery = query.trim().toLowerCase();
+type CategoryBreadcrumb = {
+  count: number;
+  key: string;
+  label: string;
+};
 
+type CategorySearchResults = {
+  categoryMatches: CategoryTreeNode[];
+  nodeMatches: ProcessFlowGraphNode[];
+  totalCategoryMatches: number;
+  totalNodeMatches: number;
+};
+
+function getCategoryTreeNodeKey(path: string[]) {
+  return path.join(categoryTreeKeyDelimiter) || 'root';
+}
+
+function createCategoryTreeNode(
+  rawLabel: string,
+  path: string[],
+  depth: number,
+): MutableCategoryTreeNode {
+  return {
+    children: [],
+    childrenByRawLabel: new Map<string, MutableCategoryTreeNode>(),
+    count: 0,
+    depth,
+    exchangeCount: 0,
+    items: [],
+    key: getCategoryTreeNodeKey(path),
+    label: rawLabel || '全部分类',
+    path,
+    rawLabel,
+  };
+}
+
+function compareCategoryTreeNodes(left: CategoryTreeNode, right: CategoryTreeNode) {
+  return (
+    right.count - left.count ||
+    right.exchangeCount - left.exchangeCount ||
+    left.label.localeCompare(right.label)
+  );
+}
+
+function compareCategoryTreeItems(left: ProcessFlowGraphNode, right: ProcessFlowGraphNode) {
+  return (
+    right.degree - left.degree ||
+    left.name.localeCompare(right.name) ||
+    left.id.localeCompare(right.id)
+  );
+}
+
+function finalizeCategoryTreeNode(categoryNode: MutableCategoryTreeNode): CategoryTreeNode {
+  return {
+    children: Array.from(categoryNode.childrenByRawLabel.values())
+      .map(finalizeCategoryTreeNode)
+      .sort(compareCategoryTreeNodes),
+    count: categoryNode.count,
+    depth: categoryNode.depth,
+    exchangeCount: categoryNode.exchangeCount,
+    items: [...categoryNode.items].sort(compareCategoryTreeItems),
+    key: categoryNode.key,
+    label: categoryNode.label,
+    path: categoryNode.path,
+    rawLabel: categoryNode.rawLabel,
+  };
+}
+
+function buildCategoryTree(nodes: ProcessFlowGraphNode[]): CategoryTreeNode {
+  const rootNode = createCategoryTreeNode('', [], 0);
+
+  nodes.forEach((graphNode) => {
+    let currentNode = rootNode;
+    currentNode.count += 1;
+    currentNode.exchangeCount += graphNode.degree;
+
+    getNodeCategoryParts(graphNode).forEach((categoryPart, categoryIndex) => {
+      const childPath = [...currentNode.path, categoryPart];
+      let childNode = currentNode.childrenByRawLabel.get(categoryPart);
+
+      if (!childNode) {
+        childNode = createCategoryTreeNode(categoryPart, childPath, categoryIndex + 1);
+        currentNode.childrenByRawLabel.set(categoryPart, childNode);
+      }
+
+      childNode.count += 1;
+      childNode.exchangeCount += graphNode.degree;
+      currentNode = childNode;
+    });
+
+    currentNode.items.push(graphNode);
+  });
+
+  return finalizeCategoryTreeNode(rootNode);
+}
+
+function doesCategoryTreeSearchMatch(node: ProcessFlowGraphNode, normalizedQuery: string) {
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return [
+    node.id,
+    node.name,
+    ...getNodeCategorySearchValues(node),
+    node.location,
+    node.flowType,
+    node.flowType ? getFlowTypeLabel(node.flowType) : undefined,
+  ].some((searchValue) => searchValue?.toLowerCase().includes(normalizedQuery));
+}
+
+function getCategorySearchText(categoryNode: CategoryTreeNode) {
+  return [...categoryNode.path, categoryNode.label].join(categoryPathDelimiter).toLowerCase();
+}
+
+function findCategoryTreeNodeByKey(
+  categoryNode: CategoryTreeNode,
+  nodeKey: string,
+): CategoryTreeNode | undefined {
+  if (categoryNode.key === nodeKey) {
+    return categoryNode;
+  }
+
+  for (const childNode of categoryNode.children) {
+    const matchingNode = findCategoryTreeNodeByKey(childNode, nodeKey);
+
+    if (matchingNode) {
+      return matchingNode;
+    }
+  }
+
+  return undefined;
+}
+
+function getCategoryTreeBreadcrumbs(
+  categoryTree: CategoryTreeNode,
+  activeCategoryNode: CategoryTreeNode,
+): CategoryBreadcrumb[] {
+  const breadcrumbs: CategoryBreadcrumb[] = [
+    {
+      count: categoryTree.count,
+      key: categoryTree.key,
+      label: '全部',
+    },
+  ];
+  let currentNode = categoryTree;
+
+  activeCategoryNode.path.forEach((pathPart) => {
+    const childNode = currentNode.children.find((node) => node.rawLabel === pathPart);
+
+    if (!childNode) {
+      return;
+    }
+
+    breadcrumbs.push({
+      count: childNode.count,
+      key: childNode.key,
+      label: childNode.label,
+    });
+    currentNode = childNode;
+  });
+
+  return breadcrumbs;
+}
+
+function getCategoryBreadcrumbLabel(breadcrumbs: CategoryBreadcrumb[]) {
+  return breadcrumbs.map((breadcrumb) => breadcrumb.label).join(' / ');
+}
+
+function getAdaptiveCategoryMenuWidth(breadcrumbLabel: string, maxWidth: number) {
+  const weightedLength = Array.from(breadcrumbLabel).reduce(
+    (length, char) => length + (char.charCodeAt(0) > 255 ? 1.1 : 0.56),
+    0,
+  );
+  const safeMaxWidth = Math.max(0, Math.round(maxWidth));
+
+  return Math.min(
+    safeMaxWidth,
+    Math.max(minCategoryMenuWidth, Math.round(196 + weightedLength * 7)),
+  );
+}
+
+function getCategoryShareStyle(count: number, maxCount: number) {
+  const share = maxCount > 0 ? Math.max(0.04, count / maxCount) : 0;
+
+  return { '--category-share': String(share) } as CSSProperties;
+}
+
+function getCategorySearchResults(
+  categoryTree: CategoryTreeNode | undefined,
+  nodes: ProcessFlowGraphNode[],
+  normalizedQuery: string,
+): CategorySearchResults {
   if (!normalizedQuery) {
     return {
-      hasMore: data.indexes.searchFlows.length > limit,
-      items: data.indexes.searchFlows.slice(0, limit),
+      categoryMatches: [],
+      nodeMatches: [],
+      totalCategoryMatches: 0,
+      totalNodeMatches: 0,
     };
   }
 
-  const results: ProcessFlowGraphSearchItem[] = [];
-  let hasMore = false;
+  const categoryMatches: CategoryTreeNode[] = [];
+  let totalCategoryMatches = 0;
 
-  for (const flow of data.indexes.searchFlows) {
-    if (
-      flow.id.toLowerCase().includes(normalizedQuery) ||
-      flow.name.toLowerCase().includes(normalizedQuery)
-    ) {
-      if (results.length < limit) {
-        results.push(flow);
-      } else {
-        hasMore = true;
-        break;
+  const visitCategoryNode = (categoryNode: CategoryTreeNode) => {
+    categoryNode.children.forEach((childNode) => {
+      if (getCategorySearchText(childNode).includes(normalizedQuery)) {
+        totalCategoryMatches += 1;
+        if (categoryMatches.length < maxCategorySearchResults) {
+          categoryMatches.push(childNode);
+        }
       }
-    }
+
+      visitCategoryNode(childNode);
+    });
+  };
+
+  if (categoryTree) {
+    visitCategoryNode(categoryTree);
   }
 
+  const matchingNodes = nodes.filter((node) => doesCategoryTreeSearchMatch(node, normalizedQuery));
+
   return {
-    hasMore,
-    items: results,
+    categoryMatches,
+    nodeMatches: matchingNodes.slice(0, maxNodeSearchResults),
+    totalCategoryMatches,
+    totalNodeMatches: matchingNodes.length,
   };
 }
 
-function compareProcessSearchResult(left: ProcessFlowGraphNode, right: ProcessFlowGraphNode) {
-  return right.degree - left.degree || left.name.localeCompare(right.name);
-}
-
-function appendLimitedProcessSearchResult(
-  results: ProcessFlowGraphNode[],
-  processNode: ProcessFlowGraphNode,
-  limit: number,
-) {
-  const insertIndex = results.findIndex(
-    (currentProcessNode) => compareProcessSearchResult(processNode, currentProcessNode) < 0,
-  );
-
-  if (insertIndex === -1) {
-    if (results.length < limit) {
-      results.push(processNode);
-    }
-    return;
-  }
-
-  results.splice(insertIndex, 0, processNode);
-  if (results.length > limit) {
-    results.pop();
-  }
-}
-
-function getProcessSearchResults(
-  data: ProcessFlowGraphData,
-  query: string,
-  limit = maxRenderedSearchResults,
-): SearchResultSlice<ProcessFlowGraphNode> {
-  const normalizedQuery = query.trim().toLowerCase();
-  const results: ProcessFlowGraphNode[] = [];
-  let matchedCount = 0;
-
-  for (const node of data.nodes) {
-    if (node.kind !== 'process') {
-      continue;
-    }
-
-    if (
-      normalizedQuery &&
-      !node.id.toLowerCase().includes(normalizedQuery) &&
-      !node.name.toLowerCase().includes(normalizedQuery) &&
-      !node.category.toLowerCase().includes(normalizedQuery) &&
-      !(node.location?.toLowerCase().includes(normalizedQuery) ?? false)
-    ) {
-      continue;
-    }
-
-    matchedCount += 1;
-    appendLimitedProcessSearchResult(results, node, limit);
-  }
-
-  return {
-    hasMore: matchedCount > limit,
-    items: results,
-  };
-}
-
-function FlowSearchResult({
-  flow,
-  isSelected,
-  onSelect,
+function CategoryRadarIndex({
+  activeNode,
+  categoryTree,
+  nodeKindLabel,
+  onNavigate,
+  onSelectNode,
+  selectedNodeId,
 }: {
-  flow: ProcessFlowGraphSearchItem;
-  isSelected: boolean;
-  onSelect: (flowId: string) => void;
+  activeNode: CategoryTreeNode;
+  categoryTree: CategoryTreeNode;
+  nodeKindLabel: string;
+  onNavigate: (nodeKey: string) => void;
+  onSelectNode: (nodeId: string) => void;
+  selectedNodeId?: string;
 }) {
-  return (
+  const breadcrumbs = getCategoryTreeBreadcrumbs(categoryTree, activeNode);
+  const breadcrumbLabel = getCategoryBreadcrumbLabel(breadcrumbs);
+  const shouldShowBreadcrumbPath = breadcrumbs.length > 1;
+  const visibleBreadcrumbs = shouldShowBreadcrumbPath ? breadcrumbs : [];
+  const shouldCollapseBreadcrumbs = visibleBreadcrumbs.length > 4;
+  const leadingBreadcrumbs = shouldCollapseBreadcrumbs
+    ? visibleBreadcrumbs.slice(0, 1)
+    : visibleBreadcrumbs;
+  const overflowBreadcrumbs = shouldCollapseBreadcrumbs ? visibleBreadcrumbs.slice(1, -2) : [];
+  const trailingBreadcrumbs = shouldCollapseBreadcrumbs ? visibleBreadcrumbs.slice(-2) : [];
+  const sectionClassName = [
+    styles.categoryRadarIndex,
+    shouldShowBreadcrumbPath ? '' : styles.categoryRadarIndexRoot,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const maxChildCount = Math.max(1, ...activeNode.children.map((node) => node.count));
+  const resultCount = activeNode.children.length + activeNode.items.length;
+
+  const renderBreadcrumbButton = (breadcrumb: CategoryBreadcrumb, index: number) => (
     <button
-      aria-pressed={isSelected}
-      className={[styles.searchResult, isSelected ? styles.searchResultActive : '']
-        .filter(Boolean)
-        .join(' ')}
-      onClick={() => onSelect(flow.id)}
+      aria-current={breadcrumb.key === activeNode.key ? 'page' : undefined}
+      className={styles.categoryIndexPathButton}
+      key={breadcrumb.key}
+      onClick={() => onNavigate(breadcrumb.key)}
+      title={`${breadcrumb.label} / ${formatNumber(breadcrumb.count)} ${nodeKindLabel}`}
       type='button'
     >
-      <span>{getFlowTypeLabel(flow.flowType)}</span>
-      <strong>{flow.name}</strong>
-      <small>{flow.id}</small>
-      <em>{formatNumber(flow.degree)} exchanges</em>
+      {index > 0 && <i aria-hidden='true'>/</i>}
+      <span>{breadcrumb.label}</span>
     </button>
+  );
+
+  return (
+    <section className={sectionClassName} aria-label='分类雷达索引'>
+      {shouldShowBreadcrumbPath && (
+        <nav
+          className={styles.categoryIndexPath}
+          aria-label={`当前分类路径：${breadcrumbLabel}`}
+          title={breadcrumbLabel}
+        >
+          {leadingBreadcrumbs.map((breadcrumb, index) => renderBreadcrumbButton(breadcrumb, index))}
+          {shouldCollapseBreadcrumbs && (
+            <span className={styles.categoryIndexOverflow}>
+              <button
+                aria-haspopup='menu'
+                className={styles.categoryIndexOverflowButton}
+                title='悬浮查看中间分类'
+                type='button'
+              >
+                <i aria-hidden='true'>/</i>
+                <span>...</span>
+              </button>
+              <div className={styles.categoryIndexOverflowMenu} role='menu'>
+                {overflowBreadcrumbs.map((breadcrumb) => (
+                  <button
+                    key={breadcrumb.key}
+                    onClick={() => onNavigate(breadcrumb.key)}
+                    role='menuitem'
+                    title={`${breadcrumb.label} / ${formatNumber(breadcrumb.count)} ${nodeKindLabel}`}
+                    type='button'
+                  >
+                    <span>{breadcrumb.label}</span>
+                    <em>{formatNumber(breadcrumb.count)}</em>
+                  </button>
+                ))}
+              </div>
+            </span>
+          )}
+          {trailingBreadcrumbs.map((breadcrumb, index) =>
+            renderBreadcrumbButton(breadcrumb, leadingBreadcrumbs.length + index + 1),
+          )}
+        </nav>
+      )}
+      {resultCount > 0 ? (
+        <ul className={styles.categoryIndexList} key={activeNode.key}>
+          {activeNode.children.map((childNode) => (
+            <li className={styles.categoryIndexItem} key={childNode.key}>
+              <button
+                className={styles.categoryIndexCategoryButton}
+                onClick={() => onNavigate(childNode.key)}
+                style={getCategoryShareStyle(childNode.count, maxChildCount)}
+                title={`${childNode.label} / ${formatNumber(childNode.count)} ${nodeKindLabel}`}
+                type='button'
+              >
+                <span className={styles.categoryIndexSignal} aria-hidden='true' />
+                <strong>{childNode.label}</strong>
+                <em>{formatNumber(childNode.count)}</em>
+                <RightOutlined className={styles.categoryIndexArrow} aria-hidden='true' />
+              </button>
+            </li>
+          ))}
+          {activeNode.items.map((itemNode) => (
+            <li className={styles.categoryIndexItem} key={itemNode.id}>
+              <button
+                aria-pressed={selectedNodeId === itemNode.id}
+                className={[
+                  styles.categoryIndexNodeButton,
+                  selectedNodeId === itemNode.id ? styles.categoryIndexNodeActive : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => onSelectNode(itemNode.id)}
+                title={itemNode.name}
+                type='button'
+              >
+                <strong>{itemNode.name}</strong>
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className={styles.categoryTreeEmpty} role='status'>
+          当前分类暂无{nodeKindLabel}
+        </div>
+      )}
+    </section>
   );
 }
 
-function ProcessSearchResult({
-  isSelected,
-  onSelect,
-  processNode,
+function CategorySearchPanel({
+  nodeKindLabel,
+  onNavigateCategory,
+  onSelectNode,
+  results,
+  selectedNodeId,
 }: {
-  isSelected: boolean;
-  onSelect: (processId: string) => void;
-  processNode: ProcessFlowGraphNode;
+  nodeKindLabel: string;
+  onNavigateCategory: (nodeKey: string) => void;
+  onSelectNode: (nodeId: string) => void;
+  results: CategorySearchResults;
+  selectedNodeId?: string;
 }) {
+  const hasResults = results.totalCategoryMatches > 0 || results.totalNodeMatches > 0;
+  const shouldShowNodeMatches = results.nodeMatches.length > 0;
+  const shouldShowCategoryMatches = !shouldShowNodeMatches && results.categoryMatches.length > 0;
+  const maxCategoryCount = Math.max(1, ...results.categoryMatches.map((node) => node.count));
+  const visibleSearchLimit = shouldShowNodeMatches
+    ? maxNodeSearchResults
+    : maxCategorySearchResults;
+  const visibleSearchType = shouldShowNodeMatches ? nodeKindLabel : '分类';
+  const hasMoreVisibleResults = shouldShowNodeMatches
+    ? results.totalNodeMatches > results.nodeMatches.length
+    : results.totalCategoryMatches > results.categoryMatches.length;
+
   return (
-    <button
-      aria-pressed={isSelected}
-      className={[styles.searchResult, isSelected ? styles.searchResultActive : '']
-        .filter(Boolean)
-        .join(' ')}
-      onClick={() => onSelect(processNode.id)}
-      type='button'
-    >
-      <span>Process</span>
-      <strong>{processNode.name}</strong>
-      <small>{processNode.category}</small>
-      <em>
-        {processNode.location ?? 'global'} / {formatNumber(processNode.degree)} exchanges
-      </em>
-    </button>
+    <section className={styles.categorySearchPanel} aria-label='分类搜索结果'>
+      {hasResults ? (
+        <>
+          {shouldShowNodeMatches && (
+            <ul className={styles.categoryIndexList}>
+              {results.nodeMatches.map((itemNode) => (
+                <li className={styles.categoryIndexItem} key={itemNode.id}>
+                  <button
+                    aria-pressed={selectedNodeId === itemNode.id}
+                    className={[
+                      styles.categoryIndexNodeButton,
+                      selectedNodeId === itemNode.id ? styles.categoryIndexNodeActive : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onClick={() => onSelectNode(itemNode.id)}
+                    title={`${itemNode.name} / ${getNodeCategoryDisplayPath(itemNode)}`}
+                    type='button'
+                  >
+                    <strong>{itemNode.name}</strong>
+                    <small>{getNodeCategoryDisplayPath(itemNode)}</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {shouldShowCategoryMatches && (
+            <ul className={styles.categoryIndexList}>
+              {results.categoryMatches.map((categoryNode) => (
+                <li className={styles.categoryIndexItem} key={categoryNode.key}>
+                  <button
+                    className={styles.categoryIndexCategoryButton}
+                    onClick={() => onNavigateCategory(categoryNode.key)}
+                    style={getCategoryShareStyle(categoryNode.count, maxCategoryCount)}
+                    title={`${categoryNode.path.join(categoryPathDelimiter)} / ${formatNumber(categoryNode.count)} ${nodeKindLabel}`}
+                    type='button'
+                  >
+                    <span className={styles.categoryIndexSignal} aria-hidden='true' />
+                    <strong>{categoryNode.label}</strong>
+                    <em>{formatNumber(categoryNode.count)}</em>
+                    <RightOutlined className={styles.categoryIndexArrow} aria-hidden='true' />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {hasMoreVisibleResults && (
+            <div className={styles.categorySearchHint}>
+              仅展示前 {visibleSearchLimit} 条匹配{visibleSearchType}
+              ，可继续输入关键词缩小范围
+            </div>
+          )}
+        </>
+      ) : (
+        <div className={styles.categoryTreeEmpty} role='status'>
+          未找到匹配的{nodeKindLabel}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -364,32 +716,9 @@ function Inspector({
 
   return (
     <aside aria-hidden={isExiting} className={inspectorClassName}>
-      <div className={styles.inspectorHeader}>
-        <span>{node.kind === 'flow' ? '已选流' : '已选过程'}</span>
-        <NodeIndexOutlined />
-      </div>
       <div className={styles.nodeIdentity}>
         <strong>{node.name}</strong>
-        <span>{node.kind === 'flow' ? getFlowTypeLabel(node.flowType) : '过程节点'}</span>
       </div>
-      <dl className={styles.nodeDetails}>
-        <div>
-          <dt>ID</dt>
-          <dd>{node.id}</dd>
-        </div>
-        <div>
-          <dt>版本</dt>
-          <dd>{node.version}</dd>
-        </div>
-        <div>
-          <dt>分类</dt>
-          <dd title={node.category}>{getCategoryLabel(node.category)}</dd>
-        </div>
-        <div>
-          <dt>位置</dt>
-          <dd>{getLocationLabel(node.location)}</dd>
-        </div>
-      </dl>
       <div className={styles.inspectorMetricGrid}>
         <div>
           <span>关联过程</span>
@@ -517,10 +846,13 @@ export default function ProcessFlowGraphPanel() {
   const [geoMapLoadError, setGeoMapLoadError] = useState<string | undefined>();
   const [interactionMode, setInteractionMode] = useState<ProcessFlowGraphInteractionMode>('select');
   const [query, setQuery] = useState('');
+  const [categoryIndexNodeKey, setCategoryIndexNodeKey] = useState('root');
   const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
   const [exitingInspector, setExitingInspector] = useState<InspectorSnapshot | undefined>();
   const [isLeftRailCollapsed, setIsLeftRailCollapsed] = useState(true);
   const inspectorExitTimeoutRef = useRef<number | undefined>();
+  const canvasToolbarRef = useRef<HTMLDivElement | null>(null);
+  const [canvasToolbarWidth, setCanvasToolbarWidth] = useState<number>();
   const isGeoMapMode = layoutMode === 'geoMap2d';
   const rawCachedGeoMapView = geoMapCachedViews[mapScope];
   const cachedGeoMapView =
@@ -555,25 +887,54 @@ export default function ProcessFlowGraphPanel() {
     () => (activeData ? getProcessFlowGraphSelection(activeData, selectedNodeId) : undefined),
     [activeData, selectedNodeId],
   );
-  const searchResultSlice = useMemo(
-    () =>
-      activeData && !shouldShowProcessSearch
-        ? getSearchResults(activeData, query)
-        : emptyFlowSearchResultSlice,
-    [activeData, query, shouldShowProcessSearch],
+  const normalizedCategoryTreeQuery = query.trim().toLowerCase();
+  const categoryIndexNodes = useMemo(() => {
+    if (!activeData) {
+      return [];
+    }
+
+    return activeData.nodes.filter((node) =>
+      shouldShowProcessSearch ? node.kind === 'process' : node.kind === 'flow',
+    );
+  }, [activeData, shouldShowProcessSearch]);
+  const categoryTree = useMemo(() => {
+    if (!categoryIndexNodes.length) {
+      return undefined;
+    }
+
+    return buildCategoryTree(categoryIndexNodes);
+  }, [categoryIndexNodes]);
+  const activeCategoryIndexNode = useMemo(() => {
+    if (!categoryTree) {
+      return undefined;
+    }
+
+    return findCategoryTreeNodeByKey(categoryTree, categoryIndexNodeKey) ?? categoryTree;
+  }, [categoryIndexNodeKey, categoryTree]);
+  const activeCategoryBreadcrumbLabel = useMemo(() => {
+    if (!categoryTree || !activeCategoryIndexNode) {
+      return '';
+    }
+
+    return getCategoryBreadcrumbLabel(
+      getCategoryTreeBreadcrumbs(categoryTree, activeCategoryIndexNode),
+    );
+  }, [activeCategoryIndexNode, categoryTree]);
+  const leftRailStyle = useMemo(() => {
+    const maxWidth = canvasToolbarWidth ?? minCategoryMenuWidth;
+    const menuWidth = getAdaptiveCategoryMenuWidth(activeCategoryBreadcrumbLabel, maxWidth);
+
+    return {
+      '--left-rail-max-width': `${maxWidth}px`,
+      '--left-rail-width': `${menuWidth}px`,
+    } as CSSProperties;
+  }, [activeCategoryBreadcrumbLabel, canvasToolbarWidth]);
+  const categorySearchResults = useMemo(
+    () => getCategorySearchResults(categoryTree, categoryIndexNodes, normalizedCategoryTreeQuery),
+    [categoryIndexNodes, categoryTree, normalizedCategoryTreeQuery],
   );
-  const processSearchResultSlice = useMemo(
-    () =>
-      activeData && shouldShowProcessSearch
-        ? getProcessSearchResults(activeData, query)
-        : emptyProcessSearchResultSlice,
-    [activeData, query, shouldShowProcessSearch],
-  );
-  const searchResults = shouldShowProcessSearch ? [] : searchResultSlice.items;
-  const processSearchResults = shouldShowProcessSearch ? processSearchResultSlice.items : [];
-  const hasMoreSearchResults = shouldShowProcessSearch
-    ? processSearchResultSlice.hasMore
-    : searchResultSlice.hasMore;
+  const isCategoryTreeSearchMode = normalizedCategoryTreeQuery.length > 0;
+  const categoryTreeNodeKindLabel = shouldShowProcessSearch ? '过程' : '流';
   const searchPlaceholder = shouldShowProcessSearch ? '搜索过程' : '搜索流';
   const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
   const quickSelectTarget = useMemo(
@@ -625,12 +986,48 @@ export default function ProcessFlowGraphPanel() {
     setSelectedNodeId(undefined);
   }, [activeData, selectedNode]);
 
-  const handleSelectProcess = useCallback(
-    (processId: string) => {
-      selectNode(processId);
-    },
-    [selectNode],
-  );
+  const handleNavigateCategoryIndexNode = useCallback((nodeKey: string) => {
+    setCategoryIndexNodeKey(nodeKey);
+  }, []);
+
+  const handleNavigateSearchCategory = useCallback((nodeKey: string) => {
+    setQuery('');
+    setCategoryIndexNodeKey(nodeKey);
+  }, []);
+
+  useEffect(() => {
+    const toolbarElement = canvasToolbarRef.current;
+
+    if (!toolbarElement) {
+      return undefined;
+    }
+
+    const updateToolbarWidth = () => {
+      const nextWidth = Math.round(toolbarElement.getBoundingClientRect().width);
+
+      if (nextWidth <= 0) {
+        return;
+      }
+
+      setCanvasToolbarWidth((currentWidth) =>
+        currentWidth === nextWidth ? currentWidth : nextWidth,
+      );
+    };
+
+    updateToolbarWidth();
+
+    const toolbarResizeObserver =
+      typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(updateToolbarWidth);
+
+    toolbarResizeObserver?.observe(toolbarElement);
+    window.addEventListener('resize', updateToolbarWidth);
+
+    return () => {
+      toolbarResizeObserver?.disconnect();
+      window.removeEventListener('resize', updateToolbarWidth);
+    };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     let initialGeoMapPrefetchGraceTimeoutId: number | undefined;
@@ -766,6 +1163,18 @@ export default function ProcessFlowGraphPanel() {
   );
 
   useEffect(() => {
+    setCategoryIndexNodeKey('root');
+  }, [shouldShowProcessSearch]);
+
+  useEffect(() => {
+    if (!categoryTree || findCategoryTreeNodeByKey(categoryTree, categoryIndexNodeKey)) {
+      return;
+    }
+
+    setCategoryIndexNodeKey('root');
+  }, [categoryIndexNodeKey, categoryTree]);
+
+  useEffect(() => {
     if (!isGeoMapMode || !data || cachedGeoMapView) {
       return undefined;
     }
@@ -899,13 +1308,6 @@ export default function ProcessFlowGraphPanel() {
     setQuery('');
   }, []);
 
-  const handleSelectFlow = useCallback(
-    (flowId: string) => {
-      selectNode(flowId);
-    },
-    [selectNode],
-  );
-
   const handleQuickSelectNode = useCallback(() => {
     if (quickSelectNode) {
       selectNode(quickSelectNode.id);
@@ -920,11 +1322,14 @@ export default function ProcessFlowGraphPanel() {
   const mapLoadDataSource: GraphDataSource =
     isGeoMapMode && data && !geoMapView ? (geoMapLoadError ? 'error' : 'loading') : dataSource;
   const mapLoadError = isGeoMapMode && data && !geoMapView ? geoMapLoadError : loadError;
-  const leftRailToggleLabel = isLeftRailCollapsed ? '展开左侧区域' : '折叠左侧区域';
+  const leftRailToggleLabel = isLeftRailCollapsed ? '展开索引菜单' : '收起索引菜单';
   const panelShellClassName = [
     styles.panelShell,
     isLeftRailCollapsed ? styles.panelShellLeftCollapsed : '',
   ]
+    .filter(Boolean)
+    .join(' ');
+  const searchBoxClassName = [styles.searchBox, query ? styles.searchBoxActive : '']
     .filter(Boolean)
     .join(' ');
   const leftRailClassName = [styles.leftRail, isLeftRailCollapsed ? styles.leftRailCollapsed : '']
@@ -947,10 +1352,12 @@ export default function ProcessFlowGraphPanel() {
 
   return (
     <div className={panelShellClassName}>
-      <aside aria-hidden={isLeftRailCollapsed} className={leftRailClassName}>
+      <aside aria-hidden={isLeftRailCollapsed} className={leftRailClassName} style={leftRailStyle}>
         <div className={styles.leftRailHeader}>
-          <label className={styles.searchBox}>
-            <SearchOutlined />
+          <label className={searchBoxClassName}>
+            <span className={styles.searchBoxIcon} aria-hidden='true'>
+              <SearchOutlined />
+            </span>
             <input
               aria-label={searchAriaLabel}
               disabled={!activeData || isLeftRailCollapsed}
@@ -970,43 +1377,48 @@ export default function ProcessFlowGraphPanel() {
             )}
           </label>
         </div>
-        <div className={styles.searchResults}>
-          {shouldShowProcessSearch
-            ? processSearchResults.map((processNode) => (
-                <ProcessSearchResult
-                  isSelected={selectedNodeId === processNode.id}
-                  key={processNode.id}
-                  onSelect={handleSelectProcess}
-                  processNode={processNode}
-                />
-              ))
-            : searchResults.map((flow) => (
-                <FlowSearchResult
-                  flow={flow}
-                  isSelected={selectedNodeId === flow.id}
-                  key={flow.id}
-                  onSelect={handleSelectFlow}
-                />
-              ))}
-          {hasMoreSearchResults && (
-            <div className={styles.searchMoreHint} role='status'>
-              <span>仅显示前 {formatNumber(maxRenderedSearchResults)} 条</span>
-              <strong>更多数据，请输入关键词查询查看</strong>
+        <div className={styles.categoryTreePanel}>
+          {categoryTree && activeCategoryIndexNode ? (
+            isCategoryTreeSearchMode ? (
+              <CategorySearchPanel
+                nodeKindLabel={categoryTreeNodeKindLabel}
+                onNavigateCategory={handleNavigateSearchCategory}
+                onSelectNode={selectNode}
+                results={categorySearchResults}
+                selectedNodeId={selectedNodeId}
+              />
+            ) : (
+              <CategoryRadarIndex
+                activeNode={activeCategoryIndexNode}
+                categoryTree={categoryTree}
+                nodeKindLabel={categoryTreeNodeKindLabel}
+                onNavigate={handleNavigateCategoryIndexNode}
+                onSelectNode={selectNode}
+                selectedNodeId={selectedNodeId}
+              />
+            )
+          ) : (
+            <div className={styles.categoryTreeEmpty} role='status'>
+              未找到匹配的{categoryTreeNodeKindLabel}
             </div>
           )}
         </div>
       </aside>
       <main className={styles.graphStage}>
-        <div aria-label='图谱工具栏' className={styles.canvasToolbar}>
+        <div aria-label='图谱工具栏' className={styles.canvasToolbar} ref={canvasToolbarRef}>
           <div className={styles.railToggleTools}>
             <button
+              aria-expanded={!isLeftRailCollapsed}
               aria-label={leftRailToggleLabel}
-              aria-pressed={isLeftRailCollapsed}
+              aria-pressed={!isLeftRailCollapsed}
               onClick={handleToggleLeftRail}
               title={leftRailToggleLabel}
               type='button'
             >
-              {isLeftRailCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              <span className={styles.railDrawerIcon} aria-hidden='true'>
+                <i />
+                {isLeftRailCollapsed ? <CaretDownOutlined /> : <CaretUpOutlined />}
+              </span>
             </button>
           </div>
           <div className={styles.modeTabs}>

@@ -32,8 +32,18 @@ export type ProcessFlowGraphCluster = {
   label: string;
 };
 
+export type ProcessFlowGraphCategoryPathItem = {
+  id: string;
+  level: number;
+  name: string;
+  zhName: string;
+};
+
 export type ProcessFlowGraphNode = {
   category: string;
+  categoryDisplayPath?: string;
+  categoryPath?: ProcessFlowGraphCategoryPathItem[];
+  categorySystem?: string;
   clusterIdLevel1: string;
   clusterIdLevel3: string;
   clusterLabelLevel1?: string;
