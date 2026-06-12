@@ -11,6 +11,7 @@
 import {
   getBase64,
   getOriginalFileUrl,
+  getSignedStorageFileUrl,
   getThumbFileUrls,
   isImage,
   removeFile,
@@ -319,6 +320,83 @@ describe('Supabase Storage service (src/services/supabase/storage.ts)', () => {
           name: '1',
         },
       ]);
+    });
+  });
+
+  describe('getSignedStorageFileUrl', () => {
+    it('returns a signed URL for a nested storage path', async () => {
+      const mockCreateSignedUrl = jest.fn().mockResolvedValue({
+        data: {
+          signedUrl:
+            'https://example.supabase.co/storage/v1/object/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+        },
+      });
+
+      (mockStorageFrom as jest.Mock).mockReturnValue({
+        createSignedUrl: mockCreateSignedUrl,
+      });
+
+      const result = await getSignedStorageFileUrl(
+        '../sys-files/video/platform_usage_process_first_matched.mp4',
+      );
+
+      expect(mockStorageFrom).toHaveBeenCalledWith('sys-files');
+      expect(mockCreateSignedUrl).toHaveBeenCalledWith(
+        'video/platform_usage_process_first_matched.mp4',
+        3600,
+      );
+      expect(result).toBe(
+        'https://example.supabase.co/storage/v1/object/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+      );
+    });
+
+    it('returns an empty string for invalid storage paths', async () => {
+      const result = await getSignedStorageFileUrl('invalid-path');
+
+      expect(result).toBe('');
+      expect(mockStorageFrom).not.toHaveBeenCalled();
+    });
+
+    it('returns an empty string when storage does not provide a signed URL', async () => {
+      const mockCreateSignedUrl = jest.fn().mockResolvedValue({
+        data: {},
+      });
+
+      (mockStorageFrom as jest.Mock).mockReturnValue({
+        createSignedUrl: mockCreateSignedUrl,
+      });
+
+      const result = await getSignedStorageFileUrl(
+        '../sys-files/video/platform_usage_process_first_matched.mp4',
+      );
+
+      expect(mockStorageFrom).toHaveBeenCalledWith('sys-files');
+      expect(mockCreateSignedUrl).toHaveBeenCalledWith(
+        'video/platform_usage_process_first_matched.mp4',
+        3600,
+      );
+      expect(result).toBe('');
+    });
+
+    it('returns an empty string when signed URL creation throws', async () => {
+      const mockCreateSignedUrl = jest.fn().mockRejectedValue(new Error('Bucket not found'));
+
+      (mockStorageFrom as jest.Mock).mockReturnValue({
+        createSignedUrl: mockCreateSignedUrl,
+      });
+
+      const result = await getSignedStorageFileUrl(
+        '../sys-files/video/platform_usage_process_first_matched.mp4',
+      );
+
+      expect(result).toBe('');
+    });
+
+    it('returns an empty string for empty storage paths', async () => {
+      const result = await getSignedStorageFileUrl('');
+
+      expect(result).toBe('');
+      expect(mockStorageFrom).not.toHaveBeenCalled();
     });
   });
 
