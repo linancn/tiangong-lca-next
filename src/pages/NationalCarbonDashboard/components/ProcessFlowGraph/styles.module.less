@@ -1,0 +1,2523 @@
+.panelShell {
+  --left-rail-top: 64px;
+  --left-rail-width: 226px;
+  --left-rail-max-width: 226px;
+
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  color: rgba(235, 250, 255, 0.94);
+}
+
+.panelShellLeftCollapsed {
+  --left-rail-top: 64px;
+}
+
+.canvasToolbar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 7;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: center;
+  min-height: 42px;
+  padding: 4px 8px;
+  max-width: calc(100% - 28px);
+  background:
+    linear-gradient(180deg, rgba(6, 28, 48, 0.88), rgba(2, 12, 24, 0.82)), rgba(2, 12, 24, 0.72);
+  border: 1px solid rgba(68, 222, 255, 0.2);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 28px rgba(24, 231, 255, 0.06);
+  backdrop-filter: blur(14px);
+  pointer-events: auto;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.leftRail,
+.inspector {
+  background:
+    linear-gradient(180deg, rgba(6, 28, 48, 0.88), rgba(2, 12, 24, 0.82)), rgba(2, 12, 24, 0.72);
+  border: 1px solid rgba(68, 222, 255, 0.2);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 28px rgba(24, 231, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.railToggleTools,
+.modeTabs {
+  position: relative;
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  height: 34px;
+  padding: 3px 8px;
+}
+
+.mouseTools {
+  position: relative;
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  height: 34px;
+  padding: 3px 8px;
+}
+
+.selectionTools,
+.cacheJobTools {
+  position: relative;
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  height: 34px;
+  padding: 3px 8px;
+}
+
+.modeTabs::before,
+.mouseTools::before,
+.selectionTools::before,
+.cacheJobTools::before,
+.graphBadges::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 16px;
+  content: '';
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(76, 218, 255, 0.24) 16%,
+    rgba(159, 242, 255, 0.58) 50%,
+    rgba(76, 218, 255, 0.24) 84%,
+    transparent
+  );
+  transform: translateY(-50%);
+}
+
+.railToggleTools button,
+.modeTabs button,
+.mouseTools button,
+.selectionTools button,
+.cacheJobTools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  color: rgba(186, 208, 218, 0.88);
+  font-weight: 800;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.railToggleTools button,
+.modeTabs button,
+.mouseTools button,
+.selectionTools button,
+.cacheJobTools button {
+  width: 28px;
+  padding: 0;
+}
+
+.railDrawerIcon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: #24e7ff;
+}
+
+.railDrawerIcon i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 2px;
+  background: currentcolor;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(36, 231, 255, 0.42);
+  opacity: 0.72;
+  transition:
+    top 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease;
+}
+
+.railToggleTools button:hover,
+.railToggleTools button:focus-visible,
+.railToggleTools button[aria-pressed='true'],
+.modeTabs button:hover,
+.modeTabs button:focus-visible,
+.modeTabs .activeMode,
+.mouseTools button:hover,
+.mouseTools button:focus-visible,
+.mouseTools .activeMode,
+.selectionTools button:hover,
+.selectionTools button:focus-visible,
+.cacheJobTools button:hover,
+.cacheJobTools button:focus-visible,
+.cacheJobTools .cacheJobButtonActive,
+.cacheJobTools .cacheJobButtonComplete,
+.cacheJobTools .cacheJobButtonError {
+  color: #eaffff;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(36, 231, 255, 0.3), transparent 58%),
+    linear-gradient(180deg, rgba(16, 68, 96, 0.76), rgba(2, 18, 32, 0.28));
+  box-shadow:
+    inset 0 0 14px rgba(36, 231, 255, 0.2),
+    0 0 16px rgba(36, 231, 255, 0.12);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.railToggleTools button:active,
+.modeTabs button:active,
+.mouseTools button:active,
+.selectionTools button:active,
+.cacheJobTools button:active {
+  transform: translateY(0) scale(0.94);
+}
+
+.railToggleTools svg,
+.modeTabs svg,
+.mouseTools svg,
+.selectionTools svg,
+.cacheJobTools svg {
+  color: #24e7ff;
+  filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
+  width: 15px;
+  height: 15px;
+  transition:
+    color 160ms ease,
+    filter 160ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.railToggleTools .railDrawerIcon svg {
+  width: 10px;
+  height: 10px;
+  transform: translateY(5px);
+}
+
+.railToggleTools button[aria-pressed='true'] .railDrawerIcon i {
+  top: 13px;
+  opacity: 0.62;
+}
+
+.railToggleTools button[aria-pressed='true'] .railDrawerIcon svg {
+  transform: translateY(-4px);
+}
+
+.railToggleTools button:disabled,
+.modeTabs button:disabled,
+.mouseTools button:disabled,
+.selectionTools button:disabled,
+.cacheJobTools button:disabled {
+  color: rgba(186, 208, 218, 0.38);
+  cursor: not-allowed;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.cacheJobButton {
+  position: relative;
+}
+
+.cacheJobTools .cacheJobButtonActive {
+  color: #f3fbff;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(37, 211, 102, 0.32), transparent 60%),
+    linear-gradient(180deg, rgba(18, 87, 67, 0.74), rgba(2, 18, 32, 0.28));
+  box-shadow:
+    inset 0 0 14px rgba(37, 211, 102, 0.18),
+    0 0 16px rgba(37, 211, 102, 0.12);
+}
+
+.cacheJobTools .cacheJobButtonComplete {
+  color: #ecfff5;
+}
+
+.cacheJobTools .cacheJobButtonError {
+  color: #fff2e8;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 123, 84, 0.32), transparent 60%),
+    linear-gradient(180deg, rgba(112, 45, 32, 0.74), rgba(2, 18, 32, 0.28));
+  box-shadow:
+    inset 0 0 14px rgba(255, 123, 84, 0.18),
+    0 0 16px rgba(255, 123, 84, 0.12);
+}
+
+.graphBadges {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 34px;
+  margin: 0;
+  min-width: 0;
+  padding-left: 8px;
+  overflow: hidden;
+}
+
+.graphBadges > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  height: 100%;
+  padding: 0 10px;
+  color: rgba(203, 220, 228, 0.9);
+  font-size: 11px;
+  font-weight: 800;
+  border-right: 0;
+}
+
+.graphBadges > div + div {
+  position: relative;
+}
+
+.graphBadges > div + div::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 14px;
+  content: '';
+  background: linear-gradient(180deg, transparent, rgba(159, 242, 255, 0.48), transparent);
+  transform: translateY(-50%);
+}
+
+.graphMetricLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.graphMetricValue {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-width: 0;
+}
+
+.graphMetricValue svg {
+  width: 15px;
+  height: 15px;
+  color: #24e7ff;
+  filter: drop-shadow(0 0 8px rgba(36, 231, 255, 0.42));
+}
+
+.graphMetricValue b {
+  max-width: 220px;
+  overflow: hidden;
+  color: #bff747;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leftRail {
+  position: absolute;
+  top: var(--left-rail-top);
+  bottom: auto;
+  left: 14px;
+  z-index: 6;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: var(--left-rail-width);
+  max-width: min(var(--left-rail-max-width), calc(100% - 28px));
+  height: min(680px, calc(100% - var(--left-rail-top) - 14px));
+  min-width: 0;
+  min-height: 0;
+  padding: 10px;
+  overflow: hidden;
+  visibility: visible;
+  clip-path: inset(0 0 0 0 round 8px);
+  opacity: 1;
+  transform: translateY(0);
+  transform-origin: top center;
+  transition:
+    width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    clip-path 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease,
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    visibility 0s linear 0s;
+  will-change: width, clip-path, opacity, transform;
+  background:
+    linear-gradient(180deg, rgba(6, 24, 39, 0.68), rgba(2, 12, 24, 0.5)), rgba(2, 12, 24, 0.4);
+  border-color: rgba(119, 193, 224, 0.13);
+  box-shadow:
+    inset 0 1px 0 rgba(153, 218, 242, 0.1),
+    inset -1px 0 0 rgba(153, 218, 242, 0.08),
+    0 14px 34px rgba(0, 0, 0, 0.16);
+}
+
+.leftRailCollapsed {
+  pointer-events: none;
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0 round 8px);
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    clip-path 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    visibility 0s linear 320ms;
+}
+
+.leftRailHeader {
+  min-width: 0;
+  padding: 0 3px 3px;
+}
+
+.searchBox {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+  height: 30px;
+  padding: 0 0 3px;
+  color: rgba(173, 205, 218, 0.68);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(116, 196, 255, 0.14);
+  border-radius: 0;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
+}
+
+.searchBox:focus-within,
+.searchBoxActive {
+  color: rgba(164, 229, 245, 0.86);
+  border-bottom-color: rgba(104, 216, 242, 0.48);
+  box-shadow: 0 6px 14px -14px rgba(24, 231, 255, 0.72);
+}
+
+.searchBoxIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: currentcolor;
+  font-size: 13px;
+}
+
+.searchBox input {
+  min-width: 0;
+  color: rgba(232, 247, 252, 0.9);
+  font-size: 11px;
+  font-weight: 750;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.searchBox input::placeholder {
+  color: rgba(150, 178, 190, 0.6);
+}
+
+.searchBox input:disabled {
+  color: rgba(190, 212, 222, 0.48);
+  cursor: not-allowed;
+}
+
+.searchBox button {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: rgba(176, 205, 218, 0.66);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.searchBox button:hover,
+.searchBox button:focus-visible {
+  color: rgba(239, 253, 255, 0.92);
+  outline: none;
+  background: rgba(61, 207, 238, 0.14);
+}
+
+.searchResults {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.searchResult {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  gap: 4px;
+  width: 100%;
+  min-height: 82px;
+  padding: 10px 12px;
+  overflow: hidden;
+  color: rgba(222, 242, 250, 0.9);
+  text-align: left;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 88% 24%, rgba(36, 231, 255, 0.13), transparent 33%),
+    linear-gradient(180deg, rgba(9, 38, 65, 0.82), rgba(2, 16, 31, 0.68));
+  border: 1px solid rgba(116, 196, 255, 0.18);
+  border-radius: 8px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.searchResult::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.18), transparent);
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.searchResult:hover,
+.searchResult:focus-visible,
+.searchResultActive {
+  border-color: rgba(36, 231, 255, 0.62);
+  box-shadow:
+    0 0 24px rgba(36, 231, 255, 0.13),
+    inset 0 0 18px rgba(36, 231, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+.searchResult:hover::before,
+.searchResult:focus-visible::before,
+.searchResultActive::before {
+  opacity: 1;
+  transform: translateX(100%);
+  transition:
+    opacity 160ms ease,
+    transform 420ms ease;
+}
+
+.searchResult span,
+.searchResult strong,
+.searchResult small,
+.searchResult em {
+  position: relative;
+  z-index: 1;
+}
+
+.searchResult span {
+  color: #24e7ff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.searchResult strong {
+  overflow: hidden;
+  color: #f4feff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchResult small,
+.searchResult em {
+  overflow: hidden;
+  color: rgba(184, 207, 218, 0.76);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchMoreHint {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 10px 12px;
+  color: rgba(196, 218, 228, 0.72);
+  background: rgba(2, 16, 31, 0.52);
+  border: 1px dashed rgba(116, 196, 255, 0.22);
+  border-radius: 8px;
+}
+
+.searchMoreHint span {
+  color: #24e7ff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.searchMoreHint strong {
+  overflow: hidden;
+  color: rgba(236, 250, 255, 0.88);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.categoryTreePanel {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.categoryRadarIndex,
+.categorySearchPanel {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  padding: 0 0 0 5px;
+  background: transparent;
+}
+
+.categoryRadarIndex::before,
+.categorySearchPanel::before {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  width: 1px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(180deg, transparent, rgba(109, 179, 205, 0.24), transparent);
+  opacity: 0.58;
+}
+
+.categoryRadarIndex::before {
+  top: 31px;
+}
+
+.categoryRadarIndexRoot::before {
+  top: 4px;
+}
+
+.categorySearchPanel::before {
+  top: 4px;
+}
+
+.categoryIndexHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  height: 23px;
+  padding: 0 3px 0 0;
+  background: transparent;
+  box-shadow: inset 0 -1px 0 rgba(116, 196, 255, 0.11);
+}
+
+.categoryIndexHead span {
+  overflow: hidden;
+  color: rgba(151, 190, 207, 0.66);
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryIndexHead strong {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  color: rgba(206, 225, 233, 0.84);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.categoryIndexHead strong small {
+  color: rgba(144, 180, 196, 0.72);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.categoryIndexPath {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  min-width: 0;
+  height: 25px;
+  padding: 2px 0 5px;
+  overflow: visible;
+  box-shadow: inset 0 -1px 0 rgba(116, 196, 255, 0.08);
+}
+
+.categoryIndexPathButton,
+.categoryIndexOverflowButton {
+  display: inline-flex;
+  flex: 0 1 auto;
+  gap: 4px;
+  align-items: center;
+  max-width: 98px;
+  min-width: 0;
+  height: 18px;
+  padding: 1px 2px;
+  color: rgba(155, 190, 205, 0.58);
+  font-size: 10px;
+  line-height: 1.35;
+  font-weight: 750;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 3px;
+  transition:
+    color 160ms ease,
+    text-shadow 160ms ease;
+}
+
+.categoryIndexPathButton:hover,
+.categoryIndexPathButton:focus-visible,
+.categoryIndexPathButton[aria-current='page'],
+.categoryIndexOverflowButton:hover,
+.categoryIndexOverflowButton:focus-visible,
+.categoryIndexOverflow:hover .categoryIndexOverflowButton,
+.categoryIndexOverflow:focus-within .categoryIndexOverflowButton {
+  color: rgba(230, 247, 252, 0.92);
+  outline: none;
+  text-shadow: none;
+}
+
+.categoryIndexPathButton[aria-current='page'] {
+  max-width: min(142px, 46%);
+}
+
+.categoryIndexPathButton span,
+.categoryIndexOverflowButton span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.categoryIndexPathButton i,
+.categoryIndexOverflowButton i {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  color: rgba(109, 179, 205, 0.44);
+  font-style: normal;
+  background: transparent;
+}
+
+.categoryIndexOverflow {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-width: 0;
+  height: 25px;
+}
+
+.categoryIndexOverflowButton {
+  max-width: none;
+  padding: 1px 3px 1px 2px;
+}
+
+.categoryIndexOverflowButton span {
+  max-width: none;
+  color: rgba(164, 229, 245, 0.86);
+  letter-spacing: 0.5px;
+}
+
+.categoryIndexOverflowMenu {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  z-index: 8;
+  display: none;
+  gap: 2px;
+  width: min(260px, calc(var(--left-rail-width) - 28px));
+  max-height: 170px;
+  padding: 6px;
+  overflow: auto;
+  background:
+    linear-gradient(180deg, rgba(6, 28, 48, 0.94), rgba(2, 12, 24, 0.9)), rgba(2, 12, 24, 0.82);
+  border: 1px solid rgba(94, 196, 226, 0.18);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(153, 218, 242, 0.1),
+    0 16px 34px rgba(0, 0, 0, 0.26),
+    0 0 18px rgba(24, 231, 255, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.categoryIndexOverflow:hover .categoryIndexOverflowMenu,
+.categoryIndexOverflow:focus-within .categoryIndexOverflowMenu {
+  display: grid;
+}
+
+.categoryIndexOverflowMenu button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  height: 25px;
+  padding: 0 7px;
+  color: rgba(212, 234, 242, 0.78);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.categoryIndexOverflowMenu button:hover,
+.categoryIndexOverflowMenu button:focus-visible {
+  color: rgba(245, 254, 255, 0.96);
+  outline: none;
+  background: rgba(61, 207, 238, 0.12);
+}
+
+.categoryIndexOverflowMenu button span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 760;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryIndexOverflowMenu button em {
+  color: rgba(164, 229, 245, 0.64);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.categoryTreeEmpty {
+  display: grid;
+  flex: 1 1 auto;
+  place-items: center;
+  min-height: 112px;
+  padding: 18px;
+  color: rgba(190, 212, 222, 0.6);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+  background: rgba(4, 22, 38, 0.16);
+  border-radius: 6px;
+}
+
+.categoryIndexList {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  min-height: 0;
+  padding: 1px 2px 9px 0;
+  margin: 0;
+  overflow: auto;
+  list-style: none;
+  animation: categoryIndexEnter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.categoryIndexItem {
+  min-width: 0;
+}
+
+.categoryIndexCategoryButton,
+.categoryIndexNodeButton {
+  position: relative;
+  display: grid;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  color: rgba(216, 235, 243, 0.78);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.categoryIndexCategoryButton {
+  grid-template-columns: 2px minmax(0, 1fr) auto 10px;
+  gap: 7px;
+  min-height: 31px;
+  padding: 4px 6px 5px 5px;
+  background: rgba(8, 33, 50, 0.22);
+}
+
+.categoryIndexCategoryButton::before {
+  position: absolute;
+  right: 18px;
+  bottom: 2px;
+  left: 15px;
+  height: 1px;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(90deg, rgba(104, 188, 213, 0.42), rgba(188, 215, 224, 0.18));
+  border-radius: 999px;
+  opacity: 0.48;
+  transform: scaleX(var(--category-share, 0));
+  transform-origin: left center;
+}
+
+.categoryIndexCategoryButton::after,
+.categoryIndexNodeButton::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(100deg, transparent 0, rgba(108, 195, 222, 0.1) 42%, transparent 68%);
+  opacity: 0;
+  transform: translateX(-120%);
+  transition:
+    opacity 160ms ease,
+    transform 460ms ease;
+}
+
+.categoryIndexCategoryButton:hover,
+.categoryIndexCategoryButton:focus-visible,
+.categoryIndexNodeButton:hover,
+.categoryIndexNodeButton:focus-visible,
+.categoryIndexNodeActive {
+  color: rgba(245, 254, 255, 0.95);
+  background: rgba(18, 55, 75, 0.42);
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(109, 198, 224, 0.11);
+  transform: translateX(1px);
+}
+
+.categoryIndexCategoryButton:hover::after,
+.categoryIndexCategoryButton:focus-visible::after,
+.categoryIndexNodeButton:hover::after,
+.categoryIndexNodeButton:focus-visible::after {
+  opacity: 1;
+  transform: translateX(120%);
+}
+
+.categoryIndexSignal {
+  width: 2px;
+  height: 17px;
+  background: linear-gradient(180deg, rgba(91, 191, 218, 0.68), rgba(91, 191, 218, 0.1));
+  border-radius: 999px;
+}
+
+.categoryIndexCategoryButton strong,
+.categoryIndexNodeButton strong {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(232, 246, 251, 0.86);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryIndexNodeButton small {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(142, 179, 194, 0.62);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryIndexCategoryButton em {
+  display: inline-flex;
+  gap: 3px;
+  align-items: baseline;
+  justify-content: flex-end;
+  min-width: 38px;
+  padding: 0;
+  color: rgba(176, 204, 215, 0.76);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.categoryIndexArrow {
+  color: rgba(130, 194, 212, 0.46);
+  font-size: 9px;
+}
+
+.categoryIndexNodeButton {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3px;
+  min-height: 28px;
+  padding: 5px 8px 5px 14px;
+  background: rgba(8, 33, 50, 0.16);
+}
+
+.categoryIndexNodeActive {
+  background:
+    linear-gradient(90deg, rgba(61, 207, 238, 0.12), rgba(18, 55, 75, 0.42) 42%),
+    rgba(18, 55, 75, 0.46);
+  box-shadow:
+    inset 2px 0 0 rgba(89, 204, 232, 0.92),
+    inset 0 0 0 1px rgba(89, 204, 232, 0.16),
+    0 0 18px rgba(36, 231, 255, 0.06);
+}
+
+.categoryIndexNodeActive strong {
+  color: rgba(246, 254, 255, 0.96);
+}
+
+.categoryIndexNodeActive small {
+  color: rgba(164, 214, 228, 0.76);
+}
+
+.categorySearchHint {
+  flex: 0 0 auto;
+  padding: 8px 2px;
+  color: rgba(190, 212, 222, 0.56);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+  box-shadow: inset 0 1px 0 rgba(36, 231, 255, 0.12);
+}
+
+@keyframes categoryIndexEnter {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.inputDot,
+.outputDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.inputDot {
+  background: #23f4ff;
+  box-shadow: 0 0 14px rgba(35, 244, 255, 0.5);
+}
+
+.outputDot {
+  background: #ff8a3d;
+  box-shadow: 0 0 14px rgba(255, 138, 61, 0.5);
+}
+
+.graphStage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(68, 222, 255, 0.13);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 70px rgba(36, 231, 255, 0.08),
+    0 0 34px rgba(36, 231, 255, 0.06);
+}
+
+.graphLoadState {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: 18px;
+  place-content: center;
+  place-items: center;
+  padding: 32px;
+  overflow: hidden;
+  color: rgba(230, 246, 251, 0.82);
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(36, 231, 255, 0.18), transparent 29%),
+    radial-gradient(circle at 50% 76%, rgba(191, 247, 71, 0.1), transparent 22%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px), #020b16;
+  background-size:
+    100% 100%,
+    38px 38px,
+    38px 38px,
+    100% 100%;
+}
+
+.graphLoadState::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.16), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 58px,
+      rgba(191, 247, 71, 0.12) 59px,
+      transparent 61px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  transform: translateX(-100%);
+  animation: graphLoadSweep 2600ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.graphLoadState::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(rgba(36, 231, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(
+      circle at 50% 52%,
+      transparent 0 34%,
+      rgba(36, 231, 255, 0.1) 35%,
+      transparent 38%
+    );
+  background-size:
+    100% 9px,
+    100% 100%;
+  opacity: 0.54;
+}
+
+.graphLoadStateError {
+  grid-template-rows: auto auto;
+  gap: 16px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(36, 231, 255, 0.15), transparent 28%),
+    radial-gradient(circle at 50% 58%, rgba(255, 214, 109, 0.09), transparent 24%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.045) 1px, transparent 1px), #020b16;
+}
+
+.graphLoadStateError::before,
+.graphLoadStateError::after {
+  display: block;
+}
+
+.graphLoadStateError::before {
+  background:
+    linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.2), transparent),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 76px,
+      rgba(255, 214, 109, 0.12) 77px,
+      transparent 79px
+    );
+  opacity: 0.46;
+  animation-duration: 3600ms;
+}
+
+.graphLoadStateError::after {
+  background:
+    linear-gradient(rgba(36, 231, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(
+      circle at 50% 46%,
+      transparent 0 29%,
+      rgba(36, 231, 255, 0.12) 30%,
+      transparent 33%
+    );
+  background-size:
+    100% 11px,
+    100% 100%;
+  opacity: 0.42;
+}
+
+.graphLoadStateActive {
+  isolation: isolate;
+}
+
+.graphNoDataScene {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(390px, 82%);
+  height: 230px;
+  isolation: isolate;
+}
+
+.graphNoDataScene::before,
+.graphNoDataScene::after {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+  border-radius: 50%;
+}
+
+.graphNoDataScene::before {
+  width: 318px;
+  height: 96px;
+  background: radial-gradient(ellipse at center, rgba(36, 231, 255, 0.14), transparent 64%);
+  border: 1px solid rgba(36, 231, 255, 0.22);
+  box-shadow:
+    0 0 30px rgba(36, 231, 255, 0.1),
+    inset 0 0 24px rgba(36, 231, 255, 0.05);
+  transform: rotateX(64deg);
+  animation: graphNoDataDisk 2400ms ease-in-out infinite;
+}
+
+.graphNoDataScene::after {
+  width: 208px;
+  height: 208px;
+  background: conic-gradient(
+    from 120deg,
+    transparent,
+    rgba(36, 231, 255, 0.22),
+    transparent 31%,
+    rgba(255, 214, 109, 0.2),
+    transparent 58%,
+    rgba(191, 247, 71, 0.18),
+    transparent
+  );
+  opacity: 0.46;
+  filter: blur(8px);
+  animation: graphNoDataHalo 6400ms linear infinite;
+}
+
+.graphNoDataRadar {
+  position: absolute;
+  z-index: 2;
+  width: 220px;
+  height: 220px;
+  overflow: hidden;
+  border: 1px solid rgba(36, 231, 255, 0.32);
+  border-radius: 50%;
+  box-shadow:
+    0 0 34px rgba(36, 231, 255, 0.13),
+    inset 0 0 34px rgba(36, 231, 255, 0.06);
+}
+
+.graphNoDataRadar::before {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 50%;
+  height: 2px;
+  content: '';
+  background: linear-gradient(90deg, rgba(36, 231, 255, 0.8), transparent);
+  filter: drop-shadow(0 0 10px rgba(36, 231, 255, 0.6));
+  transform-origin: left center;
+  animation: graphNoDataScan 2600ms linear infinite;
+}
+
+.graphNoDataRadar::after {
+  position: absolute;
+  inset: 12px;
+  content: '';
+  border: 1px dashed rgba(191, 247, 71, 0.18);
+  border-radius: 50%;
+}
+
+.graphNoDataRadar i {
+  position: absolute;
+  pointer-events: none;
+  border: 1px dashed rgba(36, 231, 255, 0.2);
+  border-radius: 50%;
+}
+
+.graphNoDataRadar i:nth-child(1) {
+  inset: 42px;
+}
+
+.graphNoDataRadar i:nth-child(2) {
+  inset: 72px;
+  border-color: rgba(255, 214, 109, 0.2);
+}
+
+.graphNoDataRadar i:nth-child(3) {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, rgba(36, 231, 255, 0.2), transparent);
+  transform: translateY(-50%);
+}
+
+.graphNoDataCore {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  color: #eaffff;
+  font-size: 30px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 214, 109, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(18, 70, 103, 0.86), rgba(2, 18, 32, 0.92));
+  border: 1px solid rgba(36, 231, 255, 0.56);
+  border-radius: 50%;
+  box-shadow:
+    0 0 34px rgba(36, 231, 255, 0.22),
+    inset 0 0 24px rgba(36, 231, 255, 0.11);
+  animation: graphNoDataCorePulse 1700ms ease-in-out infinite;
+}
+
+.graphNoDataCore::before,
+.graphNoDataCore::after {
+  position: absolute;
+  content: '';
+  background: rgba(255, 214, 109, 0.8);
+  box-shadow: 0 0 13px rgba(255, 214, 109, 0.5);
+}
+
+.graphNoDataCore::before {
+  top: -18px;
+  width: 2px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.graphNoDataCore::after {
+  right: -20px;
+  width: 13px;
+  height: 2px;
+  border-radius: 999px;
+}
+
+.graphNoDataCore svg {
+  filter: drop-shadow(0 0 12px rgba(36, 231, 255, 0.62));
+}
+
+.graphNoDataSparks {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.graphNoDataSparks i {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #24e7ff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5px rgba(36, 231, 255, 0.1),
+    0 0 16px rgba(36, 231, 255, 0.6);
+  animation: graphNoDataSpark 1900ms ease-in-out infinite;
+}
+
+.graphNoDataSparks i:nth-child(1) {
+  top: 34px;
+  left: 85px;
+}
+
+.graphNoDataSparks i:nth-child(2) {
+  top: 68px;
+  right: 76px;
+  background: #ffd66d;
+  box-shadow:
+    0 0 0 5px rgba(255, 214, 109, 0.1),
+    0 0 16px rgba(255, 214, 109, 0.5);
+  animation-delay: 180ms;
+}
+
+.graphNoDataSparks i:nth-child(3) {
+  right: 100px;
+  bottom: 45px;
+  background: #bff747;
+  box-shadow:
+    0 0 0 5px rgba(191, 247, 71, 0.1),
+    0 0 16px rgba(191, 247, 71, 0.48);
+  animation-delay: 360ms;
+}
+
+.graphNoDataSparks i:nth-child(4) {
+  bottom: 72px;
+  left: 78px;
+  animation-delay: 540ms;
+}
+
+.graphLoaderScene {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(430px, 80%);
+  height: 286px;
+}
+
+.graphLoaderScene::before,
+.graphLoaderScene::after {
+  position: absolute;
+  pointer-events: none;
+  content: '';
+  border-radius: 50%;
+}
+
+.graphLoaderScene::before {
+  width: 330px;
+  height: 120px;
+  border: 1px solid rgba(36, 231, 255, 0.24);
+  box-shadow:
+    0 0 34px rgba(36, 231, 255, 0.12),
+    inset 0 0 26px rgba(36, 231, 255, 0.06);
+  transform: rotateX(62deg);
+  animation: graphLoaderDisk 2200ms ease-in-out infinite;
+}
+
+.graphLoaderScene::after {
+  width: 228px;
+  height: 228px;
+  background: conic-gradient(
+    from 90deg,
+    transparent,
+    rgba(36, 231, 255, 0.34),
+    transparent 34%,
+    rgba(191, 247, 71, 0.22),
+    transparent 68%,
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  opacity: 0.56;
+  filter: blur(9px);
+  animation: graphLoaderHalo 5200ms linear infinite;
+}
+
+.graphLoaderGrid {
+  position: absolute;
+  width: 310px;
+  height: 172px;
+  background:
+    linear-gradient(90deg, rgba(36, 231, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.1) 1px, transparent 1px);
+  background-size: 31px 31px;
+  opacity: 0.42;
+  transform: perspective(460px) rotateX(66deg);
+  mask-image: radial-gradient(ellipse at center, #000 0 54%, transparent 72%);
+  animation: graphLoaderGridPulse 1800ms ease-in-out infinite;
+}
+
+.graphLoaderOrbit {
+  position: absolute;
+  z-index: 2;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(36, 231, 255, 0.34);
+  border-radius: 50%;
+  box-shadow:
+    0 0 36px rgba(36, 231, 255, 0.13),
+    inset 0 0 38px rgba(36, 231, 255, 0.08);
+  animation: graphLoaderOrbitSpin 4200ms linear infinite;
+}
+
+.graphLoaderOrbit::before,
+.graphLoaderOrbit::after {
+  position: absolute;
+  inset: 22px;
+  pointer-events: none;
+  content: '';
+  border: 1px dashed rgba(191, 247, 71, 0.28);
+  border-radius: 50%;
+}
+
+.graphLoaderOrbit::after {
+  inset: 49px;
+  border-color: rgba(255, 214, 109, 0.24);
+  transform: rotate(28deg);
+}
+
+.graphLoaderOrbit i {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #24e7ff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 5px rgba(36, 231, 255, 0.12),
+    0 0 18px rgba(36, 231, 255, 0.68);
+  animation: graphLoaderNodePulse 1400ms ease-in-out infinite;
+}
+
+.graphLoaderOrbit i:nth-child(1) {
+  top: -5px;
+  left: 105px;
+}
+
+.graphLoaderOrbit i:nth-child(2) {
+  top: 49px;
+  right: 10px;
+  background: #bff747;
+  box-shadow:
+    0 0 0 5px rgba(191, 247, 71, 0.12),
+    0 0 18px rgba(191, 247, 71, 0.58);
+  animation-delay: 160ms;
+}
+
+.graphLoaderOrbit i:nth-child(3) {
+  right: 10px;
+  bottom: 49px;
+  animation-delay: 320ms;
+}
+
+.graphLoaderOrbit i:nth-child(4) {
+  bottom: -5px;
+  left: 105px;
+  background: #ffd66d;
+  box-shadow:
+    0 0 0 5px rgba(255, 214, 109, 0.12),
+    0 0 18px rgba(255, 214, 109, 0.5);
+  animation-delay: 480ms;
+}
+
+.graphLoaderOrbit i:nth-child(5) {
+  bottom: 49px;
+  left: 10px;
+  animation-delay: 640ms;
+}
+
+.graphLoaderOrbit i:nth-child(6) {
+  top: 49px;
+  left: 10px;
+  background: #bff747;
+  box-shadow:
+    0 0 0 5px rgba(191, 247, 71, 0.12),
+    0 0 18px rgba(191, 247, 71, 0.58);
+  animation-delay: 800ms;
+}
+
+.graphLoaderCore {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  color: #eaffff;
+  font-size: 34px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(191, 247, 71, 0.22), transparent 32%),
+    linear-gradient(180deg, rgba(18, 70, 103, 0.92), rgba(2, 18, 32, 0.86));
+  border: 1px solid rgba(36, 231, 255, 0.62);
+  border-radius: 50%;
+  box-shadow:
+    0 0 38px rgba(36, 231, 255, 0.24),
+    inset 0 0 26px rgba(36, 231, 255, 0.12);
+  animation: graphLoaderCorePulse 1500ms ease-in-out infinite;
+}
+
+.graphLoaderCore svg {
+  filter: drop-shadow(0 0 12px rgba(36, 231, 255, 0.72));
+}
+
+.graphLoaderBeam {
+  position: absolute;
+  z-index: 4;
+  width: 360px;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(36, 231, 255, 0.3),
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  filter: blur(2px);
+  transform: translateX(-58%) skewX(-18deg);
+  animation: graphLoaderBeam 1700ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.graphLoaderCopy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 9px;
+  max-width: min(640px, 80%);
+}
+
+.graphLoaderCopy strong {
+  color: #f4feff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(36, 231, 255, 0.24);
+}
+
+.graphLoaderCopy span {
+  overflow: hidden;
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graphLoadStateError .graphLoaderCopy {
+  max-width: min(560px, 86%);
+  padding: 14px 18px 15px;
+  background:
+    linear-gradient(180deg, rgba(6, 28, 48, 0.76), rgba(2, 12, 24, 0.64)), rgba(2, 12, 24, 0.46);
+  border: 1px solid rgba(68, 222, 255, 0.22);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 18px rgba(36, 231, 255, 0.06),
+    0 0 30px rgba(36, 231, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.graphLoadStateError .graphLoaderCopy strong {
+  font-size: clamp(22px, 2vw, 28px);
+}
+
+.graphLoadStateError .graphLoaderCopy span {
+  white-space: normal;
+}
+
+.graphLoaderSteps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.graphLoaderSteps i {
+  position: relative;
+  display: block;
+  width: 92px;
+  height: 4px;
+  overflow: hidden;
+  background: rgba(116, 196, 255, 0.14);
+  border-radius: 999px;
+}
+
+.graphLoaderSteps i::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(90deg, #24e7ff, #bff747, #ffd66d);
+  border-radius: inherit;
+  transform: translateX(-100%);
+  animation: graphLoaderStep 1500ms ease-in-out infinite;
+}
+
+.graphLoaderSteps i:nth-child(2)::after {
+  animation-delay: 180ms;
+}
+
+.graphLoaderSteps i:nth-child(3)::after {
+  animation-delay: 360ms;
+}
+
+.canvasHost {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.14), transparent 32%),
+    linear-gradient(90deg, rgba(36, 231, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(36, 231, 255, 0.05) 1px, transparent 1px), #020b16;
+  background-size:
+    100% 100%,
+    38px 38px,
+    38px 38px,
+    100% 100%;
+}
+
+.canvasHost canvas {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvasGrid {
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 254deg,
+    rgba(36, 231, 255, 0.16) 276deg,
+    transparent 302deg,
+    transparent 360deg
+  );
+  opacity: 0.34;
+  animation: processFlowRadar 9s linear infinite;
+}
+
+.geoMapBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(36, 231, 255, 0.1), transparent 42%);
+  opacity: 0;
+  animation: geoMapBackdropReveal 900ms cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.geoMapBackdrop::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -18%;
+  width: 18%;
+  pointer-events: none;
+  content: '';
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(36, 231, 255, 0.22),
+    rgba(255, 214, 109, 0.2),
+    transparent
+  );
+  filter: blur(2px);
+  transform: skewX(-18deg);
+  animation: geoMapScanSweep 1100ms cubic-bezier(0.16, 1, 0.3, 1) 120ms forwards;
+}
+
+.geoMapBackdropMap {
+  position: absolute;
+  left: var(--process-flow-geo-map-left, 0);
+  top: var(--process-flow-geo-map-top, 0);
+  width: var(--process-flow-geo-map-width, 100%);
+  height: var(--process-flow-geo-map-height, 100%);
+  overflow: visible;
+  opacity: 0.74;
+  filter: drop-shadow(0 0 24px rgba(36, 231, 255, 0.12));
+}
+
+.geoMapBackdrop path {
+  fill: rgba(23, 78, 111, 0.38);
+  fill-opacity: 0;
+  stroke: rgba(134, 220, 255, 0.2);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-width: 0.75;
+  vector-effect: non-scaling-stroke;
+  animation:
+    geoMapPathTrace 980ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+    geoMapFillSettle 780ms ease-out 280ms forwards;
+}
+
+.geoMapBackdrop path:nth-child(4n + 1) {
+  animation-delay: 40ms, 320ms;
+}
+
+.geoMapBackdrop path:nth-child(4n + 2) {
+  animation-delay: 90ms, 370ms;
+}
+
+.geoMapBackdrop path:nth-child(4n + 3) {
+  animation-delay: 140ms, 420ms;
+}
+
+.geoMapBackdropWorld path[data-code='CN'],
+.geoMapBackdropChina path {
+  fill: rgba(33, 101, 126, 0.52);
+  stroke: rgba(168, 238, 255, 0.34);
+}
+
+.geoMapBackdropMap path[data-code='100000_JD'] {
+  display: none;
+}
+
+.geoMapBackdropWorld path[data-code='US'],
+.geoMapBackdropWorld path[data-code='DE'],
+.geoMapBackdropWorld path[data-code='JP'],
+.geoMapBackdropWorld path[data-code='KR'],
+.geoMapBackdropWorld path[data-code='IN'],
+.geoMapBackdropWorld path[data-code='RU'] {
+  fill: rgba(30, 93, 121, 0.46);
+}
+
+.geoMapChinaInset {
+  position: absolute;
+  right: calc(
+    100% - var(--process-flow-geo-map-left, 0px) - var(--process-flow-geo-map-width, 100%) +
+      clamp(184px, 13vw, 258px)
+  );
+  bottom: max(
+    calc(
+      100% - var(--process-flow-geo-map-top, 0px) - var(--process-flow-geo-map-height, 100%) +
+        clamp(180px, 18vh, 245px)
+    ),
+    76px
+  );
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 7px;
+  width: clamp(150px, 14vw, 230px);
+  height: clamp(162px, 23vh, 270px);
+  padding: 9px;
+  overflow: hidden;
+  background: transparent;
+  border: 1px solid rgba(36, 231, 255, 0.28);
+  border-radius: 8px;
+  box-shadow: 0 0 18px rgba(36, 231, 255, 0.06);
+  opacity: 0;
+  animation: geoMapInsetReveal 620ms ease-out 360ms forwards;
+}
+
+.geoMapInsetMap {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: visible;
+  opacity: 0.78;
+  filter: drop-shadow(0 0 10px rgba(36, 231, 255, 0.1));
+}
+
+.geoMapInsetMap path {
+  fill: rgba(33, 101, 126, 0.5);
+  stroke: rgba(168, 238, 255, 0.48);
+  stroke-width: 1.05;
+  vector-effect: non-scaling-stroke;
+}
+
+.geoMapInsetSea {
+  fill: transparent;
+  stroke: none;
+}
+
+.mapPreparingOverlay {
+  position: absolute;
+  right: 18px;
+  bottom: 70px;
+  z-index: 6;
+  display: grid;
+  gap: 3px;
+  min-width: 184px;
+  padding: 10px 12px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(9, 38, 65, 0.86), rgba(2, 14, 26, 0.72)), rgba(2, 12, 24, 0.74);
+  border: 1px solid rgba(36, 231, 255, 0.28);
+  border-radius: 8px;
+  box-shadow:
+    0 0 24px rgba(36, 231, 255, 0.12),
+    inset 0 0 18px rgba(36, 231, 255, 0.05);
+  animation: mapPreparingPulse 1200ms ease-in-out infinite;
+}
+
+.mapPreparingOverlay strong {
+  color: #eaffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mapPreparingOverlay span {
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.nodeTooltip {
+  position: absolute;
+  z-index: 8;
+  display: grid;
+  gap: 4px;
+  max-width: 260px;
+  padding: 9px 11px;
+  pointer-events: none;
+  background: rgba(1, 13, 25, 0.92);
+  border: 1px solid rgba(36, 231, 255, 0.34);
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(36, 231, 255, 0.18);
+  transform: translate(13px, 13px);
+}
+
+.nodeTooltip span {
+  color: #24e7ff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.nodeTooltip strong,
+.nodeTooltip em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nodeTooltip strong {
+  color: #f4feff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.nodeTooltip em {
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-style: normal;
+}
+
+.inspector {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(300px, calc(100% - 28px));
+  height: 50%;
+  min-height: 0;
+  max-height: calc(100% - 28px);
+  padding: 12px;
+  overflow: hidden;
+  isolation: isolate;
+  animation: inspectorPanelIn 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inspector::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(115deg, transparent 0 28%, rgba(36, 231, 255, 0.2) 43%, transparent 58%),
+    radial-gradient(circle at 86% 12%, rgba(36, 231, 255, 0.22), transparent 24%);
+  opacity: 0;
+  transform: translateX(-42%);
+  animation: inspectorSweep 920ms ease-out 70ms both;
+}
+
+.inspector > * {
+  position: relative;
+  z-index: 1;
+}
+
+.nodeIdentity,
+.inspectorMetricGrid,
+.edgeList {
+  animation: inspectorContentIn 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nodeIdentity {
+  animation-delay: 35ms;
+}
+
+.inspectorMetricGrid {
+  animation-delay: 70ms;
+}
+
+.edgeList {
+  animation-delay: 110ms;
+}
+
+.inspectorExiting {
+  pointer-events: none;
+  animation: inspectorPanelOut 320ms cubic-bezier(0.55, 0, 0.85, 0.36) both;
+}
+
+.inspectorExiting::before {
+  animation: inspectorSweepOut 320ms ease-in both;
+}
+
+.inspectorExiting .nodeIdentity,
+.inspectorExiting .inspectorMetricGrid,
+.inspectorExiting .edgeList {
+  animation: inspectorContentOut 220ms ease-in both;
+}
+
+.inspectorExiting .edgeList {
+  animation-delay: 0ms;
+}
+
+.inspectorExiting .inspectorMetricGrid {
+  animation-delay: 30ms;
+}
+
+.inspectorExiting .nodeIdentity {
+  animation-delay: 60ms;
+}
+
+.nodeIdentity {
+  display: grid;
+}
+
+.nodeIdentity strong {
+  color: #f4feff;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.inspectorMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.inspectorMetricGrid div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px;
+  background: rgba(4, 27, 47, 0.68);
+  border: 1px solid rgba(36, 231, 255, 0.16);
+  border-radius: 8px;
+  animation: inspectorMetricPop 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.inspectorMetricGrid div:nth-child(1) {
+  animation-delay: 140ms;
+}
+
+.inspectorMetricGrid div:nth-child(2) {
+  animation-delay: 170ms;
+}
+
+.inspectorMetricGrid div:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.inspectorMetricGrid div:nth-child(4) {
+  animation-delay: 230ms;
+}
+
+.inspectorExiting .inspectorMetricGrid div {
+  animation: inspectorMetricOut 220ms ease-in both;
+}
+
+.inspectorExiting .inspectorMetricGrid div:nth-child(4) {
+  animation-delay: 0ms;
+}
+
+.inspectorExiting .inspectorMetricGrid div:nth-child(3) {
+  animation-delay: 25ms;
+}
+
+.inspectorExiting .inspectorMetricGrid div:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.inspectorExiting .inspectorMetricGrid div:nth-child(1) {
+  animation-delay: 75ms;
+}
+
+.inspectorMetricGrid span {
+  overflow: hidden;
+  color: rgba(190, 212, 222, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inspectorMetricGrid strong {
+  color: #24e7ff;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.edgeList {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  flex: 1;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.edgeList > span {
+  color: rgba(203, 220, 228, 0.78);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.edgeRows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  padding-right: 5px;
+  overflow: auto;
+}
+
+.edgeRows div {
+  display: grid;
+  grid-template-columns: auto 30px minmax(0, 1fr) minmax(44px, auto);
+  gap: 7px;
+  align-items: center;
+  min-height: 31px;
+  padding-bottom: 6px;
+  color: rgba(230, 246, 251, 0.88);
+  font-size: 11px;
+  font-weight: 800;
+  border-bottom: 1px solid rgba(116, 196, 255, 0.1);
+}
+
+.edgeRows div:last-child {
+  border-bottom: 0;
+}
+
+.edgeRows i {
+  flex: 0 0 auto;
+}
+
+.edgeRows em,
+.edgeRows b {
+  min-width: 0;
+  overflow: hidden;
+  font-style: normal;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.edgeRows em {
+  color: rgba(230, 246, 251, 0.9);
+}
+
+.edgeRows b {
+  color: #f6db4d;
+  font-weight: 900;
+  text-align: right;
+}
+
+.edgeRows small {
+  color: rgba(190, 212, 222, 0.68);
+  font-weight: 800;
+}
+
+@keyframes inspectorPanelIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(18px, 18px, 0) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes inspectorPanelOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(18px, 18px, 0) scale(0.96);
+  }
+}
+
+@keyframes inspectorSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-46%);
+  }
+
+  24% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(46%);
+  }
+}
+
+@keyframes inspectorSweepOut {
+  0% {
+    opacity: 0.55;
+    transform: translateX(46%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-46%);
+  }
+}
+
+@keyframes inspectorContentIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes inspectorContentOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes inspectorMetricPop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes inspectorMetricOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+
+@keyframes graphLoadSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  18% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes graphLoaderDisk {
+  0%,
+  100% {
+    opacity: 0.64;
+    transform: rotateX(62deg) scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: rotateX(62deg) scale(1.02);
+  }
+}
+
+@keyframes graphLoaderHalo {
+  from {
+    transform: rotate(0deg) scale(0.98);
+  }
+  to {
+    transform: rotate(360deg) scale(0.98);
+  }
+}
+
+@keyframes graphLoaderGridPulse {
+  0%,
+  100% {
+    opacity: 0.32;
+    transform: perspective(460px) rotateX(66deg) translateY(4px);
+  }
+  50% {
+    opacity: 0.58;
+    transform: perspective(460px) rotateX(66deg) translateY(-2px);
+  }
+}
+
+@keyframes graphLoaderOrbitSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes graphLoaderNodePulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.76);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes graphLoaderCorePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 30px rgba(36, 231, 255, 0.18),
+      inset 0 0 22px rgba(36, 231, 255, 0.1);
+    transform: scale(0.98);
+  }
+  50% {
+    box-shadow:
+      0 0 48px rgba(36, 231, 255, 0.32),
+      inset 0 0 30px rgba(191, 247, 71, 0.1);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes graphLoaderBeam {
+  0% {
+    opacity: 0;
+    transform: translateX(-58%) skewX(-18deg);
+  }
+  24% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(58%) skewX(-18deg);
+  }
+}
+
+@keyframes graphLoaderStep {
+  0% {
+    transform: translateX(-100%);
+  }
+  54%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes graphNoDataDisk {
+  0%,
+  100% {
+    opacity: 0.54;
+    transform: rotateX(64deg) scale(0.96);
+  }
+  50% {
+    opacity: 0.9;
+    transform: rotateX(64deg) scale(1.03);
+  }
+}
+
+@keyframes graphNoDataHalo {
+  from {
+    transform: rotate(0deg) scale(0.98);
+  }
+  to {
+    transform: rotate(-360deg) scale(0.98);
+  }
+}
+
+@keyframes graphNoDataScan {
+  from {
+    opacity: 0.88;
+    transform: rotate(0deg);
+  }
+  to {
+    opacity: 0.88;
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes graphNoDataCorePulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 28px rgba(36, 231, 255, 0.16),
+      inset 0 0 22px rgba(36, 231, 255, 0.1);
+    transform: scale(0.98);
+  }
+  50% {
+    box-shadow:
+      0 0 44px rgba(36, 231, 255, 0.28),
+      inset 0 0 28px rgba(255, 214, 109, 0.1);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes graphNoDataSpark {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes processFlowRadar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes geoMapBackdropReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes geoMapInsetReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 0.86;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes geoMapScanSweep {
+  from {
+    opacity: 0;
+    transform: translateX(0) skewX(-18deg);
+  }
+  18% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(720%) skewX(-18deg);
+  }
+}
+
+@keyframes geoMapPathTrace {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes geoMapFillSettle {
+  from {
+    fill-opacity: 0;
+  }
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes mapPreparingPulse {
+  0%,
+  100% {
+    border-color: rgba(36, 231, 255, 0.24);
+    box-shadow:
+      0 0 20px rgba(36, 231, 255, 0.1),
+      inset 0 0 16px rgba(36, 231, 255, 0.04);
+  }
+  50% {
+    border-color: rgba(255, 214, 109, 0.42);
+    box-shadow:
+      0 0 30px rgba(255, 214, 109, 0.12),
+      inset 0 0 22px rgba(36, 231, 255, 0.07);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inspector,
+  .inspector::before,
+  .nodeIdentity,
+  .inspectorMetricGrid,
+  .inspectorMetricGrid div,
+  .edgeList,
+  .graphLoadState::before,
+  .graphNoDataScene::before,
+  .graphNoDataScene::after,
+  .graphNoDataRadar::before,
+  .graphNoDataCore,
+  .graphNoDataSparks i,
+  .graphLoaderScene::before,
+  .graphLoaderScene::after,
+  .graphLoaderGrid,
+  .graphLoaderOrbit,
+  .graphLoaderOrbit i,
+  .graphLoaderCore,
+  .graphLoaderBeam,
+  .graphLoaderSteps i::after {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}
