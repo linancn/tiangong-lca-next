@@ -5,7 +5,7 @@ export function shouldRenderProcessFlowBaseEdges(
   selection: ProcessFlowGraphSelection,
 ): boolean {
   if (selection.selectedNodeId) {
-    return false;
+    return layoutMode === 'sphere3d';
   }
 
   if (layoutMode !== 'geoMap2d') {

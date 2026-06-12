@@ -1310,7 +1310,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(orphanProcessSelection.highlightedEdgeIds.size).toBe(0);
   });
 
-  it('hides base edges in map overview and all selected views', () => {
+  it('keeps sphere base edges visible while hiding map overview and flat selected views', () => {
     const emptySelection = createEmptyProcessFlowGraphSelection();
     const selectedSelection = getProcessFlowGraphSelection(
       createProcessFlowGraphFixture(),
@@ -1320,7 +1320,7 @@ describe('NationalCarbonDashboard process-flow graph', () => {
     expect(shouldRenderProcessFlowBaseEdges('sphere3d', emptySelection)).toBe(true);
     expect(shouldRenderProcessFlowBaseEdges('expanded2d', emptySelection)).toBe(true);
     expect(shouldRenderProcessFlowBaseEdges('geoMap2d', emptySelection)).toBe(false);
-    expect(shouldRenderProcessFlowBaseEdges('sphere3d', selectedSelection)).toBe(false);
+    expect(shouldRenderProcessFlowBaseEdges('sphere3d', selectedSelection)).toBe(true);
     expect(shouldRenderProcessFlowBaseEdges('expanded2d', selectedSelection)).toBe(false);
     expect(shouldRenderProcessFlowBaseEdges('geoMap2d', selectedSelection)).toBe(false);
   });
