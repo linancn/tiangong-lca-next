@@ -1,3 +1,4 @@
+import { requestNationalCarbonGraphCacheObjectsApi } from '@/services/nationalCarbonGraphCacheObjects/api';
 import { geoContains, type GeoProjection } from 'd3-geo';
 import type {
   Feature,
@@ -89,7 +90,7 @@ type ActiveManifest = {
 
 type BuildManifest = {
   buildId: string;
-  files: Record<string, { path: string }>;
+  files: Record<string, { path: string; signedUrl?: string }>;
   schemaVersion: typeof processFlowGraphSchemaVersion;
   stats: {
     edgeCount: number;
@@ -150,7 +151,7 @@ type GeoMapViewPayload = {
 
 type CacheManifests = {
   activeManifest: ActiveManifest;
-  baseUrl: string;
+  baseUrl?: string;
   buildManifest: BuildManifest;
 };
 type LocalMapFeatureProperties = {
@@ -833,6 +834,10 @@ function resolveCacheUrl(baseUrl: string, pathOrUrl: string): string {
   return `${baseUrl}/${pathOrUrl.replace(/^\/+/, '')}`;
 }
 
+function shouldUseGraphCacheObjectsApi(baseUrl: string): boolean {
+  return !baseUrl || /\/storage\/v1\/s3\//i.test(baseUrl);
+}
+
 async function fetchRequired(url: string, init?: RequestInit): Promise<Response> {
   const response = await fetch(url, { credentials: 'omit', ...init });
 
@@ -1067,8 +1072,23 @@ function getBuildFilePath(
 async function loadCacheManifests(): Promise<CacheManifests> {
   const baseUrl = getProcessFlowGraphCacheBaseUrl();
 
-  if (!baseUrl) {
-    throw new Error('PROCESS_FLOW_GRAPH_CACHE_BASE_URL is not configured');
+  if (shouldUseGraphCacheObjectsApi(baseUrl)) {
+    const result = await requestNationalCarbonGraphCacheObjectsApi({
+      action: 'read_manifest_bundle',
+    });
+
+    if (result.error || !result.data) {
+      throw new Error(
+        `failed to read process-flow graph cache manifest bundle: ${
+          result.error?.message ?? 'missing response'
+        }`,
+      );
+    }
+
+    return {
+      activeManifest: result.data.activeManifest,
+      buildManifest: result.data.buildManifest,
+    };
   }
 
   const activeManifest = await fetchJson<ActiveManifest>(
@@ -1083,6 +1103,22 @@ async function loadCacheManifests(): Promise<CacheManifests> {
   );
 
   return { activeManifest, baseUrl, buildManifest };
+}
+
+function resolveBuildFileUrl(manifests: CacheManifests, fileKey: string): string {
+  const signedUrl = manifests.buildManifest.files[fileKey]?.signedUrl;
+  if (signedUrl) {
+    return signedUrl;
+  }
+
+  if (!manifests.baseUrl) {
+    throw new Error(`missing process-flow graph signed URL: ${fileKey}`);
+  }
+
+  return resolveCacheUrl(
+    manifests.baseUrl,
+    getBuildFilePath(manifests.activeManifest, manifests.buildManifest, fileKey),
+  );
 }
 
 function hasBuildFile(buildManifest: BuildManifest, fileKey: string): boolean {
@@ -1138,7 +1174,8 @@ function normalizeClusters(
 }
 
 export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphData> {
-  const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
+  const manifests = await loadCacheManifests();
+  const { activeManifest, buildManifest } = manifests;
   assertSchemaVersion(buildManifest.schemaVersion, processFlowGraphSchemaVersion, 'build manifest');
 
   const [
@@ -1153,36 +1190,16 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
     sphereLayoutBuffer,
     expandedLayoutBuffer,
   ] = await Promise.all([
-    fetchGzipJson<NodesPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'nodes')),
-    ),
-    fetchGzipJson<DictionariesPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'dictionaries')),
-    ),
-    fetchGzipJson<ClustersPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'clustersLevel1')),
-    ),
-    fetchGzipJson<ClustersPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'clustersLevel3')),
-    ),
-    fetchGzipJson<SearchPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'searchFlows')),
-    ),
-    fetchGzipJson<LookupPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'nodeLookup')),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'edges')),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'adjacency')),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'sphere3d')),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, 'expanded2d')),
-    ),
+    fetchGzipJson<NodesPayload>(resolveBuildFileUrl(manifests, 'nodes')),
+    fetchGzipJson<DictionariesPayload>(resolveBuildFileUrl(manifests, 'dictionaries')),
+    fetchGzipJson<ClustersPayload>(resolveBuildFileUrl(manifests, 'clustersLevel1')),
+    fetchGzipJson<ClustersPayload>(resolveBuildFileUrl(manifests, 'clustersLevel3')),
+    fetchGzipJson<SearchPayload>(resolveBuildFileUrl(manifests, 'searchFlows')),
+    fetchGzipJson<LookupPayload>(resolveBuildFileUrl(manifests, 'nodeLookup')),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, 'edges')),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, 'adjacency')),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, 'sphere3d')),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, 'expanded2d')),
   ]);
   assertSchemaVersion(nodesPayload.schemaVersion, processFlowGraphSchemaVersion, 'nodes payload');
   assertSchemaVersion(
@@ -1236,7 +1253,8 @@ export async function loadProcessFlowGraphFromCache(): Promise<ProcessFlowGraphD
 async function loadProcessFlowGraphGeoMapViewFromCacheUncached(
   scope: ProcessFlowGraphMapScope,
 ): Promise<ProcessFlowGraphGeoMapView | undefined> {
-  const { activeManifest, baseUrl, buildManifest } = await loadCacheManifests();
+  const manifests = await loadCacheManifests();
+  const { activeManifest, buildManifest } = manifests;
   const fileKeys = geoMapCacheFileKeys[scope];
   const requiredFileKeys = [fileKeys.view, fileKeys.edges, fileKeys.adjacency, fileKeys.layout];
 
@@ -1246,18 +1264,10 @@ async function loadProcessFlowGraphGeoMapViewFromCacheUncached(
   assertSchemaVersion(buildManifest.schemaVersion, processFlowGraphSchemaVersion, 'build manifest');
 
   const [viewPayload, edgesBuffer, adjacencyBuffer, layoutBuffer] = await Promise.all([
-    fetchGzipJson<GeoMapViewPayload>(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.view)),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.edges)),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.adjacency)),
-    ),
-    fetchGzipBinary(
-      resolveCacheUrl(baseUrl, getBuildFilePath(activeManifest, buildManifest, fileKeys.layout)),
-    ),
+    fetchGzipJson<GeoMapViewPayload>(resolveBuildFileUrl(manifests, fileKeys.view)),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, fileKeys.edges)),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, fileKeys.adjacency)),
+    fetchGzipBinary(resolveBuildFileUrl(manifests, fileKeys.layout)),
   ]);
 
   if (
