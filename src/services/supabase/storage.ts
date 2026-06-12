@@ -8,6 +8,29 @@ const imageExtensions = ['.jpeg', '.jpg', '.png', '.gif', '.bmp', '.webp', '.svg
 
 export type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
+const resolveStorageFilePath = (file: string) => {
+  if (!file) {
+    return null;
+  }
+
+  const filePaths = file.split('/');
+  if (filePaths.length === 3) {
+    return {
+      bucketName: filePaths[1],
+      filePath: filePaths[2],
+    };
+  }
+
+  if (filePaths.length >= 4) {
+    return {
+      bucketName: filePaths[1],
+      filePath: filePaths.slice(2).join('/'),
+    };
+  }
+
+  return null;
+};
+
 export const getBase64 = (file: FileType): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -24,10 +47,12 @@ export async function getOriginalFileUrl(file: string, name: string) {
   if (!file) {
     return {};
   }
-  const filePaths = file.split('/');
-  if (filePaths.length === 3) {
+  const storageFile = resolveStorageFilePath(file);
+  if (storageFile) {
     try {
-      const originalFile = await supabase.storage.from(filePaths[1]).download(filePaths[2]);
+      const originalFile = await supabase.storage
+        .from(storageFile.bucketName)
+        .download(storageFile.filePath);
 
       if (!originalFile.data) {
         return { uid: file, status: 'error', name: name, url: '' };
@@ -116,6 +141,23 @@ export async function getThumbFileUrls(fileList: any) {
     }),
   );
   return urls;
+}
+
+export async function getSignedStorageFileUrl(file: string, expiresIn = 60 * 60) {
+  const storageFile = resolveStorageFilePath(file);
+  if (!storageFile) {
+    return '';
+  }
+
+  try {
+    const { data } = await supabase.storage
+      .from(storageFile.bucketName)
+      .createSignedUrl(storageFile.filePath, expiresIn);
+
+    return data?.signedUrl ?? '';
+  } catch (e) {
+    return '';
+  }
 }
 
 export async function uploadFile(name: string, file: any) {

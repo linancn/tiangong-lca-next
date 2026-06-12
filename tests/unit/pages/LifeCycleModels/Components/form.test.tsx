@@ -226,7 +226,7 @@ describe('LifeCycleModelForm', () => {
     expect(baseProps.onData).toHaveBeenCalledTimes(1);
   });
 
-  it('uses the create default source and disables dataset version during createVersion', () => {
+  it('uses the create default source and shows auto-version copy during createVersion', () => {
     renderWithProviders(
       <LifeCycleModelForm
         {...baseProps}
@@ -236,7 +236,10 @@ describe('LifeCycleModelForm', () => {
       />,
     );
 
-    expect(screen.getAllByRole('textbox')[1]).toBeDisabled();
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toBeDisabled();
+    expect(screen.getByTestId('dataset-create-version-auto-message')).toHaveValue(
+      'The new version will be generated automatically.',
+    );
     expect(getSourceSelectByLabel('Data set format(s)')).toHaveTextContent(
       '"defaultSourceName":"ILCD format"',
     );

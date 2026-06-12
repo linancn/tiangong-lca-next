@@ -337,6 +337,7 @@ jest.mock('@/pages/Sources/Components/form', () => {
 jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   createSource: jest.fn(),
+  createSourceVersion: jest.fn(),
   getSourceDetail: jest.fn(),
 }));
 
@@ -357,8 +358,11 @@ jest.mock('@/services/supabase/key', () => ({
   supabaseStorageBucket: 'sources',
 }));
 
-const { createSource: mockCreateSource, getSourceDetail: mockGetSourceDetail } =
-  jest.requireMock('@/services/sources/api');
+const {
+  createSource: mockCreateSource,
+  createSourceVersion: mockCreateSourceVersion,
+  getSourceDetail: mockGetSourceDetail,
+} = jest.requireMock('@/services/sources/api');
 const { genSourceFromData: mockGenSourceFromData } = jest.requireMock('@/services/sources/util');
 const {
   getThumbFileUrls: mockGetThumbFileUrls,
@@ -374,6 +378,7 @@ describe('SourceCreate component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateSource.mockResolvedValue({ data: [{ id: 'source-new' }] });
+    mockCreateSourceVersion.mockResolvedValue({ data: [{ id: 'source-new' }] });
     mockGetSourceDetail.mockResolvedValue({
       data: { json: { sourceDataSet: {} } },
     });
@@ -462,8 +467,9 @@ describe('SourceCreate component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
-      expect(mockCreateSource).toHaveBeenCalledWith(
+      expect(mockCreateSourceVersion).toHaveBeenCalledWith(
         'source-1',
+        '1.0.0',
         expect.objectContaining({
           sourceInformation: expect.objectContaining({
             dataSetInformation: expect.objectContaining({
@@ -478,6 +484,28 @@ describe('SourceCreate component', () => {
           }),
         }),
       ),
+    );
+  });
+
+  it('falls back to empty create-version identifiers when runtime props are missing', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <SourceCreate
+        lang='en'
+        actionRef={{ current: { reload: jest.fn() } } as any}
+        actionType='createVersion'
+        {...({ id: undefined, version: undefined } as any)}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(within(drawer).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() =>
+      expect(mockCreateSourceVersion).toHaveBeenCalledWith('', '', expect.any(Object)),
     );
   });
 
@@ -523,7 +551,7 @@ describe('SourceCreate component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Data with the same ID already exists.',
+        'Data with the same ID and version already exists.',
       ),
     );
     expect(actionRef.current.reload).not.toHaveBeenCalled();

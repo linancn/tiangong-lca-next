@@ -5,6 +5,7 @@
 
 import {
   createUnitGroup,
+  createUnitGroupVersion,
   deleteUnitGroup,
   getReferenceUnit,
   getReferenceUnits,
@@ -63,6 +64,7 @@ jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
+  invokeDatasetCreateVersion: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -72,6 +74,7 @@ const {
   getDataDetail: mockGetDataDetail,
   getTeamIdByUserId: mockGetTeamIdByUserId,
   invokeDatasetCommand: mockInvokeDatasetCommand,
+  invokeDatasetCreateVersion: mockInvokeDatasetCreateVersion,
   normalizeLangPayloadForSave: mockNormalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 
@@ -216,6 +219,13 @@ beforeEach(() => {
     status: 200,
     statusText: 'OK',
   });
+  mockInvokeDatasetCreateVersion.mockResolvedValue({
+    data: [],
+    error: null,
+    count: null,
+    status: 200,
+    statusText: 'OK',
+  });
   mockNormalizeLangPayloadForSave.mockImplementation(async (payload: any) => ({
     payload,
     validationError: undefined,
@@ -281,6 +291,59 @@ describe('createUnitGroup', () => {
     const result = await createUnitGroup('ug-1', { name: 'Unit Group' });
 
     expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        data: null,
+        status: 400,
+        statusText: 'LANG_VALIDATION_ERROR',
+        error: expect.objectContaining({
+          code: 'LANG_VALIDATION_ERROR',
+          message: 'English translation required',
+        }),
+      }),
+    );
+  });
+});
+
+describe('createUnitGroupVersion', () => {
+  it('stores a new unit group version through the create-version command', async () => {
+    const createResult = {
+      data: [{ id: 'ug-1', version: '01.00.001' }],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    };
+    mockGenUnitGroupJsonOrdered.mockReturnValueOnce({ data: 'ordered' });
+    mockInvokeDatasetCreateVersion.mockResolvedValueOnce(createResult as any);
+
+    const result = await createUnitGroupVersion('ug-1', '01.00.000', { name: 'Unit Group' });
+
+    expect(mockGenUnitGroupJsonOrdered).toHaveBeenCalledWith('ug-1', { name: 'Unit Group' });
+    expect(mockInvokeDatasetCreateVersion).toHaveBeenCalledWith(
+      {
+        id: 'ug-1',
+        table: 'unitgroups',
+        sourceVersion: '01.00.000',
+        jsonOrdered: { data: 'ordered' },
+        ruleVerification: true,
+      },
+      {
+        ruleVerification: true,
+      },
+    );
+    expect(result).toBe(createResult);
+  });
+
+  it('returns a language validation error before invoking create-version', async () => {
+    mockNormalizeLangPayloadForSave.mockResolvedValue({
+      payload: undefined,
+      validationError: 'English translation required',
+    });
+
+    const result = await createUnitGroupVersion('ug-1', '01.00.000', { name: 'Unit Group' });
+
+    expect(mockInvokeDatasetCreateVersion).not.toHaveBeenCalled();
     expect(result).toEqual(
       expect.objectContaining({
         data: null,

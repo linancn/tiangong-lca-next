@@ -1,4 +1,5 @@
 /* istanbul ignore file -- flow form behavior is covered by tests; remaining misses are presentation-only branches */
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import LocationTextItemForm from '@/components/LocationTextItem/form';
@@ -1038,8 +1039,8 @@ export const FlowForm: FC<Props> = ({
             />
           }
         >
-          <Form.Item
-            required={false}
+          <DatasetCreateVersionFormItem
+            createVersion={formType === 'createVersion'}
             label={
               <RequiredMark
                 showError={false}
@@ -1058,8 +1059,8 @@ export const FlowForm: FC<Props> = ({
               ]['rules'],
             )}
           >
-            <Input disabled={formType === 'createVersion'} />
-          </Form.Item>
+            <Input />
+          </DatasetCreateVersionFormItem>
           {/* <FlowsSelectForm
             name={[
               'administrativeInformation',

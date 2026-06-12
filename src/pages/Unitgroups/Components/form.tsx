@@ -1,5 +1,6 @@
 /* istanbul ignore file -- unit-group form behavior is covered by tests; remaining misses are presentation-only branches */
 import AlignedNumber from '@/components/AlignedNumber';
+import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
@@ -537,8 +538,8 @@ export const UnitGroupForm: FC<Props> = ({
           }
         />
         <br />
-        <Form.Item
-          required={false}
+        <DatasetCreateVersionFormItem
+          createVersion={formType === 'createVersion'}
           label={
             <RequiredMark
               showError={false}
@@ -557,8 +558,8 @@ export const UnitGroupForm: FC<Props> = ({
             ]['rules'] ?? [],
           )}
         >
-          <Input disabled={formType === 'createVersion'} />
-        </Form.Item>
+          <Input />
+        </DatasetCreateVersionFormItem>
         <ContactSelectForm
           lang={lang}
           formRef={formRef}

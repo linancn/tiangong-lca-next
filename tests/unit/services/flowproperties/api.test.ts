@@ -17,6 +17,7 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 
 import {
   createFlowproperties,
+  createFlowpropertiesVersion,
   deleteFlowproperties,
   getFlowpropertyDetail,
   getFlowpropertyTableAll,
@@ -69,6 +70,7 @@ jest.mock('@/services/general/api', () => ({
   getDataDetail: jest.fn(),
   getTeamIdByUserId: jest.fn(),
   invokeDatasetCommand: jest.fn(),
+  invokeDatasetCreateVersion: jest.fn(),
   normalizeLangPayloadForSave: jest.fn(),
 }));
 
@@ -83,6 +85,7 @@ const {
   getDataDetail,
   getTeamIdByUserId,
   invokeDatasetCommand,
+  invokeDatasetCreateVersion,
   normalizeLangPayloadForSave,
 } = jest.requireMock('@/services/general/api');
 const { createFlowProperty: mockCreateFlowProperty } = jest.requireMock('@tiangong-lca/tidas-sdk');
@@ -94,6 +97,13 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
     jest.clearAllMocks();
     supabase.auth.getSession.mockResolvedValue(mockSession);
     invokeDatasetCommand.mockResolvedValue({
+      data: [],
+      error: null,
+      count: null,
+      status: 200,
+      statusText: 'OK',
+    });
+    invokeDatasetCreateVersion.mockResolvedValue({
       data: [],
       error: null,
       count: null,
@@ -219,6 +229,63 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         }),
         expect.objectContaining({
           ruleVerification: true,
+        }),
+      );
+    });
+  });
+
+  describe('createFlowpropertiesVersion', () => {
+    it('should create a new flow property version through the create-version command', async () => {
+      const mockId = 'flowprop-123';
+      const mockData = { flowPropertiesInformation: {} };
+      const mockOrderedData = { ordered: true };
+      const mockResult = {
+        data: [{ id: mockId, version: '01.00.001', rule_verification: true }],
+        error: null,
+        count: null,
+        status: 200,
+        statusText: 'OK',
+      };
+
+      genFlowpropertyJsonOrdered.mockReturnValue(mockOrderedData);
+      invokeDatasetCreateVersion.mockResolvedValue(mockResult);
+
+      const result = await createFlowpropertiesVersion(mockId, '01.00.000', mockData);
+
+      expect(invokeDatasetCreateVersion).toHaveBeenCalledWith(
+        {
+          id: mockId,
+          table: 'flowproperties',
+          sourceVersion: '01.00.000',
+          jsonOrdered: mockOrderedData,
+          ruleVerification: true,
+        },
+        {
+          ruleVerification: true,
+        },
+      );
+      expect(result).toEqual(mockResult);
+    });
+
+    it('should return a language validation error before invoking create-version', async () => {
+      genFlowpropertyJsonOrdered.mockReturnValue({ ordered: true });
+      normalizeLangPayloadForSave.mockResolvedValue({
+        payload: undefined,
+        validationError: 'invalid flow property language payload',
+      });
+
+      const result = await createFlowpropertiesVersion('flowprop-123', '01.00.000', {});
+
+      expect(invokeDatasetCreateVersion).not.toHaveBeenCalled();
+      expect(result).toEqual(
+        expect.objectContaining({
+          data: null,
+          status: 400,
+          statusText: 'LANG_VALIDATION_ERROR',
+          error: expect.objectContaining({
+            code: 'LANG_VALIDATION_ERROR',
+            message: 'invalid flow property language payload',
+          }),
         }),
       );
     });
