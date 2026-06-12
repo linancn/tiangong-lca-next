@@ -18,10 +18,7 @@ module.exports = async () => {
       ...(config?.testEnvironmentOptions || {}),
       url: 'http://localhost:8000',
     },
-    setupFilesAfterEnv: [
-      ...(config.setupFilesAfterEnv || []),
-      './tests/setupTests.jsx',
-    ],
+    setupFilesAfterEnv: [...(config.setupFilesAfterEnv || []), './tests/setupTests.jsx'],
     globals: {
       ...config.globals,
       localStorage: null,
@@ -53,6 +50,11 @@ module.exports = async () => {
       '!src/pages/LifeCycleModels/Components/toolbar/editIndex.tsx',
       '!src/pages/LifeCycleModels/Components/toolbar/eidtInfo.tsx',
       '!src/pages/NationalCarbonDashboard/index.tsx',
+      '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/ProcessFlowGraphCanvas.client.tsx',
+      '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/ProcessFlowGraphPanel.tsx',
+      '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphEngine.ts',
+      '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/graphTypes.ts',
+      '!src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/processFlowGraphCacheLoader.ts',
       '!src/pages/Processes/Components/edit.tsx',
       '!src/pages/Sources/Components/edit.tsx',
       '!src/pages/Unitgroups/Components/edit.tsx',
@@ -73,10 +75,7 @@ module.exports = async () => {
       '<rootDir>/tests/integration/**/*.test.{ts,tsx,js,jsx}',
       '<rootDir>/src/**/*.test.{ts,tsx,js,jsx}',
     ],
-    modulePathIgnorePatterns: [
-      ...(config.modulePathIgnorePatterns || []),
-      ...dockerPathIgnores,
-    ],
+    modulePathIgnorePatterns: [...(config.modulePathIgnorePatterns || []), ...dockerPathIgnores],
     moduleNameMapper: {
       '^@tiangong-lca/tidas-sdk/core$': '<rootDir>/tests/mocks/tidas-sdk-core.js',
       '^@/tests/(.*)$': '<rootDir>/tests/$1',
@@ -84,9 +83,6 @@ module.exports = async () => {
     },
     reporters: ['default', '<rootDir>/tests/reporters/failureSkippedSummaryReporter.js'],
     verbose: !isCI,
-    watchPathIgnorePatterns: [
-      ...(config.watchPathIgnorePatterns || []),
-      ...dockerPathIgnores,
-    ],
+    watchPathIgnorePatterns: [...(config.watchPathIgnorePatterns || []), ...dockerPathIgnores],
   };
 };

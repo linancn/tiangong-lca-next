@@ -1,15 +1,21 @@
-import { geoMercator, geoPath } from 'd3-geo';
-import type { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
 } from 'react';
+import {
+  buildChinaMercatorMap,
+  getChinaRegionAdcode as getRegionAdcode,
+  type ChinaMapData,
+} from './chinaMapProjection';
+import ProcessFlowGraphPanel from './components/ProcessFlowGraph/ProcessFlowGraphPanel';
 import rawSnapshot from './data/mockDashboardSnapshot.json';
 import {
   dashboardStatusKeys,
@@ -25,7 +31,7 @@ import {
 } from './data/schema';
 import styles from './index.less';
 
-type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity';
+type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity' | 'flow_topology';
 type StatusFilterKey = DashboardStatusKey | 'all';
 type ProvinceTooltipState = {
   anchorX: number;
@@ -36,12 +42,6 @@ type ProvinceTooltipState = {
   x: number;
   y: number;
 };
-type ChinaFeatureProperties = {
-  adcode?: number | string;
-  name?: string;
-};
-type ChinaMapFeature = Feature<Geometry, ChinaFeatureProperties>;
-type ChinaMapData = FeatureCollection<Geometry, ChinaFeatureProperties>;
 type StatusTone = {
   dark: string;
   glow: string;
@@ -52,6 +52,10 @@ type StatusTone = {
   soft: string;
 };
 type ConnectivitySnapshot = DashboardSnapshot['connectivity'];
+type FloatingNavigatorPosition = {
+  x: number;
+  y: number;
+};
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
 
@@ -60,8 +64,18 @@ const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
   { key: 'map_status', label: '态势', shortLabel: '02' },
   { key: 'outcome_metrics', label: '成果', shortLabel: '03' },
   { key: 'connectivity', label: '可计算', shortLabel: '04' },
+  { key: 'flow_topology', label: '流图谱', shortLabel: '05' },
 ];
 
+const dashboardStageWidth = 1920;
+const dashboardStageHeight = 1080;
+const floatingNavigatorMargin = 18;
+const floatingNavigatorOrbSize = 58;
+const floatingNavigatorStorageKey = 'national-carbon-dashboard-floating-navigator-v2';
+const floatingNavigatorDefaultPosition: FloatingNavigatorPosition = {
+  x: dashboardStageWidth - floatingNavigatorOrbSize - floatingNavigatorMargin,
+  y: dashboardStageHeight - floatingNavigatorOrbSize - floatingNavigatorMargin,
+};
 const statusFilterKeys: StatusFilterKey[] = ['all', ...dashboardStatusKeys];
 const overviewMapViewBox = { height: 580, width: 1030 } as const;
 const overviewHotspotLabelSize = { height: 21, width: 104 } as const;
@@ -218,40 +232,6 @@ function loadChinaMapData(): Promise<ChinaMapData> {
   }
 
   return chinaMapDataRequest;
-}
-
-function getRegionAdcode(feature: ChinaMapFeature): number | undefined {
-  const rawAdcode = feature.properties?.adcode;
-  if (typeof rawAdcode === 'number') {
-    return rawAdcode;
-  }
-  if (typeof rawAdcode === 'string') {
-    const parsed = Number.parseInt(rawAdcode, 10);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-  return undefined;
-}
-
-function rewindMapFeature(feature: ChinaMapFeature): ChinaMapFeature {
-  if (feature.geometry.type === 'Polygon') {
-    const geometry: Polygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((ring) => ring.slice().reverse()),
-    };
-    return { ...feature, geometry };
-  }
-
-  if (feature.geometry.type === 'MultiPolygon') {
-    const geometry: MultiPolygon = {
-      ...feature.geometry,
-      coordinates: feature.geometry.coordinates.map((polygon) =>
-        polygon.map((ring) => ring.slice().reverse()),
-      ),
-    };
-    return { ...feature, geometry };
-  }
-
-  return feature;
 }
 
 function getMapColor(statusKey: StatusFilterKey, value: number, maxValue: number): string {
@@ -427,28 +407,56 @@ function MetricIcon({ type }: { type: string }) {
   );
 }
 
-function HeaderRibbon({
-  snapshot,
-  title,
-  subtitle,
-}: {
-  snapshot: DashboardSnapshot;
-  title?: string;
-  subtitle?: string;
-}) {
-  return (
-    <header className={styles.headerRibbon}>
-      <div className={styles.headerFlow} />
-      <div className={styles.headerText}>
-        <h1>{title ?? snapshot.title}</h1>
-        <p>{subtitle ?? snapshot.subtitle}</p>
-      </div>
-      <div className={styles.headerMeta}>
-        <strong>{snapshot.dataVersion}</strong>
-        <span>数据更新：{snapshot.generatedAt.slice(0, 16).replace('T', ' ')}</span>
-      </div>
-    </header>
-  );
+function clampFloatingNavigatorPosition(
+  position: FloatingNavigatorPosition,
+): FloatingNavigatorPosition {
+  return {
+    x: Math.min(
+      Math.max(position.x, floatingNavigatorMargin),
+      dashboardStageWidth - floatingNavigatorOrbSize - floatingNavigatorMargin,
+    ),
+    y: Math.min(
+      Math.max(position.y, floatingNavigatorMargin),
+      dashboardStageHeight - floatingNavigatorOrbSize - floatingNavigatorMargin,
+    ),
+  };
+}
+
+function getInitialFloatingNavigatorPosition(): FloatingNavigatorPosition {
+  if (typeof window === 'undefined') {
+    return floatingNavigatorDefaultPosition;
+  }
+
+  try {
+    const rawPosition = window.localStorage.getItem(floatingNavigatorStorageKey);
+    if (!rawPosition) {
+      return floatingNavigatorDefaultPosition;
+    }
+
+    const parsedPosition = JSON.parse(rawPosition) as Partial<FloatingNavigatorPosition>;
+    if (!Number.isFinite(parsedPosition.x) || !Number.isFinite(parsedPosition.y)) {
+      return floatingNavigatorDefaultPosition;
+    }
+
+    return clampFloatingNavigatorPosition({
+      x: Number(parsedPosition.x),
+      y: Number(parsedPosition.y),
+    });
+  } catch {
+    return floatingNavigatorDefaultPosition;
+  }
+}
+
+function storeFloatingNavigatorPosition(position: FloatingNavigatorPosition) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(floatingNavigatorStorageKey, JSON.stringify(position));
+  } catch {
+    // The navigator position is a convenience preference; losing it should not affect the dashboard.
+  }
 }
 
 function ScreenNavigator({
@@ -458,19 +466,142 @@ function ScreenNavigator({
   activeScreen: ScreenKey;
   onChange: (screen: ScreenKey) => void;
 }) {
+  const activeScreenInfo = screens.find((screen) => screen.key === activeScreen) ?? screens[0];
+  const [position, setPosition] = useState<FloatingNavigatorPosition>(
+    getInitialFloatingNavigatorPosition,
+  );
+  const [isDragging, setIsDragging] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const positionRef = useRef(position);
+  const dragRef = useRef<{
+    offsetX: number;
+    offsetY: number;
+    pointerId: number;
+  } | null>(null);
+  const flyoutSideClassName =
+    position.x > dashboardStageWidth - 430 ? styles.screenNavigatorFlyoutLeft : '';
+  const navClassName = [
+    styles.screenNavigator,
+    flyoutSideClassName,
+    isDragging ? styles.screenNavigatorDragging : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  const getStagePoint = useCallback((event: { clientX: number; clientY: number }) => {
+    const bounds = navRef.current?.parentElement?.getBoundingClientRect();
+    if (!bounds?.width || !bounds.height) {
+      return positionRef.current;
+    }
+
+    return {
+      x: ((event.clientX - bounds.left) / bounds.width) * dashboardStageWidth,
+      y: ((event.clientY - bounds.top) / bounds.height) * dashboardStageHeight,
+    };
+  }, []);
+
+  const handleOrbPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      const stagePoint = getStagePoint(event);
+      const currentPosition = positionRef.current;
+      dragRef.current = {
+        offsetX: stagePoint.x - currentPosition.x,
+        offsetY: stagePoint.y - currentPosition.y,
+        pointerId: event.pointerId,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setIsDragging(true);
+      event.preventDefault();
+    },
+    [getStagePoint],
+  );
+
+  const handleOrbPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLButtonElement>) => {
+      const dragState = dragRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const stagePoint = getStagePoint(event);
+      const nextPosition = clampFloatingNavigatorPosition({
+        x: stagePoint.x - dragState.offsetX,
+        y: stagePoint.y - dragState.offsetY,
+      });
+      positionRef.current = nextPosition;
+      setPosition(nextPosition);
+      event.preventDefault();
+    },
+    [getStagePoint],
+  );
+
+  const handleOrbPointerEnd = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    const dragState = dragRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragRef.current = null;
+    setIsDragging(false);
+    storeFloatingNavigatorPosition(positionRef.current);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }, []);
+
   return (
-    <nav className={styles.screenNavigator} aria-label='大屏切换'>
-      {screens.map((screen) => (
-        <button
-          className={screen.key === activeScreen ? styles.screenNavActive : ''}
-          key={screen.key}
-          onClick={() => onChange(screen.key)}
-          type='button'
-        >
-          <span>{screen.shortLabel}</span>
-          {screen.label}
-        </button>
-      ))}
+    <nav
+      aria-label='大屏切换'
+      className={navClassName}
+      ref={navRef}
+      style={
+        {
+          '--screen-nav-x': `${position.x}px`,
+          '--screen-nav-y': `${position.y}px`,
+        } as CSSProperties
+      }
+    >
+      <button
+        aria-label={`当前形态：${activeScreenInfo.shortLabel} ${activeScreenInfo.label}，按住拖动`}
+        className={styles.screenNavOrb}
+        onPointerCancel={handleOrbPointerEnd}
+        onPointerDown={handleOrbPointerDown}
+        onPointerMove={handleOrbPointerMove}
+        onPointerUp={handleOrbPointerEnd}
+        type='button'
+      >
+        <span className={styles.screenNavOrbIndex}>{activeScreenInfo.shortLabel}</span>
+      </button>
+      <span className={styles.screenNavHoverBridge} aria-hidden='true' />
+      <div className={styles.screenNavFlyout}>
+        <div className={styles.screenNavOptions}>
+          {screens.map((screen) => (
+            <button
+              aria-current={screen.key === activeScreen ? 'page' : undefined}
+              className={[
+                styles.screenNavOption,
+                screen.key === activeScreen ? styles.screenNavActive : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              key={screen.key}
+              onClick={() => onChange(screen.key)}
+              type='button'
+            >
+              <span>{screen.shortLabel}</span>
+              <strong>{screen.label}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
     </nav>
   );
 }
@@ -594,25 +725,14 @@ function ChinaStatusMap({
       return [];
     }
 
-    const displayFeatures = mapData.features
-      .filter((feature) => {
-        const adcode = getRegionAdcode(feature);
-        return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
-      })
-      .map(rewindMapFeature);
-    const displayMapData: ChinaMapData = {
-      ...mapData,
-      features: displayFeatures,
-    };
-
-    const projection = geoMercator().fitExtent(
-      [
-        [18, 18],
-        [variant === 'overview' ? 1010 : 1080, variant === 'overview' ? 560 : 700],
-      ],
-      displayMapData,
-    );
-    const pathGenerator = geoPath(projection);
+    const chinaMap = buildChinaMercatorMap(mapData, [
+      [18, 18],
+      [variant === 'overview' ? 1010 : 1080, variant === 'overview' ? 560 : 700],
+    ]);
+    if (!chinaMap) {
+      return [];
+    }
+    const { features: displayFeatures, pathGenerator } = chinaMap;
 
     return displayFeatures.map((feature) => {
       const adcode = getRegionAdcode(feature);
@@ -794,30 +914,19 @@ function OverviewScreen({
       return [];
     }
 
-    const displayFeatures = mapData.features
-      .filter((feature) => {
-        const adcode = getRegionAdcode(feature);
-        return Boolean(feature.properties?.name) && Boolean(adcode) && adcode !== 100000;
-      })
-      .map(rewindMapFeature);
+    const chinaMap = buildChinaMercatorMap(mapData, [
+      [18, 18],
+      [1010, 560],
+    ]);
+    if (!chinaMap) {
+      return [];
+    }
     const featureMap = new Map(
-      displayFeatures.flatMap((feature) => {
+      chinaMap.features.flatMap((feature) => {
         const adcode = getRegionAdcode(feature);
         return adcode ? [[adcode, feature] as const] : [];
       }),
     );
-    const displayMapData: ChinaMapData = {
-      ...mapData,
-      features: displayFeatures,
-    };
-    const projection = geoMercator().fitExtent(
-      [
-        [18, 18],
-        [1010, 560],
-      ],
-      displayMapData,
-    );
-    const pathGenerator = geoPath(projection);
 
     return overviewTopRegions.flatMap((region) => {
       const feature = featureMap.get(region.adcode);
@@ -825,7 +934,7 @@ function OverviewScreen({
         return [];
       }
 
-      const centroid = pathGenerator.centroid(feature) as [number, number];
+      const centroid = chinaMap.pathGenerator.centroid(feature) as [number, number];
       if (!centroid.every(Number.isFinite)) {
         return [];
       }
@@ -861,13 +970,6 @@ function OverviewScreen({
 
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle={`${snapshot.summary.coveredRegions}省覆盖 / ${formatNumber(
-          sumStatus(snapshot.regions, 'all'),
-        )}条建设数据 / ${snapshot.summary.connectivityRate.toFixed(1)}%可计算连接`}
-        title='天工数据库建设成果总览'
-      />
       <div className={styles.overviewStage}>
         <div className={styles.overviewMetricsLeft}>
           <CountMetric
@@ -1082,11 +1184,6 @@ function MapStatusScreen({
 
   return (
     <section className={styles.screenPanel} style={getStatusToneStyle(activeStatus)}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='按数据生命周期状态查看各省份/地区建设进展'
-        title='全国数据建设态势'
-      />
       <StatusSwitch
         activeStatus={activeStatus}
         onChange={handleStatusChange}
@@ -1253,11 +1350,6 @@ function OutcomeMetricsScreen({
 
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='天工数据库建设成果总览'
-        title='建设成果与发布成果'
-      />
       <div className={styles.outcomeTopGrid}>
         <div className={styles.metricCluster}>
           <h2>建设成果</h2>
@@ -1980,11 +2072,6 @@ function ConnectivityScreen({
 }) {
   return (
     <section className={styles.screenPanel}>
-      <HeaderRibbon
-        snapshot={snapshot}
-        subtitle='过程输入输出匹配成熟度总览'
-        title='供应链连接与可计算性'
-      />
       <div className={styles.connectivityGrid}>
         <aside className={styles.connectivitySummary}>
           <span>供应链闭合率</span>
@@ -2031,6 +2118,23 @@ function ConnectivityScreen({
   );
 }
 
+function FlowTopologyScreen({
+  activeScreen,
+  onChangeScreen,
+}: {
+  activeScreen: ScreenKey;
+  onChangeScreen: (screen: ScreenKey) => void;
+}) {
+  return (
+    <section className={styles.screenPanel}>
+      <div className={styles.processFlowGraphWorkspace}>
+        <ProcessFlowGraphPanel />
+      </div>
+      <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
+    </section>
+  );
+}
+
 export default function NationalCarbonDashboardPage() {
   const [activeScreen, setActiveScreen] = useState<ScreenKey>(() => getInitialScreen());
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -2039,7 +2143,7 @@ export default function NationalCarbonDashboardPage() {
   const stageLayout = useStageLayout();
 
   useEffect(() => {
-    if (!autoplayEnabled) {
+    if (!autoplayEnabled || activeScreen === 'flow_topology') {
       return undefined;
     }
 
@@ -2132,6 +2236,9 @@ export default function NationalCarbonDashboardPage() {
             onChangeScreen={setActiveScreen}
             snapshot={dashboardSnapshot}
           />
+        )}
+        {activeScreen === 'flow_topology' && (
+          <FlowTopologyScreen activeScreen={activeScreen} onChangeScreen={setActiveScreen} />
         )}
       </div>
     </main>
