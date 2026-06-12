@@ -8,6 +8,14 @@ import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
 let mockLocale = 'en-US';
 const mockHistoryPush = jest.fn();
+let mockLocation = { pathname: '/welcome', search: '' };
+const mockFormatMessage = ({ defaultMessage, id }: any) => {
+  const localeMessages = mockLocale.startsWith('zh')
+    ? jest.requireActual('@/locales/zh-CN/pages_home').default
+    : jest.requireActual('@/locales/en-US/pages_home').default;
+
+  return localeMessages[id] ?? defaultMessage ?? id;
+};
 
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
@@ -21,14 +29,15 @@ jest.mock('react-countup', () => ({
 
 jest.mock('umi', () => ({
   __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  FormattedMessage: (props: any) => mockFormatMessage(props),
   history: {
     push: (...args: any[]) => mockHistoryPush(...args),
   },
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: (props: any) => mockFormatMessage(props),
   }),
+  useLocation: () => mockLocation,
 }));
 
 jest.mock('@/services/general/util', () => ({
@@ -105,6 +114,7 @@ describe('Welcome page', () => {
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
     window.location.href = 'http://localhost:8000/';
+    mockLocation = { pathname: '/welcome', search: '' };
     mockLocale = 'en-US';
     mockGetLang.mockReturnValue('en');
     mockGetLangText.mockImplementation((value: any) => {
@@ -140,6 +150,50 @@ describe('Welcome page', () => {
       'href',
       'https://tidas.tiangong.earth/en/docs/intro',
     );
+  });
+
+  it('switches the welcome center content to the carbon footprint database guide', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+
+    expect(mockHistoryPush).toHaveBeenCalledWith('/welcome?view=carbon-footprint');
+    expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
+    expect(screen.getByText('Process Data Development Workflow')).toBeInTheDocument();
+    expect(screen.getByText('Data Objects')).toBeInTheDocument();
+    expect(screen.getByText('Collect Raw Data')).toBeInTheDocument();
+    expect(screen.getByText('Validate And Submit')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /View Sample Data/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Browse Open Data/ }));
+    expect(mockHistoryPush).toHaveBeenCalledWith('/tgdata/flows');
+
+    await user.click(screen.getByRole('button', { name: /My Data/ }));
+    expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
+  });
+
+  it('renders the carbon footprint guide directly from the welcome view query', () => {
+    mockLocation = { pathname: '/welcome', search: '?view=carbon-footprint' };
+
+    renderWithProviders(<Welcome />);
+
+    expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
+    expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
+    expect(screen.queryByText('Unit Processes & Inventories')).not.toBeInTheDocument();
+  });
+
+  it('keeps the overview active when the route location has no search string', async () => {
+    mockLocation = { pathname: '/welcome' } as any;
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Unit Processes & Inventories')).toBeInTheDocument();
+    expect(screen.queryByText('Operation Demo Video')).not.toBeInTheDocument();
   });
 
   it('loads ecosystem teams with thumbnails and reuses cached teams across reopen', async () => {

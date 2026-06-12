@@ -2,16 +2,23 @@ import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
   ApartmentOutlined,
+  BranchesOutlined,
   BuildOutlined,
   DeploymentUnitOutlined,
+  ExperimentOutlined,
+  FileSearchOutlined,
+  FolderOpenOutlined,
   GlobalOutlined,
   InteractionOutlined,
+  NodeIndexOutlined,
+  PaperClipOutlined,
   ProductOutlined,
   ShareAltOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import {
+  Avatar,
   Button,
   Card,
   Col,
@@ -21,6 +28,7 @@ import {
   Spin,
   Statistic,
   StatisticProps,
+  Steps,
   Typography,
   theme,
 } from 'antd';
@@ -30,15 +38,81 @@ import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
-import { FormattedMessage, history, useIntl } from 'umi';
+import { FormattedMessage, history, useIntl, useLocation } from 'umi';
+
+const CARBON_FOOTPRINT_VIEW = 'carbon-footprint';
+
+type WelcomeView = 'overview' | 'carbonFootprintGuide';
+type SchemaItemKey =
+  | 'model'
+  | 'process'
+  | 'flow'
+  | 'flowProperty'
+  | 'unitGroup'
+  | 'source'
+  | 'contact';
+
+type GuideStepKey =
+  | 'openHome'
+  | 'createProcess'
+  | 'fillBasics'
+  | 'enterInputsOutputs'
+  | 'selectOrAddFlows'
+  | 'validateAndSubmit';
+type GuidePreparationKey =
+  | 'collectRawData'
+  | 'mapUnitProcesses'
+  | 'checkFlowsAndUnits'
+  | 'submitForReview';
+
+const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
+
+const guideTeachingStepKeys: GuideStepKey[] = [
+  'openHome',
+  'createProcess',
+  'fillBasics',
+  'enterInputsOutputs',
+  'selectOrAddFlows',
+  'validateAndSubmit',
+];
+const guidePreparationItemKeys: GuidePreparationKey[] = [
+  'collectRawData',
+  'mapUnitProcesses',
+  'checkFlowsAndUnits',
+  'submitForReview',
+];
+const guideSchemaItemKeys: SchemaItemKey[] = [
+  'model',
+  'process',
+  'flow',
+  'flowProperty',
+  'unitGroup',
+  'source',
+  'contact',
+];
+
+const schemaIconMap: Record<SchemaItemKey, React.ReactNode> = {
+  model: <ExperimentOutlined />,
+  process: <BranchesOutlined />,
+  flow: <NodeIndexOutlined />,
+  flowProperty: <FileSearchOutlined />,
+  unitGroup: <ApartmentOutlined />,
+  source: <PaperClipOutlined />,
+  contact: <TeamOutlined />,
+};
 
 const Welcome: React.FC = () => {
   const { token } = theme.useToken();
   const { Meta } = Card;
+  const location = useLocation();
 
-  const { locale } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
+  const activeViewFromLocation: WelcomeView = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search ?? '');
+    return searchParams.get('view') === CARBON_FOOTPRINT_VIEW ? 'carbonFootprintGuide' : 'overview';
+  }, [location.search]);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -48,6 +122,11 @@ const Welcome: React.FC = () => {
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
   const [isTidasModalOpen, setIsTidasModalOpen] = useState(false);
+  const [activeWelcomeView, setActiveWelcomeView] = useState<WelcomeView>(activeViewFromLocation);
+
+  useEffect(() => {
+    setActiveWelcomeView(activeViewFromLocation);
+  }, [activeViewFromLocation]);
 
   const handleOpenDataModal = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>) => {
@@ -56,6 +135,13 @@ const Welcome: React.FC = () => {
     },
     [setIsDataModalOpen],
   );
+
+  const handleOpenCarbonFootprintGuide = React.useCallback(() => {
+    setIsDataModalOpen(false);
+    setIsTidasModalOpen(false);
+    setActiveWelcomeView('carbonFootprintGuide');
+    history.push(`/welcome?view=${CARBON_FOOTPRINT_VIEW}`);
+  }, []);
 
   const loadTeams = React.useCallback(async () => {
     if (teams || isTeamsLoading) {
@@ -106,12 +192,15 @@ const Welcome: React.FC = () => {
   };
 
   useEffect(() => {
+    if (activeWelcomeView !== 'overview') {
+      return;
+    }
     if (isDataModalOpen) {
       loadTeams();
     } else {
       getTeamCount();
     }
-  }, [isDataModalOpen, loadTeams]);
+  }, [activeWelcomeView, isDataModalOpen, loadTeams]);
 
   useEffect(() => {
     if (!isDataModalOpen && !isTidasModalOpen) {
@@ -286,6 +375,38 @@ const Welcome: React.FC = () => {
   };
 
   const currentContent = tidasContent[lang] ?? tidasContent.en;
+  const guideMessage = React.useCallback(
+    (id: string) => formatMessage({ id: `${CARBON_FOOTPRINT_GUIDE_I18N_PREFIX}.${id}` }),
+    [formatMessage],
+  );
+  const currentGuideContent = {
+    entryLabel: guideMessage('entryLabel'),
+    title: guideMessage('title'),
+    intro: guideMessage('intro'),
+    videoTitle: guideMessage('videoTitle'),
+    videoFallback: guideMessage('videoFallback'),
+    workflowTitle: guideMessage('workflowTitle'),
+    schemaTitle: guideMessage('schemaTitle'),
+    actions: {
+      browsePublicData: guideMessage('actions.browsePublicData'),
+      enterMyData: guideMessage('actions.enterMyData'),
+    },
+    teachingSteps: guideTeachingStepKeys.map((key) => ({
+      key,
+      title: guideMessage(`teachingSteps.${key}.title`),
+      description: guideMessage(`teachingSteps.${key}.description`),
+    })),
+    preparationItems: guidePreparationItemKeys.map((key) => ({
+      key,
+      title: guideMessage(`preparationItems.${key}.title`),
+      description: guideMessage(`preparationItems.${key}.description`),
+    })),
+    schemaItems: guideSchemaItemKeys.map((key) => ({
+      key,
+      title: guideMessage(`schemaItems.${key}.title`),
+      description: guideMessage(`schemaItems.${key}.description`),
+    })),
+  };
 
   const metrics = [
     {
@@ -349,130 +470,276 @@ const Welcome: React.FC = () => {
   const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), []);
 
   const modalStyles = useMemo(() => ({ content: { borderRadius: WELCOME_RADIUS } }), []);
+  const guidePanelStyle = useMemo<React.CSSProperties>(
+    () => ({
+      height: '100%',
+      padding: 12,
+      border: `1px solid ${token.colorBorderSecondary}`,
+      borderRadius: WELCOME_RADIUS,
+      background: token.colorFillQuaternary ?? token.colorFillTertiary,
+    }),
+    [token.colorBorderSecondary, token.colorFillQuaternary, token.colorFillTertiary],
+  );
+  const guideAvatarStyle = useMemo<React.CSSProperties>(
+    () => ({
+      flex: '0 0 auto',
+      color: primaryColor,
+      background: token.colorPrimaryBg ?? token.colorFillTertiary,
+    }),
+    [primaryColor, token.colorFillTertiary, token.colorPrimaryBg],
+  );
+  const guideVideoStyle = useMemo<React.CSSProperties>(
+    () => ({
+      width: '100%',
+      aspectRatio: '16 / 9',
+      background: token.colorFillQuaternary ?? token.colorFillTertiary,
+      borderRadius: WELCOME_RADIUS,
+    }),
+    [token.colorFillQuaternary, token.colorFillTertiary],
+  );
+
+  const renderCarbonFootprintGuide = () => (
+    <>
+      <Row gutter={[16, 16]} align='stretch'>
+        <Col xs={24} xl={13} style={{ display: 'flex' }}>
+          <Card
+            title={currentGuideContent.title}
+            className={styles.welcome_card}
+            style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
+          >
+            <Space
+              direction='vertical'
+              size={20}
+              style={{
+                width: '100%',
+              }}
+            >
+              <Typography.Paragraph style={{ margin: 0, fontSize: 16, lineHeight: 1.9 }}>
+                {currentGuideContent.intro}
+              </Typography.Paragraph>
+              <Row gutter={[12, 12]}>
+                {currentGuideContent.preparationItems.map((item) => (
+                  <Col xs={24} md={12} key={item.key}>
+                    <div style={guidePanelStyle}>
+                      <Space direction='vertical' size={8}>
+                        <Typography.Text strong>{item.title}</Typography.Text>
+                        <Typography.Paragraph
+                          type='secondary'
+                          style={{ margin: 0, color: token.colorTextSecondary }}
+                        >
+                          {item.description}
+                        </Typography.Paragraph>
+                      </Space>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+              <Space wrap>
+                <Button icon={<FolderOpenOutlined />} onClick={() => history.push('/tgdata/flows')}>
+                  {currentGuideContent.actions.browsePublicData}
+                </Button>
+                <Button
+                  type='primary'
+                  icon={<UserOutlined />}
+                  onClick={() => history.push('/mydata/processes')}
+                >
+                  {currentGuideContent.actions.enterMyData}
+                </Button>
+              </Space>
+            </Space>
+          </Card>
+        </Col>
+        <Col xs={24} xl={11} style={{ display: 'flex' }}>
+          <Card
+            title={currentGuideContent.videoTitle}
+            className={styles.welcome_card}
+            style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
+          >
+            <Space direction='vertical' size={20} style={{ width: '100%' }}>
+              <video controls preload='metadata' style={guideVideoStyle}>
+                <source
+                  src='/tutorials/platform_usage_process_first_matched.mp4?v=fast130precise'
+                  type='video/mp4'
+                />
+                {currentGuideContent.videoFallback}
+              </video>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+
+      <Card
+        title={currentGuideContent.workflowTitle}
+        className={styles.welcome_card}
+        style={cardBorderRadiusStyle}
+      >
+        <Steps
+          current={-1}
+          items={currentGuideContent.teachingSteps.map((item) => ({
+            title: item.title,
+            description: item.description,
+          }))}
+        />
+      </Card>
+
+      <Card
+        title={currentGuideContent.schemaTitle}
+        className={styles.welcome_card}
+        style={cardBorderRadiusStyle}
+      >
+        <Row gutter={[12, 12]}>
+          {currentGuideContent.schemaItems.map((item) => (
+            <Col xs={24} sm={12} xl={8} key={item.key}>
+              <div style={guidePanelStyle}>
+                <Space align='start' size='middle'>
+                  <Avatar icon={schemaIconMap[item.key]} style={guideAvatarStyle} />
+                  <Space direction='vertical' size={4}>
+                    <Typography.Text strong>{item.title}</Typography.Text>
+                    <Typography.Text type='secondary'>{item.description}</Typography.Text>
+                  </Space>
+                </Space>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </Card>
+    </>
+  );
+
+  const renderOverview = () => (
+    <>
+      <Row gutter={[16, 16]} wrap>
+        {metrics.map((metric) => (
+          <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
+            <Card
+              className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
+              styles={{
+                body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
+              }}
+              style={{ ...cardBorderRadiusStyle, width: '100%' }}
+            >
+              <div className={styles.welcome_metric_content}>
+                <div className={styles.welcome_metric_header}>
+                  <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
+                    {metric.icon}
+                  </span>
+                  {metric.key === 'data5' ? (
+                    <Typography.Link
+                      strong
+                      href='#'
+                      onClick={handleOpenDataModal}
+                      style={{
+                        color: primaryColor,
+                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {metric.title}
+                    </Typography.Link>
+                  ) : (
+                    <Typography.Text
+                      strong
+                      style={{
+                        color: primaryColor,
+                        fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      }}
+                    >
+                      {metric.title}
+                    </Typography.Text>
+                  )}
+                </div>
+                <Statistic
+                  value={metric.value}
+                  formatter={formatter}
+                  valueStyle={{
+                    fontSize: '1.25rem',
+                    color: token.colorText,
+                    lineHeight: 1.1,
+                    fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
+                  }}
+                  style={{ width: '100%', textAlign: 'center' }}
+                />
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <Card
+        className={styles.welcome_card}
+        styles={{ body: { padding: 24 } }}
+        style={cardBorderRadiusStyle}
+      >
+        <Space direction='vertical' size={16} style={{ width: '100%' }}>
+          <Typography.Paragraph
+            style={{
+              margin: 0,
+              color: token.colorText,
+              fontSize: '1rem',
+              lineHeight: 1.7,
+            }}
+          >
+            {currentContent.intro}
+          </Typography.Paragraph>
+          <Space size={12} wrap>
+            <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
+              {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
+            </Button>
+            <Button onClick={handleOpenDataModal}>
+              {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
+            </Button>
+            <Button onClick={handleOpenCarbonFootprintGuide}>
+              {currentGuideContent.entryLabel}
+            </Button>
+          </Space>
+        </Space>
+      </Card>
+
+      <Row gutter={[16, 16]} align='stretch'>
+        {currentContent.sections.map((section) => (
+          <Col xs={24} md={12} key={section.key}>
+            <Card
+              className={`${styles.welcome_card} ${styles.welcome_section_card}`}
+              styles={{ body: { padding: 24 } }}
+              style={cardBorderRadiusStyle}
+            >
+              <Space direction='vertical' size={12}>
+                <div className={styles.welcome_section_header}>
+                  <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
+                    {sectionIconMap[section.key]}
+                  </span>
+                  <Typography.Text
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      lineHeight: '20px',
+                      fontSize: '1rem',
+                      margin: 0,
+                    }}
+                  >
+                    {section.heading}
+                  </Typography.Text>
+                </div>
+                <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
+                  {section.description}
+                </Typography.Paragraph>
+              </Space>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </>
+  );
 
   return (
     <PageContainer title={false} className={styles.welcome_page}>
       <Space direction='vertical' size={24} className={styles.welcome_content}>
-        <Row gutter={[16, 16]} wrap>
-          {metrics.map((metric) => (
-            <Col key={metric.key} flex='1 0 200px' style={{ display: 'flex' }}>
-              <Card
-                className={`${styles.welcome_card} ${styles.welcome_metrics_card}`}
-                styles={{
-                  body: { padding: 20, height: '100%', display: 'flex', flexDirection: 'column' },
-                }}
-                style={{ ...cardBorderRadiusStyle, width: '100%' }}
-              >
-                <div className={styles.welcome_metric_content}>
-                  <div className={styles.welcome_metric_header}>
-                    <span className={styles.welcome_metric_icon} style={{ color: primaryColor }}>
-                      {metric.icon}
-                    </span>
-                    {metric.key === 'data5' ? (
-                      <Typography.Link
-                        strong
-                        href='#'
-                        onClick={handleOpenDataModal}
-                        style={{
-                          color: primaryColor,
-                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                        }}
-                      >
-                        {metric.title}
-                      </Typography.Link>
-                    ) : (
-                      <Typography.Text
-                        strong
-                        style={{
-                          color: primaryColor,
-                          fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                        }}
-                      >
-                        {metric.title}
-                      </Typography.Text>
-                    )}
-                  </div>
-                  <Statistic
-                    value={metric.value}
-                    formatter={formatter}
-                    valueStyle={{
-                      fontSize: '1.25rem',
-                      color: token.colorText,
-                      lineHeight: 1.1,
-                      fontFamily: `'Inter', 'Helvetica Neue', Arial, sans-serif`,
-                    }}
-                    style={{ width: '100%', textAlign: 'center' }}
-                  />
-                </div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-
-        <Card
-          className={styles.welcome_card}
-          styles={{ body: { padding: 24 } }}
-          style={cardBorderRadiusStyle}
-        >
-          <Space direction='vertical' size={16} style={{ width: '100%' }}>
-            <Typography.Paragraph
-              style={{
-                margin: 0,
-                color: token.colorText,
-                fontSize: '1rem',
-                lineHeight: 1.7,
-              }}
-            >
-              {currentContent.intro}
-            </Typography.Paragraph>
-            <Space size={12} wrap>
-              <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
-                {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
-              </Button>
-              <Button onClick={handleOpenDataModal}>
-                {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
-              </Button>
-            </Space>
-          </Space>
-        </Card>
-
-        <Row gutter={[16, 16]} align='stretch'>
-          {currentContent.sections.map((section) => (
-            <Col xs={24} md={12} key={section.key}>
-              <Card
-                className={`${styles.welcome_card} ${styles.welcome_section_card}`}
-                styles={{ body: { padding: 24 } }}
-                style={cardBorderRadiusStyle}
-              >
-                <Space direction='vertical' size={12}>
-                  <div className={styles.welcome_section_header}>
-                    <span className={styles.welcome_section_icon} style={{ color: primaryColor }}>
-                      {sectionIconMap[section.key]}
-                    </span>
-                    <Typography.Text
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        lineHeight: '20px',
-                        fontSize: '1rem',
-                        margin: 0,
-                      }}
-                    >
-                      {section.heading}
-                    </Typography.Text>
-                  </div>
-                  <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>
-                    {section.description}
-                  </Typography.Paragraph>
-                </Space>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        {activeWelcomeView === 'carbonFootprintGuide'
+          ? renderCarbonFootprintGuide()
+          : renderOverview()}
       </Space>
       <Modal
         open={isDataModalOpen}
