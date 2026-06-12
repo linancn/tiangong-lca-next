@@ -9,6 +9,13 @@ import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 let mockLocale = 'en-US';
 const mockHistoryPush = jest.fn();
 let mockLocation = { pathname: '/welcome', search: '' };
+const mockFormatMessage = ({ defaultMessage, id }: any) => {
+  const localeMessages = mockLocale.startsWith('zh')
+    ? jest.requireActual('@/locales/zh-CN/pages_home').default
+    : jest.requireActual('@/locales/en-US/pages_home').default;
+
+  return localeMessages[id] ?? defaultMessage ?? id;
+};
 
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
@@ -22,13 +29,13 @@ jest.mock('react-countup', () => ({
 
 jest.mock('umi', () => ({
   __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  FormattedMessage: (props: any) => mockFormatMessage(props),
   history: {
     push: (...args: any[]) => mockHistoryPush(...args),
   },
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: (props: any) => mockFormatMessage(props),
   }),
   useLocation: () => mockLocation,
 }));

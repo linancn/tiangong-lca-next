@@ -52,211 +52,44 @@ type SchemaItemKey =
   | 'source'
   | 'contact';
 
-const carbonFootprintGuideContent: Record<
-  'en' | 'zh',
-  {
-    entryLabel: string;
-    title: string;
-    intro: string;
-    videoTitle: string;
-    videoFallback: string;
-    workflowTitle: string;
-    schemaTitle: string;
-    actions: {
-      browsePublicData: string;
-      enterMyData: string;
-    };
-    teachingSteps: Array<{ title: string; description: string }>;
-    preparationItems: Array<{ title: string; description: string }>;
-    schemaItems: Array<{ key: SchemaItemKey; title: string; description: string }>;
-  }
-> = {
-  zh: {
-    entryLabel: '数据研制指南',
-    title: '天工生命周期数据库',
-    intro:
-      '面向产品碳足迹数据报送、背景数据管理和生命周期建模。数据填报从过程开始，先记录过程边界、输入输出、数量单位和来源，再按需要选择已有流或新增产品流，最后完成验证、审核和模型串接。',
-    videoTitle: '操作演示视频',
-    videoFallback: '当前浏览器不支持视频播放。',
-    workflowTitle: '过程数据研制流程',
-    schemaTitle: '数据对象',
-    actions: {
-      browsePublicData: '浏览开放数据',
-      enterMyData: '进入我的数据',
-    },
-    teachingSteps: [
-      { title: '登录首页', description: '查看新手入口、教学视频和数据对象说明。' },
-      { title: '新建过程', description: '从我的数据进入过程，先录入单元过程基本信息。' },
-      { title: '填写基础信息', description: '补充过程名称、边界、年份、地区、来源和产品系统。' },
-      { title: '录入输入/输出', description: '记录物料、能源、排放和产品流的方向、数量和单位。' },
-      { title: '选择或新增流', description: '平台已有流直接选择；缺少的产品流再新建并关联。' },
-      { title: '验证与提交', description: '检查必填项、单位和逻辑关系，通过后提交审核。' },
-    ],
-    preparationItems: [
-      {
-        title: '收集原始数据',
-        description: '明确产品、功能单位、时间范围、地理范围和工艺边界。',
-      },
-      {
-        title: '梳理单元过程',
-        description: '把制造、运输、能源使用、废弃物处理等环节拆成可录入的单元过程。',
-      },
-      {
-        title: '核对流与单位',
-        description: '先匹配已有流；确实缺少的产品流再新增，并统一数量单位。',
-      },
-      {
-        title: '提交验证审核',
-        description: '完成过程必填项、输入输出和来源说明后，再进入验证与审核。',
-      },
-    ],
-    schemaItems: [
-      {
-        key: 'model',
-        title: '模型',
-        description: '描述产品系统的完整或部分生命周期，由多个相互连接的过程组成。',
-      },
-      {
-        key: 'process',
-        title: '过程',
-        description: '记录单个生产或处理过程的输入输出流、时间、地理和技术代表性。',
-      },
-      {
-        key: 'flow',
-        title: '流',
-        description: '定义生命周期评估中的物质、能量或废弃物，是过程和模型的连接基础。',
-      },
-      {
-        key: 'flowProperty',
-        title: '流属性',
-        description: '定义流的计量方式，例如质量、能量、体积、经济价值等。',
-      },
-      {
-        key: 'unitGroup',
-        title: '单位组',
-        description: '定义相关计量单位及其换算关系，支撑跨数据集的单位转换。',
-      },
-      {
-        key: 'source',
-        title: '来源',
-        description: '记录文献、数据库、合规系统等引用信息，支撑透明性和可追溯性。',
-      },
-      {
-        key: 'contact',
-        title: '联系人',
-        description: '记录与数据集相关的个人、工作组、组织或数据库网络联系信息。',
-      },
-    ],
-  },
-  en: {
-    entryLabel: 'Data Development Guide',
-    title: 'TianGong Life Cycle Database',
-    intro:
-      'Built for product carbon footprint reporting, background data management, and lifecycle modeling. Data entry starts with processes: record boundaries, inputs and outputs, quantities, units, and sources; choose existing flows or add product flows as needed; then complete validation, review, and model linking.',
-    videoTitle: 'Operation Demo Video',
-    videoFallback: 'Your browser does not support video playback.',
-    workflowTitle: 'Process Data Development Workflow',
-    schemaTitle: 'Data Objects',
-    actions: {
-      browsePublicData: 'Browse Open Data',
-      enterMyData: 'My Data',
-    },
-    teachingSteps: [
-      {
-        title: 'Open Home',
-        description: 'Review starter entry points, tutorial videos, and data objects.',
-      },
-      {
-        title: 'Create Process',
-        description: 'Enter My Data and start with basic unit process information.',
-      },
-      {
-        title: 'Fill Basics',
-        description: 'Add name, boundary, year, region, source, and product system.',
-      },
-      {
-        title: 'Enter Inputs/Outputs',
-        description:
-          'Record materials, energy, emissions, and product flows with direction, quantity, and unit.',
-      },
-      {
-        title: 'Select Or Add Flows',
-        description:
-          'Select existing platform flows first; add missing product flows only when needed.',
-      },
-      {
-        title: 'Validate And Submit',
-        description: 'Check required fields, units, and logic before submitting for review.',
-      },
-    ],
-    preparationItems: [
-      {
-        title: 'Collect Raw Data',
-        description:
-          'Clarify product, functional unit, time span, geography, and process boundary.',
-      },
-      {
-        title: 'Map Unit Processes',
-        description:
-          'Break manufacturing, transport, energy use, and waste treatment into enterable unit processes.',
-      },
-      {
-        title: 'Check Flows And Units',
-        description:
-          'Match existing flows first; add missing product flows only when needed and keep units consistent.',
-      },
-      {
-        title: 'Submit For Review',
-        description:
-          'Complete required process fields, inputs and outputs, and sources before validation and review.',
-      },
-    ],
-    schemaItems: [
-      {
-        key: 'model',
-        title: 'Model',
-        description:
-          'Describes a full or partial product system lifecycle made of connected processes.',
-      },
-      {
-        key: 'process',
-        title: 'Process',
-        description:
-          'Records inputs, outputs, time, geography, and technical representativeness for one production or treatment process.',
-      },
-      {
-        key: 'flow',
-        title: 'Flow',
-        description:
-          'Defines material, energy, or waste exchanged in lifecycle assessment, connecting processes and models.',
-      },
-      {
-        key: 'flowProperty',
-        title: 'Flow Property',
-        description:
-          'Defines how a flow is measured, such as mass, energy, volume, or economic value.',
-      },
-      {
-        key: 'unitGroup',
-        title: 'Unit Group',
-        description:
-          'Defines related measurement units and conversions for consistent cross-dataset unit handling.',
-      },
-      {
-        key: 'source',
-        title: 'Source',
-        description:
-          'Records literature, database, compliance, or other references for transparency and traceability.',
-      },
-      {
-        key: 'contact',
-        title: 'Contact',
-        description:
-          'Records people, working groups, organizations, or database networks related to datasets.',
-      },
-    ],
-  },
-};
+type GuideStepKey =
+  | 'openHome'
+  | 'createProcess'
+  | 'fillBasics'
+  | 'enterInputsOutputs'
+  | 'selectOrAddFlows'
+  | 'validateAndSubmit';
+type GuidePreparationKey =
+  | 'collectRawData'
+  | 'mapUnitProcesses'
+  | 'checkFlowsAndUnits'
+  | 'submitForReview';
+
+const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
+
+const guideTeachingStepKeys: GuideStepKey[] = [
+  'openHome',
+  'createProcess',
+  'fillBasics',
+  'enterInputsOutputs',
+  'selectOrAddFlows',
+  'validateAndSubmit',
+];
+const guidePreparationItemKeys: GuidePreparationKey[] = [
+  'collectRawData',
+  'mapUnitProcesses',
+  'checkFlowsAndUnits',
+  'submitForReview',
+];
+const guideSchemaItemKeys: SchemaItemKey[] = [
+  'model',
+  'process',
+  'flow',
+  'flowProperty',
+  'unitGroup',
+  'source',
+  'contact',
+];
 
 const schemaIconMap: Record<SchemaItemKey, React.ReactNode> = {
   model: <ExperimentOutlined />,
@@ -273,7 +106,7 @@ const Welcome: React.FC = () => {
   const { Meta } = Card;
   const location = useLocation();
 
-  const { locale } = useIntl();
+  const { formatMessage, locale } = useIntl();
   const lang = getLang(locale) as 'en' | 'zh';
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
   const activeViewFromLocation: WelcomeView = useMemo(() => {
@@ -542,7 +375,38 @@ const Welcome: React.FC = () => {
   };
 
   const currentContent = tidasContent[lang] ?? tidasContent.en;
-  const currentGuideContent = carbonFootprintGuideContent[lang] ?? carbonFootprintGuideContent.en;
+  const guideMessage = React.useCallback(
+    (id: string) => formatMessage({ id: `${CARBON_FOOTPRINT_GUIDE_I18N_PREFIX}.${id}` }),
+    [formatMessage],
+  );
+  const currentGuideContent = {
+    entryLabel: guideMessage('entryLabel'),
+    title: guideMessage('title'),
+    intro: guideMessage('intro'),
+    videoTitle: guideMessage('videoTitle'),
+    videoFallback: guideMessage('videoFallback'),
+    workflowTitle: guideMessage('workflowTitle'),
+    schemaTitle: guideMessage('schemaTitle'),
+    actions: {
+      browsePublicData: guideMessage('actions.browsePublicData'),
+      enterMyData: guideMessage('actions.enterMyData'),
+    },
+    teachingSteps: guideTeachingStepKeys.map((key) => ({
+      key,
+      title: guideMessage(`teachingSteps.${key}.title`),
+      description: guideMessage(`teachingSteps.${key}.description`),
+    })),
+    preparationItems: guidePreparationItemKeys.map((key) => ({
+      key,
+      title: guideMessage(`preparationItems.${key}.title`),
+      description: guideMessage(`preparationItems.${key}.description`),
+    })),
+    schemaItems: guideSchemaItemKeys.map((key) => ({
+      key,
+      title: guideMessage(`schemaItems.${key}.title`),
+      description: guideMessage(`schemaItems.${key}.description`),
+    })),
+  };
 
   const metrics = [
     {
@@ -655,7 +519,7 @@ const Welcome: React.FC = () => {
               </Typography.Paragraph>
               <Row gutter={[12, 12]}>
                 {currentGuideContent.preparationItems.map((item) => (
-                  <Col xs={24} md={12} key={item.title}>
+                  <Col xs={24} md={12} key={item.key}>
                     <div style={guidePanelStyle}>
                       <Space direction='vertical' size={8}>
                         <Typography.Text strong>{item.title}</Typography.Text>
