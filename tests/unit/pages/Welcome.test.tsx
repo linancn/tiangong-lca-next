@@ -1,8 +1,9 @@
 // @ts-nocheck
 import Welcome from '@/pages/Welcome';
 import { getLang, getLangText } from '@/services/general/util';
-import { getThumbFileUrls } from '@/services/supabase/storage';
+import { getSignedStorageFileUrl, getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
+import { fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
@@ -60,12 +61,14 @@ jest.mock('@/services/teams/api', () => ({
 
 jest.mock('@/services/supabase/storage', () => ({
   __esModule: true,
+  getSignedStorageFileUrl: jest.fn(),
   getThumbFileUrls: jest.fn(),
 }));
 
 const mockGetLang = getLang as jest.MockedFunction<any>;
 const mockGetLangText = getLangText as jest.MockedFunction<any>;
 const mockGetTeams = getTeams as jest.MockedFunction<any>;
+const mockGetSignedStorageFileUrl = getSignedStorageFileUrl as jest.MockedFunction<any>;
 const mockGetThumbFileUrls = getThumbFileUrls as jest.MockedFunction<any>;
 const originalLocation = window.location;
 
@@ -129,6 +132,9 @@ describe('Welcome page', () => {
       success: true,
       data: teamsPayload,
     });
+    mockGetSignedStorageFileUrl.mockResolvedValue(
+      'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+    );
     mockGetThumbFileUrls.mockResolvedValue([{ status: 'done', thumbUrl: 'thumb-url' }]);
   });
 
@@ -168,6 +174,21 @@ describe('Welcome page', () => {
     expect(screen.getByText('Collect Raw Data')).toBeInTheDocument();
     expect(screen.getByText('Validate And Submit')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /View Sample Data/ })).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(mockGetSignedStorageFileUrl).toHaveBeenCalledWith(
+        '../sys-files/video/platform_usage_process_first_matched.mp4',
+      ),
+    );
+    await waitFor(() =>
+      expect(document.querySelector('video source')).toHaveAttribute(
+        'src',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+      ),
+    );
+
+    expect(mockGetSignedStorageFileUrl).toHaveBeenCalledWith(
+      '../sys-files/video/platform_usage_process_first_matched.mp4',
+    );
 
     await user.click(screen.getByRole('button', { name: /Browse Open Data/ }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/tgdata/flows');
@@ -176,7 +197,7 @@ describe('Welcome page', () => {
     expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
-  it('renders the carbon footprint guide directly from the welcome view query', () => {
+  it('renders the carbon footprint guide directly from the welcome view query', async () => {
     mockLocation = { pathname: '/welcome', search: '?view=carbon-footprint' };
 
     renderWithProviders(<Welcome />);
@@ -184,6 +205,81 @@ describe('Welcome page', () => {
     expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
     expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
     expect(screen.queryByText('Unit Processes & Inventories')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(document.querySelector('video source')).toHaveAttribute(
+        'src',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+      ),
+    );
+  });
+
+  it('shows the video fallback when the signed URL is unavailable', async () => {
+    const user = userEvent.setup();
+    mockGetSignedStorageFileUrl.mockResolvedValueOnce('');
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+    expect(document.querySelector('video source')).not.toBeInTheDocument();
+  });
+
+  it('shows the video fallback when signed URL loading fails', async () => {
+    const user = userEvent.setup();
+    mockGetSignedStorageFileUrl.mockRejectedValueOnce(new Error('signed url failed'));
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+    expect(document.querySelector('video source')).not.toBeInTheDocument();
+  });
+
+  it('allows reloading the video after playback fails', async () => {
+    const user = userEvent.setup();
+    mockGetSignedStorageFileUrl
+      .mockResolvedValueOnce(
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=first',
+      )
+      .mockResolvedValueOnce(
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=retry',
+      );
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+
+    await waitFor(() =>
+      expect(document.querySelector('video source')).toHaveAttribute(
+        'src',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=first',
+      ),
+    );
+
+    fireEvent.error(document.querySelector('video source') as HTMLSourceElement);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
+
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+
+    await waitFor(() => expect(mockGetSignedStorageFileUrl).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(document.querySelector('video source')).toHaveAttribute(
+        'src',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=retry',
+      ),
+    );
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('keeps the overview active when the route location has no search string', async () => {

@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-06-11
-lastReviewedCommit: e1707b3fe2e802b95f19e7d5fad71cebbcd15f7a
+lastReviewedAt: 2026-06-12
+lastReviewedCommit: b49a780edb41433ff20597044987b885f2cbb5e0
 ---
 
 # Supabase Environment And Database Workflow
