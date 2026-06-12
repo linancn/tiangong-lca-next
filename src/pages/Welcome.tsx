@@ -13,6 +13,7 @@ import {
   NodeIndexOutlined,
   PaperClipOutlined,
   ProductOutlined,
+  ReloadOutlined,
   ShareAltOutlined,
   TeamOutlined,
   UserOutlined,
@@ -34,15 +35,18 @@ import {
 } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { getThumbFileUrls } from '@/services/supabase/storage';
+import { getSignedStorageFileUrl, getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
 import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
 const CARBON_FOOTPRINT_VIEW = 'carbon-footprint';
+const CARBON_FOOTPRINT_GUIDE_VIDEO_URI =
+  '../sys-files/video/platform_usage_process_first_matched.mp4';
 
 type WelcomeView = 'overview' | 'carbonFootprintGuide';
+type GuideVideoStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SchemaItemKey =
   | 'model'
   | 'process'
@@ -113,6 +117,10 @@ const Welcome: React.FC = () => {
     const searchParams = new URLSearchParams(location.search ?? '');
     return searchParams.get('view') === CARBON_FOOTPRINT_VIEW ? 'carbonFootprintGuide' : 'overview';
   }, [location.search]);
+  const [carbonFootprintGuideVideoUrl, setCarbonFootprintGuideVideoUrl] = useState('');
+  const [carbonFootprintGuideVideoStatus, setCarbonFootprintGuideVideoStatus] =
+    useState<GuideVideoStatus>('idle');
+  const [carbonFootprintGuideVideoReloadKey, setCarbonFootprintGuideVideoReloadKey] = useState(0);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
@@ -127,6 +135,44 @@ const Welcome: React.FC = () => {
   useEffect(() => {
     setActiveWelcomeView(activeViewFromLocation);
   }, [activeViewFromLocation]);
+
+  useEffect(() => {
+    if (activeWelcomeView !== 'carbonFootprintGuide') {
+      setCarbonFootprintGuideVideoUrl('');
+      setCarbonFootprintGuideVideoStatus('idle');
+      return undefined;
+    }
+
+    let isMounted = true;
+    setCarbonFootprintGuideVideoUrl('');
+    setCarbonFootprintGuideVideoStatus('loading');
+    getSignedStorageFileUrl(CARBON_FOOTPRINT_GUIDE_VIDEO_URI)
+      .then((url) => {
+        if (isMounted) {
+          setCarbonFootprintGuideVideoUrl(url);
+          setCarbonFootprintGuideVideoStatus(url ? 'ready' : 'error');
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCarbonFootprintGuideVideoUrl('');
+          setCarbonFootprintGuideVideoStatus('error');
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeWelcomeView, carbonFootprintGuideVideoReloadKey]);
+
+  const handleReloadCarbonFootprintGuideVideo = React.useCallback(() => {
+    setCarbonFootprintGuideVideoReloadKey((key) => key + 1);
+  }, []);
+
+  const handleCarbonFootprintGuideVideoError = React.useCallback(() => {
+    setCarbonFootprintGuideVideoUrl('');
+    setCarbonFootprintGuideVideoStatus('error');
+  }, []);
 
   const handleOpenDataModal = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>) => {
@@ -385,6 +431,10 @@ const Welcome: React.FC = () => {
     intro: guideMessage('intro'),
     videoTitle: guideMessage('videoTitle'),
     videoFallback: guideMessage('videoFallback'),
+    videoLoading: guideMessage('videoLoading'),
+    videoLoadErrorTitle: guideMessage('videoLoadErrorTitle'),
+    videoLoadErrorDescription: guideMessage('videoLoadErrorDescription'),
+    videoReload: guideMessage('videoReload'),
     workflowTitle: guideMessage('workflowTitle'),
     schemaTitle: guideMessage('schemaTitle'),
     actions: {
@@ -497,6 +547,19 @@ const Welcome: React.FC = () => {
     }),
     [token.colorFillQuaternary, token.colorFillTertiary],
   );
+  const guideVideoFallbackStyle = useMemo<React.CSSProperties>(
+    () => ({
+      ...guideVideoStyle,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      boxSizing: 'border-box',
+      color: token.colorTextSecondary,
+      textAlign: 'center',
+    }),
+    [guideVideoStyle, token.colorTextSecondary],
+  );
 
   const renderCarbonFootprintGuide = () => (
     <>
@@ -556,13 +619,49 @@ const Welcome: React.FC = () => {
             style={{ ...cardBorderRadiusStyle, width: '100%', height: '100%' }}
           >
             <Space direction='vertical' size={20} style={{ width: '100%' }}>
-              <video controls preload='metadata' style={guideVideoStyle}>
-                <source
-                  src='/tutorials/platform_usage_process_first_matched.mp4?v=fast130precise'
-                  type='video/mp4'
-                />
-                {currentGuideContent.videoFallback}
-              </video>
+              {carbonFootprintGuideVideoStatus === 'error' ? (
+                <div role='alert' style={guideVideoFallbackStyle}>
+                  <Space direction='vertical' size={10} align='center'>
+                    <Typography.Text strong>
+                      {currentGuideContent.videoLoadErrorTitle}
+                    </Typography.Text>
+                    <Typography.Text type='secondary'>
+                      {currentGuideContent.videoLoadErrorDescription}
+                    </Typography.Text>
+                    <Button
+                      aria-label={currentGuideContent.videoReload}
+                      icon={<ReloadOutlined />}
+                      onClick={handleReloadCarbonFootprintGuideVideo}
+                    >
+                      {currentGuideContent.videoReload}
+                    </Button>
+                  </Space>
+                </div>
+              ) : carbonFootprintGuideVideoStatus === 'ready' && carbonFootprintGuideVideoUrl ? (
+                <video
+                  key={carbonFootprintGuideVideoUrl}
+                  controls
+                  preload='metadata'
+                  style={guideVideoStyle}
+                  onError={handleCarbonFootprintGuideVideoError}
+                >
+                  <source
+                    src={carbonFootprintGuideVideoUrl}
+                    type='video/mp4'
+                    onError={handleCarbonFootprintGuideVideoError}
+                  />
+                  {currentGuideContent.videoFallback}
+                </video>
+              ) : (
+                <div style={guideVideoFallbackStyle}>
+                  <Space direction='vertical' size={10} align='center'>
+                    <Spin />
+                    <Typography.Text type='secondary'>
+                      {currentGuideContent.videoLoading}
+                    </Typography.Text>
+                  </Space>
+                </div>
+              )}
             </Space>
           </Card>
         </Col>

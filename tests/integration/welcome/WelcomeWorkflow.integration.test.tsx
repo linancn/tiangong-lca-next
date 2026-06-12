@@ -25,6 +25,11 @@ jest.mock('@/services/teams/api', () => ({
 }));
 
 jest.mock('@/services/supabase/storage', () => ({
+  getSignedStorageFileUrl: jest.fn(() =>
+    Promise.resolve(
+      'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4',
+    ),
+  ),
   getThumbFileUrls: jest.fn(),
 }));
 
