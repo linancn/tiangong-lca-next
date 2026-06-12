@@ -832,23 +832,19 @@ function Inspector({
 function GraphLoadState({
   dataSource,
   description,
-  loadError,
   title,
 }: {
   dataSource: GraphDataSource;
   description?: string;
-  loadError?: string;
   title?: string;
 }) {
   const isLoading = dataSource === 'loading';
-  const displayTitle = title ?? (isLoading ? '正在唤醒全量图谱' : 'Process-flow graph unavailable');
+  const displayTitle = title ?? (isLoading ? '正在唤醒全量图谱' : '暂无可用数据');
   const displayDescription =
     description ??
     (isLoading
       ? '读取 worker manifest / 解压拓扑索引 / 预热地图缓存'
-      : loadError
-        ? formatCacheError(loadError)
-        : 'Cache manifest could not be loaded');
+      : '缓存暂不可用，等待图谱缓存生成后将恢复展示');
 
   return (
     <div
@@ -862,7 +858,7 @@ function GraphLoadState({
         .join(' ')}
       role={isLoading ? 'status' : 'alert'}
     >
-      {isLoading && (
+      {isLoading ? (
         <div aria-hidden='true' className={styles.graphLoaderScene}>
           <div className={styles.graphLoaderGrid} />
           <div className={styles.graphLoaderOrbit}>
@@ -877,6 +873,23 @@ function GraphLoadState({
             <NodeIndexOutlined />
           </div>
           <div className={styles.graphLoaderBeam} />
+        </div>
+      ) : (
+        <div aria-hidden='true' className={styles.graphNoDataScene}>
+          <div className={styles.graphNoDataRadar}>
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className={styles.graphNoDataCore}>
+            <NodeIndexOutlined />
+          </div>
+          <div className={styles.graphNoDataSparks}>
+            <i />
+            <i />
+            <i />
+            <i />
+          </div>
         </div>
       )}
       <div className={styles.graphLoaderCopy}>
@@ -1432,8 +1445,8 @@ export default function ProcessFlowGraphPanel() {
 
   const handleTriggerGraphCacheJob = useCallback(() => {
     Modal.confirm({
-      title: '运行图谱缓存 worker',
-      content: '将提交全国碳过程流图谱缓存构建任务；如果已有任务在运行，将复用当前任务。',
+      title: '运行 worker',
+      content: '将提交过程-流图谱缓存构建任务；如果已有任务在运行，将复用当前任务。',
       okText: '运行',
       cancelText: '取消',
       centered: true,
@@ -1825,7 +1838,6 @@ export default function ProcessFlowGraphPanel() {
                   : 'Waiting for worker-generated world and China map cache'
                 : undefined
             }
-            loadError={mapLoadError}
             title={isGeoMapMode && data && !geoMapView ? 'Loading map layout' : undefined}
           />
         )}
