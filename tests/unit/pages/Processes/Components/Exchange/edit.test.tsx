@@ -752,6 +752,43 @@ describe('ProcessExchangeEdit', () => {
               maximum: 500,
             },
           },
+          {
+            key: 'sdk-comment-too-long-without-index',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'exchange[#0].generalComment.#text',
+            formName: ['generalComment', '#text'],
+            reasonMessage: 'Text length 600 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 600,
+              maximum: 500,
+            },
+          },
+          {
+            key: 'sdk-empty-comment-message',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'exchange[#0].generalComment.1.#text',
+            formName: ['generalComment', 1, '#text'],
+            reasonMessage: '',
+            suggestedFix: '',
+          },
+          {
+            key: 'sdk-non-string-field-name',
+            fieldKey: '0.#text',
+            fieldLabel: 'Unknown',
+            fieldPath: 'exchange[#0].0.#text',
+            formName: [0, '#text'],
+            reasonMessage: 'Text length 700 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 700,
+              maximum: 500,
+            },
+          },
         ]}
       />,
     );
@@ -763,6 +800,9 @@ describe('ProcessExchangeEdit', () => {
     await waitFor(() => {
       expect(
         screen.getByText('Current length is 1542 characters; keep this within 500 characters'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Current length is 600 characters; keep this within 500 characters'),
       ).toBeInTheDocument();
     });
     expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
