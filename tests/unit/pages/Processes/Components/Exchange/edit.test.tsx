@@ -40,6 +40,8 @@ jest.mock('umi', () => ({
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, any>) => {
       const messages: Record<string, string> = {
         'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
+        'pages.validationIssues.sdkDetail.suggestedFix.string_too_long':
+          'Current length is {actualLength} characters; keep this within {maximum} characters',
       };
       const template = messages[id] ?? defaultMessage ?? id ?? '';
 
@@ -128,7 +130,21 @@ jest.mock('@/pages/Sources/Components/select/form', () => ({
 
 jest.mock('@/components/LangTextItem/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='lang-form'>lang</div>,
+  default: ({ name, fieldErrorMessages }: any) => {
+    const { Form, Input } = require('antd');
+    const fieldName = Array.isArray(name) ? [...name, 0, '#text'] : [name, 0, '#text'];
+
+    return (
+      <div data-testid='lang-form'>
+        <Form.Item name={fieldName}>
+          <Input />
+        </Form.Item>
+        {fieldErrorMessages?.[0]?.map((message: string, index: number) => (
+          <div key={`sdk-lang-error-${index}`}>{message}</div>
+        ))}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/services/locations/api', () => ({
@@ -683,7 +699,7 @@ describe('ProcessExchangeEdit', () => {
     });
   });
 
-  it('auto opens and renders sdk field highlights for the targeted exchange issue', async () => {
+  it('auto opens and applies sdk field highlights for the targeted exchange issue', async () => {
     render(
       <ProcessExchangeEdit
         {...defaultProps}
@@ -713,11 +729,44 @@ describe('ProcessExchangeEdit', () => {
     expect(screen.queryByText(/Expected string but found undefined/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('sdk-highlight-meanAmount')).not.toBeInTheDocument();
 
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('shows sdk string length errors on localized exchange comments', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-comment-too-long',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (EN)',
+            fieldPath: 'exchange[#0].generalComment.0.#text',
+            formName: ['generalComment', 0, '#text'],
+            reasonMessage: 'Text length 1542 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 1542,
+              maximum: 500,
+            },
+          },
+        ]}
+      />,
+    );
+
     await waitFor(() => {
-      expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], {
-        focus: true,
-      });
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
     });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Current length is 1542 characters; keep this within 500 characters'),
+      ).toBeInTheDocument();
+    });
+    expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
   });
 
   it('keeps auto-open idempotent when strict-mode replays mount effects', async () => {
@@ -853,7 +902,7 @@ describe('ProcessExchangeEdit', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('skips auto-scrolling when the first sdk highlight cannot be mapped to a form field', async () => {
+  it('does not auto-scroll when sdk highlights are present', async () => {
     render(
       <ProcessExchangeEdit
         {...defaultProps}
@@ -907,7 +956,7 @@ describe('ProcessExchangeEdit', () => {
       expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
     });
 
-    expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], { focus: true });
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
     expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
     expect(
       mockProFormApi?.getFieldError([

@@ -108,6 +108,26 @@ const parseSdkFieldPathToFormName = (fieldPath?: string) => {
   return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
 };
 
+const getSdkDetailFormName = (detail?: ValidationIssueSdkDetail) => {
+  if (Array.isArray(detail?.formName) && detail.formName.length > 0) {
+    return detail.formName;
+  }
+
+  return (
+    parseSdkFieldPathToFormName(detail?.fieldPath) ??
+    (detail?.fieldKey ? [detail.fieldKey] : undefined)
+  );
+};
+
+const isLangTextSdkFieldFormName = (formName?: Array<string | number>) => {
+  const fieldName = typeof formName?.[0] === 'string' ? formName[0] : undefined;
+
+  return (
+    (fieldName === 'generalComment' || fieldName === 'functionalUnitOrOther') &&
+    formName?.[formName.length - 1] === '#text'
+  );
+};
+
 const ProcessExchangeEdit: FC<Props> = ({
   id,
   data,
@@ -149,15 +169,11 @@ const ProcessExchangeEdit: FC<Props> = ({
       sdkHighlights.reduce<
         Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
       >((accumulator, detail) => {
-        const formName =
-          (Array.isArray(detail.formName) && detail.formName.length > 0
-            ? detail.formName
-            : parseSdkFieldPathToFormName(detail.fieldPath)) ??
-          (detail.fieldKey ? [detail.fieldKey] : undefined);
+        const formName = getSdkDetailFormName(detail);
         const fieldKey = formName ? formName.map(String).join('.') : '';
         const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
-        if (!formName || !fieldKey || !messageText) {
+        if (!formName || !fieldKey || !messageText || isLangTextSdkFieldFormName(formName)) {
           return accumulator;
         }
         const messageEntry: SdkFieldMessageEntry = {
@@ -185,6 +201,38 @@ const ProcessExchangeEdit: FC<Props> = ({
         });
         return accumulator;
       }, new Map()),
+    [sdkHighlights],
+  );
+
+  const langTextSdkFieldErrors = useMemo(
+    () =>
+      sdkHighlights.reduce<Record<string, Record<number, string[]>>>((accumulator, detail) => {
+        const formName = getSdkDetailFormName(detail);
+        const fieldName = typeof formName?.[0] === 'string' ? formName[0] : undefined;
+
+        if (!formName || !isLangTextSdkFieldFormName(formName) || !fieldName) {
+          return accumulator;
+        }
+
+        const itemIndex = typeof formName[1] === 'number' ? formName[1] : 0;
+        const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
+
+        if (!messageText) {
+          return accumulator;
+        }
+
+        if (!accumulator[fieldName]) {
+          accumulator[fieldName] = {};
+        }
+        if (!accumulator[fieldName][itemIndex]) {
+          accumulator[fieldName][itemIndex] = [];
+        }
+        if (!accumulator[fieldName][itemIndex].includes(messageText)) {
+          accumulator[fieldName][itemIndex].push(messageText);
+        }
+
+        return accumulator;
+      }, {}),
     [sdkHighlights],
   );
 
@@ -327,32 +375,6 @@ const ProcessExchangeEdit: FC<Props> = ({
 
     sdkFieldMessagesRef.current = appliedEntries;
   }, [drawerVisible, showRules, sdkFieldMessages]);
-
-  useEffect(() => {
-    if (!drawerVisible || sdkHighlights.length === 0) {
-      return;
-    }
-
-    const highlightedField = sdkHighlights[0];
-    const fieldName =
-      (Array.isArray(highlightedField?.formName) && highlightedField.formName.length > 0
-        ? highlightedField.formName
-        : parseSdkFieldPathToFormName(highlightedField?.fieldPath)) ??
-      (highlightedField?.fieldKey ? [highlightedField.fieldKey] : undefined);
-    const formInstance = formRefEdit.current;
-
-    if (!fieldName || !formInstance || typeof formInstance.scrollToField !== 'function') {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      formInstance.scrollToField(fieldName, { focus: true });
-    }, 0);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [drawerVisible, fromData, sdkHighlights]);
 
   return (
     <>
@@ -849,6 +871,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                 </Divider>
                 <LangTextItemForm
                   name='generalComment'
+                  fieldErrorMessages={langTextSdkFieldErrors.generalComment}
                   label={
                     <FormattedMessage
                       id='pages.process.view.exchange.generalComment'
@@ -893,6 +916,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                     </Divider>
                     <LangTextItemForm
                       name='functionalUnitOrOther'
+                      fieldErrorMessages={langTextSdkFieldErrors.functionalUnitOrOther}
                       label={
                         <FormattedMessage
                           id='pages.process.view.exchange.functionalUnitOrOther'

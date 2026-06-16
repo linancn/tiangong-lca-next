@@ -10,6 +10,7 @@ type Props = {
   name: any;
   label: ReactNode | string;
   rules?: any[];
+  fieldErrorMessages?: Record<number, string[]>;
   setRuleErrorState?: (showError: boolean) => void;
   formRef?: any;
   listName?: string[];
@@ -19,6 +20,7 @@ const LangTextItemForm: FC<Props> = ({
   name,
   label,
   rules = [],
+  fieldErrorMessages,
   setRuleErrorState,
   formRef,
   listName,
@@ -110,6 +112,7 @@ const LangTextItemForm: FC<Props> = ({
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
               {subFields.map((subField) => {
                 const currentLang = formValues?.[subField.name]?.['@xml:lang'];
+                const fieldErrors = fieldErrorMessages?.[subField.name] ?? [];
                 const textRules = isRequired
                   ? [
                       {
@@ -186,6 +189,14 @@ const LangTextItemForm: FC<Props> = ({
                       <Form.Item
                         name={[subField.name, '#text']}
                         rules={textRules}
+                        validateStatus={fieldErrors.length > 0 ? 'error' : undefined}
+                        help={
+                          fieldErrors.length > 0
+                            ? fieldErrors.map((errorMessage, index) => (
+                                <div key={`${subField.key}-sdk-error-${index}`}>{errorMessage}</div>
+                              ))
+                            : undefined
+                        }
                         style={{ marginBottom: 0 }}
                       >
                         <TextArea rows={1} />
