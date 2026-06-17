@@ -1,12 +1,6 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
-import ContributeData from '@/components/ContributeData';
-import {
-  extractContributeDataError,
-  getContributeDataErrorMessage,
-} from '@/components/ContributeData/utils';
 import ExportData from '@/components/ExportData';
-import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -22,9 +16,9 @@ import {
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
+import { attachStateCodesToRows } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
+import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -33,10 +27,10 @@ import {
   getUnitGroupTablePgroongaSearch,
   getUnitGroupTableUuidMentionSearch,
 } from '@/services/unitgroups/api';
-import { UnitGroupImportItem, UnitGroupTable } from '@/services/unitgroups/data';
+import { UnitGroupTable } from '@/services/unitgroups/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -51,8 +45,6 @@ import {
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
 import UnitGroupCreate from './Components/create';
-import UnitGroupDelete from './Components/delete';
-import UnitGroupEdit from './Components/edit';
 import UnitGroupView from './Components/view';
 
 const { Search } = Input;
@@ -61,12 +53,11 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
-  const [importData, setImportData] = useState<UnitGroupImportItem[] | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
-  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
-  const [editId, setEditId] = useState<string>('');
-  const [editVersion, setEditVersion] = useState<string>('');
+  const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
+  const [viewId, setViewId] = useState<string>('');
+  const [viewVersion, setViewVersion] = useState<string>('');
   const { token } = theme.useToken();
   const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
@@ -76,12 +67,11 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
-  const shouldShowUnitGroupTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
+  const shouldShowUnitGroupTip = dataSource === 'my' || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -105,9 +95,9 @@ const TableList: FC = () => {
 
   useEffect(() => {
     if (dataSource === 'my' && id && version) {
-      setEditId(id);
-      setEditVersion(version);
-      setEditDrawerVisible(true);
+      setViewId(id);
+      setViewVersion(version);
+      setViewDrawerVisible(true);
     }
   }, [dataSource, id, version]);
 
@@ -115,7 +105,6 @@ const TableList: FC = () => {
     row: UnitGroupTable,
     listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
   ) => {
-    const actionDisabled = isDataUnderReview(row.stateCode);
     if (dataSource === 'my') {
       return [
         <ResponsiveDataListActions
@@ -126,48 +115,6 @@ const TableList: FC = () => {
               key: 'export',
               name: <ExportData tableName='unitgroups' id={row.id} version={row.version} />,
             },
-            {
-              key: 'copy',
-              name: (
-                <UnitGroupCreate
-                  disabled={!isSystemAdmin}
-                  actionType='copy'
-                  id={row.id}
-                  version={row.version}
-                  lang={lang}
-                  actionRef={listActionRef}
-                />
-              ),
-            },
-            {
-              key: 'contribute',
-              name: (
-                <ContributeData
-                  onOk={async () => {
-                    const contributeResult = await contributeSource(
-                      'unitgroups',
-                      row.id,
-                      row.version,
-                    );
-                    const contributeError = extractContributeDataError(contributeResult);
-
-                    if (contributeError) {
-                      message.error(getContributeDataErrorMessage(intl, contributeError));
-                      console.log(contributeError);
-                    } else {
-                      message.success(
-                        intl.formatMessage({
-                          id: 'component.contributeData.success',
-                          defaultMessage: 'Contribute successfully',
-                        }),
-                      );
-                      listActionRef.current?.reload();
-                    }
-                  }}
-                  disabled={!!row.teamId}
-                />
-              ),
-            },
           ]}
         >
           <UnitGroupView
@@ -176,23 +123,6 @@ const TableList: FC = () => {
             id={row.id}
             version={row.version}
             buttonType={'icon'}
-          />
-          <UnitGroupEdit
-            disabled={actionDisabled}
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            lang={lang}
-            actionRef={listActionRef}
-            setViewDrawerVisible={() => {}}
-          />
-          <UnitGroupDelete
-            disabled={actionDisabled}
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            actionRef={listActionRef}
-            setViewDrawerVisible={() => {}}
           />
         </ResponsiveDataListActions>,
       ];
@@ -293,21 +223,25 @@ const TableList: FC = () => {
                 state_code
               `}
               id={row.id}
-              addVersionComponent={({ newVersion }) => (
-                <UnitGroupCreate
-                  newVersion={newVersion}
-                  disabled={!isSystemAdmin}
-                  actionType='createVersion'
-                  id={row.id}
-                  version={row.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-              )}
+              addVersionComponent={
+                dataSource === 'my'
+                  ? undefined
+                  : ({ newVersion }) => (
+                      <UnitGroupCreate
+                        newVersion={newVersion}
+                        disabled={!isSystemAdmin}
+                        actionType='createVersion'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    )
+              }
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderUnitGroupActions(versionRow as UnitGroupTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
             ></AllVersionsList>
           </Space>
         );
@@ -328,7 +262,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<UnitGroupTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
       ),
       title: (
         <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
@@ -358,10 +292,6 @@ const TableList: FC = () => {
     actionRef.current?.reload();
   };
 
-  const handleImportData = (jsonData: UnitGroupImportItem[]) => {
-    setImportData(jsonData);
-  };
-
   return (
     <PageContainer
       header={{
@@ -373,7 +303,6 @@ const TableList: FC = () => {
         <Row {...responsiveSearchRowProps}>
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
-              disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
               placeholder={intl.formatMessage({
                 id: referenceLookup
@@ -387,7 +316,6 @@ const TableList: FC = () => {
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               checked={referenceLookup}
-              disabled={dataSource === 'my' && !isSystemAdmin}
               onChange={(e) => setReferenceLookup(e.target.checked)}
             >
               <FormattedMessage
@@ -438,9 +366,8 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            const filters = [
+            return [
               <TableFilter
-                disabled={!isSystemAdmin}
                 key={2}
                 width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
@@ -449,18 +376,6 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
-            ];
-            return [
-              ...filters,
-              <UnitGroupCreate
-                disabled={!isSystemAdmin}
-                importData={importData}
-                onClose={() => setImportData(null)}
-                key={0}
-                lang={lang}
-                actionRef={actionRef}
-              />,
-              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -472,13 +387,6 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (dataSource === 'my' && !isSystemAdmin) {
-            return {
-              data: [],
-              success: true,
-              total: 0,
-            };
-          }
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
           if (referenceLookup) {
@@ -528,17 +436,16 @@ const TableList: FC = () => {
         columns={unitGroupColumns}
       ></ProTable>
 
-      {editDrawerVisible && editId && editVersion && (
-        <UnitGroupEdit
-          id={editId}
-          version={editVersion}
+      {viewDrawerVisible && viewId && viewVersion && (
+        <UnitGroupView
+          id={viewId}
+          version={viewVersion}
           buttonType={'icon'}
           lang={lang}
           actionRef={actionRef}
-          setViewDrawerVisible={setEditDrawerVisible}
           autoOpen={true}
-          autoCheckRequired={required}
-        ></UnitGroupEdit>
+          onDrawerClose={() => setViewDrawerVisible(false)}
+        ></UnitGroupView>
       )}
     </PageContainer>
   );
