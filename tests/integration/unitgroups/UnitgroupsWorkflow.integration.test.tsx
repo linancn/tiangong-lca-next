@@ -1,23 +1,18 @@
 /**
- * Unitgroups CRUD + unit management workflow integration test.
+ * Unitgroups read-only workflow integration test.
  * Covers src/pages/Unitgroups/index.tsx with focus on:
  * - Initial table load via getUnitGroupTableAll.
  * - Search behaviour delegating to getUnitGroupTablePgroongaSearch.
- * - Create drawer flow calling createUnitGroup and reloading the table.
- * - Edit drawer flow calling getUnitGroupDetail + updateUnitGroup.
- * - Delete confirmation invoking deleteUnitGroup and refreshing data.
+ * - My Data unit groups expose existing rows without create/edit/delete controls.
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
  * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch
- * - getUnitGroupDetail, createUnitGroup, updateUnitGroup, deleteUnitGroup
  * Ancillary mocks:
  * - getRoleByUserId (ensures admin access), getTeamById, contributeSource
- * - Minimal UnitGroupForm implementation to exercise unit add/update callbacks
  */
 
 import UnitgroupsPage from '@/pages/Unitgroups';
-import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 
@@ -283,15 +278,9 @@ jest.mock('@ant-design/pro-components', () =>
   require('@/tests/mocks/proComponents').createProComponentsMock(),
 );
 
-const { message } = jest.requireMock('antd');
-const {
-  getUnitGroupTableAll,
-  getUnitGroupTablePgroongaSearch,
-  createUnitGroup,
-  updateUnitGroup,
-  deleteUnitGroup,
-  getUnitGroupDetail,
-} = jest.requireMock('@/services/unitgroups/api');
+const { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } = jest.requireMock(
+  '@/services/unitgroups/api',
+);
 const { genUnitGroupFromData: mockGenUnitGroupFromData } = jest.requireMock(
   '@/services/unitgroups/util',
 );
@@ -328,24 +317,6 @@ describe('Unitgroups Workflow Integration', () => {
       success: true,
       total: 1,
     });
-    createUnitGroup.mockResolvedValue({
-      data: [{ id: 'generated-unit-group-id' }],
-      error: null,
-    });
-    updateUnitGroup.mockResolvedValue({
-      data: [{ rule_verification: true }],
-      error: null,
-    });
-    deleteUnitGroup.mockResolvedValue({ status: 204 });
-    getUnitGroupDetail.mockResolvedValue({
-      data: {
-        json: {
-          unitGroupDataSet: {
-            unitGroupInformation: {},
-          },
-        },
-      },
-    });
     mockGenUnitGroupFromData.mockReturnValue({
       id: 'unitgroup-1',
       unitGroupInformation: {
@@ -367,20 +338,13 @@ describe('Unitgroups Workflow Integration', () => {
     });
   });
 
-  it('allows an admin to manage unit groups and units', async () => {
+  it('renders my-data unit groups read-only while preserving search and filters', async () => {
     const user = userEvent.setup();
 
     renderWithProviders(<UnitgroupsPage />);
 
     await waitFor(() => {
       expect(screen.getByLabelText('state-filter')).not.toBeDisabled();
-    });
-    const { proComponentsMocks } = require('@/tests/mocks/proComponents');
-    await waitFor(() => {
-      expect(proComponentsMocks.lastProTableAction).not.toBeNull();
-    });
-    await act(async () => {
-      await proComponentsMocks.lastProTableAction?.reload();
     });
 
     await waitFor(() => {
@@ -404,93 +368,26 @@ describe('Unitgroups Workflow Integration', () => {
     });
 
     const toolbar = screen.getByTestId('pro-table-toolbar');
-    await user.click(within(toolbar).getByRole('button', { name: /create/i }));
-
-    const createDrawer = await screen.findByRole('dialog', { name: /create/i });
-    const nameInput = within(createDrawer).getByLabelText('Unit group name');
-    await user.clear(nameInput);
-    await user.type(nameInput, 'Low voltage electricity');
-
-    await user.click(within(createDrawer).getByRole('button', { name: 'Add Unit' }));
-
-    const searchCallsBeforeCreate = getUnitGroupTablePgroongaSearch.mock.calls.length;
-    await user.click(within(createDrawer).getByRole('button', { name: /save/i }));
-
-    await waitFor(() => {
-      expect(createUnitGroup).toHaveBeenCalled();
-    });
-    const createCall = createUnitGroup.mock.calls.at(-1);
-    expect(createCall?.[0]).toBe('generated-unit-group-id');
-    const createdUnits = createCall?.[1]?.units?.unit ?? [];
-    expect(createdUnits).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          '@dataSetInternalID': '0',
-          name: 'Unit 1',
-          quantitativeReference: true,
-        }),
-      ]),
-    );
-
-    expect(message.success).toHaveBeenCalledWith('Created successfully!');
-    await waitFor(() => {
-      expect(getUnitGroupTablePgroongaSearch.mock.calls.length).toBeGreaterThan(
-        searchCallsBeforeCreate,
-      );
-    });
+    expect(within(toolbar).queryByRole('button', { name: /create/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute/i })).not.toBeInTheDocument();
 
     const dataRow = screen.getByText('Heat units').closest('tr') as HTMLElement;
-    const editButton = within(dataRow).getByRole('button', { name: /edit/i });
-    await user.click(editButton);
+    expect(within(dataRow).getByRole('button', { name: 'view' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
+    expect(within(dataRow).queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(within(dataRow).queryByRole('button', { name: /delete/i })).not.toBeInTheDocument();
 
+    await user.selectOptions(screen.getByLabelText('state-filter'), '100');
     await waitFor(() => {
-      expect(getUnitGroupDetail).toHaveBeenCalledWith('unitgroup-search', '1.0');
-    });
-
-    const editDrawer = await screen.findByRole('dialog', { name: /edit/i });
-    const editInput = within(editDrawer).getByLabelText('Unit group name');
-    await user.clear(editInput);
-    await user.type(editInput, 'Updated electricity unit group');
-
-    const searchCallsBeforeEdit = getUnitGroupTablePgroongaSearch.mock.calls.length;
-    await user.click(within(editDrawer).getByRole('button', { name: /save/i }));
-
-    await waitFor(() => {
-      expect(updateUnitGroup).toHaveBeenCalledWith(
-        'unitgroup-search',
-        '1.0',
-        expect.objectContaining({
-          unitGroupName: 'Updated electricity unit group',
-          units: expect.objectContaining({
-            unit: expect.any(Array),
-          }),
-        }),
-      );
-    });
-
-    expect(message.success).toHaveBeenCalledWith('Saved successfully!');
-    await waitFor(() => {
-      expect(getUnitGroupTablePgroongaSearch.mock.calls.length).toBeGreaterThan(
-        searchCallsBeforeEdit,
-      );
-    });
-
-    const deleteButton = within(dataRow).getByRole('button', { name: /delete/i });
-    await user.click(deleteButton);
-
-    const deleteModal = await screen.findByRole('dialog', { name: /delete/i });
-    const searchCallsBeforeDelete = getUnitGroupTablePgroongaSearch.mock.calls.length;
-    await user.click(within(deleteModal).getByRole('button', { name: /confirm/i }));
-
-    await waitFor(() => {
-      expect(deleteUnitGroup).toHaveBeenCalledWith('unitgroup-search', '1.0');
-    });
-
-    expect(message.success).toHaveBeenCalledWith('Selected record has been deleted.');
-
-    await waitFor(() => {
-      expect(getUnitGroupTablePgroongaSearch.mock.calls.length).toBeGreaterThan(
-        searchCallsBeforeDelete,
+      expect(getUnitGroupTablePgroongaSearch).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'heat',
+        {},
+        '100',
+        '',
       );
     });
   });

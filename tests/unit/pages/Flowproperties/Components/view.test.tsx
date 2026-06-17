@@ -213,6 +213,30 @@ describe('FlowpropertyView', () => {
     expect(screen.getByText('1.0')).toBeInTheDocument();
   });
 
+  it('opens automatically without rendering a trigger and calls the close callback', async () => {
+    const onDrawerClose = jest.fn();
+
+    renderWithProviders(
+      <FlowpropertyView
+        id='fp-auto'
+        version='3.0'
+        lang='en'
+        buttonType='icon'
+        autoOpen
+        onDrawerClose={onDrawerClose}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-auto', '3.0'));
+    expect(screen.queryByText('profile-icon')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /View Flow property/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
+
+    expect(onDrawerClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog', { name: /View Flow property/i })).not.toBeInTheDocument();
+  });
+
   it('opens from the text trigger and closes through both close actions', async () => {
     renderWithProviders(<FlowpropertyView id='fp-2' version='2.0' lang='en' buttonType='text' />);
 
