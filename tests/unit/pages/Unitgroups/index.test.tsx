@@ -647,6 +647,13 @@ describe('UnitgroupsPage', () => {
         ]),
       ),
     );
+
+    await userEvent.click(screen.getByRole('button', { name: /unitgroup-view-close/i }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: /unitgroup-view-close/i }),
+      ).not.toBeInTheDocument(),
+    );
   });
 
   it('does not render contribute actions for my-data rows', async () => {

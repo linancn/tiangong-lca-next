@@ -383,7 +383,7 @@ describe('under review list actions', () => {
     );
   });
 
-  it('disables unit group edit and delete buttons for rows under review', async () => {
+  it('does not render unit group edit and delete buttons for rows under review', async () => {
     mockLocation = {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
@@ -418,8 +418,8 @@ describe('under review list actions', () => {
         ]),
       ),
     );
-    expect(screen.getByTestId('unitgroup-edit')).toBeDisabled();
-    expect(screen.getByTestId('unitgroup-delete')).toBeDisabled();
+    expect(screen.queryByTestId('unitgroup-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('unitgroup-delete')).not.toBeInTheDocument();
   });
 
   it('disables process edit and delete buttons for process rows under review', async () => {

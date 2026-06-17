@@ -675,6 +675,26 @@ describe('AllVersionsList Component', () => {
     expect(mockAddVersionComponent).toHaveBeenCalled();
   });
 
+  it('should render an empty toolbar when no add version component is provided', async () => {
+    const propsWithoutAddVersion = Object.fromEntries(
+      Object.entries(defaultProps).filter(([key]) => key !== 'addVersionComponent'),
+    ) as Omit<typeof defaultProps, 'addVersionComponent'>;
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...propsWithoutAddVersion} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalled();
+    });
+    expect(screen.queryByTestId('children')).not.toBeInTheDocument();
+    expect(mockAddVersionComponent).not.toHaveBeenCalled();
+  });
+
   it('should place create-version popups in the document body', () => {
     expect(getCreateVersionPopupContainer()).toBe(document.body);
   });
