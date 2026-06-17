@@ -18,7 +18,7 @@ import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions } from './optiondata';
 import FlowpropertiesSelectDescription from './select/description';
@@ -28,6 +28,8 @@ type Props = {
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   buttonType: string;
   lang: string;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -35,7 +37,14 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
+const FlowpropertyView: FC<Props> = ({
+  id,
+  version,
+  buttonType,
+  lang,
+  autoOpen = false,
+  onDrawerClose,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<FlowPropertyDataSetObjectKeys>(
     'flowPropertiesInformation',
@@ -315,27 +324,39 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
     ),
   };
 
-  const onView = () => {
+  const onView = useCallback(() => {
     setDrawerVisible(true);
     setSpinning(true);
     getFlowpropertyDetail(id, version).then(async (result: FlowpropertyDetailResponse) => {
       setInitData(genFlowpropertyFromData(result.data?.json?.flowPropertyDataSet ?? {}));
       setSpinning(false);
     });
+  }, [id, version]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      onView();
+    }
+  }, [autoOpen, id, onView, version]);
+
+  const handleClose = () => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
   };
 
   return (
     <>
       {/* <Button shape="circle" icon={<ProfileOutlined />} size="small" onClick={onView} /> */}
-      {buttonType === 'icon' ? (
-        <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
-          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onView}>
-          <FormattedMessage id='pages.button.view' defaultMessage='View' />
-        </Button>
-      )}
+      {!autoOpen &&
+        (buttonType === 'icon' ? (
+          <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
+            <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
+          </Tooltip>
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id='pages.button.view' defaultMessage='View' />
+          </Button>
+        ))}
 
       <Drawer
         getContainer={() => document.body}
@@ -347,16 +368,10 @@ const FlowpropertyView: FC<Props> = ({ id, version, buttonType, lang }) => {
         }
         width='90%'
         closable={false}
-        extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => setDrawerVisible(false)}
-          />
-        }
+        extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={handleClose} />}
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
+        onClose={handleClose}
       >
         <Spin spinning={spinning}>
           <Card

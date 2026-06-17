@@ -3,37 +3,25 @@ import {
   getFlowpropertyTablePgroongaSearch,
   getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
-import { FlowpropertyImportData, FlowpropertyTable } from '@/services/flowproperties/data';
-import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
+import { FlowpropertyTable } from '@/services/flowproperties/data';
+import { attachStateCodesToRows } from '@/services/general/api';
 import { ListPagination } from '@/services/general/data';
-import {
-  getDataSource,
-  getLang,
-  getLangText,
-  getUnitData,
-  isDataUnderReview,
-} from '@/services/general/util';
+import { getDataSource, getLang, getLangText, getUnitData } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { Card, Checkbox, Col, Input, Row, Space, Tooltip, message, theme } from 'antd';
+import { Card, Checkbox, Col, Input, Row, Space, Tooltip, theme } from 'antd';
 import type { FC, MutableRefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl, useLocation } from 'umi';
 
 import AllVersionsList from '@/components/AllVersions';
-import ContributeData from '@/components/ContributeData';
-import {
-  extractContributeDataError,
-  getContributeDataErrorMessage,
-} from '@/components/ContributeData/utils';
 import { getTeamById } from '@/services/teams/api';
 import { SearchProps } from 'antd/es/input/Search';
 // import ReferenceUnit from '../Unitgroups/Components/Unit/reference';
 import { toSuperscript } from '@/components/AlignedNumber';
 import ExportData from '@/components/ExportData';
-import ImportData from '@/components/ImportData';
 import {
   DATA_LIST_COLUMN_RESPONSIVE,
   ResponsiveDataListActions,
@@ -59,8 +47,6 @@ import {
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
 import FlowpropertiesCreate from './Components/create';
-import FlowpropertiesDelete from './Components/delete';
-import FlowpropertiesEdit from './Components/edit';
 import FlowpropertyView from './Components/view';
 
 const { Search } = Input;
@@ -69,12 +55,11 @@ const TableList: FC = () => {
   const [keyWord, setKeyWord] = useState<string>('');
   const [, setStateCode] = useState<string | number>('all');
   const [team, setTeam] = useState<TeamTable | null>(null);
-  const [importData, setImportData] = useState<FlowpropertyImportData | null>(null);
   const [referenceLookup, setReferenceLookup] = useState<boolean>(false);
   const [isSystemAdmin, setIsSystemAdmin] = useState<boolean>(false);
-  const [editDrawerVisible, setEditDrawerVisible] = useState<boolean>(false);
-  const [editId, setEditId] = useState<string>('');
-  const [editVersion, setEditVersion] = useState<string>('');
+  const [viewDrawerVisible, setViewDrawerVisible] = useState<boolean>(false);
+  const [viewId, setViewId] = useState<string>('');
+  const [viewVersion, setViewVersion] = useState<string>('');
   const isMobileDataList = useResponsiveDataListMobile();
   const location = useLocation();
   const dataSource = getDataSource(location.pathname);
@@ -84,12 +69,11 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
 
   const intl = useIntl();
 
   const lang = getLang(intl.locale);
-  const shouldShowFlowpropertyTip = (dataSource === 'my' && !isSystemAdmin) || dataSource === 'te';
+  const shouldShowFlowpropertyTip = dataSource === 'my' || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef<string>('');
@@ -129,7 +113,6 @@ const TableList: FC = () => {
     row: FlowpropertyTable,
     listActionRef: MutableRefObject<ActionType | undefined> = actionRef,
   ) => {
-    const actionDisabled = isDataUnderReview(row.stateCode);
     if (dataSource === 'my') {
       return [
         <ResponsiveDataListActions
@@ -140,48 +123,6 @@ const TableList: FC = () => {
               key: 'export',
               name: <ExportData tableName='flowproperties' id={row.id} version={row.version} />,
             },
-            {
-              key: 'copy',
-              name: (
-                <FlowpropertiesCreate
-                  disabled={!isSystemAdmin}
-                  actionType='copy'
-                  id={row.id}
-                  version={row.version}
-                  actionRef={listActionRef}
-                  lang={lang}
-                />
-              ),
-            },
-            {
-              key: 'contribute',
-              name: (
-                <ContributeData
-                  onOk={async () => {
-                    const contributeResult = await contributeSource(
-                      'flowproperties',
-                      row.id,
-                      row.version,
-                    );
-                    const contributeError = extractContributeDataError(contributeResult);
-
-                    if (contributeError) {
-                      message.error(getContributeDataErrorMessage(intl, contributeError));
-                      console.log(contributeError);
-                    } else {
-                      message.success(
-                        intl.formatMessage({
-                          id: 'component.contributeData.success',
-                          defaultMessage: 'Contribute successfully',
-                        }),
-                      );
-                      listActionRef.current?.reload();
-                    }
-                  }}
-                  disabled={!!row.teamId}
-                />
-              ),
-            },
           ]}
         >
           <FlowpropertyView
@@ -190,22 +131,6 @@ const TableList: FC = () => {
             buttonType={'icon'}
             id={row.id}
             version={row.version}
-          />
-          <FlowpropertiesEdit
-            disabled={actionDisabled}
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            actionRef={listActionRef}
-            lang={lang}
-          />
-          <FlowpropertiesDelete
-            disabled={actionDisabled}
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            actionRef={listActionRef}
-            setViewDrawerVisible={() => {}}
           />
         </ResponsiveDataListActions>,
       ];
@@ -235,9 +160,9 @@ const TableList: FC = () => {
 
   useEffect(() => {
     if (dataSource === 'my' && id && version) {
-      setEditId(id);
-      setEditVersion(version);
-      setEditDrawerVisible(true);
+      setViewId(id);
+      setViewVersion(version);
+      setViewDrawerVisible(true);
     }
   }, [dataSource, id, version]);
   const flowpropertiesColumns: ProColumns<FlowpropertyTable>[] = [
@@ -319,21 +244,25 @@ const TableList: FC = () => {
                   state_code
               `}
               id={row.id}
-              addVersionComponent={({ newVersion }) => (
-                <FlowpropertiesCreate
-                  newVersion={newVersion}
-                  disabled={!isSystemAdmin}
-                  actionType='createVersion'
-                  id={row.id}
-                  version={row.version}
-                  lang={lang}
-                  actionRef={actionRef}
-                />
-              )}
+              addVersionComponent={
+                dataSource === 'my'
+                  ? undefined
+                  : ({ newVersion }) => (
+                      <FlowpropertiesCreate
+                        newVersion={newVersion}
+                        disabled={!isSystemAdmin}
+                        actionType='createVersion'
+                        id={row.id}
+                        version={row.version}
+                        lang={lang}
+                        actionRef={actionRef}
+                      />
+                    )
+              }
               operationRender={(versionRow, { actionRef: allVersionsActionRef }) =>
                 renderFlowpropertyActions(versionRow as FlowpropertyTable, allVersionsActionRef)
               }
-              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 216 : 184}
+              operationColumnWidth={isMobileDataList ? 88 : dataSource === 'my' ? 104 : 184}
             ></AllVersionsList>
           </Space>
         );
@@ -349,7 +278,7 @@ const TableList: FC = () => {
     },
     {
       ...dataListActionColumn<FlowpropertyTable>(
-        isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152,
+        isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
       ),
       title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
       dataIndex: 'option',
@@ -369,12 +298,6 @@ const TableList: FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (dataSource === 'my' && isSystemAdmin) {
-      actionRef.current?.reload();
-    }
-  }, [dataSource, isSystemAdmin]);
-
   const onSearch: SearchProps['onSearch'] = (value) => {
     keyWordRef.current = value;
     setKeyWord(value);
@@ -383,9 +306,6 @@ const TableList: FC = () => {
       showInvalidReferenceLookupUuidMessage(intl);
     }
     actionRef.current?.reload();
-  };
-  const handleImportData = (jsonData: FlowpropertyImportData) => {
-    setImportData(jsonData);
   };
   return (
     <PageContainer
@@ -398,7 +318,6 @@ const TableList: FC = () => {
         <Row {...responsiveSearchRowProps}>
           <Col {...responsiveSearchPrimaryColProps}>
             <Search
-              disabled={dataSource === 'my' && !isSystemAdmin}
               size={'large'}
               placeholder={intl.formatMessage({
                 id: referenceLookup
@@ -412,7 +331,6 @@ const TableList: FC = () => {
           <Col {...responsiveSearchExtraColProps}>
             <Checkbox
               checked={referenceLookup}
-              disabled={dataSource === 'my' && !isSystemAdmin}
               onChange={(e) => setReferenceLookup(e.target.checked)}
             >
               <FormattedMessage
@@ -463,9 +381,8 @@ const TableList: FC = () => {
         }}
         toolBarRender={() => {
           if (dataSource === 'my') {
-            const filters = [
+            return [
               <TableFilter
-                disabled={!isSystemAdmin}
                 key={2}
                 width={isMobileDataList ? 120 : 140}
                 onChange={(val) => {
@@ -474,18 +391,6 @@ const TableList: FC = () => {
                   actionRef.current?.reload();
                 }}
               />,
-            ];
-            return [
-              ...filters,
-              <FlowpropertiesCreate
-                disabled={!isSystemAdmin}
-                importData={importData}
-                onClose={() => setImportData(null)}
-                lang={lang}
-                key={0}
-                actionRef={actionRef}
-              />,
-              <ImportData disabled={!isSystemAdmin} onJsonData={handleImportData} key={1} />,
             ];
           }
           return [];
@@ -497,13 +402,6 @@ const TableList: FC = () => {
           },
           sort,
         ) => {
-          if (dataSource === 'my' && !isSystemAdmin) {
-            return {
-              data: [],
-              success: true,
-              total: 0,
-            };
-          }
           const currentKeyWord = keyWordRef.current || keyWord;
           const currentStateCode = stateCodeRef.current;
           if (referenceLookup) {
@@ -560,16 +458,15 @@ const TableList: FC = () => {
         columns={flowpropertiesColumns}
       />
 
-      {editDrawerVisible && editId && editVersion && (
-        <FlowpropertiesEdit
-          id={editId}
-          version={editVersion}
+      {viewDrawerVisible && viewId && viewVersion && (
+        <FlowpropertyView
+          id={viewId}
+          version={viewVersion}
           buttonType={'icon'}
           actionRef={actionRef}
           lang={lang}
           autoOpen={true}
-          autoCheckRequired={required}
-          onDrawerClose={() => setEditDrawerVisible(false)}
+          onDrawerClose={() => setViewDrawerVisible(false)}
         />
       )}
     </PageContainer>
