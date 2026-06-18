@@ -42,6 +42,8 @@ jest.mock('umi', () => ({
         'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
         'pages.validationIssues.sdkDetail.suggestedFix.string_too_long':
           'Current length is {actualLength} characters; keep this within {maximum} characters',
+        'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
+          'Chinese text must include at least one Chinese character',
       };
       const template = messages[id] ?? defaultMessage ?? id ?? '';
 
@@ -133,15 +135,18 @@ jest.mock('@/components/LangTextItem/form', () => ({
   default: ({ name, fieldErrorMessages }: any) => {
     const { Form, Input } = require('antd');
     const fieldName = Array.isArray(name) ? [...name, 0, '#text'] : [name, 0, '#text'];
+    const fieldErrorEntries = Object.entries(fieldErrorMessages ?? {}) as Array<[string, string[]]>;
 
     return (
       <div data-testid='lang-form'>
         <Form.Item name={fieldName}>
           <Input />
         </Form.Item>
-        {fieldErrorMessages?.[0]?.map((message: string, index: number) => (
-          <div key={`sdk-lang-error-${index}`}>{message}</div>
-        ))}
+        {fieldErrorEntries.flatMap(([rowIndex, messages]) =>
+          messages.map((message: string, index: number) => (
+            <div key={`sdk-lang-error-${rowIndex}-${index}`}>{message}</div>
+          )),
+        )}
       </div>
     );
   },
@@ -806,6 +811,57 @@ describe('ProcessExchangeEdit', () => {
       ).toBeInTheDocument();
     });
     expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('maps raw tidas localized exchange comment paths onto drawer comment rows', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        id='1'
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-raw-tidas-zh-comment-path',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'processDataSet.exchanges.exchange.1.generalComment.1.#text',
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+          {
+            key: 'sdk-raw-tidas-zh-comment-form-name',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'exchange[#1].generalComment.1.#text',
+            formName: ['processDataSet', 'exchanges', 'exchange', 1, 'generalComment', 1, '#text'],
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+          {
+            key: 'sdk-anchored-exchange-comment-form-name',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'exchange[#1].generalComment.1.#text',
+            formName: ['exchange[#1]', 'generalComment', 1, '#text'],
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getAllByText('Chinese text must include at least one Chinese character'),
+    ).toHaveLength(1);
+    expect(mockProFormApi?.getFieldError(['generalComment', 1, '#text'])).toEqual([]);
     expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
   });
 

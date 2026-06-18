@@ -93,24 +93,57 @@ const normalizeQuantitativeReferenceSelection = (
   }));
 };
 
+const normalizeSdkFormNameSegments = (segments: Array<string | number>) =>
+  segments.map((segment) =>
+    typeof segment === 'string' && /^\d+$/.test(segment) ? Number(segment) : segment,
+  );
+
+const normalizeExchangeSdkFormName = (formName?: Array<string | number>) => {
+  if (!formName || formName.length === 0) {
+    return undefined;
+  }
+
+  const normalizedFormName = normalizeSdkFormNameSegments(formName);
+  const anchoredExchangeSegment = normalizedFormName[0];
+
+  if (
+    typeof anchoredExchangeSegment === 'string' &&
+    /^exchange(?:\[#?.+?\]|\[\d+\])$/.test(anchoredExchangeSegment)
+  ) {
+    return normalizedFormName.slice(1);
+  }
+
+  const exchangePathIndex = normalizedFormName.findIndex((segment) => segment === 'exchange');
+  if (exchangePathIndex >= 0 && normalizedFormName[exchangePathIndex - 1] === 'exchanges') {
+    return normalizedFormName.slice(exchangePathIndex + 2);
+  }
+
+  return normalizedFormName;
+};
+
 const parseSdkFieldPathToFormName = (fieldPath?: string) => {
   if (!fieldPath) {
     return undefined;
   }
 
-  const normalizedPath = fieldPath.replace(/^exchange\[#.+?\]\.?/, '');
+  const normalizedPath = fieldPath
+    .replace(/^processDataSet\.exchanges\.exchange\.\d+\.?/, '')
+    .replace(/^exchanges\.exchange\.\d+\.?/, '')
+    .replace(/^exchange(?:\[#?.+?\]|\[\d+\])\.?/, '');
   const segments = normalizedPath.split('.').filter(Boolean);
 
   if (segments.length === 0) {
     return undefined;
   }
 
-  return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
+  return normalizeExchangeSdkFormName(segments);
 };
 
 const getSdkDetailFormName = (detail?: ValidationIssueSdkDetail) => {
-  if (Array.isArray(detail?.formName) && detail.formName.length > 0) {
-    return detail.formName;
+  const normalizedFormName = normalizeExchangeSdkFormName(detail?.formName);
+
+  if (normalizedFormName) {
+    return normalizedFormName;
   }
 
   return (
