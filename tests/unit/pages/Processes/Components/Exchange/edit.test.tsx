@@ -998,6 +998,51 @@ describe('ProcessExchangeEdit', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('renders sdk version errors on exchange selector version fields', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-flow-version-required',
+            fieldKey: '@version',
+            fieldLabel: 'Version',
+            fieldPath: 'exchange[#0].referenceToFlowDataSet.@version',
+            formName: ['referenceToFlowDataSet', '@version'],
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+          {
+            key: 'sdk-source-version-required',
+            fieldKey: '@version',
+            fieldLabel: 'Version',
+            fieldPath: 'exchange[#0].referencesToDataSource.referenceToDataSource.0.@version',
+            formName: ['referencesToDataSource', 'referenceToDataSource', 0, '@version'],
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(mockProFormApi?.getFieldError(['referenceToFlowDataSet', '@version'])).toEqual([
+      'Fill in this field',
+    ]);
+    expect(
+      mockProFormApi?.getFieldError([
+        'referencesToDataSource',
+        'referenceToDataSource',
+        0,
+        '@version',
+      ]),
+    ).toEqual(['Fill in this field']);
+  });
+
   it('does not auto-scroll when sdk highlights are present', async () => {
     render(
       <ProcessExchangeEdit

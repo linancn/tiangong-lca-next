@@ -1010,6 +1010,115 @@ describe('process sdk validation mapping', () => {
     ]);
   });
 
+  it('maps reference version issues onto the matching selector version fields', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing root data source version',
+          path: [
+            'processDataSet',
+            'modellingAndValidation',
+            'dataSourcesTreatmentAndRepresentativeness',
+            'referenceToDataSource',
+            0,
+            '@version',
+          ],
+          severity: 'error',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing exchange flow version',
+          path: [
+            'processDataSet',
+            'exchanges',
+            'exchange',
+            0,
+            'referenceToFlowDataSet',
+            '@version',
+          ],
+          severity: 'error',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing exchange data source version',
+          path: [
+            'processDataSet',
+            'exchanges',
+            'exchange',
+            0,
+            'referencesToDataSource',
+            'referenceToDataSource',
+            0,
+            '@version',
+          ],
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          exchanges: {
+            exchange: [
+              {
+                '@dataSetInternalID': 'exchange-1',
+                exchangeDirection: 'Input',
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-1',
+                },
+                referencesToDataSource: {
+                  referenceToDataSource: [
+                    {
+                      '@refObjectId': 'exchange-source-1',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          modellingAndValidation: {
+            dataSourcesTreatmentAndRepresentativeness: {
+              referenceToDataSource: [
+                {
+                  '@refObjectId': 'root-source-1',
+                },
+              ],
+            },
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath:
+          'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.referenceToDataSource.0.@version',
+        formName: [
+          'modellingAndValidation',
+          'dataSourcesTreatmentAndRepresentativeness',
+          'referenceToDataSource',
+          0,
+          '@version',
+        ],
+        validationCode: 'required_missing',
+      }),
+      expect.objectContaining({
+        exchangeInternalId: 'exchange-1',
+        fieldPath: 'exchange[#exchange-1].referenceToFlowDataSet.@version',
+        formName: ['referenceToFlowDataSet', '@version'],
+        validationCode: 'required_missing',
+      }),
+      expect.objectContaining({
+        exchangeInternalId: 'exchange-1',
+        fieldPath: 'exchange[#exchange-1].referencesToDataSource.referenceToDataSource.0.@version',
+        formName: ['referencesToDataSource', 'referenceToDataSource', 0, '@version'],
+        validationCode: 'required_missing',
+      }),
+    ]);
+  });
+
   it('normalizes string and empty issue paths when resolving tab names', () => {
     expect(
       getProcessSdkIssueTabName({
