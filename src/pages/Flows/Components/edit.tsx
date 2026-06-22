@@ -11,6 +11,7 @@ import {
   collectValidationIssueRefTabNames,
   enrichValidationIssuesWithOwner,
   getErrRefTab,
+  mapValidationIssuesToRefCheckData,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 import {
@@ -471,19 +472,6 @@ const FlowsEdit: FC<Props> = ({
       orderedJson: genFlowJsonOrdered(id, jsonData),
     });
     const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
-    if (problemNodes && problemNodes.length > 0) {
-      const result = problemNodes.map((item) => {
-        return {
-          id: item['@refObjectId'],
-          version: item['@version'],
-          ruleVerification: item.ruleVerification,
-          nonExistent: item.nonExistent,
-        };
-      });
-      setRefCheckData(result);
-    } else {
-      setRefCheckData([]);
-    }
 
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
@@ -549,6 +537,11 @@ const FlowsEdit: FC<Props> = ({
       unRuleVerification,
     });
     setValidationIssueTabNames(referenceValidationTabNames);
+    if (validationIssues.length > 0) {
+      setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
+    } else {
+      setRefCheckData([]);
+    }
     const feedbackState = resolveDataCheckFeedbackState({
       hasValidationIssues:
         !currentDatasetValid ||

@@ -26,6 +26,7 @@ const mockCheckData = jest.fn(async () => {});
 const mockFindProblemNodes = jest.fn(() => []);
 const mockGetErrRefTab = jest.fn(() => '');
 const mockBuildValidationIssues = jest.fn(() => []);
+const mockMapValidationIssuesToRefCheckData = jest.fn(() => []);
 const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => issues);
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
@@ -34,6 +35,7 @@ const mockJsonToList = jest.fn((value: any) => {
   return Array.isArray(value) ? value : [value];
 });
 let latestFlowFormProps: any = null;
+let mockLatestRefCheckProviderValue: any = null;
 
 const flowTypeOfDatasetIssuePath = [
   'flowDataSet',
@@ -256,7 +258,10 @@ jest.mock('@/components/RefsOfNewVersionDrawer', () => ({
 jest.mock('@/contexts/refCheckContext', () => ({
   __esModule: true,
   RefCheckContext: {
-    Provider: ({ children }: any) => <div>{children}</div>,
+    Provider: ({ children, value }: any) => {
+      mockLatestRefCheckProviderValue = value;
+      return <div>{children}</div>;
+    },
   },
   useRefCheckContext: () => mockParentRefCheckContext,
 }));
@@ -378,6 +383,8 @@ jest.mock('@/pages/Utils/review', () => ({
   })),
   checkData: (...args: any[]) => mockCheckData(...args),
   getErrRefTab: (...args: any[]) => mockGetErrRefTab(...args),
+  mapValidationIssuesToRefCheckData: (...args: any[]) =>
+    mockMapValidationIssuesToRefCheckData(...args),
   validateDatasetWithSdk: (...args: any[]) => mockValidateDatasetWithSdk(...args),
 }));
 
@@ -471,8 +478,10 @@ describe('FlowsEdit', () => {
   beforeEach(() => {
     latestRefsDrawerProps = null;
     latestFlowFormProps = null;
+    mockLatestRefCheckProviderValue = null;
     jest.clearAllMocks();
     mockBuildValidationIssues.mockReturnValue([]);
+    mockMapValidationIssuesToRefCheckData.mockReturnValue([]);
     mockEnrichValidationIssuesWithOwner.mockImplementation(async (issues: any[]) => issues);
     mockCheckData.mockResolvedValue(undefined);
     mockFindProblemNodes.mockReturnValue([]);
@@ -860,6 +869,59 @@ describe('FlowsEdit', () => {
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
+  });
+
+  it('maps flow-property reference validation issues back into ref-check context', async () => {
+    const flowPropertyRef = {
+      '@type': 'flow property data set',
+      '@refObjectId': 'fp-1',
+      '@version': '1.0.0',
+    };
+    const validationIssues = [
+      {
+        code: 'nonExistentRef',
+        link: '/mydata/flowproperties?id=fp-1&version=1.0.0',
+        ref: flowPropertyRef,
+        tabName: 'flowProperties',
+      },
+    ];
+    const mappedRefCheckData = [
+      {
+        id: 'fp-1',
+        version: '1.0.0',
+        ruleVerification: true,
+        nonExistent: true,
+      },
+    ];
+
+    mockCheckData.mockImplementation(async (_ref: any, _unRule: any[], nonExistent: any[]) => {
+      nonExistent.push(flowPropertyRef);
+    });
+    mockGetErrRefTab.mockReturnValue('flowProperties');
+    mockBuildValidationIssues.mockReturnValueOnce(validationIssues);
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce(mappedRefCheckData);
+
+    renderWithProviders(
+      <FlowsEdit
+        id='flow-1'
+        version='1.0.0'
+        buttonType='text'
+        lang='en'
+        updateErrRef={jest.fn()}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByTestId('flow-form');
+    await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
+
+    await waitFor(() =>
+      expect(mockMapValidationIssuesToRefCheckData).toHaveBeenCalledWith(validationIssues),
+    );
+    await waitFor(() =>
+      expect(mockLatestRefCheckProviderValue?.refCheckData).toEqual(mappedRefCheckData),
+    );
+    expect(latestFlowFormProps.validationIssueTabNames).toEqual(['flowProperties']);
   });
 
   it('shows the generic flow data-check error when issues do not map to tabs', async () => {
