@@ -21,6 +21,6 @@ describe('access (src/access.ts)', () => {
   it('returns false when user is missing', () => {
     const result = access(undefined);
 
-    expect(result.canAdmin).toBeFalsy();
+    expect(result.canAdmin).toBe(false);
   });
 });

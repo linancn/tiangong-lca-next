@@ -23,7 +23,7 @@ interface AllVersionsListProps {
   lang: string;
   dataSource?: string;
   disabled?: boolean;
-  addVersionComponent: ({ newVersion }: { newVersion: string }) => ReactElement;
+  addVersionComponent?: ({ newVersion }: { newVersion: string }) => ReactElement;
   operationRender?: (
     row: any,
     context: { actionRef: MutableRefObject<ActionType | undefined> },
@@ -214,6 +214,10 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
                 : undefined
             }
             toolBarRender={() => {
+              if (!addVersionComponent) {
+                return [];
+              }
+
               return [
                 <ConfigProvider key={0} getPopupContainer={getCreateVersionPopupContainer}>
                   {addVersionComponent({ newVersion: getNewVersion() })}

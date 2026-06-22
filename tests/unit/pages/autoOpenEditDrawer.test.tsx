@@ -259,7 +259,12 @@ jest.mock('@/pages/Unitgroups/Components/edit', () => ({
 
 jest.mock('@/pages/Unitgroups/Components/view', () => ({
   __esModule: true,
-  default: () => null,
+  default: ({ autoOpen, id, version }: any) =>
+    autoOpen ? (
+      <div data-testid='unitgroup-view-auto-open'>
+        {id}:{version}
+      </div>
+    ) : null,
 }));
 
 jest.mock('@/pages/Flowproperties/Components/create', () => ({
@@ -288,7 +293,12 @@ jest.mock('@/pages/Flowproperties/Components/edit', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/view', () => ({
   __esModule: true,
-  default: () => null,
+  default: ({ autoOpen, id, version }: any) =>
+    autoOpen ? (
+      <div data-testid='flowproperty-view-auto-open'>
+        {id}:{version}
+      </div>
+    ) : null,
 }));
 
 jest.mock('@/pages/Flows/Components/create', () => ({
@@ -587,7 +597,7 @@ describe('my data list auto open edit drawer', () => {
     );
   });
 
-  it('auto opens flow property edit drawer from id and version query params', async () => {
+  it('auto opens flow property view drawer from id and version query params', async () => {
     mockLocation = {
       pathname: '/mydata/flowproperties',
       search: '?tid=team-1&id=flowproperty-1&version=01.00.000',
@@ -596,7 +606,7 @@ describe('my data list auto open edit drawer', () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() =>
-      expect(screen.getByTestId('flowproperty-auto-open')).toHaveTextContent(
+      expect(screen.getByTestId('flowproperty-view-auto-open')).toHaveTextContent(
         'flowproperty-1:01.00.000',
       ),
     );
@@ -615,7 +625,7 @@ describe('my data list auto open edit drawer', () => {
     );
   });
 
-  it('auto opens unit group edit drawer from id and version query params', async () => {
+  it('auto opens unit group view drawer from id and version query params', async () => {
     mockLocation = {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1&id=unitgroup-1&version=01.00.000',
@@ -624,7 +634,9 @@ describe('my data list auto open edit drawer', () => {
     renderWithProviders(<UnitgroupsPage />);
 
     await waitFor(() =>
-      expect(screen.getByTestId('unitgroup-auto-open')).toHaveTextContent('unitgroup-1:01.00.000'),
+      expect(screen.getByTestId('unitgroup-view-auto-open')).toHaveTextContent(
+        'unitgroup-1:01.00.000',
+      ),
     );
   });
 

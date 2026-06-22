@@ -331,6 +331,14 @@ export const createAntdMock = () => {
     </div>
   );
 
+  const Result = ({ status, title, subTitle, extra }: any) => (
+    <section data-testid='antd-result' data-status={status}>
+      <h1>{title}</h1>
+      {subTitle ? <p>{subTitle}</p> : null}
+      {extra ? <div>{extra}</div> : null}
+    </section>
+  );
+
   const Image = ({ src, alt = '', preview, ...rest }: any) => {
     void preview;
     return <img src={src} alt={alt} data-testid='image' {...rest} />;
@@ -786,6 +794,7 @@ export const createAntdMock = () => {
     Layout,
     Modal,
     Progress,
+    Result,
     Skeleton,
     Steps,
     Row,
