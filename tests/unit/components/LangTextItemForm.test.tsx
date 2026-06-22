@@ -64,7 +64,7 @@ jest.mock('antd', () => {
 
   Form.useFormInstance = () => React.useContext(FormContext).form;
 
-  const FormItem = ({ name, children, style, rules = [] }: any) => {
+  const FormItem = ({ name, children, style, rules = [], help, validateStatus }: any) => {
     const { form, prefix } = React.useContext(FormContext);
     const path = [...prefix, ...normalizePath(name)];
 
@@ -96,7 +96,12 @@ jest.mock('antd', () => {
         ? children({ value, onChange: handleChange })
         : children;
 
-    return <div style={style}>{content}</div>;
+    return (
+      <div data-validate-status={validateStatus} style={style}>
+        {content}
+        {help}
+      </div>
+    );
   };
 
   const FormList = ({ name, children, rules = [] }: any) => {
@@ -238,6 +243,7 @@ type RenderOptions = {
   name?: (string | number)[];
   label?: ReactNode;
   rules?: any[];
+  fieldErrorMessages?: Record<number, string[]>;
   listName?: string[];
   setRuleErrorState?: jest.Mock;
   initialValues?: Record<string, unknown>;
@@ -317,6 +323,7 @@ const renderLangTextItemForm = (options: RenderOptions = {}) => {
     name = ['translations'],
     label = 'Translation',
     rules = [],
+    fieldErrorMessages,
     listName,
     setRuleErrorState,
     initialValues = { translations: [] },
@@ -330,6 +337,7 @@ const renderLangTextItemForm = (options: RenderOptions = {}) => {
         name={name}
         label={label}
         rules={rules}
+        fieldErrorMessages={fieldErrorMessages}
         listName={listName}
         setRuleErrorState={setRuleErrorState}
         formRef={formRef}
@@ -584,6 +592,24 @@ describe('LangTextItemForm', () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue('Review notes')).toBeInTheDocument();
     });
+  });
+
+  it('renders sdk field errors on the matching localized text row', async () => {
+    renderLangTextItemForm({
+      fieldErrorMessages: {
+        0: ['Current length is 1542 characters', 'Keep this within 500 characters'],
+      },
+      initialValues: {
+        translations: [{ '@xml:lang': 'en', '#text': 'Long note' }],
+      },
+    });
+
+    expect(await screen.findByText('Current length is 1542 characters')).toBeInTheDocument();
+    expect(screen.getByText('Keep this within 500 characters')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Long note').closest('[data-validate-status]')).toHaveAttribute(
+      'data-validate-status',
+      'error',
+    );
   });
 
   it('runs required child validators for text and language inputs', async () => {

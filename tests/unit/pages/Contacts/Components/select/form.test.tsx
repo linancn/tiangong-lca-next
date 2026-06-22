@@ -541,6 +541,44 @@ describe('ContactSelectForm', () => {
     expect(screen.queryByText('err-ref')).not.toBeInTheDocument();
   });
 
+  it('shows validation errors for existing references even when ref detail lookup returns no data', async () => {
+    setValueAtPath(['reference', '@refObjectId'], 'missing-contact');
+    setValueAtPath(['reference', '@version'], '01.00.000');
+    mockGetRefData.mockResolvedValueOnce({ data: null });
+    mockRefCheckContextValue = {
+      refCheckData: [
+        {
+          id: 'missing-contact',
+          version: '01.00.000',
+          ruleVerification: true,
+          nonExistent: true,
+        },
+      ],
+    };
+
+    const formRef = {
+      current: {
+        setFieldValue: (path: any[], value: any) => setValueAtPath(path, value),
+        getFieldValue: (path: any[]) => getValueAtPath(path),
+      },
+    };
+
+    renderWithProviders(
+      <ContactSelectForm
+        name={['reference']}
+        label='Contact'
+        lang='en'
+        formRef={formRef as any}
+        onData={jest.fn()}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetRefData).toHaveBeenCalledWith('missing-contact', '01.00.000', 'contacts', ''),
+    );
+    expect(await screen.findByText('err-ref')).toBeInTheDocument();
+  });
+
   it('matches ref-check entries against refData and renders zh/raw short-description language labels', async () => {
     setValueAtPath(['reference', '@refObjectId'], 'contact-1');
     setValueAtPath(['reference', '@version'], '1.0.0');

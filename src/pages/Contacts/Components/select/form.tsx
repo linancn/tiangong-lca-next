@@ -52,6 +52,7 @@ const ContactSelectForm: FC<Props> = ({
   const [refData, setRefData] = useState<ContactDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const refCheckData = refCheckContext?.refCheckData;
   const { initialState } = useModel('@@initialState');
 
   const updateErrRefByDetail = (data: ContactDetailData | null | undefined) => {
@@ -77,29 +78,36 @@ const ContactSelectForm: FC<Props> = ({
   useEffect(() => {
     if (id && version && !refData) {
       getRefData(id, version, 'contacts', '').then((result: RefDataResponse) => {
-        setRefData(result.data ? { ...result.data } : null);
+        const nextRefData = result.data ? { ...result.data } : null;
+        setRefData(nextRefData);
         setDataUserId(result?.data?.userId);
-        updateErrRefByDetail(result?.data);
+        if (nextRefData) {
+          updateErrRefByDetail(nextRefData);
+        }
       });
     }
   }, [id, version]);
 
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length) {
-      const ref = refCheckContext?.refCheckData?.find(
-        (item) =>
-          (item.id === id && item.version === version) ||
-          (item.id === refData?.id && item.version === refData?.version),
-      );
-      if (ref) {
-        setErrRef(ref);
-      } else if (refData && refData?.id !== errRef?.id) {
-        setErrRef(null);
+    setErrRef((currentErrRef) => {
+      if (refCheckData?.length) {
+        const ref = refCheckData.find(
+          (item) =>
+            (item.id === id && item.version === version) ||
+            (item.id === refData?.id && item.version === refData?.version),
+        );
+        if (ref) {
+          return ref;
+        }
+        if (refData && refData?.id !== currentErrRef?.id) {
+          return null;
+        }
+        return currentErrRef;
       }
-    } else {
-      setErrRef(null);
-    }
-  }, [refCheckContext, refData]);
+
+      return null;
+    });
+  }, [id, refCheckData, refData, version]);
 
   const handletContactData = (rowId: string, rowVersion: string) => {
     getContactDetail(rowId, rowVersion).then(async (result: ContactDetailResponse) => {
