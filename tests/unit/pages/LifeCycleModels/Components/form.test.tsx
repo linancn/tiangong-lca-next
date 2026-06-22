@@ -325,6 +325,21 @@ describe('LifeCycleModelForm', () => {
     });
   });
 
+  it('highlights tabs with reference validation issues using the error color token', () => {
+    renderWithProviders(
+      <LifeCycleModelForm
+        {...baseProps}
+        activeTabKey='lifeCycleModelInformation'
+        validationIssueTabNames={['modellingAndValidation']}
+      />,
+    );
+
+    expect(screen.getByText('Modelling and validation').parentElement).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
   it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
     mockSdkValidationCountsByTab = {
       complianceDeclarations: 1,

@@ -14,6 +14,7 @@ import {
   buildValidationIssues,
   checkReferences,
   checkVersions,
+  collectValidationIssueRefTabNames,
   dealProcress,
   enrichValidationIssuesWithOwner,
   getAllRefObj,
@@ -1205,47 +1206,20 @@ const ProcessEdit: FC<Props> = ({
     allRefs.add(`${processDetail.id}:${processDetail.version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
-    const referenceValidationTabNames: string[] = [];
-    const referenceValidationTabNamesByKey = new Map<string, string[]>();
-
-    const getReferenceValidationKey = (ref: refDataType | RefProblemNode) =>
-      `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
-
-    const collectReferenceValidationTabName = (item: refDataType | RefProblemNode) => {
-      const tabName = getErrRefTab(item, processDetail);
-
-      if (!tabName) {
-        return;
-      }
-
+    const { getRefTabNames, tabNames: referenceValidationTabNames } =
+      collectValidationIssueRefTabNames({
+        refs: [...nonExistentRef, ...unRuleVerification, ...problemNodes],
+        resolveTabName: (item) => getErrRefTab(item, processDetail),
+      });
+    referenceValidationTabNames.forEach((tabName) => {
       if (!errTabNames.includes(tabName)) {
         errTabNames.push(tabName);
       }
-
-      if (!referenceValidationTabNames.includes(tabName)) {
-        referenceValidationTabNames.push(tabName);
-      }
-
-      const key = getReferenceValidationKey(item);
-      const existingTabNames = referenceValidationTabNamesByKey.get(key) ?? [];
-      if (!existingTabNames.includes(tabName)) {
-        referenceValidationTabNamesByKey.set(key, [...existingTabNames, tabName]);
-      }
-    };
-
-    nonExistentRef.forEach((item) => {
-      collectReferenceValidationTabName(item);
-    });
-    unRuleVerification.forEach((item) => {
-      collectReferenceValidationTabName(item);
-    });
-    problemNodes.forEach((item) => {
-      collectReferenceValidationTabName(item);
     });
     const validationIssues = buildValidationIssues({
       actionFrom: from,
       datasetSdkValid: currentDatasetValid,
-      getRefTabNames: (ref) => referenceValidationTabNamesByKey.get(getReferenceValidationKey(ref)),
+      getRefTabNames,
       nonExistentRef,
       problemNodes,
       rootRef,

@@ -328,6 +328,25 @@ jest.mock('@/pages/Utils/review', () => ({
   __esModule: true,
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkData: (...args: any[]) => mockCheckData(...args),
+  collectValidationIssueRefTabNames: ({ refs, resolveTabName }: any) => {
+    const tabNames: string[] = [];
+    const tabNamesByKey = new Map<string, string[]>();
+
+    refs.forEach((ref: any) => {
+      const tabName = resolveTabName(ref);
+      if (!tabName) return;
+      if (!tabNames.includes(tabName)) tabNames.push(tabName);
+      const key = `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+      const refTabNames = tabNamesByKey.get(key) ?? [];
+      if (!refTabNames.includes(tabName)) tabNamesByKey.set(key, [...refTabNames, tabName]);
+    });
+
+    return {
+      getRefTabNames: (ref: any) =>
+        tabNamesByKey.get(`${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`),
+      tabNames,
+    };
+  },
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   ReffPath: jest.fn(() => ({
     findProblemNodes: () => mockFindProblemNodes(),

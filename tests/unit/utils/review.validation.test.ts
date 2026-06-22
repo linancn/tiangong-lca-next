@@ -1,6 +1,7 @@
 import {
   buildValidationIssues,
   checkReferences,
+  collectValidationIssueRefTabNames,
   dealModel,
   dealProcress,
   enrichValidationIssuesWithOwner,
@@ -449,6 +450,50 @@ describe('review helper coverage', () => {
         tabNames: ['exchanges'],
       }),
     ]);
+  });
+
+  it('collects unique validation tab names by reference key', () => {
+    const firstRef = {
+      '@type': 'source data set',
+      '@refObjectId': 'source-1',
+      '@version': '01.00.000',
+      tabName: 'administrativeInformation',
+    };
+    const duplicateRef = {
+      ...firstRef,
+      tabName: 'administrativeInformation',
+    };
+    const secondTabRef = {
+      ...firstRef,
+      tabName: 'sourceInformation',
+    };
+    const emptyTabRef = {
+      '@type': 'contact data set',
+      '@refObjectId': 'contact-1',
+      '@version': '01.00.000',
+      tabName: '',
+    };
+
+    const result = collectValidationIssueRefTabNames({
+      refs: [firstRef, duplicateRef, secondTabRef, emptyTabRef],
+      resolveTabName: (ref) => ref.tabName,
+    });
+
+    expect(result.tabNames).toEqual(['administrativeInformation', 'sourceInformation']);
+    expect(
+      result.getRefTabNames({
+        '@type': 'source data set',
+        '@refObjectId': 'source-1',
+        '@version': '01.00.000',
+      }),
+    ).toEqual(['administrativeInformation', 'sourceInformation']);
+    expect(
+      result.getRefTabNames({
+        '@type': 'contact data set',
+        '@refObjectId': 'contact-1',
+        '@version': '01.00.000',
+      }),
+    ).toBeUndefined();
   });
 
   it('suppresses the root rule-verification issue when sdk invalid already covers the same dataset', () => {

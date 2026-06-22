@@ -193,6 +193,40 @@ export type ValidationIssueSdkDetail = {
 const getValidationIssueRefKey = (ref: refDataType) =>
   `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
 
+export const collectValidationIssueRefTabNames = <T extends refDataType>({
+  refs,
+  resolveTabName,
+}: {
+  refs: T[];
+  resolveTabName: (ref: T) => string | null | undefined;
+}) => {
+  const tabNames: string[] = [];
+  const tabNamesByRefKey = new Map<string, string[]>();
+
+  refs.forEach((ref) => {
+    const tabName = resolveTabName(ref);
+
+    if (!tabName) {
+      return;
+    }
+
+    if (!tabNames.includes(tabName)) {
+      tabNames.push(tabName);
+    }
+
+    const key = getValidationIssueRefKey(ref);
+    const refTabNames = tabNamesByRefKey.get(key) ?? [];
+    if (!refTabNames.includes(tabName)) {
+      tabNamesByRefKey.set(key, [...refTabNames, tabName]);
+    }
+  });
+
+  return {
+    getRefTabNames: (ref: refDataType) => tabNamesByRefKey.get(getValidationIssueRefKey(ref)),
+    tabNames,
+  };
+};
+
 const getValidationIssueOwnerName = (user?: {
   display_name?: string | null;
   email?: string | null;

@@ -3,7 +3,7 @@ import LangTextItemForm from '@/components/LangTextItem/form';
 import LevelTextItemForm from '@/components/LevelTextItem/form';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 import RequiredMark from '@/components/RequiredMark';
@@ -31,6 +31,7 @@ type Props = {
   showRules?: boolean;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 export const FlowpropertyForm: FC<Props> = ({
   lang,
@@ -43,6 +44,7 @@ export const FlowpropertyForm: FC<Props> = ({
   showRules = false,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -57,9 +59,13 @@ export const FlowpropertyForm: FC<Props> = ({
     schemaRoot: schema,
     showRules,
   });
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span

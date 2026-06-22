@@ -14,7 +14,7 @@ import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/for
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../lifecyclemodels.json';
 import { licenseTypeOptions } from './optiondata';
@@ -32,6 +32,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -44,6 +45,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   actionType,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -62,9 +64,13 @@ export const LifeCycleModelForm: FC<Props> = ({
     schemaRoot: schema,
     showRules,
   });
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span
