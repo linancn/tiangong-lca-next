@@ -1,4 +1,5 @@
 import { FormattedMessage } from '@umijs/max';
+import { Result } from 'antd';
 
 type AccessDeniedProps = {
   titleId?: string;
@@ -15,12 +16,11 @@ export default function AccessDenied({
 }: AccessDeniedProps) {
   return (
     <div data-testid='access-denied'>
-      <h3>
-        <FormattedMessage id={titleId} defaultMessage={titleDefaultMessage} />
-      </h3>
-      <p>
-        <FormattedMessage id={messageId} defaultMessage={messageDefaultMessage} />
-      </p>
+      <Result
+        status='403'
+        title={<FormattedMessage id={titleId} defaultMessage={titleDefaultMessage} />}
+        subTitle={<FormattedMessage id={messageId} defaultMessage={messageDefaultMessage} />}
+      />
     </div>
   );
 }

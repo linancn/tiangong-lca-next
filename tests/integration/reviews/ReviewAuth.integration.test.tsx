@@ -34,6 +34,13 @@ jest.mock('antd', () => {
     </div>
   );
 
+  const Result = ({ status, title, subTitle }: any) => (
+    <section data-testid='antd-result' data-status={status}>
+      <h1>{title}</h1>
+      <p>{subTitle}</p>
+    </section>
+  );
+
   const Tabs = ({ items = [], activeKey, onChange }: any) => (
     <div data-testid='tabs'>
       {(items ?? []).map((item: any) => (
@@ -65,6 +72,7 @@ jest.mock('antd', () => {
     __esModule: true,
     ConfigProvider,
     message,
+    Result,
     Spin,
     Tabs,
   };

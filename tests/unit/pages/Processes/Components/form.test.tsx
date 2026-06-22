@@ -887,6 +887,50 @@ describe('ProcessForm component', () => {
     expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
   });
 
+  it('renders sdk messages on root selector version fields', async () => {
+    const fieldName = [
+      'modellingAndValidation',
+      'dataSourcesTreatmentAndRepresentativeness',
+      'referenceToDataSource',
+      0,
+      '@version',
+    ];
+
+    render(
+      <ProcessForm
+        {...defaultProps}
+        activeTabKey='modellingAndValidation'
+        sdkValidationDetails={[
+          {
+            key: 'sdk-root-data-source-version-required',
+            tabName: 'modellingAndValidation',
+            fieldKey: '@version',
+            fieldLabel: 'Version',
+            fieldPath:
+              'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.referenceToDataSource.0.@version',
+            formName: fieldName,
+            reasonMessage: 'Required value is missing.',
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(defaultProps.formRef.current.setFields).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            errors: ['Fill in this field'],
+            name: fieldName,
+          }),
+        ]),
+      );
+    });
+
+    expect(defaultProps.formRef.current.getFieldError(fieldName)).toEqual(['Fill in this field']);
+  });
+
   it('renders annual supply reference-context sdk issues on the derived context input', async () => {
     const sdkValidationDetail = {
       key: 'sdk-annual-supply-zh-context',

@@ -137,7 +137,7 @@ export default {
   'pages.validationIssues.issue.versionUnderReview': 'Another version {underReviewVersion} of this dataset is already under review',
   'pages.validationIssues.issue.versionIsInTg': 'Current version is lower than the published version',
   'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
-  'pages.validationIssues.sdkDetail.suggestedFix.string_too_long': 'Keep this within {maximum} characters',
+  'pages.validationIssues.sdkDetail.suggestedFix.string_too_long': 'Current length is {actualLength} characters; keep this within {maximum} characters',
   'pages.validationIssues.sdkDetail.suggestedFix.string_too_short': 'Enter at least {minimum} characters',
   'pages.validationIssues.sdkDetail.suggestedFix.array_too_small': 'Add at least {minimum} items',
   'pages.validationIssues.sdkDetail.suggestedFix.array_too_large': 'Remove extra items',

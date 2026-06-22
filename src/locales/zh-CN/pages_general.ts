@@ -136,7 +136,7 @@ export default {
   'pages.validationIssues.issue.versionUnderReview': '该数据集已有版本 {underReviewVersion} 处于审核中',
   'pages.validationIssues.issue.versionIsInTg': '当前版本号小于已发布版本号',
   'pages.validationIssues.sdkDetail.suggestedFix.required_missing': '请补充此项',
-  'pages.validationIssues.sdkDetail.suggestedFix.string_too_long': '请缩短到 {maximum} 个字符以内',
+  'pages.validationIssues.sdkDetail.suggestedFix.string_too_long': '当前字符总数 {actualLength}，请缩短到 {maximum} 个字符以内',
   'pages.validationIssues.sdkDetail.suggestedFix.string_too_short': '请补充到至少 {minimum} 个字符',
   'pages.validationIssues.sdkDetail.suggestedFix.array_too_small': '请至少补充 {minimum} 项',
   'pages.validationIssues.sdkDetail.suggestedFix.array_too_large': '请删除多余条目',

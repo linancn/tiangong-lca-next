@@ -40,6 +40,10 @@ jest.mock('umi', () => ({
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, any>) => {
       const messages: Record<string, string> = {
         'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
+        'pages.validationIssues.sdkDetail.suggestedFix.string_too_long':
+          'Current length is {actualLength} characters; keep this within {maximum} characters',
+        'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
+          'Chinese text must include at least one Chinese character',
       };
       const template = messages[id] ?? defaultMessage ?? id ?? '';
 
@@ -128,7 +132,24 @@ jest.mock('@/pages/Sources/Components/select/form', () => ({
 
 jest.mock('@/components/LangTextItem/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='lang-form'>lang</div>,
+  default: ({ name, fieldErrorMessages }: any) => {
+    const { Form, Input } = require('antd');
+    const fieldName = Array.isArray(name) ? [...name, 0, '#text'] : [name, 0, '#text'];
+    const fieldErrorEntries = Object.entries(fieldErrorMessages ?? {}) as Array<[string, string[]]>;
+
+    return (
+      <div data-testid='lang-form'>
+        <Form.Item name={fieldName}>
+          <Input />
+        </Form.Item>
+        {fieldErrorEntries.flatMap(([rowIndex, messages]) =>
+          messages.map((message: string, index: number) => (
+            <div key={`sdk-lang-error-${rowIndex}-${index}`}>{message}</div>
+          )),
+        )}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/services/locations/api', () => ({
@@ -683,7 +704,7 @@ describe('ProcessExchangeEdit', () => {
     });
   });
 
-  it('auto opens and renders sdk field highlights for the targeted exchange issue', async () => {
+  it('auto opens and applies sdk field highlights for the targeted exchange issue', async () => {
     render(
       <ProcessExchangeEdit
         {...defaultProps}
@@ -713,11 +734,135 @@ describe('ProcessExchangeEdit', () => {
     expect(screen.queryByText(/Expected string but found undefined/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('sdk-highlight-meanAmount')).not.toBeInTheDocument();
 
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('shows sdk string length errors on localized exchange comments', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-comment-too-long',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (EN)',
+            fieldPath: 'exchange[#0].generalComment.0.#text',
+            formName: ['generalComment', 0, '#text'],
+            reasonMessage: 'Text length 1542 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 1542,
+              maximum: 500,
+            },
+          },
+          {
+            key: 'sdk-comment-too-long-without-index',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'exchange[#0].generalComment.#text',
+            formName: ['generalComment', '#text'],
+            reasonMessage: 'Text length 600 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 600,
+              maximum: 500,
+            },
+          },
+          {
+            key: 'sdk-empty-comment-message',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment',
+            fieldPath: 'exchange[#0].generalComment.1.#text',
+            formName: ['generalComment', 1, '#text'],
+            reasonMessage: '',
+            suggestedFix: '',
+          },
+          {
+            key: 'sdk-non-string-field-name',
+            fieldKey: '0.#text',
+            fieldLabel: 'Unknown',
+            fieldPath: 'exchange[#0].0.#text',
+            formName: [0, '#text'],
+            reasonMessage: 'Text length 700 exceeds maximum 500',
+            suggestedFix: 'Shorten this text to 500 characters or fewer.',
+            validationCode: 'string_too_long',
+            validationParams: {
+              actualLength: 700,
+              maximum: 500,
+            },
+          },
+        ]}
+      />,
+    );
+
     await waitFor(() => {
-      expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], {
-        focus: true,
-      });
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
     });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Current length is 1542 characters; keep this within 500 characters'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Current length is 600 characters; keep this within 500 characters'),
+      ).toBeInTheDocument();
+    });
+    expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('maps raw tidas localized exchange comment paths onto drawer comment rows', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        id='1'
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-raw-tidas-zh-comment-path',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'processDataSet.exchanges.exchange.1.generalComment.1.#text',
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+          {
+            key: 'sdk-raw-tidas-zh-comment-form-name',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'exchange[#1].generalComment.1.#text',
+            formName: ['processDataSet', 'exchanges', 'exchange', 1, 'generalComment', 1, '#text'],
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+          {
+            key: 'sdk-anchored-exchange-comment-form-name',
+            fieldKey: 'generalComment',
+            fieldLabel: 'Comment (ZH)',
+            fieldPath: 'exchange[#1].generalComment.1.#text',
+            formName: ['exchange[#1]', 'generalComment', 1, '#text'],
+            reasonMessage:
+              "@xml:lang values starting with 'zh' must include at least one Chinese character",
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getAllByText('Chinese text must include at least one Chinese character'),
+    ).toHaveLength(1);
+    expect(mockProFormApi?.getFieldError(['generalComment', 1, '#text'])).toEqual([]);
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
   });
 
   it('keeps auto-open idempotent when strict-mode replays mount effects', async () => {
@@ -853,7 +998,52 @@ describe('ProcessExchangeEdit', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('skips auto-scrolling when the first sdk highlight cannot be mapped to a form field', async () => {
+  it('renders sdk version errors on exchange selector version fields', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-flow-version-required',
+            fieldKey: '@version',
+            fieldLabel: 'Version',
+            fieldPath: 'exchange[#0].referenceToFlowDataSet.@version',
+            formName: ['referenceToFlowDataSet', '@version'],
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+          {
+            key: 'sdk-source-version-required',
+            fieldKey: '@version',
+            fieldLabel: 'Version',
+            fieldPath: 'exchange[#0].referencesToDataSource.referenceToDataSource.0.@version',
+            formName: ['referencesToDataSource', 'referenceToDataSource', 0, '@version'],
+            suggestedFix: 'Fill in the required value for this field.',
+            validationCode: 'required_missing',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+    });
+
+    expect(mockProFormApi?.getFieldError(['referenceToFlowDataSet', '@version'])).toEqual([
+      'Fill in this field',
+    ]);
+    expect(
+      mockProFormApi?.getFieldError([
+        'referencesToDataSource',
+        'referenceToDataSource',
+        0,
+        '@version',
+      ]),
+    ).toEqual(['Fill in this field']);
+  });
+
+  it('does not auto-scroll when sdk highlights are present', async () => {
     render(
       <ProcessExchangeEdit
         {...defaultProps}
@@ -907,7 +1097,7 @@ describe('ProcessExchangeEdit', () => {
       expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
     });
 
-    expect(mockProFormApi?.scrollToField).toHaveBeenCalledWith(['meanAmount'], { focus: true });
+    expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
     expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
     expect(
       mockProFormApi?.getFieldError([

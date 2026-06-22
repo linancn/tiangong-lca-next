@@ -578,6 +578,63 @@ describe('process sdk validation mapping', () => {
     ]);
   });
 
+  it('maps indexed zh exchange comment localized-text issues to the matching exchange row', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'localized_text_zh_must_include_chinese_character',
+          message:
+            "@xml:lang values starting with 'zh' must include at least one Chinese character",
+          path: ['processDataSet', 'exchanges', 'exchange', 1, 'generalComment', 1, '#text'],
+          rawCode: 'custom',
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          exchanges: {
+            exchange: [
+              {
+                '@dataSetInternalID': 'exchange-1',
+                exchangeDirection: 'Output',
+                generalComment: [{ '@xml:lang': 'en', '#text': 'Output comment' }],
+              },
+              {
+                '@dataSetInternalID': 'exchange-2',
+                exchangeDirection: 'Input',
+                generalComment: [
+                  { '@xml:lang': 'en', '#text': 'Input comment' },
+                  { '@xml:lang': 'zh-CN', '#text': 'Input comment without Chinese text' },
+                ],
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-2',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Input flow' }],
+                },
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        exchangeDirection: 'input',
+        exchangeFlowId: 'flow-2',
+        exchangeFlowLabel: 'Input flow',
+        exchangeIndex: 1,
+        exchangeInternalId: 'exchange-2',
+        fieldLabel: 'Comment (ZH-CN)',
+        fieldPath: 'exchange[#exchange-2].generalComment.1.#text',
+        formName: ['generalComment', 1, '#text'],
+        reasonMessage:
+          "@xml:lang values starting with 'zh' must include at least one Chinese character",
+        tabName: 'exchanges',
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+      }),
+    ]);
+  });
+
   it('maps single-entry root localized-text leaf issues to the indexed process form leaf', () => {
     const details = normalizeProcessSdkValidationDetails(
       [
@@ -949,6 +1006,115 @@ describe('process sdk validation mapping', () => {
       expect.objectContaining({
         suggestedFix: 'Fill in the required value for this field.',
         validationCode: 'unknown_code',
+      }),
+    ]);
+  });
+
+  it('maps reference version issues onto the matching selector version fields', () => {
+    const details = normalizeProcessSdkValidationDetails(
+      [
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing root data source version',
+          path: [
+            'processDataSet',
+            'modellingAndValidation',
+            'dataSourcesTreatmentAndRepresentativeness',
+            'referenceToDataSource',
+            0,
+            '@version',
+          ],
+          severity: 'error',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing exchange flow version',
+          path: [
+            'processDataSet',
+            'exchanges',
+            'exchange',
+            0,
+            'referenceToFlowDataSet',
+            '@version',
+          ],
+          severity: 'error',
+        },
+        {
+          code: 'invalid_type',
+          expected: 'string',
+          message: 'Missing exchange data source version',
+          path: [
+            'processDataSet',
+            'exchanges',
+            'exchange',
+            0,
+            'referencesToDataSource',
+            'referenceToDataSource',
+            0,
+            '@version',
+          ],
+          severity: 'error',
+        },
+      ],
+      {
+        processDataSet: {
+          exchanges: {
+            exchange: [
+              {
+                '@dataSetInternalID': 'exchange-1',
+                exchangeDirection: 'Input',
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-1',
+                },
+                referencesToDataSource: {
+                  referenceToDataSource: [
+                    {
+                      '@refObjectId': 'exchange-source-1',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          modellingAndValidation: {
+            dataSourcesTreatmentAndRepresentativeness: {
+              referenceToDataSource: [
+                {
+                  '@refObjectId': 'root-source-1',
+                },
+              ],
+            },
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath:
+          'modellingAndValidation.dataSourcesTreatmentAndRepresentativeness.referenceToDataSource.0.@version',
+        formName: [
+          'modellingAndValidation',
+          'dataSourcesTreatmentAndRepresentativeness',
+          'referenceToDataSource',
+          0,
+          '@version',
+        ],
+        validationCode: 'required_missing',
+      }),
+      expect.objectContaining({
+        exchangeInternalId: 'exchange-1',
+        fieldPath: 'exchange[#exchange-1].referenceToFlowDataSet.@version',
+        formName: ['referenceToFlowDataSet', '@version'],
+        validationCode: 'required_missing',
+      }),
+      expect.objectContaining({
+        exchangeInternalId: 'exchange-1',
+        fieldPath: 'exchange[#exchange-1].referencesToDataSource.referenceToDataSource.0.@version',
+        formName: ['referencesToDataSource', 'referenceToDataSource', 0, '@version'],
+        validationCode: 'required_missing',
       }),
     ]);
   });

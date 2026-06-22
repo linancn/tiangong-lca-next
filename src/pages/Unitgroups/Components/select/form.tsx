@@ -57,6 +57,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   const [refData, setRefData] = useState<UnitGroupDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const refCheckData = refCheckContext?.refCheckData;
   const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: UnitGroupDetailData | null | undefined) => {
     const resolvedId = data?.id;
@@ -82,29 +83,36 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   useEffect(() => {
     if (id && version && !refData) {
       getRefData(id, version, 'unitgroups', '').then((result: RefDataResponse) => {
-        setRefData(result.data ? { ...result.data } : null);
+        const nextRefData = result.data ? { ...result.data } : null;
+        setRefData(nextRefData);
         setDataUserId(result?.data?.userId);
-        updateErrRefByDetail(result?.data);
+        if (nextRefData) {
+          updateErrRefByDetail(nextRefData);
+        }
       });
     }
   }, [id, version]);
 
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length) {
-      const ref = refCheckContext?.refCheckData?.find(
-        (item: RefCheckType) =>
-          (item.id === id && item.version === version) ||
-          (item.id === refData?.id && item.version === refData?.version),
-      );
-      if (ref) {
-        setErrRef(ref);
-      } else if (refData && refData?.id !== errRef?.id) {
-        setErrRef(null);
+    setErrRef((currentErrRef) => {
+      if (refCheckData?.length) {
+        const ref = refCheckData.find(
+          (item: RefCheckType) =>
+            (item.id === id && item.version === version) ||
+            (item.id === refData?.id && item.version === refData?.version),
+        );
+        if (ref) {
+          return ref;
+        }
+        if (refData && refData?.id !== currentErrRef?.id) {
+          return null;
+        }
+        return currentErrRef;
       }
-    } else {
-      setErrRef(null);
-    }
-  }, [refCheckContext, refData]);
+
+      return null;
+    });
+  }, [id, refCheckData, refData, version]);
 
   const handletUnitgroupsData = (rowId: string, rowVersion: string) => {
     getUnitGroupDetail(rowId, rowVersion).then(async (result: UnitGroupDetailResponse) => {

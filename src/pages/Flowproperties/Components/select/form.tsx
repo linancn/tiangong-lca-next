@@ -103,6 +103,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   const [refData, setRefData] = useState<FlowpropertyDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const refCheckData = refCheckContext?.refCheckData;
   const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: FlowpropertyDetailData | null | undefined) => {
     const resolvedId = data?.id;
@@ -128,27 +129,26 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   useEffect(() => {
     if (id && version && !refData) {
       getRefData(id, version, 'flowproperties', '').then((result: RefDataResponse) => {
-        setRefData(result.data ? { ...result.data } : null);
+        const nextRefData = result.data ? { ...result.data } : null;
+        setRefData(nextRefData);
         setDataUserId(result?.data?.userId);
-        updateErrRefByDetail(result?.data);
+        if (nextRefData) {
+          updateErrRefByDetail(nextRefData);
+        }
       });
     }
   }, [id, version]);
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length) {
-      setErrRef(
-        resolveRefErrorFromContext({
-          refCheckData: refCheckContext?.refCheckData,
-          id,
-          version,
-          refData,
-          currentErrRef: errRef,
-        }),
-      );
-    } else {
-      setErrRef(null);
-    }
-  }, [refCheckContext, refData]);
+    setErrRef((currentErrRef) =>
+      resolveRefErrorFromContext({
+        refCheckData,
+        id,
+        version,
+        refData,
+        currentErrRef,
+      }),
+    );
+  }, [id, refCheckData, refData, version]);
 
   const handletFlowpropertyData = (rowId: string, rowVersion: string) => {
     getFlowpropertyDetail(rowId, rowVersion).then(async (result: FlowpropertyDetailResponse) => {

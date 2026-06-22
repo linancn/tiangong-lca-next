@@ -50,6 +50,7 @@ const SourceSelectForm: FC<Props> = ({
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const refCheckData = refCheckContext?.refCheckData;
   const [refData, setRefData] = useState<SourceDetailData | null>(null);
   const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: SourceDetailData | null | undefined) => {
@@ -76,28 +77,35 @@ const SourceSelectForm: FC<Props> = ({
   useEffect(() => {
     if (id && version && !refData) {
       getRefData(id, version, 'sources', '').then((result: RefDataResponse) => {
-        setRefData(result.data ? { ...result.data } : null);
+        const nextRefData = result.data ? { ...result.data } : null;
+        setRefData(nextRefData);
         setDataUserId(result?.data?.userId);
-        updateErrRefByDetail(result?.data);
+        if (nextRefData) {
+          updateErrRefByDetail(nextRefData);
+        }
       });
     }
   }, [id, version]);
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length) {
-      const ref = refCheckContext?.refCheckData?.find(
-        (item) =>
-          (item.id === id && item.version === version) ||
-          (item.id === refData?.id && item.version === refData?.version),
-      );
-      if (ref) {
-        setErrRef(ref);
-      } else if (refData && refData?.id !== errRef?.id) {
-        setErrRef(null);
+    setErrRef((currentErrRef) => {
+      if (refCheckData?.length) {
+        const ref = refCheckData.find(
+          (item) =>
+            (item.id === id && item.version === version) ||
+            (item.id === refData?.id && item.version === refData?.version),
+        );
+        if (ref) {
+          return ref;
+        }
+        if (refData && refData?.id !== currentErrRef?.id) {
+          return null;
+        }
+        return currentErrRef;
       }
-    } else {
-      setErrRef(null);
-    }
-  }, [refCheckContext, refData]);
+
+      return null;
+    });
+  }, [id, refCheckData, refData, version]);
 
   const { token } = theme.useToken();
   const [ruleErrorState, setRuleErrorState] = useState(false);

@@ -114,6 +114,51 @@ describe('Utils page helpers', () => {
     expect(validateFields).toHaveBeenNthCalledWith(2, [['parent', 2, 'child', 0, '@refObjectId']]);
   });
 
+  it('clears stale reference version errors after a new version is selected', () => {
+    const validateFields = jest.fn();
+    const setFields = jest.fn();
+    const getFieldValue = jest.fn((path: Array<string | number>) => {
+      return path[path.length - 1] === '@version' ? '01.00.000' : 'contact-id';
+    });
+    const formRef = {
+      current: {
+        getFieldValue,
+        setFields,
+        validateFields,
+      },
+    };
+
+    validateRefObjectId(formRef as any, ['referenceToContact'], ['dataSetInformation']);
+
+    expect(setFields).toHaveBeenCalledWith([
+      { name: ['dataSetInformation', 'referenceToContact', '@refObjectId'], errors: [] },
+      { name: ['dataSetInformation', 'referenceToContact', '@version'], errors: [] },
+    ]);
+    expect(validateFields).toHaveBeenCalledWith([
+      ['dataSetInformation', 'referenceToContact', '@refObjectId'],
+    ]);
+  });
+
+  it('keeps the version error when a reference id is still missing its version', () => {
+    const setFields = jest.fn();
+    const getFieldValue = jest.fn((path: Array<string | number>) => {
+      return path[path.length - 1] === '@refObjectId' ? 'contact-id' : undefined;
+    });
+    const formRef = {
+      current: {
+        getFieldValue,
+        setFields,
+        validateFields: jest.fn(),
+      },
+    };
+
+    validateRefObjectId(formRef as any, ['referenceToContact']);
+
+    expect(setFields).toHaveBeenCalledWith([
+      { name: ['referenceToContact', '@refObjectId'], errors: [] },
+    ]);
+  });
+
   it('maps local language values into display labels', () => {
     expect(getLocalValueProps('en')).toEqual({ value: 'English' });
     expect(getLocalValueProps('zh')).toEqual({ value: '简体中文' });

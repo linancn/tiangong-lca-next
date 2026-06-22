@@ -296,6 +296,11 @@ const getListItemIndex = (path: PropertyKey[], segmentName: string) => {
   return typeof listIndex === 'number' ? listIndex : 0;
 };
 
+const getReferenceFormLeaf = (path: PropertyKey[]) => {
+  const leaf = path[path.length - 1];
+  return leaf === '@version' ? '@version' : '@refObjectId';
+};
+
 const getProcessQuantitativeReferenceExchangeIndex = (orderedJson: any) => {
   const exchanges = getArrayValues(
     getValueAtPath(orderedJson, ['processDataSet', 'exchanges', 'exchange']),
@@ -532,12 +537,17 @@ const getProcessSdkIssueExchangeFormName = (
   const fieldSegment = exchangePath[0];
 
   if (fieldSegment === 'referenceToFlowDataSet') {
-    return ['referenceToFlowDataSet', '@refObjectId'];
+    return ['referenceToFlowDataSet', getReferenceFormLeaf(exchangePath)];
   }
 
   if (fieldSegment === 'referencesToDataSource') {
     const listIndex = getListItemIndex(exchangePath, 'referenceToDataSource');
-    return ['referencesToDataSource', 'referenceToDataSource', listIndex, '@refObjectId'];
+    return [
+      'referencesToDataSource',
+      'referenceToDataSource',
+      listIndex,
+      getReferenceFormLeaf(exchangePath),
+    ];
   }
 
   if (fieldSegment === 'generalComment' || fieldSegment === 'functionalUnitOrOther') {
@@ -623,7 +633,7 @@ const getProcessSdkIssueRootFormName = (
       'dataSourcesTreatmentAndRepresentativeness',
       'referenceToDataSource',
       listIndex,
-      '@refObjectId',
+      getReferenceFormLeaf(rootPath),
     ];
   }
 

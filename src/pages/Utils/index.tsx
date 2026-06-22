@@ -54,11 +54,20 @@ export const validateRefObjectId = (
   name: Array<string | number>,
   parentName?: Array<string | number>,
 ) => {
-  if (parentName) {
-    formRef.current?.validateFields([[...parentName, ...name, '@refObjectId']]);
-  } else {
-    formRef.current?.validateFields([[...name, '@refObjectId']]);
+  const refObjectIdPath = parentName
+    ? [...parentName, ...name, '@refObjectId']
+    : [...name, '@refObjectId'];
+  const versionPath = parentName ? [...parentName, ...name, '@version'] : [...name, '@version'];
+  const refObjectId = formRef.current?.getFieldValue?.(refObjectIdPath);
+  const version = formRef.current?.getFieldValue?.(versionPath);
+  const fieldsToClear = [{ name: refObjectIdPath, errors: [] as string[] }];
+
+  if (version || !refObjectId) {
+    fieldsToClear.push({ name: versionPath, errors: [] });
   }
+
+  formRef.current?.setFields?.(fieldsToClear);
+  formRef.current?.validateFields([refObjectIdPath]);
 };
 
 export const getLocalValueProps = (value: string) => ({

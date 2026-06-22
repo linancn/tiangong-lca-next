@@ -50,6 +50,7 @@ const FlowsSelectForm: FC<Props> = ({
   const [refData, setRefData] = useState<FlowDetailData | null>(null);
   const [errRef, setErrRef] = useState<RefCheckType | null>(null);
   const refCheckContext = useRefCheckContext();
+  const refCheckData = refCheckContext?.refCheckData;
   const { initialState } = useModel('@@initialState');
   const updateErrRefByDetail = (data: FlowDetailData | null | undefined) => {
     const resolvedId = data?.id;
@@ -75,28 +76,35 @@ const FlowsSelectForm: FC<Props> = ({
   useEffect(() => {
     if (id && version && !refData) {
       getRefData(id, version, 'flows', '').then((result: RefDataResponse) => {
+        const nextRefData = result.data ? { ...result.data } : null;
         setDataUserId(result?.data?.userId);
-        setRefData(result.data ? { ...result.data } : null);
-        updateErrRefByDetail(result?.data);
+        setRefData(nextRefData);
+        if (nextRefData) {
+          updateErrRefByDetail(nextRefData);
+        }
       });
     }
   }, [id, version]);
   useEffect(() => {
-    if (refCheckContext?.refCheckData?.length) {
-      const ref = refCheckContext?.refCheckData?.find(
-        (item) =>
-          (item.id === id && item.version === version) ||
-          (item.id === refData?.id && item.version === refData?.version),
-      );
-      if (ref) {
-        setErrRef(ref);
-      } else if (refData && refData?.id !== errRef?.id) {
-        setErrRef(null);
+    setErrRef((currentErrRef) => {
+      if (refCheckData?.length) {
+        const ref = refCheckData.find(
+          (item) =>
+            (item.id === id && item.version === version) ||
+            (item.id === refData?.id && item.version === refData?.version),
+        );
+        if (ref) {
+          return ref;
+        }
+        if (refData && refData?.id !== currentErrRef?.id) {
+          return null;
+        }
+        return currentErrRef;
       }
-    } else {
-      setErrRef(null);
-    }
-  }, [refCheckContext, refData]);
+
+      return null;
+    });
+  }, [id, refCheckData, refData, version]);
 
   const handletFlowsData = (rowId: string, rowVersion: string) => {
     getFlowDetail(rowId, rowVersion).then(async (result: FlowDetailResponse) => {
