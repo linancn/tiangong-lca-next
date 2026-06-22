@@ -1,13 +1,11 @@
 /**
- * Flowproperties CRUD workflow integration test.
+ * Flowproperties read-only workflow integration test.
  * Covers page at: src/pages/Flowproperties/index.tsx
  *
  * Journey:
  * 1. Owner opens My Data / Flow Properties list (ProTable request -> getFlowpropertyTableAll).
- * 2. Owner creates a new flow property (FlowpropertiesCreate -> createFlowproperties -> reload).
- * 3. Owner triggers edit workflow (FlowpropertiesEdit -> updateFlowproperties -> reload).
- * 4. Owner deletes an existing flow property (FlowpropertiesDelete -> deleteFlowproperties -> reload).
- * 5. Open-data users land on /tgdata flow properties and only see the read-only source matrix.
+ * 2. My Data shows existing rows without create/edit/delete controls.
+ * 3. Open-data users land on /tgdata flow properties and only see the read-only source matrix.
  *
  * Services mocked:
  * - getFlowpropertyTableAll, createFlowproperties, updateFlowproperties, deleteFlowproperties
@@ -345,43 +343,35 @@ describe('Flowproperties workflow integration', () => {
     });
   };
 
-  it('completes CRUD workflow', async () => {
+  it('renders my-data flow properties read-only while preserving filters', async () => {
     await renderFlowproperties();
+    const user = userEvent.setup();
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('Water mass')).toBeInTheDocument();
 
-    const createButton = within(screen.getByTestId('pro-table-toolbar')).getByRole('button', {
-      name: /create/i,
-    });
+    expect(
+      within(screen.getByTestId('pro-table-toolbar')).queryByRole('button', { name: /create/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'import' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /edit fp-1/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete fp-1/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'view fp-1:1.0.0' })).toBeInTheDocument();
+    expect(screen.getByText('export')).toBeInTheDocument();
 
-    await userEvent.click(createButton);
-
-    const nameInput = await screen.findByLabelText(/flow property name/i);
-    await userEvent.type(nameInput, 'New Flow Property');
-
-    const saveButton = screen.getByRole('button', { name: /save/i });
-    await userEvent.click(saveButton);
+    await user.selectOptions(screen.getByRole('combobox'), '100');
 
     await waitFor(() =>
-      expect(mockCreateFlowproperties).toHaveBeenCalledWith(
-        'generated-flowproperty-id',
-        expect.any(Object),
+      expect(mockGetFlowpropertyTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'my',
+        '',
+        '100',
       ),
     );
-    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(2));
-
-    const editButton = screen.getByRole('button', { name: /edit fp-1/i });
-    await userEvent.click(editButton);
-    await waitFor(() =>
-      expect(mockUpdateFlowproperties).toHaveBeenCalledWith('fp-1', '1.0.0', { updated: true }),
-    );
-    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(3));
-
-    const deleteButton = screen.getByRole('button', { name: /delete fp-1/i });
-    await userEvent.click(deleteButton);
-    await waitFor(() => expect(mockDeleteFlowproperties).toHaveBeenCalledWith('fp-1', '1.0.0'));
-    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalledTimes(4));
   });
 
   it('uses the open-data route matrix for tgdata flow properties', async () => {

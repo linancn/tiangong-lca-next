@@ -20,7 +20,7 @@ import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import UnitView from './Unit/view';
 import { complianceOptions } from './optiondata';
@@ -31,6 +31,8 @@ type Props = {
   lang: string;
   buttonType: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
+  autoOpen?: boolean;
+  onDrawerClose?: () => void;
 };
 
 const getComplianceLabel = (value: string) => {
@@ -38,7 +40,14 @@ const getComplianceLabel = (value: string) => {
   return option ? option.label : '-';
 };
 
-const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
+const ContactView: FC<Props> = ({
+  id,
+  version,
+  lang,
+  buttonType,
+  autoOpen = false,
+  onDrawerClose,
+}) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [spinning, setSpinning] = useState(false);
@@ -386,7 +395,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
     ),
   };
 
-  const onView = () => {
+  const onView = useCallback(() => {
     console.log('onView', id, version);
     setDrawerVisible(true);
     setSpinning(true);
@@ -417,21 +426,35 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
       // }
       setSpinning(false);
     });
+  }, [id, version]);
+
+  useEffect(() => {
+    if (autoOpen && id && version) {
+      onView();
+    }
+  }, [autoOpen, id, onView, version]);
+
+  const handleClose = () => {
+    setDrawerVisible(false);
+    onDrawerClose?.();
   };
 
   return (
     <>
-      {buttonType === 'icon' ? (
-        <Tooltip
-          title={<FormattedMessage id='pages.button.view' defaultMessage='View'></FormattedMessage>}
-        >
-          <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
-        </Tooltip>
-      ) : (
-        <Button onClick={onView}>
-          <FormattedMessage id='pages.button.view' defaultMessage='View' />
-        </Button>
-      )}
+      {!autoOpen &&
+        (buttonType === 'icon' ? (
+          <Tooltip
+            title={
+              <FormattedMessage id='pages.button.view' defaultMessage='View'></FormattedMessage>
+            }
+          >
+            <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
+          </Tooltip>
+        ) : (
+          <Button onClick={onView}>
+            <FormattedMessage id='pages.button.view' defaultMessage='View' />
+          </Button>
+        ))}
 
       <Drawer
         getContainer={() => document.body}
@@ -444,13 +467,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         width='90%'
         closable={false}
         extra={
-          <Button
-            icon={<CloseOutlined />}
-            style={{ border: 0 }}
-            onClick={() => {
-              setDrawerVisible(false);
-            }}
-          ></Button>
+          <Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={handleClose}></Button>
         }
         // footer={
         //   <Space size={'middle'} className={styles.footer_right}>
@@ -459,9 +476,7 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
         // }
         maskClosable={true}
         open={drawerVisible}
-        onClose={() => {
-          setDrawerVisible(false);
-        }}
+        onClose={handleClose}
       >
         <Spin spinning={spinning}>
           <Card

@@ -288,6 +288,30 @@ describe('UnitGroupView', () => {
     expect(screen.getByTestId('unit-view')).toHaveTextContent('unit-1');
   });
 
+  it('opens automatically without rendering a trigger and calls the close callback', async () => {
+    const onDrawerClose = jest.fn();
+
+    renderWithProviders(
+      <UnitGroupView
+        id='ug-auto'
+        version='3.0'
+        lang='en'
+        buttonType='icon'
+        autoOpen
+        onDrawerClose={onDrawerClose}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('ug-auto', '3.0'));
+    expect(screen.queryByText('profile-icon')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /View Unit group/i })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
+
+    expect(onDrawerClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog', { name: /View Unit group/i })).not.toBeInTheDocument();
+  });
+
   it('supports the text trigger, fallback labels, drawer close handlers, and sparse datasets', async () => {
     mockGetUnitGroupDetail.mockResolvedValueOnce({
       data: null,

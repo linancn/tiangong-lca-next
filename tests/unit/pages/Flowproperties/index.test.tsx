@@ -18,6 +18,7 @@ let mockLocation = {
   search: '?tid=team-1',
 };
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
+let mockFlowpropertyViewCalls: any[] = [];
 
 const mockContributeSource = jest.fn();
 const mockGetFlowpropertyTableAll = jest.fn();
@@ -209,9 +210,19 @@ jest.mock('@/pages/Flowproperties/Components/edit', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/view', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => (
-    <div data-testid='flowproperty-view'>{`${id}:${version}`}</div>
-  ),
+  default: (props: any) => {
+    mockFlowpropertyViewCalls.push(props);
+    return (
+      <div data-testid='flowproperty-view'>
+        {`${props.id}:${props.version}`}
+        {props.autoOpen ? (
+          <button type='button' onClick={() => props.onDrawerClose?.()}>
+            flowproperty-view-close
+          </button>
+        ) : null}
+      </div>
+    );
+  },
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -376,6 +387,7 @@ describe('FlowpropertiesPage', () => {
       search: '?tid=team-1',
     };
     mockBreakpointScreens = {};
+    mockFlowpropertyViewCalls = [];
     mockGetDataSource.mockReturnValue('my');
     mockGetRoleByUserId.mockResolvedValue([
       {
@@ -411,22 +423,35 @@ describe('FlowpropertiesPage', () => {
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
   });
 
-  it('returns an empty locked table for non-admin my-data users', async () => {
+  it('loads existing my-data flow properties as read-only for non-admin users', async () => {
     mockGetRoleByUserId.mockResolvedValue([]);
 
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
-    await waitFor(() => expect(screen.getByRole('button', { name: /search/i })).toBeDisabled());
+    await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
 
-    expect(mockGetFlowpropertyTableAll).not.toHaveBeenCalled();
+    expect(mockGetFlowpropertyTableAll).toHaveBeenCalledWith(
+      { pageSize: 10, current: 1 },
+      {},
+      'en',
+      'my',
+      'team-1',
+      'all',
+    );
+    expect(screen.getByRole('button', { name: /search/i })).not.toBeDisabled();
     expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /table-filter/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /import-data/i })).toBeDisabled();
-    expect(screen.getAllByTestId('flowproperty-create')[0]).toHaveTextContent('"disabled":true');
+    expect(screen.getByRole('button', { name: /table-filter/i })).not.toBeDisabled();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flowproperty-create')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flowproperty-delete')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flowproperty-edit')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+    expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
+    expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
   });
 
-  it('loads the default table and keeps imported data in the create action', async () => {
+  it('loads the default table with read-only my-data actions', async () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetTeamById).toHaveBeenCalledWith('team-1'));
@@ -453,30 +478,18 @@ describe('FlowpropertiesPage', () => {
     expect(screen.getByText('Global warming potential')).toBeInTheDocument();
     expect(screen.getByText('sup:kg')).toBeInTheDocument();
     expect(screen.getByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
-    expect(screen.getByTestId('flowproperty-delete')).toHaveTextContent('fp-1:01.00.000');
-    expect(screen.getAllByTestId('flowproperty-create')[1]).toHaveTextContent(
-      '"actionType":"createVersion"',
-    );
+    expect(screen.queryByTestId('flowproperty-delete')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flowproperty-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flowproperty-create')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
     expect(screen.getByTestId('table-dropdown')).toBeInTheDocument();
     expect(screen.getByTestId('export-data')).toHaveTextContent('flowproperties:fp-1:01.00.000');
     expect(screen.getByRole('checkbox', { name: 'Reference Lookup' })).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /import-data/i }));
-    expect(
-      screen
-        .getAllByTestId('flowproperty-create')
-        .some((node) => node.textContent?.includes('"importCount":1')),
-    ).toBe(true);
-    await userEvent.click(screen.getByRole('button', { name: /flowproperty-create-close/i }));
-    expect(
-      screen
-        .getAllByTestId('flowproperty-create')
-        .some((node) => node.textContent?.includes('"importCount":0')),
-    ).toBe(true);
-    await userEvent.click(screen.getByTestId('flowproperty-delete'));
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
   });
 
-  it('uses compact mobile controls for my data rows', async () => {
+  it('uses compact mobile controls for my data rows without import actions', async () => {
     mockBreakpointScreens = { md: false };
 
     renderWithProviders(<FlowpropertiesPage />);
@@ -484,7 +497,7 @@ describe('FlowpropertiesPage', () => {
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
     expect(await screen.findByTestId('flowproperty-view')).toHaveTextContent('fp-1:01.00.000');
     expect(screen.getByRole('button', { name: /table-filter/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /import-data/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /import-data/i })).not.toBeInTheDocument();
   });
 
   it('reloads the table with the selected state filter', async () => {
@@ -536,29 +549,13 @@ describe('FlowpropertiesPage', () => {
     );
   });
 
-  it('runs contribute success and non-my option branches', async () => {
+  it('uses non-my option branches without my-data write controls', async () => {
     const { rerender } = renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() => expect(mockGetFlowpropertyTableAll).toHaveBeenCalled());
     await screen.findByTestId('flowproperty-view');
-    const initialTableCalls = mockGetFlowpropertyTableAll.mock.calls.length;
-    await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
-
-    await waitFor(() =>
-      expect(mockContributeSource).toHaveBeenCalledWith('flowproperties', 'fp-1', '01.00.000'),
-    );
-    await waitFor(() =>
-      expect(mockMessage.success).toHaveBeenCalledWith('Contribute successfully'),
-    );
-    await waitFor(() =>
-      expect(mockGetFlowpropertyTableAll.mock.calls.length).toBeGreaterThan(initialTableCalls),
-    );
-
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    mockContributeSource.mockResolvedValueOnce({ error: new Error('contribute failed') });
-    await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
-    await waitFor(() => expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error)));
-    consoleSpy.mockRestore();
+    expect(screen.queryByRole('button', { name: /contribute-action/i })).not.toBeInTheDocument();
+    expect(mockContributeSource).not.toHaveBeenCalled();
 
     mockGetDataSource.mockReturnValue('co');
     mockLocation = {
@@ -744,7 +741,7 @@ describe('FlowpropertiesPage', () => {
     );
   });
 
-  it('opens and closes the route-driven edit drawer for my-data links', async () => {
+  it('opens and closes the route-driven view drawer for my-data links', async () => {
     mockLocation = {
       pathname: '/mydata/flowproperties',
       search: '?tid=team-1&id=fp-route&version=9.9.9',
@@ -753,29 +750,34 @@ describe('FlowpropertiesPage', () => {
     renderWithProviders(<FlowpropertiesPage />);
 
     await waitFor(() =>
-      expect(
-        screen
-          .getAllByTestId('flowproperty-edit')
-          .some((node) => node.textContent?.includes('"autoOpen":true')),
-      ).toBe(true),
+      expect(mockFlowpropertyViewCalls).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'fp-route',
+            version: '9.9.9',
+            autoOpen: true,
+          }),
+        ]),
+      ),
     );
 
-    const autoOpenEdit = screen
-      .getAllByTestId('flowproperty-edit')
-      .find((node) => node.textContent?.includes('"autoOpen":true'));
+    const autoOpenView = screen
+      .getAllByTestId('flowproperty-view')
+      .find((node) => within(node).queryByRole('button', { name: /flowproperty-view-close/i }));
 
-    expect(autoOpenEdit).toHaveTextContent('"id":"fp-route"');
-    expect(autoOpenEdit).toHaveTextContent('"version":"9.9.9"');
+    expect(autoOpenView).toHaveTextContent('fp-route:9.9.9');
 
     await userEvent.click(
-      within(autoOpenEdit!).getByRole('button', { name: /flowproperty-edit-close/i }),
+      within(autoOpenView!).getByRole('button', { name: /flowproperty-view-close/i }),
     );
 
     await waitFor(() =>
       expect(
         screen
-          .getAllByTestId('flowproperty-edit')
-          .some((node) => node.textContent?.includes('"autoOpen":true')),
+          .getAllByTestId('flowproperty-view')
+          .some((node) =>
+            Boolean(within(node).queryByRole('button', { name: /flowproperty-view-close/i })),
+          ),
       ).toBe(false),
     );
   });
