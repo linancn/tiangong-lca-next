@@ -56,9 +56,9 @@ jest.mock('@/components/LangTextItem/form', () => ({
 
 jest.mock('@/components/LevelTextItem/form', () => ({
   __esModule: true,
-  default: ({ name, dataType, onData }: any) => (
+  default: ({ name, dataType, onData, validationHelp, validationStatus }: any) => (
     <button type='button' data-testid='level-text-form' onClick={onData}>
-      {JSON.stringify({ name, dataType })}
+      {JSON.stringify({ name, dataType, validationHelp, validationStatus })}
     </button>
   ),
 }));
@@ -338,6 +338,64 @@ describe('LifeCycleModelForm', () => {
       color: '#ff4d4f',
       fontWeight: '600',
     });
+  });
+
+  it('passes sdk classification validation errors to the classification field', () => {
+    const classificationFormName = [
+      'lifeCycleModelInformation',
+      'dataSetInformation',
+      'classificationInformation',
+      'common:classification',
+      'common:class',
+      'showValue',
+    ];
+
+    renderWithProviders(
+      <LifeCycleModelForm
+        {...baseProps}
+        activeTabKey='lifeCycleModelInformation'
+        sdkValidationDetails={[
+          {
+            fieldPath: classificationFormName.join('.'),
+            formName: classificationFormName,
+            key: 'classification-not-found',
+            suggestedFix: 'Select an existing classification.',
+            tabName: 'lifeCycleModelInformation',
+            validationCode: 'custom',
+          } as any,
+        ]}
+      />,
+    );
+
+    expect(screen.getByTestId('level-text-form')).toHaveTextContent('"validationStatus":"error"');
+    expect(screen.getByTestId('level-text-form')).toHaveTextContent(
+      '"validationHelp":"Please input classification"',
+    );
+  });
+
+  it('matches sdk classification validation errors by fieldPath fallback', () => {
+    const classificationFieldPath =
+      'lifeCycleModelInformation.dataSetInformation.classificationInformation.common:classification.common:class.showValue';
+
+    renderWithProviders(
+      <LifeCycleModelForm
+        {...baseProps}
+        activeTabKey='lifeCycleModelInformation'
+        sdkValidationDetails={[
+          {
+            fieldPath: classificationFieldPath,
+            key: 'classification-field-path-only',
+            tabName: 'lifeCycleModelInformation',
+            validationCode: 'custom',
+          } as any,
+        ]}
+      />,
+    );
+
+    expect(screen.getByTestId('level-text-form')).toHaveTextContent('"validationStatus":"error"');
+    expect(screen.getByTestId('level-text-form')).toHaveTextContent(
+      '"validationHelp":"Please input classification"',
+    );
   });
 
   it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
