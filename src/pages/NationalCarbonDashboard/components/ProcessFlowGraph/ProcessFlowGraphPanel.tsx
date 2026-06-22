@@ -839,12 +839,9 @@ function GraphLoadState({
   title?: string;
 }) {
   const isLoading = dataSource === 'loading';
-  const displayTitle = title ?? (isLoading ? '正在唤醒全量图谱' : '暂无可用数据');
+  const displayTitle = title ?? (isLoading ? '' : '暂无可用数据');
   const displayDescription =
-    description ??
-    (isLoading
-      ? '读取 worker manifest / 解压拓扑索引 / 预热地图缓存'
-      : '缓存暂不可用，等待图谱缓存生成后将恢复展示');
+    description ?? (isLoading ? '' : '缓存暂不可用，等待图谱缓存生成后将恢复展示');
 
   return (
     <div

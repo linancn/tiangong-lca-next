@@ -49,6 +49,12 @@ jest.mock('@ant-design/pro-components', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
+  const Result = ({ status, title, subTitle }: any) => (
+    <section data-testid='antd-result' data-status={status}>
+      <h1>{title}</h1>
+      <p>{subTitle}</p>
+    </section>
+  );
   const Spin = ({ children }: any) => <div data-testid='spin'>{children}</div>;
   const Tabs = ({ items = [], activeKey, onChange }: any) => {
     const currentItem = items.find((item: any) => item.key === activeKey) ?? items[0];
@@ -69,6 +75,7 @@ jest.mock('antd', () => {
 
   return {
     __esModule: true,
+    Result,
     Spin,
     Tabs,
   };

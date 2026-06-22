@@ -1,3 +1,5 @@
+import AccessDenied from '@/components/AccessDenied';
+import { useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
@@ -153,6 +155,9 @@ const statusTonePalette: Record<StatusFilterKey, StatusTone> = {
     soft: 'rgba(17, 169, 215, 0.14)',
   },
 };
+
+export const canViewNationalCarbonDashboard = (currentUser?: Auth.CurrentUser | null) =>
+  currentUser?.access === 'admin';
 
 const numberFormatter = new Intl.NumberFormat('zh-CN');
 let chinaMapDataCache: ChinaMapData | null = null;
@@ -2135,7 +2140,7 @@ function FlowTopologyScreen({
   );
 }
 
-export default function NationalCarbonDashboardPage() {
+export function NationalCarbonDashboardContent() {
   const [activeScreen, setActiveScreen] = useState<ScreenKey>(() => getInitialScreen());
   const rootRef = useRef<HTMLDivElement | null>(null);
   const activeIndex = screens.findIndex((screen) => screen.key === activeScreen);
@@ -2243,4 +2248,14 @@ export default function NationalCarbonDashboardPage() {
       </div>
     </main>
   );
+}
+
+export default function NationalCarbonDashboardPage() {
+  const { initialState } = useModel('@@initialState');
+
+  if (!canViewNationalCarbonDashboard(initialState?.currentUser)) {
+    return <AccessDenied />;
+  }
+
+  return <NationalCarbonDashboardContent />;
 }

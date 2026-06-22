@@ -214,6 +214,12 @@ jest.mock('antd', () => {
   };
 
   const Flex = ({ children }: any) => <div data-testid='flex'>{children}</div>;
+  const Result = ({ status, title, subTitle }: any) => (
+    <section data-testid='antd-result' data-status={status}>
+      <h1>{toText(title)}</h1>
+      <p>{toText(subTitle)}</p>
+    </section>
+  );
 
   const ModalComponent = ({ open, onCancel, onOk, children }: any) =>
     open ? (
@@ -242,6 +248,7 @@ jest.mock('antd', () => {
     Form,
     Input,
     Modal: Object.assign(ModalComponent, { confirm: modalConfirm }),
+    Result,
     Spin,
     Tabs,
     Tooltip,
