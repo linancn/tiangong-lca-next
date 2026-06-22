@@ -2102,6 +2102,54 @@ describe('ProcessEdit component', () => {
     );
   });
 
+  it('passes reference issue tabs into the validation modal and process form during data check', async () => {
+    const sourceRef = {
+      '@type': 'source data set',
+      '@refObjectId': 'source-1',
+      '@version': '01.00.000',
+    };
+    const validationIssues = [
+      {
+        code: 'ruleVerificationFailed',
+        ref: sourceRef,
+        tabName: 'modellingAndValidation',
+        tabNames: ['modellingAndValidation'],
+      },
+    ];
+    mockDealProcress.mockImplementationOnce(
+      (_processDetail, _unReview, _underReview, unRuleVerification) => {
+        unRuleVerification.push(sourceRef);
+      },
+    );
+    mockGetErrRefTab.mockImplementationOnce((ref: any) =>
+      ref?.['@refObjectId'] === 'source-1' ? 'modellingAndValidation' : '',
+    );
+    mockBuildValidationIssues.mockImplementationOnce(({ getRefTabNames, unRuleVerification }) => {
+      expect(unRuleVerification).toEqual([sourceRef]);
+      expect(getRefTabNames(sourceRef)).toEqual(['modellingAndValidation']);
+      return validationIssues;
+    });
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ id: 'source-1' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.validationIssueTabNames).toEqual(['modellingAndValidation']),
+    );
+    await waitFor(() =>
+      expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: validationIssues,
+          title: 'Data validation issues',
+        }),
+      ),
+    );
+  });
+
   it('falls back to empty exchanges when reference updates return no exchange payload', async () => {
     mockUpdateRefsData.mockReturnValue(undefined);
     mockGetRefsOfNewVersion

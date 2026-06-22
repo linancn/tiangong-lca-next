@@ -374,6 +374,31 @@ const pushValidationIssue = (
   issues.push(issue);
 };
 
+type ValidationIssueRefTabNamesResolver = (
+  ref: refDataType,
+) => string | string[] | null | undefined;
+
+const getValidationIssueRefTabProps = (
+  ref: refDataType,
+  getRefTabNames?: ValidationIssueRefTabNamesResolver,
+): Pick<ValidationIssue, 'tabName' | 'tabNames'> => {
+  const rawTabNames = getRefTabNames?.(ref);
+  const tabNames = (Array.isArray(rawTabNames) ? rawTabNames : [rawTabNames])
+    .map((tabName) => (typeof tabName === 'string' ? tabName.trim() : ''))
+    .filter(
+      (tabName, index, allTabNames) => tabName.length > 0 && allTabNames.indexOf(tabName) === index,
+    );
+
+  if (tabNames.length === 0) {
+    return {};
+  }
+
+  return {
+    tabName: tabNames[0],
+    tabNames,
+  };
+};
+
 export const mapValidationIssuesToRefCheckData = (issues: ValidationIssue[]): RefCheckType[] => {
   const issueMap = new Map<string, RefCheckType>();
 
@@ -833,6 +858,7 @@ export const validateDatasetWithSdk = (
 export const buildValidationIssues = ({
   rootRef,
   datasetSdkValid,
+  getRefTabNames,
   sdkInvalidTabNames = [],
   sdkInvalidDetails = [],
   nonExistentRef = [],
@@ -842,6 +868,7 @@ export const buildValidationIssues = ({
 }: {
   actionFrom?: 'checkData' | 'review';
   datasetSdkValid: boolean;
+  getRefTabNames?: ValidationIssueRefTabNamesResolver;
   sdkInvalidDetails?: ValidationIssueSdkDetail[];
   sdkInvalidTabNames?: string[];
   nonExistentRef?: refDataType[];
@@ -879,6 +906,7 @@ export const buildValidationIssues = ({
       code: 'ruleVerificationFailed',
       link: getDatasetDetailAbsoluteUrl(ref),
       ref,
+      ...getValidationIssueRefTabProps(ref, getRefTabNames),
     });
   });
 
@@ -887,6 +915,7 @@ export const buildValidationIssues = ({
       code: 'nonExistentRef',
       link: getDatasetDetailAbsoluteUrl(ref),
       ref,
+      ...getValidationIssueRefTabProps(ref, getRefTabNames),
     });
   });
 
@@ -902,6 +931,7 @@ export const buildValidationIssues = ({
         code: 'versionIsInTg',
         link: getDatasetDetailAbsoluteUrl(ref),
         ref,
+        ...getValidationIssueRefTabProps(ref, getRefTabNames),
       });
       return;
     }
@@ -915,6 +945,7 @@ export const buildValidationIssues = ({
         link: getDatasetDetailAbsoluteUrl(ref),
         ref,
         underReviewVersion: node.underReviewVersion,
+        ...getValidationIssueRefTabProps(ref, getRefTabNames),
       });
     }
   });

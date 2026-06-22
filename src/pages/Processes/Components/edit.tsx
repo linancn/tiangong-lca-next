@@ -396,6 +396,7 @@ const ProcessEdit: FC<Props> = ({
   });
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
+  const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
     refCheckData: RefCheckType[];
   }>({
@@ -1204,9 +1205,47 @@ const ProcessEdit: FC<Props> = ({
     allRefs.add(`${processDetail.id}:${processDetail.version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
+    const referenceValidationTabNames: string[] = [];
+    const referenceValidationTabNamesByKey = new Map<string, string[]>();
+
+    const getReferenceValidationKey = (ref: refDataType | RefProblemNode) =>
+      `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+
+    const collectReferenceValidationTabName = (item: refDataType | RefProblemNode) => {
+      const tabName = getErrRefTab(item, processDetail);
+
+      if (!tabName) {
+        return;
+      }
+
+      if (!errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+
+      if (!referenceValidationTabNames.includes(tabName)) {
+        referenceValidationTabNames.push(tabName);
+      }
+
+      const key = getReferenceValidationKey(item);
+      const existingTabNames = referenceValidationTabNamesByKey.get(key) ?? [];
+      if (!existingTabNames.includes(tabName)) {
+        referenceValidationTabNamesByKey.set(key, [...existingTabNames, tabName]);
+      }
+    };
+
+    nonExistentRef.forEach((item) => {
+      collectReferenceValidationTabName(item);
+    });
+    unRuleVerification.forEach((item) => {
+      collectReferenceValidationTabName(item);
+    });
+    problemNodes.forEach((item) => {
+      collectReferenceValidationTabName(item);
+    });
     const validationIssues = buildValidationIssues({
       actionFrom: from,
       datasetSdkValid: currentDatasetValid,
+      getRefTabNames: (ref) => referenceValidationTabNamesByKey.get(getReferenceValidationKey(ref)),
       nonExistentRef,
       problemNodes,
       rootRef,
@@ -1214,6 +1253,9 @@ const ProcessEdit: FC<Props> = ({
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
+
+    setValidationIssueTabNames(referenceValidationTabNames);
+
     if (validationIssues.length > 0) {
       setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
     } else {
@@ -1236,25 +1278,6 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: true, unReview };
     }
-
-    nonExistentRef.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
-    unRuleVerification.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
-    problemNodes.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
 
     let validationHint = intl.formatMessage({
       id: 'pages.button.check.error',
@@ -1462,6 +1485,7 @@ const ProcessEdit: FC<Props> = ({
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
+    setValidationIssueTabNames([]);
     setSdkValidationFocus(null);
   }, [setViewDrawerVisible]);
 
@@ -1486,6 +1510,7 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setRefCheckData([]);
+      setValidationIssueTabNames([]);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
       setSdkValidationDismissedFieldKeys(new Set());
@@ -1765,6 +1790,7 @@ const ProcessEdit: FC<Props> = ({
                 sdkValidationDismissedFieldKeys={sdkValidationDismissedFieldKeys}
                 sdkValidationFocus={sdkValidationFocus}
                 showRules={showRules}
+                validationIssueTabNames={validationIssueTabNames}
               />
               <Form.Item name='id' hidden>
                 <Input />

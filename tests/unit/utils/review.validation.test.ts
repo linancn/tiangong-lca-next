@@ -384,6 +384,73 @@ describe('review helper coverage', () => {
     ).toEqual([]);
   });
 
+  it('adds resolved tab names to reference validation issues', () => {
+    const rootRef = {
+      '@type': 'process data set',
+      '@refObjectId': 'process-root',
+      '@version': '01.00.000',
+    } as const;
+    const sourceRef = {
+      '@type': 'source data set',
+      '@refObjectId': 'source-1',
+      '@version': '01.00.000',
+    } as const;
+    const flowRef = {
+      '@type': 'flow data set',
+      '@refObjectId': 'flow-1',
+      '@version': '01.00.000',
+    } as const;
+
+    const issues = buildValidationIssues({
+      actionFrom: 'review',
+      datasetSdkValid: true,
+      getRefTabNames: (ref) => {
+        if (ref['@refObjectId'] === 'source-1') {
+          return ['modellingAndValidation', 'modellingAndValidation'];
+        }
+
+        if (ref['@refObjectId'] === 'flow-1') {
+          return 'exchanges';
+        }
+
+        return undefined;
+      },
+      nonExistentRef: [sourceRef],
+      problemNodes: [
+        {
+          ...flowRef,
+          ruleVerification: true,
+          nonExistent: false,
+          versionUnderReview: true,
+          underReviewVersion: '01.00.000',
+        },
+      ],
+      rootRef,
+      unRuleVerification: [flowRef],
+    });
+
+    expect(issues).toEqual([
+      expect.objectContaining({
+        code: 'ruleVerificationFailed',
+        ref: flowRef,
+        tabName: 'exchanges',
+        tabNames: ['exchanges'],
+      }),
+      expect.objectContaining({
+        code: 'nonExistentRef',
+        ref: sourceRef,
+        tabName: 'modellingAndValidation',
+        tabNames: ['modellingAndValidation'],
+      }),
+      expect.objectContaining({
+        code: 'underReview',
+        ref: flowRef,
+        tabName: 'exchanges',
+        tabNames: ['exchanges'],
+      }),
+    ]);
+  });
+
   it('suppresses the root rule-verification issue when sdk invalid already covers the same dataset', () => {
     const rootRef = {
       '@type': 'process data set',
