@@ -175,5 +175,6 @@ export default defineConfig({
     'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
     'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
     'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
+    'process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED': process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED,
   },
 });

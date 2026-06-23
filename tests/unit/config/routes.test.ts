@@ -11,4 +11,14 @@ describe('route access config', () => {
       menu: false,
     });
   });
+
+  it('protects data processing with data product manager access', () => {
+    const dataProcessingRoute = routes.find((route) => route.path === '/data-processing');
+
+    expect(dataProcessingRoute).toMatchObject({
+      access: 'canDataProductManager',
+      component: './DataProcessing',
+      name: 'dataProcessing',
+    });
+  });
 });

@@ -1598,6 +1598,7 @@ const ProcessView: FC<Props> = ({
     lciaResults: (
       <ProcessLciaResultsPanel
         baseRows={lciaResultDataSource}
+        enablePublishedPackageReader={process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED === 'true'}
         lang={lang}
         processId={id}
         processVersion={version}

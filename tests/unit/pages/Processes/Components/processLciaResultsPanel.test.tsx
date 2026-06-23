@@ -7,6 +7,7 @@ const mockGetLangText = jest.fn();
 const mockGetReferenceQuantityFromMethod = jest.fn();
 const mockQueryLcaResults = jest.fn();
 const mockIsLcaFunctionInvokeError = jest.fn();
+const mockGetPublishedLciaResultPackage = jest.fn();
 const mockUseLocation = jest.fn();
 
 const toText = (node: any): string => {
@@ -43,6 +44,11 @@ jest.mock('@/services/lca', () => ({
   __esModule: true,
   isLcaFunctionInvokeError: (...args: any[]) => mockIsLcaFunctionInvokeError(...args),
   queryLcaResults: (...args: any[]) => mockQueryLcaResults(...args),
+}));
+
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  getPublishedLciaResultPackage: (...args: any[]) => mockGetPublishedLciaResultPackage(...args),
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -130,7 +136,102 @@ describe('ProcessLciaResultsPanel', () => {
       meta: { computed_at: '2026-04-28T00:00:00Z' },
       data: { values: [] },
     });
+    mockGetPublishedLciaResultPackage.mockResolvedValue({
+      data: {
+        publication: null,
+        package: null,
+        rowCount: 0,
+        values: [],
+      },
+      error: null,
+    });
     mockUseLocation.mockReturnValue({ pathname: '/mydata/processes', search: '' });
+  });
+
+  it('loads published LCIA rows for open-data processes without querying solver', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-1' },
+        package: { id: 'package-1', version: 3 },
+        rowCount: 1,
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 1,
+            impact_name: 'Climate change',
+            unit: 'kg CO2 eq',
+            value: 12.5,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledWith({
+        processId: 'process-1',
+        processVersion: '1.0',
+      }),
+    );
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(await screen.findByText(/source=published_package/)).toBeInTheDocument();
+    expect(await screen.findByText('Climate change')).toBeInTheDocument();
+    expect(screen.getByText('12.5')).toBeInTheDocument();
+    expect(screen.getByText('kg CO2 eq')).toBeInTheDocument();
+  });
+
+  it('shows an empty published state without falling back to solver when package has no row values', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-1' },
+        package: { id: 'package-1' },
+        rowCount: 0,
+        values: [],
+      },
+      error: null,
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[
+          {
+            key: 'legacy-row',
+            meanAmount: 99,
+            referenceToLCIAMethodDataSet: {
+              '@refObjectId': 'legacy-impact',
+              'common:shortDescription': { '#text': 'Legacy LCIA' },
+            },
+          },
+        ]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(
+      screen.getByText('No published LCIA result rows are available for this process.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Legacy LCIA')).not.toBeInTheDocument();
   });
 
   it('normalizes missing base rows and queries solver without optional version or scope', async () => {

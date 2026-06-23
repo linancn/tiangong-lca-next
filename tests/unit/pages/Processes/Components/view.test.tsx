@@ -36,6 +36,7 @@ const mockGetLangText = jest.fn();
 const mockGetLangJson = jest.fn();
 const mockQueryLcaResults = jest.fn();
 const mockIsLcaFunctionInvokeError = jest.fn(() => false);
+const mockGetPublishedLciaResultPackage = jest.fn();
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetDecompressedMethod = jest.fn();
 const mockGetReferenceQuantityFromMethod = jest.fn();
@@ -88,6 +89,11 @@ jest.mock('@/services/lca', () => ({
   __esModule: true,
   queryLcaResults: (...args: any[]) => mockQueryLcaResults(...args),
   isLcaFunctionInvokeError: (...args: any[]) => mockIsLcaFunctionInvokeError(...args),
+}));
+
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  getPublishedLciaResultPackage: (...args: any[]) => mockGetPublishedLciaResultPackage(...args),
 }));
 
 jest.mock('@/services/lciaMethods/util', () => ({
@@ -397,6 +403,7 @@ const processDataSet = {
 describe('ProcessView component', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     jest.useRealTimers();
     mockGetLangText.mockImplementation((value: any) => {
       if (typeof value === 'string') return value;
@@ -438,6 +445,15 @@ describe('ProcessView component', () => {
           },
         ],
       },
+    });
+    mockGetPublishedLciaResultPackage.mockResolvedValue({
+      data: {
+        publication: null,
+        package: null,
+        rowCount: 0,
+        values: [],
+      },
+      error: null,
     });
   });
 
@@ -574,6 +590,44 @@ describe('ProcessView component', () => {
         allow_fallback: false,
       }),
     );
+  });
+
+  it('uses published LCIA package reader on the tgdata route when enabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-1' },
+        package: { id: 'package-1' },
+        rowCount: 1,
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 0,
+            impact_name: 'Published climate change',
+            unit: 'kg CO2-eq',
+            value: 52,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledWith({
+        processId: 'process-1',
+        processVersion: '1.0.0',
+      }),
+    );
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(screen.getByText(/source=published_package/)).toBeInTheDocument();
+    expect(screen.getAllByText('Published climate change').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('52').length).toBeGreaterThan(0);
   });
 
   it('opens with the result-icon trigger and renders fallback labels for unsupported option codes', async () => {
