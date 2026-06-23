@@ -833,6 +833,7 @@ describe('simple dataset sdk validation detail mapping', () => {
           fieldLabel: 'Localized text (ZH)',
           rawCode: 'localized_text_zh_must_include_chinese_character',
           tabName: 'meta',
+          validationCode: 'localized_text_zh_must_include_chinese_character',
         }),
         expect.objectContaining({
           fieldPath: 'custom.meta.dynamic',
@@ -845,6 +846,49 @@ describe('simple dataset sdk validation detail mapping', () => {
       ]),
     );
     expect(details).toHaveLength(4);
+  });
+
+  it('promotes custom sdk params validationCode into the detail validation code', () => {
+    const details = normalizeSimpleDatasetSdkValidationDetails(
+      [
+        {
+          code: 'custom',
+          message:
+            "@xml:lang values starting with 'zh' must include at least one Chinese character",
+          params: {
+            validationCode: 'localized_text_zh_must_include_chinese_character',
+          },
+          path: ['demoDataSet', 'meta', 'localized', 0, '#text'],
+        },
+      ],
+      {
+        demoDataSet: {
+          meta: {
+            localized: [
+              {
+                '@xml:lang': 'zh',
+                '#text': 'English content',
+              },
+            ],
+          },
+        },
+      },
+      simpleConfig,
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath: 'meta.localized.0.#text',
+        formName: ['meta', 'localized', 0, '#text'],
+        reasonMessage:
+          "@xml:lang values starting with 'zh' must include at least one Chinese character",
+        tabName: 'meta',
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+        validationParams: expect.objectContaining({
+          validationCode: 'localized_text_zh_must_include_chinese_character',
+        }),
+      }),
+    ]);
   });
 
   it('covers fallback field-label, tab-name, and language-helper branches for sparse paths', () => {

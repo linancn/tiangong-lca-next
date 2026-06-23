@@ -64,6 +64,10 @@ const parseSdkFieldPathToFormName = (fieldPath?: string) => {
   return segments.map((segment) => (/^\d+$/.test(segment) ? Number(segment) : segment));
 };
 
+const isLangTextSdkFieldFormName = (formName?: Array<string | number>) => {
+  return formName?.[0] === 'generalComment' && formName?.[formName.length - 1] === '#text';
+};
+
 const PropertyEdit: FC<Props> = ({
   id,
   data,
@@ -101,7 +105,7 @@ const PropertyEdit: FC<Props> = ({
         const fieldKey = formName ? formName.map(String).join('.') : '';
         const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
 
-        if (!formName || !fieldKey || !messageText) {
+        if (!formName || !fieldKey || !messageText || isLangTextSdkFieldFormName(formName)) {
           return accumulator;
         }
 
@@ -131,6 +135,44 @@ const PropertyEdit: FC<Props> = ({
         });
         return accumulator;
       }, new Map()),
+    [sdkHighlights],
+  );
+
+  const langTextSdkFieldErrors = useMemo(
+    () =>
+      sdkHighlights.reduce<Record<string, Record<number, string[]>>>((accumulator, detail) => {
+        const formName =
+          (Array.isArray(detail.formName) && detail.formName.length > 0
+            ? detail.formName
+            : parseSdkFieldPathToFormName(detail.fieldPath)) ??
+          (detail.fieldKey ? [detail.fieldKey] : undefined);
+        const fieldName = typeof formName?.[0] === 'string' ? formName[0] : undefined;
+
+        if (!formName || !isLangTextSdkFieldFormName(formName) || !fieldName) {
+          return accumulator;
+        }
+
+        const itemIndex = typeof formName[1] === 'number' ? formName[1] : 0;
+        const messageText = getSdkSuggestedFixMessage(intlRef.current, detail);
+
+        if (!messageText) {
+          return accumulator;
+        }
+
+        if (!accumulator[fieldName]) {
+          accumulator[fieldName] = {};
+        }
+
+        if (!accumulator[fieldName][itemIndex]) {
+          accumulator[fieldName][itemIndex] = [];
+        }
+
+        if (!accumulator[fieldName][itemIndex].includes(messageText)) {
+          accumulator[fieldName][itemIndex].push(messageText);
+        }
+
+        return accumulator;
+      }, {}),
     [sdkHighlights],
   );
 
@@ -473,6 +515,7 @@ const PropertyEdit: FC<Props> = ({
             >
               <LangTextItemForm
                 name={['generalComment']}
+                fieldErrorMessages={langTextSdkFieldErrors.generalComment}
                 label={
                   <FormattedMessage
                     id='pages.flow.view.flowProperties.generalComment'
