@@ -26,6 +26,7 @@
 ### Task 1: Access, Route, And Header Entry
 
 **Files:**
+
 - Modify: `src/typings.d.ts`
 - Modify: `src/access.ts`
 - Modify: `src/app.tsx`
@@ -103,6 +104,7 @@ Expected: PASS.
 ### Task 2: Data Product Service API
 
 **Files:**
+
 - Create: `src/services/dataProducts/api.ts`
 - Create: `src/services/dataProducts/index.ts`
 - Test: `tests/unit/services/dataProducts/api.test.ts`
@@ -139,13 +141,16 @@ await getPublishedLciaResultPackage({
   impactCategoryId: 'climate-change',
 });
 
-expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', expect.objectContaining({
-  body: {
-    processId: '11111111-1111-4111-8111-111111111111',
-    processVersion: '01.00.000',
-    impactCategoryId: 'climate-change',
-  },
-}));
+expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+  'data_product_results',
+  expect.objectContaining({
+    body: {
+      processId: '11111111-1111-4111-8111-111111111111',
+      processVersion: '01.00.000',
+      impactCategoryId: 'climate-change',
+    },
+  }),
+);
 ```
 
 - [ ] **Step 2: Run service test and verify RED**
@@ -171,7 +176,9 @@ export async function publishLciaResultPackage(request: PublishLciaResultPackage
   return invokeDataProductCommand({ action: 'publish_package', ...request });
 }
 
-export async function unpublishLciaResultPublication(request: UnpublishLciaResultPublicationRequest) {
+export async function unpublishLciaResultPublication(
+  request: UnpublishLciaResultPublicationRequest,
+) {
   return invokeDataProductCommand({ action: 'unpublish_publication', ...request });
 }
 ```
@@ -187,6 +194,7 @@ Expected: PASS.
 ### Task 3: Data Processing Workbench Page
 
 **Files:**
+
 - Create: `src/pages/DataProcessing/index.tsx`
 - Test: `tests/unit/pages/DataProcessing/index.test.tsx`
 
@@ -228,6 +236,7 @@ Expected: PASS.
 ### Task 4: Published LCIA Source In Process Result Panel
 
 **Files:**
+
 - Modify: `src/pages/Processes/Components/processLciaResultsPanel.tsx`
 - Test: `tests/unit/pages/Processes/Components/processLciaResultsPanel.test.tsx`
 
@@ -296,6 +305,7 @@ Expected: PASS.
 ### Task 5: Focused Regression And Build Validation
 
 **Files:**
+
 - No new source files.
 
 - [ ] **Step 1: Run all touched focused suites**

@@ -199,6 +199,117 @@ describe('dataProducts api', () => {
     });
   });
 
+  it('normalizes command failure envelopes returned as successful function responses', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: {
+          ok: false,
+          error: 'package_not_previewable',
+          message: 'Package is not previewable',
+          status: 409,
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: false,
+          detail: 'Package detail failure',
+        },
+        error: null,
+      });
+
+    await expect(previewLciaResultPackage('package-1')).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Package is not previewable',
+        code: 'package_not_previewable',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 409,
+      statusText: 'package_not_previewable',
+    });
+
+    await expect(previewLciaResultPackage('package-2')).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Package detail failure',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 400,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
+  it('falls back when function errors have no parseable JSON context', async () => {
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'Network failure',
+        },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: 'FunctionsHttpError',
+          context: {
+            status: 500,
+            json: async () => {
+              throw new Error('invalid json');
+            },
+          },
+        },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {},
+      });
+
+    await expect(previewLciaResultPackage('package-1')).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Network failure',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+
+    await expect(previewLciaResultPackage('package-2')).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+
+    await expect(previewLciaResultPackage('package-3')).resolves.toEqual({
+      data: null,
+      error: {
+        message: 'Request failed',
+        code: 'FUNCTION_ERROR',
+        details: '',
+        hint: '',
+      },
+      count: null,
+      status: 500,
+      statusText: 'FUNCTION_ERROR',
+    });
+  });
+
   it('reads public published LCIA package metadata without requiring a session', async () => {
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
     mockFunctionsInvoke.mockResolvedValueOnce({
@@ -239,6 +350,35 @@ describe('dataProducts api', () => {
     expect(result.data?.values?.[0]).toMatchObject({
       impact_id: 'climate-change',
       value: 42,
+    });
+  });
+
+  it('reads raw public package payloads and omits optional impact category filters', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        publication: { publicationId: 'publication-1' },
+        package: { packageId: 'package-1' },
+        rowCount: 0,
+      },
+      error: null,
+    });
+
+    const result = await getPublishedLciaResultPackage({
+      processId: '11111111-1111-4111-8111-111111111111',
+      processVersion: '01.00.000',
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', {
+      body: {
+        processId: '11111111-1111-4111-8111-111111111111',
+        processVersion: '01.00.000',
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.data).toMatchObject({
+      publication: { publicationId: 'publication-1' },
+      rowCount: 0,
     });
   });
 });
