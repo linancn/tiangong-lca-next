@@ -14,12 +14,26 @@ import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/for
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Select, Space, theme } from 'antd';
 import type { FC } from 'react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import schema from '../lifecyclemodels.json';
 import { licenseTypeOptions } from './optiondata';
 
 const LIFE_CYCLE_MODEL_SCHEMA_PATH_PREFIX = ['lifeCycleModelDataSet'];
+const LIFE_CYCLE_MODEL_CLASSIFICATION_FORM_NAME = [
+  'lifeCycleModelInformation',
+  'dataSetInformation',
+  'classificationInformation',
+  'common:classification',
+  'common:class',
+  'showValue',
+] as const;
+
+const isSameFormName = (left?: Array<string | number>, right?: readonly (string | number)[]) =>
+  !!left &&
+  !!right &&
+  left.length === right.length &&
+  left.every((segment, index) => segment === right[index]);
 
 type Props = {
   lang: string;
@@ -32,6 +46,7 @@ type Props = {
   actionType?: 'create' | 'copy' | 'createVersion';
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 export const LifeCycleModelForm: FC<Props> = ({
   lang,
@@ -44,6 +59,7 @@ export const LifeCycleModelForm: FC<Props> = ({
   actionType,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -62,9 +78,33 @@ export const LifeCycleModelForm: FC<Props> = ({
     schemaRoot: schema,
     showRules,
   });
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
+  const classificationSdkValidationDetail = useMemo(
+    () =>
+      sdkValidationDetails.find(
+        (detail) =>
+          detail.presentation !== 'highlight-only' &&
+          (isSameFormName(detail.formName, LIFE_CYCLE_MODEL_CLASSIFICATION_FORM_NAME) ||
+            detail.fieldPath === LIFE_CYCLE_MODEL_CLASSIFICATION_FORM_NAME.join('.')),
+      ),
+    [sdkValidationDetails],
+  );
+  const classificationSdkValidationHelp = useMemo(() => {
+    if (!classificationSdkValidationDetail) {
+      return undefined;
+    }
+
+    return intl.formatMessage({
+      id: 'pages.contact.validator.classification.required',
+      defaultMessage: 'Please input classification',
+    });
+  }, [classificationSdkValidationDetail, intl]);
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span
@@ -329,6 +369,8 @@ export const LifeCycleModelForm: FC<Props> = ({
           dataType={'LifeCycleModel'}
           onData={onData}
           showRules={showRules}
+          validationHelp={classificationSdkValidationHelp}
+          validationStatus={classificationSdkValidationHelp ? 'error' : undefined}
           rules={
             showRules
               ? getRules(

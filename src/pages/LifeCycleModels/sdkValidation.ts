@@ -27,6 +27,7 @@ const LIFECYCLEMODEL_FIELD_LABELS_BY_KEY: Record<string, string> = {
   'common:referenceToOwnershipOfDataSet': 'Owner of data set',
   'common:referenceToPersonOrEntityEnteringTheData': 'Data entry by',
   'common:timeStamp': 'Time stamp (last saved)',
+  '@classId': 'Classification',
   '@refObjectId': 'Reference identifier',
   baseName: 'Base name',
   functionalUnitFlowProperties: 'Quantitative product or process properties',

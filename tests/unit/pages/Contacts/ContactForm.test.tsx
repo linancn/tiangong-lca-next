@@ -298,6 +298,15 @@ describe('ContactForm component', () => {
     });
   });
 
+  it('highlights tabs with reference validation issues using the error color token', () => {
+    renderForm({ validationIssueTabNames: ['contactInformation'] });
+
+    expect(screen.getByText('Contact information')).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
   it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
     mockSdkValidationCountsByTab = {
       contactInformation: 1,

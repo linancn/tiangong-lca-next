@@ -64,7 +64,7 @@ jest.mock('antd', () => {
       <div>
         {tabList.map((tab: any) => (
           <button type='button' key={tab.key} onClick={() => onTabChange?.(tab.key)}>
-            {toText(tab.tab)}
+            {tab.tab}
           </button>
         ))}
       </div>
@@ -97,7 +97,16 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const Tooltip = ({ children }: any) => <>{children}</>;
   const Divider = ({ children }: any) => <div>{children}</div>;
-  const theme = { useToken: () => ({ token: { colorTextDescription: '#000' } }) };
+  const theme = {
+    useToken: () => ({
+      token: {
+        colorError: '#ff4d4f',
+        colorPrimary: '#1677ff',
+        colorTextDescription: '#000',
+        fontWeightStrong: 600,
+      },
+    }),
+  };
   return { __esModule: true, Card, Form, Input, Select, Space, Tooltip, Divider, theme };
 });
 
@@ -257,6 +266,17 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
 
     fireEvent.click(screen.getByText('Modelling and validation'));
     expect(props.onTabChange).toHaveBeenCalled();
+  });
+
+  it('highlights tabs with reference validation issues using the error color token', async () => {
+    await act(async () => {
+      render(<FlowForm {...baseProps()} validationIssueTabNames={['administrativeInformation']} />);
+    });
+
+    expect(screen.getByText('Administrative information').parentElement).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
   });
 
   it('resets classification fields when switching away from elementary flow', async () => {

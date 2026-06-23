@@ -28,6 +28,7 @@ import {
   buildValidationIssues,
   checkReferences,
   checkVersions,
+  collectValidationIssueRefTabNames,
   dealModel,
   dealProcress,
   enrichValidationIssuesWithOwner,
@@ -188,6 +189,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
     const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
       null,
     );
+    const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
     const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
     const parentRefCheckContext = useRefCheckContext();
     const [refCheckContextValue, setRefCheckContextValue] = useState<{
@@ -338,6 +340,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setShowRules(false);
         setSdkValidationDetails([]);
         setSdkValidationFocus(null);
+        setValidationIssueTabNames([]);
         onProcessInstanceValidationChange([]);
         return;
       }
@@ -551,9 +554,27 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       await checkVersions(allRefs, path);
 
       const problemNodes = (path?.findProblemNodes(from) ?? []) as ReviewProblemNode[];
+      const modelDataset = orderedValidationDataset?.lifeCycleModelDataSet;
+      const shouldShowDatasetRefTabName = (item: refDataType | ReviewProblemNode) =>
+        item['@type'] !== 'lifeCycleModel data set' && item['@type'] !== 'process data set';
+      const { getRefTabNames, tabNames: referenceValidationTabNames } =
+        collectValidationIssueRefTabNames({
+          refs: [
+            ...nonExistentRef,
+            ...unRuleVerification.filter(shouldShowDatasetRefTabName),
+            ...problemNodes.filter(shouldShowDatasetRefTabName),
+          ],
+          resolveTabName: (item) => getErrRefTab(item, modelDataset),
+        });
+      referenceValidationTabNames.forEach((tabName) => {
+        if (!errTabNames.includes(tabName)) {
+          errTabNames.push(tabName);
+        }
+      });
       const validationIssues = buildValidationIssues({
         actionFrom: from,
         datasetSdkValid: currentDatasetValid,
+        getRefTabNames,
         nonExistentRef,
         problemNodes,
         rootRef,
@@ -561,6 +582,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         sdkInvalidTabNames: currentDatasetTabNames,
         unRuleVerification,
       });
+      setValidationIssueTabNames(referenceValidationTabNames);
       if (validationIssues.length > 0) {
         setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
       } else {
@@ -597,36 +619,6 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
         setSpinning(false);
         return { checkResult: true, unReview, problemNodes };
       }
-
-      const modelDataset = orderedValidationDataset?.lifeCycleModelDataSet;
-      nonExistentRef.forEach((item) => {
-        const tabName = getErrRefTab(item, modelDataset);
-        if (tabName && !errTabNames.includes(tabName)) {
-          errTabNames.push(tabName);
-        }
-      });
-      unRuleVerification.forEach((item) => {
-        const tabName = getErrRefTab(item, modelDataset);
-        if (
-          tabName &&
-          !errTabNames.includes(tabName) &&
-          item['@type'] !== 'lifeCycleModel data set' &&
-          item['@type'] !== 'process data set'
-        ) {
-          errTabNames.push(tabName);
-        }
-      });
-      problemNodes.forEach((item) => {
-        const tabName = getErrRefTab(item, modelDataset);
-        if (
-          tabName &&
-          !errTabNames.includes(tabName) &&
-          item['@type'] !== 'lifeCycleModel data set' &&
-          item['@type'] !== 'process data set'
-        ) {
-          errTabNames.push(tabName);
-        }
-      });
 
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
@@ -913,6 +905,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
                   showRules={showRules}
                   sdkValidationDetails={sdkValidationDetails}
                   sdkValidationFocus={sdkValidationFocus}
+                  validationIssueTabNames={validationIssueTabNames}
                 />
               </ProForm>
             </RefCheckContext.Provider>

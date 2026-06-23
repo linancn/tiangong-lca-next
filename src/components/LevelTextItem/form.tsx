@@ -1,6 +1,7 @@
 import RequiredMark from '@/components/RequiredMark';
 import { getILCDClassification, getILCDFlowCategorization } from '@/services/classifications/api';
 import { Cascader, Form, Input, TreeSelect } from 'antd';
+import type { ReactNode } from 'react';
 import { FC, useEffect, useState } from 'react';
 import { FormattedMessage } from 'umi';
 type Props = {
@@ -13,6 +14,8 @@ type Props = {
   onData: () => void;
   rules?: any[];
   showRules?: boolean;
+  validationHelp?: ReactNode;
+  validationStatus?: 'success' | 'warning' | 'error' | 'validating';
 };
 
 const LevelTextItemForm: FC<Props> = ({
@@ -25,9 +28,12 @@ const LevelTextItemForm: FC<Props> = ({
   onData,
   rules = [],
   showRules = false,
+  validationHelp,
+  validationStatus,
 }) => {
   const [selectOptions, setSelectOptions] = useState<any>([]);
   const [hasClassId, setHasClassId] = useState<boolean>(false);
+  const hasRequiredRuleError = showRules && !hasClassId;
 
   const getNodePath = (
     targetId: string,
@@ -188,14 +194,16 @@ const LevelTextItemForm: FC<Props> = ({
         }
         name={[...name, 'showValue']}
         rules={rules}
-        validateStatus={showRules && !hasClassId ? 'error' : undefined}
+        validateStatus={hasRequiredRuleError ? 'error' : validationStatus}
         help={
-          showRules && !hasClassId ? (
+          hasRequiredRuleError ? (
             <FormattedMessage
               id='pages.contact.validator.classification.required'
               defaultMessage='Please input classification'
             />
-          ) : undefined
+          ) : (
+            validationHelp
+          )
         }
       >
         <TreeSelect

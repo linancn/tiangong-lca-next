@@ -172,7 +172,7 @@ jest.mock('antd', () => {
               data-active={tab.key === activeTabKey}
               onClick={() => onTabChange?.(tab.key)}
             >
-              {toText(tab.tab)}
+              {tab.tab}
             </button>
           ))}
         </div>
@@ -213,7 +213,10 @@ jest.mock('antd', () => {
   const theme = {
     useToken: () => ({
       token: {
+        colorError: '#ff4d4f',
+        colorPrimary: '#1677ff',
         colorTextDescription: '#999',
+        fontWeightStrong: 600,
       },
     }),
   };
@@ -522,6 +525,21 @@ describe('UnitGroupForm', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /administrative information/i }));
     expect(baseProps.onTabChange).toHaveBeenCalledWith('administrativeInformation');
+  });
+
+  it('highlights tabs with reference validation issues using the error color token', () => {
+    renderWithProviders(
+      <UnitGroupForm
+        {...baseProps}
+        activeTabKey='unitGroupInformation'
+        validationIssueTabNames={['modellingAndValidation']}
+      />,
+    );
+
+    expect(screen.getByText('Modelling and validation').parentElement).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
   });
 
   it('adds schema-driven rules on the information tab when showRules is enabled', () => {

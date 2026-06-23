@@ -211,6 +211,62 @@ describe('LifeCycleModels sdkValidation', () => {
     ]);
   });
 
+  it('maps classification existence issues to the classification showValue field', () => {
+    const details = normalizeLifeCycleModelSdkValidationDetails(
+      [
+        {
+          code: 'custom',
+          message: 'Classification does not exist',
+          path: [
+            'lifeCycleModelDataSet',
+            'lifeCycleModelInformation',
+            'dataSetInformation',
+            'classificationInformation',
+            'common:classification',
+            'common:class',
+            0,
+            '@classId',
+          ],
+        },
+      ],
+      {
+        lifeCycleModelDataSet: {
+          lifeCycleModelInformation: {
+            dataSetInformation: {
+              classificationInformation: {
+                'common:classification': {
+                  'common:class': [
+                    {
+                      '@classId': 'missing-classification',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldLabel: 'Classification',
+        fieldPath:
+          'lifeCycleModelInformation.dataSetInformation.classificationInformation.common:classification.common:class.showValue',
+        formName: [
+          'lifeCycleModelInformation',
+          'dataSetInformation',
+          'classificationInformation',
+          'common:classification',
+          'common:class',
+          'showValue',
+        ],
+        tabName: 'lifeCycleModelInformation',
+        validationCode: 'custom',
+      }),
+    ]);
+  });
+
   it('ignores non-metadata roots when building the form-level validation list', () => {
     expect(
       normalizeLifeCycleModelSdkValidationDetails(

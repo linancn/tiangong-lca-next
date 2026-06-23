@@ -187,6 +187,88 @@ describe('Flows sdkValidation', () => {
     );
   });
 
+  it('maps each TIDAS union flow-property leaf issue to the owning row and detail field', () => {
+    const details = normalizeFlowSdkValidationDetails(
+      [
+        {
+          code: 'invalid_union',
+          errors: [
+            [
+              {
+                code: 'invalid_type',
+                expected: 'object',
+                message: 'Invalid input: expected object, received array',
+                path: [],
+              },
+            ],
+            [
+              {
+                code: 'custom',
+                message:
+                  "@xml:lang values starting with 'zh' must include at least one Chinese character",
+                params: {
+                  validationCode: 'localized_text_zh_must_include_chinese_character',
+                },
+                path: [0, 'generalComment', 1, '#text'],
+              },
+              {
+                code: 'invalid_type',
+                expected: 'string',
+                message: 'Invalid input: expected string, received undefined',
+                path: [1, 'meanValue'],
+              },
+            ],
+          ],
+          path: ['flowDataSet', 'flowProperties', 'flowProperty'],
+          rawCode: 'invalid_union',
+        },
+      ],
+      {
+        flowDataSet: {
+          flowProperties: {
+            flowProperty: [
+              {
+                '@dataSetInternalID': 'prop-1',
+                generalComment: [
+                  {
+                    '#text': 'English comment',
+                    '@xml:lang': 'en',
+                  },
+                  {
+                    '#text': 'English content',
+                    '@xml:lang': 'zh',
+                  },
+                ],
+              },
+              {
+                '@dataSetInternalID': 'prop-2',
+                meanValue: undefined,
+              },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(details).toEqual([
+      expect.objectContaining({
+        fieldPath: 'flowProperty[#prop-1].generalComment.1.#text',
+        formName: ['generalComment', 1, '#text'],
+        reasonMessage:
+          "@xml:lang values starting with 'zh' must include at least one Chinese character",
+        tabName: 'flowProperties',
+        validationCode: 'localized_text_zh_must_include_chinese_character',
+      }),
+      expect.objectContaining({
+        fieldPath: 'flowProperty[#prop-2].meanValue',
+        formName: ['meanValue'],
+        suggestedFix: 'Fill in the required value for this field.',
+        tabName: 'flowProperties',
+        validationCode: 'required_missing',
+      }),
+    ]);
+  });
+
   it('falls back to positional flow-property paths when dataset internal ids are unavailable', () => {
     const details = normalizeFlowSdkValidationDetails(
       [

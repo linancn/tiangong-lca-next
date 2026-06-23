@@ -51,6 +51,7 @@ type Props = {
   showRules?: boolean;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 
 const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
@@ -86,6 +87,7 @@ export const FlowForm: FC<Props> = ({
   showRules = false,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const refCheckContext = useRefCheckContext();
   const [thisFlowType, setThisFlowType] = useState<string | undefined>(flowType);
@@ -183,10 +185,14 @@ export const FlowForm: FC<Props> = ({
       (rootSdkValidationCountsByTab.flowProperties ?? 0) +
       (sdkVisibleFlowPropertyRowsByTab.flowProperties?.size ?? 0),
   };
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
   const focusedFlowPropertyInternalId = getFlowPropertyInternalId(sdkValidationFocus);
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span

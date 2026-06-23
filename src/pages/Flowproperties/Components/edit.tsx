@@ -6,6 +6,7 @@ import type { ProblemNode, ValidationIssueSdkDetail, refDataType } from '@/pages
 import {
   buildValidationIssues,
   checkData,
+  collectValidationIssueRefTabNames,
   enrichValidationIssuesWithOwner,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
@@ -105,6 +106,7 @@ const FlowpropertiesEdit: FC<Props> = ({
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
     null,
   );
+  const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
   const [pendingTabValidationKey, setPendingTabValidationKey] =
     useState<FlowPropertyDataSetObjectKeys | null>(null);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
@@ -278,6 +280,7 @@ const FlowpropertiesEdit: FC<Props> = ({
       setShowRules(false);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
+      setValidationIssueTabNames([]);
       setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       return;
@@ -420,17 +423,13 @@ const FlowpropertiesEdit: FC<Props> = ({
       setRefCheckData([]);
     }
     const errTabNames: string[] = [];
-    nonExistentRef.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    unRuleVerification.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    problemNodes.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    const { getRefTabNames, tabNames: referenceValidationTabNames } =
+      collectValidationIssueRefTabNames({
+        refs: [...nonExistentRef, ...unRuleVerification, ...problemNodes],
+        resolveTabName: (item) => getErrRefTab(item, initData),
+      });
+    referenceValidationTabNames.forEach((tabName) => {
+      if (!errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
     const sdkValidation = validateDatasetWithSdk('flow property data set', orderedJson);
@@ -462,12 +461,14 @@ const FlowpropertiesEdit: FC<Props> = ({
     }
     const validationIssues = buildValidationIssues({
       datasetSdkValid: sdkValidation.success,
+      getRefTabNames,
       nonExistentRef,
       rootRef,
       sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames,
       unRuleVerification,
     });
+    setValidationIssueTabNames(referenceValidationTabNames);
     const feedbackState = resolveDataCheckFeedbackState({
       hasValidationIssues:
         unRuleVerification.length > 0 ||
@@ -635,6 +636,7 @@ const FlowpropertiesEdit: FC<Props> = ({
                 showRules={showRules}
                 sdkValidationDetails={sdkValidationDetails}
                 sdkValidationFocus={sdkValidationFocus}
+                validationIssueTabNames={validationIssueTabNames}
               />
             </ProForm>
           </RefCheckContext.Provider>

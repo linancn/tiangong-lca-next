@@ -395,6 +395,25 @@ jest.mock('@/pages/Utils/review', () => ({
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   checkVersions: (...args: any[]) => mockCheckVersions(...args),
   checkRequiredFields: (...args: any[]) => mockCheckRequiredFields(...args),
+  collectValidationIssueRefTabNames: ({ refs, resolveTabName }: any) => {
+    const tabNames: string[] = [];
+    const tabNamesByKey = new Map<string, string[]>();
+
+    refs.forEach((ref: any) => {
+      const tabName = resolveTabName(ref);
+      if (!tabName) return;
+      if (!tabNames.includes(tabName)) tabNames.push(tabName);
+      const key = `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+      const refTabNames = tabNamesByKey.get(key) ?? [];
+      if (!refTabNames.includes(tabName)) tabNamesByKey.set(key, [...refTabNames, tabName]);
+    });
+
+    return {
+      getRefTabNames: (ref: any) =>
+        tabNamesByKey.get(`${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`),
+      tabNames,
+    };
+  },
   dealModel: (...args: any[]) => mockDealModel(...args),
   dealProcress: (...args: any[]) => mockDealProcress(...args),
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
