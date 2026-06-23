@@ -53,6 +53,8 @@ type ImpactCategoryOption = {
   value: string;
 };
 
+const submittedBuildPendingPhase = 'waiting_for_worker_processing';
+
 function stringifyCommandData(value: unknown): string {
   if (value === null || value === undefined) {
     return '-';
@@ -69,6 +71,53 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function firstString(...values: unknown[]): string | undefined {
   return values.find((value): value is string => typeof value === 'string' && value.trim() !== '');
+}
+
+export function createSubmittedBuildJob(data: unknown): WorkerJobResult | null {
+  const record = isRecord(data) ? data : null;
+  const workerJob = isRecord(record?.workerJob) ? record.workerJob : null;
+  const buildId = firstString(
+    record?.buildId,
+    record?.build_id,
+    record?.id,
+    workerJob?.subjectId,
+    workerJob?.subject_id,
+  );
+  const workerJobId = firstString(
+    record?.workerJobId,
+    record?.worker_job_id,
+    workerJob?.id,
+    workerJob?.workerJobId,
+    workerJob?.worker_job_id,
+  );
+  const jobId = workerJobId ?? buildId;
+
+  if (!jobId) {
+    return null;
+  }
+
+  return {
+    id: jobId,
+    jobKind: firstString(workerJob?.jobKind, workerJob?.job_kind) ?? 'lcia_result.package_build',
+    subjectType:
+      firstString(workerJob?.subjectType, workerJob?.subject_type) ?? 'lcia_result_build',
+    subjectId: buildId,
+    status: (firstString(workerJob?.status) as WorkerJobResult['status'] | undefined) ?? 'queued',
+    phase: firstString(workerJob?.phase) ?? submittedBuildPendingPhase,
+    createdAt: firstString(workerJob?.createdAt, workerJob?.created_at),
+    updatedAt: firstString(workerJob?.updatedAt, workerJob?.updated_at),
+  };
+}
+
+export function mergeSubmittedBuildJobs(
+  submittedJobs: WorkerJobResult[],
+  serverJobs: WorkerJobResult[],
+): WorkerJobResult[] {
+  const rows = new Map<string, WorkerJobResult>();
+  [...submittedJobs, ...serverJobs].forEach((job, index) => {
+    rows.set(firstString(job.id, job.subjectId) ?? `job-${index}`, job);
+  });
+  return Array.from(rows.values());
 }
 
 export function resolveLocalizedText(value: unknown, locale: string): string {
@@ -140,6 +189,7 @@ const DataProcessing = () => {
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const [buildJobs, setBuildJobs] = useState<WorkerJobResult[]>([]);
+  const [submittedBuildJobs, setSubmittedBuildJobs] = useState<WorkerJobResult[]>([]);
   const [buildJobsLoading, setBuildJobsLoading] = useState(false);
   const [buildJobsError, setBuildJobsError] = useState<string | null>(null);
   const [buildForm] = Form.useForm();
@@ -223,6 +273,11 @@ const DataProcessing = () => {
       void loadBuildJobs();
     }
   }, [isAuthorized, loadBuildJobs]);
+
+  const visibleBuildJobs = useMemo(
+    () => mergeSubmittedBuildJobs(submittedBuildJobs, buildJobs),
+    [buildJobs, submittedBuildJobs],
+  );
 
   const coverageModeOptions = useMemo(
     () => [
@@ -385,6 +440,12 @@ const DataProcessing = () => {
     );
 
     if (result && !result.error) {
+      const submittedJob = createSubmittedBuildJob(result.data);
+      if (submittedJob) {
+        setSubmittedBuildJobs((currentJobs) =>
+          mergeSubmittedBuildJobs([submittedJob], currentJobs),
+        );
+      }
       void loadBuildJobs();
     }
   };
@@ -445,6 +506,11 @@ const DataProcessing = () => {
     );
   };
 
+  const renderJobPhase = (phase: WorkerJobResult['phase']) =>
+    phase === submittedBuildPendingPhase
+      ? t('pages.dataProcessing.jobs.waitingForWorker', 'Waiting for worker processing')
+      : phase;
+
   const renderBuildJobs = () => (
     <Card
       title={t('pages.dataProcessing.jobs.title', 'Package build jobs')}
@@ -456,13 +522,19 @@ const DataProcessing = () => {
     >
       <Spin spinning={buildJobsLoading}>
         <Space direction='vertical' size='small' className={styles.jobList}>
+          <div className={styles.jobHint}>
+            {t(
+              'pages.dataProcessing.jobs.hint',
+              'Builds run asynchronously. Refresh jobs to update progress, then preview the package after completion.',
+            )}
+          </div>
           {buildJobsError ? <Alert message={buildJobsError} type='error' /> : null}
-          {buildJobs.length === 0 ? (
+          {visibleBuildJobs.length === 0 ? (
             <div className={styles.emptyJobs} data-testid='data-product-jobs-empty'>
               {t('pages.dataProcessing.jobs.empty', 'No package build jobs')}
             </div>
           ) : (
-            buildJobs.map((job, index) => {
+            visibleBuildJobs.map((job, index) => {
               const jobId = job.id ?? `${job.subjectId ?? 'job'}-${index}`;
               return (
                 <section
@@ -478,7 +550,7 @@ const DataProcessing = () => {
                     <span>
                       {t('pages.dataProcessing.jobs.build', 'Build')}: {job.subjectId ?? '-'}
                     </span>
-                    {job.phase ? <span>{job.phase}</span> : null}
+                    {job.phase ? <span>{renderJobPhase(job.phase)}</span> : null}
                     <span>
                       {t('pages.dataProcessing.jobs.updatedAt', 'Updated at')}:{' '}
                       {job.updatedAt ?? '-'}

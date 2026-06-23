@@ -1,5 +1,7 @@
 import DataProcessing, {
   buildImpactCategoryOptions,
+  createSubmittedBuildJob,
+  mergeSubmittedBuildJobs,
   resolveLocalizedText,
 } from '@/pages/DataProcessing';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -207,6 +209,51 @@ describe('DataProcessing page', () => {
     ]);
   });
 
+  it('normalizes locally submitted build jobs before server rows are visible', () => {
+    expect(createSubmittedBuildJob(null)).toBeNull();
+    expect(createSubmittedBuildJob({ build_id: 'build-only' })).toMatchObject({
+      id: 'build-only',
+      subjectId: 'build-only',
+      status: 'queued',
+      phase: 'waiting_for_worker_processing',
+    });
+    expect(
+      createSubmittedBuildJob({
+        buildId: 'build-from-response',
+        workerJob: {
+          id: 'worker-from-response',
+          job_kind: 'lcia_result.package_build.custom',
+          subject_type: 'custom_subject',
+          status: 'running',
+          phase: 'materializing',
+          created_at: '2026-06-23T08:00:00Z',
+          updated_at: '2026-06-23T08:01:00Z',
+        },
+      }),
+    ).toMatchObject({
+      id: 'worker-from-response',
+      jobKind: 'lcia_result.package_build.custom',
+      subjectType: 'custom_subject',
+      subjectId: 'build-from-response',
+      status: 'running',
+      phase: 'materializing',
+      createdAt: '2026-06-23T08:00:00Z',
+      updatedAt: '2026-06-23T08:01:00Z',
+    });
+    expect(
+      mergeSubmittedBuildJobs(
+        [{ id: 'job-1', subjectId: 'build-1', status: 'queued' }],
+        [
+          { id: 'job-1', subjectId: 'build-1', status: 'running' },
+          { subjectId: 'build-2', status: 'queued' },
+        ],
+      ),
+    ).toEqual([
+      { id: 'job-1', subjectId: 'build-1', status: 'running' },
+      { subjectId: 'build-2', status: 'queued' },
+    ]);
+  });
+
   it('submits build, preview, publish, and unpublish commands for managers', async () => {
     render(<DataProcessing />);
 
@@ -317,10 +364,50 @@ describe('DataProcessing page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create build' }));
 
     expect(await screen.findByText('Build request submitted')).toBeInTheDocument();
-    expect(screen.getByText('build-with-large-payload')).toBeInTheDocument();
-    expect(screen.getByText('worker-job-with-large-payload')).toBeInTheDocument();
+    const successAlert = screen.getByRole('alert');
+    expect(within(successAlert).getByText('build-with-large-payload')).toBeInTheDocument();
+    expect(within(successAlert).getByText('worker-job-with-large-payload')).toBeInTheDocument();
     expect(screen.queryByText(/input_manifest/)).not.toBeInTheDocument();
     expect(screen.queryByText(/process-from-raw-manifest/)).not.toBeInTheDocument();
+  });
+
+  it('keeps a newly submitted build visible when the refreshed worker job list is still empty', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [],
+      error: null,
+      total: 0,
+    });
+    mockCreateLciaResultBuildRequest.mockResolvedValueOnce({
+      data: {
+        buildId: 'build-pending-after-submit',
+        workerJobId: 'worker-job-pending-after-submit',
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('data-product-jobs-empty')).toHaveTextContent(
+      'No package build jobs',
+    );
+
+    fireEvent.change(screen.getByLabelText('Package name'), {
+      target: { value: 'Pending package' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create build' }));
+
+    expect(await screen.findByText('Build request submitted')).toBeInTheDocument();
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('data-product-jobs-empty')).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId('data-product-job-worker-job-pending-after-submit'),
+    ).toHaveTextContent('worker-job-pending-after-submit');
+    expect(
+      screen.getByTestId('data-product-job-worker-job-pending-after-submit'),
+    ).toHaveTextContent('queued');
+    expect(screen.getByText('Waiting for worker processing')).toBeInTheDocument();
   });
 
   it('handles command errors and sparse payload fallbacks for managers', async () => {

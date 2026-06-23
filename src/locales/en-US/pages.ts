@@ -226,6 +226,8 @@ export default {
   'pages.dataProcessing.jobs.empty': 'No package build jobs',
   'pages.dataProcessing.jobs.refresh': 'Refresh jobs',
   'pages.dataProcessing.jobs.build': 'Build',
+  'pages.dataProcessing.jobs.hint': 'Builds run asynchronously. Refresh jobs to update progress, then preview the package after completion.',
+  'pages.dataProcessing.jobs.waitingForWorker': 'Waiting for worker processing',
   'pages.dataProcessing.jobs.updatedAt': 'Updated at',
   'pages.dataProcessing.preview.packageId': 'Package id',
   'pages.dataProcessing.preview.packageVersion': 'Package version',

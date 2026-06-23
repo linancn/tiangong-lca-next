@@ -226,6 +226,8 @@ export default {
   'pages.dataProcessing.jobs.empty': '暂无包构建任务',
   'pages.dataProcessing.jobs.refresh': '刷新任务',
   'pages.dataProcessing.jobs.build': '构建',
+  'pages.dataProcessing.jobs.hint': '构建会由 Worker 异步处理。可点击刷新任务查看进度，完成后进入包预览继续处理。',
+  'pages.dataProcessing.jobs.waitingForWorker': '等待 Worker 处理',
   'pages.dataProcessing.jobs.updatedAt': '更新时间',
   'pages.dataProcessing.preview.packageId': '包 ID',
   'pages.dataProcessing.preview.packageVersion': '包版本',
