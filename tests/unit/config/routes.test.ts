@@ -21,4 +21,11 @@ describe('route access config', () => {
       name: 'dataProcessing',
     });
   });
+
+  it('places data processing after the user and team data modules', () => {
+    const routePaths = routes.map((route) => route.path);
+
+    expect(routePaths.indexOf('/data-processing')).toBeGreaterThan(routePaths.indexOf('/tedata'));
+    expect(routePaths.indexOf('/data-processing')).toBeLessThan(routePaths.indexOf('/account'));
+  });
 });

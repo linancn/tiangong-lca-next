@@ -19,13 +19,6 @@ export default [
     component: './NationalCarbonDashboard',
   },
   {
-    path: '/data-processing',
-    name: 'dataProcessing',
-    access: 'canDataProductManager',
-    icon: 'DatabaseOutlined',
-    component: './DataProcessing',
-  },
-  {
     path: '/manageSystem',
     name: 'manageSystem',
     icon: 'TeamOutlined',
@@ -257,6 +250,13 @@ export default [
         component: './Contacts',
       },
     ],
+  },
+  {
+    path: '/data-processing',
+    name: 'dataProcessing',
+    access: 'canDataProductManager',
+    icon: 'DatabaseOutlined',
+    component: './DataProcessing',
   },
   {
     path: '/account',

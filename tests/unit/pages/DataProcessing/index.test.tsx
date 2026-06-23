@@ -1,4 +1,7 @@
-import DataProcessing from '@/pages/DataProcessing';
+import DataProcessing, {
+  buildImpactCategoryOptions,
+  resolveLocalizedText,
+} from '@/pages/DataProcessing';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
@@ -15,12 +18,78 @@ const mockPreviewLciaResultPackage = jest.fn();
 const mockPublishLciaResultPackage = jest.fn();
 const mockUnpublishLciaResultPublication = jest.fn();
 const mockRequestWorkerJobsApi = jest.fn();
+const mockFetch = jest.fn();
+let mockLocale: string | undefined = 'en-US';
+
+const mockMessages: Record<string, Record<string, string>> = {
+  'zh-CN': {
+    'pages.dataProcessing.title': '数据处理',
+    'pages.dataProcessing.tabs.builds': '构建请求',
+    'pages.dataProcessing.tabs.preview': '包预览',
+    'pages.dataProcessing.tabs.publication': '发布',
+    'pages.dataProcessing.form.packageName': '包名称',
+    'pages.dataProcessing.form.coverageMode': '覆盖范围',
+    'pages.dataProcessing.form.defaultImpactCategory': '默认影响类别',
+    'pages.dataProcessing.form.publishDefaultImpactCategory': '发布默认影响类别',
+    'pages.dataProcessing.form.previewPackageId': '预览包 ID',
+    'pages.dataProcessing.form.publishPackageId': '发布包 ID',
+    'pages.dataProcessing.form.publishReason': '发布原因',
+    'pages.dataProcessing.form.unpublishPublicationId': '下架发布 ID',
+    'pages.dataProcessing.form.unpublishReason': '下架原因',
+    'pages.dataProcessing.action.createBuild': '创建构建',
+    'pages.dataProcessing.action.previewPackage': '预览包',
+    'pages.dataProcessing.action.publishPackage': '发布包',
+    'pages.dataProcessing.action.unpublishPublication': '下架发布',
+    'pages.dataProcessing.jobs.title': '包构建任务',
+    'pages.dataProcessing.jobs.empty': '暂无包构建任务',
+    'pages.dataProcessing.jobs.refresh': '刷新任务',
+    'pages.dataProcessing.jobs.build': '构建',
+    'pages.dataProcessing.jobs.updatedAt': '更新时间',
+  },
+};
+
+const mockFormatMessage = ({ id, defaultMessage }: { id?: string; defaultMessage?: string }) =>
+  (id && mockLocale ? mockMessages[mockLocale]?.[id] : undefined) ?? defaultMessage ?? id ?? '';
+
+const mockLciaMethodList = {
+  files: [
+    {
+      id: 'climate-change',
+      version: '01.00.000',
+      description: [
+        { '@xml:lang': 'en', '#text': 'Climate change' },
+        { '@xml:lang': 'zh', '#text': '气候变化' },
+      ],
+      referenceQuantity: {
+        'common:shortDescription': {
+          '@xml:lang': 'en',
+          '#text': 'kg CO2 eq',
+        },
+      },
+    },
+    {
+      id: 'acidification',
+      version: '01.00.000',
+      description: [
+        { '@xml:lang': 'en', '#text': 'Acidification' },
+        { '@xml:lang': 'zh', '#text': '酸化' },
+      ],
+      referenceQuantity: {
+        'common:shortDescription': {
+          '@xml:lang': 'en',
+          '#text': 'mol H+ eq',
+        },
+      },
+    },
+  ],
+};
 
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: mockFormatMessage,
+    locale: mockLocale,
   }),
 }));
 
@@ -45,6 +114,12 @@ jest.mock('@/services/workerJobs/api', () => ({
 describe('DataProcessing page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'en-US';
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockLciaMethodList,
+    });
+    global.fetch = mockFetch as any;
     mockGetSystemUserRoleApi.mockResolvedValue({ role: 'data_product_manager' });
     mockCreateLciaResultBuildRequest.mockResolvedValue({
       data: { buildId: 'build-1', workerJobId: 'worker-job-1' },
@@ -77,6 +152,9 @@ describe('DataProcessing page', () => {
           jobKind: 'lcia_result.package_build',
           subjectId: 'build-1',
           status: 'running',
+          phase: 'materializing',
+          progress: 35,
+          updatedAt: '2026-06-23T10:00:00Z',
         },
       ],
       error: null,
@@ -84,10 +162,58 @@ describe('DataProcessing page', () => {
     });
   });
 
+  it('normalizes localized impact category option metadata', () => {
+    expect(resolveLocalizedText('String label', 'en-US')).toBe('String label');
+    expect(
+      resolveLocalizedText(
+        [
+          null,
+          { '@xml:lang': 'fr', '#text': 'Changement climatique' },
+          { '@xml:lang': 'en', '#text': 'Climate fallback' },
+        ],
+        'zh-CN',
+      ),
+    ).toBe('Climate fallback');
+    expect(resolveLocalizedText([{ '@xml:lang': 'fr', '#text': 'Acidification' }], 'en-US')).toBe(
+      'Acidification',
+    );
+    expect(resolveLocalizedText([{}], 'en-US')).toBe('');
+    expect(resolveLocalizedText(['raw fallback'], 'en-US')).toBe('');
+    expect(resolveLocalizedText({}, 'en-US')).toBe('');
+    expect(resolveLocalizedText(undefined, 'en-US')).toBe('');
+
+    expect(buildImpactCategoryOptions({}, 'en-US')).toEqual([]);
+    expect(
+      buildImpactCategoryOptions(
+        {
+          files: [
+            { description: 'Missing id' },
+            { id: 'fallback-name' },
+            {
+              id: 'string-name',
+              description: 'String name',
+              version: '01.00.000',
+              referenceQuantity: {
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg eq' }],
+              },
+            },
+          ],
+        },
+        'en-US',
+      ),
+    ).toEqual([
+      { value: 'fallback-name', label: 'fallback-name' },
+      { value: 'string-name', label: 'String name (01.00.000 / kg eq)' },
+    ]);
+  });
+
   it('submits build, preview, publish, and unpublish commands for managers', async () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    expect(await screen.findByLabelText('Default impact category')).toHaveTextContent(
+      'Climate change',
+    );
     await waitFor(() =>
       expect(mockRequestWorkerJobsApi).toHaveBeenCalledWith({
         action: 'list',
@@ -112,9 +238,11 @@ describe('DataProcessing page', () => {
         lciaMethodSet: [],
       }),
     );
-    expect(await screen.findByTestId('pro-table-cell-id-worker-job-1')).toHaveTextContent(
+    expect(await screen.findByTestId('data-product-job-worker-job-1')).toHaveTextContent(
       'worker-job-1',
     );
+    expect(screen.getByTestId('data-product-job-worker-job-1')).toHaveTextContent('running');
+    expect(screen.getByTestId('data-product-job-worker-job-1')).toHaveTextContent('materializing');
 
     fireEvent.click(screen.getByTestId('tab-preview'));
     fireEvent.change(screen.getByLabelText('Preview package id'), {
@@ -194,7 +322,9 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
-    expect(screen.getByTestId('pro-table-empty')).toBeInTheDocument();
+    expect(screen.getByTestId('data-product-jobs-empty')).toHaveTextContent(
+      'No package build jobs',
+    );
 
     fireEvent.change(screen.getByLabelText('Package name'), {
       target: { value: 'Sparse package' },
@@ -211,7 +341,7 @@ describe('DataProcessing page', () => {
         lciaMethodSet: [],
       }),
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('Command failed');
+    expect(await screen.findByText('Command failed')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-preview'));
     fireEvent.change(screen.getByLabelText('Preview package id'), {
@@ -230,7 +360,7 @@ describe('DataProcessing page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preview package' }));
 
     await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith('package-error'));
-    expect(await screen.findByRole('alert')).toHaveTextContent('preview failed');
+    expect(await screen.findByText('preview failed')).toBeInTheDocument();
     expect(screen.queryByTestId('descriptions')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-publication'));
@@ -249,7 +379,7 @@ describe('DataProcessing page', () => {
         displayDefaultImpactCategory: 'climate-change',
       }),
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('publish failed');
+    expect(await screen.findByText('publish failed')).toBeInTheDocument();
 
     fireEvent.change(within(publicationPanel).getByLabelText('Unpublish publication id'), {
       target: { value: 'publication-sparse' },
@@ -263,7 +393,60 @@ describe('DataProcessing page', () => {
         publicationId: 'publication-sparse',
       }),
     );
-    expect(await screen.findByRole('alert')).toHaveTextContent('unpublished');
+    expect(await screen.findByText('unpublished')).toBeInTheDocument();
+  });
+
+  it('handles failed method metadata loading and sparse worker jobs', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({}),
+    });
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: [
+        {
+          jobKind: 'lcia_result.package_build',
+          status: 'failed',
+          progress: 'not-a-number',
+          errorMessage: 'job failed',
+        },
+      ],
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitFor(() => expect(mockFetch).toHaveBeenCalledWith('/lciamethods/list.json'));
+    expect(screen.getByLabelText('Default impact category')).not.toHaveTextContent(
+      'Climate change',
+    );
+    expect(screen.getByTestId('data-product-job-job-0')).toHaveTextContent('Build: -');
+    expect(screen.getByTestId('data-product-job-job-0')).toHaveTextContent('Updated at: -');
+    expect(screen.getByText('job failed')).toBeInTheDocument();
+  });
+
+  it('surfaces thrown command errors and falls back when locale is unavailable', async () => {
+    mockLocale = undefined;
+    mockPreviewLciaResultPackage.mockRejectedValueOnce('plain preview failure');
+    mockCreateLciaResultBuildRequest.mockRejectedValueOnce(new Error('build exploded'));
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    fireEvent.change(screen.getByLabelText('Package name'), {
+      target: { value: 'Throwing package' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create build' }));
+
+    expect(await screen.findByText('build exploded')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-preview'));
+    fireEvent.change(screen.getByLabelText('Preview package id'), {
+      target: { value: 'package-throw' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Preview package' }));
+
+    expect(await screen.findByText('plain preview failure')).toBeInTheDocument();
   });
 
   it('renders access denied for non-manager users', async () => {
@@ -273,6 +456,19 @@ describe('DataProcessing page', () => {
 
     expect(await screen.findByTestId('access-denied')).toBeInTheDocument();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+
+  it('renders localized Chinese workbench copy and impact category labels', async () => {
+    mockLocale = 'zh-CN';
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('数据处理');
+    expect(screen.getByTestId('tab-builds')).toHaveTextContent('构建请求');
+    expect(screen.getByTestId('tab-preview')).toHaveTextContent('包预览');
+    expect(screen.getByTestId('tab-publication')).toHaveTextContent('发布');
+    expect(screen.getByLabelText('默认影响类别')).toHaveTextContent('气候变化');
+    expect(screen.getByRole('button', { name: '创建构建' })).toBeInTheDocument();
   });
 
   it('renders access denied when role lookup fails', async () => {
