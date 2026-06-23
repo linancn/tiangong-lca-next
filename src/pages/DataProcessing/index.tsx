@@ -111,7 +111,7 @@ const DataProcessing = () => {
     const values = await buildForm.validateFields();
     const result = await createLciaResultBuildRequest({
       name: values.name,
-      coverageMode: values.coverageMode ?? 'global_eligible',
+      coverageMode: values.coverageMode || 'global_eligible',
       ...(values.defaultImpactCategory
         ? { defaultImpactCategory: values.defaultImpactCategory }
         : {}),

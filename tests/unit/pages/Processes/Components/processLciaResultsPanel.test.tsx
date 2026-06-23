@@ -234,6 +234,187 @@ describe('ProcessLciaResultsPanel', () => {
     expect(screen.queryByText('Legacy LCIA')).not.toBeInTheDocument();
   });
 
+  it('normalizes sparse published rows and metadata fallbacks', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { publication_id: ' publication-2 ' },
+        package: { result_package_id: ' package-2 ' },
+        values: [
+          {},
+          {
+            impact_id: 'impact-2',
+            impact_index: undefined,
+            impact_name: undefined,
+            unit: undefined,
+            value: undefined,
+          },
+          {
+            impact_id: 'impact-1',
+            impact_index: 1,
+            impact_name: 'Water use',
+            unit: 'm3',
+            value: 2,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    expect(
+      await screen.findByText(/publication=publication-2, package=package-2, rows=2/),
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Water use')).toBeInTheDocument();
+    expect(await screen.findByText('impact-2')).toBeInTheDocument();
+    expect(screen.getByText('m3')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-row-impact-1')).toHaveTextContent('2');
+  });
+
+  it('shows an empty published state when package payload omits row values and metadata', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: {},
+        package: undefined,
+      },
+      error: null,
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    expect(await screen.findByText(/publication=-, package=-, rows=0/)).toBeInTheDocument();
+    expect(
+      screen.getByText('No published LCIA result rows are available for this process.'),
+    ).toBeInTheDocument();
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+  });
+
+  it('shows published package errors without falling back to solver', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'not published' },
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[
+          {
+            key: 'legacy-row',
+            meanAmount: 99,
+            referenceToLCIAMethodDataSet: {
+              '@refObjectId': 'legacy-impact',
+              'common:shortDescription': { '#text': 'Legacy LCIA' },
+            },
+          },
+        ]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+    expect(screen.queryByText('Legacy LCIA')).not.toBeInTheDocument();
+  });
+
+  it('uses a default published package error when the backend omits a message', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+  });
+
+  it('stringifies non-error published query failures', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockRejectedValueOnce('offline');
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+        processVersion='1.0'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+  });
+
+  it('does not fall back to solver when the public reader is enabled without a process version', async () => {
+    mockGetDataSource.mockReturnValue('tg');
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+
+    render(
+      <ProcessLciaResultsPanel
+        baseRows={[
+          {
+            key: 'legacy-row',
+            meanAmount: 99,
+            referenceToLCIAMethodDataSet: {
+              '@refObjectId': 'legacy-impact',
+              'common:shortDescription': { '#text': 'Legacy LCIA' },
+            },
+          },
+        ]}
+        enablePublishedPackageReader={true}
+        lang='en'
+        processId='process-1'
+      />,
+    );
+
+    expect(await screen.findByText('Legacy LCIA')).toBeInTheDocument();
+    expect(mockGetPublishedLciaResultPackage).not.toHaveBeenCalled();
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+  });
+
   it('normalizes missing base rows and queries solver without optional version or scope', async () => {
     mockUseLocation.mockReturnValue({ pathname: undefined, search: '' });
 

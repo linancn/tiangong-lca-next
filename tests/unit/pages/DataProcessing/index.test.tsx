@@ -164,8 +164,119 @@ describe('DataProcessing page', () => {
     );
   });
 
+  it('handles command errors and sparse payload fallbacks for managers', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'job list failed' },
+    });
+    mockCreateLciaResultBuildRequest.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: {},
+      error: null,
+    });
+    mockPreviewLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'preview failed' },
+    });
+    mockPublishLciaResultPackage.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'publish failed' },
+    });
+    mockUnpublishLciaResultPublication.mockResolvedValueOnce({
+      data: 'unpublished',
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    await waitFor(() => expect(mockRequestWorkerJobsApi).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('pro-table-empty')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Package name'), {
+      target: { value: 'Sparse package' },
+    });
+    fireEvent.change(screen.getByLabelText('Coverage mode'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create build' }));
+
+    await waitFor(() =>
+      expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith({
+        name: 'Sparse package',
+        coverageMode: 'global_eligible',
+        lciaMethodSet: [],
+      }),
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('Command failed');
+
+    fireEvent.click(screen.getByTestId('tab-preview'));
+    fireEvent.change(screen.getByLabelText('Preview package id'), {
+      target: { value: 'package-sparse' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Preview package' }));
+
+    await waitFor(() =>
+      expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith('package-sparse'),
+    );
+    expect(await screen.findAllByText('-')).toHaveLength(5);
+
+    fireEvent.change(screen.getByLabelText('Preview package id'), {
+      target: { value: 'package-error' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Preview package' }));
+
+    await waitFor(() => expect(mockPreviewLciaResultPackage).toHaveBeenCalledWith('package-error'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('preview failed');
+    expect(screen.queryByTestId('descriptions')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-publication'));
+    const publicationPanel = screen.getByTestId('tab-panel-publication');
+    fireEvent.change(within(publicationPanel).getByLabelText('Publish package id'), {
+      target: { value: 'package-sparse' },
+    });
+    fireEvent.change(within(publicationPanel).getByLabelText('Publish default impact category'), {
+      target: { value: 'climate-change' },
+    });
+    fireEvent.click(within(publicationPanel).getByRole('button', { name: 'Publish package' }));
+
+    await waitFor(() =>
+      expect(mockPublishLciaResultPackage).toHaveBeenCalledWith({
+        packageId: 'package-sparse',
+        displayDefaultImpactCategory: 'climate-change',
+      }),
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('publish failed');
+
+    fireEvent.change(within(publicationPanel).getByLabelText('Unpublish publication id'), {
+      target: { value: 'publication-sparse' },
+    });
+    fireEvent.click(
+      within(publicationPanel).getByRole('button', { name: 'Unpublish publication' }),
+    );
+
+    await waitFor(() =>
+      expect(mockUnpublishLciaResultPublication).toHaveBeenCalledWith({
+        publicationId: 'publication-sparse',
+      }),
+    );
+    expect(await screen.findByRole('alert')).toHaveTextContent('unpublished');
+  });
+
   it('renders access denied for non-manager users', async () => {
     mockGetSystemUserRoleApi.mockResolvedValueOnce({ role: 'member' });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('access-denied')).toBeInTheDocument();
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+
+  it('renders access denied when role lookup fails', async () => {
+    mockGetSystemUserRoleApi.mockRejectedValueOnce(new Error('role lookup failed'));
 
     render(<DataProcessing />);
 

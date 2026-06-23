@@ -221,9 +221,6 @@ const ProcessLciaResultsPanel: FC<Props> = ({
 
   const loadPublishedLciaResults = useCallback(
     async (forceReload: boolean) => {
-      if (!shouldUsePublishedPackage || !baseRowsReady || !processId) {
-        return;
-      }
       if (publishedLciaLoading) {
         return;
       }
@@ -237,8 +234,8 @@ const ProcessLciaResultsPanel: FC<Props> = ({
 
       try {
         const result = await getPublishedLciaResultPackage({
-          processId,
-          processVersion,
+          processId: processId as string,
+          processVersion: processVersion as string,
         });
 
         if (result.error || !result.data) {
@@ -273,14 +270,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
         setPublishedLciaLoading(false);
       }
     },
-    [
-      baseRowsReady,
-      processId,
-      processVersion,
-      publishedLciaLoaded,
-      publishedLciaLoading,
-      shouldUsePublishedPackage,
-    ],
+    [processId, processVersion, publishedLciaLoaded, publishedLciaLoading],
   );
 
   const loadSolverLciaResults = useCallback(
