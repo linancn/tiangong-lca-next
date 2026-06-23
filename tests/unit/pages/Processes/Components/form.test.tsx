@@ -751,6 +751,17 @@ describe('ProcessForm component', () => {
     });
   });
 
+  it('highlights tabs that contain reference validation issues', () => {
+    render(<ProcessForm {...defaultProps} validationIssueTabNames={['exchanges']} />);
+
+    expect(screen.getByRole('button', { name: 'Exchanges' }).querySelector('span')).toHaveStyle({
+      color: 'red',
+    });
+    expect(
+      screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
+    ).not.toHaveStyle({ color: 'red' });
+  });
+
   it('counts review and compliance issues on their rendered tabs', async () => {
     render(
       <ProcessForm

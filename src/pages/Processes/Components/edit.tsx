@@ -14,6 +14,7 @@ import {
   buildValidationIssues,
   checkReferences,
   checkVersions,
+  collectValidationIssueRefTabNames,
   dealProcress,
   enrichValidationIssuesWithOwner,
   getAllRefObj,
@@ -396,6 +397,7 @@ const ProcessEdit: FC<Props> = ({
   });
   const intl = useIntl();
   const [refCheckData, setRefCheckData] = useState<RefCheckType[]>([]);
+  const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
   const [refCheckContextValue, setRefCheckContextValue] = useState<{
     refCheckData: RefCheckType[];
   }>({
@@ -1204,9 +1206,20 @@ const ProcessEdit: FC<Props> = ({
     allRefs.add(`${processDetail.id}:${processDetail.version}:process data set`);
     await checkVersions(allRefs, path);
     const problemNodes = (path?.findProblemNodes(from) ?? []) as RefProblemNode[];
+    const { getRefTabNames, tabNames: referenceValidationTabNames } =
+      collectValidationIssueRefTabNames({
+        refs: [...nonExistentRef, ...unRuleVerification, ...problemNodes],
+        resolveTabName: (item) => getErrRefTab(item, processDetail),
+      });
+    referenceValidationTabNames.forEach((tabName) => {
+      if (!errTabNames.includes(tabName)) {
+        errTabNames.push(tabName);
+      }
+    });
     const validationIssues = buildValidationIssues({
       actionFrom: from,
       datasetSdkValid: currentDatasetValid,
+      getRefTabNames,
       nonExistentRef,
       problemNodes,
       rootRef,
@@ -1214,6 +1227,9 @@ const ProcessEdit: FC<Props> = ({
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
+
+    setValidationIssueTabNames(referenceValidationTabNames);
+
     if (validationIssues.length > 0) {
       setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
     } else {
@@ -1236,25 +1252,6 @@ const ProcessEdit: FC<Props> = ({
       setSpinning(false);
       return { checkResult: true, unReview };
     }
-
-    nonExistentRef.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
-    unRuleVerification.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
-    problemNodes.forEach((item) => {
-      const tabName = getErrRefTab(item, processDetail);
-      if (tabName && !errTabNames.includes(tabName)) {
-        errTabNames.push(tabName);
-      }
-    });
 
     let validationHint = intl.formatMessage({
       id: 'pages.button.check.error',
@@ -1462,6 +1459,7 @@ const ProcessEdit: FC<Props> = ({
   const onEdit = useCallback(() => {
     setDrawerVisible(true);
     setActiveTabKey('processInformation');
+    setValidationIssueTabNames([]);
     setSdkValidationFocus(null);
   }, [setViewDrawerVisible]);
 
@@ -1486,6 +1484,7 @@ const ProcessEdit: FC<Props> = ({
     if (!drawerVisible) {
       setShowRules(false);
       setRefCheckData([]);
+      setValidationIssueTabNames([]);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
       setSdkValidationDismissedFieldKeys(new Set());
@@ -1765,6 +1764,7 @@ const ProcessEdit: FC<Props> = ({
                 sdkValidationDismissedFieldKeys={sdkValidationDismissedFieldKeys}
                 sdkValidationFocus={sdkValidationFocus}
                 showRules={showRules}
+                validationIssueTabNames={validationIssueTabNames}
               />
               <Form.Item name='id' hidden>
                 <Input />

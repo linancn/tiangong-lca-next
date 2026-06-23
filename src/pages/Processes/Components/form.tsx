@@ -78,6 +78,7 @@ type Props = {
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationDismissedFieldKeys?: ReadonlySet<string>;
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 
 type FlowStateCodeItem = {
@@ -282,6 +283,7 @@ export const ProcessForm: FC<Props> = ({
   sdkValidationDetails = [],
   sdkValidationDismissedFieldKeys = EMPTY_SDK_DISMISSED_FIELD_KEYS,
   sdkValidationFocus,
+  validationIssueTabNames = [],
 }) => {
   const intl = useIntl();
   const intlRef = useRef(intl);
@@ -545,6 +547,15 @@ export const ProcessForm: FC<Props> = ({
 
     return accumulator;
   }, {});
+  const validationIssueTabs = useMemo(
+    () =>
+      new Set(
+        validationIssueTabNames.filter(
+          (tabName): tabName is string => typeof tabName === 'string' && tabName.length > 0,
+        ),
+      ),
+    [validationIssueTabNames],
+  );
 
   useEffect(() => {
     const formInstance = formRef.current;
@@ -711,7 +722,7 @@ export const ProcessForm: FC<Props> = ({
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
     const issueCount = sdkValidationCountsByTab[key] ?? 0;
-    const hasIssue = issueCount > 0;
+    const hasIssue = issueCount > 0 || validationIssueTabs.has(key);
 
     return (
       <span

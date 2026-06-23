@@ -41,6 +41,7 @@ type Props = {
   showRules?: boolean;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 
 const isSdkFieldDetail = (detail: ValidationIssueSdkDetail) =>
@@ -69,6 +70,7 @@ export const UnitGroupForm: FC<Props> = ({
   showRules = false,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -159,10 +161,14 @@ export const UnitGroupForm: FC<Props> = ({
     ...rootSdkValidationCountsByTab,
     units: (rootSdkValidationCountsByTab.units ?? 0) + (sdkVisibleUnitRowsByTab.units?.size ?? 0),
   };
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
   const focusedUnitInternalId = getUnitInternalId(sdkValidationFocus);
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span

@@ -20,12 +20,20 @@ const toText = (node: any): string => {
 };
 
 let lastFormApi: any = null;
+let mockLangTextItemFormProps: any[] = [];
 
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any) => {
+      const messages: Record<string, string> = {
+        'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
+          'Chinese text must include at least one Chinese character',
+      };
+
+      return messages[id] ?? defaultMessage ?? id;
+    },
   }),
 }));
 
@@ -42,7 +50,10 @@ jest.mock('@/style/custom.less', () => ({
 
 jest.mock('@/components/LangTextItem/form', () => ({
   __esModule: true,
-  default: () => <div data-testid='lang-form'>lang-form</div>,
+  default: (props: any) => {
+    mockLangTextItemFormProps.push(props);
+    return <div data-testid='lang-form'>lang-form</div>;
+  },
 }));
 
 jest.mock('@/pages/Flowproperties/Components/select/form', () => ({
@@ -247,6 +258,7 @@ describe('FlowPropertyEdit', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     lastFormApi = null;
+    mockLangTextItemFormProps = [];
   });
 
   it('updates the targeted flow property, reloads the table, and closes the drawer', async () => {
@@ -554,6 +566,67 @@ describe('FlowPropertyEdit', () => {
 
     expect(lastFormApi.setFields).not.toHaveBeenCalled();
     expect(lastFormApi.getFieldError(['meanValue'])).toEqual(['Local mean value error']);
+  });
+
+  it('passes localized general-comment sdk errors to the lang-text field renderer', async () => {
+    const actionRef = { current: { reload: jest.fn() } };
+    renderWithProviders(
+      <PropertyEdit
+        id='1'
+        data={
+          [
+            {
+              '@dataSetInternalID': '1',
+              generalComment: [
+                {
+                  '#text': 'English comment',
+                  '@xml:lang': 'en',
+                },
+                {
+                  '#text': 'English content',
+                  '@xml:lang': 'zh',
+                },
+              ],
+            },
+          ] as any
+        }
+        lang='en'
+        buttonType='text'
+        actionRef={actionRef as any}
+        setViewDrawerVisible={jest.fn()}
+        onData={jest.fn()}
+        autoOpen
+        sdkHighlights={
+          [
+            {
+              fieldPath: 'flowProperty[#prop-1].generalComment.1.#text',
+              formName: ['generalComment', 1, '#text'],
+              key: 'flow-property-general-comment-language-highlight',
+              reasonMessage:
+                "@xml:lang values starting with 'zh' must include at least one Chinese character",
+              tabName: 'flowProperties',
+              validationCode: 'localized_text_zh_must_include_chinese_character',
+            },
+          ] as any
+        }
+      />,
+    );
+
+    await screen.findByRole('dialog', { name: /edit flow property/i });
+    await waitFor(() => expect(lastFormApi).not.toBeNull());
+
+    const generalCommentLangTextProps = mockLangTextItemFormProps.find(
+      (props) => Array.isArray(props.name) && props.name[0] === 'generalComment',
+    );
+
+    expect(generalCommentLangTextProps?.fieldErrorMessages).toEqual({
+      1: ['Chinese text must include at least one Chinese character'],
+    });
+    expect(lastFormApi.setFields).not.toHaveBeenCalledWith([
+      expect.objectContaining({
+        name: ['generalComment', 1, '#text'],
+      }),
+    ]);
   });
 
   it('uses the flow-property frontend required copy for sdk required_missing highlights', async () => {

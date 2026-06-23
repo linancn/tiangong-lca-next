@@ -1,6 +1,6 @@
 import { FileType, getBase64, getOriginalFileUrl, isImage } from '@/services/supabase/storage';
 import { Card, Form, Image, Input, Select, Space, Upload, UploadFile } from 'antd';
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 
 import DatasetCreateVersionFormItem from '@/components/DatasetCreateVersionFormItem';
 import { UploadButton } from '@/components/FileViewer/upload';
@@ -35,6 +35,7 @@ type Props = {
   showRules?: boolean;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 
 export const SourceForm: FC<Props> = ({
@@ -51,6 +52,7 @@ export const SourceForm: FC<Props> = ({
   showRules = false,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
@@ -67,6 +69,10 @@ export const SourceForm: FC<Props> = ({
     schemaRoot: schema,
     showRules,
   });
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
   const handlePreview = async (file: UploadFile) => {
     if (isImage(file)) {
       if (!file.url && !file.preview) {
@@ -86,7 +92,7 @@ export const SourceForm: FC<Props> = ({
   };
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span

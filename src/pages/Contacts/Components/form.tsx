@@ -10,7 +10,7 @@ import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { useDatasetSdkValidationFormSupport } from '@/pages/Utils/validation/formSupport';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Form, Input, Space, theme } from 'antd';
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const CONTACT_SCHEMA_PATH_PREFIX = ['contactDataSet'];
@@ -25,6 +25,7 @@ type Props = {
   showRules?: boolean;
   sdkValidationDetails?: ValidationIssueSdkDetail[];
   sdkValidationFocus?: ValidationIssueSdkDetail | null;
+  validationIssueTabNames?: string[];
 };
 
 export const ContactForm: FC<Props> = ({
@@ -37,6 +38,7 @@ export const ContactForm: FC<Props> = ({
   showRules = false,
   sdkValidationDetails = [],
   sdkValidationFocus = null,
+  validationIssueTabNames = [],
 }) => {
   const { token } = theme.useToken();
   const intl = useIntl();
@@ -52,9 +54,13 @@ export const ContactForm: FC<Props> = ({
     schemaRoot: schema,
     showRules,
   });
+  const validationIssueTabs = useMemo(
+    () => new Set(validationIssueTabNames),
+    [validationIssueTabNames],
+  );
 
   const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
-    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0;
+    const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
       <span

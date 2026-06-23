@@ -147,6 +147,25 @@ jest.mock('@/pages/Utils/review', () => ({
   buildValidationIssues: (...args: any[]) => mockBuildValidationIssues(...args),
   checkReferences: (...args: any[]) => mockCheckReferences(...args),
   checkVersions: (...args: any[]) => mockCheckVersions(...args),
+  collectValidationIssueRefTabNames: ({ refs, resolveTabName }: any) => {
+    const tabNames: string[] = [];
+    const tabNamesByKey = new Map<string, string[]>();
+
+    refs.forEach((ref: any) => {
+      const tabName = resolveTabName(ref);
+      if (!tabName) return;
+      if (!tabNames.includes(tabName)) tabNames.push(tabName);
+      const key = `${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`;
+      const refTabNames = tabNamesByKey.get(key) ?? [];
+      if (!refTabNames.includes(tabName)) tabNamesByKey.set(key, [...refTabNames, tabName]);
+    });
+
+    return {
+      getRefTabNames: (ref: any) =>
+        tabNamesByKey.get(`${ref['@type']}:${ref['@refObjectId']}:${ref['@version']}`),
+      tabNames,
+    };
+  },
   dealProcress: (...args: any[]) => mockDealProcress(...args),
   enrichValidationIssuesWithOwner: (...args: any[]) => mockEnrichValidationIssuesWithOwner(...args),
   getAllRefObj: (...args: any[]) => mockGetAllRefObj(...args),
@@ -2094,6 +2113,54 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(showValidationIssueModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          issues: validationIssues,
+          title: 'Data validation issues',
+        }),
+      ),
+    );
+  });
+
+  it('passes reference issue tabs into the validation modal and process form during data check', async () => {
+    const sourceRef = {
+      '@type': 'source data set',
+      '@refObjectId': 'source-1',
+      '@version': '01.00.000',
+    };
+    const validationIssues = [
+      {
+        code: 'ruleVerificationFailed',
+        ref: sourceRef,
+        tabName: 'modellingAndValidation',
+        tabNames: ['modellingAndValidation'],
+      },
+    ];
+    mockDealProcress.mockImplementationOnce(
+      (_processDetail, _unReview, _underReview, unRuleVerification) => {
+        unRuleVerification.push(sourceRef);
+      },
+    );
+    mockGetErrRefTab.mockImplementationOnce((ref: any) =>
+      ref?.['@refObjectId'] === 'source-1' ? 'modellingAndValidation' : '',
+    );
+    mockBuildValidationIssues.mockImplementationOnce(({ getRefTabNames, unRuleVerification }) => {
+      expect(unRuleVerification).toEqual([sourceRef]);
+      expect(getRefTabNames(sourceRef)).toEqual(['modellingAndValidation']);
+      return validationIssues;
+    });
+    mockMapValidationIssuesToRefCheckData.mockReturnValueOnce([{ id: 'source-1' }]);
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+    fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
+
+    await waitFor(() =>
+      expect(latestProcessFormProps.validationIssueTabNames).toEqual(['modellingAndValidation']),
+    );
+    await waitFor(() =>
+      expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
         expect.objectContaining({
           issues: validationIssues,
           title: 'Data validation issues',

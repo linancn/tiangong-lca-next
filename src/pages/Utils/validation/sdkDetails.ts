@@ -141,6 +141,23 @@ const collectLeafUnionIssues = (
   );
 };
 
+const getMeaningfulUnionLeafIssues = (
+  issue: DatasetSdkValidationIssueLike,
+): DatasetSdkValidationIssueLike[] => {
+  const leafIssues = collectLeafUnionIssues(issue);
+  const issuePathLength = toPathArray(issue.path).length;
+  const fieldLeafIssues = leafIssues.filter(
+    (candidate) => toPathArray(candidate.path).length > issuePathLength,
+  );
+
+  if (fieldLeafIssues.length > 0) {
+    return fieldLeafIssues;
+  }
+
+  const nonTypeLeafIssues = leafIssues.filter((candidate) => candidate.code !== 'invalid_type');
+  return nonTypeLeafIssues.length > 0 ? nonTypeLeafIssues : leafIssues;
+};
+
 const resolveDatasetSdkIssue = (
   issue: DatasetSdkValidationIssueLike,
 ): DatasetSdkValidationIssueLike => {
@@ -151,18 +168,25 @@ const resolveDatasetSdkIssue = (
     };
   }
 
-  const leafIssues = collectLeafUnionIssues(issue);
-  const preferredLeafIssue =
-    leafIssues.find(
-      (candidate) => toPathArray(candidate.path).length > toPathArray(issue.path).length,
-    ) ??
-    leafIssues.find((candidate) => candidate.code !== 'invalid_type') ??
-    leafIssues[0];
+  const preferredLeafIssue = getMeaningfulUnionLeafIssues(issue)[0];
 
   return {
     ...preferredLeafIssue,
     path: toPathArray(preferredLeafIssue?.path),
   };
+};
+
+const resolveDatasetSdkIssues = (
+  issue: DatasetSdkValidationIssueLike,
+): DatasetSdkValidationIssueLike[] => {
+  if (issue.code !== 'invalid_union') {
+    return [resolveDatasetSdkIssue(issue)];
+  }
+
+  return getMeaningfulUnionLeafIssues(issue).map((leafIssue) => ({
+    ...leafIssue,
+    path: toPathArray(leafIssue.path),
+  }));
 };
 
 const toRootFormPath = (path: PropertyKey[], datasetKey: string): Array<string | number> => {
@@ -190,10 +214,33 @@ const getActualValueLength = (value: unknown) => {
   return undefined;
 };
 
+const getExplicitSdkValidationCode = (issue: DatasetSdkValidationIssueLike) => {
+  const paramValidationCode =
+    typeof issue.params?.validationCode === 'string'
+      ? normalizeString(issue.params.validationCode)
+      : undefined;
+
+  if (paramValidationCode) {
+    return paramValidationCode;
+  }
+
+  const rawValidationCode = normalizeString(issue.rawCode);
+  if (issue.code === 'custom' && rawValidationCode && rawValidationCode !== 'custom') {
+    return rawValidationCode;
+  }
+
+  return undefined;
+};
+
 const getDatasetSdkValidationCode = (
   issue: DatasetSdkValidationIssueLike,
   actualValue: unknown,
 ) => {
+  const explicitValidationCode = getExplicitSdkValidationCode(issue);
+  if (explicitValidationCode) {
+    return explicitValidationCode;
+  }
+
   if (actualValue === undefined) {
     switch (issue.code) {
       case 'required_missing':
@@ -519,61 +566,65 @@ export const normalizeSimpleDatasetSdkValidationDetails = (
   const detailMap = new Map<string, ValidationIssueSdkDetail>();
 
   issues.forEach((issue) => {
-    const resolvedIssue = resolveDatasetSdkIssue(issue);
-    const path = toPathArray(resolvedIssue.path);
-    if (path.length === 0) {
-      return;
-    }
+    const resolvedIssues = resolveDatasetSdkIssues(issue);
 
-    const rootPath = toRootFormPath(path, config.datasetKey);
-    if (rootPath.length === 0) {
-      return;
-    }
+    resolvedIssues.forEach((resolvedIssue) => {
+      const path = toPathArray(resolvedIssue.path);
+      if (path.length === 0) {
+        return;
+      }
 
-    const formName = getSimpleSdkIssueFormName(rootPath, orderedJson, config);
-    const fieldPath = formName.map(String).join('.');
-    const actualValue =
-      resolvedIssue.input !== undefined
-        ? resolvedIssue.input
-        : getValueAtPath(orderedJson, [config.datasetKey, ...rootPath]);
-    const fieldKey = getSimpleSdkIssueFieldKey(rootPath);
-    const { actual, limit, reasonMessage, suggestedFix, validationCode, validationParams } =
-      getDatasetSdkIssueReason(resolvedIssue, actualValue);
-    const tabName = getSimpleSdkIssueTabName(rootPath, config);
-    /* istanbul ignore next -- detail key fallbacks only guard against impossible/legacy malformed sdk payloads */
-    const detailKey = [
-      tabName ?? 'unknown',
-      fieldPath,
-      validationCode,
-      JSON.stringify(validationParams),
-    ].join(':');
+      const rootPath = toRootFormPath(path, config.datasetKey);
+      if (rootPath.length === 0) {
+        return;
+      }
 
-    const detail: ValidationIssueSdkDetail = {
-      actual,
-      fieldKey,
-      fieldLabel: getSimpleSdkIssueFieldLabel(rootPath, orderedJson, config),
-      fieldPath,
-      formName,
-      key: detailKey,
-      limit,
-      presentation: 'field',
-      rawCode: resolvedIssue.rawCode ?? resolvedIssue.code,
-      reasonMessage,
-      suggestedFix,
-      tabName,
-      validationCode,
-      validationParams,
-    };
+      const formName = getSimpleSdkIssueFormName(rootPath, orderedJson, config);
+      const fieldPath = formName.map(String).join('.');
+      const actualValue =
+        resolvedIssue.input !== undefined
+          ? resolvedIssue.input
+          : getValueAtPath(orderedJson, [config.datasetKey, ...rootPath]);
+      const fieldKey = getSimpleSdkIssueFieldKey(rootPath);
+      const { actual, limit, reasonMessage, suggestedFix, validationCode, validationParams } =
+        getDatasetSdkIssueReason(resolvedIssue, actualValue);
+      const tabName = getSimpleSdkIssueTabName(rootPath, config);
+      /* istanbul ignore next -- detail key fallbacks only guard against impossible/legacy malformed sdk payloads */
+      const detailKey = [
+        tabName ?? 'unknown',
+        fieldPath,
+        validationCode,
+        JSON.stringify(validationParams),
+      ].join(':');
 
-    if (!detailMap.has(detail.key)) {
-      detailMap.set(detail.key, detail);
-    }
+      const detail: ValidationIssueSdkDetail = {
+        actual,
+        fieldKey,
+        fieldLabel: getSimpleSdkIssueFieldLabel(rootPath, orderedJson, config),
+        fieldPath,
+        formName,
+        key: detailKey,
+        limit,
+        presentation: 'field',
+        rawCode: resolvedIssue.rawCode ?? resolvedIssue.code,
+        reasonMessage,
+        suggestedFix,
+        tabName,
+        validationCode,
+        validationParams,
+      };
+
+      if (!detailMap.has(detail.key)) {
+        detailMap.set(detail.key, detail);
+      }
+    });
   });
 
   return Array.from(detailMap.values());
 };
 
 export const simpleSdkValidationTestUtils = {
+  collectLeafUnionIssues,
   getDatasetSdkIssueReason,
   getSimpleSdkIssueFieldKey,
   getSimpleSdkIssueFormName,

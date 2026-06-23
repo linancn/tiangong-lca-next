@@ -8,8 +8,10 @@ import {
   ReffPath,
   buildValidationIssues,
   checkData,
+  collectValidationIssueRefTabNames,
   enrichValidationIssuesWithOwner,
   getErrRefTab,
+  mapValidationIssuesToRefCheckData,
   validateDatasetWithSdk,
 } from '@/pages/Utils/review';
 import {
@@ -103,6 +105,7 @@ const FlowsEdit: FC<Props> = ({
   const [sdkValidationFocus, setSdkValidationFocus] = useState<ValidationIssueSdkDetail | null>(
     null,
   );
+  const [validationIssueTabNames, setValidationIssueTabNames] = useState<string[]>([]);
   const [pendingTabValidationKey, setPendingTabValidationKey] =
     useState<FlowDataSetObjectKeys | null>(null);
   const [autoCheckTriggered, setAutoCheckTriggered] = useState(false);
@@ -323,6 +326,7 @@ const FlowsEdit: FC<Props> = ({
       setShowRules(false);
       setSdkValidationDetails([]);
       setSdkValidationFocus(null);
+      setValidationIssueTabNames([]);
       setPendingTabValidationKey(null);
       setAutoCheckTriggered(false);
       return;
@@ -468,34 +472,17 @@ const FlowsEdit: FC<Props> = ({
       orderedJson: genFlowJsonOrdered(id, jsonData),
     });
     const problemNodes: ProblemNode[] = pathRef.findProblemNodes();
-    if (problemNodes && problemNodes.length > 0) {
-      const result = problemNodes.map((item) => {
-        return {
-          id: item['@refObjectId'],
-          version: item['@version'],
-          ruleVerification: item.ruleVerification,
-          nonExistent: item.nonExistent,
-        };
-      });
-      setRefCheckData(result);
-    } else {
-      setRefCheckData([]);
-    }
 
     const errTabNames: string[] = [];
     const currentDatasetTabNames: string[] = [];
     let datasetValidationMessage: string | null = null;
-    nonExistentRef.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    unRuleVerification.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
-    });
-    problemNodes.forEach((item) => {
-      const tabName = getErrRefTab(item, initData);
-      if (tabName && !errTabNames.includes(tabName)) errTabNames.push(tabName);
+    const { getRefTabNames, tabNames: referenceValidationTabNames } =
+      collectValidationIssueRefTabNames({
+        refs: [...nonExistentRef, ...unRuleVerification, ...problemNodes],
+        resolveTabName: (item) => getErrRefTab(item, initData),
+      });
+    referenceValidationTabNames.forEach((tabName) => {
+      if (!errTabNames.includes(tabName)) errTabNames.push(tabName);
     });
 
     const orderedJson = genFlowJsonOrdered(id, jsonData);
@@ -542,12 +529,19 @@ const FlowsEdit: FC<Props> = ({
 
     const validationIssues = buildValidationIssues({
       datasetSdkValid: currentDatasetValid,
+      getRefTabNames,
       nonExistentRef,
       rootRef,
       sdkInvalidDetails: sdkIssueDetails,
       sdkInvalidTabNames: currentDatasetTabNames,
       unRuleVerification,
     });
+    setValidationIssueTabNames(referenceValidationTabNames);
+    if (validationIssues.length > 0) {
+      setRefCheckData(mapValidationIssuesToRefCheckData(validationIssues));
+    } else {
+      setRefCheckData([]);
+    }
     const feedbackState = resolveDataCheckFeedbackState({
       hasValidationIssues:
         !currentDatasetValid ||
@@ -740,6 +734,7 @@ const FlowsEdit: FC<Props> = ({
                 showRules={showRules}
                 sdkValidationDetails={sdkValidationDetails}
                 sdkValidationFocus={sdkValidationFocus}
+                validationIssueTabNames={validationIssueTabNames}
               />
             </ProForm>
           </RefCheckContext.Provider>

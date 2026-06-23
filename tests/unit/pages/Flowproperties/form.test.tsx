@@ -433,6 +433,34 @@ describe('FlowpropertyForm', () => {
     });
   });
 
+  it('highlights tabs with reference validation issues using the error color token', () => {
+    const formRef = {
+      current: {
+        setFieldsValue: jest.fn(),
+        setFieldValue: jest.fn(),
+        getFieldsValue: jest.fn(() => ({})),
+      },
+    };
+
+    renderWithProviders(
+      <FlowpropertyForm
+        lang='en'
+        activeTabKey='flowPropertiesInformation'
+        drawerVisible={true}
+        formRef={formRef as any}
+        onData={jest.fn()}
+        onTabChange={jest.fn()}
+        formType='create'
+        validationIssueTabNames={['administrativeInformation']}
+      />,
+    );
+
+    expect(screen.getByText('Administrative information')).toHaveStyle({
+      color: '#ff4d4f',
+      fontWeight: '600',
+    });
+  });
+
   it('falls back to the primary color when sdk-highlighted tabs have no explicit error color token', () => {
     mockSdkValidationCountsByTab = {
       administrativeInformation: 1,

@@ -49,8 +49,12 @@ jest.mock('antd', () => {
     );
   };
 
-  const FormItem = ({ children, label, help, hidden }: any) => (
-    <div data-testid='form-item' data-hidden={hidden ? 'true' : 'false'}>
+  const FormItem = ({ children, label, help, hidden, validateStatus }: any) => (
+    <div
+      data-testid='form-item'
+      data-hidden={hidden ? 'true' : 'false'}
+      data-validate-status={validateStatus}
+    >
       {label ? <label>{typeof label === 'string' ? label : label}</label> : null}
       <div>{children}</div>
       {help ? <div role='alert'>{help}</div> : null}
@@ -146,6 +150,34 @@ describe('LevelTextItemForm', () => {
 
     expect(screen.getByText('Classification')).toBeInTheDocument();
     expect(screen.getByText('Please input classification')).toBeInTheDocument();
+  });
+
+  it('shows external validation help when classification validation fails', async () => {
+    mockGetILCDClassification.mockResolvedValue({ data: [], success: true });
+    const formRef = createFormRef();
+
+    render(
+      <LevelTextItemForm
+        name={['classification']}
+        lang='en'
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        hidden={false}
+        onData={jest.fn()}
+        rules={[]}
+        showRules={false}
+        validationHelp='Select an existing classification.'
+        validationStatus='error'
+      />,
+    );
+
+    expect(screen.getAllByTestId('form-item')[0]).toHaveAttribute('data-validate-status', 'error');
+    expect(screen.getByText('Select an existing classification.')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', 'en', ['all']);
+    });
   });
 
   it('fetches flow categorization when requesting elementary flow data', async () => {
