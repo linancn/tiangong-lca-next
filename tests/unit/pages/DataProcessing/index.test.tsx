@@ -292,6 +292,37 @@ describe('DataProcessing page', () => {
     );
   });
 
+  it('summarizes successful build responses without rendering the raw worker payload', async () => {
+    mockCreateLciaResultBuildRequest.mockResolvedValueOnce({
+      data: {
+        buildId: 'build-with-large-payload',
+        workerJobId: 'worker-job-with-large-payload',
+        workerJob: {
+          payload: {
+            input_manifest: {
+              processes: [{ id: 'process-from-raw-manifest', version: '01.01.000' }],
+            },
+          },
+        },
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    fireEvent.change(screen.getByLabelText('Package name'), {
+      target: { value: 'Large payload package' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create build' }));
+
+    expect(await screen.findByText('Build request submitted')).toBeInTheDocument();
+    expect(screen.getByText('build-with-large-payload')).toBeInTheDocument();
+    expect(screen.getByText('worker-job-with-large-payload')).toBeInTheDocument();
+    expect(screen.queryByText(/input_manifest/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/process-from-raw-manifest/)).not.toBeInTheDocument();
+  });
+
   it('handles command errors and sparse payload fallbacks for managers', async () => {
     mockRequestWorkerJobsApi.mockResolvedValueOnce({
       data: undefined,

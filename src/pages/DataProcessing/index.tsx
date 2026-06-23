@@ -22,15 +22,20 @@ import {
   Spin,
   Tabs,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import styles from './index.less';
 
 type CommandStatus = {
   kind: 'success' | 'error';
-  message: string;
+  message: ReactNode;
 };
 
 type CommandAction = 'createBuild' | 'previewPackage' | 'publishPackage' | 'unpublishPublication';
+
+type CommandSummaryRow = {
+  label: string;
+  value: string;
+};
 
 type LciaMethodListPayload = {
   files?: Array<{
@@ -56,6 +61,14 @@ function stringifyCommandData(value: unknown): string {
     return value;
   }
   return JSON.stringify(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function firstString(...values: unknown[]): string | undefined {
+  return values.find((value): value is string => typeof value === 'string' && value.trim() !== '');
 }
 
 export function resolveLocalizedText(value: unknown, locale: string): string {
@@ -222,7 +235,108 @@ const DataProcessing = () => {
     [t],
   );
 
-  const showResult = (result: { data: unknown; error: { message?: string } | null }) => {
+  const commandSuccessTitle = (action: CommandAction) => {
+    const messages: Record<CommandAction, { defaultMessage: string; id: string }> = {
+      createBuild: {
+        id: 'pages.dataProcessing.command.createBuildSuccess',
+        defaultMessage: 'Build request submitted',
+      },
+      previewPackage: {
+        id: 'pages.dataProcessing.command.previewPackageSuccess',
+        defaultMessage: 'Package preview loaded',
+      },
+      publishPackage: {
+        id: 'pages.dataProcessing.command.publishPackageSuccess',
+        defaultMessage: 'Package published',
+      },
+      unpublishPublication: {
+        id: 'pages.dataProcessing.command.unpublishPublicationSuccess',
+        defaultMessage: 'Publication unpublished',
+      },
+    };
+    return t(messages[action].id, messages[action].defaultMessage);
+  };
+
+  const commandSummaryRows = (action: CommandAction, data: unknown): CommandSummaryRow[] => {
+    const record = isRecord(data) ? data : null;
+    const workerJob = isRecord(record?.workerJob) ? record.workerJob : null;
+
+    const rows: CommandSummaryRow[] = [];
+    const addRow = (label: string, value?: string) => {
+      if (value) {
+        rows.push({ label, value });
+      }
+    };
+
+    if (action === 'createBuild') {
+      addRow(
+        t('pages.dataProcessing.command.buildId', 'Build ID'),
+        firstString(record?.buildId, record?.build_id, record?.id),
+      );
+      addRow(
+        t('pages.dataProcessing.command.workerJobId', 'Worker job'),
+        firstString(
+          record?.workerJobId,
+          record?.worker_job_id,
+          workerJob?.id,
+          workerJob?.workerJobId,
+          workerJob?.worker_job_id,
+        ),
+      );
+      return rows;
+    }
+
+    if (action === 'previewPackage') {
+      return rows;
+    }
+
+    if (action === 'publishPackage') {
+      addRow(
+        t('pages.dataProcessing.command.publicationId', 'Publication ID'),
+        firstString(record?.publicationId, record?.publication_id, record?.id),
+      );
+      addRow(
+        t('pages.dataProcessing.command.packageId', 'Package ID'),
+        firstString(record?.packageId, record?.package_id),
+      );
+      addRow(t('pages.dataProcessing.command.status', 'Status'), firstString(record?.status));
+      return rows;
+    }
+
+    addRow(
+      t('pages.dataProcessing.command.publicationId', 'Publication ID'),
+      firstString(record?.publicationId, record?.publication_id, record?.id),
+    );
+    addRow(
+      t('pages.dataProcessing.command.status', 'Status'),
+      firstString(record?.status, typeof data === 'string' ? data : undefined),
+    );
+    return rows;
+  };
+
+  const commandSuccessMessage = (action: CommandAction, data: unknown) => {
+    const rows = commandSummaryRows(action, data);
+
+    return (
+      <div className={styles.commandMessage}>
+        <strong>{commandSuccessTitle(action)}</strong>
+        {rows.length > 0 ? (
+          <div className={styles.commandMeta}>
+            {rows.map((row) => (
+              <span key={`${row.label}:${row.value}`} className={styles.commandMetaItem}>
+                {row.label}: <code className={styles.commandMetaValue}>{row.value}</code>
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+
+  const showResult = (
+    action: CommandAction,
+    result: { data: unknown; error: { message?: string } | null },
+  ) => {
     if (result.error) {
       setCommandStatus({
         kind: 'error',
@@ -233,7 +347,7 @@ const DataProcessing = () => {
 
     setCommandStatus({
       kind: 'success',
-      message: stringifyCommandData(result.data),
+      message: commandSuccessMessage(action, result.data),
     });
   };
 
@@ -244,7 +358,7 @@ const DataProcessing = () => {
     setSubmittingAction(action);
     try {
       const result = await command();
-      showResult(result);
+      showResult(action, result);
       return result;
     } catch (error) {
       setCommandStatus({
