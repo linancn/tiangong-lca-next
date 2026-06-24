@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-06-11
-lastReviewedCommit: e1707b3fe2e802b95f19e7d5fad71cebbcd15f7a
+lastReviewedAt: 2026-06-24
+lastReviewedCommit: 71e508cc07f4568218518f25ddf2cc185308c1f5
 ---
 
 # Contribution Path Analysis Design

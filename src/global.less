@@ -122,6 +122,25 @@ ol {
 }
 
 .ant-layout-sider-collapsed {
+  .ant-menu-item:has(a[href='#/data-processing']) {
+    padding-inline: 0 !important;
+  }
+
+  a[href='#/data-processing'] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: calc(50% - 11px) !important;
+
+    > span:first-child {
+      margin-right: 0;
+    }
+
+    > span:last-child {
+      display: none;
+    }
+  }
+
   .ant-pro-sider-links {
     a[href='/umi/plugin/openapi'] {
       > span:not(.anticon) {

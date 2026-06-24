@@ -48,6 +48,7 @@ export type WorkerJobRequest =
       action?: 'list';
       subjectType?: string;
       subjectId?: string;
+      visibility?: 'user' | 'operator';
       statuses?: WorkerJobStatus[];
       limit?: number;
     }
@@ -151,6 +152,7 @@ export async function requestWorkerJobsApi<Row extends WorkerJobResult = WorkerJ
             action: 'list',
             ...(request.subjectType ? { subjectType: request.subjectType } : {}),
             ...(request.subjectId ? { subjectId: request.subjectId } : {}),
+            ...(request.visibility ? { visibility: request.visibility } : {}),
             ...(request.statuses?.length ? { statuses: request.statuses } : {}),
             ...(request.limit ? { limit: request.limit } : {}),
           };

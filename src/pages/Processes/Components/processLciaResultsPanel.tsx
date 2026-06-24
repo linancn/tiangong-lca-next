@@ -1,14 +1,19 @@
 import AlignedNumber from '@/components/AlignedNumber';
+import {
+  getPublishedLciaResultPackage,
+  type PublishedLciaResultValue,
+} from '@/services/dataProducts';
 import { ListPagination } from '@/services/general/data';
 import { getLangText } from '@/services/general/util';
 import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getReferenceQuantityFromMethod } from '@/services/lciaMethods/util';
+import { InfoCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Space, Tooltip, Typography } from 'antd';
 import type { FC } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FormattedMessage, useLocation } from 'umi';
+import { FormattedMessage, useIntl, useLocation } from 'umi';
 import {
   buildMergedLcaRows,
   getDefaultLcaDataScopeForPath,
@@ -27,6 +32,7 @@ type Props = {
   lcaDataScope?: Exclude<LcaAnalysisDataScope, 'all_data'>;
   queryScope?: string;
   enableSolverRefresh?: boolean;
+  enablePublishedPackageReader?: boolean;
 };
 
 type SolverLciaPendingJob = {
@@ -34,6 +40,40 @@ type SolverLciaPendingJob = {
   jobId: string;
   snapshotId: string;
 };
+
+type PublishedLciaMeta = {
+  publicationId: string;
+  packageId: string;
+  rowCount: number;
+};
+
+function normalizePublishedLciaValues(values: PublishedLciaResultValue[] | undefined) {
+  return (Array.isArray(values) ? values : [])
+    .map((row) => ({
+      impact_id: String(row.impact_id ?? ''),
+      impact_index: Number(row.impact_index ?? 0),
+      impact_name: String(row.impact_name ?? ''),
+      unit: String(row.unit ?? ''),
+      value: Number(row.value ?? 0),
+    }))
+    .filter((row) => row.impact_id.length > 0)
+    .sort((left, right) => Number(left.impact_index) - Number(right.impact_index));
+}
+
+function readRecordId(record: Record<string, unknown> | null | undefined, fallback: string) {
+  if (!record) {
+    return fallback;
+  }
+
+  const candidates = [
+    record.id,
+    record.publication_id,
+    record.package_id,
+    record.result_package_id,
+  ];
+  const matched = candidates.find((value) => typeof value === 'string' && value.trim());
+  return typeof matched === 'string' ? matched.trim() : fallback;
+}
 
 const ProcessLciaResultsPanel: FC<Props> = ({
   baseRows,
@@ -43,10 +83,15 @@ const ProcessLciaResultsPanel: FC<Props> = ({
   lcaDataScope,
   queryScope = LCA_SCOPE,
   enableSolverRefresh = true,
+  enablePublishedPackageReader = false,
 }) => {
   const location = useLocation();
+  const intl = useIntl();
   const resolvedDataScope = lcaDataScope ?? getDefaultLcaDataScopeForPath(location.pathname ?? '');
-  const canQuerySolver = enableSolverRefresh && !!processId;
+  const shouldPreferPublishedPackage =
+    enablePublishedPackageReader && resolvedDataScope === 'open_data' && !!processId;
+  const shouldUsePublishedPackage = shouldPreferPublishedPackage && !!processVersion;
+  const canQuerySolver = enableSolverRefresh && !!processId && !shouldPreferPublishedPackage;
   const [normalizedBaseRows, setNormalizedBaseRows] = useState<LCIAResultTable[]>([]);
   const [rows, setRows] = useState<LCIAResultTable[]>([]);
   const [baseRowsReady, setBaseRowsReady] = useState(false);
@@ -61,6 +106,101 @@ const ProcessLciaResultsPanel: FC<Props> = ({
   } | null>(null);
   const [solverLciaPendingJob, setSolverLciaPendingJob] = useState<SolverLciaPendingJob | null>(
     null,
+  );
+  const [publishedLciaLoading, setPublishedLciaLoading] = useState(false);
+  const [publishedLciaLoaded, setPublishedLciaLoaded] = useState(false);
+  const [publishedLciaError, setPublishedLciaError] = useState<string | null>(null);
+  const [publishedLciaMeta, setPublishedLciaMeta] = useState<PublishedLciaMeta | null>(null);
+  const [publishedLciaEmpty, setPublishedLciaEmpty] = useState(false);
+  const lciaLoading = solverLciaLoading || publishedLciaLoading;
+
+  const lciaDiagnostics = useMemo(() => {
+    if (shouldUsePublishedPackage && publishedLciaMeta) {
+      return {
+        label: intl.formatMessage({
+          id: 'pages.process.view.lciaresults.published.details',
+          defaultMessage: 'Published result details',
+        }),
+        text: `source=published_package, publication=${publishedLciaMeta.publicationId}, package=${publishedLciaMeta.packageId}, rows=${publishedLciaMeta.rowCount}`,
+      };
+    }
+
+    if (solverLciaMeta) {
+      return {
+        label: intl.formatMessage({
+          id: 'pages.process.view.lciaresults.solver.details',
+          defaultMessage: 'Calculated result details',
+        }),
+        text: `source=${solverLciaMeta.source}, snapshot=${solverLciaMeta.snapshotId}, result=${solverLciaMeta.resultId}, computed_at=${solverLciaMeta.computedAt}`,
+      };
+    }
+
+    return null;
+  }, [intl, publishedLciaMeta, shouldUsePublishedPackage, solverLciaMeta]);
+
+  const lciaProfileHeaderExtra = lciaDiagnostics ? (
+    <Tooltip title={lciaDiagnostics.text}>
+      <Button
+        aria-label={lciaDiagnostics.label}
+        icon={<InfoCircleOutlined />}
+        size='small'
+        type='text'
+      />
+    </Tooltip>
+  ) : null;
+
+  const publishedErrorDetailLabel = intl.formatMessage({
+    id: 'pages.process.view.lciaresults.published.errorDetails',
+    defaultMessage: 'Published result error details',
+  });
+
+  const lciaProfileNotice = (
+    <>
+      {solverLciaError && !solverLciaPendingJob && (
+        <Typography.Text type='danger'>
+          <FormattedMessage
+            id='pages.process.view.lciaresults.solver.error'
+            defaultMessage='Result query failed: {message}'
+            values={{ message: solverLciaError }}
+          />
+        </Typography.Text>
+      )}
+      {publishedLciaEmpty && (
+        <Typography.Text type='secondary'>
+          <FormattedMessage
+            id='pages.process.view.lciaresults.published.empty'
+            defaultMessage='No published LCIA result rows are available for this process.'
+          />
+        </Typography.Text>
+      )}
+      {publishedLciaError && (
+        <Space align='center' size={4} wrap>
+          <Typography.Text type='secondary'>
+            <WarningOutlined style={{ color: '#d48806' }} />{' '}
+            <FormattedMessage
+              id='pages.process.view.lciaresults.published.unavailable'
+              defaultMessage='Published LCIA results are unavailable.'
+            />
+          </Typography.Text>
+          <Tooltip
+            title={intl.formatMessage(
+              {
+                id: 'pages.process.view.lciaresults.published.errorDetailMessage',
+                defaultMessage: 'Detail: {message}',
+              },
+              { message: publishedLciaError },
+            )}
+          >
+            <Button
+              aria-label={publishedErrorDetailLabel}
+              icon={<InfoCircleOutlined />}
+              size='small'
+              type='text'
+            />
+          </Tooltip>
+        </Space>
+      )}
+    </>
   );
 
   const columns = useMemo<ProColumns<LCIAResultTable>[]>(
@@ -141,6 +281,10 @@ const ProcessLciaResultsPanel: FC<Props> = ({
     setSolverLciaError(null);
     setSolverLciaMeta(null);
     setSolverLciaPendingJob(null);
+    setPublishedLciaLoaded(false);
+    setPublishedLciaError(null);
+    setPublishedLciaMeta(null);
+    setPublishedLciaEmpty(false);
 
     const syncBaseRows = async () => {
       const sourceRows = JSON.parse(JSON.stringify(baseRows ?? [])) as LCIAResultTable[];
@@ -165,6 +309,60 @@ const ProcessLciaResultsPanel: FC<Props> = ({
       cancelled = true;
     };
   }, [baseRows]);
+
+  const loadPublishedLciaResults = useCallback(
+    async (forceReload: boolean) => {
+      if (publishedLciaLoading) {
+        return;
+      }
+      if (publishedLciaLoaded && !forceReload) {
+        return;
+      }
+
+      setPublishedLciaLoading(true);
+      setPublishedLciaError(null);
+      setPublishedLciaEmpty(false);
+
+      try {
+        const result = await getPublishedLciaResultPackage({
+          processId: processId as string,
+          processVersion: processVersion as string,
+        });
+
+        if (result.error || !result.data) {
+          throw new Error(result.error?.message || 'Published LCIA result package is unavailable.');
+        }
+
+        const publishedRows = normalizePublishedLciaValues(result.data.values);
+        setPublishedLciaMeta({
+          publicationId: readRecordId(result.data.publication, '-'),
+          packageId: readRecordId(result.data.package, '-'),
+          rowCount: result.data.rowCount ?? publishedRows.length,
+        });
+
+        if (publishedRows.length === 0) {
+          setRows([]);
+          setPublishedLciaEmpty(true);
+          setPublishedLciaLoaded(true);
+          return;
+        }
+
+        const methodMetaById = await getLcaMethodMetaMap(
+          publishedRows.map((publishedRow) => publishedRow.impact_id),
+        );
+        setRows(buildMergedLcaRows([], publishedRows, methodMetaById));
+        setPublishedLciaLoaded(true);
+      } catch (error: unknown) {
+        setRows([]);
+        setPublishedLciaMeta(null);
+        setPublishedLciaError(error instanceof Error ? error.message : String(error));
+        setPublishedLciaLoaded(true);
+      } finally {
+        setPublishedLciaLoading(false);
+      }
+    },
+    [processId, processVersion, publishedLciaLoaded, publishedLciaLoading],
+  );
 
   const loadSolverLciaResults = useCallback(
     async (forceReload: boolean) => {
@@ -310,6 +508,14 @@ const ProcessLciaResultsPanel: FC<Props> = ({
   }, [baseRowsReady, canQuerySolver, loadSolverLciaResults]);
 
   useEffect(() => {
+    if (!shouldUsePublishedPackage || !baseRowsReady) {
+      return;
+    }
+
+    void loadPublishedLciaResults(false);
+  }, [baseRowsReady, loadPublishedLciaResults, shouldUsePublishedPackage]);
+
+  useEffect(() => {
     if (!canQuerySolver || !solverLciaPendingJob) {
       return;
     }
@@ -339,11 +545,6 @@ const ProcessLciaResultsPanel: FC<Props> = ({
               defaultMessage='Refresh latest calculated results'
             />
           </Button>
-          {solverLciaMeta && (
-            <Typography.Text type='secondary'>
-              {`source=${solverLciaMeta.source}, snapshot=${solverLciaMeta.snapshotId}, result=${solverLciaMeta.resultId}, computed_at=${solverLciaMeta.computedAt}`}
-            </Typography.Text>
-          )}
           {solverLciaPendingJob?.kind === 'snapshot_build' && (
             <Typography.Text type='secondary'>
               <FormattedMessage
@@ -364,19 +565,16 @@ const ProcessLciaResultsPanel: FC<Props> = ({
           )}
         </Space>
       )}
-      {solverLciaError && !solverLciaPendingJob && (
-        <Typography.Text type='danger'>
-          <FormattedMessage
-            id='pages.process.view.lciaresults.solver.error'
-            defaultMessage='Result query failed: {message}'
-            values={{ message: solverLciaError }}
-          />
-        </Typography.Text>
-      )}
-      <LcaProfileSummary rows={rows} lang={lang} loading={solverLciaLoading} />
+      <LcaProfileSummary
+        rows={rows}
+        lang={lang}
+        headerExtra={lciaProfileHeaderExtra}
+        loading={lciaLoading}
+        notice={lciaProfileNotice}
+      />
       <ProTable<LCIAResultTable, ListPagination>
         rowKey={(row) => row.referenceToLCIAMethodDataSet?.['@refObjectId'] || row.key}
-        loading={solverLciaLoading}
+        loading={lciaLoading}
         search={false}
         options={false}
         dataSource={rows}

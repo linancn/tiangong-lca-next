@@ -1,5 +1,6 @@
 import AlignedNumber from '@/components/AlignedNumber';
 import ToolBarButton from '@/components/ToolBarButton';
+import { queryPublishedLciaResults } from '@/services/dataProducts';
 import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
 import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { OrderedListOutlined } from '@ant-design/icons';
@@ -36,6 +37,7 @@ import {
   toProgressStatus,
   VALUE_EPSILON,
 } from './lcaAnalysisShared';
+import { publishedLciaQueryMeta, shouldUsePublishedLciaResults } from './publishedLciaResults';
 
 const DEFAULT_HOTSPOT_LIMIT = 20;
 const HOTSPOT_LIMIT_OPTIONS = [10, 20, 50, 100];
@@ -299,6 +301,7 @@ const LcaImpactHotspotToolbar: FC<{
   const intl = useIntl();
   const location = useLocation();
   const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
+  const usePublishedResults = shouldUsePublishedLciaResults(defaultLcaDataScope);
   const topNOptions = useMemo(
     () =>
       HOTSPOT_LIMIT_OPTIONS.map((value) => ({
@@ -356,19 +359,47 @@ const LcaImpactHotspotToolbar: FC<{
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
-        mode: 'processes_one_impact',
-        impact_id: selectedImpactId,
-        top_n: selectedTopN,
-        offset: requestedOffset,
-        sort_by: 'absolute_value',
-        sort_direction: 'desc',
-        allow_fallback: false,
-      });
+      let data: RankedProcessesQueryData;
+      let queryMeta: {
+        snapshotId: string;
+        resultId: string;
+        source: string;
+        computedAt: string;
+      };
 
-      const data = queried.data as RankedProcessesQueryData;
+      if (usePublishedResults) {
+        const published = await queryPublishedLciaResults({
+          mode: 'ranked_processes_one_impact',
+          impactCategoryId: selectedImpactId,
+          offset: requestedOffset,
+          limit: selectedTopN,
+        });
+        if (published.error || !published.data) {
+          throw new Error(published.error?.message || 'Published LCIA results are unavailable.');
+        }
+        data = published.data as RankedProcessesQueryData;
+        queryMeta = publishedLciaQueryMeta(published.data);
+      } else {
+        const queried = await queryLcaResults({
+          scope: LCA_SCOPE,
+          ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
+          mode: 'processes_one_impact',
+          impact_id: selectedImpactId,
+          top_n: selectedTopN,
+          offset: requestedOffset,
+          sort_by: 'absolute_value',
+          sort_direction: 'desc',
+          allow_fallback: false,
+        });
+        data = queried.data as RankedProcessesQueryData;
+        queryMeta = {
+          snapshotId: queried.snapshot_id,
+          resultId: queried.result_id,
+          source: queried.source,
+          computedAt: queried.meta.computed_at,
+        };
+      }
+
       if (data?.kind !== 'ranked_processes') {
         throw new Error(
           intl.formatMessage({
@@ -404,10 +435,10 @@ const LcaImpactHotspotToolbar: FC<{
         impactId: selectedImpactId,
         impactLabel: selectedImpact.label,
         unit: selectedImpact.unit,
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
+        snapshotId: queryMeta.snapshotId,
+        resultId: queryMeta.resultId,
+        source: queryMeta.source,
+        computedAt: queryMeta.computedAt,
         model: buildLcaImpactHotspotModel(rankedValues, processNameLookup, {
           offset: Number.isFinite(offsetValue) ? offsetValue : 0,
           limit: Number.isFinite(limitValue) && limitValue > 0 ? limitValue : selectedTopN,

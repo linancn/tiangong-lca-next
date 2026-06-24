@@ -36,6 +36,7 @@ const mockGetLangText = jest.fn();
 const mockGetLangJson = jest.fn();
 const mockQueryLcaResults = jest.fn();
 const mockIsLcaFunctionInvokeError = jest.fn(() => false);
+const mockGetPublishedLciaResultPackage = jest.fn();
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetDecompressedMethod = jest.fn();
 const mockGetReferenceQuantityFromMethod = jest.fn();
@@ -49,6 +50,15 @@ const mockUseLocation = jest.fn(() => ({ pathname: '/', search: '' }));
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+      const template = defaultMessage ?? id;
+      return Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+        template,
+      );
+    },
+  }),
   useLocation: () => mockUseLocation(),
 }));
 
@@ -88,6 +98,11 @@ jest.mock('@/services/lca', () => ({
   __esModule: true,
   queryLcaResults: (...args: any[]) => mockQueryLcaResults(...args),
   isLcaFunctionInvokeError: (...args: any[]) => mockIsLcaFunctionInvokeError(...args),
+}));
+
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  getPublishedLciaResultPackage: (...args: any[]) => mockGetPublishedLciaResultPackage(...args),
 }));
 
 jest.mock('@/services/lciaMethods/util', () => ({
@@ -217,19 +232,29 @@ jest.mock('@ant-design/icons', () => ({
   ProfileOutlined: () => <span>profile-icon</span>,
   CheckCircleOutlined: () => <span>check-circle-icon</span>,
   CloseCircleOutlined: () => <span>close-circle-icon</span>,
+  InfoCircleOutlined: () => <span>info-circle-icon</span>,
+  WarningOutlined: () => <span>warning-icon</span>,
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, icon, onClick, disabled }: any) => (
-    <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
-      {icon}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, icon, onClick, disabled, ...props }: any) => {
+    delete props.loading;
 
-  const Tooltip = ({ children }: any) => <>{children}</>;
+    return (
+      <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick} {...props}>
+        {icon}
+        {toText(children)}
+      </button>
+    );
+  };
+
+  const Tooltip = ({ children, title }: any) => (
+    <span data-testid='tooltip' data-title={toText(title)}>
+      {children}
+    </span>
+  );
 
   const Drawer = ({ open, title, extra, children, getContainer, onClose }: any) => {
     if (!open) return null;
@@ -397,6 +422,7 @@ const processDataSet = {
 describe('ProcessView component', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     jest.useRealTimers();
     mockGetLangText.mockImplementation((value: any) => {
       if (typeof value === 'string') return value;
@@ -438,6 +464,15 @@ describe('ProcessView component', () => {
           },
         ],
       },
+    });
+    mockGetPublishedLciaResultPackage.mockResolvedValue({
+      data: {
+        publication: null,
+        package: null,
+        rowCount: 0,
+        values: [],
+      },
+      error: null,
     });
   });
 
@@ -538,6 +573,8 @@ describe('ProcessView component', () => {
   });
 
   it('shows solver metadata when latest LCIA results load successfully', async () => {
+    mockUseLocation.mockReturnValue({ pathname: '/mydata/processes', search: '' });
+
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
 
@@ -546,6 +583,7 @@ describe('ProcessView component', () => {
     await waitFor(() =>
       expect(mockQueryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
+        data_scope: 'current_user',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         process_version: '1.0.0',
@@ -553,27 +591,86 @@ describe('ProcessView component', () => {
       }),
     );
     expect(
-      screen.getByText(/source=all_unit, snapshot=snapshot-1, result=result-1/),
-    ).toBeInTheDocument();
+      screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute(
+      'data-title',
+      expect.stringContaining('source=all_unit, snapshot=snapshot-1, result=result-1'),
+    );
   });
 
-  it('uses open_data scope for solver results on the tgdata route', async () => {
+  it('uses the published LCIA package reader on the tgdata route even when the old flag is false', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-flag-false' },
+        package: { id: 'package-flag-false' },
+        rowCount: 1,
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 0,
+            impact_name: 'Published climate change',
+            unit: 'kg CO2-eq',
+            value: 52,
+          },
+        ],
+      },
+      error: null,
+    });
 
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
 
     await waitFor(() =>
-      expect(mockQueryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
-        data_scope: 'open_data',
-        mode: 'process_all_impacts',
-        process_id: 'process-1',
-        process_version: '1.0.0',
-        allow_fallback: false,
+      expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledWith({
+        processId: 'process-1',
+        processVersion: '1.0.0',
       }),
     );
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+  });
+
+  it('uses published LCIA package reader on the tgdata route by default', async () => {
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
+    mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-1' },
+        package: { id: 'package-1' },
+        rowCount: 1,
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 0,
+            impact_name: 'Published climate change',
+            unit: 'kg CO2-eq',
+            value: 52,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
+
+    await waitFor(() =>
+      expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledWith({
+        processId: 'process-1',
+        processVersion: '1.0.0',
+      }),
+    );
+
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
+    expect(screen.queryByText(/source=published_package/)).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute('data-title', expect.stringContaining('source=published_package'));
+    expect(screen.getAllByText('Published climate change').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('52').length).toBeGreaterThan(0);
   });
 
   it('opens with the result-icon trigger and renders fallback labels for unsupported option codes', async () => {
@@ -803,8 +900,13 @@ describe('ProcessView component', () => {
     await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(
-        screen.getByText(/source=latest_ready, snapshot=snapshot-ready, result=result-ready/),
-      ).toBeInTheDocument(),
+        screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+      ).toHaveAttribute(
+        'data-title',
+        expect.stringContaining(
+          'source=latest_ready, snapshot=snapshot-ready, result=result-ready',
+        ),
+      ),
     );
     jest.useRealTimers();
   });
@@ -1146,8 +1248,13 @@ describe('ProcessView component', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/source=latest_ready, snapshot=snapshot-merge, result=result-merge/),
-      ).toBeInTheDocument(),
+        screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+      ).toHaveAttribute(
+        'data-title',
+        expect.stringContaining(
+          'source=latest_ready, snapshot=snapshot-merge, result=result-merge',
+        ),
+      ),
     );
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
     expect(

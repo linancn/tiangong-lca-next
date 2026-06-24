@@ -42,6 +42,11 @@ jest.mock('@/services/lca', () => ({
   isLcaFunctionInvokeError: jest.fn(() => false),
 }));
 
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  queryPublishedLciaResults: jest.fn(),
+}));
+
 jest.mock('@/services/lciaMethods/util', () => ({
   __esModule: true,
   cacheAndDecompressMethod: jest.fn(),
@@ -50,6 +55,7 @@ jest.mock('@/services/lciaMethods/util', () => ({
 
 const { queryLcaResults } = jest.requireMock('@/services/lca');
 const { isLcaFunctionInvokeError } = jest.requireMock('@/services/lca');
+const { queryPublishedLciaResults } = jest.requireMock('@/services/dataProducts');
 const { cacheAndDecompressMethod, getDecompressedMethod } = jest.requireMock(
   '@/services/lciaMethods/util',
 );
@@ -89,6 +95,7 @@ const selectImpact = async (impactId = 'impact-1') => {
 describe('lcaImpactCompareToolbar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     resetUmiMocks();
     getDecompressedMethod.mockResolvedValue({
       files: [
@@ -129,6 +136,24 @@ describe('lcaImpactCompareToolbar', () => {
         cache_hit: false,
         computed_at: '2026-03-12T12:00:00Z',
       },
+    });
+    queryPublishedLciaResults.mockResolvedValue({
+      data: {
+        publication: {
+          publicationId: 'publication-1',
+          publishedAt: '2026-06-24T09:00:00Z',
+        },
+        package: {
+          packageId: 'package-1',
+          snapshotId: 'snapshot-published',
+        },
+        mode: 'processes_one_impact',
+        values: {
+          'process-1': 21,
+          'process-2': -4,
+        },
+      },
+      error: null,
     });
   });
 
@@ -267,8 +292,34 @@ describe('lcaImpactCompareToolbar', () => {
     expect(screen.getAllByText('86.5%').length).toBeGreaterThan(0);
   });
 
-  it('uses open_data scope on the tgdata route', async () => {
+  it('uses current public published results on the tgdata route even when the old flag is false', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'processes_one_impact',
+        impactCategoryId: 'impact-1',
+        processes: [
+          { id: 'process-1', version: '01.00.000' },
+          { id: 'process-2', version: '02.00.000' },
+        ],
+      }),
+    );
+    expect(queryLcaResults).not.toHaveBeenCalled();
+  });
+
+  it('uses current-user solver scope on the mydata route', async () => {
+    setUmiLocation({ pathname: '/mydata/processes', search: '' });
 
     renderToolbar([
       buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
@@ -282,12 +333,83 @@ describe('lcaImpactCompareToolbar', () => {
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'open_data',
+        data_scope: 'current_user',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2'],
         impact_id: 'impact-1',
         allow_fallback: false,
       }),
+    );
+    expect(queryPublishedLciaResults).not.toHaveBeenCalled();
+  });
+
+  it('uses current public published results on the tgdata route when enabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'processes_one_impact',
+        impactCategoryId: 'impact-1',
+        processes: [
+          { id: 'process-1', version: '01.00.000' },
+          { id: 'process-2', version: '02.00.000' },
+        ],
+      }),
+    );
+    expect(queryLcaResults).not.toHaveBeenCalled();
+    expect(await screen.findByText('snapshot-published')).toBeInTheDocument();
+    expect(screen.getByText('package-1')).toBeInTheDocument();
+  });
+
+  it('shows published result errors on the tgdata route when enabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+    queryPublishedLciaResults.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'published compare unavailable' },
+    });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('published compare unavailable');
+  });
+
+  it('falls back when published comparison errors omit a message', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+    queryPublishedLciaResults.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Published LCIA results are unavailable.',
     );
   });
 
