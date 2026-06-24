@@ -36,7 +36,7 @@ import {
 import type { ButtonType } from 'antd/es/button';
 import type { FC, ReactNode } from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useLocation } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
 import {
@@ -50,6 +50,7 @@ import ReviewItemView from './Review/view';
 import { getExchangeColumns, PROCESS_EXCHANGE_TABLE_SCROLL } from './Exchange/column';
 import {
   buildMergedLcaRows as buildMergedLciaRows,
+  getDefaultLcaDataScopeForPath,
   getLcaMethodMetaMap,
 } from './lcaAnalysisShared';
 import {
@@ -60,6 +61,7 @@ import {
   processtypeOfDataSetOptions,
 } from './optiondata';
 import ProcessLciaResultsPanel from './processLciaResultsPanel';
+import { shouldUsePublishedLciaResults } from './publishedLciaResults';
 
 type Props = {
   id: string;
@@ -151,6 +153,8 @@ const ProcessView: FC<Props> = ({
   autoOpen = false,
   onDrawerClose,
 }) => {
+  const location = useLocation();
+  const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
@@ -1598,7 +1602,7 @@ const ProcessView: FC<Props> = ({
     lciaResults: (
       <ProcessLciaResultsPanel
         baseRows={lciaResultDataSource}
-        enablePublishedPackageReader={process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED === 'true'}
+        enablePublishedPackageReader={shouldUsePublishedLciaResults(defaultLcaDataScope)}
         lang={lang}
         processId={id}
         processVersion={version}

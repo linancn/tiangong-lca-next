@@ -292,7 +292,8 @@ describe('lcaImpactCompareToolbar', () => {
     expect(screen.getAllByText('86.5%').length).toBeGreaterThan(0);
   });
 
-  it('uses open_data scope on the tgdata route', async () => {
+  it('uses open_data solver scope on the tgdata route when published reads are disabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     setUmiLocation({ pathname: '/tgdata/processes', search: '' });
 
     renderToolbar([

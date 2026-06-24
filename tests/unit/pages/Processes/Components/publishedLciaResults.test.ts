@@ -15,12 +15,15 @@ describe('publishedLciaResults helpers', () => {
     }
   });
 
-  it('enables published LCIA reads only for flagged open data', () => {
-    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+  it('enables published LCIA reads for open data unless explicitly disabled', () => {
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
 
     expect(shouldUsePublishedLciaResults('open_data')).toBe(true);
     expect(shouldUsePublishedLciaResults('current_user')).toBe(false);
     expect(shouldUsePublishedLciaResults(undefined)).toBe(false);
+
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    expect(shouldUsePublishedLciaResults('open_data')).toBe(true);
 
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     expect(shouldUsePublishedLciaResults('open_data')).toBe(false);

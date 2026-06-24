@@ -573,7 +573,8 @@ describe('ProcessView component', () => {
     ).toBeInTheDocument();
   });
 
-  it('uses open_data scope for solver results on the tgdata route', async () => {
+  it('uses open_data scope for solver results on the tgdata route when published reads are disabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
 
     render(<ProcessView {...defaultProps} />);
@@ -592,8 +593,8 @@ describe('ProcessView component', () => {
     );
   });
 
-  it('uses published LCIA package reader on the tgdata route when enabled', async () => {
-    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+  it('uses published LCIA package reader on the tgdata route by default', async () => {
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
     mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
       data: {

@@ -28,7 +28,7 @@ function readString(record: Record<string, unknown> | null | undefined, keys: st
 }
 
 export function shouldUsePublishedLciaResults(dataScope?: LcaAnalysisDataScope): boolean {
-  return process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED === 'true' && dataScope === 'open_data';
+  return process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED !== 'false' && dataScope === 'open_data';
 }
 
 export function publishedLciaQueryMeta(
