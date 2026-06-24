@@ -29,6 +29,40 @@ export type UnpublishLciaResultPublicationRequest = {
   reason?: string;
 };
 
+export type ListLciaResultPublicationsRequest = {
+  limit?: number;
+};
+
+export type LciaResultPublication = {
+  id?: string;
+  publicationId?: string;
+  packageId?: string;
+  packageName?: string;
+  packageVersion?: string;
+  status?: string;
+  isCurrent?: boolean;
+  publicationSeriesKey?: string;
+  publicationChannel?: string;
+  visibilityScope?: string;
+  displayDefaultImpactCategory?: string;
+  publishedAt?: string;
+  unpublishedAt?: string;
+  reason?: string;
+  eligibleInputCount?: number;
+  includedInputCount?: number;
+};
+
+export type PreviewLciaResultPackageRequest = {
+  packageId: string;
+  impactCategoryId?: string;
+  rowOffset?: number;
+  rowLimit?: number;
+  inputOffset?: number;
+  inputLimit?: number;
+  resultOffset?: number;
+  resultLimit?: number;
+};
+
 export type PublishedLciaResultValue = {
   impact_id: string;
   impact_index: number;
@@ -43,6 +77,38 @@ export type PublishedLciaResultPackageRequest = {
   impactCategoryId?: string;
 };
 
+export type PublishedLciaProcessSelection = {
+  id: string;
+  version: string;
+};
+
+export type QueryPublishedLciaResultsRequest =
+  | {
+      mode: 'process_all_impacts';
+      processId: string;
+      processVersion: string;
+      impactCategoryId?: string;
+    }
+  | {
+      mode: 'processes_one_impact';
+      impactCategoryId: string;
+      processes: PublishedLciaProcessSelection[];
+    }
+  | {
+      mode: 'ranked_processes_one_impact';
+      impactCategoryId: string;
+      offset?: number;
+      limit?: number;
+    };
+
+export type PublishedLciaRankedProcessValue = {
+  process_id: string;
+  process_version: string;
+  process_index: number;
+  value: number;
+  absolute_value: number;
+};
+
 export type PublishedLciaResultPackage = {
   publication: Record<string, unknown> | null;
   package: Record<string, unknown> | null;
@@ -52,6 +118,21 @@ export type PublishedLciaResultPackage = {
   artifactManifest?: Record<string, unknown> | null;
   rowCount: number;
   values?: PublishedLciaResultValue[];
+};
+
+export type PublishedLciaResults = Omit<PublishedLciaResultPackage, 'values'> & {
+  mode?: string;
+  kind?: string;
+  impact_id?: string;
+  impact_index?: number;
+  sort_by?: string;
+  sort_direction?: string;
+  offset?: number;
+  limit?: number;
+  returned_count?: number;
+  total_process_count?: number;
+  total_absolute_value?: number;
+  values?: PublishedLciaResultValue[] | PublishedLciaRankedProcessValue[] | Record<string, unknown>;
 };
 
 export type DataProductApiResult<T> = {
@@ -214,10 +295,11 @@ export function createLciaResultBuildRequest(request: LciaResultBuildRequest) {
   });
 }
 
-export function previewLciaResultPackage(packageId: string) {
+export function previewLciaResultPackage(request: string | PreviewLciaResultPackageRequest) {
+  const payload = typeof request === 'string' ? { packageId: request } : request;
   return invokeDataProductCommand<Record<string, unknown>>({
     action: 'preview_package',
-    packageId,
+    ...payload,
   });
 }
 
@@ -235,10 +317,24 @@ export function unpublishLciaResultPublication(request: UnpublishLciaResultPubli
   });
 }
 
+export function listLciaResultPublications(request: ListLciaResultPublicationsRequest = {}) {
+  return invokeDataProductCommand<LciaResultPublication[]>({
+    action: 'list_publications',
+    ...(request.limit ? { limit: request.limit } : {}),
+  });
+}
+
 export function getPublishedLciaResultPackage(request: PublishedLciaResultPackageRequest) {
   return invokeDataProductFunction<PublishedLciaResultPackage>('data_product_results', {
     processId: request.processId,
     processVersion: request.processVersion,
     ...(request.impactCategoryId ? { impactCategoryId: request.impactCategoryId } : {}),
   });
+}
+
+export function queryPublishedLciaResults(request: QueryPublishedLciaResultsRequest) {
+  return invokeDataProductFunction<PublishedLciaResults>(
+    'data_product_results',
+    request as unknown as Record<string, unknown>,
+  );
 }

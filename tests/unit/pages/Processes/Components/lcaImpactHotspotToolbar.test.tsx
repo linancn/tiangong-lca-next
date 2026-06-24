@@ -43,6 +43,11 @@ jest.mock('@/services/lca', () => ({
   isLcaFunctionInvokeError: jest.fn(() => false),
 }));
 
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  queryPublishedLciaResults: jest.fn(),
+}));
+
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessesByIdAndVersion: jest.fn(),
@@ -55,6 +60,7 @@ jest.mock('@/services/lciaMethods/util', () => ({
 }));
 
 const { queryLcaResults } = jest.requireMock('@/services/lca');
+const { queryPublishedLciaResults } = jest.requireMock('@/services/dataProducts');
 const { getProcessesByIdAndVersion } = jest.requireMock('@/services/processes/api');
 const { cacheAndDecompressMethod, getDecompressedMethod } = jest.requireMock(
   '@/services/lciaMethods/util',
@@ -78,6 +84,7 @@ const selectImpact = async (impactId = 'impact-1') => {
 describe('lcaImpactHotspotToolbar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     resetUmiMocks();
     getDecompressedMethod.mockResolvedValue({
       files: [
@@ -178,6 +185,41 @@ describe('lcaImpactHotspotToolbar', () => {
           computed_at: '2026-03-12T12:00:00Z',
         },
       });
+    queryPublishedLciaResults.mockResolvedValue({
+      data: {
+        publication: {
+          publicationId: 'publication-1',
+          publishedAt: '2026-06-24T09:00:00Z',
+        },
+        package: {
+          packageId: 'package-1',
+          snapshotId: 'snapshot-published',
+        },
+        kind: 'ranked_processes',
+        impact_id: 'impact-1',
+        offset: 0,
+        limit: 20,
+        total_process_count: 2,
+        total_absolute_value: 46,
+        values: [
+          {
+            process_id: 'process-1',
+            process_version: '01.00.000',
+            process_index: 5,
+            value: 42,
+            absolute_value: 42,
+          },
+          {
+            process_id: 'process-2',
+            process_version: '02.00.000',
+            process_index: 9,
+            value: -4,
+            absolute_value: 4,
+          },
+        ],
+      },
+      error: null,
+    });
   });
 
   it('builds a hotspot model using global shares and offset ranks', () => {
@@ -430,6 +472,65 @@ describe('lcaImpactHotspotToolbar', () => {
         sort_direction: 'desc',
         allow_fallback: false,
       }),
+    );
+  });
+
+  it('uses current public published hotspot rankings on the tgdata route when enabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+
+    renderToolbar();
+
+    fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+
+    await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'ranked_processes_one_impact',
+        impactCategoryId: 'impact-1',
+        offset: 0,
+        limit: 20,
+      }),
+    );
+    expect(queryLcaResults).not.toHaveBeenCalled();
+    expect(await screen.findByText('snapshot-published')).toBeInTheDocument();
+    expect(screen.getByText('package-1')).toBeInTheDocument();
+  });
+
+  it('shows published hotspot errors on the tgdata route when enabled', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+    queryPublishedLciaResults.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'published hotspot unavailable' },
+    });
+
+    renderToolbar();
+
+    fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('published hotspot unavailable');
+  });
+
+  it('falls back when published hotspot errors omit a message', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    setUmiLocation({ pathname: '/tgdata/processes', search: '' });
+    queryPublishedLciaResults.mockResolvedValueOnce({
+      data: null,
+      error: {},
+    });
+
+    renderToolbar();
+
+    fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Published LCIA results are unavailable.',
     );
   });
 

@@ -1,6 +1,6 @@
 .workbenchPanel {
   width: 100%;
-  max-width: 960px;
+  max-width: 1180px;
 }
 
 .commandMessage {
@@ -49,22 +49,125 @@
   border-radius: 6px;
 }
 
-.jobItem {
-  padding: 12px;
+.statusIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--ant-color-fill-secondary);
+  color: var(--ant-color-text-secondary);
+  font-size: 15px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.statusIconSuccess {
+  background: var(--ant-color-success-bg);
+  color: var(--ant-color-success);
+}
+
+.statusIconError {
+  background: var(--ant-color-error-bg);
+  color: var(--ant-color-error);
+}
+
+.statusIconProcessing {
+  background: var(--ant-color-info-bg);
+  color: var(--ant-color-info);
+}
+
+.statusIconWarning {
+  background: var(--ant-color-warning-bg);
+  color: var(--ant-color-warning);
+}
+
+.statusIconDefault {
+  background: var(--ant-color-fill-secondary);
+  color: var(--ant-color-text-secondary);
+}
+
+.iconActionButton {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jobSecondary {
+  display: block;
+  margin-top: 4px;
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.jobTable {
+  width: 100%;
+  overflow-x: auto;
   border: 1px solid var(--ant-color-border-secondary);
   border-radius: 6px;
-  background: var(--ant-color-bg-container);
 }
 
-.jobHeader {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
+.jobTableHeader,
+.jobTableRow {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 96px 120px 160px 96px;
+  align-items: stretch;
+  min-width: 760px;
+}
+
+.jobTableHeader {
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.jobTableHeader span,
+.jobTableCell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.jobTableRow:last-child .jobTableCell {
+  border-bottom: 0;
+}
+
+.jobTableCell {
   min-width: 0;
+  color: var(--ant-color-text);
+  font-size: 13px;
+  line-height: 20px;
 }
 
-.jobStatus {
+.jobTableCell strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jobErrorButton {
+  margin-top: 6px;
+  padding: 0 4px;
+  color: var(--ant-color-error);
+}
+
+.previewDetails {
+  width: 100%;
+}
+
+.previewTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.previewTags span {
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--ant-color-fill-secondary);
@@ -73,11 +176,121 @@
   line-height: 20px;
 }
 
-.jobMeta {
+.previewArtifactMeta code {
+  color: var(--ant-color-text);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.previewArtifactList {
+  width: 100%;
+}
+
+.previewArtifact {
+  display: grid;
+  gap: 6px;
+}
+
+.previewArtifactMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 8px;
+  gap: 6px 16px;
   color: var(--ant-color-text-secondary);
   font-size: 12px;
+  line-height: 20px;
+}
+
+.previewTableStack,
+.previewTableWrap {
+  width: 100%;
+}
+
+.previewTableWrap {
+  overflow-x: auto;
+}
+
+.previewTableWrap code {
+  color: var(--ant-color-text);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.previewPager {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.previewResultToolbar {
+  flex-wrap: wrap;
+}
+
+.previewResultToolbar :global(.ant-select) {
+  min-width: 280px;
+}
+
+.previewResultActions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.publicationList {
+  width: 100%;
+}
+
+.publicationTable {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 6px;
+}
+
+.publicationTableHeader,
+.publicationTableRow {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) 156px minmax(180px, 240px) 150px 96px 96px;
+  align-items: stretch;
+  min-width: 932px;
+}
+
+.publicationTableHeader {
+  background: var(--ant-color-fill-quaternary);
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.publicationTableHeader span,
+.publicationTableCell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.publicationTableRow:last-child .publicationTableCell {
+  border-bottom: 0;
+}
+
+.publicationTableCell {
+  min-width: 0;
+  color: var(--ant-color-text);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.publicationTableCell strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.currentPublication {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ant-color-success-bg);
+  color: var(--ant-color-success);
+  font-size: 12px;
+  line-height: 20px;
 }

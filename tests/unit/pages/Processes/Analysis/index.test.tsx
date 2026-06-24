@@ -184,6 +184,11 @@ jest.mock('@/services/lca', () => ({
   isLcaFunctionInvokeError: jest.fn(() => false),
 }));
 
+jest.mock('@/services/dataProducts', () => ({
+  __esModule: true,
+  queryPublishedLciaResults: jest.fn(),
+}));
+
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   listProcessesForLcaAnalysis: jest.fn(),
@@ -208,6 +213,7 @@ const {
   pollLcaJobUntilTerminal,
   isLcaFunctionInvokeError,
 } = jest.requireMock('@/services/lca');
+const { queryPublishedLciaResults } = jest.requireMock('@/services/dataProducts');
 const { getProcessDetail, listProcessesForLcaAnalysis } = jest.requireMock(
   '@/services/processes/api',
 );
@@ -369,6 +375,7 @@ const contributionPathArtifact = {
 describe('LcaAnalysisPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
     resetAntdToken();
     resetUmiMocks();
     setUmiLocation({ pathname: '/mydata/processes/analysis', search: '' });
@@ -463,6 +470,52 @@ describe('LcaAnalysisPage', () => {
       }
 
       return Promise.reject(new Error('unexpected_query'));
+    });
+    queryPublishedLciaResults.mockImplementation(async (request: Record<string, unknown>) => {
+      if (request.mode === 'process_all_impacts') {
+        return {
+          data: {
+            publication: {
+              publicationId: 'publication-1',
+              publishedAt: '2026-06-24T09:00:00Z',
+            },
+            package: {
+              packageId: 'package-published',
+              snapshotId: 'snapshot-published',
+            },
+            values: [
+              {
+                impact_id: 'impact-1',
+                impact_index: 0,
+                impact_name: 'Climate change',
+                unit: 'kg CO2-eq',
+                value: 32,
+              },
+            ],
+          },
+          error: null,
+        };
+      }
+
+      return {
+        data: {
+          publication: {
+            publicationId: 'publication-1',
+            publishedAt: '2026-06-24T09:00:00Z',
+          },
+          package: {
+            packageId: 'package-published',
+            snapshotId: 'snapshot-published',
+          },
+          mode: 'processes_one_impact',
+          values: {
+            'process-1': 32,
+            'process-2': -6,
+            'process-3': 3,
+          },
+        },
+        error: null,
+      };
     });
 
     submitLcaContributionPath.mockResolvedValue({
@@ -1215,6 +1268,179 @@ describe('LcaAnalysisPage', () => {
         allow_fallback: false,
       }),
     );
+  });
+
+  it('uses current public published results for open-data profile, compare, and grouped analyses', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('3 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Data scope'), {
+      target: { value: 'open_data' },
+    });
+
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 1,
+          pageSize: 50,
+        },
+        'en',
+        'open_data',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+
+    await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'process_all_impacts',
+        processId: 'process-1',
+        processVersion: '01.00.000',
+      }),
+    );
+
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'processes_one_impact',
+        impactCategoryId: 'impact-1',
+        processes: [
+          { id: 'process-1', version: '01.00.000' },
+          { id: 'process-2', version: '02.00.000' },
+          { id: 'process-3', version: '01.00.000' },
+        ],
+      }),
+    );
+
+    fireEvent.click(screen.getByTestId('tab-grouped'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
+
+    await waitFor(() => expect(queryPublishedLciaResults).toHaveBeenCalledTimes(3));
+    expect(queryLcaResults).not.toHaveBeenCalled();
+    expect(await screen.findByText('snapshot-published')).toBeInTheDocument();
+    expect(screen.getAllByText('package-published').length).toBeGreaterThan(0);
+  });
+
+  it('shows published result errors for open-data profile, compare, and grouped analyses', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    queryPublishedLciaResults
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'published profile unavailable' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'published compare unavailable' },
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: 'published grouped unavailable' },
+      });
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('3 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Data scope'), {
+      target: { value: 'open_data' },
+    });
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 1,
+          pageSize: 50,
+        },
+        'en',
+        'open_data',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    fireEvent.change(screen.getByLabelText('Process'), {
+      target: { value: 'process-1:01.00.000' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    expect(await screen.findByText('published profile unavailable')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    expect(await screen.findByText('published compare unavailable')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-grouped'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
+    expect(await screen.findByText('published grouped unavailable')).toBeInTheDocument();
+  });
+
+  it('falls back when published result errors omit messages in analysis views', async () => {
+    process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    queryPublishedLciaResults
+      .mockResolvedValueOnce({
+        data: null,
+        error: {},
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {},
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: {},
+      });
+
+    render(<LcaAnalysisPage />);
+
+    expect(
+      await screen.findByText('3 process rows are currently available for analysis.'),
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Data scope'), {
+      target: { value: 'open_data' },
+    });
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        {
+          current: 1,
+          pageSize: 50,
+        },
+        'en',
+        'open_data',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    fireEvent.change(screen.getByLabelText('Process'), {
+      target: { value: 'process-1:01.00.000' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tab-grouped'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
+    expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
   });
 
   it('shows empty-state alerts when no processes or impact categories are available', async () => {

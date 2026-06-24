@@ -18,8 +18,10 @@ jest.mock('@/services/supabase', () => ({
 import {
   createLciaResultBuildRequest,
   getPublishedLciaResultPackage,
+  listLciaResultPublications,
   previewLciaResultPackage,
   publishLciaResultPackage,
+  queryPublishedLciaResults,
   unpublishLciaResultPublication,
 } from '@/services/dataProducts/api';
 
@@ -103,7 +105,12 @@ describe('dataProducts api', () => {
         error: null,
       });
 
-    await previewLciaResultPackage('package-1');
+    await previewLciaResultPackage({
+      packageId: 'package-1',
+      impactCategoryId: 'climate-change',
+      rowOffset: 50,
+      rowLimit: 50,
+    });
     await publishLciaResultPackage({
       packageId: 'package-1',
       displayDefaultImpactCategory: 'climate-change',
@@ -118,7 +125,13 @@ describe('dataProducts api', () => {
       1,
       'app_data_product_commands',
       expect.objectContaining({
-        body: { action: 'preview_package', packageId: 'package-1' },
+        body: {
+          action: 'preview_package',
+          packageId: 'package-1',
+          impactCategoryId: 'climate-change',
+          rowOffset: 50,
+          rowLimit: 50,
+        },
       }),
     );
     expect(mockFunctionsInvoke).toHaveBeenNthCalledWith(
@@ -144,6 +157,68 @@ describe('dataProducts api', () => {
         },
       }),
     );
+  });
+
+  it('lists managed LCIA result publications through app_data_product_commands', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        command: 'lcia_result_publications_list',
+        data: [
+          {
+            publicationId: 'publication-1',
+            packageId: 'package-1',
+            packageName: 'June result set',
+            packageVersion: '2026-06-public',
+            status: 'published',
+            isCurrent: true,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await listLciaResultPublications({ limit: 50 });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_data_product_commands', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: {
+        action: 'list_publications',
+        limit: 50,
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.data).toEqual([
+      {
+        publicationId: 'publication-1',
+        packageId: 'package-1',
+        packageName: 'June result set',
+        packageVersion: '2026-06-public',
+        status: 'published',
+        isCurrent: true,
+      },
+    ]);
+  });
+
+  it('omits publication list limits when the caller uses defaults', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        command: 'lcia_result_publications_list',
+        data: [],
+      },
+      error: null,
+    });
+
+    await listLciaResultPublications();
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('app_data_product_commands', {
+      headers: { Authorization: 'Bearer access-token' },
+      body: {
+        action: 'list_publications',
+      },
+      region: FunctionRegion.UsEast1,
+    });
   });
 
   it('returns command auth errors before invoking protected commands', async () => {
@@ -350,6 +425,82 @@ describe('dataProducts api', () => {
     expect(result.data?.values?.[0]).toMatchObject({
       impact_id: 'climate-change',
       value: 42,
+    });
+  });
+
+  it('queries current public published LCIA results for selected open-data processes', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        data: {
+          mode: 'processes_one_impact',
+          values: {
+            'process-1': 12.5,
+            'process-2': -3,
+          },
+        },
+      },
+      error: null,
+    });
+
+    const result = await queryPublishedLciaResults({
+      mode: 'processes_one_impact',
+      impactCategoryId: 'impact-1',
+      processes: [
+        { id: 'process-1', version: '01.00.000' },
+        { id: 'process-2', version: '02.00.000' },
+      ],
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', {
+      body: {
+        mode: 'processes_one_impact',
+        impactCategoryId: 'impact-1',
+        processes: [
+          { id: 'process-1', version: '01.00.000' },
+          { id: 'process-2', version: '02.00.000' },
+        ],
+      },
+      region: FunctionRegion.UsEast1,
+    });
+    expect(result.data).toEqual({
+      mode: 'processes_one_impact',
+      values: {
+        'process-1': 12.5,
+        'process-2': -3,
+      },
+    });
+  });
+
+  it('queries current public published LCIA hotspot rankings', async () => {
+    mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: {
+        ok: true,
+        data: {
+          kind: 'ranked_processes',
+          values: [],
+        },
+      },
+      error: null,
+    });
+
+    await queryPublishedLciaResults({
+      mode: 'ranked_processes_one_impact',
+      impactCategoryId: 'impact-1',
+      offset: 20,
+      limit: 10,
+    });
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith('data_product_results', {
+      body: {
+        mode: 'ranked_processes_one_impact',
+        impactCategoryId: 'impact-1',
+        offset: 20,
+        limit: 10,
+      },
+      region: FunctionRegion.UsEast1,
     });
   });
 
