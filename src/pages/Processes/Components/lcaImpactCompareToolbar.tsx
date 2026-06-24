@@ -1,5 +1,6 @@
 import AlignedNumber from '@/components/AlignedNumber';
 import ToolBarButton from '@/components/ToolBarButton';
+import { queryPublishedLciaResults } from '@/services/dataProducts';
 import { isLcaFunctionInvokeError, queryLcaResults } from '@/services/lca';
 import type { ProcessTable } from '@/services/processes/data';
 import { BarChartOutlined } from '@ant-design/icons';
@@ -38,6 +39,11 @@ import {
   toProgressStatus,
   VALUE_EPSILON,
 } from './lcaAnalysisShared';
+import {
+  publishedLciaQueryMeta,
+  publishedValuesByProcessId,
+  shouldUsePublishedLciaResults,
+} from './publishedLciaResults';
 
 const DEFAULT_SELECTION_LIMIT = 5;
 type ProcessOption = LcaProcessOption;
@@ -153,6 +159,7 @@ const LcaImpactCompareToolbar: FC<{
   const location = useLocation();
   const defaultLcaDataScope = getDefaultLcaDataScopeForPath(location.pathname);
   const processOptions = useMemo(() => buildLcaProcessOptions(processes), [processes]);
+  const usePublishedResults = shouldUsePublishedLciaResults(defaultLcaDataScope);
   const processOptionMap = useMemo(
     () => new Map(processOptions.map((item) => [item.value, item])),
     [processOptions],
@@ -252,30 +259,62 @@ const LcaImpactCompareToolbar: FC<{
     setAnalysisLoading(true);
     setAnalysisError(null);
     try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
-        mode: 'processes_one_impact',
-        process_ids: selectedProcesses.map((item) => item.value),
-        impact_id: selectedImpactId,
-        allow_fallback: false,
-      });
+      let valuesByProcessId: Record<string, unknown>;
+      let queryMeta: {
+        snapshotId: string;
+        resultId: string;
+        source: string;
+        computedAt: string;
+      };
 
-      const values = (queried.data as QueryDataValues)?.values;
-      const valuesByProcessId =
-        values && typeof values === 'object' && !Array.isArray(values)
-          ? (values as Record<string, unknown>)
-          : {};
+      if (usePublishedResults) {
+        const published = await queryPublishedLciaResults({
+          mode: 'processes_one_impact',
+          impactCategoryId: selectedImpactId,
+          processes: selectedProcesses.map((item) => ({
+            id: item.processId,
+            version: item.version,
+          })),
+        });
+
+        if (published.error || !published.data) {
+          throw new Error(published.error?.message || 'Published LCIA results are unavailable.');
+        }
+
+        valuesByProcessId = publishedValuesByProcessId(published.data);
+        queryMeta = publishedLciaQueryMeta(published.data);
+      } else {
+        const queried = await queryLcaResults({
+          scope: LCA_SCOPE,
+          ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
+          mode: 'processes_one_impact',
+          process_ids: selectedProcesses.map((item) => item.value),
+          impact_id: selectedImpactId,
+          allow_fallback: false,
+        });
+
+        const values = (queried.data as QueryDataValues)?.values;
+        valuesByProcessId =
+          values && typeof values === 'object' && !Array.isArray(values)
+            ? (values as Record<string, unknown>)
+            : {};
+        queryMeta = {
+          snapshotId: queried.snapshot_id,
+          resultId: queried.result_id,
+          source: queried.source,
+          computedAt: queried.meta.computed_at,
+        };
+      }
 
       const selectedImpact = impactOptions.find((item) => item.value === selectedImpactId)!;
       setAnalysisResult({
         impactId: selectedImpactId,
         impactLabel: selectedImpact.label,
         unit: selectedImpact.unit,
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
+        snapshotId: queryMeta.snapshotId,
+        resultId: queryMeta.resultId,
+        source: queryMeta.source,
+        computedAt: queryMeta.computedAt,
         model: buildLcaImpactCompareModel(selectedProcesses, valuesByProcessId),
       });
     } catch (error: unknown) {

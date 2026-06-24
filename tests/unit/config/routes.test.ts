@@ -11,4 +11,21 @@ describe('route access config', () => {
       menu: false,
     });
   });
+
+  it('protects data processing with data product manager access', () => {
+    const dataProcessingRoute = routes.find((route) => route.path === '/data-processing');
+
+    expect(dataProcessingRoute).toMatchObject({
+      access: 'canDataProductManager',
+      component: './DataProcessing',
+      name: 'dataProcessing',
+    });
+  });
+
+  it('places data processing after the user and team data modules', () => {
+    const routePaths = routes.map((route) => route.path);
+
+    expect(routePaths.indexOf('/data-processing')).toBeGreaterThan(routePaths.indexOf('/tedata'));
+    expect(routePaths.indexOf('/data-processing')).toBeLessThan(routePaths.indexOf('/account'));
+  });
 });

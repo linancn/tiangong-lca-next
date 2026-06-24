@@ -48,6 +48,7 @@ describe('workerJobs api', () => {
     const result = await requestWorkerJobsApi({
       action: 'list',
       subjectType: 'processes',
+      visibility: 'operator',
       statuses: ['queued', 'running'],
       limit: 25,
     });
@@ -57,6 +58,7 @@ describe('workerJobs api', () => {
       body: {
         action: 'list',
         subjectType: 'processes',
+        visibility: 'operator',
         statuses: ['queued', 'running'],
         limit: 25,
       },

@@ -94,6 +94,7 @@ jest.mock('@umijs/max', () => ({
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
   DashboardOutlined: () => <span data-testid='dashboard-icon'>dashboard-icon</span>,
+  DatabaseOutlined: () => <span data-testid='database-icon'>database-icon</span>,
   LinkOutlined: () => <span data-testid='link-icon'>link-icon</span>,
 }));
 
@@ -176,6 +177,18 @@ describe('app runtime config', () => {
     const state = await getInitialState();
 
     expect(state.currentUser).toEqual({ name: 'Current User', access: undefined });
+  });
+
+  it('getInitialState grants data product manager access without admin access', async () => {
+    const { getInitialState } = require('@/app');
+    mockGetSystemUserRoleApi.mockResolvedValueOnce({ role: 'data_product_manager' });
+
+    const state = await getInitialState();
+
+    expect(state.currentUser).toEqual({
+      name: 'Current User',
+      access: 'data_product_manager',
+    });
   });
 
   it('getInitialState does not grant admin access when the system role response is empty', async () => {
@@ -420,6 +433,30 @@ describe('app runtime config', () => {
 
     fireEvent.click(render(actions[5]).getByTestId('header-action-icon'));
     expect(mockHistory.push).toHaveBeenCalledWith('/dashboard/national-carbon');
+  });
+
+  it('adds a data processing shortcut for data product manager users', () => {
+    const { layout } = require('@/app');
+    const setInitialState = jest.fn();
+
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: { access: 'data_product_manager', name: 'Manager User' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState,
+    });
+
+    const actions = runtimeLayout.actionsRender?.();
+    const dataProcessingAction = actions.find(
+      (action: any) => action.props?.title === 'Data Processing',
+    );
+
+    expect(actions).toHaveLength(11);
+    expect(dataProcessingAction).toBeTruthy();
+    fireEvent.click(render(dataProcessingAction).getByTestId('header-action-icon'));
+    expect(mockHistory.push).toHaveBeenCalledWith('/data-processing');
   });
 
   it('uses the dark theme algorithm when dark mode is enabled', () => {

@@ -24,6 +24,7 @@ import LcaProfileSummary, {
   buildLcaProfileModel,
 } from '@/pages/Processes/Components/lcaProfileSummary';
 import ProcessView from '@/pages/Processes/Components/view';
+import { queryPublishedLciaResults } from '@/services/dataProducts';
 import { getLang, getLangText } from '@/services/general/util';
 import {
   getLcaContributionPathResult,
@@ -77,6 +78,11 @@ import {
   type LcaProcessOption,
   type SolverLcaImpactValueRow,
 } from '../Components/lcaAnalysisShared';
+import {
+  publishedLciaQueryMeta,
+  publishedValuesByProcessId,
+  shouldUsePublishedLciaResults,
+} from '../Components/publishedLciaResults';
 
 const DEFAULT_ANALYSIS_PAGE_SIZE = 50;
 const DEFAULT_COMPARE_SELECTION_LIMIT = 5;
@@ -190,6 +196,19 @@ type ContributionPathResultState = QueryMeta & {
   amount: number;
   model: LcaContributionPathModel;
 };
+
+function normalizeProcessAllImpactRows(values: unknown): SolverLcaImpactValueRow[] {
+  return (Array.isArray(values) ? (values as ProcessAllImpactsValue[]) : [])
+    .map((row) => ({
+      impact_id: String(row.impact_id ?? '').trim(),
+      impact_name: String(row.impact_name ?? '').trim(),
+      unit: String(row.unit ?? '').trim(),
+      value: normalizeNumber(row.value),
+      impact_index: Number(row.impact_index ?? 0),
+    }))
+    .filter((row) => row.impact_id.length > 0)
+    .sort((left, right) => left.impact_index - right.impact_index);
+}
 
 function truncateChartLabel(value: string, maxLength = DEFAULT_CHART_LABEL_MAX_LENGTH): string {
   const trimmed = value.trim();
@@ -415,6 +434,7 @@ const LcaAnalysisPage = () => {
 
   const [activeTabKey, setActiveTabKey] = useState('profile');
   const [selectedDataScope, setSelectedDataScope] = useState<LcaAnalysisDataScope>('current_user');
+  const usePublishedResults = shouldUsePublishedLciaResults(selectedDataScope);
   const [processSearchKeyword, setProcessSearchKeyword] = useState('');
   const [appliedProcessSearchKeyword, setAppliedProcessSearchKeyword] = useState('');
   const [processCurrentPage, setProcessCurrentPage] = useState(1);
@@ -959,29 +979,42 @@ const LcaAnalysisPage = () => {
     setProfileError(null);
 
     try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        data_scope: selectedDataScope,
-        mode: 'process_all_impacts',
-        process_id: selectedProcess.processId,
-        process_version: selectedProcess.version,
-        allow_fallback: false,
-      });
+      let solverRows: SolverLcaImpactValueRow[];
+      let queryMeta: QueryMeta;
 
-      const solverRows = (
-        Array.isArray((queried.data as { values?: unknown[] })?.values)
-          ? ((queried.data as { values?: unknown[] }).values as ProcessAllImpactsValue[])
-          : []
-      )
-        .map((row) => ({
-          impact_id: String(row.impact_id ?? '').trim(),
-          impact_name: String(row.impact_name ?? '').trim(),
-          unit: String(row.unit ?? '').trim(),
-          value: normalizeNumber(row.value),
-          impact_index: Number(row.impact_index ?? 0),
-        }))
-        .filter((row) => row.impact_id.length > 0)
-        .sort((left, right) => left.impact_index - right.impact_index);
+      if (usePublishedResults) {
+        const published = await queryPublishedLciaResults({
+          mode: 'process_all_impacts',
+          processId: selectedProcess.processId,
+          processVersion: selectedProcess.version,
+        });
+
+        if (published.error || !published.data) {
+          throw new Error(published.error?.message || 'Published LCIA results are unavailable.');
+        }
+
+        solverRows = normalizeProcessAllImpactRows(published.data.values);
+        queryMeta = publishedLciaQueryMeta(published.data);
+      } else {
+        const queried = await queryLcaResults({
+          scope: LCA_SCOPE,
+          data_scope: selectedDataScope,
+          mode: 'process_all_impacts',
+          process_id: selectedProcess.processId,
+          process_version: selectedProcess.version,
+          allow_fallback: false,
+        });
+
+        solverRows = normalizeProcessAllImpactRows(
+          (queried.data as { values?: unknown[] })?.values,
+        );
+        queryMeta = {
+          snapshotId: queried.snapshot_id,
+          resultId: queried.result_id,
+          source: queried.source,
+          computedAt: queried.meta.computed_at,
+        };
+      }
       const methodMetaById = await getLcaMethodMetaMap(solverRows.map((row) => row.impact_id));
       const mergedRows = buildMergedLcaRows(
         [],
@@ -1000,10 +1033,7 @@ const LcaAnalysisPage = () => {
       setProfileResult({
         process: selectedProcess,
         rows: mergedRows,
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
+        ...queryMeta,
       });
     } catch (error: unknown) {
       setProfileResult(null);
@@ -1027,30 +1057,54 @@ const LcaAnalysisPage = () => {
     setCompareError(null);
 
     try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        data_scope: selectedDataScope,
-        mode: 'processes_one_impact',
-        process_ids: buildUniqueProcessIdList(selectedCompareProcesses),
-        impact_id: selectedCompareImpactId,
-        allow_fallback: false,
-      });
+      let valuesByProcessId: Record<string, unknown>;
+      let queryMeta: QueryMeta;
 
-      const values = (queried.data as { values?: Record<string, unknown> })?.values;
-      const valuesByProcessId =
-        values && typeof values === 'object' && !Array.isArray(values)
-          ? (values as Record<string, unknown>)
-          : {};
+      if (usePublishedResults) {
+        const published = await queryPublishedLciaResults({
+          mode: 'processes_one_impact',
+          impactCategoryId: selectedCompareImpactId,
+          processes: selectedCompareProcesses.map((process) => ({
+            id: process.processId,
+            version: process.version,
+          })),
+        });
+
+        if (published.error || !published.data) {
+          throw new Error(published.error?.message || 'Published LCIA results are unavailable.');
+        }
+
+        valuesByProcessId = publishedValuesByProcessId(published.data);
+        queryMeta = publishedLciaQueryMeta(published.data);
+      } else {
+        const queried = await queryLcaResults({
+          scope: LCA_SCOPE,
+          data_scope: selectedDataScope,
+          mode: 'processes_one_impact',
+          process_ids: buildUniqueProcessIdList(selectedCompareProcesses),
+          impact_id: selectedCompareImpactId,
+          allow_fallback: false,
+        });
+
+        const values = (queried.data as { values?: Record<string, unknown> })?.values;
+        valuesByProcessId =
+          values && typeof values === 'object' && !Array.isArray(values)
+            ? (values as Record<string, unknown>)
+            : {};
+        queryMeta = {
+          snapshotId: queried.snapshot_id,
+          resultId: queried.result_id,
+          source: queried.source,
+          computedAt: queried.meta.computed_at,
+        };
+      }
       const selectedImpact = impactOptions.find((item) => item.value === selectedCompareImpactId);
 
       setCompareResult({
         impactId: selectedCompareImpactId,
         impactLabel: selectedImpact?.label || selectedCompareImpactId,
         unit: selectedImpact?.unit || '-',
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
+        ...queryMeta,
         model: buildLcaImpactCompareModel(selectedCompareProcesses, valuesByProcessId),
       });
     } catch (error: unknown) {
@@ -1075,20 +1129,47 @@ const LcaAnalysisPage = () => {
     setGroupedError(null);
 
     try {
-      const queried = await queryLcaResults({
-        scope: LCA_SCOPE,
-        data_scope: selectedDataScope,
-        mode: 'processes_one_impact',
-        process_ids: selectedGroupedProcesses.map((item) => item.id),
-        impact_id: selectedGroupedImpactId,
-        allow_fallback: false,
-      });
+      let valuesByProcessId: Record<string, unknown>;
+      let queryMeta: QueryMeta;
 
-      const values = (queried.data as { values?: Record<string, unknown> })?.values;
-      const valuesByProcessId =
-        values && typeof values === 'object' && !Array.isArray(values)
-          ? (values as Record<string, unknown>)
-          : {};
+      if (usePublishedResults) {
+        const published = await queryPublishedLciaResults({
+          mode: 'processes_one_impact',
+          impactCategoryId: selectedGroupedImpactId,
+          processes: selectedGroupedProcesses.map((process) => ({
+            id: process.id.trim(),
+            version: process.version.trim(),
+          })),
+        });
+
+        if (published.error || !published.data) {
+          throw new Error(published.error?.message || 'Published LCIA results are unavailable.');
+        }
+
+        valuesByProcessId = publishedValuesByProcessId(published.data);
+        queryMeta = publishedLciaQueryMeta(published.data);
+      } else {
+        const queried = await queryLcaResults({
+          scope: LCA_SCOPE,
+          data_scope: selectedDataScope,
+          mode: 'processes_one_impact',
+          process_ids: selectedGroupedProcesses.map((item) => item.id),
+          impact_id: selectedGroupedImpactId,
+          allow_fallback: false,
+        });
+
+        const values = (queried.data as { values?: Record<string, unknown> })?.values;
+        valuesByProcessId =
+          values && typeof values === 'object' && !Array.isArray(values)
+            ? (values as Record<string, unknown>)
+            : {};
+        queryMeta = {
+          snapshotId: queried.snapshot_id,
+          resultId: queried.result_id,
+          source: queried.source,
+          computedAt: queried.meta.computed_at,
+        };
+      }
       const selectedImpact = impactOptions.find((item) => item.value === selectedGroupedImpactId);
 
       setGroupedResult({
@@ -1097,10 +1178,7 @@ const LcaAnalysisPage = () => {
         unit: selectedImpact?.unit || '-',
         groupBy: selectedGroupedBy,
         valuesByProcessId,
-        snapshotId: queried.snapshot_id,
-        resultId: queried.result_id,
-        source: queried.source,
-        computedAt: queried.meta.computed_at,
+        ...queryMeta,
         model: buildGroupedResultModel(selectedGroupedProcesses, valuesByProcessId, {
           groupBy: selectedGroupedBy,
           teamNameMap,

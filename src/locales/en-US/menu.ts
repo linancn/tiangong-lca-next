@@ -12,6 +12,7 @@ export default {
   'menu.dashboard.monitor': 'Monitor',
   'menu.dashboard.nationalCarbon': 'Data Dashboard',
   'menu.dashboard.workplace': 'Workplace',
+  'menu.dataProcessing': 'Data Processing',
   'menu.exception.403': '403',
   'menu.exception.404': '404',
   'menu.exception.500': '500',

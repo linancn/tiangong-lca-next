@@ -252,6 +252,13 @@ export default [
     ],
   },
   {
+    path: '/data-processing',
+    name: 'dataProcessing',
+    access: 'canDataProductManager',
+    icon: 'DatabaseOutlined',
+    component: './DataProcessing',
+  },
+  {
     path: '/account',
     name: 'account',
     menu: false,

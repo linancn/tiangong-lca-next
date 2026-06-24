@@ -17,7 +17,7 @@ import { Link, getIntl, history } from '@umijs/max';
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
-import { DashboardOutlined, LinkOutlined } from '@ant-design/icons';
+import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
@@ -31,13 +31,18 @@ import { errorConfig } from './requestErrorConfig';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const dashboardPath = '/dashboard/national-carbon';
+const dataProcessingPath = '/data-processing';
 const unAuthorizedPath = ['/user/login/password_forgot'];
-const systemAdminRoles = new Set(['admin', 'owner']);
+const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
+  ['admin', 'admin'],
+  ['owner', 'admin'],
+  ['data_product_manager', 'data_product_manager'],
+]);
 
-async function getAdminAccess(): Promise<string | undefined> {
+async function getSystemAccess(): Promise<Auth.CurrentUser['access'] | undefined> {
   try {
     const systemUserRole = await getSystemUserRoleApi();
-    return systemAdminRoles.has(systemUserRole?.role ?? '') ? 'admin' : undefined;
+    return systemAccessByRole.get(systemUserRole?.role ?? '');
   } catch {
     return undefined;
   }
@@ -62,7 +67,7 @@ export async function getInitialState(): Promise<{
       }
       return {
         ...msg,
-        access: await getAdminAccess(),
+        access: await getSystemAccess(),
       };
     } catch (error) {
       history.push(loginPath);
@@ -102,6 +107,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     getLocalizedAppTitle(locale) ??
     formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
   const canViewDashboard = initialState?.currentUser?.access === 'admin';
+  const canViewDataProcessing = initialState?.currentUser?.access === 'data_product_manager';
   const handleClickFunction = () => {
     setInitialState((prevState: any) => {
       const newState = {
@@ -148,6 +154,22 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
             title={formatMessage({
               id: 'menu.dashboard.nationalCarbon',
               defaultMessage: 'Data Dashboard',
+            })}
+          />,
+        );
+      }
+
+      if (canViewDataProcessing) {
+        actions.splice(
+          5,
+          0,
+          <HeaderActionIcon
+            key='DataProcessing'
+            icon={<DatabaseOutlined />}
+            onClick={() => history.push(dataProcessingPath)}
+            title={formatMessage({
+              id: 'menu.dataProcessing',
+              defaultMessage: 'Data Processing',
             })}
           />,
         );

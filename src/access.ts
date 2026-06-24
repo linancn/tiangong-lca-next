@@ -5,5 +5,6 @@ export default function access(initialState: { currentUser?: Auth.CurrentUser } 
   const { currentUser } = initialState ?? {};
   return {
     canAdmin: currentUser?.access === 'admin',
+    canDataProductManager: currentUser?.access === 'data_product_manager',
   };
 }

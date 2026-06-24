@@ -12,6 +12,7 @@ export default {
   'menu.dashboard.monitor': '监控页',
   'menu.dashboard.nationalCarbon': '数据看板',
   'menu.dashboard.workplace': '工作台',
+  'menu.dataProcessing': '数据处理',
   'menu.exception.403': '403',
   'menu.exception.404': '404',
   'menu.exception.500': '500',
