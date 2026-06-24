@@ -554,6 +554,8 @@ describe('ProcessView component', () => {
   });
 
   it('shows solver metadata when latest LCIA results load successfully', async () => {
+    mockUseLocation.mockReturnValue({ pathname: '/mydata/processes', search: '' });
+
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
 
@@ -562,6 +564,7 @@ describe('ProcessView component', () => {
     await waitFor(() =>
       expect(mockQueryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
+        data_scope: 'current_user',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         process_version: '1.0.0',
@@ -573,24 +576,38 @@ describe('ProcessView component', () => {
     ).toBeInTheDocument();
   });
 
-  it('uses open_data scope for solver results on the tgdata route when published reads are disabled', async () => {
+  it('uses the published LCIA package reader on the tgdata route even when the old flag is false', async () => {
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     mockUseLocation.mockReturnValue({ pathname: '/tgdata/processes', search: '' });
+    mockGetPublishedLciaResultPackage.mockResolvedValueOnce({
+      data: {
+        publication: { id: 'publication-flag-false' },
+        package: { id: 'package-flag-false' },
+        rowCount: 1,
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 0,
+            impact_name: 'Published climate change',
+            unit: 'kg CO2-eq',
+            value: 52,
+          },
+        ],
+      },
+      error: null,
+    });
 
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
 
     await waitFor(() =>
-      expect(mockQueryLcaResults).toHaveBeenCalledWith({
-        scope: 'dev-v1',
-        data_scope: 'open_data',
-        mode: 'process_all_impacts',
-        process_id: 'process-1',
-        process_version: '1.0.0',
-        allow_fallback: false,
+      expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledWith({
+        processId: 'process-1',
+        processVersion: '1.0.0',
       }),
     );
+    expect(mockQueryLcaResults).not.toHaveBeenCalled();
   });
 
   it('uses published LCIA package reader on the tgdata route by default', async () => {

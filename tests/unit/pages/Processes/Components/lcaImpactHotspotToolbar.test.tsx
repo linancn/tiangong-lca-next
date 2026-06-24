@@ -451,7 +451,7 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('#11 - #11')).toBeInTheDocument();
   });
 
-  it('uses open_data solver scope on the tgdata route when published reads are disabled', async () => {
+  it('uses current public published hotspot rankings on the tgdata route even when the old flag is false', async () => {
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     setUmiLocation({ pathname: '/tgdata/processes', search: '' });
 
@@ -462,9 +462,29 @@ describe('lcaImpactHotspotToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
 
     await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'ranked_processes_one_impact',
+        impactCategoryId: 'impact-1',
+        offset: 0,
+        limit: 20,
+      }),
+    );
+    expect(queryLcaResults).not.toHaveBeenCalled();
+  });
+
+  it('uses current-user solver scope on the mydata route', async () => {
+    setUmiLocation({ pathname: '/mydata/processes', search: '' });
+
+    renderToolbar();
+
+    fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+
+    await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'open_data',
+        data_scope: 'current_user',
         mode: 'processes_one_impact',
         impact_id: 'impact-1',
         top_n: 20,
@@ -474,6 +494,7 @@ describe('lcaImpactHotspotToolbar', () => {
         allow_fallback: false,
       }),
     );
+    expect(queryPublishedLciaResults).not.toHaveBeenCalled();
   });
 
   it('uses current public published hotspot rankings on the tgdata route when enabled', async () => {

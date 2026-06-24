@@ -15,7 +15,7 @@ describe('publishedLciaResults helpers', () => {
     }
   });
 
-  it('enables published LCIA reads for open data unless explicitly disabled', () => {
+  it('always enables published LCIA reads for open data', () => {
     delete process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED;
 
     expect(shouldUsePublishedLciaResults('open_data')).toBe(true);
@@ -26,7 +26,7 @@ describe('publishedLciaResults helpers', () => {
     expect(shouldUsePublishedLciaResults('open_data')).toBe(true);
 
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
-    expect(shouldUsePublishedLciaResults('open_data')).toBe(false);
+    expect(shouldUsePublishedLciaResults('open_data')).toBe(true);
   });
 
   it('normalizes publication/package metadata and value maps defensively', () => {

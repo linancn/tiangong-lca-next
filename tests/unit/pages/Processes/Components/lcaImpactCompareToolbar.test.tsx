@@ -292,7 +292,7 @@ describe('lcaImpactCompareToolbar', () => {
     expect(screen.getAllByText('86.5%').length).toBeGreaterThan(0);
   });
 
-  it('uses open_data solver scope on the tgdata route when published reads are disabled', async () => {
+  it('uses current public published results on the tgdata route even when the old flag is false', async () => {
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'false';
     setUmiLocation({ pathname: '/tgdata/processes', search: '' });
 
@@ -306,15 +306,41 @@ describe('lcaImpactCompareToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
+      expect(queryPublishedLciaResults).toHaveBeenCalledWith({
+        mode: 'processes_one_impact',
+        impactCategoryId: 'impact-1',
+        processes: [
+          { id: 'process-1', version: '01.00.000' },
+          { id: 'process-2', version: '02.00.000' },
+        ],
+      }),
+    );
+    expect(queryLcaResults).not.toHaveBeenCalled();
+  });
+
+  it('uses current-user solver scope on the mydata route', async () => {
+    setUmiLocation({ pathname: '/mydata/processes', search: '' });
+
+    renderToolbar([
+      buildProcess('process-1', 'Solar panel manufacturing', '01.00.000'),
+      buildProcess('process-2', 'Wind turbine maintenance', '02.00.000'),
+    ]);
+
+    fireEvent.click(screen.getByTestId('impact-compare-trigger'));
+    await selectImpact();
+    fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'open_data',
+        data_scope: 'current_user',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2'],
         impact_id: 'impact-1',
         allow_fallback: false,
       }),
     );
+    expect(queryPublishedLciaResults).not.toHaveBeenCalled();
   });
 
   it('uses current public published results on the tgdata route when enabled', async () => {
