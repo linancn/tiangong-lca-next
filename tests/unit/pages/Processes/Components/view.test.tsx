@@ -50,6 +50,15 @@ const mockUseLocation = jest.fn(() => ({ pathname: '/', search: '' }));
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+      const template = defaultMessage ?? id;
+      return Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+        template,
+      );
+    },
+  }),
   useLocation: () => mockUseLocation(),
 }));
 
@@ -223,19 +232,29 @@ jest.mock('@ant-design/icons', () => ({
   ProfileOutlined: () => <span>profile-icon</span>,
   CheckCircleOutlined: () => <span>check-circle-icon</span>,
   CloseCircleOutlined: () => <span>close-circle-icon</span>,
+  InfoCircleOutlined: () => <span>info-circle-icon</span>,
+  WarningOutlined: () => <span>warning-icon</span>,
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, icon, onClick, disabled }: any) => (
-    <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick}>
-      {icon}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, icon, onClick, disabled, ...props }: any) => {
+    delete props.loading;
 
-  const Tooltip = ({ children }: any) => <>{children}</>;
+    return (
+      <button type='button' disabled={disabled} onClick={disabled ? undefined : onClick} {...props}>
+        {icon}
+        {toText(children)}
+      </button>
+    );
+  };
+
+  const Tooltip = ({ children, title }: any) => (
+    <span data-testid='tooltip' data-title={toText(title)}>
+      {children}
+    </span>
+  );
 
   const Drawer = ({ open, title, extra, children, getContainer, onClose }: any) => {
     if (!open) return null;
@@ -572,8 +591,11 @@ describe('ProcessView component', () => {
       }),
     );
     expect(
-      screen.getByText(/source=all_unit, snapshot=snapshot-1, result=result-1/),
-    ).toBeInTheDocument();
+      screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute(
+      'data-title',
+      expect.stringContaining('source=all_unit, snapshot=snapshot-1, result=result-1'),
+    );
   });
 
   it('uses the published LCIA package reader on the tgdata route even when the old flag is false', async () => {
@@ -643,7 +665,10 @@ describe('ProcessView component', () => {
     );
 
     expect(mockQueryLcaResults).not.toHaveBeenCalled();
-    expect(screen.getByText(/source=published_package/)).toBeInTheDocument();
+    expect(screen.queryByText(/source=published_package/)).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute('data-title', expect.stringContaining('source=published_package'));
     expect(screen.getAllByText('Published climate change').length).toBeGreaterThan(0);
     expect(screen.getAllByText('52').length).toBeGreaterThan(0);
   });
@@ -875,8 +900,13 @@ describe('ProcessView component', () => {
     await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(
-        screen.getByText(/source=latest_ready, snapshot=snapshot-ready, result=result-ready/),
-      ).toBeInTheDocument(),
+        screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+      ).toHaveAttribute(
+        'data-title',
+        expect.stringContaining(
+          'source=latest_ready, snapshot=snapshot-ready, result=result-ready',
+        ),
+      ),
     );
     jest.useRealTimers();
   });
@@ -1218,8 +1248,13 @@ describe('ProcessView component', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/source=latest_ready, snapshot=snapshot-merge, result=result-merge/),
-      ).toBeInTheDocument(),
+        screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+      ).toHaveAttribute(
+        'data-title',
+        expect.stringContaining(
+          'source=latest_ready, snapshot=snapshot-merge, result=result-merge',
+        ),
+      ),
     );
     expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
     expect(

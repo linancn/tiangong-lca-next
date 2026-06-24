@@ -23,6 +23,15 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+      const template = defaultMessage ?? id;
+      return Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+        template,
+      );
+    },
+  }),
   useLocation: () => mockUseLocation(),
 }));
 
@@ -58,8 +67,10 @@ jest.mock('@/components/AlignedNumber', () => ({
 
 jest.mock('@/pages/Processes/Components/lcaProfileSummary', () => ({
   __esModule: true,
-  default: ({ loading, rows }: any) => (
+  default: ({ headerExtra, loading, notice, rows }: any) => (
     <div data-testid='lca-profile-summary' data-loading={String(loading)}>
+      <div data-testid='lca-profile-header-extra'>{headerExtra}</div>
+      <div data-testid='lca-profile-notice'>{notice}</div>
       {rows.length}
     </div>
   ),
@@ -96,13 +107,18 @@ jest.mock('@ant-design/pro-components', () => ({
 }));
 
 jest.mock('antd', () => {
-  const Button = ({ children, loading, onClick }: any) => (
-    <button type='button' data-loading={String(loading)} onClick={onClick}>
+  const Button = ({ children, icon, loading, onClick, ...props }: any) => (
+    <button type='button' data-loading={String(loading)} onClick={onClick} {...props}>
+      {icon}
       {toText(children)}
     </button>
   );
   const Space = ({ children }: any) => <div>{children}</div>;
-  const Tooltip = ({ children }: any) => <>{children}</>;
+  const Tooltip = ({ children, title }: any) => (
+    <span data-testid='tooltip' data-title={toText(title)}>
+      {children}
+    </span>
+  );
   const Typography = {
     Text: ({ children, type }: any) => (
       <span data-testid={`typography-${type ?? 'default'}`}>{children}</span>
@@ -187,7 +203,17 @@ describe('ProcessLciaResultsPanel', () => {
     );
 
     expect(mockQueryLcaResults).not.toHaveBeenCalled();
-    expect(await screen.findByText(/source=published_package/)).toBeInTheDocument();
+    await screen.findByText('Climate change');
+    expect(screen.queryByText(/source=published_package/)).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute('data-title', expect.stringContaining('source=published_package'));
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute(
+      'data-title',
+      expect.stringContaining('publication=publication-1, package=package-1, rows=1'),
+    );
     expect(await screen.findByText('Climate change')).toBeInTheDocument();
     expect(screen.getByText('12.5')).toBeInTheDocument();
     expect(screen.getByText('kg CO2 eq')).toBeInTheDocument();
@@ -272,9 +298,16 @@ describe('ProcessLciaResultsPanel', () => {
       />,
     );
 
+    await screen.findByText('Water use');
     expect(
-      await screen.findByText(/publication=publication-2, package=package-2, rows=2/),
-    ).toBeInTheDocument();
+      screen.queryByText(/publication=publication-2, package=package-2, rows=2/),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute(
+      'data-title',
+      expect.stringContaining('publication=publication-2, package=package-2, rows=2'),
+    );
     expect(await screen.findByText('Water use')).toBeInTheDocument();
     expect(await screen.findByText('impact-2')).toBeInTheDocument();
     expect(screen.getByText('m3')).toBeInTheDocument();
@@ -302,7 +335,11 @@ describe('ProcessLciaResultsPanel', () => {
       />,
     );
 
-    expect(await screen.findByText(/publication=-, package=-, rows=0/)).toBeInTheDocument();
+    await screen.findByText('No published LCIA result rows are available for this process.');
+    expect(screen.queryByText(/publication=-, package=-, rows=0/)).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute('data-title', expect.stringContaining('publication=-, package=-, rows=0'));
     expect(
       screen.getByText('No published LCIA result rows are available for this process.'),
     ).toBeInTheDocument();
@@ -339,7 +376,11 @@ describe('ProcessLciaResultsPanel', () => {
     await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
 
     expect(mockQueryLcaResults).not.toHaveBeenCalled();
-    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+    expect(screen.getByText('Published LCIA results are unavailable.')).toBeInTheDocument();
+    expect(screen.queryByText('Published result query failed: {message}')).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText('Published result error details').closest('[data-testid="tooltip"]'),
+    ).toHaveAttribute('data-title', expect.stringContaining('not published'));
     expect(screen.queryByText('Legacy LCIA')).not.toBeInTheDocument();
   });
 
@@ -364,7 +405,8 @@ describe('ProcessLciaResultsPanel', () => {
     await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
 
     expect(mockQueryLcaResults).not.toHaveBeenCalled();
-    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+    expect(screen.getByText('Published LCIA results are unavailable.')).toBeInTheDocument();
+    expect(screen.queryByText('Published result query failed: {message}')).not.toBeInTheDocument();
   });
 
   it('stringifies non-error published query failures', async () => {
@@ -385,7 +427,8 @@ describe('ProcessLciaResultsPanel', () => {
     await waitFor(() => expect(mockGetPublishedLciaResultPackage).toHaveBeenCalledTimes(1));
 
     expect(mockQueryLcaResults).not.toHaveBeenCalled();
-    expect(screen.getByText('Published result query failed: {message}')).toBeInTheDocument();
+    expect(screen.getByText('Published LCIA results are unavailable.')).toBeInTheDocument();
+    expect(screen.queryByText('Published result query failed: {message}')).not.toBeInTheDocument();
   });
 
   it('does not fall back to solver when the public reader is enabled without a process version', async () => {
@@ -471,8 +514,11 @@ describe('ProcessLciaResultsPanel', () => {
     await waitFor(() => expect(mockQueryLcaResults).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(
-        screen.getByText(/source=all_unit, snapshot=snapshot-ready, result=result-ready/),
-      ).toBeInTheDocument(),
+        screen.getByLabelText('Calculated result details').closest('[data-testid="tooltip"]'),
+      ).toHaveAttribute(
+        'data-title',
+        expect.stringContaining('source=all_unit, snapshot=snapshot-ready, result=result-ready'),
+      ),
     );
     jest.useRealTimers();
   });

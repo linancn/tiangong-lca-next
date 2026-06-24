@@ -2,7 +2,7 @@ import AlignedNumber from '@/components/AlignedNumber';
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
 import { Card, Col, Descriptions, Progress, Row, Space, Statistic, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { FormattedMessage } from 'umi';
 import {
   normalizeNumber,
@@ -37,8 +37,10 @@ export type LcaProfileModel = {
 type Props = {
   rows: LCIAResultTable[];
   lang: string;
+  headerExtra?: ReactNode;
   loading?: boolean;
   limit?: number;
+  notice?: ReactNode;
 };
 
 function toDirection(value: number): LcaProfileItem['direction'] {
@@ -118,7 +120,14 @@ function renderProfileValue(item?: LcaProfileItem) {
   );
 }
 
-const LcaProfileSummary: FC<Props> = ({ rows, lang, loading = false, limit }) => {
+const LcaProfileSummary: FC<Props> = ({
+  rows,
+  lang,
+  headerExtra,
+  loading = false,
+  limit,
+  notice,
+}) => {
   if (loading && rows.length === 0) {
     return null;
   }
@@ -173,18 +182,22 @@ const LcaProfileSummary: FC<Props> = ({ rows, lang, loading = false, limit }) =>
     <Card size='small'>
       <Space direction='vertical' size='middle' style={{ width: '100%' }}>
         <div>
-          <Typography.Text strong>
-            <FormattedMessage
-              id='pages.process.view.lciaresults.profile.title'
-              defaultMessage='LCIA Profile'
-            />
-          </Typography.Text>
+          <Space align='center' size={4}>
+            <Typography.Text strong>
+              <FormattedMessage
+                id='pages.process.view.lciaresults.profile.title'
+                defaultMessage='LCIA Profile'
+              />
+            </Typography.Text>
+            {headerExtra}
+          </Space>
           <Typography.Paragraph type='secondary'>
             <FormattedMessage
               id='pages.process.view.lciaresults.profile.subtitle'
               defaultMessage='Bars are normalized by the largest absolute impact value. Exact raw values remain in the table below.'
             />
           </Typography.Paragraph>
+          {notice}
         </div>
 
         <Row gutter={[16, 16]}>

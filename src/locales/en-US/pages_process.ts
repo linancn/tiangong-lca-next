@@ -362,6 +362,12 @@ export default {
   'pages.process.view.lciaresults.profile.topNegative': 'Largest negative category',
   'pages.process.view.lciaresults.profile.topList': 'Top categories by normalized magnitude',
   'pages.process.view.lciaresults.profile.empty': 'No LCIA results available for profile analysis.',
+  'pages.process.view.lciaresults.solver.details': 'Calculated result details',
+  'pages.process.view.lciaresults.published.details': 'Published result details',
+  'pages.process.view.lciaresults.published.empty': 'No published LCIA result rows are available for this process.',
+  'pages.process.view.lciaresults.published.unavailable': 'Published LCIA results are unavailable.',
+  'pages.process.view.lciaresults.published.errorDetails': 'Published result error details',
+  'pages.process.view.lciaresults.published.errorDetailMessage': 'Detail: {message}',
 
   'pages.process.view.modellingAndValidation.typeOfDataSet': 'Dataset type',
   'pages.process.view.modellingAndValidation.lCIMethodAndAllocation': 'LCI method and allocation',
