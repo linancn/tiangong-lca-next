@@ -46,6 +46,7 @@ const mockJsonToList = jest.fn((value: any) =>
 const mockGetRejectedComments = jest.fn();
 const mockMergeCommentsToData = jest.fn();
 const mockUseLocation = jest.fn(() => ({ pathname: '/', search: '' }));
+const mockGetClassificationValues = jest.fn(() => []);
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -162,7 +163,7 @@ jest.mock('@/pages/Sources/Components/select/description', () => ({
 
 jest.mock('@/pages/Utils', () => ({
   __esModule: true,
-  getClassificationValues: jest.fn(() => []),
+  getClassificationValues: (...args: any[]) => mockGetClassificationValues(...args),
 }));
 
 jest.mock('@/pages/Utils/review', () => ({
@@ -448,6 +449,7 @@ describe('ProcessView component', () => {
     mockCacheAndDecompressMethod.mockResolvedValue(true);
     mockGetRejectedComments.mockResolvedValue([]);
     mockUseLocation.mockReturnValue({ pathname: '/', search: '' });
+    mockGetClassificationValues.mockReturnValue([]);
     mockQueryLcaResults.mockResolvedValue({
       snapshot_id: 'snapshot-1',
       result_id: 'result-1',
@@ -488,6 +490,30 @@ describe('ProcessView component', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+  });
+
+  it('uses the first classification entry when process classification is an array', async () => {
+    const classificationClass = [{ value: 'process-array-classification' }];
+    mockGenProcessFromData.mockReturnValueOnce({
+      processInformation: {
+        dataSetInformation: {
+          classificationInformation: {
+            'common:classification': [
+              {
+                'common:class': classificationClass,
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetClassificationValues).toHaveBeenCalledWith(classificationClass);
     });
   });
 

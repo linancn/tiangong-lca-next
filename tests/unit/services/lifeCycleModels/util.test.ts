@@ -625,10 +625,13 @@ describe('genLifeCycleModelInfoFromData', () => {
       '0',
     );
 
-    const classification =
+    const rawClassification =
       result.lifeCycleModelInformation.dataSetInformation.classificationInformation[
         'common:classification'
-      ]['common:class'];
+      ];
+    const classification = Array.isArray(rawClassification)
+      ? rawClassification[0]?.['common:class']
+      : rawClassification?.['common:class'];
     const classificationList = classification as { id?: string[]; value?: string[] };
     expect(classificationList.value).toEqual(['Systems', 'Unspecific parts']);
     expect(classificationList.id).toEqual(['class-0', 'class-1']);

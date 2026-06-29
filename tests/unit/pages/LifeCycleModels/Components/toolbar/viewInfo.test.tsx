@@ -256,6 +256,32 @@ describe('ToolbarViewInfo', () => {
     );
   });
 
+  it('uses the first classification entry when lifecycle model classification is an array', async () => {
+    const classificationClass = [{ value: 'array-classification' }];
+    const arrayClassificationData = {
+      ...data,
+      lifeCycleModelInformation: {
+        ...data.lifeCycleModelInformation,
+        dataSetInformation: {
+          ...data.lifeCycleModelInformation.dataSetInformation,
+          classificationInformation: {
+            'common:classification': [
+              {
+                'common:class': classificationClass,
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    render(<ToolbarViewInfo lang='en' data={arrayClassificationData as any} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /info/i }));
+
+    expect(mockGetClassificationValues).toHaveBeenCalledWith(classificationClass);
+  });
+
   it('switches tabs and renders administrative, validation, and compliance content', async () => {
     render(<ToolbarViewInfo lang='en' data={data as any} />);
 
