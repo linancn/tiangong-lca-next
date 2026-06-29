@@ -31,11 +31,15 @@ const getCopyrightOptions = (value: string) => {
 const ToolbarViewInfo: FC<Props> = ({ lang, data }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('lifeCycleModelInformation');
+  const classification =
+    data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ];
   const classificationValues =
     getClassificationValues(
-      data.lifeCycleModelInformation?.dataSetInformation?.classificationInformation?.[
-        'common:classification'
-      ]?.['common:class'],
+      Array.isArray(classification)
+        ? classification[0]?.['common:class']
+        : classification?.['common:class'],
     ) ?? [];
   const onTabChange = (key: string) => {
     setActiveTabKey(key);

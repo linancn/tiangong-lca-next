@@ -161,6 +161,10 @@ const ProcessView: FC<Props> = ({
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
+  const processClassification =
+    initData.processInformation?.dataSetInformation?.classificationInformation?.[
+      'common:classification'
+    ];
   const [lciaResultDataSource, setLciaResultDataSource] = useState<LCIAResultTable[]>([]);
   const tabList = [
     {
@@ -347,9 +351,9 @@ const ProcessView: FC<Props> = ({
         <br />
         <LevelTextItemDescription
           data={getClassificationValues(
-            initData.processInformation?.dataSetInformation?.classificationInformation?.[
-              'common:classification'
-            ]?.['common:class'],
+            Array.isArray(processClassification)
+              ? processClassification[0]?.['common:class']
+              : processClassification?.['common:class'],
           )}
           lang={lang}
           categoryType={'Process'}
