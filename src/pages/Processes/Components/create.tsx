@@ -21,6 +21,7 @@ import ToolBarButton from '@/components/ToolBarButton';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import {
   FormProcess,
+  getFirstProcessExchangeAllocation,
   ProcessDataSetObjectKeys,
   ProcessDetailResponse,
   ProcessExchangeData,
@@ -339,13 +340,9 @@ const ProcessCreate: FC<CreateProps> = ({
               );
               let allocatedFractionTotal = toBigNumberOrZero(0);
               output.forEach((e) => {
-                if (
-                  e?.allocations?.allocation &&
-                  e?.allocations?.allocation['@allocatedFraction']
-                ) {
-                  const fraction = e?.allocations?.allocation['@allocatedFraction']
-                    ?.toString()
-                    ?.replace('%', '');
+                const allocation = getFirstProcessExchangeAllocation(e?.allocations?.allocation);
+                if (allocation?.['@allocatedFraction']) {
+                  const fraction = allocation['@allocatedFraction']?.toString()?.replace('%', '');
                   allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
                 }
               });
