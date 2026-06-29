@@ -45,6 +45,7 @@ import {
   ProcessDetailData,
   ProcessDetailResponse,
   ProcessExchangeData,
+  getFirstProcessExchangeAllocation,
 } from '@/services/processes/data';
 import { genProcessFromData, genProcessJsonOrdered } from '@/services/processes/util';
 import type {
@@ -875,8 +876,9 @@ const ProcessEdit: FC<Props> = ({
     );
     let allocatedFractionTotal = toBigNumberOrZero(0);
     output.forEach((e) => {
-      if (e?.allocations?.allocation && e?.allocations?.allocation['@allocatedFraction']) {
-        const fractionText = e.allocations.allocation['@allocatedFraction']?.toString?.();
+      const allocation = getFirstProcessExchangeAllocation(e?.allocations?.allocation);
+      if (allocation?.['@allocatedFraction']) {
+        const fractionText = allocation['@allocatedFraction']?.toString?.();
         const fraction = typeof fractionText === 'string' ? fractionText.replace('%', '') : '';
         allocatedFractionTotal = allocatedFractionTotal.plus(toBigNumberOrZero(fraction));
       }

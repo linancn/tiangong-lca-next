@@ -26,6 +26,15 @@ export type ProcessRefUnitDisplay = {
   [key: string]: unknown;
 };
 
+type ProcessExchangeAllocation = {
+  '@internalReferenceToCoProduct'?: string | number;
+  '@allocatedFraction'?: string | number;
+};
+
+export const getFirstProcessExchangeAllocation = (
+  allocation?: ProcessExchangeAllocation | ProcessExchangeAllocation[],
+) => (Array.isArray(allocation) ? allocation[0] : allocation);
+
 export type ProcessExchangeData = {
   '@dataSetInternalID'?: string;
   referenceToFlowDataSet?: ReferenceItem | ReferenceItem[];
@@ -40,10 +49,7 @@ export type ProcessExchangeData = {
   uncertaintyDistributionType?: string;
   relativeStandardDeviation95In?: string | number;
   allocations?: {
-    allocation?: {
-      '@internalReferenceToCoProduct'?: string | number;
-      '@allocatedFraction'?: string | number;
-    };
+    allocation?: ProcessExchangeAllocation | ProcessExchangeAllocation[];
   };
   dataSourceType?: string;
   dataDerivationTypeStatus?: string;
@@ -96,8 +102,7 @@ export type ProcessReviewItem = {
   'common:scope'?: ProcessReviewScopeItem | ProcessReviewScopeItem[];
   'common:dataQualityIndicators'?: {
     'common:dataQualityIndicator'?:
-      | ProcessReviewDataQualityIndicatorItem
-      | ProcessReviewDataQualityIndicatorItem[];
+      ProcessReviewDataQualityIndicatorItem | ProcessReviewDataQualityIndicatorItem[];
   };
   'common:reviewDetails'?: LangTextValue;
   'common:referenceToNameOfReviewerAndInstitution'?: ReferenceItem | ReferenceItem[];

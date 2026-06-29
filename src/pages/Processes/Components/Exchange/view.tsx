@@ -2,7 +2,7 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import FlowsSelectDescription from '@/pages/Flows/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
-import { ProcessExchangeData } from '@/services/processes/data';
+import { getFirstProcessExchangeAllocation, ProcessExchangeData } from '@/services/processes/data';
 import { CaretRightOutlined, CloseOutlined, ProfileOutlined } from '@ant-design/icons';
 import { Button, Card, Collapse, Descriptions, Divider, Drawer, Tooltip } from 'antd';
 import type { FC } from 'react';
@@ -46,6 +46,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [viewData, setViewData] = useState<ProcessExchangeData>({});
+  const allocation = getFirstProcessExchangeAllocation(viewData?.allocations?.allocation);
   // const [spinning, setSpinning] = useState(false);
 
   const onView = () => {
@@ -308,7 +309,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               styles={{ label: { width: '180px' } }}
             >
-              {viewData?.allocations?.allocation?.['@internalReferenceToCoProduct'] ?? '-'}
+              {allocation?.['@internalReferenceToCoProduct'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
           <br />
@@ -323,7 +324,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
               }
               styles={{ label: { width: '180px' } }}
             >
-              {viewData?.allocations?.allocation?.['@allocatedFraction'] ?? '-'}
+              {allocation?.['@allocatedFraction'] ?? '-'}
             </Descriptions.Item>
           </Descriptions>
         </Card>

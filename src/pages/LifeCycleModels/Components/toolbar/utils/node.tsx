@@ -3,13 +3,16 @@ import type {
   LifeCycleModelThemeToken,
 } from '@/services/lifeCycleModels/data';
 import { genNodeLabel } from '@/services/lifeCycleModels/util';
+import { getFirstProcessExchangeAllocation } from '@/services/processes/data';
 
 export const getPortLabelWithAllocation = (
   label: string,
   allocations: LifeCycleModelPortData['allocations'],
   direction: string,
 ) => {
-  const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+  const allocatedFraction = getFirstProcessExchangeAllocation(allocations?.allocation)?.[
+    '@allocatedFraction'
+  ];
   const num = typeof allocatedFraction === 'string' ? allocatedFraction.replace('%', '') : '';
   const allocatedFractionNum = Number(num);
 
@@ -24,7 +27,9 @@ export const getPortTextColor = (
   allocations: LifeCycleModelPortData['allocations'],
   token: LifeCycleModelThemeToken,
 ) => {
-  const allocatedFraction = allocations?.allocation?.['@allocatedFraction'];
+  const allocatedFraction = getFirstProcessExchangeAllocation(allocations?.allocation)?.[
+    '@allocatedFraction'
+  ];
   const num = typeof allocatedFraction === 'string' ? allocatedFraction.replace('%', '') : '';
   const allocatedFractionNum = Number(num);
   if (allocatedFractionNum > 0 || quantitativeReference) {
