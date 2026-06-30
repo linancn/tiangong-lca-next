@@ -100,6 +100,9 @@ const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
   'waiting_gate',
   'submitting',
 ]);
+const REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS = 250;
+const REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS = 5000;
+const REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS = 24;
 const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
   revision_report_stale: {
     titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
@@ -260,7 +263,30 @@ const formatReviewSubmitGateEvidenceRecord = (value: unknown): string | null => 
     .filter((part): part is [string, string] => Boolean(part[1]))
     .map(([label, value]) => `${label}: ${value}`);
 
-  return parts.length > 0 ? parts.join(', ') : null;
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+
+  const diagnosticParts = [
+    ['error', pickReviewSubmitGateEvidenceValue(record, ['error'])],
+    ['worker_job_id', pickReviewSubmitGateEvidenceValue(record, ['worker_job_id', 'workerJobId'])],
+    [
+      'submit_worker_job_id',
+      pickReviewSubmitGateEvidenceValue(record, ['submit_worker_job_id', 'submitWorkerJobId']),
+    ],
+    [
+      'gate_worker_job_id',
+      pickReviewSubmitGateEvidenceValue(record, ['gate_worker_job_id', 'gateWorkerJobId']),
+    ],
+    [
+      'review_submit_job_id',
+      pickReviewSubmitGateEvidenceValue(record, ['review_submit_job_id', 'reviewSubmitJobId']),
+    ],
+  ]
+    .filter((part): part is [string, string] => Boolean(part[1]))
+    .map(([label, value]) => `${label}: ${value}`);
+
+  return diagnosticParts.length > 0 ? diagnosticParts.join(', ') : null;
 };
 
 const formatReviewSubmitGateEvidence = (details: unknown): string[] => {
@@ -277,6 +303,54 @@ const formatReviewSubmitGateEvidence = (details: unknown): string[] => {
     .map(formatReviewSubmitGateEvidenceRecord)
     .filter((item): item is string => Boolean(item));
 };
+
+const getBlockingReasonsFromResult = (
+  result: unknown,
+): ReviewSubmitGateBlockingReason[] | undefined => {
+  const resultRecord = toReviewSubmitGateEvidenceRecord(result);
+  if (!resultRecord || !Array.isArray(resultRecord.blockingReasons)) {
+    return undefined;
+  }
+
+  return resultRecord.blockingReasons as ReviewSubmitGateBlockingReason[];
+};
+
+const getReviewSubmitJobBlockingReasons = (
+  jobData?: ReviewSubmitJobResult,
+): ReviewSubmitGateBlockingReason[] | undefined => {
+  const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
+  const blockingReasons =
+    jobData?.gate?.blockingReasons ??
+    getBlockingReasonsFromResult(gateWorkerJob?.result) ??
+    getBlockingReasonsFromResult(jobData?.result) ??
+    getBlockingReasonsFromResult(jobData?.error?.details);
+
+  if (blockingReasons && blockingReasons.length > 0) {
+    return blockingReasons;
+  }
+
+  if (!jobData?.error?.code && !jobData?.error?.message && jobData?.error?.details === undefined) {
+    return undefined;
+  }
+
+  return [
+    {
+      code: jobData.error?.code,
+      message: jobData.error?.message,
+      details: {
+        ...(toReviewSubmitGateEvidenceRecord(jobData.error?.details) ?? {
+          error: jobData.error?.details,
+        }),
+        review_submit_job_id: jobData.reviewSubmitJobId,
+        submit_worker_job_id: jobData.submitWorkerJobId ?? jobData.rootJobId,
+        gate_worker_job_id: jobData.gateWorkerJobId,
+      },
+    },
+  ];
+};
+
+const isReviewSubmitTerminalStatus = (status: ReviewSubmitGateUiStatus) =>
+  status !== 'not_run' && !REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status);
 
 const collectChangedFieldPaths = (
   value: unknown,
@@ -375,6 +449,9 @@ const ProcessEdit: FC<Props> = ({
   actionFrom,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const drawerVisibleRef = useRef(false);
+  const reviewSubmitLatestSyncTimeoutRef = useRef<number | null>(null);
+  const reviewSubmitLatestSyncTokenRef = useRef(0);
   const formRefEdit = useRef<ProFormInstance>();
   const [activeTabKey, setActiveTabKey] = useState<TabKeysType>('processInformation');
   const [fromData, setFromData] = useState<FormProcessWithDatas>();
@@ -415,9 +492,24 @@ const ProcessEdit: FC<Props> = ({
   const [refsNewList, setRefsNewList] = useState<RefVersionItem[]>([]);
   const [refsOldList, setRefsOldList] = useState<RefVersionItem[]>([]);
 
-  const resetReviewSubmitGateState = useCallback(() => {
-    setReviewSubmitGateState({ status: 'not_run' });
+  useEffect(() => {
+    drawerVisibleRef.current = drawerVisible;
+  }, [drawerVisible]);
+
+  const cancelReviewSubmitLatestSync = useCallback(() => {
+    reviewSubmitLatestSyncTokenRef.current += 1;
+    if (reviewSubmitLatestSyncTimeoutRef.current !== null) {
+      window.clearTimeout(reviewSubmitLatestSyncTimeoutRef.current);
+      reviewSubmitLatestSyncTimeoutRef.current = null;
+    }
   }, []);
+
+  useEffect(() => () => cancelReviewSubmitLatestSync(), [cancelReviewSubmitLatestSync]);
+
+  const resetReviewSubmitGateState = useCallback(() => {
+    cancelReviewSubmitLatestSync();
+    setReviewSubmitGateState({ status: 'not_run' });
+  }, [cancelReviewSubmitLatestSync]);
 
   const getReviewSubmitGateStatusMessage = useCallback(
     (status: ReviewSubmitGateUiStatus) => {
@@ -1315,6 +1407,108 @@ const ProcessEdit: FC<Props> = ({
     return handleCheckData('checkData', validationTarget, { silent });
   };
 
+  const applyReviewSubmitJobState = useCallback(
+    (
+      jobData: ReviewSubmitJobResult | undefined,
+      fallback?: { revisionChecksum?: string },
+    ): { status: ReviewSubmitGateUiStatus; messageText: string } => {
+      const status = jobData?.status ?? 'error';
+      const gateData = jobData?.gate ?? undefined;
+      const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
+      const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
+      const revisionChecksum =
+        jobData?.datasetRevision?.revisionChecksum ??
+        gateData?.datasetRevision?.revisionChecksum ??
+        (gateWorkerJob?.result &&
+        typeof gateWorkerJob.result === 'object' &&
+        'datasetRevision' in gateWorkerJob.result
+          ? (
+              gateWorkerJob.result as {
+                datasetRevision?: { revisionChecksum?: string };
+              }
+            ).datasetRevision?.revisionChecksum
+          : undefined) ??
+        fallback?.revisionChecksum;
+      const blockingReasons = getReviewSubmitJobBlockingReasons(jobData);
+      const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
+
+      setReviewSubmitGateState({
+        status,
+        reviewSubmitJobId: jobData?.reviewSubmitJobId,
+        gateRunId,
+        revisionChecksum,
+        blockingReasons,
+        message: jobData?.error?.message,
+      });
+
+      return { status, messageText };
+    },
+    [getReviewSubmitGateStatusMessage],
+  );
+
+  const startReviewSubmitLatestSync = useCallback(
+    (processDetail: ProcessCheckTarget) => {
+      cancelReviewSubmitLatestSync();
+      const syncToken = reviewSubmitLatestSyncTokenRef.current;
+
+      const syncLatest = async (remainingAttempts: number): Promise<void> => {
+        if (!drawerVisibleRef.current || reviewSubmitLatestSyncTokenRef.current !== syncToken) {
+          return;
+        }
+
+        const latestResult = await requestReviewSubmitJob(
+          'processes',
+          processDetail.id,
+          processDetail.version,
+          null,
+          {
+            action: 'read_latest',
+          },
+        );
+
+        if (!drawerVisibleRef.current || reviewSubmitLatestSyncTokenRef.current !== syncToken) {
+          return;
+        }
+
+        const latestJobData = latestResult.data?.[0] as ReviewSubmitJobResult | undefined;
+        if (!latestJobData || latestResult.error) {
+          if (remainingAttempts > 1) {
+            reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
+              reviewSubmitLatestSyncTimeoutRef.current = null;
+              void syncLatest(remainingAttempts - 1);
+            }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS);
+          }
+          return;
+        }
+
+        const { status, messageText } = applyReviewSubmitJobState(latestJobData, {
+          revisionChecksum: latestResult.revisionChecksum,
+        });
+
+        if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status)) {
+          if (remainingAttempts > 1) {
+            reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
+              reviewSubmitLatestSyncTimeoutRef.current = null;
+              void syncLatest(remainingAttempts - 1);
+            }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS);
+          }
+          return;
+        }
+
+        trackReviewSubmitTask(latestJobData);
+        if (isReviewSubmitTerminalStatus(status) && status !== 'submitted') {
+          message.error(messageText);
+        }
+      };
+
+      reviewSubmitLatestSyncTimeoutRef.current = window.setTimeout(() => {
+        reviewSubmitLatestSyncTimeoutRef.current = null;
+        void syncLatest(REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS);
+      }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS);
+    },
+    [applyReviewSubmitJobState, cancelReviewSubmitLatestSync],
+  );
+
   const runReviewSubmitJob = async (processDetail: ProcessCheckTarget) => {
     const jobResult = await requestReviewSubmitJob(
       'processes',
@@ -1344,41 +1538,8 @@ const ProcessEdit: FC<Props> = ({
     }
 
     const jobData = jobResult.data?.[0] as ReviewSubmitJobResult | undefined;
-    const status = jobData?.status ?? 'error';
-    const gateData = jobData?.gate ?? undefined;
-    const gateWorkerJob = jobData?.gateWorkerJob ?? undefined;
-    const gateRunId = jobData?.gateRunId ?? gateData?.gateRunId ?? undefined;
-    const revisionChecksum =
-      jobData?.datasetRevision?.revisionChecksum ??
-      gateData?.datasetRevision?.revisionChecksum ??
-      (gateWorkerJob?.result &&
-      typeof gateWorkerJob.result === 'object' &&
-      'datasetRevision' in gateWorkerJob.result
-        ? (
-            gateWorkerJob.result as {
-              datasetRevision?: { revisionChecksum?: string };
-            }
-          ).datasetRevision?.revisionChecksum
-        : undefined) ??
-      jobResult.revisionChecksum;
-    const blockingReasons =
-      gateData?.blockingReasons ??
-      (gateWorkerJob?.result &&
-      typeof gateWorkerJob.result === 'object' &&
-      'blockingReasons' in gateWorkerJob.result &&
-      Array.isArray((gateWorkerJob.result as { blockingReasons?: unknown }).blockingReasons)
-        ? ((gateWorkerJob.result as { blockingReasons?: ReviewSubmitGateBlockingReason[] })
-            .blockingReasons ?? [])
-        : undefined);
-    const messageText = jobData?.error?.message || getReviewSubmitGateStatusMessage(status);
-
-    setReviewSubmitGateState({
-      status,
-      reviewSubmitJobId: jobData?.reviewSubmitJobId,
-      gateRunId,
-      revisionChecksum,
-      blockingReasons,
-      message: jobData?.error?.message,
+    const { status, messageText } = applyReviewSubmitJobState(jobData, {
+      revisionChecksum: jobResult.revisionChecksum,
     });
 
     if (jobData) {
@@ -1398,6 +1559,7 @@ const ProcessEdit: FC<Props> = ({
             'Review submission task has been created. Track progress in the task center.',
         }),
       );
+      startReviewSubmitLatestSync(processDetail);
       return 'queued' as const;
     }
 

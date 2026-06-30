@@ -172,6 +172,93 @@ describe('reviews/taskCenter', () => {
     ]);
   });
 
+  it('hydrates latest coordinator errors with worker ids and blocking diagnostics', async () => {
+    mockRequestWorkerJobsApi.mockResolvedValue({
+      data: [
+        {
+          id: '00000000-0000-4000-8000-000000000001',
+          jobKind: 'review_submit.submit',
+          subjectType: 'processes',
+          subjectId: '33333333-3333-4333-8333-333333333333',
+          subjectVersion: '01.00.000',
+          status: 'failed',
+          errorCode: 'calculator_gate_error',
+          errorMessage:
+            'calculator review-submit gate worker failed before producing a passed/blocked report',
+          createdAt: '2026-03-12T10:59:00.000Z',
+          updatedAt: '2026-03-12T11:02:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    mockRequestReviewSubmitJobApi.mockResolvedValue({
+      data: [
+        {
+          status: 'error',
+          reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
+          submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
+          gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+          error: {
+            code: 'calculator_gate_error',
+            message:
+              'calculator review-submit gate worker failed before producing a passed/blocked report',
+            details: {
+              error: 'failed to build review-submit gate snapshot',
+              worker_job_id: '22222222-2222-4222-8222-222222222222',
+            },
+          },
+          gate: {
+            status: 'error',
+            blockingReasons: [
+              {
+                code: 'calculator_gate_error',
+                message: 'failed to build review-submit gate snapshot',
+                details: {
+                  error: 'failed to build review-submit gate snapshot',
+                  worker_job_id: '22222222-2222-4222-8222-222222222222',
+                },
+              },
+            ],
+          },
+        },
+      ],
+      error: null,
+    });
+
+    const taskCenter = loadTaskCenterModule();
+    const tasks = await taskCenter.refreshReviewSubmitTasks();
+
+    expect(mockRequestReviewSubmitJobApi).toHaveBeenCalledWith({
+      action: 'read_latest',
+      table: 'processes',
+      id: '33333333-3333-4333-8333-333333333333',
+      version: '01.00.000',
+    });
+    expect(tasks).toEqual([
+      expect.objectContaining({
+        id: '00000000-0000-4000-8000-000000000001',
+        reviewSubmitJobId: '11111111-1111-4111-8111-111111111111',
+        submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
+        gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+        phase: 'error',
+        state: 'failed',
+        error:
+          'calculator review-submit gate worker failed before producing a passed/blocked report',
+        blockingReasons: [
+          {
+            code: 'calculator_gate_error',
+            message: 'failed to build review-submit gate snapshot',
+            details: {
+              error: 'failed to build review-submit gate snapshot',
+              worker_job_id: '22222222-2222-4222-8222-222222222222',
+            },
+          },
+        ],
+        blockerCodes: ['calculator_gate_error'],
+      }),
+    ]);
+  });
+
   it('does not infer final submit completion from a completed gate worker alone', async () => {
     mockRequestWorkerJobsApi.mockResolvedValue({
       data: [
