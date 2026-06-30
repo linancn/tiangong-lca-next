@@ -1679,6 +1679,114 @@ describe('ProcessEdit component', () => {
     expect(mockRequestOpenLcaTaskCenter).toHaveBeenCalled();
   });
 
+  it('syncs pending review-submit jobs to latest terminal errors in the drawer', async () => {
+    mockUpdateProcess.mockResolvedValue({
+      data: [
+        {
+          id: 'process-1',
+          version: '1.0.0',
+          json: { processDataSet: processDataset },
+          state_code: 10,
+          rule_verification: true,
+        },
+      ],
+    });
+    mockRequestReviewSubmitJob
+      .mockResolvedValueOnce({
+        data: [{ status: 'waiting_gate', reviewSubmitJobId: 'job-waiting' }],
+        error: null,
+        reviewSubmitJobId: 'job-waiting',
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            status: 'error',
+            reviewSubmitJobId: 'job-waiting',
+            submitWorkerJobId: 'submit-worker-1',
+            gateWorkerJobId: 'gate-worker-1',
+            error: {
+              code: 'calculator_gate_error',
+              message:
+                'calculator review-submit gate worker failed before producing a passed/blocked report',
+              details: {
+                error: 'failed to build review-submit gate snapshot',
+                worker_job_id: 'gate-worker-1',
+              },
+            },
+            gate: {
+              status: 'error',
+              blockingReasons: [
+                {
+                  code: 'calculator_gate_error',
+                  message: 'failed to build review-submit gate snapshot',
+                  details: {
+                    error: 'failed to build review-submit gate snapshot',
+                    worker_job_id: 'gate-worker-1',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+        error: null,
+      });
+
+    render(<ProcessEdit {...baseProps} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await screen.findByRole('dialog', { name: 'Edit process' });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit for Review' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Review submission is waiting for the numerical stability gate to finish.',
+      ),
+    );
+
+    await waitFor(() => expect(mockRequestReviewSubmitJob).toHaveBeenCalledTimes(2));
+    expect(mockRequestReviewSubmitJob).toHaveBeenNthCalledWith(
+      1,
+      'processes',
+      'process-1',
+      '1.0.0',
+      null,
+      {
+        action: 'enqueue',
+        reviewSubmitJobId: undefined,
+      },
+    );
+    expect(mockRequestReviewSubmitJob).toHaveBeenLastCalledWith(
+      'processes',
+      'process-1',
+      '1.0.0',
+      null,
+      {
+        action: 'read_latest',
+      },
+    );
+    expect(screen.getByRole('alert')).not.toHaveTextContent(
+      'Review submission is waiting for the numerical stability gate to finish.',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'calculator review-submit gate worker failed before producing a passed/blocked report',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'calculator_gate_error: failed to build review-submit gate snapshot',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'error: failed to build review-submit gate snapshot, worker_job_id: gate-worker-1',
+    );
+    expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'error',
+        reviewSubmitJobId: 'job-waiting',
+        submitWorkerJobId: 'submit-worker-1',
+        gateWorkerJobId: 'gate-worker-1',
+      }),
+    );
+  });
+
   it('clears a review-submit job state after data changes', async () => {
     mockUpdateProcess.mockResolvedValue({
       data: [

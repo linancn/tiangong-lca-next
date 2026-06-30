@@ -722,6 +722,62 @@ describe('review-submit job helpers', () => {
     );
   });
 
+  it('treats read_latest structured HTTP errors as terminal job results', async () => {
+    mockFunctionsInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'FunctionsHttpError',
+        context: {
+          status: 502,
+          json: async () => ({
+            ok: false,
+            command: 'dataset_review_submit_job_read_latest',
+            data: {
+              status: 'error',
+              reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+              submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
+              gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+              error: {
+                code: 'calculator_gate_error',
+                message:
+                  'calculator review-submit gate worker failed before producing a passed/blocked report',
+                details: {
+                  error: 'failed to build review-submit gate snapshot',
+                  worker_job_id: '22222222-2222-4222-8222-222222222222',
+                },
+              },
+            },
+          }),
+        },
+      },
+    });
+
+    const result = await reviewsApi.requestReviewSubmitJobApi({
+      action: 'read_latest',
+      table: 'processes',
+      id: '11111111-1111-4111-8111-111111111111',
+      version: '01.00.000',
+    });
+
+    expect(result).toEqual({
+      data: [
+        expect.objectContaining({
+          status: 'error',
+          reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+          submitWorkerJobId: '00000000-0000-4000-8000-000000000001',
+          gateWorkerJobId: '22222222-2222-4222-8222-222222222222',
+          error: expect.objectContaining({
+            code: 'calculator_gate_error',
+          }),
+        }),
+      ],
+      error: null,
+      count: null,
+      status: 502,
+      statusText: 'OK',
+    });
+  });
+
   it('falls back to an empty bearer token when the auth session omits the access token', async () => {
     mockAuthGetSession.mockResolvedValueOnce({
       data: {
