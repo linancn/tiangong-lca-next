@@ -56,6 +56,11 @@ import type {
 } from '@/services/reviews/api';
 import { trackReviewSubmitTask } from '@/services/reviews/taskCenter';
 import { getUserTeamId } from '@/services/roles/api';
+import {
+  requestWorkerJobsApi,
+  type WorkerJobResult,
+  type WorkerJobStatus,
+} from '@/services/workerJobs/api';
 import styles from '@/style/custom.less';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
@@ -78,6 +83,7 @@ type ProcessCheckTarget = FormProcessWithDatas & {
   stateCode: number;
   ruleVerification: boolean;
 };
+type ProcessReviewSubmitTarget = Pick<ProcessCheckTarget, 'id' | 'version'>;
 type HandleSubmitResult = Awaited<ReturnType<typeof updateProcess>>;
 type RefProblemNode = ProblemNode & {
   versionUnderReview?: boolean;
@@ -100,6 +106,14 @@ const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
   'waiting_gate',
   'submitting',
 ]);
+const REVIEW_SUBMIT_ROOT_WORKER_KIND = 'review_submit.submit';
+const REVIEW_SUBMIT_GATE_WORKER_KIND = 'review_submit.gate';
+const REVIEW_SUBMIT_ACTIVE_WORKER_STATUSES = new Set<WorkerJobStatus>([
+  'queued',
+  'running',
+  'waiting',
+]);
+const REVIEW_SUBMIT_ACTIVE_WORKER_LIST_LIMIT = 20;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS = 250;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS = 5000;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS = 24;
@@ -351,6 +365,106 @@ const getReviewSubmitJobBlockingReasons = (
 
 const isReviewSubmitTerminalStatus = (status: ReviewSubmitGateUiStatus) =>
   status !== 'not_run' && !REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status);
+
+const isReviewSubmitWorkerStatusActive = (status: unknown): status is WorkerJobStatus =>
+  typeof status === 'string' && REVIEW_SUBMIT_ACTIVE_WORKER_STATUSES.has(status as WorkerJobStatus);
+
+const isReviewSubmitGateCheckActive = (
+  jobData?: ReviewSubmitJobResult,
+): jobData is ReviewSubmitJobResult => {
+  if (!jobData) {
+    return false;
+  }
+
+  if (REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(jobData.status)) {
+    return true;
+  }
+
+  if (jobData.gate?.status && REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(jobData.gate.status)) {
+    return true;
+  }
+
+  return (
+    isReviewSubmitWorkerStatusActive(jobData.gateWorkerJob?.status) ||
+    isReviewSubmitWorkerStatusActive(jobData.workerJob?.status) ||
+    isReviewSubmitWorkerStatusActive(jobData.submitWorkerJob?.status)
+  );
+};
+
+const isReviewSubmitWorkerJob = (
+  workerJob?: WorkerJobResult | null,
+): workerJob is WorkerJobResult =>
+  workerJob?.jobKind === REVIEW_SUBMIT_ROOT_WORKER_KIND ||
+  workerJob?.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND;
+
+const isReviewSubmitWorkerJobForProcess = (
+  workerJob: WorkerJobResult,
+  processDetail: ProcessReviewSubmitTarget,
+): boolean =>
+  isReviewSubmitWorkerJob(workerJob) &&
+  workerJob.subjectType === 'processes' &&
+  workerJob.subjectId === processDetail.id &&
+  (!workerJob.subjectVersion || workerJob.subjectVersion === processDetail.version);
+
+const findActiveReviewSubmitWorkerJob = (
+  workerJobs: WorkerJobResult[] | null | undefined,
+  processDetail: ProcessReviewSubmitTarget,
+): WorkerJobResult | undefined =>
+  workerJobs?.find(
+    (workerJob) =>
+      isReviewSubmitWorkerJobForProcess(workerJob, processDetail) &&
+      isReviewSubmitWorkerStatusActive(workerJob.status),
+  );
+
+const reviewSubmitJobStatusFromWorkerJob = (workerJob: WorkerJobResult): ReviewSubmitJobStatus => {
+  if (workerJob.phase === 'submitting') {
+    return 'submitting';
+  }
+  if (workerJob.status === 'queued') {
+    return 'queued';
+  }
+  return 'waiting_gate';
+};
+
+const reviewSubmitJobFromActiveWorkerJob = (
+  workerJob: WorkerJobResult,
+  processDetail: ProcessReviewSubmitTarget,
+): ReviewSubmitJobResult => {
+  const isGateWorker = workerJob.jobKind === REVIEW_SUBMIT_GATE_WORKER_KIND;
+  const rootJobId = workerJob.rootJobId ?? (isGateWorker ? undefined : workerJob.id);
+
+  return {
+    status: reviewSubmitJobStatusFromWorkerJob(workerJob),
+    submitWorkerJobId: isGateWorker ? rootJobId : workerJob.id,
+    rootJobId,
+    gateWorkerJobId: isGateWorker ? workerJob.id : undefined,
+    datasetRevision: {
+      table: 'processes',
+      id: processDetail.id,
+      version: processDetail.version,
+    },
+    workerJob,
+    submitWorkerJob: isGateWorker ? null : workerJob,
+    gateWorkerJob: isGateWorker ? workerJob : null,
+  };
+};
+
+const isReviewSubmitJobNotFoundResult = (result: {
+  error?: {
+    code?: string;
+    message?: string;
+  } | null;
+  status?: number;
+  statusText?: string;
+}): boolean => {
+  if (!result.error) {
+    return false;
+  }
+
+  const code = `${result.error.code ?? result.statusText ?? ''}`.toLowerCase();
+  const messageText = `${result.error.message ?? ''}`.toLowerCase();
+  return result.status === 404 || code.includes('not_found') || messageText.includes('not found');
+};
 
 const collectChangedFieldPaths = (
   value: unknown,
@@ -1509,7 +1623,106 @@ const ProcessEdit: FC<Props> = ({
     [applyReviewSubmitJobState, cancelReviewSubmitLatestSync],
   );
 
+  const readActiveReviewSubmitWorkerJob = async (processDetail: ProcessReviewSubmitTarget) => {
+    const result = await requestWorkerJobsApi<WorkerJobResult>({
+      action: 'list',
+      subjectType: 'processes',
+      subjectId: processDetail.id,
+      statuses: ['queued', 'running', 'waiting'],
+      limit: REVIEW_SUBMIT_ACTIVE_WORKER_LIST_LIMIT,
+    });
+
+    if (result.error) {
+      return { error: result.error, workerJob: undefined };
+    }
+
+    return {
+      error: null,
+      workerJob: findActiveReviewSubmitWorkerJob(result.data, processDetail),
+    };
+  };
+
+  const failReviewSubmitRunningCheck = (messageText: string, revisionChecksum?: string) => {
+    setReviewSubmitGateState({
+      status: 'error',
+      message: messageText,
+      revisionChecksum,
+    });
+    message.error(messageText);
+    return 'failed' as const;
+  };
+
+  const showActiveReviewSubmitJob = (
+    jobData: ReviewSubmitJobResult,
+    fallback?: { revisionChecksum?: string },
+  ) => {
+    applyReviewSubmitJobState(jobData, fallback);
+    trackReviewSubmitTask(jobData);
+    requestOpenLcaTaskCenter();
+    message.warning(
+      intl.formatMessage({
+        id: 'pages.process.reviewSubmitJob.alreadyRunning',
+        defaultMessage: 'A review submission gate check is already running.',
+      }),
+    );
+    return 'queued' as const;
+  };
+
   const runReviewSubmitJob = async (processDetail: ProcessCheckTarget) => {
+    const activeWorkerCheck = await readActiveReviewSubmitWorkerJob(processDetail);
+
+    if (activeWorkerCheck.error) {
+      return failReviewSubmitRunningCheck(
+        activeWorkerCheck.error.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.checkRunningFailed',
+            defaultMessage: 'Failed to check whether a review submission gate is already running.',
+          }),
+      );
+    }
+
+    if (activeWorkerCheck.workerJob) {
+      return showActiveReviewSubmitJob(
+        reviewSubmitJobFromActiveWorkerJob(activeWorkerCheck.workerJob, processDetail),
+      );
+    }
+
+    const handleActiveReviewSubmitJob = (
+      jobData: ReviewSubmitJobResult,
+      fallback?: { revisionChecksum?: string },
+    ) => {
+      startReviewSubmitLatestSync(processDetail);
+      return showActiveReviewSubmitJob(jobData, fallback);
+    };
+
+    const latestResult = await requestReviewSubmitJob(
+      'processes',
+      processDetail.id,
+      processDetail.version,
+      null,
+      {
+        action: 'read_latest',
+      },
+    );
+
+    if (latestResult.error && !isReviewSubmitJobNotFoundResult(latestResult)) {
+      return failReviewSubmitRunningCheck(
+        latestResult.error.message ||
+          intl.formatMessage({
+            id: 'pages.process.reviewSubmitJob.checkRunningFailed',
+            defaultMessage: 'Failed to check whether a review submission gate is already running.',
+          }),
+        latestResult.revisionChecksum,
+      );
+    }
+
+    const latestJobData = latestResult.data?.[0] as ReviewSubmitJobResult | undefined;
+    if (isReviewSubmitGateCheckActive(latestJobData)) {
+      return handleActiveReviewSubmitJob(latestJobData, {
+        revisionChecksum: latestResult.revisionChecksum,
+      });
+    }
+
     const jobResult = await requestReviewSubmitJob(
       'processes',
       processDetail.id,
@@ -1570,6 +1783,32 @@ const ProcessEdit: FC<Props> = ({
   const submitReview = async () => {
     setSpinning(true);
     resetReviewSubmitGateState();
+
+    if (id && version) {
+      const activeWorkerCheck = await readActiveReviewSubmitWorkerJob({ id, version });
+
+      if (activeWorkerCheck.error) {
+        failReviewSubmitRunningCheck(
+          activeWorkerCheck.error.message ||
+            intl.formatMessage({
+              id: 'pages.process.reviewSubmitJob.checkRunningFailed',
+              defaultMessage:
+                'Failed to check whether a review submission gate is already running.',
+            }),
+        );
+        setSpinning(false);
+        return;
+      }
+
+      if (activeWorkerCheck.workerJob) {
+        showActiveReviewSubmitJob(
+          reviewSubmitJobFromActiveWorkerJob(activeWorkerCheck.workerJob, { id, version }),
+        );
+        setSpinning(false);
+        return;
+      }
+    }
+
     const updateResult = await handleSubmit(false, { langIntent: 'validation' });
     const validationTarget = await resolveProcessCheckTarget(updateResult);
     const updatedProcess = toSavedProcessCheckTarget(updateResult);
