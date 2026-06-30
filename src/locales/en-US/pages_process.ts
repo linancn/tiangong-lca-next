@@ -722,6 +722,8 @@ export default {
   'pages.process.reviewSubmitJob.cancelled': 'Review submission job was cancelled.',
   'pages.process.reviewSubmitJob.backgroundProcessing': 'Review submission is still processing in the background. You can retry later to refresh the latest status.',
   'pages.process.reviewSubmitJob.enqueued': 'Review submission task has been created. Track progress in the task center.',
+  'pages.process.reviewSubmitJob.alreadyRunning': 'A review submission gate check is already running.',
+  'pages.process.reviewSubmitJob.checkRunningFailed': 'Failed to check whether a review submission gate is already running.',
   'pages.process.reviewSubmitTaskCenter.kind': 'Review Submit',
   'pages.process.reviewSubmitTaskCenter.phase.queued': 'Queued',
   'pages.process.reviewSubmitTaskCenter.phase.running': 'Gate running',

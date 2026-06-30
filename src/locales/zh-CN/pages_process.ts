@@ -719,6 +719,8 @@ export default {
   'pages.process.reviewSubmitJob.cancelled': '提交审核任务已取消。',
   'pages.process.reviewSubmitJob.backgroundProcessing': '提交审核仍在后台处理中，稍后可重新点击以刷新最新状态。',
   'pages.process.reviewSubmitJob.enqueued': '提交审核任务已创建，请在任务中心查看进度。',
+  'pages.process.reviewSubmitJob.alreadyRunning': '提交审核门禁检查正在运行，请稍后再试。',
+  'pages.process.reviewSubmitJob.checkRunningFailed': '检查提交审核门禁运行状态失败。',
   'pages.process.reviewSubmitTaskCenter.kind': '提交审核',
   'pages.process.reviewSubmitTaskCenter.phase.queued': '已排队',
   'pages.process.reviewSubmitTaskCenter.phase.running': '门禁运行中',
