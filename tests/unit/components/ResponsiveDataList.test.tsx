@@ -77,7 +77,7 @@ describe('ResponsiveDataList helpers', () => {
     });
     expect(responsiveSearchExtraColProps).toEqual({
       className: 'responsive-data-list-search-extra',
-      flex: '100px',
+      flex: 'none',
     });
   });
 
