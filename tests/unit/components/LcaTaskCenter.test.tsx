@@ -1,5 +1,9 @@
 // @ts-nocheck
 import LcaTaskCenter from '@/components/LcaTaskCenter';
+import {
+  REVIEW_SUBMIT_GATE_BLOCKER_CODES,
+  REVIEW_SUBMIT_GATE_REASON_GUIDANCE,
+} from '@/utils/reviewSubmitGateGuidance';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 let mockTasks: any[] = [];
@@ -146,7 +150,19 @@ jest.mock('antd', () => {
   };
 
   const Progress = ({ percent }: any) => <div role='progressbar'>{percent}%</div>;
-  const Space = ({ children, style }: any) => <div style={style}>{children}</div>;
+  const Space = ({ children, style, ...props }: any) => {
+    const domProps = { ...props };
+    delete domProps.align;
+    delete domProps.direction;
+    delete domProps.size;
+    delete domProps.split;
+    delete domProps.wrap;
+    return (
+      <div style={style} {...domProps}>
+        {children}
+      </div>
+    );
+  };
   const Tag = ({ children }: any) => <span>{children}</span>;
   const Tabs = ({ activeKey, items = [], onChange }: any) => (
     <div role='tablist'>
@@ -534,10 +550,10 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('Review Submit').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Waiting for gate').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Blocked').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Input and output flow semantics conflict')).not.toBeInTheDocument();
+    expect(screen.queryByText('Flow and LCIA semantics are inconsistent')).not.toBeInTheDocument();
     expect(
       screen.queryByText(
-        'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
+        'Check flow types, biosphere exchanges, and LCIA factor mappings, then correct the mismatched data before retrying.',
       ),
     ).not.toBeInTheDocument();
     expect(screen.queryByText('same input/output flow')).not.toBeInTheDocument();
@@ -556,12 +572,12 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('processes')).toBeInTheDocument();
     expect(screen.getByText('Version')).toBeInTheDocument();
     expect(screen.getAllByText('01.00.000').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Input and output flow semantics conflict').length).toBeGreaterThan(
+    expect(screen.getAllByText('Flow and LCIA semantics are inconsistent').length).toBeGreaterThan(
       0,
     );
     expect(
       screen.getAllByText(
-        'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
+        'Check flow types, biosphere exchanges, and LCIA factor mappings, then correct the mismatched data before retrying.',
       ).length,
     ).toBeGreaterThan(0);
 
@@ -778,7 +794,7 @@ describe('LcaTaskCenter', () => {
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
     expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.queryByText('Gate returned an unmapped blocker')).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
 
     const reviewViewButtons = screen.getAllByRole('button', { name: 'View' });
     reviewViewButtons.forEach((button) => {
@@ -791,23 +807,22 @@ describe('LcaTaskCenter', () => {
     expect(screen.queryByText('Gate passed; submitting review')).not.toBeInTheDocument();
     expect(screen.getByText('Gate result is stale')).toBeInTheDocument();
     expect(
-      screen.getByText('Save the latest data and run the submit-review gate again.'),
+      screen.getByText('Save the current data and submit for review again.'),
     ).toBeInTheDocument();
     expect(screen.getAllByText('Execution stages').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Run gate').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Submit review').length).toBeGreaterThan(0);
     expect(screen.queryByText('Review submission task was cancelled')).not.toBeInTheDocument();
     expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Gate returned an unmapped blocker').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Review submission did not complete')).toHaveLength(2);
     expect(screen.queryByText('worker failed')).not.toBeInTheDocument();
     expect(screen.queryByText('custom_blocker')).not.toBeInTheDocument();
     expect(screen.queryByText('custom blocker message')).not.toBeInTheDocument();
     expect(screen.queryByText('missing code reason')).not.toBeInTheDocument();
 
     expect(
-      screen.getAllByText(
-        'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
-      ).length,
+      screen.getAllByText('Save the data and retry. If it still fails, contact an administrator.')
+        .length,
     ).toBeGreaterThan(0);
 
     const reviewDiagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
@@ -833,6 +848,43 @@ describe('LcaTaskCenter', () => {
         (_, element) => element?.textContent?.includes('process-no-version') ?? false,
       ),
     ).not.toBeInTheDocument();
+  });
+
+  it('renders friendly task-center guidance for every stable review-submit blocker code', () => {
+    mockReviewSubmitTasks = [
+      {
+        id: 'review-all-stable-blockers',
+        state: 'failed',
+        phase: 'blocked',
+        message: 'blocked',
+        createdAt: '2026-03-12T12:00:00.000Z',
+        updatedAt: '2026-03-12T12:01:00.000Z',
+        datasetRevision: {
+          table: 'processes',
+          id: 'process-all-blockers',
+          version: '01.00.000',
+        },
+        blockingReasons: REVIEW_SUBMIT_GATE_BLOCKER_CODES.map((code) => ({
+          code,
+          message: `worker message for ${code}`,
+          details: { code },
+        })),
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    expect(screen.getByTestId('review-submit-blocker-summary')).toHaveStyle({
+      width: '100%',
+    });
+    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
+    for (const code of REVIEW_SUBMIT_GATE_BLOCKER_CODES) {
+      const guidance = REVIEW_SUBMIT_GATE_REASON_GUIDANCE[code];
+      expect(screen.getByText(guidance.defaultTitle)).toBeInTheDocument();
+      expect(screen.getByText(guidance.defaultAction)).toBeInTheDocument();
+    }
   });
 
   it('reports review-submit refresh, cancel, and retry errors with fallback and explicit messages', async () => {
@@ -867,20 +919,15 @@ describe('LcaTaskCenter', () => {
 
     expect(screen.getAllByText('Error').length).toBeGreaterThan(0);
     expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
-      ),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Review submission did not complete')).not.toBeInTheDocument();
     expect(screen.queryByText('transient worker failure')).not.toBeInTheDocument();
 
     const viewButtons = screen.getAllByRole('button', { name: 'View' });
     fireEvent.click(viewButtons[0]);
     expect(screen.queryByText('Review submission task failed')).not.toBeInTheDocument();
+    expect(screen.getByText('Review submission did not complete')).toBeInTheDocument();
     expect(
-      screen.getByText(
-        'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
-      ),
+      screen.getByText('The current data could not complete the pre-review check.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));

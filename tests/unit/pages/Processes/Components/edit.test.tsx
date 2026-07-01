@@ -1496,8 +1496,8 @@ describe('ProcessEdit component', () => {
             gateRunId: 'gate-run-blocked',
             blockingReasons: [
               {
-                code: 'provider_unresolved',
-                message: 'Provider unresolved',
+                code: 'missing_or_zero_reference',
+                message: 'Reference missing',
                 details: {
                   examples: [
                     {
@@ -1542,13 +1542,17 @@ describe('ProcessEdit component', () => {
     );
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'Numerical stability gate blocked this revision.',
+      'Gate check did not pass. Open the task center for details.',
     );
-    expect(screen.getByRole('alert')).toHaveTextContent('Provider selection is unresolved');
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Narrow the provider candidates or add evidence that selects the intended provider.',
+      'Quantitative reference is missing or zero',
     );
-    expect(screen.getByRole('alert')).toHaveTextContent('provider_unresolved: Provider unresolved');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Check the quantitative reference and make sure it points to a valid exchange with an amount greater than zero.',
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'missing_or_zero_reference: Reference missing',
+    );
     expect(screen.getByRole('alert')).toHaveTextContent(
       'process: Existing process, version: 1.0.0, exchange: exchange-1, flow: flow-1',
     );
@@ -1583,7 +1587,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Numerical stability gate result is stale. Save the latest data and rerun the gate.',
+        'Gate check did not pass. Open the task center for details.',
       ),
     );
     expect(mockSubmitDatasetReview).not.toHaveBeenCalled();
