@@ -38,6 +38,7 @@ import {
   refreshTidasPackageTasksFromWorkerJobs,
   subscribeTidasPackageTasks,
 } from '@/services/tidasPackage/taskCenter';
+import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -88,6 +89,7 @@ type FormattedReviewSubmitReason = {
   title: string;
   description: string;
   action?: string;
+  isFallback?: boolean;
   diagnosticCode?: string;
   diagnosticMessage?: string;
   diagnosticDetails?: string;
@@ -847,107 +849,6 @@ function packageTaskErrorText(
   return task.error;
 }
 
-const REVIEW_SUBMIT_REASON_GUIDANCE: Record<
-  string,
-  {
-    titleId: string;
-    defaultTitle: string;
-    descriptionId: string;
-    defaultDescription: string;
-    actionId: string;
-    defaultAction: string;
-  }
-> = {
-  revision_report_stale: {
-    titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
-    defaultTitle: 'Gate result is stale',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.description',
-    defaultDescription: 'The gate result no longer matches the saved process revision.',
-    actionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.action',
-    defaultAction: 'Save the latest data and run the submit-review gate again.',
-  },
-  invalid_scope_state: {
-    titleId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.title',
-    defaultTitle: 'Dataset lifecycle state is not eligible',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.description',
-    defaultDescription:
-      'The process is in a lifecycle state that cannot enter the submit-review gate.',
-    actionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.action',
-    defaultAction:
-      'Use a draft process or an already reviewed dependency; data under review cannot be submitted again.',
-  },
-  flow_lcia_semantic_mismatch: {
-    titleId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title',
-    defaultTitle: 'Input and output flow semantics conflict',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.description',
-    defaultDescription:
-      'The process appears to contain the same flow as both input and output, which can make the numerical system unstable.',
-    actionId: 'pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.action',
-    defaultAction:
-      'Check the exchange direction and quantitative reference; split or correct the duplicated flow before submitting again.',
-  },
-  sparse_matrix_zero_or_near_zero_diagonal: {
-    titleId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title',
-    defaultTitle: 'Matrix diagonal is zero or near zero',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description',
-    defaultDescription:
-      'The generated matrix has a process diagonal that is zero or too close to zero for stable solving.',
-    actionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action',
-    defaultAction:
-      'Check self-loops, reference exchanges, and process structure before running the gate again.',
-  },
-  singular_risk_medium_or_high: {
-    titleId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.title',
-    defaultTitle: 'Matrix singularity risk is too high',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.description',
-    defaultDescription:
-      'The snapshot has medium or high singularity risk, so solving may be unstable or fail.',
-    actionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.action',
-    defaultAction:
-      'Resolve duplicate or linearly dependent process structure, then rebuild and rerun the gate.',
-  },
-  duplicate_sparse_columns: {
-    titleId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.title',
-    defaultTitle: 'Duplicate process columns were detected',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.description',
-    defaultDescription:
-      'Two or more process columns are numerically identical, which can produce an underdetermined matrix.',
-    actionId: 'pages.process.reviewSubmitGate.reason.duplicateSparseColumns.action',
-    defaultAction:
-      'Review repeated processes, duplicated exchanges, and reference products before submitting again.',
-  },
-  factorization_probe_failed: {
-    titleId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title',
-    defaultTitle: 'Numerical probe failed',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.description',
-    defaultDescription: 'The fast factorization probe could not solve the target process reliably.',
-    actionId: 'pages.process.reviewSubmitGate.reason.factorizationProbeFailed.action',
-    defaultAction:
-      'Check the exchange graph around the target process and rerun the gate after correcting unstable structure.',
-  },
-  target_process_not_covered_by_probe: {
-    titleId: 'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.title',
-    defaultTitle: 'Target process is outside the probe scope',
-    descriptionId:
-      'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.description',
-    defaultDescription:
-      'The fast gate could not include the submitted process in the numerical stability probe.',
-    actionId: 'pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.action',
-    defaultAction:
-      'Confirm the process has valid reference exchanges and connected product flows, then submit again.',
-  },
-  service_loop_detected: {
-    titleId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.title',
-    defaultTitle: 'Service loop detected',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.description',
-    defaultDescription:
-      'The process graph contains a service loop that may make the matrix unstable.',
-    actionId: 'pages.process.reviewSubmitGate.reason.serviceLoopDetected.action',
-    defaultAction:
-      'Inspect the referenced processes in the loop and remove unintended circular dependencies.',
-  },
-};
-
 function diagnosticJson(value: unknown): string | undefined {
   if (value === undefined || value === null) {
     return undefined;
@@ -959,9 +860,27 @@ function diagnosticJson(value: unknown): string | undefined {
   }
 }
 
+function formatReviewSubmitFallbackSummary(
+  intl: IntlShapeLike,
+): Pick<FormattedReviewSubmitReason, 'title' | 'description' | 'action'> {
+  return {
+    title: intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.fallback.title',
+      defaultMessage: 'Review submission did not complete',
+    }),
+    description: intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.fallback.description',
+      defaultMessage: 'The current data could not complete the pre-review check.',
+    }),
+    action: intl.formatMessage({
+      id: 'pages.process.reviewSubmitTaskCenter.fallback.action',
+      defaultMessage: 'Save the data and retry. If it still fails, contact an administrator.',
+    }),
+  };
+}
+
 function formatReviewSubmitReason(
   reason: ReviewSubmitBlockingReason,
-  index: number,
   intl: IntlShapeLike,
 ): FormattedReviewSubmitReason {
   const rawCode = typeof reason?.code === 'string' ? reason.code.trim() : '';
@@ -972,28 +891,15 @@ function formatReviewSubmitReason(
       id: 'pages.process.reviewSubmitGate.reasonFallbackMessage',
       defaultMessage: 'No detailed message returned.',
     });
-  const guidance = rawCode ? REVIEW_SUBMIT_REASON_GUIDANCE[rawCode] : undefined;
+  const guidance = rawCode
+    ? REVIEW_SUBMIT_GATE_REASON_GUIDANCE[rawCode as keyof typeof REVIEW_SUBMIT_GATE_REASON_GUIDANCE]
+    : undefined;
   const diagnosticDetails = diagnosticJson('details' in reason ? reason.details : undefined);
 
   if (!guidance) {
     return {
-      title: intl.formatMessage(
-        {
-          id: 'pages.process.reviewSubmitGate.reason.unknown.title',
-          defaultMessage: 'Gate returned an unmapped blocker',
-        },
-        { index: index + 1 },
-      ),
-      description: intl.formatMessage({
-        id: 'pages.process.reviewSubmitGate.reason.unknown.description',
-        defaultMessage:
-          'The revision was blocked by a backend gate condition that is not mapped to a user-facing message yet.',
-      }),
-      action: intl.formatMessage({
-        id: 'pages.process.reviewSubmitGate.reason.unknown.action',
-        defaultMessage:
-          'Open details and share the diagnostics with an administrator if retrying does not resolve it.',
-      }),
+      ...formatReviewSubmitFallbackSummary(intl),
+      isFallback: true,
       diagnosticCode: rawCode || undefined,
       diagnosticMessage: reasonMessage,
       diagnosticDetails,
@@ -1500,13 +1406,30 @@ function reviewSubmitBlockerSummaryContent(
   if (normalizedReasons.length === 0) {
     return null;
   }
+  const visibleReasons: FormattedReviewSubmitReason[] = [];
+  let hasFallbackReason = false;
+
+  for (const reason of normalizedReasons) {
+    const formattedReason = formatReviewSubmitReason(reason, intl);
+    if (formattedReason.isFallback) {
+      if (hasFallbackReason) {
+        continue;
+      }
+      hasFallbackReason = true;
+    }
+    visibleReasons.push(formattedReason);
+  }
 
   return (
-    <Space direction='vertical' size={6} style={{ maxWidth: 420 }}>
-      {normalizedReasons.map((reason, index) => {
-        const formattedReason = formatReviewSubmitReason(reason, index, intl);
+    <Space
+      data-testid='review-submit-blocker-summary'
+      direction='vertical'
+      size={6}
+      style={{ display: 'flex', width: '100%' }}
+    >
+      {visibleReasons.map((formattedReason, index) => {
         return (
-          <div key={`${reason.code ?? 'reason'}-${index}`}>
+          <div key={`${formattedReason.isFallback ? 'fallback' : 'reason'}-${index}`}>
             <Typography.Text strong>{formattedReason.title}</Typography.Text>
             <br />
             <Typography.Text>{formattedReason.description}</Typography.Text>
@@ -1531,22 +1454,12 @@ function reviewSubmitErrorSummaryContent(
     return null;
   }
 
+  const fallbackSummary = formatReviewSubmitFallbackSummary(intl);
   return (
-    <Space direction='vertical' size={2} style={{ maxWidth: 420 }}>
-      <Typography.Text>
-        {intl.formatMessage({
-          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.description',
-          defaultMessage:
-            'The task stopped before review submission could complete. Retry the task after checking the saved process data.',
-        })}
-      </Typography.Text>
-      <Typography.Text type='secondary'>
-        {intl.formatMessage({
-          id: 'pages.process.reviewSubmitTaskCenter.errorSummary.action',
-          defaultMessage:
-            'If the task fails again, open details and share the diagnostics with an administrator.',
-        })}
-      </Typography.Text>
+    <Space direction='vertical' size={2} style={{ display: 'flex', width: '100%' }}>
+      <Typography.Text strong>{fallbackSummary.title}</Typography.Text>
+      <Typography.Text>{fallbackSummary.description}</Typography.Text>
+      <Typography.Text type='secondary'>{fallbackSummary.action}</Typography.Text>
     </Space>
   );
 }
@@ -1595,8 +1508,8 @@ function reviewSubmitDiagnosticsContent(
   const workerErrorMessage =
     typeof task.workerJob?.errorMessage === 'string' ? task.workerJob.errorMessage.trim() : '';
   const taskError = typeof task.error === 'string' ? task.error.trim() : '';
-  const formattedReasons = normalizedReasons.map((reason, index) =>
-    formatReviewSubmitReason(reason, index, intl),
+  const formattedReasons = normalizedReasons.map((reason) =>
+    formatReviewSubmitReason(reason, intl),
   );
   const hasDiagnostics =
     Boolean(taskError || workerErrorCode || workerErrorMessage) ||

@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-06-30"
-lastReviewedCommit: "ab56a4b91d917809f8451a861ddbe81e61e5948f"
+lastReviewedAt: "2026-07-01"
+lastReviewedCommit: "5785b6d2c98b0339585eb457d273d64ffba50662"
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -347,6 +347,8 @@ rules:
       - path: src/typings.d.ts
         kind: app-runtime
       - path: src/utils/appUrl.ts
+        kind: app-runtime
+      - path: src/utils/reviewSubmitGateGuidance.ts
         kind: app-runtime
       - path: src/utils/ruleVerification.ts
         kind: app-runtime

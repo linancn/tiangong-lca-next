@@ -51,6 +51,7 @@ import {
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
+import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import FlowsCreate from './Components/create';
 import FlowsDelete from './Components/delete';
 import FlowsEdit from './Components/edit';
@@ -464,20 +465,23 @@ const TableList: FC = () => {
             >
               <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
             </Checkbox>
-            <Checkbox
-              checked={referenceLookup}
-              onChange={(e) => {
-                setReferenceLookup(e.target.checked);
-                if (e.target.checked) {
-                  setOpenAI(false);
-                }
-              }}
-            >
-              <FormattedMessage
-                id='pages.search.referenceLookup'
-                defaultMessage='Reference Lookup'
-              />
-            </Checkbox>
+            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
+              <Checkbox
+                checked={referenceLookup}
+                onChange={(e) => {
+                  setReferenceLookup(e.target.checked);
+                  if (e.target.checked) {
+                    setOpenAI(false);
+                  }
+                }}
+              >
+                <FormattedMessage
+                  id='pages.search.referenceLookup'
+                  defaultMessage='Reference Lookup'
+                />
+              </Checkbox>
+              <ReferenceLookupHelpIcon />
+            </Space>
           </Col>
         </Row>
       </Card>

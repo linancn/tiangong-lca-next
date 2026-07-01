@@ -34,7 +34,7 @@ export const responsiveSearchPrimaryColProps = {
 
 export const responsiveSearchExtraColProps = {
   className: 'responsive-data-list-search-extra',
-  flex: '100px',
+  flex: 'none',
 };
 
 export function dataListIndexColumn<T>(): Partial<ProColumns<T>> {
