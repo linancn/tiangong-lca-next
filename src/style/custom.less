@@ -47,12 +47,13 @@
 
 :global(.ant-pro-layout .ant-pro-layout-content) {
   display: flex;
-  min-height: calc(100vh - 56px);
+  flex: 1 1 auto;
+  min-height: 0;
   flex-direction: column;
 }
 
 :global(.ant-pro-layout .ant-pro-layout-content > .ant-pro-page-container) {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
 }
 
 @welcome-radius: 8px;
