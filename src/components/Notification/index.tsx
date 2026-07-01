@@ -1,4 +1,4 @@
-import HeaderActionIcon from '@/components/HeaderActionIcon';
+import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
 import {
   getFreshUserMetadata,
   updateDataNotificationTime,
@@ -186,15 +186,7 @@ const Notification: React.FC = () => {
     setActiveTabKey(key as NotificationTabKey);
   };
 
-  const badgeStyles = {
-    backgroundColor: token.colorError,
-    borderRadius: '7px',
-    minWidth: '14px',
-    height: '14px',
-    lineHeight: '14px',
-    padding: '0 4px',
-    fontSize: '9px',
-  };
+  const badgeStyles = getHeaderBadgeStyle(token.colorError);
 
   const items = [
     {
