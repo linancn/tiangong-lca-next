@@ -348,6 +348,8 @@ rules:
         kind: app-runtime
       - path: src/utils/appUrl.ts
         kind: app-runtime
+      - path: src/utils/reviewSubmitGateGuidance.ts
+        kind: app-runtime
       - path: src/utils/ruleVerification.ts
         kind: app-runtime
     requiredDocs:

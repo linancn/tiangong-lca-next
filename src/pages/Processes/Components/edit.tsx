@@ -62,6 +62,7 @@ import {
   type WorkerJobStatus,
 } from '@/services/workerJobs/api';
 import styles from '@/style/custom.less';
+import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
 import { ActionType, ProForm, ProFormInstance } from '@ant-design/pro-components';
@@ -117,87 +118,6 @@ const REVIEW_SUBMIT_ACTIVE_WORKER_LIST_LIMIT = 20;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS = 250;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_INTERVAL_MS = 5000;
 const REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS = 24;
-const REVIEW_SUBMIT_GATE_REASON_GUIDANCE = {
-  revision_report_stale: {
-    titleId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.title',
-    defaultTitle: 'Gate result is stale',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.description',
-    defaultDescription: 'The gate result no longer matches the saved process revision.',
-    actionId: 'pages.process.reviewSubmitGate.reason.revisionReportStale.action',
-    defaultAction: 'Save the latest data and run the submit-review gate again.',
-  },
-  invalid_scope_state: {
-    titleId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.title',
-    defaultTitle: 'Dataset lifecycle state is not eligible',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.description',
-    defaultDescription:
-      'The process is in a lifecycle state that cannot enter the submit-review gate.',
-    actionId: 'pages.process.reviewSubmitGate.reason.invalidScopeState.action',
-    defaultAction:
-      'Use a draft process or an already reviewed dependency; data under review cannot be submitted again.',
-  },
-  provider_missing: {
-    titleId: 'pages.process.reviewSubmitGate.reason.providerMissing.title',
-    defaultTitle: 'Provider data is missing',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.providerMissing.description',
-    defaultDescription:
-      'Some product inputs have no provider data yet. Newer gate runs treat this as diagnostic information.',
-    actionId: 'pages.process.reviewSubmitGate.reason.providerMissing.action',
-    defaultAction:
-      'Add provider data when available, or rerun the gate after the latest calculator policy is deployed.',
-  },
-  provider_unresolved: {
-    titleId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.title',
-    defaultTitle: 'Provider selection is unresolved',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.description',
-    defaultDescription:
-      'A product input still has multiple possible providers without a final selection.',
-    actionId: 'pages.process.reviewSubmitGate.reason.providerUnresolved.action',
-    defaultAction:
-      'Narrow the provider candidates or add evidence that selects the intended provider.',
-  },
-  provider_equal_fallback: {
-    titleId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.title',
-    defaultTitle: 'Provider selection used equal fallback',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.description',
-    defaultDescription:
-      'The gate found provider weights that fell back to equal shares instead of evidence-based allocation.',
-    actionId: 'pages.process.reviewSubmitGate.reason.providerEqualFallback.action',
-    defaultAction:
-      'Add annual volume or other provider evidence so allocation does not use equal fallback.',
-  },
-  provider_volume_evidence_invalid: {
-    titleId: 'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.title',
-    defaultTitle: 'Provider volume evidence is incomplete',
-    descriptionId:
-      'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.description',
-    defaultDescription:
-      'Provider allocation depends on missing or defaulted volume evidence, so numerical results may be unstable.',
-    actionId: 'pages.process.reviewSubmitGate.reason.providerVolumeEvidenceInvalid.action',
-    defaultAction:
-      'Complete comparable annual volume evidence for provider candidates, then rerun the gate.',
-  },
-  sparse_matrix_zero_or_near_zero_diagonal: {
-    titleId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title',
-    defaultTitle: 'Matrix diagonal is zero or near zero',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description',
-    defaultDescription:
-      'The generated matrix has a process diagonal that is zero or too close to zero for stable solving.',
-    actionId: 'pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action',
-    defaultAction:
-      'Check self-loops, reference exchanges, and process structure before running the gate again.',
-  },
-  singular_risk_medium_or_high: {
-    titleId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.title',
-    defaultTitle: 'Matrix singularity risk is too high',
-    descriptionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.description',
-    defaultDescription:
-      'The snapshot has medium or high singularity risk, so solving may be unstable or fail.',
-    actionId: 'pages.process.reviewSubmitGate.reason.singularRiskMediumOrHigh.action',
-    defaultAction:
-      'Resolve duplicate or linearly dependent process structure, then rebuild and rerun the gate.',
-  },
-} as const;
 
 const toReviewSubmitGateEvidenceValue = (value: unknown): string | undefined => {
   if (typeof value === 'string') {
@@ -365,6 +285,9 @@ const getReviewSubmitJobBlockingReasons = (
 
 const isReviewSubmitTerminalStatus = (status: ReviewSubmitGateUiStatus) =>
   status !== 'not_run' && !REVIEW_SUBMIT_JOB_PENDING_STATUSES.has(status);
+
+const isReviewSubmitGateNotPassedStatus = (status: ReviewSubmitGateUiStatus) =>
+  status === 'blocked' || status === 'stale' || status === 'error';
 
 const isReviewSubmitWorkerStatusActive = (status: unknown): status is WorkerJobStatus =>
   typeof status === 'string' && REVIEW_SUBMIT_ACTIVE_WORKER_STATUSES.has(status as WorkerJobStatus);
@@ -687,6 +610,15 @@ const ProcessEdit: FC<Props> = ({
           return '';
       }
     },
+    [intl],
+  );
+
+  const getReviewSubmitGateFailedToastMessage = useCallback(
+    () =>
+      intl.formatMessage({
+        id: 'pages.process.reviewSubmitGate.failedToast',
+        defaultMessage: 'Gate check did not pass. Open the task center for details.',
+      }),
     [intl],
   );
 
@@ -1611,7 +1543,11 @@ const ProcessEdit: FC<Props> = ({
 
         trackReviewSubmitTask(latestJobData);
         if (isReviewSubmitTerminalStatus(status) && status !== 'submitted') {
-          message.error(messageText);
+          message.error(
+            isReviewSubmitGateNotPassedStatus(status)
+              ? getReviewSubmitGateFailedToastMessage()
+              : messageText,
+          );
         }
       };
 
@@ -1620,7 +1556,11 @@ const ProcessEdit: FC<Props> = ({
         void syncLatest(REVIEW_SUBMIT_JOB_LATEST_SYNC_MAX_ATTEMPTS);
       }, REVIEW_SUBMIT_JOB_LATEST_SYNC_INITIAL_DELAY_MS);
     },
-    [applyReviewSubmitJobState, cancelReviewSubmitLatestSync],
+    [
+      applyReviewSubmitJobState,
+      cancelReviewSubmitLatestSync,
+      getReviewSubmitGateFailedToastMessage,
+    ],
   );
 
   const readActiveReviewSubmitWorkerJob = async (processDetail: ProcessReviewSubmitTarget) => {
@@ -1776,7 +1716,11 @@ const ProcessEdit: FC<Props> = ({
       return 'queued' as const;
     }
 
-    message.error(messageText);
+    message.error(
+      isReviewSubmitGateNotPassedStatus(status)
+        ? getReviewSubmitGateFailedToastMessage()
+        : messageText,
+    );
     return 'failed' as const;
   };
 
