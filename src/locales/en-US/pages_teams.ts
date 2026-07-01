@@ -47,6 +47,10 @@ export default {
   'pages.team.info.public.tooltip': 'After enabling, allow others to contact the team leader through email',
   'pages.team.info.showInHome': 'Apply to display on the homepage',
   'pages.team.info.showInHome.tooltip': 'After enabling, allow the logo and team introduction to be displayed on the homepage',
+  'pages.team.info.section.basic': 'Basic Information',
+  'pages.team.info.section.visibility': 'Team visibility and display',
+  'pages.team.info.section.logo': 'Team Logo',
+  'pages.team.info.logo.helper': 'Transparent PNG or SVG is recommended for the best display effect.',
   'pages.team.info.lightLogo.required': 'Please upload light logo!',
   'pages.team.info.darkLogo.required': 'Please upload dark logo!',
 };

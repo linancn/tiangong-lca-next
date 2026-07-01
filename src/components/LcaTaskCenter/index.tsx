@@ -1,4 +1,4 @@
-import HeaderActionIcon from '@/components/HeaderActionIcon';
+import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
 import type {
   LcaBackgroundTask,
   LcaTaskPhase,
@@ -1818,6 +1818,7 @@ const LcaTaskCenter: React.FC = () => {
       })),
     [intl],
   );
+  const badgeStyle = getHeaderBadgeStyle(token.colorError);
 
   useEffect(() => {
     setExpandedTaskKeys((current) =>
@@ -1968,7 +1969,7 @@ const LcaTaskCenter: React.FC = () => {
         })}
         icon={<ClockCircleOutlined />}
         badgeCount={runningCount + attentionCount}
-        badgeStyle={attentionCount > 0 ? { backgroundColor: '#cf1322' } : undefined}
+        badgeStyle={badgeStyle}
         onClick={() => {
           setOpen(true);
           void refreshAllTasks().catch(() => undefined);

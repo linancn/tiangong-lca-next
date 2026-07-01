@@ -28,6 +28,9 @@
 }
 
 .app_footer {
+  flex-shrink: 0;
+  margin-top: auto;
+
   :global(.ant-pro-global-footer-list-link) {
     transition: color 0.2s ease;
   }
@@ -36,6 +39,21 @@
   :global(.ant-pro-global-footer-list-link:focus-visible) {
     color: var(--ant-color-primary);
   }
+}
+
+:global(.ant-pro-layout .ant-pro-layout-container) {
+  min-height: 100vh;
+}
+
+:global(.ant-pro-layout .ant-pro-layout-content) {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+}
+
+:global(.ant-pro-layout .ant-pro-layout-content > .ant-pro-page-container) {
+  flex: 1 1 auto;
 }
 
 @welcome-radius: 8px;

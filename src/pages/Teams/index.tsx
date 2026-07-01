@@ -1,4 +1,3 @@
-import { darkLogoPreviewStyle } from '@/components/AllTeams/logoPreviewStyle';
 import LangTextItemForm from '@/components/LangTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
@@ -51,6 +50,7 @@ import {
 import { Children, useEffect, useRef, useState } from 'react';
 import { v4 } from 'uuid';
 import AddMemberModal from './Components/AddMemberModal';
+import './index.less';
 
 const DEFAULT_CREATE_TEAM_RANK = -1;
 const DEFAULT_CREATE_TEAM_IS_PUBLIC = false;
@@ -177,6 +177,11 @@ const Team = () => {
   };
 
   const renderTeamInfoForm = () => {
+    const hasLightLogoPreview =
+      lightLogo.length > 0 && lightLogoPreviewUrl && lightLogoPreviewUrl !== '.';
+    const hasDarkLogoPreview =
+      darkLogo.length > 0 && darkLogoPreviewUrl && darkLogoPreviewUrl !== '.';
+
     const getParams = (input: Record<string, any>) => {
       const result: Record<string, any> = {};
 
@@ -397,262 +402,323 @@ const Team = () => {
     };
 
     return (
-      <Flex gap='small' vertical style={{ maxWidth: '50%', minWidth: '200px' }}>
-        <Spin spinning={teamInfoSpinning}>
-          <ProForm
-            disabled={
-              (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
-            }
-            formRef={formRefEdit}
-            submitter={{
-              resetButtonProps: false,
-              render: (_, dom) => (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  {Children.toArray(dom)}
-                </div>
-              ),
-            }}
-            onFinish={(values) => submitTeamInfo(values)}
-            initialValues={{
-              rank: DEFAULT_CREATE_TEAM_RANK,
-              is_public: DEFAULT_CREATE_TEAM_IS_PUBLIC,
-            }}
-          >
-            <Form.Item
-              label={
-                <RequiredMark
-                  label={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
-                  showError={titleError}
-                />
-              }
-              style={{ marginBottom: 0 }}
-            >
-              <LangTextItemForm
-                name='title'
-                label={<FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id='pages.team.info.title.required'
-                        defaultMessage='Please input team name!'
-                      />
-                    ),
-                  },
-                ]}
-                setRuleErrorState={setTitleError}
+      <Spin spinning={teamInfoSpinning}>
+        <ProForm
+          className='team-info-form'
+          disabled={
+            (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
+          }
+          formRef={formRefEdit}
+          submitter={{
+            resetButtonProps: false,
+            render: (_, dom) => <div className='team-info-submitter'>{Children.toArray(dom)}</div>,
+          }}
+          onFinish={(values) => submitTeamInfo(values)}
+          initialValues={{
+            rank: DEFAULT_CREATE_TEAM_RANK,
+            is_public: DEFAULT_CREATE_TEAM_IS_PUBLIC,
+          }}
+        >
+          <section className='team-info-card team-info-card-basic'>
+            <div className='team-info-section-title'>
+              <FormattedMessage
+                id='pages.team.info.section.basic'
+                defaultMessage='Basic Information'
               />
-            </Form.Item>
-            <Form.Item
-              label={
-                <RequiredMark
+            </div>
+            <div className='team-info-basic-grid'>
+              <div className='team-info-basic-fields'>
+                <Form.Item
+                  className='team-lang-field'
                   label={
-                    <FormattedMessage
-                      id='pages.team.info.description'
-                      defaultMessage='Team Description'
+                    <RequiredMark
+                      label={
+                        <FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />
+                      }
+                      showError={titleError}
                     />
                   }
-                  showError={descriptionError}
-                />
-              }
-              style={{ marginBottom: 0 }}
-            >
-              <LangTextItemForm
-                name='description'
-                label={
-                  <FormattedMessage
-                    id='pages.team.info.description'
-                    defaultMessage='Team Description'
+                  style={{ marginBottom: 0 }}
+                >
+                  <LangTextItemForm
+                    name='title'
+                    label={
+                      <FormattedMessage id='pages.team.info.title' defaultMessage='Team Name' />
+                    }
+                    rules={[
+                      {
+                        required: true,
+                        message: (
+                          <FormattedMessage
+                            id='pages.team.info.title.required'
+                            defaultMessage='Please input team name!'
+                          />
+                        ),
+                      },
+                    ]}
+                    setRuleErrorState={setTitleError}
                   />
+                </Form.Item>
+                <Form.Item
+                  className='team-lang-field'
+                  label={
+                    <RequiredMark
+                      label={
+                        <FormattedMessage
+                          id='pages.team.info.description'
+                          defaultMessage='Team Description'
+                        />
+                      }
+                      showError={descriptionError}
+                    />
+                  }
+                  style={{ marginBottom: 0 }}
+                >
+                  <LangTextItemForm
+                    name='description'
+                    label={
+                      <FormattedMessage
+                        id='pages.team.info.description'
+                        defaultMessage='Team Description'
+                      />
+                    }
+                    rules={[
+                      {
+                        required: true,
+                        message: (
+                          <FormattedMessage
+                            id='pages.team.info.description.required'
+                            defaultMessage='Please input team description!'
+                          />
+                        ),
+                      },
+                    ]}
+                    setRuleErrorState={setDescriptionError}
+                  />
+                </Form.Item>
+              </div>
+            </div>
+          </section>
+
+          <section className='team-info-card'>
+            <div className='team-info-section-title'>
+              <FormattedMessage
+                id='pages.team.info.section.visibility'
+                defaultMessage='Team visibility and display'
+              />
+            </div>
+            <div className='team-switch-grid'>
+              <Form.Item
+                className='team-switch-item'
+                name='is_public'
+                label={
+                  <>
+                    <FormattedMessage id='pages.team.info.public' defaultMessage='Public' />
+                    <Tooltip title={intl.formatMessage({ id: 'pages.team.info.public.tooltip' })}>
+                      <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                    </Tooltip>
+                  </>
+                }
+                valuePropName='checked'
+              >
+                <Switch
+                  disabled={
+                    (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
+                    rank > 0
+                  }
+                />
+              </Form.Item>
+              <Form.Item
+                className='team-switch-item'
+                name='rank'
+                label={
+                  <>
+                    <FormattedMessage
+                      id='pages.team.info.showInHome'
+                      defaultMessage='Apply to display on the homepage'
+                    />
+                    <Tooltip
+                      title={intl.formatMessage({ id: 'pages.team.info.showInHome.tooltip' })}
+                    >
+                      <QuestionCircleOutlined style={{ marginLeft: 4 }} />
+                    </Tooltip>
+                  </>
+                }
+                valuePropName='checked'
+                getValueProps={(value) => ({
+                  checked: value === 0,
+                })}
+                normalize={(value) => {
+                  return value ? 0 : -1;
+                }}
+              >
+                <Switch
+                  disabled={
+                    (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
+                    rank > 0
+                  }
+                  onChange={(checked) => {
+                    setRank(checked ? 0 : -1);
+                    setLightLogoError(false);
+                    setDarkLogoError(false);
+                  }}
+                />
+              </Form.Item>
+            </div>
+          </section>
+
+          <section className='team-info-card team-logo-card'>
+            <div className='team-info-section-title'>
+              <FormattedMessage id='pages.team.info.section.logo' defaultMessage='Team Logo' />
+            </div>
+            <div className='team-logo-grid'>
+              <Form.Item
+                className='team-logo-form-item'
+                name='lightLogo'
+                label={
+                  <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
                 }
                 rules={[
                   {
-                    required: true,
+                    required: rank === 0,
                     message: (
                       <FormattedMessage
-                        id='pages.team.info.description.required'
-                        defaultMessage='Please input team description!'
+                        id='pages.team.info.lightLogo.required'
+                        defaultMessage='Please upload light logo!'
                       />
                     ),
                   },
                 ]}
-                setRuleErrorState={setDescriptionError}
-              />
-            </Form.Item>
-            <Form.Item
-              name='is_public'
-              label={
-                <>
-                  <FormattedMessage id='pages.team.info.public' defaultMessage='Public' />
-                  <Tooltip title={intl.formatMessage({ id: 'pages.team.info.public.tooltip' })}>
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </>
-              }
-              valuePropName='checked'
-            >
-              <Switch
-                disabled={
-                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
-                }
-              />
-            </Form.Item>
-            <Form.Item
-              name='rank'
-              label={
-                <>
-                  <FormattedMessage
-                    id='pages.team.info.showInHome'
-                    defaultMessage='Apply to display on the homepage'
-                  />
-                  <Tooltip title={intl.formatMessage({ id: 'pages.team.info.showInHome.tooltip' })}>
-                    <QuestionCircleOutlined style={{ marginLeft: 4 }} />
-                  </Tooltip>
-                </>
-              }
-              valuePropName='checked'
-              getValueProps={(value) => ({
-                checked: value === 0,
-              })}
-              normalize={(value) => {
-                return value ? 0 : -1;
-              }}
-            >
-              <Switch
-                disabled={
-                  (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') || rank > 0
-                }
-                onChange={(checked) => {
-                  setRank(checked ? 0 : -1);
-                  setLightLogoError(false);
-                  setDarkLogoError(false);
-                }}
-              />
-            </Form.Item>
-            <Form.Item
-              name='lightLogo'
-              label={
-                <FormattedMessage id='pages.team.info.lightLogo' defaultMessage='Light Logo' />
-              }
-              rules={[
-                {
-                  required: rank === 0,
-                  message: (
+                validateStatus={lightLogoError ? 'error' : undefined}
+                help={
+                  lightLogoError ? (
                     <FormattedMessage
                       id='pages.team.info.lightLogo.required'
                       defaultMessage='Please upload light logo!'
                     />
-                  ),
-                },
-              ]}
-              validateStatus={lightLogoError ? 'error' : undefined}
-              help={
-                lightLogoError ? (
-                  <FormattedMessage
-                    id='pages.team.info.lightLogo.required'
-                    defaultMessage='Please upload light logo!'
-                  />
-                ) : undefined
-              }
-            >
-              <div>
-                <Upload
-                  disabled={
-                    (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
-                    rank > 0
-                  }
-                  beforeUpload={(file) => {
-                    getBase64(file as FileType).then((url) => {
-                      setLightLogoPreviewUrl(url);
-                      setLightLogo([file]);
-                      setLightLogoError(false);
-                    });
+                  ) : undefined
+                }
+              >
+                <div className='team-logo-upload team-logo-upload-light'>
+                  <Upload
+                    disabled={
+                      (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
+                      rank > 0
+                    }
+                    beforeUpload={(file) => {
+                      getBase64(file as FileType).then((url) => {
+                        setLightLogoPreviewUrl(url);
+                        setLightLogo([file]);
+                        setLightLogoError(false);
+                      });
 
-                    return false;
-                  }}
-                  onRemove={() => removeLogo('lightLogo')}
-                  maxCount={1}
-                  listType='picture-card'
-                  fileList={
-                    lightLogo && lightLogo.length > 0
-                      ? [
-                          {
-                            uid: '-1',
-                            name: 'logo',
-                            status: 'done',
-                            url: lightLogoPreviewUrl,
-                          },
-                        ]
-                      : []
-                  }
-                >
-                  {lightLogo && lightLogo.length === 0 && <PlusOutlined />}
-                </Upload>
-              </div>
-            </Form.Item>
+                      return false;
+                    }}
+                    onRemove={() => removeLogo('lightLogo')}
+                    maxCount={1}
+                    isImageUrl={() => true}
+                    listType='picture-card'
+                    fileList={
+                      hasLightLogoPreview
+                        ? [
+                            {
+                              uid: '-1',
+                              name: 'logo.png',
+                              status: 'done',
+                              thumbUrl: lightLogoPreviewUrl,
+                              url: lightLogoPreviewUrl,
+                            },
+                          ]
+                        : []
+                    }
+                  >
+                    {!hasLightLogoPreview && <PlusOutlined className='team-logo-upload-plus' />}
+                  </Upload>
+                </div>
+              </Form.Item>
 
-            <Form.Item
-              name='darkLogo'
-              label={<FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />}
-              rules={[
-                {
-                  required: rank === 0,
-                  message: (
+              <Form.Item
+                className='team-logo-form-item'
+                name='darkLogo'
+                label={
+                  <FormattedMessage id='pages.team.info.darkLogo' defaultMessage='Dark Logo' />
+                }
+                rules={[
+                  {
+                    required: rank === 0,
+                    message: (
+                      <FormattedMessage
+                        id='pages.team.info.darkLogo.required'
+                        defaultMessage='Please upload dark logo!'
+                      />
+                    ),
+                  },
+                ]}
+                validateStatus={darkLogoError ? 'error' : undefined}
+                help={
+                  darkLogoError ? (
                     <FormattedMessage
                       id='pages.team.info.darkLogo.required'
                       defaultMessage='Please upload dark logo!'
                     />
-                  ),
-                },
-              ]}
-              validateStatus={darkLogoError ? 'error' : undefined}
-              help={
-                darkLogoError ? (
-                  <FormattedMessage
-                    id='pages.team.info.darkLogo.required'
-                    defaultMessage='Please upload dark logo!'
-                  />
-                ) : undefined
-              }
-            >
-              <div style={darkLogoPreviewUrl ? darkLogoPreviewStyle : {}}>
-                <Upload
-                  disabled={
-                    (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
-                    rank > 0
-                  }
-                  beforeUpload={(file) => {
-                    getBase64(file as FileType).then((url) => {
-                      setDarkLogoPreviewUrl(url);
-                      setDarkLogo([file]);
-                      setDarkLogoError(false);
-                    });
-                    return false;
-                  }}
-                  onRemove={() => removeLogo('darkLogo')}
-                  maxCount={1}
-                  listType='picture-card'
-                  fileList={
-                    darkLogo && darkLogo.length > 0
-                      ? [
-                          {
-                            uid: '-1',
-                            name: 'logo',
-                            status: 'done',
-                            url: darkLogoPreviewUrl,
-                          },
-                        ]
-                      : []
-                  }
+                  ) : undefined
+                }
+              >
+                <div
+                  className={[
+                    'team-logo-upload',
+                    'team-logo-upload-dark',
+                    hasDarkLogoPreview ? 'team-logo-upload-has-file' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                 >
-                  {darkLogo && darkLogo.length === 0 && <PlusOutlined />}
-                </Upload>
-              </div>
-            </Form.Item>
-          </ProForm>
-        </Spin>
-      </Flex>
+                  <Upload
+                    disabled={
+                      (userRole !== 'admin' && userRole !== 'owner' && action !== 'create') ||
+                      rank > 0
+                    }
+                    beforeUpload={(file) => {
+                      getBase64(file as FileType).then((url) => {
+                        setDarkLogoPreviewUrl(url);
+                        setDarkLogo([file]);
+                        setDarkLogoError(false);
+                      });
+                      return false;
+                    }}
+                    onRemove={() => removeLogo('darkLogo')}
+                    maxCount={1}
+                    isImageUrl={() => true}
+                    listType='picture-card'
+                    fileList={
+                      hasDarkLogoPreview
+                        ? [
+                            {
+                              uid: '-1',
+                              name: 'logo.png',
+                              status: 'done',
+                              thumbUrl: darkLogoPreviewUrl,
+                              url: darkLogoPreviewUrl,
+                            },
+                          ]
+                        : []
+                    }
+                  >
+                    {!hasDarkLogoPreview && <PlusOutlined className='team-logo-upload-plus' />}
+                  </Upload>
+                </div>
+              </Form.Item>
+            </div>
+            <div className='team-logo-helper'>
+              <QuestionCircleOutlined />
+              <FormattedMessage
+                id='pages.team.info.logo.helper'
+                defaultMessage='Transparent PNG or SVG is recommended for the best display effect.'
+              />
+            </div>
+          </section>
+        </ProForm>
+      </Spin>
     );
   };
 
@@ -937,7 +1003,13 @@ const Team = () => {
     <PageContainer
       title={<FormattedMessage id='menu.account.team' defaultMessage='Team Management' />}
     >
-      <Tabs activeKey={activeTabKey} onChange={onTabChange} tabPosition='left' items={tabs} />
+      <Tabs
+        activeKey={activeTabKey}
+        className='team-page-tabs'
+        onChange={onTabChange}
+        tabPosition='left'
+        items={tabs}
+      />
     </PageContainer>
   );
 };

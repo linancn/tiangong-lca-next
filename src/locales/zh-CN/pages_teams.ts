@@ -46,6 +46,10 @@ export default {
   'pages.team.info.public.tooltip': '开启后，允许他人通过邮箱联系团队负责人',
   'pages.team.info.showInHome': '申请首页展示',
   'pages.team.info.showInHome.tooltip': '开启后，允许在首页展示Logo及团队简介',
+  'pages.team.info.section.basic': '基本信息',
+  'pages.team.info.section.visibility': '团队可见性与展示',
+  'pages.team.info.section.logo': '团队标志',
+  'pages.team.info.logo.helper': '建议使用透明背景的 PNG 或 SVG 格式，以获得最佳展示效果。',
   'pages.team.info.lightLogo.required': '请上传亮色Logo!',
   'pages.team.info.darkLogo.required': '请上传暗色Logo!',
 };

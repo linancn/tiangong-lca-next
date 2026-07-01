@@ -8,6 +8,16 @@ export const HEADER_ACTION_ICON_STYLE: React.CSSProperties = {
   cursor: 'pointer',
 };
 
+export const getHeaderBadgeStyle = (backgroundColor: string): React.CSSProperties => ({
+  backgroundColor,
+  borderRadius: '7px',
+  minWidth: '14px',
+  height: '14px',
+  lineHeight: '14px',
+  padding: '0 4px',
+  fontSize: '9px',
+});
+
 type HeaderActionIconProps = {
   title: React.ReactNode;
   icon: React.ReactElement<any>;
