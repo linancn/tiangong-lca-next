@@ -47,6 +47,7 @@ import {
   showInvalidReferenceLookupUuidMessage,
   showReferenceLookupLimitMessage,
 } from '../Utils/referenceLookup';
+import ReferenceLookupHelpIcon from '../Utils/ReferenceLookupHelpIcon';
 import ContactCreate from './Components/create';
 import ContactDelete from './Components/delete';
 import ContactEdit from './Components/edit';
@@ -351,15 +352,18 @@ const TableList: FC = () => {
             />
           </Col>
           <Col {...responsiveSearchExtraColProps}>
-            <Checkbox
-              checked={referenceLookup}
-              onChange={(e) => setReferenceLookup(e.target.checked)}
-            >
-              <FormattedMessage
-                id='pages.search.referenceLookup'
-                defaultMessage='Reference Lookup'
-              />
-            </Checkbox>
+            <Space className='responsive-data-list-reference-lookup-option' size={4} align='center'>
+              <Checkbox
+                checked={referenceLookup}
+                onChange={(e) => setReferenceLookup(e.target.checked)}
+              >
+                <FormattedMessage
+                  id='pages.search.referenceLookup'
+                  defaultMessage='Reference Lookup'
+                />
+              </Checkbox>
+              <ReferenceLookupHelpIcon />
+            </Space>
           </Col>
         </Row>
       </Card>

@@ -32,6 +32,26 @@
   }
 }
 
+.responsive-data-list-search-card {
+  .responsive-data-list-search-extra {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .responsive-data-list-search-extra {
+    .ant-checkbox-wrapper {
+      white-space: nowrap;
+    }
+  }
+
+  .responsive-data-list-reference-lookup-option {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 768px) {
   .responsive-data-list-search-card {
     margin-bottom: 16px;
@@ -43,6 +63,7 @@
 
     .responsive-data-list-search-extra {
       display: flex;
+      flex-direction: column;
       align-items: center;
       white-space: nowrap;
     }

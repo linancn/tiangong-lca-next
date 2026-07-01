@@ -86,6 +86,7 @@ export default {
   'pages.search.keyWord': 'Full-text search: Enter one or more keywords.',
   'pages.search.placeholder': 'AI Search: Describe the data you need in one sentence or a few key words.',
   'pages.search.referenceLookup.placeholder': 'Reference Lookup: Enter a complete dataset UUID.',
+  'pages.search.referenceLookup.tooltip': 'Find records that reference a specific dataset.\nAfter enabling this option, enter the full dataset UUID. The system searches the current data type for records whose content contains that UUID.\nThis mode does not search by name or keyword.',
   'pages.datasetUuidMention.empty': 'No data contains this ID',
   'pages.datasetUuidMention.entityKind': 'Data type',
   'pages.datasetUuidMention.error': 'Search failed. Try again later.',

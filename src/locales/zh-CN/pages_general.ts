@@ -85,6 +85,7 @@ export default {
   'pages.search.keyWord': '全文检索：请输入一个或多个关键词。',
   'pages.search.placeholder': '智能查询：用一句话或几个关键词描述您所需要的数据。',
   'pages.search.referenceLookup.placeholder': '引用查找：请输入完整的数据集 UUID。',
+  'pages.search.referenceLookup.tooltip': '用于反向查找“哪些数据引用了指定数据集”。\n开启后，请在搜索框输入完整的数据集 UUID，系统会在当前数据类型中查找内容包含该 UUID 的记录。\n该模式不支持名称或关键词搜索。',
   'pages.datasetUuidMention.empty': '没有找到包含该 ID 的数据',
   'pages.datasetUuidMention.entityKind': '数据类型',
   'pages.datasetUuidMention.error': '查找失败，请稍后重试',
