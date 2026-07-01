@@ -22,7 +22,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-01
-lastReviewedCommit: 41c686f3d884c2bae0a018e84a32026e042c0ad5
+lastReviewedCommit: e4356fd5fc6e3696134a4ae184bcb96809acb737
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
