@@ -1,4 +1,4 @@
-import HeaderActionIcon from '@/components/HeaderActionIcon';
+import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 type ReactNode = import('react').ReactNode;
@@ -39,6 +39,18 @@ jest.mock('antd', () => ({
 }));
 
 describe('HeaderActionIcon', () => {
+  it('provides the shared compact header badge style', () => {
+    expect(getHeaderBadgeStyle('#ff4d4f')).toEqual({
+      backgroundColor: '#ff4d4f',
+      borderRadius: '7px',
+      minWidth: '14px',
+      height: '14px',
+      lineHeight: '14px',
+      padding: '0 4px',
+      fontSize: '9px',
+    });
+  });
+
   it('renders shared icon styling and badge props', () => {
     render(
       <HeaderActionIcon

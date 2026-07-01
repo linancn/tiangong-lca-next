@@ -312,27 +312,38 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Upload = ({ beforeUpload, onRemove, fileList = [], disabled }: any) => (
-    <div data-testid='upload'>
-      <button
-        type='button'
-        disabled={disabled}
-        onClick={() =>
-          beforeUpload?.({
-            name: mockUploadFileName,
-            type: 'image/png',
-          })
-        }
-      >
-        upload-file
-      </button>
-      {fileList?.length > 0 ? (
-        <button type='button' disabled={disabled} onClick={() => onRemove?.()}>
-          remove-file
+  const Upload = ({ beforeUpload, onRemove, fileList = [], disabled, isImageUrl }: any) => {
+    const imageFlags = fileList.map((file: any) => isImageUrl?.(file));
+
+    return (
+      <div data-testid='upload'>
+        <button
+          type='button'
+          disabled={disabled}
+          onClick={() =>
+            beforeUpload?.({
+              name: mockUploadFileName,
+              type: 'image/png',
+            })
+          }
+        >
+          upload-file
         </button>
-      ) : null}
-    </div>
-  );
+        {fileList?.length > 0 ? (
+          <>
+            {imageFlags.map((flag: boolean, index: number) => (
+              <span key={index} data-testid='upload-image-flag'>
+                {String(flag)}
+              </span>
+            ))}
+            <button type='button' disabled={disabled} onClick={() => onRemove?.()}>
+              remove-file
+            </button>
+          </>
+        ) : null}
+      </div>
+    );
+  };
 
   const Button = React.forwardRef((props: any, ref: any) => {
     const { children, onClick, disabled, icon, ...rest } = props ?? {};
