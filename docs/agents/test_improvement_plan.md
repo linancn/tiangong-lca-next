@@ -21,7 +21,7 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-01
-lastReviewedCommit: f6e731491ee17c4c40703754b027042cb0470587
+lastReviewedCommit: d786dce9ed4e19370d8a4322e2fe1c1886b3dbbd
 ---
 
 # Testing Strategy
