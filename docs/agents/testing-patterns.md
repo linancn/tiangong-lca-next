@@ -21,8 +21,8 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-01
-lastReviewedCommit: d786dce9ed4e19370d8a4322e2fe1c1886b3dbbd
+lastReviewedAt: 2026-07-03
+lastReviewedCommit: 986aa5f3aa3ad849c8fc20b76e7133c6d5dcab10
 ---
 
 # Testing Patterns Reference
