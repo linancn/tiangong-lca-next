@@ -237,18 +237,10 @@ export type TidasPackageValidationIssue = {
 export type TidasPackageJobMode = 'queued' | 'in_progress' | 'cache_hit' | 'completed';
 
 export type TidasPackageArtifactKind =
-  | 'import_source'
-  | 'export_zip'
-  | 'export_report'
-  | 'import_report';
+  'import_source' | 'export_zip' | 'export_report' | 'import_report';
 
 export type TidasPackageJobStatus =
-  | 'queued'
-  | 'running'
-  | 'ready'
-  | 'completed'
-  | 'failed'
-  | 'stale';
+  'queued' | 'running' | 'ready' | 'completed' | 'failed' | 'stale';
 
 export type ExportTidasPackageQueueResponse = {
   ok: boolean;

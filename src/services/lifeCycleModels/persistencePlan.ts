@@ -317,13 +317,11 @@ async function buildProcessMutations(args: {
   if (args.version) {
     const deleteMutations = args.oldSubmodels
       .filter((oldSubmodel) => shouldDeleteSubmodel(oldSubmodel, args.lifeCycleModelProcesses))
-      .map(
-        (oldSubmodel): LifeCycleModelProcessMutation => ({
-          op: 'delete',
-          id: oldSubmodel.id,
-          version: args.version!,
-        }),
-      );
+      .map((oldSubmodel): LifeCycleModelProcessMutation => ({
+        op: 'delete',
+        id: oldSubmodel.id,
+        version: args.version!,
+      }));
     processMutations.push(...deleteMutations);
   }
 

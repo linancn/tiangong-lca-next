@@ -179,8 +179,7 @@ function normalizeRequest(value: unknown): LcaSolveRequest | undefined {
     return value as LcaSolveRequest;
   }
   const demand = request.demand as
-    | { process_index?: unknown; process_id?: unknown; process_version?: unknown }
-    | undefined;
+    { process_index?: unknown; process_id?: unknown; process_version?: unknown } | undefined;
   if (demand && Number.isInteger(demand.process_index) && Number(demand.process_index) >= 0) {
     return value as LcaSolveRequest;
   }

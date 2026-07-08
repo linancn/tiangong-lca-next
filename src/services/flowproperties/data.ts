@@ -44,11 +44,9 @@ export type FlowpropertyDetailResponse = {
 
 export type FlowPropertyDataSetObjectKeys = Exclude<
   {
-    [K in keyof FlowProperty['flowPropertyDataSet']]: FlowProperty['flowPropertyDataSet'][K] extends
-      | object
-      | undefined
-      ? K
-      : never;
+    [
+      K in keyof FlowProperty['flowPropertyDataSet']
+    ]: FlowProperty['flowPropertyDataSet'][K] extends object | undefined ? K : never;
   }[keyof FlowProperty['flowPropertyDataSet']],
   undefined | 'common:other'
 >;

@@ -4,8 +4,7 @@ import { getUserId } from '@/services/users/api';
 import { SortOrder } from 'antd/lib/table/interface';
 
 type ReviewCommentCommandFunctionName =
-  | 'app_review_save_comment_draft'
-  | 'app_review_submit_comment';
+  'app_review_save_comment_draft' | 'app_review_submit_comment';
 
 type ReviewCommentRpcRow = {
   review_id: string;

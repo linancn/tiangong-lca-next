@@ -24,12 +24,7 @@ export const REVIEW_SUBMIT_GATE_REPORT_SCHEMA_VERSION = 'review_submit_gate_repo
 
 export type ReviewSubmitGateAction = 'ensure' | 'read' | 'rerun';
 export type ReviewSubmitGateStatus =
-  | 'queued'
-  | 'running'
-  | 'passed'
-  | 'blocked'
-  | 'stale'
-  | 'error';
+  'queued' | 'running' | 'passed' | 'blocked' | 'stale' | 'error';
 
 export type ReviewSubmitGateBlockingReason = {
   code?: string;
