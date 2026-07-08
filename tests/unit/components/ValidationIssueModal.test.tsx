@@ -27,12 +27,14 @@ jest.mock('antd', () => {
     disabled,
     loading,
     onClick,
+    style,
     type,
   }: {
     children?: React.ReactNode;
     disabled?: boolean;
     loading?: boolean;
     onClick?: () => void;
+    style?: React.CSSProperties;
     type?: string;
   }) => (
     <button
@@ -40,6 +42,7 @@ jest.mock('antd', () => {
       data-button-type={type}
       data-loading={loading ? 'true' : 'false'}
       disabled={disabled || loading}
+      style={style}
       onClick={disabled || loading ? undefined : onClick}
     >
       {children}
@@ -93,23 +96,33 @@ jest.mock('antd', () => {
     rowKey,
     scroll,
     sticky,
+    tableLayout,
   }: {
     columns: Array<{
       title: React.ReactNode;
       key?: string;
       dataIndex?: string;
+      onCell?: (record: any, rowIndex?: number) => React.TdHTMLAttributes<HTMLTableCellElement>;
       render?: (value: unknown, record: any, index: number) => React.ReactNode;
+      width?: number | string;
     }>;
     dataSource: any[];
     rowKey?: ((record: any) => string) | string;
     scroll?: {
+      x?: number | string;
       y?: number;
     };
     sticky?: boolean;
+    tableLayout?: 'auto' | 'fixed';
   }) => {
     latestTableDataSource = dataSource;
     return (
-      <table data-scroll-y={scroll?.y} data-sticky={sticky ? 'true' : 'false'}>
+      <table
+        data-scroll-x={scroll?.x}
+        data-scroll-y={scroll?.y}
+        data-sticky={sticky ? 'true' : 'false'}
+        data-table-layout={tableLayout}
+      >
         <thead>
           <tr>
             {columns.map((column) => (
@@ -131,7 +144,12 @@ jest.mock('antd', () => {
               {columns.map((column) => {
                 const value = column.dataIndex ? record[column.dataIndex] : undefined;
                 const content = column.render?.(value, record, rowIndex) ?? value ?? null;
-                return <td key={column.key ?? String(column.dataIndex)}>{content}</td>;
+                const cellProps = column.onCell?.(record, rowIndex) ?? {};
+                return (
+                  <td {...cellProps} key={column.key ?? String(column.dataIndex)}>
+                    {content}
+                  </td>
+                );
               })}
             </tr>
           ))}
@@ -218,6 +236,7 @@ describe('ValidationIssueModal', () => {
         'pages.process.view.modellingAndValidation': '建模信息',
         'pages.process.view.administrativeInformation': '管理信息',
         'pages.process.view.exchanges': '输入/输出',
+        'pages.lifeCycleModel.view.exchanges': '输入/输出',
         'pages.validationIssues.fixIssue': '修复问题',
         'pages.validationIssues.notifyDataOwner': '通知数据拥有者',
         'pages.validationIssues.dataOwnerNotified': '已通知',
@@ -1066,7 +1085,9 @@ describe('ValidationIssueModal', () => {
     });
 
     expect(screen.getByRole('table')).toHaveAttribute('data-scroll-y', '360');
+    expect(screen.getByRole('table')).toHaveAttribute('data-scroll-x', '1164');
     expect(screen.getByRole('table')).toHaveAttribute('data-sticky', 'true');
+    expect(screen.getByRole('table')).toHaveAttribute('data-table-layout', 'fixed');
 
     const rowTexts = Array.from(document.querySelectorAll('tbody tr')).map((row) =>
       row.textContent?.replace(/\s+/g, ' ').trim(),
@@ -1082,6 +1103,58 @@ describe('ValidationIssueModal', () => {
     expect(rowTexts[1]).toContain('flow-1');
     expect(rowTexts[2]).toContain('process-1');
     expect(rowTexts[3]).toContain('model-1');
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('wraps long lifecycle model issue paths within the issue column', async () => {
+    const onNavigate = jest.fn();
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl,
+        issues: [
+          {
+            code: 'sdkInvalid',
+            link: 'http://localhost:8000/mydata/lifecyclemodels?id=model-long-path&version=01.01.000',
+            ref: {
+              '@refObjectId': 'model-long-path',
+              '@type': 'lifeCycleModel data set',
+              '@version': '01.01.000',
+            },
+            sdkDetails: [
+              {
+                key: 'model-long-path-detail',
+                fieldLabel: 'Version',
+                fieldPath:
+                  'processInstance[#model-process].connections.outputExchange.downstreamProcess.@version',
+                presentation: 'highlight-only',
+                processInstanceLabel: '过程 非烧结砖，高压压制成型；高压压制成型；生产混合，在工厂',
+                reasonMessage: 'Version is required',
+                tabName: 'exchanges',
+                validationCode: 'required_missing',
+              },
+            ],
+          },
+        ],
+        onNavigate,
+        title: '数据校验问题',
+      }) as { destroy: () => void };
+    });
+
+    const longPathButton = screen.getByRole('button', {
+      name: /connections\.outputExchange\.downstreamProcess\.@version/,
+    });
+    const issueCell = longPathButton.closest('td');
+
+    expect(longPathButton).toHaveStyle('max-width: 100%');
+    expect(longPathButton).toHaveStyle('overflow-wrap: anywhere');
+    expect(longPathButton).toHaveStyle('white-space: normal');
+    expect(issueCell).toHaveStyle('overflow-wrap: anywhere');
+    expect(issueCell).toHaveStyle('white-space: normal');
 
     await act(async () => {
       modalHandle?.destroy();

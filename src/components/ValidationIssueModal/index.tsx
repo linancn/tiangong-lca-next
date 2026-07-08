@@ -4,6 +4,7 @@ import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { getBrandTheme } from '../../../config/branding';
@@ -161,6 +162,13 @@ const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
 
 const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
 const PROCESS_INSTANCE_FIELD_PATH_PREFIX = 'processInstance[#';
+const VALIDATION_ISSUE_TABLE_SCROLL_X = 1164;
+
+const validationIssueCellTextStyle: CSSProperties = {
+  overflowWrap: 'anywhere',
+  whiteSpace: 'normal',
+  wordBreak: 'break-word',
+};
 
 /* istanbul ignore next -- process-instance detail text fallbacks are UI-only formatting branches */
 const getSdkDetailFieldToken = (detail?: ValidationIssueSdkDetail) => {
@@ -759,9 +767,10 @@ const ValidationIssueModalContent = ({
                 color: token.colorPrimary,
                 fontWeight: token.fontWeightStrong,
                 height: 'auto',
+                maxWidth: '100%',
                 padding: 0,
                 textAlign: 'left',
-                whiteSpace: 'normal',
+                ...validationIssueCellTextStyle,
               }}
               onClick={() =>
                 onNavigate({ detail: detailItem.detail, tabName: detailItem.detail.tabName })
@@ -884,6 +893,10 @@ const ValidationIssueModalContent = ({
         defaultMessage: 'ID',
       }),
       key: 'id',
+      width: 220,
+      onCell: () => ({
+        style: validationIssueCellTextStyle,
+      }),
       render: (_, groupedIssue) => groupedIssue.ref['@refObjectId'],
     },
     {
@@ -901,6 +914,10 @@ const ValidationIssueModalContent = ({
         defaultMessage: 'Issue',
       }),
       key: 'issue',
+      width: 380,
+      onCell: () => ({
+        style: validationIssueCellTextStyle,
+      }),
       render: (_, groupedIssue) => {
         if (groupedIssue.issues.length <= 1) {
           return renderIssueCell(groupedIssue.issues[0]);
@@ -926,6 +943,9 @@ const ValidationIssueModalContent = ({
       }),
       key: 'ownerName',
       width: 160,
+      onCell: () => ({
+        style: validationIssueCellTextStyle,
+      }),
       render: (_, groupedIssue) => groupedIssue.ownerName,
     },
     {
@@ -979,7 +999,7 @@ const ValidationIssueModalContent = ({
       dataSource={groupedIssues}
       pagination={false}
       rowKey={(groupedIssue) => getValidationIssueGroupKey(groupedIssue)}
-      scroll={{ y: 360 }}
+      scroll={{ x: VALIDATION_ISSUE_TABLE_SCROLL_X, y: 360 }}
       sticky
       size='small'
       style={{
@@ -987,6 +1007,7 @@ const ValidationIssueModalContent = ({
         borderRadius: token.borderRadiusLG,
         overflow: 'hidden',
       }}
+      tableLayout='fixed'
     />
   );
 };
