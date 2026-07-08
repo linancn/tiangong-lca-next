@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - package.json
-lastReviewedAt: 2026-07-03
-lastReviewedCommit: 986aa5f3aa3ad849c8fc20b76e7133c6d5dcab10
+lastReviewedAt: 2026-07-08
+lastReviewedCommit: d62ed0cbf6bb23e0f2da14c9aa278263a0adbbdd
 ---
 
 # Testing Troubleshooting

@@ -20,8 +20,8 @@ checkPaths:
   - src/services/classifications/**
   - src/components/ClassificationCacheMonitor/**
   - src/app.tsx
-lastReviewedAt: 2026-06-12
-lastReviewedCommit: 16bc40cc54d75ad11080548e749c6057ef7fca5e
+lastReviewedAt: 2026-07-08
+lastReviewedCommit: fb19ecd0b7fac061ae54cbade1c35e7f81ac7cc1
 ---
 
 # Classification Bundle Reference
