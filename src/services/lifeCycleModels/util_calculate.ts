@@ -12,6 +12,7 @@ import {
 import LCIAResultCalculation from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
+import { toReferenceProcessKey } from './referenceProcess';
 import { allocateSupplyToDemand } from './util_allocate_supply_demand';
 
 /**
@@ -1194,11 +1195,12 @@ export async function genLifeCycleModelProcesses(
   lifeCycleModelJsonOrdered: any,
   oldSubmodels: any[],
 ) {
-  const refProcessNodeId =
+  const refProcessNodeId = toReferenceProcessKey(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation
-      ?.quantitativeReference?.referenceToReferenceProcess;
+      ?.quantitativeReference?.referenceToReferenceProcess,
+  );
 
-  if (!refProcessNodeId) {
+  if (refProcessNodeId === undefined) {
     throw new Error('No referenceToReferenceProcess found in lifeCycleModelInformation');
   }
 
@@ -1210,9 +1212,14 @@ export async function genLifeCycleModelProcesses(
     lifeCycleModelJsonOrdered?.lifeCycleModelDataSet?.lifeCycleModelInformation?.technology
       ?.processes?.processInstance,
   ).map((p: any) => {
-    let node = modelNodes?.find((i: any) => i?.data?.index === p?.['@dataSetInternalID']);
+    const processInternalId = toReferenceProcessKey(p?.['@dataSetInternalID']);
+    let node = modelNodes?.find(
+      (i: any) => toReferenceProcessKey(i?.data?.index) === processInternalId,
+    );
     if (!node)
-      node = modelNodes?.find((i: any) => i?.['@dataSetInternalID'] === p?.['@dataSetInternalID']);
+      node = modelNodes?.find(
+        (i: any) => toReferenceProcessKey(i?.['@dataSetInternalID']) === processInternalId,
+      );
     return {
       ...p,
       nodeId: node?.id,
@@ -1222,8 +1229,8 @@ export async function genLifeCycleModelProcesses(
   const mdProcessMap = new Map<string, any>();
   const processShortDescriptionMap = new Map<string, any>();
   for (const p of mdProcesses as any[]) {
-    const nid = p?.['@dataSetInternalID'];
-    if (nid) mdProcessMap.set(nid, p);
+    const nid = toReferenceProcessKey(p?.['@dataSetInternalID']);
+    if (nid !== undefined) mdProcessMap.set(nid, p);
 
     const processId = p?.referenceToProcess?.['@refObjectId'];
     const processVersion = p?.referenceToProcess?.['@version'];

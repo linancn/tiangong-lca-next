@@ -15,6 +15,7 @@ import {
 } from '../general/util';
 import { genProcessName, genProcessNameJson } from '../processes/util';
 import { FormLifeCycleModel } from './data';
+import { toReferenceProcessKey, toReferenceProcessNumber } from './referenceProcess';
 
 export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
   let labelSub = label?.substring(0, nodeWidth / 7 - 4);
@@ -60,10 +61,10 @@ export const genReferenceToResultingProcess = (
 export function genLifeCycleModelJsonOrdered(id: string, data: any) {
   const nodes = data?.model?.nodes;
 
-  let referenceToReferenceProcess = null;
+  let referenceToReferenceProcess: number | undefined;
   const processInstance = nodes?.map((n: any) => {
     if (n?.data?.quantitativeReference === '1') {
-      referenceToReferenceProcess = n?.data?.index;
+      referenceToReferenceProcess = toReferenceProcessNumber(n?.data?.index);
     }
 
     const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
@@ -193,7 +194,7 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
           },
         },
         quantitativeReference: {
-          referenceToReferenceProcess: referenceToReferenceProcess ?? {},
+          referenceToReferenceProcess,
         },
         technology: {
           groupDeclarations: {},
@@ -487,6 +488,8 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
 }
 
 export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
+  const referenceToReferenceProcess =
+    data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess;
   const model = createTidasLifeCycleModel({
     lifeCycleModelDataSet: {
       '@xmlns': 'http://eplca.jrc.ec.europa.eu/ILCD/LifeCycleModel/2017',
@@ -579,7 +582,7 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
             data?.lifeCycleModelInformation?.quantitativeReference?.functionalUnitOrOther,
           ),
           referenceToReferenceProcess:
-            data?.lifeCycleModelInformation?.quantitativeReference?.referenceToReferenceProcess,
+            toReferenceProcessNumber(referenceToReferenceProcess) ?? referenceToReferenceProcess,
         } as any,
         technology: {
           groupDeclarations: {},
@@ -848,8 +851,22 @@ export function genLifeCycleModelInfoFromData(data: any): FormLifeCycleModel {
       },
     },
   });
+  const lifeCycleModelInformation = model.lifeCycleModelDataSet.lifeCycleModelInformation;
+  const referenceToReferenceProcessFormValue = toReferenceProcessKey(
+    lifeCycleModelInformation.quantitativeReference?.referenceToReferenceProcess,
+  );
+
   return {
-    lifeCycleModelInformation: model.lifeCycleModelDataSet.lifeCycleModelInformation,
+    lifeCycleModelInformation: {
+      ...lifeCycleModelInformation,
+      quantitativeReference:
+        referenceToReferenceProcessFormValue === undefined
+          ? lifeCycleModelInformation.quantitativeReference
+          : ({
+              ...lifeCycleModelInformation.quantitativeReference,
+              referenceToReferenceProcess: referenceToReferenceProcessFormValue,
+            } as any),
+    },
     modellingAndValidation: model.lifeCycleModelDataSet.modellingAndValidation,
     administrativeInformation: model.lifeCycleModelDataSet.administrativeInformation,
   };

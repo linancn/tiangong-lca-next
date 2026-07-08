@@ -349,7 +349,7 @@ describe('genLifeCycleModelJsonOrdered', () => {
     expect(
       result.lifeCycleModelDataSet.lifeCycleModelInformation.quantitativeReference
         .referenceToReferenceProcess,
-    ).toBe('0');
+    ).toBe(0);
 
     expect(processes[0].referenceToProcess['@refObjectId']).toBe('proc-a');
     expect(processes[0].referenceToProcess['@uri']).toBe('../processes/proc-a.xml');
