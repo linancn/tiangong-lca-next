@@ -102,8 +102,7 @@ export type ProcessReviewItem = {
   'common:scope'?: ProcessReviewScopeItem | ProcessReviewScopeItem[];
   'common:dataQualityIndicators'?: {
     'common:dataQualityIndicator'?:
-      | ProcessReviewDataQualityIndicatorItem
-      | ProcessReviewDataQualityIndicatorItem[];
+      ProcessReviewDataQualityIndicatorItem | ProcessReviewDataQualityIndicatorItem[];
   };
   'common:reviewDetails'?: LangTextValue;
   'common:referenceToNameOfReviewerAndInstitution'?: ReferenceItem | ReferenceItem[];

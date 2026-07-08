@@ -1215,8 +1215,7 @@ function buildSourceReferenceUri(id: string) {
 
 function extractOwnerReferenceSummary(jsonOrdered: Record<string, unknown>): OwnerReferenceSummary {
   const reference = getNestedValue(jsonOrdered, SOURCE_DATASET_FORMAT_REFERENCE_PATH) as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
 
   return {
     refObjectId:
@@ -1259,8 +1258,7 @@ function alignSourceDataSetFormatReferenceVersion(
 ) {
   const clonedJsonOrdered = deepClone(jsonOrdered);
   const reference = getNestedValue(clonedJsonOrdered, SOURCE_DATASET_FORMAT_REFERENCE_PATH) as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
 
   if (
     reference &&

@@ -39,8 +39,7 @@ export type UnitGroupDetailResponse = {
 export type UnitGroupDataSetObjectKeys = Exclude<
   {
     [K in keyof UnitGroup['unitGroupDataSet']]: UnitGroup['unitGroupDataSet'][K] extends
-      | object
-      | undefined
+      object | undefined
       ? K
       : never;
   }[keyof UnitGroup['unitGroupDataSet']],

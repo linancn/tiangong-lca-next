@@ -1,11 +1,5 @@
 export type DatasetUuidMentionEntityKind =
-  | 'flow'
-  | 'process'
-  | 'lifecyclemodel'
-  | 'source'
-  | 'contact'
-  | 'unitgroup'
-  | 'flowproperty';
+  'flow' | 'process' | 'lifecyclemodel' | 'source' | 'contact' | 'unitgroup' | 'flowproperty';
 
 export type DatasetUuidMentionRow = {
   matched_by: string;

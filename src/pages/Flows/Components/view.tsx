@@ -90,8 +90,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
 
   const ecNumber = (
     initData?.flowInformation?.dataSetInformation?.['common:other'] as
-      | { 'ecn:ECNumber'?: string }
-      | undefined
+      { 'ecn:ECNumber'?: string } | undefined
   )?.['ecn:ECNumber'];
 
   const toFlowPropertyList = (
@@ -456,9 +455,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
             }
             data={
               (initData?.flowInformation?.technology?.referenceToTechnicalSpecification as
-                | ReferenceItem
-                | ReferenceItem[]
-                | undefined) ?? undefined
+                ReferenceItem | ReferenceItem[] | undefined) ?? undefined
             }
             lang={lang}
           />
@@ -494,8 +491,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
         <SourceSelectDescription
           data={
             (compliance?.['common:referenceToComplianceSystem'] as
-              | ReferenceItem
-              | ReferenceItem[]) ?? undefined
+              ReferenceItem | ReferenceItem[]) ?? undefined
           }
           title={
             <FormattedMessage

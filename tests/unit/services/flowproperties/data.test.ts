@@ -19,9 +19,7 @@ import { createMockTableResponse, mockFlowProperty } from '../../../helpers/test
 import type { Equal, ExpectTrue } from '../../../helpers/typeAssertions';
 
 type FlowPropertyDataSetKeys =
-  | 'flowPropertiesInformation'
-  | 'modellingAndValidation'
-  | 'administrativeInformation';
+  'flowPropertiesInformation' | 'modellingAndValidation' | 'administrativeInformation';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type AssertFlowPropertyDataSetKeys = ExpectTrue<
   Equal<FlowPropertyDataSetObjectKeys, FlowPropertyDataSetKeys>
