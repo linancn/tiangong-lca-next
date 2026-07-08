@@ -349,7 +349,7 @@ describe('genLifeCycleModelJsonOrdered', () => {
     expect(
       result.lifeCycleModelDataSet.lifeCycleModelInformation.quantitativeReference
         .referenceToReferenceProcess,
-    ).toBe('0');
+    ).toBe(0);
 
     expect(processes[0].referenceToProcess['@refObjectId']).toBe('proc-a');
     expect(processes[0].referenceToProcess['@uri']).toBe('../processes/proc-a.xml');
@@ -673,6 +673,18 @@ describe('genLifeCycleModelInfoFromData', () => {
     const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
 
     expect(result.lifeCycleModelInformation.dataSetInformation['common:UUID']).toBe('-');
+  });
+
+  it('should keep the reference process unset when the ordered dataset omits it', () => {
+    const ordered = genLifeCycleModelJsonOrdered('model-reference-fallback', baseModelData);
+    delete ordered.lifeCycleModelDataSet.lifeCycleModelInformation.quantitativeReference
+      .referenceToReferenceProcess;
+
+    const result = genLifeCycleModelInfoFromData(ordered.lifeCycleModelDataSet);
+
+    expect(
+      result.lifeCycleModelInformation.quantitativeReference.referenceToReferenceProcess,
+    ).toBeUndefined();
   });
 });
 

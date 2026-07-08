@@ -245,6 +245,18 @@ const createSupabaseProcesses = () => [
   },
 ];
 
+const createNumericReferenceLifeCycleModelData = () => {
+  const data = clone(createLifeCycleModelData()) as any;
+  const modelInfo = data.lifeCycleModelDataSet.lifeCycleModelInformation;
+  modelInfo.quantitativeReference.referenceToReferenceProcess = 0;
+
+  const processInstances = modelInfo.technology.processes.processInstance;
+  processInstances[0]['@dataSetInternalID'] = '0';
+  processInstances[1].connections.outputExchange[0].downstreamProcess['@id'] = '0';
+
+  return data;
+};
+
 const createSelectionFallbackModelData = () => ({
   lifeCycleModelDataSet: {
     lifeCycleModelInformation: {
@@ -1227,6 +1239,30 @@ describe('genLifeCycleModelProcesses', () => {
       genLifeCycleModelProcesses('model-no-data-payload', null, data, []),
     ).rejects.toThrow('Reference process not found in database');
 
+    expect(mockFrom).toHaveBeenCalledWith('processes');
+  });
+
+  it('accepts numeric zero as the reference process id and matches string internal ids', async () => {
+    const data = createNumericReferenceLifeCycleModelData();
+    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+    mockLCIAResultCalculation.mockResolvedValue([]);
+
+    const { lifeCycleModelProcesses } = await genLifeCycleModelProcesses(
+      'model-zero-reference',
+      [
+        {
+          id: 'graph-node-reference',
+          data: { index: '0', quantitativeReference: '1', targetAmount: 10 },
+        },
+      ] as any,
+      data,
+      [],
+    );
+
+    const primary = lifeCycleModelProcesses.find((item) => item?.modelInfo?.type === 'primary');
+
+    expect(primary).toBeDefined();
+    expect(primary?.modelInfo?.id).toBe('model-zero-reference');
     expect(mockFrom).toHaveBeenCalledWith('processes');
   });
 
