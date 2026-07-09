@@ -51,8 +51,10 @@ lastReviewedCommit: 47f70019eae759ef055f76862faa28aad0faca6d
 ```bash
 nvm install
 nvm use 24
-npm install
+npm ci
 ```
+
+`npm ci` installs the exact dependency tree from the committed `package-lock.json`. Use `npm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
 ## Default Work Loop
 

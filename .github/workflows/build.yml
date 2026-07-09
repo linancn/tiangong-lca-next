@@ -200,7 +200,7 @@ jobs:
             ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run docpact release gate
         run: |
@@ -249,7 +249,7 @@ jobs:
             ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
         run: npm run build
@@ -337,7 +337,7 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build/release Electron app
         env:
