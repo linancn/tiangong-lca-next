@@ -41,11 +41,6 @@ jest.mock('@/pages/Unitgroups/Components/view', () => ({
   default: ({ id, version }: any) => <span>{`view ${id}:${version}`}</span>,
 }));
 
-jest.mock('@/pages/Unitgroups/Components/create', () => ({
-  __esModule: true,
-  default: () => <span>create-unit-group</span>,
-}));
-
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
   default: function MockAllVersions({
@@ -209,7 +204,7 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, columns = [], toolBarRender }: any) => {
+  const ProTable = ({ actionRef, request, rowSelection, columns = [] }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
     latestRequestRef.current = request;
@@ -236,7 +231,6 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div>
-        <div>{toolBarRender?.()}</div>
         {rows.map((row) => (
           <div key={`${row.id}:${row.version}`}>
             {columns.map((column: any, index: number) => (
@@ -363,7 +357,7 @@ describe('UnitgroupsSelectDrawer', () => {
       ),
     );
     expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
-    expect(screen.getByText('create-unit-group')).toBeInTheDocument();
+    expect(screen.queryByText('create-unit-group')).not.toBeInTheDocument();
     expect(screen.getByText('view unit-group-my:1.0.0')).toBeInTheDocument();
     expect(screen.getByTestId('all-versions-add-version-my')).toBeInTheDocument();
 

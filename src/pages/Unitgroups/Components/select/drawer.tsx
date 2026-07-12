@@ -13,7 +13,6 @@ import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { getAllVersionsColumns } from '../../../Utils';
-import UnitGroupCreate from '../create';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -277,9 +276,6 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
-          }}
-          toolBarRender={() => {
-            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
           }}
           request={async (
             params: {
