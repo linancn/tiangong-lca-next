@@ -149,8 +149,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   useEffect(() => {
     // setId(undefined);
     const refObjectId = formRef.current?.getFieldValue([...name, '@refObjectId']) as
-      | string
-      | undefined;
+      string | undefined;
     if (refObjectId && refObjectId !== id) {
       setId(refObjectId);
       setVersion(formRef.current?.getFieldValue([...name, '@version']) as string | undefined);

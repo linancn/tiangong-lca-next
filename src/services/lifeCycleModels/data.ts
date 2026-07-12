@@ -32,11 +32,9 @@ export type Up2DownEdge = {
 
 export type LifeCycleModelDataSetObjectKeys = Exclude<
   {
-    [K in keyof LifeCycleModel['lifeCycleModelDataSet']]: LifeCycleModel['lifeCycleModelDataSet'][K] extends
-      | object
-      | undefined
-      ? K
-      : never;
+    [
+      K in keyof LifeCycleModel['lifeCycleModelDataSet']
+    ]: LifeCycleModel['lifeCycleModelDataSet'][K] extends object | undefined ? K : never;
   }[keyof LifeCycleModel['lifeCycleModelDataSet']],
   undefined | 'common:other'
 >;

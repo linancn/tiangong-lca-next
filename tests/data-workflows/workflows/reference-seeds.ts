@@ -15,20 +15,10 @@ import {
 import { deepClone, deepSortJson, readJsonFile } from './workflow-shared';
 
 export type ReferenceSeedKey =
-  | 'contact'
-  | 'flow'
-  | 'flowproperty'
-  | 'process'
-  | 'source'
-  | 'unitgroup';
+  'contact' | 'flow' | 'flowproperty' | 'process' | 'source' | 'unitgroup';
 
 export type ReferenceSeedTable =
-  | 'contacts'
-  | 'flowproperties'
-  | 'flows'
-  | 'processes'
-  | 'sources'
-  | 'unitgroups';
+  'contacts' | 'flowproperties' | 'flows' | 'processes' | 'sources' | 'unitgroups';
 
 type DatasetReferenceObject = {
   '@refObjectId': string;

@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-12
-lastReviewedCommit: bb72522c0
+lastReviewedCommit: 7f4db1930
 ---
 
 # Development Bootstrap
@@ -51,8 +51,10 @@ lastReviewedCommit: bb72522c0
 ```bash
 nvm install
 nvm use 24
-npm install
+npm ci
 ```
+
+`npm ci` installs the exact dependency tree from the committed `package-lock.json`. Use `npm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
 ## Default Work Loop
 

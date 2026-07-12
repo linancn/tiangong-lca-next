@@ -3,14 +3,7 @@ import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/
 import { FunctionRegion } from '@supabase/supabase-js';
 
 export type WorkerJobStatus =
-  | 'queued'
-  | 'running'
-  | 'waiting'
-  | 'completed'
-  | 'blocked'
-  | 'stale'
-  | 'failed'
-  | 'cancelled';
+  'queued' | 'running' | 'waiting' | 'completed' | 'blocked' | 'stale' | 'failed' | 'cancelled';
 
 export type WorkerJobResult = {
   id?: string;

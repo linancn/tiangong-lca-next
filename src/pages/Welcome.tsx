@@ -48,13 +48,7 @@ const CARBON_FOOTPRINT_GUIDE_VIDEO_URI =
 type WelcomeView = 'overview' | 'carbonFootprintGuide';
 type GuideVideoStatus = 'idle' | 'loading' | 'ready' | 'error';
 type SchemaItemKey =
-  | 'model'
-  | 'process'
-  | 'flow'
-  | 'flowProperty'
-  | 'unitGroup'
-  | 'source'
-  | 'contact';
+  'model' | 'process' | 'flow' | 'flowProperty' | 'unitGroup' | 'source' | 'contact';
 
 type GuideStepKey =
   | 'openHome'
@@ -64,10 +58,7 @@ type GuideStepKey =
   | 'selectOrAddFlows'
   | 'validateAndSubmit';
 type GuidePreparationKey =
-  | 'collectRawData'
-  | 'mapUnitProcesses'
-  | 'checkFlowsAndUnits'
-  | 'submitForReview';
+  'collectRawData' | 'mapUnitProcesses' | 'checkFlowsAndUnits' | 'submitForReview';
 
 const CARBON_FOOTPRINT_GUIDE_I18N_PREFIX = 'pages.welcome.carbonFootprintGuide';
 

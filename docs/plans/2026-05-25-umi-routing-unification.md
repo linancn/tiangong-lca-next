@@ -76,27 +76,7 @@
 
 这些位置当前已经走 Umi 路由，不应改成手写 URL。
 
-| 文件 | 位置 | 现状 | 处理 |
-| --- | --- | --- | --- | --- | --- |
-| `src/app.tsx` | `history.push(loginPath)` | 未登录时跳登录 | 保留 |
-| `src/app.tsx` | `history.push(dashboardPath)` | 顶部 Dashboard 入口 | 保留 |
-| `src/app.tsx` | `<Link to='/umi/plugin/openapi' target='_blank'>` | dev OpenAPI 链接 | 保留，已是 Umi Link |
-| `src/app.tsx` | `menuItemRender` 中 `<Link to={menuItemProps.path}>` | 菜单跳转 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.replace({ pathname: '/user/login', search })` | 退出登录 redirect | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/manageSystem')` | 用户菜单系统管理 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/review')` | 用户菜单审核 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/team?action=edit')` | 团队入口 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.replace({ pathname: '/team', search })` | 团队创建状态切换 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/team?action=create')` | 团队创建入口 | 保留 |
-| `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/account')` | 账户入口 | 保留 |
-| `src/pages/404.tsx` | `history.push('/')` | 返回首页 | 保留 |
-| `src/pages/Processes/Analysis/index.tsx` | `history.push('/mydata/processes')` | 分析页返回 | 保留 |
-| `src/pages/Processes/index.tsx` | `history.push('/mydata/processes/analysis')` | 进入分析页 | 保留 |
-| `src/pages/Teams/index.tsx` | `history.replace('/team?action=edit')` | 团队页状态同步 | 保留 |
-| `src/pages/User/Login/index.tsx` | `history.push(urlParams.get('redirect') |  | '/')` | 登录后跳转 | 保留，但需确认 redirect 安全性不是本计划范围 |
-| `src/pages/User/Login/password_forgot.tsx` | `<Link to='/'>` | 返回首页 | 保留 |
-| `src/pages/User/Login/password_reset.tsx` | `history.push('/')` | 重置后返回首页 | 保留 |
-| `src/pages/Welcome.tsx` | `history.push('/tgdata/models?tid=...')` | 团队数据入口 | 保留 |
+| 文件 | 位置 | 现状 | 处理 | | --- | --- | --- | --- | --- | --- | | `src/app.tsx` | `history.push(loginPath)` | 未登录时跳登录 | 保留 | | `src/app.tsx` | `history.push(dashboardPath)` | 顶部 Dashboard 入口 | 保留 | | `src/app.tsx` | `<Link to='/umi/plugin/openapi' target='_blank'>` | dev OpenAPI 链接 | 保留，已是 Umi Link | | `src/app.tsx` | `menuItemRender` 中 `<Link to={menuItemProps.path}>` | 菜单跳转 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.replace({ pathname: '/user/login', search })` | 退出登录 redirect | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/manageSystem')` | 用户菜单系统管理 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/review')` | 用户菜单审核 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/team?action=edit')` | 团队入口 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.replace({ pathname: '/team', search })` | 团队创建状态切换 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/team?action=create')` | 团队创建入口 | 保留 | | `src/components/RightContent/AvatarDropdown.tsx` | `history.push('/account')` | 账户入口 | 保留 | | `src/pages/404.tsx` | `history.push('/')` | 返回首页 | 保留 | | `src/pages/Processes/Analysis/index.tsx` | `history.push('/mydata/processes')` | 分析页返回 | 保留 | | `src/pages/Processes/index.tsx` | `history.push('/mydata/processes/analysis')` | 进入分析页 | 保留 | | `src/pages/Teams/index.tsx` | `history.replace('/team?action=edit')` | 团队页状态同步 | 保留 | | `src/pages/User/Login/index.tsx` | `history.push(urlParams.get('redirect') |  | '/')` | 登录后跳转 | 保留，但需确认 redirect 安全性不是本计划范围 | | `src/pages/User/Login/password_forgot.tsx` | `<Link to='/'>` | 返回首页 | 保留 | | `src/pages/User/Login/password_reset.tsx` | `history.push('/')` | 重置后返回首页 | 保留 | | `src/pages/Welcome.tsx` | `history.push('/tgdata/models?tid=...')` | 团队数据入口 | 保留 |
 
 ### 3. 当前 UI 中直接构造 hash/internal URL 的位置
 
