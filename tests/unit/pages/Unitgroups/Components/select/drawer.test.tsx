@@ -46,6 +46,7 @@ jest.mock('@/components/AllVersions', () => ({
   default: function MockAllVersions({
     addVersionComponent,
     dataSource,
+    stateCode,
     onSelectVersion,
     operationRender,
   }: any) {
@@ -60,7 +61,11 @@ jest.mock('@/components/AllVersions', () => ({
     };
 
     return (
-      <div data-testid='all-versions'>
+      <div
+        data-testid='all-versions'
+        data-source={dataSource}
+        data-state-code={stateCode === undefined ? '' : String(stateCode)}
+      >
         <div data-testid={`all-versions-add-version-${dataSource}`}>
           {addVersionComponent?.({ newVersion: '01.00.001' })}
         </div>
@@ -292,6 +297,8 @@ describe('UnitgroupsSelectDrawer', () => {
     );
     expect(screen.getByText('view unit-group-tg:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('sup:kg')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'tg');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '');
 
     await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
 
@@ -325,6 +332,63 @@ describe('UnitgroupsSelectDrawer', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
     );
+  });
+
+  it('loads and selects My Data only after the user explicitly switches tabs', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+    expect(mockGetUnitGroupTableAll.mock.calls.some((call) => call[3] === 'my')).toBe(false);
+
+    await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'my',
+        [],
+        0,
+      ),
+    );
+    expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'my');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '0');
+    expect(screen.queryByText('create-unit-group')).not.toBeInTheDocument();
+    expect(screen.getByText('view unit-group-my:1.0.0')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-add-version-my')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('my'), 'owner-draft');
+    await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'my',
+        'owner-draft',
+        {},
+        0,
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'my:owner-draft' }));
+    await userEvent.click(screen.getByRole('button', { name: /^submit$/i }));
+
+    expect(onData).toHaveBeenCalledWith('unit-group-my-search', '2.0.0');
   });
 
   it('supports icon trigger, tg search, reopen reset, and all close paths', async () => {

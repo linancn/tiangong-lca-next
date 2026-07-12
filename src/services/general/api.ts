@@ -1221,6 +1221,7 @@ export async function getAllVersions(
   sort: Record<string, SortOrder>,
   lang: string,
   dataSource: string,
+  stateCode?: number,
 ) {
   const sortBy = Object.keys(sort)[0] ?? 'version';
   const orderBy = sort[sortBy] ?? 'descend';
@@ -1243,11 +1244,9 @@ export async function getAllVersions(
       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
     );
 
-  if (dataSource === 'tg') {
-    query = query.eq('state_code', 100);
-  } else if (dataSource === 'co') {
-    query = query.eq('state_code', 200);
-  } else if (dataSource === 'my') {
+  const hasExactStateCode = typeof stateCode === 'number';
+
+  if (dataSource === 'my') {
     const session = await supabase.auth.getSession();
     if (session.data.session) {
       query = query.eq('user_id', session?.data?.session?.user?.id);
@@ -1269,6 +1268,14 @@ export async function getAllVersions(
         total: 0,
       });
     }
+  }
+
+  if (hasExactStateCode) {
+    query = query.eq('state_code', stateCode);
+  } else if (dataSource === 'tg') {
+    query = query.eq('state_code', 100);
+  } else if (dataSource === 'co') {
+    query = query.eq('state_code', 200);
   }
 
   const result = await query;

@@ -31,9 +31,19 @@ jest.mock('@/style/custom.less', () => ({
   default: { footer_right: 'footer-right' },
 }));
 
+const mockFlowpropertiesCreate = jest.fn(() => <span>create-flowproperty</span>);
+const mockFlowpropertiesEdit = jest.fn(({ id, version }: any) => (
+  <span>{`edit ${id}:${version}`}</span>
+));
+const mockFlowpropertiesDelete = jest.fn(({ id, version, setViewDrawerVisible }: any) => (
+  <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
+    {`delete ${id}:${version}`}
+  </button>
+));
+
 jest.mock('@/pages/Flowproperties/Components/create', () => ({
   __esModule: true,
-  default: () => <span>create-flowproperty</span>,
+  default: (props: any) => mockFlowpropertiesCreate(props),
 }));
 
 jest.mock('@/pages/Flowproperties/Components/view', () => ({
@@ -43,22 +53,29 @@ jest.mock('@/pages/Flowproperties/Components/view', () => ({
 
 jest.mock('@/pages/Flowproperties/Components/edit', () => ({
   __esModule: true,
-  default: ({ id, version }: any) => <span>{`edit ${id}:${version}`}</span>,
+  default: (props: any) => mockFlowpropertiesEdit(props),
 }));
 
 jest.mock('@/pages/Flowproperties/Components/delete', () => ({
   __esModule: true,
-  default: ({ id, version, setViewDrawerVisible }: any) => (
-    <button type='button' onClick={() => setViewDrawerVisible?.(false)}>
-      {`delete ${id}:${version}`}
-    </button>
-  ),
+  default: (props: any) => mockFlowpropertiesDelete(props),
 }));
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,
-  default: ({ id, addVersionComponent, operationRender, onSelectVersion }: any) => (
-    <div data-testid='all-versions'>
+  default: ({
+    id,
+    addVersionComponent,
+    dataSource,
+    stateCode,
+    operationRender,
+    onSelectVersion,
+  }: any) => (
+    <div
+      data-testid='all-versions'
+      data-source={dataSource}
+      data-state-code={stateCode === undefined ? '' : String(stateCode)}
+    >
       <span>{`all versions `}</span>
       {addVersionComponent?.({ newVersion: '10.00.000' })}
       <button type='button' onClick={() => onSelectVersion?.({ id })}>
@@ -304,6 +321,8 @@ describe('FlowpropertySelectDrawer', () => {
     );
     expect(screen.getByText('view flowproperty-tg:1.0.0')).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('unitgroup'))).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'tg');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '');
 
     await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
 
@@ -314,13 +333,20 @@ describe('FlowpropertySelectDrawer', () => {
         'en',
         'my',
         [],
+        0,
       ),
     );
-    expect(screen.getByText('create-flowproperty')).toBeInTheDocument();
-    expect(screen.getByText('edit flowproperty-my:1.0.0')).toBeInTheDocument();
-    const deleteButton = screen.getByRole('button', { name: 'delete flowproperty-my:1.0.0' });
-    expect(deleteButton).toBeInTheDocument();
-    await userEvent.click(deleteButton);
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'my');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '0');
+    expect(screen.getByText('view flowproperty-my:1.0.0')).toBeInTheDocument();
+    expect(screen.queryByText('create-flowproperty')).not.toBeInTheDocument();
+    expect(screen.queryByText('edit flowproperty-my:1.0.0')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'delete flowproperty-my:1.0.0' }),
+    ).not.toBeInTheDocument();
+    expect(mockFlowpropertiesCreate).not.toHaveBeenCalled();
+    expect(mockFlowpropertiesEdit).not.toHaveBeenCalled();
+    expect(mockFlowpropertiesDelete).not.toHaveBeenCalled();
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -332,6 +358,7 @@ describe('FlowpropertySelectDrawer', () => {
         'my',
         'alpha',
         {},
+        0,
       ),
     );
 
@@ -452,6 +479,7 @@ describe('FlowpropertySelectDrawer', () => {
         'en',
         'my',
         [],
+        0,
       ),
     );
 

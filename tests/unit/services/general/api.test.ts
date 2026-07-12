@@ -2213,7 +2213,7 @@ describe('Edge Cases and Error Handling', () => {
       ]);
     });
 
-    it('should fetch versions for my dataSource with session', async () => {
+    it('should fetch only exact owner-draft versions for my dataSource with session', async () => {
       const mockData = [
         { id: sampleId, version: '01.00.000', created_at: '2024-01-01', modified_at: '2024-01-01' },
       ];
@@ -2230,9 +2230,13 @@ describe('Edge Cases and Error Handling', () => {
         {},
         'en',
         'my',
+        0,
       );
 
       expect(builder.eq).toHaveBeenCalledWith('user_id', 'user-1');
+      expect(builder.eq).toHaveBeenCalledWith('state_code', 0);
+      expect(builder.eq).not.toHaveBeenCalledWith('state_code', 100);
+      expect(builder.eq).not.toHaveBeenCalledWith('state_code', 200);
       expect(result).toBeDefined();
     });
 
