@@ -1,6 +1,7 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
-import { ListPagination } from '@/services/general/data';
+import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
+import { DataTabKey, ListPagination } from '@/services/general/data';
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
@@ -12,8 +13,7 @@ import type { FC, Key, ReactNode } from 'react';
 import React, { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { getAllVersionsColumns } from '../../../Utils';
-// import UnitGroupCreate from '../create';
-import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
+import UnitGroupCreate from '../create';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -23,19 +23,21 @@ type Props = {
   onData: (rowKey: string, version: string) => void;
 };
 
+type UnitGroupDataTabKey = Exclude<DataTabKey, 'te'>;
+
 const { Search } = Input;
 
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<string>('');
   const [coKeyWord, setCoKeyWord] = useState<string>('');
-  // const [myKeyWord, setMyKeyWord] = useState<string>('');
+  const [myKeyWord, setMyKeyWord] = useState<string>('');
   // const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<string>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<UnitGroupDataTabKey>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
-  // const myActionRefSelect = useRef<ActionType>();
+  const myActionRefSelect = useRef<ActionType>();
   // const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
   const tableAlertOptionRender = renderTableSelectionClearAction(
@@ -75,19 +77,20 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   };
 
   const onTabChange = async (key: string) => {
-    await setActiveTabKey(key);
-    if (key === 'tg') {
+    const tabKey = key as UnitGroupDataTabKey;
+    await setActiveTabKey(tabKey);
+    if (tabKey === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
       tgActionRefSelect.current?.reload();
     }
-    if (key === 'co') {
+    if (tabKey === 'co') {
       coActionRefSelect.current?.setPageInfo?.({ current: 1 });
       coActionRefSelect.current?.reload();
     }
-    // if (key === 'my') {
-    //   myActionRefSelect.current?.setPageInfo?.({ current: 1 });
-    //   myActionRefSelect.current?.reload();
-    // }
+    if (tabKey === 'my') {
+      await myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      myActionRefSelect.current?.reload();
+    }
     // if (key === 'te') {
     //   teActionRefSelect.current?.setPageInfo?.({ current: 1 });
     //   teActionRefSelect.current?.reload();
@@ -106,11 +109,11 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     coActionRefSelect.current?.reload();
   };
 
-  // const onMySearch: SearchProps['onSearch'] = async (value) => {
-  //   await setMyKeyWord(value);
-  //   myActionRefSelect.current?.setPageInfo?.({ current: 1 });
-  //   myActionRefSelect.current?.reload();
-  // };
+  const onMySearch: SearchProps['onSearch'] = async (value) => {
+    await setMyKeyWord(value);
+    myActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    myActionRefSelect.current?.reload();
+  };
 
   // const onTeSearch: SearchProps['onSearch'] = async (value) => {
   //   await setTeKeyWord(value);
@@ -126,9 +129,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     setCoKeyWord(e.target.value);
   };
 
-  // const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setMyKeyWord(e.target.value);
-  // };
+  const handleMyKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMyKeyWord(e.target.value);
+  };
 
   // const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   setTeKeyWord(e.target.value);
@@ -250,56 +253,57 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       tab: <FormattedMessage id='pages.tab.title.tgdata' defaultMessage='TianGong Data' />,
     },
     { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
-    // { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
+    { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
     // { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
   ];
 
-  const databaseList: Record<string, React.ReactNode> = {
-    // my: (
-    //   <>
-    //     <Card>
-    //       <Search
-    //         name={'my'}
-    //         size={'large'}
-    //         placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-    //         value={myKeyWord}
-    //         onChange={handleMyKeyWordChange}
-    //         onSearch={onMySearch}
-    //         enterButton
-    //       />
-    //     </Card>
-    //     <ProTable<UnitGroupTable, ListPagination>
-    //       actionRef={myActionRefSelect}
-    //       search={false}
-    //       pagination={{
-    //         showSizeChanger: false,
-    //         pageSize: 10,
-    //       }}
-    //       toolBarRender={() => {
-    //         return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
-    //       }}
-    //       request={async (
-    //         params: {
-    //           pageSize: number;
-    //           current: number;
-    //         },
-    //         sort,
-    //       ) => {
-    //         if (myKeyWord.length > 0) {
-    //           return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-    //         }
-    //         return getUnitGroupTableAll(params, sort, lang, 'my', []);
-    //       }}
-    //       columns={unitGroupColumns}
-    //       rowSelection={{
-    //         type: 'radio',
-    //         alwaysShowAlert: true,
-    //         selectedRowKeys,
-    //         onChange: onSelectChange,
-    //       }}
-    //     />
-    //   </>
-    // ),
+  const databaseList: Record<UnitGroupDataTabKey, ReactNode> = {
+    my: (
+      <>
+        <Card>
+          <Search
+            name={'my'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={myKeyWord}
+            onChange={handleMyKeyWordChange}
+            onSearch={onMySearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ListPagination>
+          actionRef={myActionRefSelect}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          toolBarRender={() => {
+            return [<UnitGroupCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
+          }}
+          request={async (
+            params: {
+              pageSize: number;
+              current: number;
+            },
+            sort,
+          ) => {
+            if (myKeyWord.length > 0) {
+              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+            }
+            return getUnitGroupTableAll(params, sort, lang, 'my', []);
+          }}
+          columns={unitGroupColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
     tg: (
       <>
         <Card>
