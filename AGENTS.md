@@ -27,7 +27,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-12
-lastReviewedCommit: a0ccd96cf1506d8d6a627797dab9afb0714e76d2
+lastReviewedCommit: d054b46fd99f8b981ffebe598f5d174da23dd0cd
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -70,6 +70,7 @@ Required principles:
 | `docs/agents/test_todo_list.md` | current testing execution state | long-term testing strategy |
 | `docs/agents/supabase-branching.md` | frontend environment selection and database ownership workflow | schema truth |
 | `docs/agents/public-classifications-gz-usage.md` | classification asset read path and file mapping | repo-wide workflow rules |
+| `docs/agents/lcia-calculation-evidence.md` | reviewed LCIA bundle, cache trust, factor coverage, and calculation-evidence contract | Worker or Edge implementation truth |
 | `docs/agents/util_calculate.md`, `docs/agents/team_management.md`, `docs/agents/data_audit_instruction.md` | narrow business or domain references | repo contract or bootstrap workflow |
 
 Additional governed source docs, not part of the default first-load surface:

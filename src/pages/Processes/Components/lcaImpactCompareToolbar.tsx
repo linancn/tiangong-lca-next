@@ -35,6 +35,7 @@ import {
   LcaProcessOption,
   loadImpactOptions,
   normalizeNumber,
+  toLcaRequestImpactId,
   toProgressPercent,
   toProgressStatus,
   VALUE_EPSILON,
@@ -270,7 +271,7 @@ const LcaImpactCompareToolbar: FC<{
       if (usePublishedResults) {
         const published = await queryPublishedLciaResults({
           mode: 'processes_one_impact',
-          impactCategoryId: selectedImpactId,
+          impactCategoryId: toLcaRequestImpactId(selectedImpactId, 'open_data'),
           processes: selectedProcesses.map((item) => ({
             id: item.processId,
             version: item.version,
@@ -289,7 +290,7 @@ const LcaImpactCompareToolbar: FC<{
           ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
           mode: 'processes_one_impact',
           process_ids: selectedProcesses.map((item) => item.value),
-          impact_id: selectedImpactId,
+          impact_id: toLcaRequestImpactId(selectedImpactId, defaultLcaDataScope),
           allow_fallback: false,
         });
 

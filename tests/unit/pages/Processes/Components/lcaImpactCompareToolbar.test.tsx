@@ -47,11 +47,18 @@ jest.mock('@/services/dataProducts', () => ({
   queryPublishedLciaResults: jest.fn(),
 }));
 
-jest.mock('@/services/lciaMethods/util', () => ({
-  __esModule: true,
-  cacheAndDecompressMethod: jest.fn(),
-  getDecompressedMethod: jest.fn(),
-}));
+jest.mock('@/services/lciaMethods/util', () => {
+  const getDecompressedMethod = jest.fn();
+  return {
+    __esModule: true,
+    cacheAndDecompressMethod: jest.fn(),
+    getDecompressedMethod,
+    getVerifiedDecompressedMethodEntry: async (...args: unknown[]) => {
+      const data = await getDecompressedMethod(...args);
+      return data ? { data, sha256: 'verified-test-sha' } : null;
+    },
+  };
+});
 
 const { queryLcaResults } = jest.requireMock('@/services/lca');
 const { isLcaFunctionInvokeError } = jest.requireMock('@/services/lca');
@@ -318,7 +325,7 @@ describe('lcaImpactCompareToolbar', () => {
     expect(queryLcaResults).not.toHaveBeenCalled();
   });
 
-  it('uses current-user solver scope on the mydata route', async () => {
+  it('uses the strict public-plus-owner-draft scope on the mydata route', async () => {
     setUmiLocation({ pathname: '/mydata/processes', search: '' });
 
     renderToolbar([
@@ -333,7 +340,7 @@ describe('lcaImpactCompareToolbar', () => {
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2'],
         impact_id: 'impact-1',

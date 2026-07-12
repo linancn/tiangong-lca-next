@@ -2,6 +2,7 @@ const mockGetDataSource = jest.fn();
 const mockGetLangJson = jest.fn();
 const mockCacheAndDecompressMethod = jest.fn();
 const mockGetDecompressedMethod = jest.fn();
+const mockGetVerifiedDecompressedMethodEntry = jest.fn();
 
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
@@ -13,6 +14,8 @@ jest.mock('@/services/lciaMethods/util', () => ({
   __esModule: true,
   cacheAndDecompressMethod: (...args: unknown[]) => mockCacheAndDecompressMethod(...args),
   getDecompressedMethod: (...args: unknown[]) => mockGetDecompressedMethod(...args),
+  getVerifiedDecompressedMethodEntry: (...args: unknown[]) =>
+    mockGetVerifiedDecompressedMethodEntry(...args),
 }));
 
 import {
@@ -26,10 +29,15 @@ import {
   loadImpactOptions,
   normalizeNumber,
   resolveLangText,
+  toLcaRequestImpactId,
   toProgressPercent,
   toProgressStatus,
   UNKNOWN_LCIA_UNIT,
 } from '@/pages/Processes/Components/lcaAnalysisShared';
+
+const ALIASED_CANONICAL_METHOD_ID = '503699e0-eca9-4089-8bf8-e0f49c93e578';
+const ALIASED_ARTIFACT_LOCATOR_ID = '9ec743ea-6b00-400d-a53b-61547a3fc03c';
+const ALIASED_METHOD_VERSION = '01.01.000';
 
 describe('lcaAnalysisShared', () => {
   beforeEach(() => {
@@ -75,6 +83,10 @@ describe('lcaAnalysisShared', () => {
         },
       ],
     });
+    mockGetVerifiedDecompressedMethodEntry.mockImplementation(async (...args: unknown[]) => {
+      const data = await mockGetDecompressedMethod(...args);
+      return data ? { data, sha256: 'verified' } : null;
+    });
   });
 
   it('resolves language text, formats helpers, and normalizes numbers', () => {
@@ -109,9 +121,24 @@ describe('lcaAnalysisShared', () => {
   });
 
   it('maps route data sources into default LCA scopes', () => {
-    expect(getDefaultLcaDataScopeForPath('/mydata/processes')).toBe('current_user');
+    expect(getDefaultLcaDataScopeForPath('/mydata/processes')).toBe('public_plus_owner_draft');
     expect(getDefaultLcaDataScopeForPath('/tgdata/processes')).toBe('open_data');
     expect(getDefaultLcaDataScopeForPath('/processes')).toBeUndefined();
+  });
+
+  it('uses canonical impact ids only for the new private v2 scope', () => {
+    expect(toLcaRequestImpactId(ALIASED_ARTIFACT_LOCATOR_ID, 'public_plus_owner_draft')).toBe(
+      ALIASED_CANONICAL_METHOD_ID,
+    );
+    expect(toLcaRequestImpactId(ALIASED_CANONICAL_METHOD_ID, 'current_user')).toBe(
+      ALIASED_ARTIFACT_LOCATOR_ID,
+    );
+    expect(toLcaRequestImpactId(ALIASED_CANONICAL_METHOD_ID, 'all_data')).toBe(
+      ALIASED_ARTIFACT_LOCATOR_ID,
+    );
+    expect(toLcaRequestImpactId(ALIASED_CANONICAL_METHOD_ID, 'open_data')).toBe(
+      ALIASED_ARTIFACT_LOCATOR_ID,
+    );
   });
 
   it('builds process options with duplicate filtering and name/version fallbacks', () => {
@@ -213,56 +240,13 @@ describe('lcaAnalysisShared', () => {
     ]);
   });
 
-  it('refreshes outdated method lists and throws when recaching fails', async () => {
-    mockGetDecompressedMethod
-      .mockResolvedValueOnce({
-        files: [
-          {
-            id: 'impact-legacy',
-            description: [{ '@xml:lang': 'en', '#text': 'Legacy' }],
-          },
-        ],
-      })
-      .mockResolvedValueOnce({
-        files: [
-          {
-            id: 'impact-fresh',
-            description: [{ '@xml:lang': 'en', '#text': 'Fresh' }],
-            referenceQuantity: {
-              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'pt' }],
-            },
-          },
-        ],
-      });
-
-    await expect(loadImpactOptions('en')).resolves.toEqual([
-      {
-        value: 'impact-fresh',
-        label: 'Fresh',
-        unit: 'pt',
-      },
-    ]);
-    expect(mockCacheAndDecompressMethod).toHaveBeenCalledWith('list.json');
-
-    mockGetDecompressedMethod.mockResolvedValueOnce(null);
-    mockCacheAndDecompressMethod.mockResolvedValueOnce(false);
-
+  it('fails closed when the reviewed method list is unavailable', async () => {
+    mockGetVerifiedDecompressedMethodEntry.mockResolvedValueOnce(null);
     await expect(loadImpactOptions('en')).rejects.toThrow('load_lcia_method_list_failed');
   });
 
-  it('returns an empty option list when refreshed method files are still not array-shaped', async () => {
-    mockGetDecompressedMethod
-      .mockResolvedValueOnce({
-        files: [
-          {
-            id: 'impact-legacy',
-            description: [{ '@xml:lang': 'en', '#text': 'Legacy' }],
-          },
-        ],
-      })
-      .mockResolvedValueOnce({
-        files: {},
-      });
+  it('returns an empty option list when verified method files are not array-shaped', async () => {
+    mockGetVerifiedDecompressedMethodEntry.mockResolvedValueOnce({ data: { files: {} } });
 
     await expect(loadImpactOptions('en')).resolves.toEqual([]);
   });
@@ -281,6 +265,76 @@ describe('lcaAnalysisShared', () => {
       ],
       version: '01.00.000',
       referenceQuantityDesc: [{ '@xml:lang': 'en', '#text': 'kg CO2-eq' }],
+    });
+  });
+
+  it('returns empty metadata when the reviewed method list read rejects', async () => {
+    mockGetVerifiedDecompressedMethodEntry.mockRejectedValueOnce(new Error('cache read failed'));
+
+    await expect(getLcaMethodMetaMap(['impact-1'])).resolves.toEqual(new Map());
+  });
+
+  it('uses canonical selector/result ids while accepting canonical and locator metadata lookups', async () => {
+    mockGetDecompressedMethod.mockResolvedValue({
+      files: [
+        {
+          id: ALIASED_ARTIFACT_LOCATOR_ID,
+          version: ALIASED_METHOD_VERSION,
+          description: [{ '@xml:lang': 'en', '#text': 'Aliased method' }],
+          referenceQuantity: {
+            'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg alias-eq' }],
+          },
+        },
+      ],
+    });
+
+    await expect(loadImpactOptions('en')).resolves.toEqual([
+      {
+        value: ALIASED_CANONICAL_METHOD_ID,
+        label: 'Aliased method',
+        unit: 'kg alias-eq',
+      },
+    ]);
+
+    const canonicalMeta = await getLcaMethodMetaMap([ALIASED_CANONICAL_METHOD_ID]);
+    expect(canonicalMeta.get(ALIASED_CANONICAL_METHOD_ID)).toMatchObject({
+      version: ALIASED_METHOD_VERSION,
+    });
+
+    const locatorMeta = await getLcaMethodMetaMap([ALIASED_ARTIFACT_LOCATOR_ID]);
+    expect(locatorMeta.get(ALIASED_ARTIFACT_LOCATOR_ID)).toBe(
+      locatorMeta.get(ALIASED_CANONICAL_METHOD_ID),
+    );
+
+    const merged = buildMergedLcaRows(
+      [
+        {
+          key: ALIASED_ARTIFACT_LOCATOR_ID,
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': ALIASED_ARTIFACT_LOCATOR_ID,
+            '@version': ALIASED_METHOD_VERSION,
+          },
+          meanAmount: 0,
+        },
+      ] as any,
+      [
+        {
+          impact_id: ALIASED_CANONICAL_METHOD_ID,
+          impact_name: 'Aliased method',
+          unit: 'kg alias-eq',
+          value: 4,
+        },
+      ],
+      canonicalMeta,
+    );
+    expect(merged).toHaveLength(1);
+    expect(merged[0]).toMatchObject({
+      key: ALIASED_CANONICAL_METHOD_ID,
+      meanAmount: 4,
+      referenceToLCIAMethodDataSet: {
+        '@refObjectId': ALIASED_CANONICAL_METHOD_ID,
+        '@uri': `../lciamethods/${ALIASED_ARTIFACT_LOCATOR_ID}.xml`,
+      },
     });
   });
 
@@ -304,6 +358,30 @@ describe('lcaAnalysisShared', () => {
     const meta = await getLcaMethodMetaMap(['impact-1']);
 
     expect(Array.from(meta.keys())).toEqual(['impact-1']);
+  });
+
+  it('preserves an explicit row key and fills a missing reviewed method version', () => {
+    const merged = buildMergedLcaRows(
+      [
+        {
+          key: 'explicit-result-key',
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': ALIASED_ARTIFACT_LOCATOR_ID,
+          },
+          meanAmount: 1,
+        },
+      ] as any,
+      [],
+      new Map(),
+    );
+
+    expect(merged[0]).toMatchObject({
+      key: 'explicit-result-key',
+      referenceToLCIAMethodDataSet: {
+        '@refObjectId': ALIASED_CANONICAL_METHOD_ID,
+        '@version': ALIASED_METHOD_VERSION,
+      },
+    });
   });
 
   it('skips method entries whose ids are not strings', async () => {

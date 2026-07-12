@@ -73,11 +73,13 @@ import {
   getLcaMethodMetaMap,
   loadImpactOptions,
   normalizeNumber,
+  toLcaRequestImpactId,
   type ImpactOption,
   type LcaAnalysisDataScope,
   type LcaProcessOption,
   type SolverLcaImpactValueRow,
 } from '../Components/lcaAnalysisShared';
+import LcaCalculationEvidenceNotice from '../Components/lcaCalculationEvidenceNotice';
 import {
   publishedLciaQueryMeta,
   publishedValuesByProcessId,
@@ -153,6 +155,7 @@ type QueryMeta = {
   resultId: string;
   source: string;
   computedAt: string;
+  calculationEvidence?: unknown;
 };
 
 type SankeyGraphNodeDatum = {
@@ -346,6 +349,9 @@ function QueryMetaCard({ meta }: { meta: QueryMeta }) {
           {meta.computedAt}
         </Descriptions.Item>
       </Descriptions>
+      {meta.calculationEvidence !== undefined ? (
+        <LcaCalculationEvidenceNotice calculationEvidence={meta.calculationEvidence} />
+      ) : null}
     </Card>
   );
 }
@@ -433,7 +439,8 @@ const LcaAnalysisPage = () => {
   const barChartTheme = useMemo(() => buildLcaBarChartTheme(token), [token]);
 
   const [activeTabKey, setActiveTabKey] = useState('profile');
-  const [selectedDataScope, setSelectedDataScope] = useState<LcaAnalysisDataScope>('current_user');
+  const [selectedDataScope, setSelectedDataScope] =
+    useState<LcaAnalysisDataScope>('public_plus_owner_draft');
   const usePublishedResults = shouldUsePublishedLciaResults(selectedDataScope);
   const [processSearchKeyword, setProcessSearchKeyword] = useState('');
   const [appliedProcessSearchKeyword, setAppliedProcessSearchKeyword] = useState('');
@@ -539,6 +546,13 @@ const LcaAnalysisPage = () => {
 
   const dataScopeOptions = useMemo(
     () => [
+      {
+        value: 'public_plus_owner_draft' as const,
+        label: intl.formatMessage({
+          id: 'pages.process.lca.page.dataScope.option.publicPlusOwnerDraft',
+          defaultMessage: 'Public data + my drafts',
+        }),
+      },
       {
         value: 'current_user' as const,
         label: intl.formatMessage({
@@ -1013,6 +1027,7 @@ const LcaAnalysisPage = () => {
           resultId: queried.result_id,
           source: queried.source,
           computedAt: queried.meta.computed_at,
+          calculationEvidence: queried.meta.calculation_evidence,
         };
       }
       const methodMetaById = await getLcaMethodMetaMap(solverRows.map((row) => row.impact_id));
@@ -1063,7 +1078,7 @@ const LcaAnalysisPage = () => {
       if (usePublishedResults) {
         const published = await queryPublishedLciaResults({
           mode: 'processes_one_impact',
-          impactCategoryId: selectedCompareImpactId,
+          impactCategoryId: toLcaRequestImpactId(selectedCompareImpactId, 'open_data'),
           processes: selectedCompareProcesses.map((process) => ({
             id: process.processId,
             version: process.version,
@@ -1082,7 +1097,7 @@ const LcaAnalysisPage = () => {
           data_scope: selectedDataScope,
           mode: 'processes_one_impact',
           process_ids: buildUniqueProcessIdList(selectedCompareProcesses),
-          impact_id: selectedCompareImpactId,
+          impact_id: toLcaRequestImpactId(selectedCompareImpactId, selectedDataScope),
           allow_fallback: false,
         });
 
@@ -1096,6 +1111,7 @@ const LcaAnalysisPage = () => {
           resultId: queried.result_id,
           source: queried.source,
           computedAt: queried.meta.computed_at,
+          calculationEvidence: queried.meta.calculation_evidence,
         };
       }
       const selectedImpact = impactOptions.find((item) => item.value === selectedCompareImpactId);
@@ -1135,7 +1151,7 @@ const LcaAnalysisPage = () => {
       if (usePublishedResults) {
         const published = await queryPublishedLciaResults({
           mode: 'processes_one_impact',
-          impactCategoryId: selectedGroupedImpactId,
+          impactCategoryId: toLcaRequestImpactId(selectedGroupedImpactId, 'open_data'),
           processes: selectedGroupedProcesses.map((process) => ({
             id: process.id.trim(),
             version: process.version.trim(),
@@ -1154,7 +1170,7 @@ const LcaAnalysisPage = () => {
           data_scope: selectedDataScope,
           mode: 'processes_one_impact',
           process_ids: selectedGroupedProcesses.map((item) => item.id),
-          impact_id: selectedGroupedImpactId,
+          impact_id: toLcaRequestImpactId(selectedGroupedImpactId, selectedDataScope),
           allow_fallback: false,
         });
 
@@ -1168,6 +1184,7 @@ const LcaAnalysisPage = () => {
           resultId: queried.result_id,
           source: queried.source,
           computedAt: queried.meta.computed_at,
+          calculationEvidence: queried.meta.calculation_evidence,
         };
       }
       const selectedImpact = impactOptions.find((item) => item.value === selectedGroupedImpactId);
@@ -1231,7 +1248,7 @@ const LcaAnalysisPage = () => {
         data_scope: selectedDataScope,
         process_id: pathProcess.processId,
         process_version: pathProcess.version === '-' ? undefined : pathProcess.version,
-        impact_id: selectedPathImpactId,
+        impact_id: toLcaRequestImpactId(selectedPathImpactId, selectedDataScope),
         amount: pathAmount,
         options: {
           max_depth: pathMaxDepth,
@@ -2058,6 +2075,7 @@ const LcaAnalysisPage = () => {
                                 resultId: profileResult.resultId,
                                 source: profileResult.source,
                                 computedAt: profileResult.computedAt,
+                                calculationEvidence: profileResult.calculationEvidence,
                               }}
                             />
 
@@ -2270,6 +2288,7 @@ const LcaAnalysisPage = () => {
                                 resultId: compareResult.resultId,
                                 source: compareResult.source,
                                 computedAt: compareResult.computedAt,
+                                calculationEvidence: compareResult.calculationEvidence,
                               }}
                             />
 
@@ -2528,6 +2547,7 @@ const LcaAnalysisPage = () => {
                                 resultId: groupedResult.resultId,
                                 source: groupedResult.source,
                                 computedAt: groupedResult.computedAt,
+                                calculationEvidence: groupedResult.calculationEvidence,
                               }}
                             />
 

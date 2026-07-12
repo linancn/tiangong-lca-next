@@ -1,6 +1,11 @@
 import { getDataSource, getLangJson } from '@/services/general/util';
 import type { LCIAResultTable, LciaMethodListData } from '@/services/lciaMethods/data';
-import { cacheAndDecompressMethod, getDecompressedMethod } from '@/services/lciaMethods/util';
+import {
+  resolveReviewedLciaMethodIdentity,
+  toCanonicalLciaMethodId,
+  toLciaArtifactLocatorId,
+} from '@/services/lciaMethods/evidence';
+import { getVerifiedDecompressedMethodEntry } from '@/services/lciaMethods/util';
 import type { ProcessTable } from '@/services/processes/data';
 
 export const LCA_SCOPE = 'dev-v1';
@@ -31,7 +36,14 @@ export type LcaProcessOption = {
   label: string;
 };
 
-export type LcaAnalysisDataScope = 'current_user' | 'open_data' | 'all_data';
+export type LcaAnalysisDataScope =
+  'public_plus_owner_draft' | 'current_user' | 'open_data' | 'all_data';
+
+export function toLcaRequestImpactId(impactId: unknown, dataScope?: LcaAnalysisDataScope): string {
+  return dataScope === 'public_plus_owner_draft'
+    ? toCanonicalLciaMethodId(impactId)
+    : toLciaArtifactLocatorId(impactId);
+}
 
 type LcaMethodMeta = {
   description?: unknown;
@@ -83,7 +95,7 @@ export function getDefaultLcaDataScopeForPath(
 ): Exclude<LcaAnalysisDataScope, 'all_data'> | undefined {
   const dataSource = getDataSource(pathname);
   if (dataSource === 'my') {
-    return 'current_user';
+    return 'public_plus_owner_draft';
   }
   if (dataSource === 'tg') {
     return 'open_data';
@@ -158,16 +170,9 @@ function readTrimmedString(value: unknown): string {
 }
 
 async function getLciaMethodListEntries(): Promise<LciaMethodListEntry[]> {
-  let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-  const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
-
-  if (!listData || needsUpdate) {
-    const cached = await cacheAndDecompressMethod('list.json');
-    if (!cached) {
-      throw new Error('load_lcia_method_list_failed');
-    }
-    listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-  }
+  const listData = (await getVerifiedDecompressedMethodEntry<LciaMethodListData>('list.json'))
+    ?.data;
+  if (!listData) throw new Error('load_lcia_method_list_failed');
 
   return Array.isArray(listData?.files)
     ? (listData.files.filter(
@@ -181,10 +186,11 @@ export async function loadImpactOptions(lang: string): Promise<ImpactOption[]> {
 
   return files
     .map((item) => {
-      const value = readTrimmedString(item.id);
-      if (!value) {
+      const artifactLocatorId = readTrimmedString(item.id);
+      if (!artifactLocatorId) {
         return null;
       }
+      const value = toCanonicalLciaMethodId(artifactLocatorId, item.version);
 
       const label = resolveLangText(item.description, lang) || value;
       const unit =
@@ -203,8 +209,13 @@ export async function loadImpactOptions(lang: string): Promise<ImpactOption[]> {
 export async function getLcaMethodMetaMap(
   impactIds: string[],
 ): Promise<Map<string, LcaMethodMeta>> {
-  const impactIdSet = new Set(impactIds.filter((id) => !!id));
-  if (impactIdSet.size === 0) {
+  const requestedImpactIds = new Set(
+    impactIds.map((id) => readTrimmedString(id)).filter((id) => !!id),
+  );
+  const canonicalImpactIds = new Set(
+    Array.from(requestedImpactIds).map((id) => toCanonicalLciaMethodId(id)),
+  );
+  if (requestedImpactIds.size === 0) {
     return new Map<string, LcaMethodMeta>();
   }
 
@@ -217,16 +228,21 @@ export async function getLcaMethodMetaMap(
   const byId = new Map<string, LcaMethodMeta>();
 
   files.forEach((item) => {
-    const methodId = readTrimmedString(item.id);
-    if (!methodId || !impactIdSet.has(methodId)) {
+    const artifactLocatorId = readTrimmedString(item.id);
+    const methodId = toCanonicalLciaMethodId(artifactLocatorId, item.version);
+    if (!methodId || !canonicalImpactIds.has(methodId)) {
       return;
     }
 
-    byId.set(methodId, {
+    const meta = {
       description: item.description,
       version: item.version,
       referenceQuantityDesc: getLangJson(item.referenceQuantity?.['common:shortDescription']),
-    });
+    };
+    byId.set(methodId, meta);
+    if (artifactLocatorId !== methodId && requestedImpactIds.has(artifactLocatorId)) {
+      byId.set(artifactLocatorId, meta);
+    }
   });
 
   return byId;
@@ -241,10 +257,26 @@ export function buildMergedLcaRows(
   solverRows: SolverLcaImpactValueRow[],
   methodMetaById: Map<string, LcaMethodMeta>,
 ): LCIAResultTable[] {
-  const mergedRows = baseRows.map((row) => ({
-    ...row,
-    referenceToLCIAMethodDataSet: { ...row.referenceToLCIAMethodDataSet },
-  }));
+  const mergedRows = baseRows.map((row) => {
+    const reference = { ...row.referenceToLCIAMethodDataSet };
+    const identity = resolveReviewedLciaMethodIdentity(
+      reference?.['@refObjectId'],
+      reference?.['@version'],
+    );
+    if (!identity) {
+      return { ...row, referenceToLCIAMethodDataSet: reference };
+    }
+    return {
+      ...row,
+      key: row.key === reference['@refObjectId'] ? identity.method_id : row.key,
+      referenceToLCIAMethodDataSet: {
+        ...reference,
+        '@refObjectId': identity.method_id,
+        '@uri': `../lciamethods/${identity.artifact_locator_id}.xml`,
+        '@version': reference['@version'] || identity.method_version,
+      },
+    };
+  });
   const indexByMethodId = new Map<string, number>();
 
   mergedRows.forEach((row, idx) => {
@@ -255,8 +287,9 @@ export function buildMergedLcaRows(
   });
 
   solverRows.forEach((solverRow) => {
-    const methodId = solverRow.impact_id;
+    const methodId = toCanonicalLciaMethodId(solverRow.impact_id);
     const methodMeta = methodMetaById.get(methodId);
+    const artifactLocatorId = toLciaArtifactLocatorId(methodId, methodMeta?.version);
     const shortDescription =
       methodMeta?.description ??
       toLangFallback(solverRow.impact_name?.trim() || solverRow.impact_id || '-');
@@ -290,7 +323,7 @@ export function buildMergedLcaRows(
       referenceToLCIAMethodDataSet: {
         '@refObjectId': methodId,
         '@type': 'lCIA method data set',
-        '@uri': `../lciamethods/${methodId}.xml`,
+        '@uri': `../lciamethods/${artifactLocatorId}.xml`,
         '@version': methodMeta?.version || '',
         'common:shortDescription':
           shortDescription as LCIAResultTable['referenceToLCIAMethodDataSet']['common:shortDescription'],

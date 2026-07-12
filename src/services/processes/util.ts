@@ -834,6 +834,7 @@ export function genProcessJsonOrdered(id: string, data: any) {
       },
       LCIAResults: {
         LCIAResult: data?.LCIAResults?.LCIAResult ?? [],
+        'common:other': data?.LCIAResults?.['common:other'],
       },
     },
   });
@@ -1617,6 +1618,7 @@ export function genProcessFromData(data: any): FormProcess {
       },
       LCIAResults: {
         LCIAResult: data?.LCIAResults?.LCIAResult ?? [],
+        'common:other': data?.LCIAResults?.['common:other'],
       },
     },
   } as any);
