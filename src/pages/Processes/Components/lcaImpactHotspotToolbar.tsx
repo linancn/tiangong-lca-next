@@ -33,6 +33,7 @@ import {
   LcaProcessOption,
   loadImpactOptions,
   normalizeNumber,
+  toLcaRequestImpactId,
   toProgressPercent,
   toProgressStatus,
   VALUE_EPSILON,
@@ -370,7 +371,7 @@ const LcaImpactHotspotToolbar: FC<{
       if (usePublishedResults) {
         const published = await queryPublishedLciaResults({
           mode: 'ranked_processes_one_impact',
-          impactCategoryId: selectedImpactId,
+          impactCategoryId: toLcaRequestImpactId(selectedImpactId, 'open_data'),
           offset: requestedOffset,
           limit: selectedTopN,
         });
@@ -384,7 +385,7 @@ const LcaImpactHotspotToolbar: FC<{
           scope: LCA_SCOPE,
           ...(defaultLcaDataScope ? { data_scope: defaultLcaDataScope } : {}),
           mode: 'processes_one_impact',
-          impact_id: selectedImpactId,
+          impact_id: toLcaRequestImpactId(selectedImpactId, defaultLcaDataScope),
           top_n: selectedTopN,
           offset: requestedOffset,
           sort_by: 'absolute_value',

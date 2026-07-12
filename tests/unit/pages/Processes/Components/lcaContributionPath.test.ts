@@ -114,6 +114,20 @@ const contributionPathArtifact = {
 };
 
 describe('lcaContributionPath', () => {
+  it('normalizes the reviewed locator alias in contribution-path result identities', () => {
+    const model = buildLcaContributionPathModel({
+      ...contributionPathArtifact,
+      impact_id: '9ec743ea-6b00-400d-a53b-61547a3fc03c',
+      impact: {
+        ...contributionPathArtifact.impact,
+        impact_id: '9ec743ea-6b00-400d-a53b-61547a3fc03c',
+      },
+    });
+
+    expect(model?.impactId).toBe('503699e0-eca9-4089-8bf8-e0f49c93e578');
+    expect(model?.impact.impactId).toBe('503699e0-eca9-4089-8bf8-e0f49c93e578');
+  });
+
   it('returns null for invalid artifacts and for missing required identifiers', () => {
     expect(buildLcaContributionPathModel(null)).toBeNull();
     expect(buildLcaContributionPathModel([])).toBeNull();

@@ -22,10 +22,12 @@ import {
   type LcaAnalysisDataScope,
   type SolverLcaImpactValueRow,
 } from './lcaAnalysisShared';
+import LcaCalculationEvidenceNotice from './lcaCalculationEvidenceNotice';
 import LcaProfileSummary from './lcaProfileSummary';
 
 type Props = {
   baseRows: LCIAResultTable[];
+  baseCalculationEvidence?: unknown;
   lang: string;
   processId?: string;
   processVersion?: string;
@@ -77,6 +79,7 @@ function readRecordId(record: Record<string, unknown> | null | undefined, fallba
 
 const ProcessLciaResultsPanel: FC<Props> = ({
   baseRows,
+  baseCalculationEvidence,
   lang,
   processId,
   processVersion,
@@ -103,6 +106,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
     resultId: string;
     source: string;
     computedAt: string;
+    calculationEvidence?: unknown;
   } | null>(null);
   const [solverLciaPendingJob, setSolverLciaPendingJob] = useState<SolverLciaPendingJob | null>(
     null,
@@ -421,6 +425,7 @@ const ProcessLciaResultsPanel: FC<Props> = ({
           resultId: queried.result_id,
           source: queried.source,
           computedAt: queried.meta.computed_at,
+          calculationEvidence: queried.meta.calculation_evidence,
         });
         setSolverLciaPendingJob(null);
         setSolverLciaLoaded(true);
@@ -564,6 +569,12 @@ const ProcessLciaResultsPanel: FC<Props> = ({
             </Typography.Text>
           )}
         </Space>
+      )}
+      {!shouldUsePublishedPackage && (
+        <LcaCalculationEvidenceNotice
+          staticEvidence={solverLciaMeta ? undefined : baseCalculationEvidence}
+          calculationEvidence={solverLciaMeta?.calculationEvidence}
+        />
       )}
       <LcaProfileSummary
         rows={rows}

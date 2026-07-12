@@ -1,7 +1,7 @@
-import { toBigNumberOrNaN, toBigNumberOrZero } from '@/services/general/bignumber';
 import {
   clearCachedStore,
   decompressGzipData,
+  deleteCachedJsonEntry,
   getAllCachedKeys,
   getCachedJsonEntry,
   getCachedStoreSize,
@@ -12,13 +12,9 @@ import {
 } from '@/services/general/browserResourceCache';
 import { getLangJson } from '@/services/general/util';
 import type { ProcessExchangeData } from '@/services/processes/data';
-import type BigNumber from 'bignumber.js';
-import {
-  LCIAResultTable,
-  LciaFlowFactorEntry,
-  LciaFlowFactorMap,
-  LciaMethodListData,
-} from './data';
+import { buildStaticCalculationFailure, calculateStaticLcia } from './calculation';
+import { LciaFlowFactorMap, LciaMethodListData, LCIAResultTable } from './data';
+import { computeLciaSha256, STATIC_LCIA_CACHE_MANIFEST, toLciaArtifactLocatorId } from './evidence';
 
 // Enhanced LCIA Cache Management with Decompression
 const CACHE_KEY = 'lcia_methods_cache_manifest';
@@ -28,6 +24,9 @@ const CACHE_STORE_NAME = 'lcia_methods';
 
 export interface LciaCacheManifest {
   version: string;
+  cacheSchemaVersion?: 'lcia.browser_cache_manifest.v2';
+  bundleVersion?: string;
+  sourceSnapshotSha256?: string;
   files: string[];
   cachedAt: number;
   decompressed: boolean; // Track if files are stored decompressed
@@ -61,29 +60,50 @@ const storeDecompressedMethod = async (
   db: IDBDatabase,
   filename: string,
   data: unknown,
+  sha256?: string,
 ): Promise<void> => {
-  return putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+  return putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, { sha256 });
+};
+
+const expectedCacheFile = (filename: string) => {
+  if (filename === STATIC_LCIA_CACHE_MANIFEST.files.list.path) {
+    return STATIC_LCIA_CACHE_MANIFEST.files.list;
+  }
+  if (filename === STATIC_LCIA_CACHE_MANIFEST.files.factors.path) {
+    return STATIC_LCIA_CACHE_MANIFEST.files.factors;
+  }
+  return null;
 };
 
 /**
  * Get decompressed LCIA method from IndexedDB
  */
-export const getDecompressedMethod = async <T>(filename: string): Promise<T | null> => {
+export const getDecompressedMethodEntry = async <T>(
+  filename: string,
+): Promise<CachedLciaMethod<T> | null> => {
   try {
     const db = await initDB();
-    const cachedEntry = await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
-    return cachedEntry?.data ?? null;
+    return await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
   } catch (error) {
     console.error(`Failed to get decompressed method ${filename}:`, error);
     return null;
   }
 };
 
+export const getDecompressedMethod = async <T>(filename: string): Promise<T | null> =>
+  (await getDecompressedMethodEntry<T>(filename))?.data ?? null;
+
 /**
  * Download, decompress and cache LCIA method
  */
 export const cacheAndDecompressMethod = async (filename: string): Promise<boolean> => {
   try {
+    const expected = expectedCacheFile(filename);
+    if (!expected) {
+      console.warn(`⚠️ File is not part of the reviewed LCIA bundle: ${filename}`);
+      return false;
+    }
+
     // Download the file
     const response = await fetch(`/lciamethods/${filename}`);
     if (!response.ok) {
@@ -91,26 +111,65 @@ export const cacheAndDecompressMethod = async (filename: string): Promise<boolea
       return false;
     }
 
-    // Skip decompression for non-gzipped files (like list.json)
+    // Verify the exact downloaded bytes before parsing or writing anything to IndexedDB.
+    const arrayBuffer = await response.arrayBuffer();
+    const sha256 = await computeLciaSha256(arrayBuffer);
+    if (arrayBuffer.byteLength !== expected.byte_size || sha256 !== expected.sha256) {
+      console.error(`❌ Rejected unreviewed LCIA bundle bytes: ${filename}`);
+      return false;
+    }
+
     let data: unknown;
     if (filename.endsWith('.json.gz')) {
-      const arrayBuffer = await response.arrayBuffer();
       const decompressedText = await decompressGzip(arrayBuffer);
       data = JSON.parse(decompressedText);
     } else {
-      const text = await response.text();
+      const text = new TextDecoder().decode(arrayBuffer);
       data = JSON.parse(text);
     }
 
     // Store in IndexedDB
     const db = await initDB();
-    await storeDecompressedMethod(db, filename, data);
+    await storeDecompressedMethod(db, filename, data, sha256);
 
     return true;
   } catch (error) {
     console.error(`❌ Failed to cache and decompress ${filename}:`, error);
     return false;
   }
+};
+
+/**
+ * Read one reviewed LCIA cache entry. Old entries without a digest and entries with
+ * a different digest are evicted and downloaded exactly once before failing closed.
+ */
+export const getVerifiedDecompressedMethodEntry = async <T>(
+  filename: string,
+): Promise<CachedLciaMethod<T> | null> => {
+  const expected = expectedCacheFile(filename);
+  if (!expected) {
+    return null;
+  }
+  let entry = await getDecompressedMethodEntry<T>(filename);
+  if (entry?.sha256 === expected.sha256) {
+    return entry;
+  }
+
+  try {
+    const db = await initDB();
+    if (entry) {
+      await deleteCachedJsonEntry(db, CACHE_STORE_NAME, filename);
+    }
+  } catch (error) {
+    console.warn(`Failed to evict stale LCIA cache entry ${filename}:`, error);
+    return null;
+  }
+
+  if (!(await cacheAndDecompressMethod(filename))) {
+    return null;
+  }
+  entry = await getDecompressedMethodEntry<T>(filename);
+  return entry?.sha256 === expected.sha256 ? entry : null;
 };
 
 /**
@@ -197,8 +256,8 @@ export const forceRefreshCache = async (): Promise<void> => {
  * Check if a method is available in decompressed cache
  */
 export const isMethodCached = async (filename: string): Promise<boolean> => {
-  const data = await getDecompressedMethod(filename);
-  return data !== null;
+  const entry = await getVerifiedDecompressedMethodEntry(filename);
+  return entry !== null;
 };
 
 /**
@@ -222,23 +281,18 @@ export const getReferenceQuantityFromMethod = async (
     if (!lciaResults) {
       return undefined;
     }
-    let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-
-    // Check if cached list.json has referenceQuantity field (version check)
-    const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
-
-    if (!listData || needsUpdate) {
-      const cached = await cacheAndDecompressMethod('list.json');
-      if (!cached) {
-        return;
-      }
-      listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-    }
+    const listData = (await getVerifiedDecompressedMethodEntry<LciaMethodListData>('list.json'))
+      ?.data;
+    if (!listData) return;
 
     // Match lciaResults with listData and add unit
     for (const result of lciaResults) {
       const methodId = result.referenceToLCIAMethodDataSet['@refObjectId'];
-      const methodInfo = listData?.files?.find((it) => it.id === methodId);
+      const artifactLocatorId = toLciaArtifactLocatorId(
+        methodId,
+        result.referenceToLCIAMethodDataSet['@version'],
+      );
+      const methodInfo = listData?.files?.find((it) => it.id === artifactLocatorId);
       if (methodInfo?.referenceQuantity?.['common:shortDescription']) {
         result.referenceQuantityDesc = getLangJson(
           methodInfo.referenceQuantity['common:shortDescription'],
@@ -250,129 +304,67 @@ export const getReferenceQuantityFromMethod = async (
   }
 };
 
-const LCIAResultCalculation = async (
+export const LCIAResultCalculationWithEvidence = async (
   exchangeDataSource: ProcessExchangeData[],
-): Promise<LCIAResultTable[] | undefined> => {
-  const lciaResults: LCIAResultTable[] = [];
-
-  const flow_factors_file = 'flow_factors.json.gz';
+): ReturnType<typeof calculateStaticLcia> => {
+  const flowFactorsFile = 'flow_factors.json.gz';
+  const listEntry = await getVerifiedDecompressedMethodEntry<LciaMethodListData>('list.json');
+  const factorEntry = await getVerifiedDecompressedMethodEntry<LciaFlowFactorMap>(flowFactorsFile);
   try {
-    // First try to get the list from cache
-    let listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-
-    // Check if cached list.json has referenceQuantity field (version check)
-    const needsUpdate = listData && !listData.files?.[0]?.referenceQuantity;
-
-    if (!listData || needsUpdate) {
-      // If not cached or outdated, cache it first (this will download, decompress and store)
-      const cached = await cacheAndDecompressMethod('list.json');
-      if (!cached) {
-        console.error('Failed to load LCIA methods list');
-        return undefined;
-      }
-      // Now get from cache
-      listData = await getDecompressedMethod<LciaMethodListData>('list.json');
-    }
-
-    let factors = await getDecompressedMethod<LciaFlowFactorMap>(flow_factors_file);
-    if (!factors) {
-      // If not cached, cache it first (this will download, decompress and store)
-      const cached = await cacheAndDecompressMethod(flow_factors_file);
-      if (!cached) {
-        console.warn(`Failed to cache file: ${flow_factors_file}`);
-        return lciaResults;
-      }
-      // Now get from cache
-      factors = await getDecompressedMethod<LciaFlowFactorMap>(flow_factors_file);
-    }
-
-    // Only support current preprocessed object map format
-    if (!factors || Array.isArray(factors) || Object.keys(factors).length === 0) {
-      console.warn(`No characterisation factors found in file: ${flow_factors_file}`);
-      return lciaResults;
-    }
-
-    // Use preprocessed object map directly for lookup
-    const factorsObj: LciaFlowFactorMap = factors;
-
-    const lciaFlowResults: LciaFlowFactorEntry[] = [];
-
-    exchangeDataSource.forEach((exchange) => {
-      const exchangeFlowRef = Array.isArray(exchange.referenceToFlowDataSet)
-        ? exchange.referenceToFlowDataSet[0]
-        : exchange.referenceToFlowDataSet;
-      const exchangeFlowId = exchangeFlowRef?.['@refObjectId'];
-      const exchangeDirection = String(exchange.exchangeDirection || '').toUpperCase();
-      if (exchangeFlowId && exchangeDirection) {
-        const key = `${exchangeFlowId}:${exchangeDirection}`;
-        const matchingFactor = factorsObj[key];
-        if (matchingFactor) {
-          const exchangeAmount = toBigNumberOrNaN(exchange.meanAmount);
-          if (
-            !exchangeAmount.isNaN() &&
-            matchingFactor?.factor &&
-            matchingFactor?.factor.length > 0
-          ) {
-            const newFactor = matchingFactor.factor.map((f) => {
-              const factorValue = toBigNumberOrNaN(f.value);
-              if (!factorValue.isNaN()) {
-                return { ...f, value: exchangeAmount.times(factorValue).toString() };
-              } else {
-                return { ...f, value: 0 };
-              }
-            });
-            lciaFlowResults.push(...newFactor);
-          }
-        }
-      }
-    });
-
-    const lciaFlowResultsAggregated: Array<{ key: string; value: string }> = Array.from(
-      lciaFlowResults
-        .filter((it) => it && it.key !== undefined && it.key !== null)
-        .reduce((map: Map<string, BigNumber>, it) => {
-          const key = String(it.key);
-          const raw = it.value;
-          const val = toBigNumberOrNaN(raw);
-          if (!val.isNaN()) {
-            map.set(key, (map.get(key) ?? toBigNumberOrZero(0)).plus(val));
-          }
-          return map;
-        }, new Map<string, BigNumber>())
-        .entries(),
-    )
-      .map(([key, sum]) => ({ key, value: sum.toString() }))
-      .filter((it) => {
-        const bn = toBigNumberOrNaN(it.value);
-        return !bn.isNaN() && !bn.isZero();
+    if (!listEntry) {
+      console.error('Failed to load LCIA methods list');
+      return await buildStaticCalculationFailure(exchangeDataSource, 'method_list_unavailable', {
+        factorSha256: factorEntry?.sha256,
       });
-
-    if (lciaFlowResultsAggregated.length > 0) {
-      for (const result of lciaFlowResultsAggregated) {
-        const methodInfo = listData?.files.find((it) => it.id === result.key);
-        if (!methodInfo) {
-          continue;
-        }
-
-        const lciaResult: LCIAResultTable = {
-          key: methodInfo.id,
-          referenceToLCIAMethodDataSet: {
-            '@refObjectId': methodInfo.id,
-            '@type': 'lCIA method data set',
-            '@uri': `../lciamethods/${methodInfo.id}.xml`,
-            '@version': methodInfo.version,
-            'common:shortDescription': methodInfo.description,
-          },
-          meanAmount: result.value,
-        };
-        lciaResults.push(lciaResult);
-      }
     }
-    return lciaResults;
+
+    if (!factorEntry) {
+      console.warn(`Failed to cache file: ${flowFactorsFile}`);
+      return await buildStaticCalculationFailure(exchangeDataSource, 'factor_map_unavailable', {
+        listSha256: listEntry.sha256,
+      });
+    }
+
+    if (!listEntry?.data) {
+      return await buildStaticCalculationFailure(
+        exchangeDataSource,
+        'method_list_cache_read_failed',
+        { factorSha256: factorEntry?.sha256 },
+      );
+    }
+    if (
+      !factorEntry?.data ||
+      Array.isArray(factorEntry.data) ||
+      Object.keys(factorEntry.data).length === 0
+    ) {
+      console.warn(`No characterisation factors found in file: ${flowFactorsFile}`);
+      return await buildStaticCalculationFailure(
+        exchangeDataSource,
+        'factor_map_empty_or_invalid',
+        { listSha256: listEntry.sha256, factorSha256: factorEntry.sha256 },
+      );
+    }
+
+    return await calculateStaticLcia({
+      exchanges: exchangeDataSource,
+      listData: listEntry.data,
+      factors: factorEntry.data,
+      observedListSha256: listEntry.sha256,
+      observedFactorSha256: factorEntry.sha256,
+    });
   } catch (fileError) {
-    console.error(`Error processing file ${flow_factors_file}:`, fileError);
-    return undefined;
+    console.error(`Error processing file ${flowFactorsFile}:`, fileError);
+    return await buildStaticCalculationFailure(
+      exchangeDataSource,
+      fileError instanceof Error ? fileError.message : String(fileError),
+      { listSha256: listEntry?.sha256, factorSha256: factorEntry?.sha256 },
+    );
   }
 };
+
+const LCIAResultCalculation = async (
+  exchangeDataSource: ProcessExchangeData[],
+): Promise<LCIAResultTable[]> =>
+  (await LCIAResultCalculationWithEvidence(exchangeDataSource)).results;
 
 export default LCIAResultCalculation;

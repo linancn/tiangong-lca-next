@@ -417,6 +417,7 @@ const ProcessCreate: FC<CreateProps> = ({
               onTabChange={(key) => onTabChange(key as TabKeysType)}
               exchangeDataSource={exchangeDataSource}
               lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
+              lciaCalculationEvidence={fromData?.LCIAResults?.['common:other']}
             />
           </ProForm>
         </Spin>

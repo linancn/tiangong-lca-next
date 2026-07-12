@@ -27,6 +27,9 @@ interface UseResourceCacheMonitorOptions<TManifest extends ResourceCacheManifest
   startDelayMs?: number;
   batchDelayMs?: number;
   maxCacheAgeHours?: number;
+  manifestMetadata?: Partial<TManifest>;
+  isManifestCurrent?: (cached: TManifest, current: TManifest) => boolean;
+  persistManifestOnPartialSuccess?: boolean;
 }
 
 export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>(
@@ -44,6 +47,9 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
     startDelayMs = 3000,
     batchDelayMs = 100,
     maxCacheAgeHours = 24,
+    manifestMetadata,
+    isManifestCurrent,
+    persistManifestOnPartialSuccess = true,
   } = options;
 
   useEffect(() => {
@@ -51,6 +57,7 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
       try {
         const cachedManifest = getManifest();
         const currentManifest = {
+          ...manifestMetadata,
           version,
           files,
           cachedAt: Date.now(),
@@ -61,7 +68,8 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
           cachedManifest &&
           cachedManifest.version === currentManifest.version &&
           JSON.stringify(cachedManifest.files) === JSON.stringify(currentManifest.files) &&
-          cachedManifest.decompressed
+          cachedManifest.decompressed &&
+          (isManifestCurrent?.(cachedManifest, currentManifest) ?? true)
         ) {
           const hoursSinceCache = (Date.now() - cachedManifest.cachedAt) / (1000 * 60 * 60);
           if (hoursSinceCache <= maxCacheAgeHours) {
@@ -109,7 +117,9 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
           }
         }
 
-        setManifest(currentManifest);
+        if (successCount === currentManifest.files.length || persistManifestOnPartialSuccess) {
+          setManifest(currentManifest);
+        }
 
         if (successCount === currentManifest.files.length) {
           console.log(logMessages.success(successCount, currentManifest.files.length));
@@ -135,9 +145,12 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
     files,
     getCachedFileList,
     getManifest,
+    isManifestCurrent,
     logMessages,
+    manifestMetadata,
     maxCacheAgeHours,
     setManifest,
+    persistManifestOnPartialSuccess,
     startDelayMs,
     version,
   ]);

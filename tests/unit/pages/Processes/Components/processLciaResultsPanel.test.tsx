@@ -76,6 +76,11 @@ jest.mock('@/pages/Processes/Components/lcaProfileSummary', () => ({
   ),
 }));
 
+jest.mock('@/pages/Processes/Components/lcaCalculationEvidenceNotice', () => ({
+  __esModule: true,
+  default: () => <div data-testid='lcia-evidence-notice' />,
+}));
+
 jest.mock('@ant-design/pro-components', () => ({
   __esModule: true,
   ProTable: ({ columns = [], dataSource = [], rowKey }: any) => {

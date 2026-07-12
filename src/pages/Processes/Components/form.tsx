@@ -70,6 +70,7 @@ type Props = {
   onTabChange: (key: string) => void;
   exchangeDataSource: ProcessExchangeData[];
   lciaResults: LCIAResultTable[];
+  lciaCalculationEvidence?: unknown;
   formType?: string;
   processId?: string;
   processVersion?: string;
@@ -279,6 +280,7 @@ export const ProcessForm: FC<Props> = ({
   processVersion,
   showRules = false,
   lciaResults,
+  lciaCalculationEvidence,
   actionFrom,
   sdkValidationDetails = [],
   sdkValidationDismissedFieldKeys = EMPTY_SDK_DISMISSED_FIELD_KEYS,
@@ -2791,6 +2793,7 @@ export const ProcessForm: FC<Props> = ({
     ),
     lciaResults: (
       <ProcessLciaResultsPanel
+        baseCalculationEvidence={lciaCalculationEvidence}
         baseRows={lciaResults}
         lang={lang}
         processId={processId}
