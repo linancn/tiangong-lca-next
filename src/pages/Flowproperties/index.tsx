@@ -105,8 +105,7 @@ const TableList: FC = () => {
     return {
       ...resultWithReviewState,
       data: ((await getUnitData('unitgroup', resultWithReviewState?.data ?? [])) ?? []) as
-        | FlowpropertyTable[]
-        | undefined,
+        FlowpropertyTable[] | undefined,
     };
   };
 

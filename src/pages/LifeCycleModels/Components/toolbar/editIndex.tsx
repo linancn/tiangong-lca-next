@@ -893,8 +893,7 @@ const ToolbarEdit: FC<Props> = ({
       const newData = buildSavePayload(infoData, currentNodes, currentEdges);
       const fallbackValidationVersion =
         (newData?.administrativeInformation?.publicationAndOwnership?.['common:dataSetVersion'] as
-          | string
-          | undefined) ??
+          string | undefined) ??
         newData.version ??
         thisVersion;
       const buildValidationSnapshotPayload = (

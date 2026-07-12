@@ -205,8 +205,7 @@ const ContactView: FC<Props> = ({
     ]?.['common:class'],
   );
   const complianceRecord = initData.modellingAndValidation?.complianceDeclarations?.compliance as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
 
   const contentList: Record<string, React.ReactNode> = {
     unitGroupInformation: (
@@ -254,8 +253,7 @@ const ContactView: FC<Props> = ({
           }
           data={
             (complianceRecord?.['common:referenceToComplianceSystem'] as
-              | Record<string, unknown>
-              | undefined) ?? {}
+              Record<string, unknown> | undefined) ?? {}
           }
           lang={lang}
         />

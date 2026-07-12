@@ -1282,8 +1282,7 @@ export class ProcessFlowGraphEngine {
   private captureNodePositionMap() {
     const positionMap = new Map<string, [number, number, number]>();
     const positionAttribute = this.nodeGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!positionAttribute) {
       return positionMap;
@@ -1428,8 +1427,7 @@ export class ProcessFlowGraphEngine {
 
         const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
         const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-          | THREE.LineBasicMaterial
-          | undefined;
+          THREE.LineBasicMaterial | undefined;
         const nodeTo = capturePositionArray(this.nodeGeometry);
         const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
         const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
@@ -1524,8 +1522,7 @@ export class ProcessFlowGraphEngine {
 
       const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
       const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-        | THREE.LineBasicMaterial
-        | undefined;
+        THREE.LineBasicMaterial | undefined;
       const nodeTo = capturePositionArray(this.nodeGeometry);
       const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
       const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
@@ -1600,8 +1597,7 @@ export class ProcessFlowGraphEngine {
 
       const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
       const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-        | THREE.LineBasicMaterial
-        | undefined;
+        THREE.LineBasicMaterial | undefined;
       const nodeFromFallback = capturePositionArray(this.nodeGeometry);
       const highlightedNodeFromFallback = capturePositionArray(this.highlightedNodeGeometry);
       const selectedNodeFromFallback = capturePositionArray(this.selectedNodeGeometry);
@@ -1681,8 +1677,7 @@ export class ProcessFlowGraphEngine {
 
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const nodeTo = capturePositionArray(this.nodeGeometry);
     const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
@@ -1755,8 +1750,7 @@ export class ProcessFlowGraphEngine {
     this.updateMaterialState();
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const nodeTo = capturePositionArray(this.nodeGeometry);
     const highlightedNodeTo = capturePositionArray(this.highlightedNodeGeometry);
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
@@ -1806,11 +1800,9 @@ export class ProcessFlowGraphEngine {
     const shouldClearSelection = Boolean(previousSelectedNodeId) && !selection.selectedNodeId;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const edgeOpacityFrom = edgeMaterial?.opacity ?? 0;
     const highlightedEdgeOpacityFrom = shouldRevealSphereSelection
@@ -2605,16 +2597,13 @@ export class ProcessFlowGraphEngine {
       : 1;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const nodeMaterial = this.nodePoints?.material;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodeMaterial = this.selectedNodePoint?.material as
-      | THREE.PointsMaterial
-      | undefined;
+      THREE.PointsMaterial | undefined;
 
     if (this.sphereShell) {
       this.sphereShell.visible = false;
@@ -2795,11 +2784,9 @@ export class ProcessFlowGraphEngine {
     this.transitionEffectGroup.visible = false;
     this.updateTransitionEffectOpacity(0);
     const impactMaterialA = this.sphereIntroImpactRingA?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const impactMaterialB = this.sphereIntroImpactRingB?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
 
     if (impactMaterialA) {
       impactMaterialA.opacity = 0;
@@ -2920,11 +2907,9 @@ export class ProcessFlowGraphEngine {
   }) {
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
     const normalizedSelectedNodeFrom =
@@ -2974,11 +2959,9 @@ export class ProcessFlowGraphEngine {
   }) {
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodeTo = capturePositionArray(this.selectedNodeGeometry);
     const normalizedSelectedNodeFrom =
@@ -3040,8 +3023,7 @@ export class ProcessFlowGraphEngine {
             target: currentTarget.clone(),
           };
     const nodeColorAttribute = this.nodeGeometry.getAttribute('color') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
     const nodeColorFrom = nodeColorAttribute
       ? new Float32Array(nodeColorAttribute.array as Float32Array)
       : undefined;
@@ -3168,19 +3150,15 @@ export class ProcessFlowGraphEngine {
         : getSmoothStep(0, 0.7, rawProgress);
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const nodeMaterial = this.nodePoints?.material;
     const highlightedNodeMaterial = this.highlightedNodePoints?.material;
     const selectedNodePositionAttribute = this.selectedNodeGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
     const nodeColorAttribute = this.nodeGeometry.getAttribute('color') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     this.camera.position.lerpVectors(transition.cameraFrom, transition.cameraTo, cameraProgress);
     this.controls.target.lerpVectors(transition.targetFrom, transition.targetTo, cameraProgress);
@@ -3309,11 +3287,9 @@ export class ProcessFlowGraphEngine {
     const cameraLaunchProgress = getFairyEase(getSmoothStep(0, 0.52, rawProgress));
     const cameraRecoverProgress = getFairyEase(getSmoothStep(0.52, 1, rawProgress));
     const positionAttribute = this.nodeGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
 
     if (rawProgress < 0.52) {
@@ -3430,20 +3406,16 @@ export class ProcessFlowGraphEngine {
     const sparkle = Math.sin(Math.PI * rawProgress);
     const reveal = getSmoothStep(0, 0.18, rawProgress) * (1 - getSmoothStep(0.9, 1, rawProgress));
     const dustPositionAttribute = this.transitionDustGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
     const dustMaterial = this.transitionDustPoints?.material;
     const ringMaterial = this.transitionRing?.material as THREE.LineBasicMaterial | undefined;
     const gateMaterial = this.transitionGateLines?.material as THREE.LineBasicMaterial | undefined;
     const projectionMaterial = this.transitionProjectionLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const impactMaterialA = this.sphereIntroImpactRingA?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const impactMaterialB = this.sphereIntroImpactRingB?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const sphereShellMaterial = this.sphereShell?.material as THREE.MeshBasicMaterial | undefined;
     const impactProgressA = getSmoothStep(0.52, 0.66, rawProgress);
     const impactProgressB = getSmoothStep(0.62, 0.82, rawProgress);
@@ -3698,8 +3670,7 @@ export class ProcessFlowGraphEngine {
     transition: LayoutTransition,
   ) {
     const positionAttribute = geometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (
       !positionAttribute ||
@@ -3967,11 +3938,9 @@ export class ProcessFlowGraphEngine {
       : 1;
     const edgeMaterial = this.edgeLines?.material as THREE.LineBasicMaterial | undefined;
     const highlightedEdgeMaterial = this.highlightedEdgeLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const flowMarkerMaterial = this.flowMarkerLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const nodeMaterial = this.nodePoints?.material;
     const sphereShellMaterial = this.sphereShell?.material as THREE.MeshBasicMaterial | undefined;
 
@@ -4087,8 +4056,7 @@ export class ProcessFlowGraphEngine {
     sourceLayoutNodeIds: Set<string> | undefined,
   ) {
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (sizeAttribute) {
       const sizeArray = sizeAttribute.array as Float32Array;
@@ -4109,8 +4077,7 @@ export class ProcessFlowGraphEngine {
     }
 
     const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (highlightedSizeAttribute) {
       const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
@@ -4170,8 +4137,7 @@ export class ProcessFlowGraphEngine {
     sourceLayoutNodeIds: Set<string> | undefined,
   ) {
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (sizeAttribute) {
       const sizeArray = sizeAttribute.array as Float32Array;
@@ -4192,8 +4158,7 @@ export class ProcessFlowGraphEngine {
     }
 
     const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (highlightedSizeAttribute) {
       const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
@@ -4223,8 +4188,7 @@ export class ProcessFlowGraphEngine {
 
   private updateSphereExpandedNodeSizes(sphereToExpandedProgress: number) {
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (sizeAttribute) {
       const sizeArray = sizeAttribute.array as Float32Array;
@@ -4239,8 +4203,7 @@ export class ProcessFlowGraphEngine {
     }
 
     const highlightedSizeAttribute = this.highlightedNodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (highlightedSizeAttribute) {
       const highlightedSizeArray = highlightedSizeAttribute.array as Float32Array;
@@ -4267,8 +4230,7 @@ export class ProcessFlowGraphEngine {
     const ringMaterial = this.transitionRing?.material as THREE.LineBasicMaterial | undefined;
     const gateMaterial = this.transitionGateLines?.material as THREE.LineBasicMaterial | undefined;
     const projectionMaterial = this.transitionProjectionLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
 
     if (dustMaterial instanceof THREE.ShaderMaterial) {
       dustMaterial.uniforms.opacity.value = opacity;
@@ -4308,8 +4270,7 @@ export class ProcessFlowGraphEngine {
           ? -1
           : 1;
     const dustPositionAttribute = this.transitionDustGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (dustPositionAttribute) {
       const positionArray = dustPositionAttribute.array as Float32Array;
@@ -4409,11 +4370,9 @@ export class ProcessFlowGraphEngine {
 
   private updateGeoMapZoomGridEffect(progress: number, transition: LayoutTransition) {
     const projectionMaterial = this.transitionProjectionLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!projectionMaterial || !positionAttribute || !isGeoMapScopeTransition(transition)) {
       if (projectionMaterial) {
@@ -4474,11 +4433,9 @@ export class ProcessFlowGraphEngine {
 
   private updatePlanarMapGridEffect(progress: number, transition: LayoutTransition) {
     const projectionMaterial = this.transitionProjectionLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!projectionMaterial || !positionAttribute || !isExpandedGeoMapTransition(transition)) {
       if (projectionMaterial) {
@@ -4568,11 +4525,9 @@ export class ProcessFlowGraphEngine {
 
   private updateProjectionGridEffect(progress: number, transition: LayoutTransition) {
     const projectionMaterial = this.transitionProjectionLines?.material as
-      | THREE.LineBasicMaterial
-      | undefined;
+      THREE.LineBasicMaterial | undefined;
     const positionAttribute = this.transitionProjectionGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!projectionMaterial || !positionAttribute || !isGeoProjectionTransition(transition)) {
       if (projectionMaterial) {
@@ -4688,8 +4643,7 @@ export class ProcessFlowGraphEngine {
 
   private updateNodeSizes() {
     const sizeAttribute = this.nodeGeometry.getAttribute('pointSize') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!sizeAttribute) {
       return;
@@ -4962,8 +4916,7 @@ export class ProcessFlowGraphEngine {
     }
 
     const positionAttribute = this.flowMarkerGeometry.getAttribute('position') as
-      | THREE.BufferAttribute
-      | undefined;
+      THREE.BufferAttribute | undefined;
 
     if (!positionAttribute) {
       return;
@@ -5128,8 +5081,7 @@ export class ProcessFlowGraphEngine {
 
   private updateSelectedNodePulse() {
     const selectedNodeMaterial = this.selectedNodePoint?.material as
-      | THREE.PointsMaterial
-      | undefined;
+      THREE.PointsMaterial | undefined;
 
     if (!selectedNodeMaterial) {
       return;
