@@ -193,6 +193,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             <AllVersionsList
               lang={lang}
               dataSource={activeTabKey}
+              stateCode={activeTabKey === 'my' ? 0 : undefined}
               searchTableName='unitgroups'
               columns={getAllVersionsColumns(unitGroupColumns, 4)}
               searchColume={unitGroupAllVersionsSearchColumn}

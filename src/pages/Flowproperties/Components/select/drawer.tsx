@@ -17,9 +17,6 @@ import type { FC, Key, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 import { getAllVersionsColumns } from '../../../Utils';
-import FlowpropertiesCreate from '../create';
-import FlowpropertiesDelete from '../delete';
-import FlowpropertiesEdit from '../edit';
 import FlowpropertyView from '../view';
 
 type Props = {
@@ -79,35 +76,11 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   };
 
   const renderVersionSelectActions = (row: FlowpropertyTable) => {
-    if (activeTabKey === 'tg') {
-      return [
-        <Space size={'small'} key={0}>
-          <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
-        </Space>,
-      ];
-    }
-    if (activeTabKey === 'my') {
-      return [
-        <Space size={'small'} key={0}>
-          <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
-          <FlowpropertiesEdit
-            lang={lang}
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            actionRef={myActionRefSelect}
-          />
-          <FlowpropertiesDelete
-            id={row.id}
-            version={row.version}
-            buttonType={'icon'}
-            actionRef={myActionRefSelect}
-            setViewDrawerVisible={() => {}}
-          />
-        </Space>,
-      ];
-    }
-    return [];
+    return [
+      <Space size={'small'} key={0}>
+        <FlowpropertyView lang={lang} buttonType={'icon'} id={row.id} version={row.version} />
+      </Space>,
+    ];
   };
 
   const onTabChange = async (key: string) => {
@@ -241,11 +214,11 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             <AllVersionsList
               lang={lang}
               dataSource={activeTabKey}
+              stateCode={activeTabKey === 'my' ? 0 : undefined}
               searchTableName='flowproperties'
               columns={getAllVersionsColumns(FlowpropertyColumns, 4)}
               searchColume={flowpropertyAllVersionsSearchColumn}
               id={row.id}
-              addVersionComponent={() => <></>}
               operationRender={(versionRow) =>
                 renderVersionSelectActions(versionRow as FlowpropertyTable)
               }
@@ -481,9 +454,6 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
         <ProTable<FlowpropertyTable, ListPagination>
           actionRef={myActionRefSelect}
           search={false}
-          toolBarRender={() => {
-            return [<FlowpropertiesCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
-          }}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
@@ -496,7 +466,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             sort,
           ) => {
             if (myKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {}).then(
+              return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {}, 0).then(
                 (res) => {
                   return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
@@ -508,7 +478,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                 },
               );
             }
-            return getFlowpropertyTableAll(params, sort, lang, 'my', []).then((res) => {
+            return getFlowpropertyTableAll(params, sort, lang, 'my', [], 0).then((res) => {
               return getUnitData('unitgroup', res?.data).then((unitRes) => {
                 return {
                   ...res,

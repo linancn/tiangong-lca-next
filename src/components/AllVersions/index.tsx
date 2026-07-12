@@ -22,6 +22,7 @@ interface AllVersionsListProps {
   columns: ProColumns<any>[];
   lang: string;
   dataSource?: string;
+  stateCode?: number;
   disabled?: boolean;
   addVersionComponent?: ({ newVersion }: { newVersion: string }) => ReactElement;
   operationRender?: (
@@ -46,6 +47,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   columns,
   lang,
   dataSource: dataSourceOverride,
+  stateCode,
   disabled = false,
   addVersionComponent,
   operationRender,
@@ -233,6 +235,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
                 sort,
                 lang,
                 dataSource,
+                stateCode,
               );
               tableDataRef.current = result.data ?? [];
               return result;

@@ -46,6 +46,7 @@ jest.mock('@/components/AllVersions', () => ({
   default: function MockAllVersions({
     addVersionComponent,
     dataSource,
+    stateCode,
     onSelectVersion,
     operationRender,
   }: any) {
@@ -60,7 +61,11 @@ jest.mock('@/components/AllVersions', () => ({
     };
 
     return (
-      <div data-testid='all-versions'>
+      <div
+        data-testid='all-versions'
+        data-source={dataSource}
+        data-state-code={stateCode === undefined ? '' : String(stateCode)}
+      >
         <div data-testid={`all-versions-add-version-${dataSource}`}>
           {addVersionComponent?.({ newVersion: '01.00.001' })}
         </div>
@@ -292,6 +297,8 @@ describe('UnitgroupsSelectDrawer', () => {
     );
     expect(screen.getByText('view unit-group-tg:1.0.0')).toBeInTheDocument();
     expect(screen.getByText('sup:kg')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'tg');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '');
 
     await userEvent.click(screen.getByRole('button', { name: /Business Data/i }));
 
@@ -358,6 +365,8 @@ describe('UnitgroupsSelectDrawer', () => {
       ),
     );
     expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-source', 'my');
+    expect(screen.getByTestId('all-versions')).toHaveAttribute('data-state-code', '0');
     expect(screen.queryByText('create-unit-group')).not.toBeInTheDocument();
     expect(screen.getByText('view unit-group-my:1.0.0')).toBeInTheDocument();
     expect(screen.getByTestId('all-versions-add-version-my')).toBeInTheDocument();
