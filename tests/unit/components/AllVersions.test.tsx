@@ -582,6 +582,7 @@ describe('AllVersionsList Component', () => {
         expect.any(Object),
         'en',
         'test-datasource',
+        undefined,
       );
     });
   });
@@ -607,6 +608,33 @@ describe('AllVersionsList Component', () => {
         expect.any(Object),
         'en',
         'te',
+        undefined,
+      );
+    });
+  });
+
+  it('should pass an exact state-code filter for owner-draft selectors', async () => {
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} dataSource='my' stateCode={0} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalledWith(
+        'id',
+        'processes',
+        'test-id',
+        expect.objectContaining({
+          pageSize: 10,
+          current: 1,
+        }),
+        expect.any(Object),
+        'en',
+        'my',
+        0,
       );
     });
   });
