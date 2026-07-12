@@ -327,6 +327,61 @@ describe('UnitgroupsSelectDrawer', () => {
     );
   });
 
+  it('loads and selects My Data only after the user explicitly switches tabs', async () => {
+    const onData = jest.fn();
+
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={onData} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+    expect(mockGetUnitGroupTableAll.mock.calls.some((call) => call[3] === 'my')).toBe(false);
+
+    await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'my',
+        [],
+        0,
+      ),
+    );
+    expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
+    expect(screen.queryByText('create-unit-group')).not.toBeInTheDocument();
+    expect(screen.getByText('view unit-group-my:1.0.0')).toBeInTheDocument();
+    expect(screen.getByTestId('all-versions-add-version-my')).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText('my'), 'owner-draft');
+    await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'my',
+        'owner-draft',
+        {},
+        0,
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'my:owner-draft' }));
+    await userEvent.click(screen.getByRole('button', { name: /^submit$/i }));
+
+    expect(onData).toHaveBeenCalledWith('unit-group-my-search', '2.0.0');
+  });
+
   it('supports icon trigger, tg search, reopen reset, and all close paths', async () => {
     const onData = jest.fn();
 
