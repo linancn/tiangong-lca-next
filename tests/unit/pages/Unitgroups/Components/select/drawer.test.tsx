@@ -354,6 +354,7 @@ describe('UnitgroupsSelectDrawer', () => {
         'en',
         'my',
         [],
+        0,
       ),
     );
     expect(screen.getByRole('button', { name: /My Data/i })).toHaveAttribute('data-active', 'true');
@@ -371,6 +372,7 @@ describe('UnitgroupsSelectDrawer', () => {
         'my',
         'owner-draft',
         {},
+        0,
       ),
     );
 

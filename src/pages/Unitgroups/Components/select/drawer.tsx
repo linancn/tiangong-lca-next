@@ -285,9 +285,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             sort,
           ) => {
             if (myKeyWord.length > 0) {
-              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
+              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {}, 0);
             }
-            return getUnitGroupTableAll(params, sort, lang, 'my', []);
+            return getUnitGroupTableAll(params, sort, lang, 'my', [], 0);
           }}
           columns={unitGroupColumns}
           tableAlertOptionRender={tableAlertOptionRender}
