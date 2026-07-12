@@ -63,7 +63,7 @@ It does not own:
 | local `pre-push` hook on any branch | run docpact first, then run the full local gate |
 | ordinary GitHub branch pushes | do not run standalone remote test jobs |
 | PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
-| canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, then run release-gate tests before web deploy and draft Electron release |
+| canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
 
@@ -83,5 +83,6 @@ It does not own:
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
+- make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run
 - reproduce `npm run test:ci` and `npm run prepush:gate` serially on one workstation when both are needed
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern

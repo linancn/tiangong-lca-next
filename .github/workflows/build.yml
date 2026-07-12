@@ -215,6 +215,78 @@ jobs:
       - name: Run full release gate
         run: npm run prepush:gate
 
+  release-draft:
+    name: Prepare Unique Draft Release
+    needs:
+      - release-context
+      - release-gate
+    if: needs.release-context.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+
+    steps:
+      - name: Ensure exactly one draft release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_HEAD: ${{ needs.release-context.outputs.release_head }}
+          TAG_NAME: ${{ needs.release-context.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          releases_json="$(
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" | jq -s 'add'
+          )"
+          release_count="$(jq --arg tag "${TAG_NAME}" '[.[] | select(.tag_name == $tag)] | length' <<< "${releases_json}")"
+
+          if [ "${release_count}" -gt 1 ]; then
+            echo "::error::Found ${release_count} releases for ${TAG_NAME}; refusing parallel publication into an ambiguous release."
+            exit 1
+          fi
+
+          if [ "${release_count}" -eq 0 ]; then
+            release_id="$(
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" \
+                -f tag_name="${TAG_NAME}" \
+                -f target_commitish="${RELEASE_HEAD}" \
+                -f name="${TAG_NAME#v}" \
+                -F draft=true \
+                -F prerelease=false \
+                --jq '.id'
+            )"
+            echo "Created draft release ${release_id} for ${TAG_NAME}."
+          else
+            release_id="$(jq -r --arg tag "${TAG_NAME}" '[.[] | select(.tag_name == $tag)][0].id' <<< "${releases_json}")"
+            echo "Reusing draft release ${release_id} for ${TAG_NAME}."
+          fi
+
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/${release_id}")"
+          actual_tag="$(jq -r '.tag_name' <<< "${release_json}")"
+          actual_target="$(jq -r '.target_commitish' <<< "${release_json}")"
+          is_draft="$(jq -r '.draft' <<< "${release_json}")"
+
+          if [ "${actual_tag}" != "${TAG_NAME}" ]; then
+            echo "::error::Release ${release_id} uses tag ${actual_tag}, expected ${TAG_NAME}."
+            exit 1
+          fi
+          if [ "${actual_target}" != "${RELEASE_HEAD}" ]; then
+            echo "::error::Release ${release_id} targets ${actual_target}, expected ${RELEASE_HEAD}."
+            exit 1
+          fi
+          if [ "${is_draft}" != "true" ]; then
+            echo "::error::Release ${release_id} is not a draft; refusing draft publication."
+            exit 1
+          fi
+
+          echo "release_id=${release_id}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Prepared Electron release"
+            echo "- tag: \`${TAG_NAME}\`"
+            echo "- head: \`${RELEASE_HEAD}\`"
+            echo "- draft release id: \`${release_id}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   web-deploy:
     name: Build and Deploy Web App
     needs:
@@ -310,6 +382,7 @@ jobs:
     needs:
       - release-context
       - release-gate
+      - release-draft
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ${{ matrix.os }}
 
@@ -346,3 +419,93 @@ jobs:
           npm run build
           npx tsc --project tsconfig.electron.json
           npx electron-builder --config electron-builder.json --publish always --${{ matrix.arch }}
+
+  verify-release:
+    name: Verify Unique Complete Electron Release
+    needs:
+      - release-context
+      - release-draft
+      - release
+    if: needs.release-context.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify release identity and assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREPARED_RELEASE_ID: ${{ needs.release-draft.outputs.release_id }}
+          RELEASE_HEAD: ${{ needs.release-context.outputs.release_head }}
+          TAG_NAME: ${{ needs.release-context.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          releases_json="$(
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" | jq -s 'add'
+          )"
+          release_count="$(jq --arg tag "${TAG_NAME}" '[.[] | select(.tag_name == $tag)] | length' <<< "${releases_json}")"
+          if [ "${release_count}" -ne 1 ]; then
+            echo "::error::Expected exactly one release for ${TAG_NAME}, found ${release_count}."
+            exit 1
+          fi
+          observed_release_id="$(jq -r --arg tag "${TAG_NAME}" '[.[] | select(.tag_name == $tag)][0].id' <<< "${releases_json}")"
+          if [ "${observed_release_id}" != "${PREPARED_RELEASE_ID}" ]; then
+            echo "::error::Release identity changed from ${PREPARED_RELEASE_ID} to ${observed_release_id}."
+            exit 1
+          fi
+
+          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/${PREPARED_RELEASE_ID}")"
+          actual_tag="$(jq -r '.tag_name' <<< "${release_json}")"
+          actual_target="$(jq -r '.target_commitish' <<< "${release_json}")"
+          is_draft="$(jq -r '.draft' <<< "${release_json}")"
+          asset_count="$(jq '.assets | length' <<< "${release_json}")"
+
+          if [ "${actual_tag}" != "${TAG_NAME}" ]; then
+            echo "::error::Release uses tag ${actual_tag}, expected ${TAG_NAME}."
+            exit 1
+          fi
+          if [ "${actual_target}" != "${RELEASE_HEAD}" ]; then
+            echo "::error::Release targets ${actual_target}, expected ${RELEASE_HEAD}."
+            exit 1
+          fi
+          if [ "${is_draft}" != "true" ]; then
+            echo "::error::Release ${PREPARED_RELEASE_ID} is not a draft."
+            exit 1
+          fi
+          if [ "${asset_count}" -ne 12 ]; then
+            echo "::error::Expected 12 release assets, found ${asset_count}."
+            jq -r '.assets[].name' <<< "${release_json}"
+            exit 1
+          fi
+
+          version="${TAG_NAME#v}"
+          expected_assets=(
+            "TianGong-LCA-${version}-arm64.dmg"
+            "TianGong-LCA-${version}-arm64.dmg.blockmap"
+            "TianGong-LCA-Setup-${version}.exe"
+            "TianGong-LCA-Setup-${version}.exe.blockmap"
+            "latest-linux-arm64.yml"
+            "latest-linux.yml"
+            "latest-mac.yml"
+            "latest.yml"
+            "tiangong-lca-next-${version}.aarch64.rpm"
+            "tiangong-lca-next-${version}.x86_64.rpm"
+            "tiangong-lca-next_${version}_amd64.deb"
+            "tiangong-lca-next_${version}_arm64.deb"
+          )
+
+          for asset_name in "${expected_assets[@]}"; do
+            if ! jq -e --arg name "${asset_name}" '.assets[] | select(.name == $name and .state == "uploaded" and .size > 0)' <<< "${release_json}" >/dev/null; then
+              echo "::error::Missing, empty, or incomplete release asset: ${asset_name}."
+              exit 1
+            fi
+          done
+
+          {
+            echo "### Verified Electron release"
+            echo "- tag: \`${TAG_NAME}\`"
+            echo "- head: \`${RELEASE_HEAD}\`"
+            echo "- unique draft release id: \`${PREPARED_RELEASE_ID}\`"
+            echo "- assets: \`${asset_count}/12\`"
+            echo
+            jq -r '.assets | sort_by(.name)[] | "- `\(.name)` (\(.size) bytes)"' <<< "${release_json}"
+          } >> "$GITHUB_STEP_SUMMARY"
