@@ -3,6 +3,7 @@ export interface CachedJsonEntry<T = unknown> {
   data: T;
   size: number;
   cachedAt: number;
+  sha256?: string;
 }
 
 export const initIndexedDbStore = (
@@ -48,6 +49,7 @@ export const putCachedJsonEntry = async (
   storeName: string,
   filename: string,
   data: unknown,
+  metadata: { sha256?: string } = {},
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([storeName], 'readwrite');
@@ -58,6 +60,7 @@ export const putCachedJsonEntry = async (
       data,
       size: JSON.stringify(data).length,
       cachedAt: Date.now(),
+      ...(metadata.sha256 ? { sha256: metadata.sha256 } : {}),
     };
 
     const request = store.put(cachedEntry);
@@ -81,6 +84,21 @@ export const getCachedJsonEntry = async <T>(
       const result = request.result as CachedJsonEntry<T> | undefined;
       resolve(result ?? null);
     };
+  });
+};
+
+export const deleteCachedJsonEntry = async (
+  db: IDBDatabase,
+  storeName: string,
+  filename: string,
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const request = store.delete(filename);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
   });
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "tiangong-lca-next",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -26,6 +26,8 @@
     "lint:fix": "eslint --fix --cache --ext .js,.jsx,.ts,.tsx --format=stylish ./src ./tests",
     "lint:js": "eslint --cache --ext .js,.jsx,.ts,.tsx --format=stylish ./src ./tests && npm run lint:deprecated",
     "lint:prettier": "prettier --check \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",
+    "lcia-cache:generate": "node --max-old-space-size=512 scripts/validate-lcia-cache.cjs --write",
+    "lcia-cache:verify": "node --max-old-space-size=512 scripts/validate-lcia-cache.cjs",
     "openapi": "max openapi",
     "prepare": "husky",
     "prettier": "prettier --write \"{src,tests,docs,config,scripts,types}/**/*.{js,jsx,tsx,ts,less,md,json}\" \"*.{js,jsx,tsx,ts,less,md,json}\"",
@@ -50,7 +52,7 @@
     "test:report": "npm run test:coverage:report",
     "test:update": "jest --runInBand --testTimeout=20000 -u",
     "tsc": "tsc --noEmit",
-    "prepush:gate": "npm run lint && npm run test:coverage && npm run test:coverage:assert-full",
+    "prepush:gate": "npm run lcia-cache:verify && npm run lint && npm run test:coverage && npm run test:coverage:assert-full",
     "test:antchain": "npx tsx src/services/antchain/api.ts",
     "ncu": "ncu",
     "ncu:update": "ncu -u"

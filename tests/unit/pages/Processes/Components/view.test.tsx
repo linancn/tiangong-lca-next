@@ -110,6 +110,16 @@ jest.mock('@/services/lciaMethods/util', () => ({
   __esModule: true,
   cacheAndDecompressMethod: (...args: any[]) => mockCacheAndDecompressMethod(...args),
   getDecompressedMethod: (...args: any[]) => mockGetDecompressedMethod(...args),
+  getVerifiedDecompressedMethodEntry: async (...args: any[]) => {
+    let data = await mockGetDecompressedMethod(...args);
+    const needsRefresh = data && !data.files?.[0]?.referenceQuantity;
+    if (!data || needsRefresh) {
+      const refreshed = await mockCacheAndDecompressMethod(...args);
+      if (!refreshed) return null;
+      data = await mockGetDecompressedMethod(...args);
+    }
+    return data ? { data, sha256: 'verified-test-sha' } : null;
+  },
   getReferenceQuantityFromMethod: (...args: any[]) => mockGetReferenceQuantityFromMethod(...args),
 }));
 
@@ -298,6 +308,13 @@ jest.mock('antd', () => {
   );
 
   const Space = ({ children }: any) => <div>{children}</div>;
+  const Alert = ({ message, description }: any) => (
+    <div role='alert'>
+      <div>{message}</div>
+      <div>{description}</div>
+    </div>
+  );
+  const Tag = ({ children }: any) => <span>{children}</span>;
   const Row = ({ children }: any) => <div>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
   const Descriptions = ({ children }: any) => <div>{children}</div>;
@@ -366,6 +383,8 @@ jest.mock('antd', () => {
     Card,
     Collapse,
     Space,
+    Alert,
+    Tag,
     Row,
     Col,
     Descriptions,
@@ -609,7 +628,7 @@ describe('ProcessView component', () => {
     await waitFor(() =>
       expect(mockQueryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         process_version: '1.0.0',

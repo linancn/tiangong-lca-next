@@ -1605,6 +1605,7 @@ const ProcessView: FC<Props> = ({
     ),
     lciaResults: (
       <ProcessLciaResultsPanel
+        baseCalculationEvidence={initData?.LCIAResults?.['common:other']}
         baseRows={lciaResultDataSource}
         enablePublishedPackageReader={shouldUsePublishedLciaResults(defaultLcaDataScope)}
         lang={lang}

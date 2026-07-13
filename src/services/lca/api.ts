@@ -123,7 +123,7 @@ export type LcaResultResponse = {
 export type LcaQueryMode = 'process_all_impacts' | 'processes_one_impact';
 export type LcaHotspotSortBy = 'absolute_value' | 'value' | 'process_index';
 export type LcaSortDirection = 'asc' | 'desc';
-export type LcaDataScope = 'current_user' | 'open_data' | 'all_data';
+export type LcaDataScope = 'public_plus_owner_draft' | 'current_user' | 'open_data' | 'all_data';
 
 export type LcaQueryRequest =
   | {
@@ -172,6 +172,7 @@ export type LcaQueryResponse = {
     cache_hit: boolean;
     computed_at: string;
     query_artifact_format?: string;
+    calculation_evidence?: unknown;
   };
 };
 

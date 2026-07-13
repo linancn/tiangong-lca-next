@@ -1248,6 +1248,9 @@ describe('Process Utility Functions', () => {
       const dataWithLCIA = {
         ...mockRawData,
         LCIAResults: {
+          'common:other': {
+            'tg:lciaCalculationEvidence': { '#text': '{"status":"complete"}' },
+          },
           LCIAResult: [
             {
               referenceToLCIAMethodDataSet: {
@@ -1263,6 +1266,14 @@ describe('Process Utility Functions', () => {
 
       expect(result.LCIAResults).toBeDefined();
       expect(result.LCIAResults?.LCIAResult ?? []).toHaveLength(1);
+      expect(result.LCIAResults?.['common:other']).toEqual(
+        dataWithLCIA.LCIAResults['common:other'],
+      );
+
+      const ordered = genProcessJsonOrdered('process-with-evidence', result);
+      expect(ordered.processDataSet.LCIAResults['common:other']).toEqual(
+        dataWithLCIA.LCIAResults['common:other'],
+      );
     });
 
     it('should include all major sections', () => {

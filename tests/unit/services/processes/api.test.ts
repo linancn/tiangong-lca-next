@@ -137,6 +137,7 @@ const createQueryBuilder = <T>(resolvedValue: T) => {
     filter: jest.fn().mockReturnThis(),
     in: jest.fn().mockReturnThis(),
     or: jest.fn().mockReturnThis(),
+    ilike: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
@@ -1247,6 +1248,47 @@ describe('getProcessTableAll', () => {
 });
 
 describe('listProcessesForLcaAnalysis', () => {
+  it('lists only public rows plus personal owner drafts for the strict scope', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'owner-1' } } },
+    });
+
+    const result = await processesApi.listProcessesForLcaAnalysis(
+      { current: 1, pageSize: 20 },
+      'en',
+      'public_plus_owner_draft',
+    );
+
+    expect(builder.or).toHaveBeenCalledWith(
+      'state_code.eq.100,and(user_id.eq.owner-1,state_code.eq.0,team_id.is.null,review_id.is.null)',
+    );
+    expect(builder.ilike).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ success: true, total: 0 });
+  });
+
+  it('keeps strict owner/team/review guards on keyword search without using the broader RPC', async () => {
+    const builder = createQueryBuilder({ data: [], error: null, count: 0 });
+    mockFrom.mockReturnValueOnce(builder);
+    mockAuthGetSession.mockResolvedValueOnce({
+      data: { session: { user: { id: 'owner-2' } } },
+    });
+
+    await processesApi.listProcessesForLcaAnalysis(
+      { current: 2, pageSize: 10 },
+      'en',
+      'public_plus_owner_draft',
+      'battery',
+    );
+
+    expect(builder.or).toHaveBeenCalledWith(
+      'state_code.eq.100,and(user_id.eq.owner-2,state_code.eq.0,team_id.is.null,review_id.is.null)',
+    );
+    expect(builder.ilike).toHaveBeenCalledWith('extracted_text', '%battery%');
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
   it('loads only the requested page for a single-source analysis list', async () => {
     const buildProcessRow = (index: number) => ({
       id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,

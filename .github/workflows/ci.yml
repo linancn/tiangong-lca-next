@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify reviewed LCIA cache bundle
+        run: npm run lcia-cache:verify
+
       - name: Build project
         run: npm run build
 

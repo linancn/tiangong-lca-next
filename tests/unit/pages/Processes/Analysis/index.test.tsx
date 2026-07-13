@@ -131,6 +131,13 @@ jest.mock('@/pages/Processes/Components/view', () => ({
   ),
 }));
 
+jest.mock('@/pages/Processes/Components/lcaCalculationEvidenceNotice', () => ({
+  __esModule: true,
+  default: ({ calculationEvidence }: { calculationEvidence?: unknown }) => (
+    <div data-testid='calculation-evidence-notice'>{JSON.stringify(calculationEvidence)}</div>
+  ),
+}));
+
 jest.mock('@/pages/Processes/Components/lcaProcessSelectionTable', () => ({
   __esModule: true,
   default: ({
@@ -200,11 +207,19 @@ jest.mock('@/services/teams/api', () => ({
   getTeams: jest.fn(),
 }));
 
-jest.mock('@/services/lciaMethods/util', () => ({
-  __esModule: true,
-  cacheAndDecompressMethod: jest.fn(),
-  getDecompressedMethod: jest.fn(),
-}));
+jest.mock('@/services/lciaMethods/util', () => {
+  const getDecompressedMethod = jest.fn();
+
+  return {
+    __esModule: true,
+    cacheAndDecompressMethod: jest.fn(),
+    getDecompressedMethod,
+    getVerifiedDecompressedMethodEntry: async (...args: unknown[]) => {
+      const data = await getDecompressedMethod(...args);
+      return data ? { data, sha256: 'verified-test-sha' } : null;
+    },
+  };
+});
 
 const {
   queryLcaResults,
@@ -276,6 +291,18 @@ const methodListFiles = [
 ];
 
 const defaultMethodListFiles = [methodListFiles[0]];
+const aliasedCanonicalMethodId = '503699e0-eca9-4089-8bf8-e0f49c93e578';
+const aliasedArtifactLocatorId = '9ec743ea-6b00-400d-a53b-61547a3fc03c';
+const aliasedMethodListFiles = [
+  {
+    id: aliasedArtifactLocatorId,
+    version: '01.01.000',
+    description: [{ '@xml:lang': 'en', '#text': 'Aliased impact' }],
+    referenceQuantity: {
+      'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg alias-eq' }],
+    },
+  },
+];
 
 const createDeferred = <T,>() => {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -587,7 +614,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         mode: 'process_all_impacts',
         process_id: 'process-1',
         process_version: '01.00.000',
@@ -600,6 +627,39 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByText('Climate change').length).toBeGreaterThan(0);
     expect(screen.getAllByText('kg CO2-eq').length).toBeGreaterThan(0);
     expect(screen.getAllByTestId('bar-chart').length).toBeGreaterThan(0);
+  });
+
+  it('renders calculation evidence returned with an analysis result', async () => {
+    queryLcaResults.mockResolvedValueOnce({
+      snapshot_id: 'snapshot-with-evidence',
+      result_id: 'result-with-evidence',
+      source: 'all_unit',
+      mode: 'process_all_impacts',
+      data: {
+        values: [
+          {
+            impact_id: 'impact-1',
+            impact_index: 1,
+            impact_name: 'Climate change',
+            unit: 'kg CO2-eq',
+            value: 1,
+          },
+        ],
+      },
+      meta: {
+        cache_hit: false,
+        computed_at: '2026-03-12T12:00:00Z',
+        calculation_evidence: { schema_version: 'invalid-test-evidence' },
+      },
+    });
+    render(<LcaAnalysisPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Load profile' }));
+
+    expect(await screen.findByText('snapshot-with-evidence')).toBeInTheDocument();
+    expect(await screen.findByTestId('calculation-evidence-notice')).toHaveTextContent(
+      'invalid-test-evidence',
+    );
   });
 
   it('falls back to colorSplit when the secondary border token is unavailable', async () => {
@@ -634,7 +694,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
         impact_id: 'impact-1',
@@ -669,7 +729,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
         impact_id: 'impact-1',
@@ -829,7 +889,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         process_id: 'process-1',
         process_version: '01.00.000',
         impact_id: 'impact-1',
@@ -1080,7 +1140,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         process_id: 'process-blank-version',
         process_version: undefined,
         impact_id: 'impact-1',
@@ -1132,7 +1192,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'current_user',
+        'public_plus_owner_draft',
         '',
         {},
         {},
@@ -1151,7 +1211,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'current_user',
+        'public_plus_owner_draft',
         '',
         {},
         {},
@@ -1193,7 +1253,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'current_user',
+        'public_plus_owner_draft',
         '',
         {},
         {},
@@ -1213,7 +1273,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
         scope: 'dev-v1',
-        data_scope: 'current_user',
+        data_scope: 'public_plus_owner_draft',
         process_id: 'process-shared',
         process_version: '01.00.000',
         impact_id: 'impact-1',
@@ -1228,15 +1288,30 @@ describe('LcaAnalysisPage', () => {
     );
   });
 
-  it('switches data scope and uses the selected scope for option loading and compare queries', async () => {
+  it('uses canonical impact ids only for private v2 and locators for current-user/all-data legacy scopes', async () => {
+    getDecompressedMethod.mockResolvedValue({ files: aliasedMethodListFiles });
     render(<LcaAnalysisPage />);
 
     expect(
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
+    fireEvent.click(screen.getByTestId('tab-compare'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+
+    await waitFor(() =>
+      expect(queryLcaResults).toHaveBeenLastCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'public_plus_owner_draft',
+        mode: 'processes_one_impact',
+        process_ids: ['process-1', 'process-2', 'process-3'],
+        impact_id: aliasedCanonicalMethodId,
+        allow_fallback: false,
+      }),
+    );
+
     fireEvent.change(screen.getByLabelText('Data scope'), {
-      target: { value: 'all_data' },
+      target: { value: 'current_user' },
     });
 
     await waitFor(() =>
@@ -1246,7 +1321,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'all_data',
+        'current_user',
         '',
         {},
         {},
@@ -1255,16 +1330,43 @@ describe('LcaAnalysisPage', () => {
       ),
     );
 
-    fireEvent.click(screen.getByTestId('tab-compare'));
     fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
 
     await waitFor(() =>
-      expect(queryLcaResults).toHaveBeenCalledWith({
+      expect(queryLcaResults).toHaveBeenLastCalledWith({
+        scope: 'dev-v1',
+        data_scope: 'current_user',
+        mode: 'processes_one_impact',
+        process_ids: ['process-1', 'process-2', 'process-3'],
+        impact_id: aliasedArtifactLocatorId,
+        allow_fallback: false,
+      }),
+    );
+
+    fireEvent.change(screen.getByLabelText('Data scope'), {
+      target: { value: 'all_data' },
+    });
+
+    await waitFor(() =>
+      expect(listProcessesForLcaAnalysis).toHaveBeenLastCalledWith(
+        { current: 1, pageSize: 50 },
+        'en',
+        'all_data',
+        '',
+        {},
+        {},
+        'all',
+        'all',
+      ),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Run analysis' }));
+    await waitFor(() =>
+      expect(queryLcaResults).toHaveBeenLastCalledWith({
         scope: 'dev-v1',
         data_scope: 'all_data',
         mode: 'processes_one_impact',
         process_ids: ['process-1', 'process-2', 'process-3'],
-        impact_id: 'impact-1',
+        impact_id: aliasedArtifactLocatorId,
         allow_fallback: false,
       }),
     );
@@ -1272,6 +1374,7 @@ describe('LcaAnalysisPage', () => {
 
   it('uses current public published results for open-data profile, compare, and grouped analyses', async () => {
     process.env.APP_PUBLIC_LCIA_RESULTS_ENABLED = 'true';
+    getDecompressedMethod.mockResolvedValue({ files: aliasedMethodListFiles });
 
     render(<LcaAnalysisPage />);
 
@@ -1315,7 +1418,7 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
         mode: 'processes_one_impact',
-        impactCategoryId: 'impact-1',
+        impactCategoryId: aliasedArtifactLocatorId,
         processes: [
           { id: 'process-1', version: '01.00.000' },
           { id: 'process-2', version: '02.00.000' },
@@ -1634,7 +1737,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'current_user',
+        'public_plus_owner_draft',
         'battery',
         {},
         {},
@@ -1654,7 +1757,7 @@ describe('LcaAnalysisPage', () => {
           pageSize: 50,
         },
         'en',
-        'current_user',
+        'public_plus_owner_draft',
         'battery',
         {},
         {},

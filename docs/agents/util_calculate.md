@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-08
-lastReviewedCommit: a7f4365e258d82d3a1b6c09de9bbeb79100a272a
+lastReviewedAt: 2026-07-13
+lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
 ---
 
 # Lifecycle Model Calculation Reference
@@ -46,6 +46,7 @@ lastReviewedCommit: a7f4365e258d82d3a1b6c09de9bbeb79100a272a
 - main pipeline: `src/services/lifeCycleModels/util_calculate.ts`
 - allocation helper: `src/services/lifeCycleModels/util_allocate_supply_demand.ts`
 - LCIA helper: `src/services/lciaMethods/util.ts`
+- LCIA bundle/evidence contract: `docs/agents/lcia-calculation-evidence.md`
 - ordered-dataset shaping adjacent to calculation and review flows: `src/services/lifeCycleModels/persistencePlan.ts`
 
 ## Entry Function

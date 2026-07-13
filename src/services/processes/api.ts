@@ -73,7 +73,8 @@ export type LcaMyProcessOption = {
   name: string;
 };
 
-export type LcaAnalysisProcessScope = 'current_user' | 'open_data' | 'all_data';
+export type LcaAnalysisProcessScope =
+  'public_plus_owner_draft' | 'current_user' | 'open_data' | 'all_data';
 
 type ProcessTableQueryParams = {
   current?: number;
@@ -502,6 +503,8 @@ async function getProcessTableAllData(
   sort: Record<string, SortOrder>,
   lang: string,
   typeOfDataSet?: string,
+  ownerDraftOnly = false,
+  keyword = '',
 ): Promise<ProcessTableResponse> {
   const session = await supabase.auth.getSession();
   const userId = session.data.session?.user?.id;
@@ -515,7 +518,11 @@ async function getProcessTableAllData(
   let query = supabase
     .from('processes')
     .select(selectStr4Table, { count: 'exact' })
-    .or(`state_code.eq.100,user_id.eq.${userId}`)
+    .or(
+      ownerDraftOnly
+        ? `state_code.eq.100,and(user_id.eq.${userId},state_code.eq.0,team_id.is.null,review_id.is.null)`
+        : `state_code.eq.100,user_id.eq.${userId}`,
+    )
     .order(sortBy, { ascending: orderBy === 'ascend' })
     .range(
       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
@@ -527,6 +534,10 @@ async function getProcessTableAllData(
       'json_ordered->processDataSet->modellingAndValidation->LCIMethodAndAllocation->>typeOfDataSet',
       typeOfDataSet,
     );
+  }
+
+  if (keyword.trim()) {
+    query = query.ilike('extracted_text', `%${keyword.trim()}%`);
   }
 
   const result = await query;
@@ -1356,6 +1367,10 @@ export async function listProcessesForLcaAnalysis(
       stateCode,
       typeOfDataSet,
     );
+  }
+
+  if (dataScope === 'public_plus_owner_draft') {
+    return await getProcessTableAllData(params, sort, lang, typeOfDataSet, true, trimmedKeyword);
   }
 
   return loadBySource(dataScope === 'open_data' ? 'tg' : 'my');

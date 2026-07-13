@@ -35,6 +35,16 @@ const {
 jest.mock('@/services/lciaMethods/util', () => ({
   __esModule: true,
   default: jest.fn(),
+  LCIAResultCalculationWithEvidence: async (...args: unknown[]) => {
+    const calculate = jest.requireMock('@/services/lciaMethods/util').default;
+    return { results: await calculate(...args), report: { schema_version: 'test-report' } };
+  },
+}));
+
+jest.mock('@/services/lciaMethods/evidence', () => ({
+  __esModule: true,
+  ...jest.requireActual('@/services/lciaMethods/evidence'),
+  serializeStaticLciaReport: (report: unknown) => ({ 'tg:testEvidence': report }),
 }));
 
 jest.mock('uuid', () => ({

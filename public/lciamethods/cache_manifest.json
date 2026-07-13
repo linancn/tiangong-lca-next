@@ -1,0 +1,352 @@
+{
+  "schema_version": "lcia.static_cache_bundle.v1",
+  "source_kind": "static_cache_bundle",
+  "bundle_version": "1.2.4",
+  "bundle_version_provenance": {
+    "scheme": "legacy_frontend_cache_release.v1",
+    "repository": "linancn/tiangong-lca-next",
+    "commit": "d054b46fd99f8b981ffebe598f5d174da23dd0cd",
+    "path": "src/components/LCIACacheMonitor/index.tsx",
+    "value": "1.2.4"
+  },
+  "source_snapshot_sha256": "4efbe0b027969dc2b3b151a84422b3fb749bf1fc2d334c60d1fcf37bf7cc2c11",
+  "method_manifest_sha256": "801e886d2d02fc57c6815cfae2f33904139597c1665b55ee0f57bcacdd6be609",
+  "method_identity_manifest_sha256": "dedd7f932f8418a2babb0a9b3ac93c7c812bda4988f974859ac6981e855a0b19",
+  "factor_manifest_sha256": "40ffd33323c9882dbd0b0d9c99982bad1752e311062231bcf1f490ee96f92e96",
+  "hash_algorithm": "sha256",
+  "canonicalization": "sorted_object_keys_preserve_array_order.v1",
+  "source_snapshot_hash_input": {
+    "schema_version": "lcia.static_cache_bundle.v1",
+    "source_kind": "static_cache_bundle",
+    "bundle_version": "1.2.4",
+    "method_manifest_sha256": "801e886d2d02fc57c6815cfae2f33904139597c1665b55ee0f57bcacdd6be609",
+    "method_identity_manifest_sha256": "dedd7f932f8418a2babb0a9b3ac93c7c812bda4988f974859ac6981e855a0b19",
+    "factor_manifest_sha256": "40ffd33323c9882dbd0b0d9c99982bad1752e311062231bcf1f490ee96f92e96",
+    "files": {
+      "list": {
+        "path": "list.json",
+        "media_type": "application/json",
+        "byte_size": 25311,
+        "sha256": "38f4bb0c1f43589ae58798e7c6b35f7c9607861c2753c81eb16255a3225867fc"
+      },
+      "factors": {
+        "path": "flow_factors.json.gz",
+        "media_type": "application/gzip",
+        "byte_size": 3900634,
+        "decompressed_byte_size": 62571421,
+        "sha256": "3803be483b8b29060e031cdfe401f3c2ed02b68bcd6e0588fd467f9459d45139",
+        "decompressed_sha256": "1f69c73ca45fd2f5a1379b6f91bb8886a85829adec317689b6039b6cc7066ba1",
+        "canonical_sha256": "40ffd33323c9882dbd0b0d9c99982bad1752e311062231bcf1f490ee96f92e96"
+      }
+    }
+  },
+  "method_membership_status": "consistent_with_verified_aliases",
+  "release_ready": true,
+  "files": {
+    "list": {
+      "path": "list.json",
+      "media_type": "application/json",
+      "byte_size": 25311,
+      "sha256": "38f4bb0c1f43589ae58798e7c6b35f7c9607861c2753c81eb16255a3225867fc"
+    },
+    "factors": {
+      "path": "flow_factors.json.gz",
+      "media_type": "application/gzip",
+      "byte_size": 3900634,
+      "decompressed_byte_size": 62571421,
+      "sha256": "3803be483b8b29060e031cdfe401f3c2ed02b68bcd6e0588fd467f9459d45139",
+      "decompressed_sha256": "1f69c73ca45fd2f5a1379b6f91bb8886a85829adec317689b6039b6cc7066ba1",
+      "canonical_sha256": "40ffd33323c9882dbd0b0d9c99982bad1752e311062231bcf1f490ee96f92e96"
+    }
+  },
+  "identity_aliases": [
+    {
+      "method_id": "503699e0-eca9-4089-8bf8-e0f49c93e578",
+      "method_version": "01.01.000",
+      "artifact_locator_id": "9ec743ea-6b00-400d-a53b-61547a3fc03c",
+      "status": "verified",
+      "evidence": {
+        "repository": "tiangong-lca/data",
+        "commit": "def9510358d12256ccfa9f530ddcb78038da0454",
+        "path": "tiangong_lca_data/lciamethods/9ec743ea-6b00-400d-a53b-61547a3fc03c.xml",
+        "sha256": "84203510df0a0700e385cd1b08288859bff79d0127df02edb3b26882145d33c2",
+        "identity_field": "LCIAMethodDataSet.LCIAMethodInformation.dataSetInformation.common:UUID"
+      }
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "01500b74-7ffb-463e-9bd4-72f17c2263ff",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "01500b74-7ffb-463e-9bd4-72f17c2263ff",
+      "artifact_filename": "01500b74-7ffb-463e-9bd4-72f17c2263ff_01.00.000.json.gz",
+      "factor_entry_count": 398,
+      "unique_flow_direction_key_count": 398,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "05316e7a-b254-4bea-9cf0-6bf33eb5c630",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "05316e7a-b254-4bea-9cf0-6bf33eb5c630",
+      "artifact_filename": "05316e7a-b254-4bea-9cf0-6bf33eb5c630_01.00.000.json.gz",
+      "factor_entry_count": 79349,
+      "unique_flow_direction_key_count": 79169,
+      "duplicate_entry_count": 180
+    },
+    {
+      "method_id": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12",
+      "artifact_filename": "14af9ca7-aa1d-4832-b1d9-ab05a06dcb12_01.00.000.json.gz",
+      "factor_entry_count": 12,
+      "unique_flow_direction_key_count": 12,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c",
+      "method_version": "01.01.000",
+      "artifact_locator_id": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c",
+      "artifact_filename": "2299222a-bbd8-474f-9d4f-4dd1f18aea7c_01.01.000.json.gz",
+      "factor_entry_count": 13717,
+      "unique_flow_direction_key_count": 13717,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "503699e0-eca9-4089-8bf8-e0f49c93e578",
+      "method_version": "01.01.000",
+      "artifact_locator_id": "9ec743ea-6b00-400d-a53b-61547a3fc03c",
+      "artifact_filename": "9ec743ea-6b00-400d-a53b-61547a3fc03c_01.01.000.json.gz",
+      "factor_entry_count": 13319,
+      "unique_flow_direction_key_count": 13319,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "6209b35f-9447-40b5-b68c-a1099e3674a0",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "6209b35f-9447-40b5-b68c-a1099e3674a0",
+      "artifact_filename": "6209b35f-9447-40b5-b68c-a1099e3674a0_01.00.000.json.gz",
+      "factor_entry_count": 1099,
+      "unique_flow_direction_key_count": 1099,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "706261af-a357-4cc0-a50a-f3033fcbd556",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "706261af-a357-4cc0-a50a-f3033fcbd556",
+      "artifact_filename": "706261af-a357-4cc0-a50a-f3033fcbd556_01.00.000.json.gz",
+      "factor_entry_count": 13,
+      "unique_flow_direction_key_count": 13,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8",
+      "artifact_filename": "7cfdcfcf-b222-4b26-888a-a55f9fbf7ac8_01.00.000.json.gz",
+      "factor_entry_count": 43816,
+      "unique_flow_direction_key_count": 43636,
+      "duplicate_entry_count": 180
+    },
+    {
+      "method_id": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186",
+      "artifact_filename": "7fce5b3a-66b8-4ce1-91e8-a925aee1f186_01.00.000.json.gz",
+      "factor_entry_count": 1074,
+      "unique_flow_direction_key_count": 1074,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "8c3141e9-1f15-43b5-bff2-182e49893a46",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "8c3141e9-1f15-43b5-bff2-182e49893a46",
+      "artifact_filename": "8c3141e9-1f15-43b5-bff2-182e49893a46_01.00.000.json.gz",
+      "factor_entry_count": 39499,
+      "unique_flow_direction_key_count": 39499,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85",
+      "artifact_filename": "9d1d43a2-e1aa-4c16-acd4-3dd8a6a2fb85_01.00.000.json.gz",
+      "factor_entry_count": 4317,
+      "unique_flow_direction_key_count": 4137,
+      "duplicate_entry_count": 180
+    },
+    {
+      "method_id": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01",
+      "method_version": "01.00.010",
+      "artifact_locator_id": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01",
+      "artifact_filename": "b2ad6110-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
+      "factor_entry_count": 6,
+      "unique_flow_direction_key_count": 6,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01",
+      "method_version": "01.00.010",
+      "artifact_locator_id": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01",
+      "artifact_filename": "b2ad6494-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
+      "factor_entry_count": 48,
+      "unique_flow_direction_key_count": 48,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01",
+      "method_version": "03.00.014",
+      "artifact_locator_id": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01",
+      "artifact_filename": "b2ad66ce-c78d-11e6-9d9d-cec0c932ce01_03.00.014.json.gz",
+      "factor_entry_count": 2310,
+      "unique_flow_direction_key_count": 11,
+      "duplicate_entry_count": 2299
+    },
+    {
+      "method_id": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01",
+      "method_version": "01.00.010",
+      "artifact_locator_id": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01",
+      "artifact_filename": "b2ad6890-c78d-11e6-9d9d-cec0c932ce01_01.00.010.json.gz",
+      "factor_entry_count": 36423,
+      "unique_flow_direction_key_count": 171,
+      "duplicate_entry_count": 36252
+    },
+    {
+      "method_id": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b",
+      "method_version": "01.00.010",
+      "artifact_locator_id": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b",
+      "artifact_filename": "b53ec18f-7377-4ad3-86eb-cc3f4f276b2b_01.00.010.json.gz",
+      "factor_entry_count": 29,
+      "unique_flow_direction_key_count": 29,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "b5c602c6-def3-11e6-bf01-fe55135034f3",
+      "method_version": "02.00.011",
+      "artifact_locator_id": "b5c602c6-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c602c6-def3-11e6-bf01-fe55135034f3_02.00.011.json.gz",
+      "factor_entry_count": 983,
+      "unique_flow_direction_key_count": 83,
+      "duplicate_entry_count": 900
+    },
+    {
+      "method_id": "b5c610fe-def3-11e6-bf01-fe55135034f3",
+      "method_version": "02.01.000",
+      "artifact_locator_id": "b5c610fe-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c610fe-def3-11e6-bf01-fe55135034f3_02.01.000.json.gz",
+      "factor_entry_count": 1401,
+      "unique_flow_direction_key_count": 681,
+      "duplicate_entry_count": 720
+    },
+    {
+      "method_id": "b5c611c6-def3-11e6-bf01-fe55135034f3",
+      "method_version": "01.04.000",
+      "artifact_locator_id": "b5c611c6-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c611c6-def3-11e6-bf01-fe55135034f3_01.04.000.json.gz",
+      "factor_entry_count": 935,
+      "unique_flow_direction_key_count": 35,
+      "duplicate_entry_count": 900
+    },
+    {
+      "method_id": "b5c614d2-def3-11e6-bf01-fe55135034f3",
+      "method_version": "01.02.009",
+      "artifact_locator_id": "b5c614d2-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c614d2-def3-11e6-bf01-fe55135034f3_01.02.009.json.gz",
+      "factor_entry_count": 575,
+      "unique_flow_direction_key_count": 35,
+      "duplicate_entry_count": 540
+    },
+    {
+      "method_id": "b5c619fa-def3-11e6-bf01-fe55135034f3",
+      "method_version": "02.00.010",
+      "artifact_locator_id": "b5c619fa-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c619fa-def3-11e6-bf01-fe55135034f3_02.00.010.json.gz",
+      "factor_entry_count": 590,
+      "unique_flow_direction_key_count": 50,
+      "duplicate_entry_count": 540
+    },
+    {
+      "method_id": "b5c629d6-def3-11e6-bf01-fe55135034f3",
+      "method_version": "02.00.012",
+      "artifact_locator_id": "b5c629d6-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c629d6-def3-11e6-bf01-fe55135034f3_02.00.012.json.gz",
+      "factor_entry_count": 124,
+      "unique_flow_direction_key_count": 124,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "b5c632be-def3-11e6-bf01-fe55135034f3",
+      "method_version": "01.00.011",
+      "artifact_locator_id": "b5c632be-def3-11e6-bf01-fe55135034f3",
+      "artifact_filename": "b5c632be-def3-11e6-bf01-fe55135034f3_01.00.011.json.gz",
+      "factor_entry_count": 189,
+      "unique_flow_direction_key_count": 189,
+      "duplicate_entry_count": 0
+    },
+    {
+      "method_id": "dacd48b5-4da5-49aa-aff4-cd5f5495c037",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "dacd48b5-4da5-49aa-aff4-cd5f5495c037",
+      "artifact_filename": "dacd48b5-4da5-49aa-aff4-cd5f5495c037_01.00.000.json.gz",
+      "factor_entry_count": 6198,
+      "unique_flow_direction_key_count": 6018,
+      "duplicate_entry_count": 180
+    },
+    {
+      "method_id": "fd530f00-9325-424a-92ef-aaac67922fd9",
+      "method_version": "01.00.000",
+      "artifact_locator_id": "fd530f00-9325-424a-92ef-aaac67922fd9",
+      "artifact_filename": "fd530f00-9325-424a-92ef-aaac67922fd9_01.00.000.json.gz",
+      "factor_entry_count": 73151,
+      "unique_flow_direction_key_count": 73151,
+      "duplicate_entry_count": 0
+    }
+  ],
+  "factor_index_summary": {
+    "schema_version": "lcia.factor_index_summary.v1",
+    "flow_direction_key_count": 89070,
+    "factor_entry_count": 319575,
+    "method_flow_direction_key_count": 276704,
+    "duplicate_entry_count": 42871,
+    "max_method_count_per_key": 9,
+    "all_methods_key_count": 0,
+    "keys_with_duplicate_method_entries": 207,
+    "method_count_distribution": [
+      {
+        "method_count": 1,
+        "flow_direction_key_count": 614
+      },
+      {
+        "method_count": 2,
+        "flow_direction_key_count": 43967
+      },
+      {
+        "method_count": 3,
+        "flow_direction_key_count": 127
+      },
+      {
+        "method_count": 4,
+        "flow_direction_key_count": 39278
+      },
+      {
+        "method_count": 5,
+        "flow_direction_key_count": 366
+      },
+      {
+        "method_count": 6,
+        "flow_direction_key_count": 4412
+      },
+      {
+        "method_count": 7,
+        "flow_direction_key_count": 151
+      },
+      {
+        "method_count": 8,
+        "flow_direction_key_count": 91
+      },
+      {
+        "method_count": 9,
+        "flow_direction_key_count": 64
+      }
+    ]
+  }
+}
