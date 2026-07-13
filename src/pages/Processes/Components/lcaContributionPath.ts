@@ -1,3 +1,5 @@
+import { toCanonicalLciaMethodId } from '@/services/lciaMethods/evidence';
+
 const CONTRIBUTION_PATH_EPSILON = 1e-12;
 const DEFAULT_TOP_CONTRIBUTOR_COUNT = 12;
 
@@ -190,7 +192,7 @@ export function buildLcaContributionPathModel(raw: unknown): LcaContributionPath
 
   const rootProcessId = readString(root.process_id);
   const rootLabel = readString(root.label) || rootProcessId;
-  const impactId = readString(impact.impact_id);
+  const impactId = toCanonicalLciaMethodId(readString(impact.impact_id));
   const impactLabel = readString(impact.label) || impactId;
   const impactUnit = readString(impact.unit) || '-';
   if (!rootProcessId || !impactId) {
@@ -308,7 +310,7 @@ export function buildLcaContributionPathModel(raw: unknown): LcaContributionPath
     snapshotId: readString(artifact.snapshot_id),
     jobId: readString(artifact.job_id),
     processId: readString(artifact.process_id) || rootProcessId,
-    impactId: readString(artifact.impact_id) || impactId,
+    impactId: toCanonicalLciaMethodId(readString(artifact.impact_id) || impactId),
     amount: readNumber(artifact.amount, 1),
     options: {
       maxDepth: readNumber(options.max_depth, 4),

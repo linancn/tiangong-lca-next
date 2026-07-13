@@ -9,7 +9,8 @@ import {
   removeEmptyObjects,
   toAmountNumber,
 } from '../general/util';
-import LCIAResultCalculation from '../lciaMethods/util';
+import { serializeStaticLciaReport } from '../lciaMethods/evidence';
+import { LCIAResultCalculationWithEvidence } from '../lciaMethods/util';
 import { supabase } from '../supabase';
 import { Up2DownEdge } from './data';
 import { toReferenceProcessKey } from './referenceProcess';
@@ -1613,7 +1614,7 @@ export async function genLifeCycleModelProcesses(
         };
       });
 
-      const LCIAResults = await LCIAResultCalculation(newExchanges);
+      const lciaCalculation = await LCIAResultCalculationWithEvidence(newExchanges);
 
       if (type === 'secondary') {
         const oldProcesses = oldSubmodels?.find(
@@ -2295,7 +2296,8 @@ export async function genLifeCycleModelProcesses(
               exchange: newExchanges,
             },
             LCIAResults: {
-              LCIAResult: LCIAResults,
+              LCIAResult: lciaCalculation.results,
+              'common:other': serializeStaticLciaReport(lciaCalculation.report),
             },
           },
         },

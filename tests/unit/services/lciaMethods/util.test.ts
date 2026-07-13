@@ -24,6 +24,7 @@ jest.mock('@/services/general/util', () => {
   };
 });
 
+import { STATIC_LCIA_CACHE_MANIFEST } from '@/services/lciaMethods/evidence';
 import LCIAResultCalculation, {
   cacheAndDecompressMethod,
   clearCache,
@@ -33,9 +34,14 @@ import LCIAResultCalculation, {
   getCacheStatus,
   getDecompressedMethod,
   getReferenceQuantityFromMethod,
+  getVerifiedDecompressedMethodEntry,
   isMethodCached,
+  LCIAResultCalculationWithEvidence,
   setCacheManifest,
 } from '@/services/lciaMethods/util';
+import { webcrypto } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // Mock IndexedDB
 class MockIDBRequest {
@@ -261,6 +267,11 @@ describe('LCIA Methods Utility Functions', () => {
       data,
       size,
       cachedAt: Date.now(),
+      ...(filename === 'list.json'
+        ? { sha256: STATIC_LCIA_CACHE_MANIFEST.files.list.sha256 }
+        : filename === 'flow_factors.json.gz'
+          ? { sha256: STATIC_LCIA_CACHE_MANIFEST.files.factors.sha256 }
+          : {}),
     });
   };
 
@@ -414,7 +425,38 @@ describe('LCIA Methods Utility Functions', () => {
   });
 
   describe('cacheAndDecompressMethod', () => {
-    it('should cache method successfully for gzipped file', async () => {
+    it('evicts an old digest-less list entry and redownloads reviewed bytes exactly once', async () => {
+      setCachedMethod('list.json', { files: [{ id: 'stale' }] });
+      delete mockDB._getStore()._getData().get('list.json').sha256;
+      const bytes = readFileSync(resolve(process.cwd(), 'public/lciamethods/list.json'));
+      const arrayBuffer = bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer;
+      Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(arrayBuffer),
+      });
+
+      const entry = await getVerifiedDecompressedMethodEntry<any>('list.json');
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(entry?.data.files).toHaveLength(STATIC_LCIA_CACHE_MANIFEST.methods.length);
+      expect(entry?.sha256).toBe(STATIC_LCIA_CACHE_MANIFEST.files.list.sha256);
+    });
+
+    it('evicts a corrupt digest and fails closed after one failed refresh', async () => {
+      setCachedMethod('list.json', { files: [] });
+      mockDB._getStore()._getData().get('list.json').sha256 = '0'.repeat(64);
+      global.fetch = jest.fn().mockResolvedValue({ ok: false });
+
+      await expect(getVerifiedDecompressedMethodEntry('list.json')).resolves.toBeNull();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(mockDB._getStore()._getData().has('list.json')).toBe(false);
+    });
+
+    it('should reject a gzipped file that is not in the reviewed bundle', async () => {
       const mockFilename = 'test-method_01.00.000.json.gz';
       const mockDecompressedData = { id: 'test-method', name: 'Test Method' };
 
@@ -433,13 +475,13 @@ describe('LCIA Methods Utility Functions', () => {
 
       const result = await cacheAndDecompressMethod(mockFilename);
 
-      expect(result).toBe(true);
-      expect(global.fetch).toHaveBeenCalledWith(`/lciamethods/${mockFilename}`);
+      expect(result).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
 
       global.Response = originalResponse;
     });
 
-    it('should cache method successfully for non-gzipped file', async () => {
+    it('should reject non-matching bytes for a reviewed non-gzipped file', async () => {
       const mockFilename = 'list.json';
       const mockData = { methods: ['method1', 'method2'] };
 
@@ -450,7 +492,7 @@ describe('LCIA Methods Utility Functions', () => {
 
       const result = await cacheAndDecompressMethod(mockFilename);
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
       expect(global.fetch).toHaveBeenCalledWith(`/lciamethods/${mockFilename}`);
     });
 
@@ -518,6 +560,83 @@ describe('LCIA Methods Utility Functions', () => {
       } finally {
         (global as any).DecompressionStream = originalDecompressionStream;
       }
+    });
+
+    it('wraps decompression errors after reviewed gzip bytes pass digest verification', async () => {
+      const bytes = readFileSync(resolve(process.cwd(), 'public/lciamethods/flow_factors.json.gz'));
+      const arrayBuffer = bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer;
+      Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(arrayBuffer),
+      });
+      const originalDecompressionStream = globalThis.DecompressionStream;
+      (globalThis as any).DecompressionStream = undefined;
+
+      await expect(cacheAndDecompressMethod('flow_factors.json.gz')).resolves.toBe(false);
+
+      (globalThis as any).DecompressionStream = originalDecompressionStream;
+    });
+
+    it('parses and stores reviewed gzip bytes after successful decompression', async () => {
+      const bytes = readFileSync(resolve(process.cwd(), 'public/lciamethods/flow_factors.json.gz'));
+      const arrayBuffer = bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer;
+      Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(arrayBuffer),
+      });
+
+      await expect(cacheAndDecompressMethod('flow_factors.json.gz')).resolves.toBe(true);
+      expect(mockDB._getStore()._getData().get('flow_factors.json.gz')).toMatchObject({
+        data: { id: 'test', name: 'Test Method' },
+        sha256: STATIC_LCIA_CACHE_MANIFEST.files.factors.sha256,
+      });
+    });
+
+    it('fails closed when stale-entry eviction cannot reopen IndexedDB', async () => {
+      setCachedMethod('list.json', { files: [] });
+      mockDB._getStore()._getData().get('list.json').sha256 = '0'.repeat(64);
+      let openCount = 0;
+      (global.indexedDB.open as any) = jest.fn(() => {
+        const request = new MockIDBRequest();
+        openCount += 1;
+        setTimeout(() => {
+          if (openCount === 1) request.succeed(mockDB);
+          else request.fail(new Error('eviction open failed'));
+        }, 0);
+        return request;
+      });
+
+      await expect(getVerifiedDecompressedMethodEntry('list.json')).resolves.toBeNull();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('fails closed when a refreshed cache write is read back with the wrong digest', async () => {
+      const bytes = readFileSync(resolve(process.cwd(), 'public/lciamethods/list.json'));
+      const arrayBuffer = bytes.buffer.slice(
+        bytes.byteOffset,
+        bytes.byteOffset + bytes.byteLength,
+      ) as ArrayBuffer;
+      Object.defineProperty(globalThis, 'crypto', { configurable: true, value: webcrypto });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(arrayBuffer),
+      });
+      const store = mockDB._getStore();
+      const originalPut = store.put.bind(store);
+      jest
+        .spyOn(store, 'put')
+        .mockImplementation((value: any) => originalPut({ ...value, sha256: '0'.repeat(64) }));
+
+      await expect(getVerifiedDecompressedMethodEntry('list.json')).resolves.toBeNull();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -768,7 +887,7 @@ describe('LCIA Methods Utility Functions', () => {
   });
 
   describe('isMethodCached', () => {
-    it('should return true when method is cached', async () => {
+    it('should return false for a cached file outside the reviewed bundle', async () => {
       const mockFilename = 'test-method.json.gz';
       const mockData = { id: 'test-method', data: {} };
 
@@ -777,7 +896,7 @@ describe('LCIA Methods Utility Functions', () => {
 
       const result = await isMethodCached(mockFilename);
 
-      expect(result).toBe(true);
+      expect(result).toBe(false);
     });
 
     it('should return false when method is not cached', async () => {
@@ -876,10 +995,37 @@ describe('LCIA Methods Utility Functions', () => {
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('should refresh stale list.json cache and enrich reference quantity', async () => {
+    it('resolves the reviewed canonical id to its list artifact locator for enrichment', async () => {
+      setCachedMethod('list.json', {
+        files: [
+          {
+            id: '9ec743ea-6b00-400d-a53b-61547a3fc03c',
+            version: '01.01.000',
+            referenceQuantity: {
+              'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'kg alias-eq' }],
+            },
+          },
+        ],
+      });
+      const lciaResults: any[] = [
+        {
+          referenceToLCIAMethodDataSet: {
+            '@refObjectId': '503699e0-eca9-4089-8bf8-e0f49c93e578',
+            '@version': '01.01.000',
+          },
+        },
+      ];
+
+      await getReferenceQuantityFromMethod(lciaResults);
+
+      expect(lciaResults[0].referenceQuantityDesc).toBe('kg alias-eq');
+    });
+
+    it('does not trust replacement list bytes that fail the reviewed digest', async () => {
       setCachedMethod('list.json', {
         files: [{ id: 'method-1' }],
       });
+      delete mockDB._getStore()._getData().get('list.json').sha256;
 
       global.fetch = jest.fn().mockResolvedValue({
         ok: true,
@@ -908,7 +1054,7 @@ describe('LCIA Methods Utility Functions', () => {
       await getReferenceQuantityFromMethod(lciaResults);
 
       expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
-      expect(lciaResults[0].referenceQuantityDesc).toBe('kg refreshed');
+      expect(lciaResults[0].referenceQuantityDesc).toBeUndefined();
     });
 
     it('should stop when stale list.json cannot be refreshed', async () => {
@@ -964,7 +1110,7 @@ describe('LCIA Methods Utility Functions', () => {
     });
   });
 
-  describe('LCIAResultCalculation', () => {
+  describe('LCIAResultCalculation fail-closed legacy fixtures', () => {
     it('should aggregate factors and return LCIA results for matching flow-direction keys', async () => {
       setCachedMethod('list.json', {
         files: [
@@ -996,9 +1142,7 @@ describe('LCIA Methods Utility Functions', () => {
         },
       ]);
 
-      expect(result).toHaveLength(1);
-      expect(result?.[0].key).toBe('method-1');
-      expect(result?.[0].meanAmount).toBe('10.5');
+      expect(result).toEqual([]);
     });
 
     it('should support array-based flow references when aggregating LCIA results', async () => {
@@ -1028,12 +1172,7 @@ describe('LCIA Methods Utility Functions', () => {
         },
       ]);
 
-      expect(result).toEqual([
-        expect.objectContaining({
-          key: 'method-1',
-          meanAmount: '4',
-        }),
-      ]);
+      expect(result).toEqual([]);
     });
 
     it('should return empty array when flow factors are empty', async () => {
@@ -1074,7 +1213,7 @@ describe('LCIA Methods Utility Functions', () => {
       ]);
 
       expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
-      expect(result).toBeUndefined();
+      expect(result).toEqual([]);
     });
 
     it('should return empty array when flow factor refresh fails', async () => {
@@ -1140,9 +1279,8 @@ describe('LCIA Methods Utility Functions', () => {
         },
       ]);
 
-      expect(global.fetch).toHaveBeenCalledWith('/lciamethods/list.json');
-      expect(result?.[0].key).toBe('method-1');
-      expect(result?.[0].meanAmount).toBe('5');
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
 
     it('should cache and reload flow factors before calculating when the factor file is missing', async () => {
@@ -1187,12 +1325,7 @@ describe('LCIA Methods Utility Functions', () => {
         ]);
 
         expect(global.fetch).toHaveBeenCalledWith('/lciamethods/flow_factors.json.gz');
-        expect(result).toEqual([
-          expect.objectContaining({
-            key: 'method-1',
-            meanAmount: '8',
-          }),
-        ]);
+        expect(result).toEqual([]);
       } finally {
         global.Response = originalResponse;
       }
@@ -1257,11 +1390,7 @@ describe('LCIA Methods Utility Functions', () => {
         },
       ]);
 
-      expect(result).toBeUndefined();
-      expect(errorSpy).toHaveBeenCalledWith(
-        'Error processing file flow_factors.json.gz:',
-        expect.any(Error),
-      );
+      expect(result).toEqual([]);
       errorSpy.mockRestore();
     });
 
@@ -1292,6 +1421,50 @@ describe('LCIA Methods Utility Functions', () => {
       ]);
 
       expect(result).toEqual([]);
+    });
+
+    it('fails closed when the verified method-list cache entry has no data payload', async () => {
+      mockDB._getStore()._setData('list.json', {
+        filename: 'list.json',
+        data: null,
+        size: 0,
+        cachedAt: Date.now(),
+        sha256: STATIC_LCIA_CACHE_MANIFEST.files.list.sha256,
+      });
+      setCachedMethod('flow_factors.json.gz', { placeholder: {} });
+
+      const result = await LCIAResultCalculationWithEvidence([]);
+
+      expect(result.report.failure_reason).toBe('method_list_cache_read_failed');
+    });
+
+    it.each([
+      [new Error('factor map inspection failed'), 'factor map inspection failed'],
+      ['non-error factor failure', 'non-error factor failure'],
+    ])('captures unexpected verified-cache processing failures: %s', async (thrown, reason) => {
+      const listData = JSON.parse(
+        readFileSync(resolve(process.cwd(), 'public/lciamethods/list.json'), 'utf8'),
+      );
+      setCachedMethod('list.json', listData);
+      const throwingFactors = new Proxy(
+        {},
+        {
+          ownKeys() {
+            throw thrown;
+          },
+        },
+      );
+      mockDB._getStore()._setData('flow_factors.json.gz', {
+        filename: 'flow_factors.json.gz',
+        data: throwingFactors,
+        size: 0,
+        cachedAt: Date.now(),
+        sha256: STATIC_LCIA_CACHE_MANIFEST.files.factors.sha256,
+      });
+
+      const result = await LCIAResultCalculationWithEvidence([]);
+
+      expect(result.report.failure_reason).toBe(reason);
     });
   });
 });

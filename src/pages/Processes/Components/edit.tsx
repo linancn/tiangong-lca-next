@@ -2101,6 +2101,7 @@ const ProcessEdit: FC<Props> = ({
                 exchangeDataSource={exchangeDataSource}
                 formRef={formRefEdit}
                 lciaResults={jsonToList(fromData?.LCIAResults?.LCIAResult) as LCIAResultTable[]}
+                lciaCalculationEvidence={fromData?.LCIAResults?.['common:other']}
                 onData={handletFromData}
                 onExchangeData={handletExchangeData}
                 onExchangeDataCreate={handletExchangeDataCreate}

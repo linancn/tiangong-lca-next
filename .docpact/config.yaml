@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-12"
-lastReviewedCommit: "a0ccd96cf1506d8d6a627797dab9afb0714e76d2"
+lastReviewedAt: '2026-07-12'
+lastReviewedCommit: 'd054b46fd99f8b981ffebe598f5d174da23dd0cd'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -56,6 +56,7 @@ ownership:
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
+          - scripts/validate-lcia-cache.cjs
       ownerRepo: next
 
 coverage:
@@ -77,6 +78,7 @@ coverage:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
     - .github/PULL_REQUEST_TEMPLATE/*.md
@@ -98,6 +100,7 @@ coverage:
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
+    - scripts/validate-lcia-cache.cjs
   exclude:
     - node_modules/**
     - dist/**
@@ -141,6 +144,7 @@ routing:
         - scripts/docpact-gate.js
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
+        - scripts/validate-lcia-cache.cjs
         - tests/**
     repo-docs:
       paths:
@@ -161,6 +165,7 @@ routing:
         - docs/agents/lca-analysis-visualization-plan.md
         - docs/agents/public-classifications-gz-usage.md
         - docs/agents/util_calculate.md
+        - docs/agents/lcia-calculation-evidence.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
         - .github/PULL_REQUEST_TEMPLATE/*.md
@@ -239,6 +244,7 @@ docInventory:
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
     - docs/agents/util_calculate.md
+    - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
     - .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
@@ -454,6 +460,8 @@ rules:
         kind: test-gate
       - path: scripts/test-coverage-report.js
         kind: test-gate
+      - path: scripts/validate-lcia-cache.cjs
+        kind: test-gate
       - path: tests/data-workflows/test-api-smoke.cjs
         kind: repo-test
       - path: tests/**
@@ -482,8 +490,6 @@ rules:
         kind: static-resource
       - path: public/locations/**
         kind: static-resource
-      - path: public/lciamethods/**
-        kind: static-resource
       - path: docs/agents/public-classifications-gz-usage.md
         kind: domain-doc
     requiredDocs:
@@ -495,7 +501,27 @@ rules:
         mode: review_or_update
       - path: docs/agents/public-classifications-gz-usage.md
         mode: review_or_update
-    reason: Static resource changes can invalidate both the repo routing layer and the detailed cache or usage guidance.
+    reason: Classification and location resources should stay aligned with their cache guidance and the repo proof baseline.
+  - id: next-lcia-static-bundle-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: public/lciamethods/**
+        kind: static-resource
+      - path: scripts/validate-lcia-cache.cjs
+        kind: test-gate
+      - path: docs/agents/lcia-calculation-evidence.md
+        kind: domain-doc
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+      - path: docs/agents/lcia-calculation-evidence.md
+        mode: review_or_update
+    reason: The reviewed LCIA bundle, validator, cache trust, and calculation-evidence contract must change together.
   - id: next-public-map-assets-contract
     scope: repo
     repo: next
