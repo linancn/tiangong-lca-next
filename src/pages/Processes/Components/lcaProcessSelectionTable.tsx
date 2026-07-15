@@ -11,6 +11,59 @@ type IntlMessageDescriptor = {
   defaultMessage: string;
 };
 
+export type LcaProcessSelectionMode = 'compare' | 'grouped' | 'path';
+
+const LCA_SELECTION_MESSAGES = {
+  compare: {
+    empty: {
+      id: 'pages.process.lca.page.compare.selectionEmpty',
+      defaultMessage: 'No processes match the current data scope and search keyword.',
+    },
+    hint: {
+      id: 'pages.process.lca.page.compare.selectionHint',
+      defaultMessage:
+        '{selectedCount, plural, one {# process selected from {totalCount, plural, one {# available option} other {# available options}}.} other {# processes selected from {totalCount, plural, one {# available option} other {# available options}}.}}',
+    },
+    title: {
+      id: 'pages.process.lca.page.compare.selectionTitle',
+      defaultMessage: 'Process selection',
+    },
+  },
+  grouped: {
+    empty: {
+      id: 'pages.process.lca.page.grouped.selectionEmpty',
+      defaultMessage: 'No processes match the current data scope and search keyword.',
+    },
+    hint: {
+      id: 'pages.process.lca.page.grouped.selectionHint',
+      defaultMessage:
+        '{selectedCount, plural, one {# process selected from {totalCount, plural, one {# available option} other {# available options}}.} other {# processes selected from {totalCount, plural, one {# available option} other {# available options}}.}}',
+    },
+    title: {
+      id: 'pages.process.lca.page.grouped.selectionTitle',
+      defaultMessage: 'Process selection',
+    },
+  },
+  path: {
+    empty: {
+      id: 'pages.process.lca.page.path.selectionEmpty',
+      defaultMessage: 'No processes match the current data scope and search keyword.',
+    },
+    hint: {
+      id: 'pages.process.lca.page.path.selectionHint',
+      defaultMessage:
+        '{selectedCount, plural, one {# root process selected from {totalCount, plural, one {# available option} other {# available options}}.} other {# root processes selected from {totalCount, plural, one {# available option} other {# available options}}.}}',
+    },
+    title: {
+      id: 'pages.process.lca.page.path.selectionTitle',
+      defaultMessage: 'Root process selection',
+    },
+  },
+} as const satisfies Record<
+  LcaProcessSelectionMode,
+  Record<'empty' | 'hint' | 'title', IntlMessageDescriptor>
+>;
+
 type LcaProcessSelectionTableProps = {
   processOptions: LcaProcessOption[];
   selectedProcessIds: string[];
@@ -25,9 +78,7 @@ type LcaProcessSelectionTableProps = {
     onPrevious: () => void;
     onNext: () => void;
   };
-  titleMessage: IntlMessageDescriptor;
-  hintMessage: IntlMessageDescriptor;
-  emptyMessage: IntlMessageDescriptor;
+  mode: LcaProcessSelectionMode;
   selectionType?: 'checkbox' | 'radio';
   onSelectionChange: (selectedProcessIds: string[]) => void;
 };
@@ -55,13 +106,12 @@ const LcaProcessSelectionTable = ({
   selectedProcessOptions = [],
   totalProcessCount,
   pagination,
-  titleMessage,
-  hintMessage,
-  emptyMessage,
+  mode,
   selectionType = 'checkbox',
   onSelectionChange,
 }: LcaProcessSelectionTableProps) => {
   const intl = useIntl();
+  const messages = LCA_SELECTION_MESSAGES[mode];
   const [selectionViewMode, setSelectionViewMode] = useState<ProcessSelectionViewMode>('all');
   const [filterKeyword, setFilterKeyword] = useState('');
   const selectedProcessKeySet = useMemo(
@@ -108,12 +158,12 @@ const LcaProcessSelectionTable = ({
   return (
     <Space direction='vertical' size='small' style={{ width: '100%' }}>
       <Typography.Text strong>
-        <FormattedMessage id={titleMessage.id} defaultMessage={titleMessage.defaultMessage} />
+        <FormattedMessage id={messages.title.id} defaultMessage={messages.title.defaultMessage} />
       </Typography.Text>
       <Typography.Text type='secondary'>
         <FormattedMessage
-          id={hintMessage.id}
-          defaultMessage={hintMessage.defaultMessage}
+          id={messages.hint.id}
+          defaultMessage={messages.hint.defaultMessage}
           values={{
             selectedCount: selectedProcessIds.length,
             totalCount: totalProcessCount ?? processOptions.length,
@@ -156,12 +206,12 @@ const LcaProcessSelectionTable = ({
         <Input
           aria-label={intl.formatMessage({
             id: 'pages.process.lca.selection.search.label',
-            defaultMessage: 'Filter processes in the current view',
+            defaultMessage: 'Filter processes in this list',
           })}
           style={{ width: 'min(440px, 100%)' }}
           placeholder={intl.formatMessage({
             id: 'pages.process.lca.selection.search.placeholder',
-            defaultMessage: 'Filter processes in the current view',
+            defaultMessage: 'Filter processes in this list by name, version, or tag',
           })}
           value={filterKeyword}
           onChange={(event) => setFilterKeyword(String(event.target.value))}
@@ -170,7 +220,7 @@ const LcaProcessSelectionTable = ({
       <Typography.Text type='secondary'>
         <FormattedMessage
           id='pages.process.lca.selection.visibleCount'
-          defaultMessage='Showing {visibleCount} processes in the current view.'
+          defaultMessage='{visibleCount, plural, one {Showing # process in this list.} other {Showing # processes in this list.}}'
           values={{
             visibleCount: visibleProcessOptions.length,
           }}
@@ -230,8 +280,8 @@ const LcaProcessSelectionTable = ({
         }
         locale={{
           emptyText: intl.formatMessage({
-            id: emptyMessage.id,
-            defaultMessage: emptyMessage.defaultMessage,
+            id: messages.empty.id,
+            defaultMessage: messages.empty.defaultMessage,
           }),
         }}
         rowSelection={{

@@ -21,7 +21,10 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
             <Descriptions.Item
               key={0}
               label={
-                <FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />
+                <FormattedMessage
+                  id='pages.source.refObjectId'
+                  defaultMessage='Reference source data set identifier'
+                />
               }
               styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}
             >
@@ -49,7 +52,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                     label={
                       <FormattedMessage
                         id='pages.source.refObjectId'
-                        defaultMessage='Ref object id'
+                        defaultMessage='Reference source data set identifier'
                       />
                     }
                     styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}

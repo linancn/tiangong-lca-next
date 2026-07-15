@@ -555,7 +555,7 @@ describe('ReviewLifeCycleModelToolbarViewInfo', () => {
         validation: {},
       },
     });
-    expect(mockMessage.success).toHaveBeenCalledWith('Temporary save successfully');
+    expect(mockMessage.success).toHaveBeenCalledWith('Temporarily saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 

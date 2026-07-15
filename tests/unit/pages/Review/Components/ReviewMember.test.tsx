@@ -215,7 +215,7 @@ describe('ReviewMember', () => {
     await waitFor(() =>
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-admin'),
     );
-    expect(message.success).toHaveBeenCalledWith('Action success!');
+    expect(message.success).toHaveBeenCalledWith('Operation successful');
 
     await userEvent.click(screen.getByRole('button', { name: 'delete' }));
     expect(Modal.confirm).toHaveBeenCalled();
@@ -227,7 +227,7 @@ describe('ReviewMember', () => {
     await waitFor(() =>
       expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-member'),
     );
-    expect(message.success).toHaveBeenCalledWith('Action success!');
+    expect(message.success).toHaveBeenCalledWith('Operation successful');
   });
 
   it('opens the reviewed drawer variant when clicking reviewed counts', async () => {
@@ -268,7 +268,7 @@ describe('ReviewMember', () => {
     await waitFor(() =>
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-2', 'user-3', 'review-member'),
     );
-    expect(message.success).toHaveBeenCalledWith('Action success!');
+    expect(message.success).toHaveBeenCalledWith('Operation successful');
   });
 
   it('closes the add-member modal and review drawer through cancel and close actions', async () => {
@@ -309,7 +309,7 @@ describe('ReviewMember', () => {
     await waitFor(() =>
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-admin'),
     );
-    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(message.error).toHaveBeenCalledWith('Operation failed');
   });
 
   it('shows error feedback when deleting a member fails', async () => {
@@ -329,7 +329,7 @@ describe('ReviewMember', () => {
     await waitFor(() =>
       expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'user-2', 'review-member'),
     );
-    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(message.error).toHaveBeenCalledWith('Operation failed');
   });
 
   it('keeps admin-only controls disabled for review members', async () => {

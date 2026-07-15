@@ -332,7 +332,7 @@ export const ProcessForm: FC<Props> = ({
   const annualSupplyVolumeReferenceContextErrorMessage = hasAnnualSupplyVolumeReferenceContextError
     ? intl.formatMessage({
         id: 'pages.process.validator.annualSupplyOrProductionVolume.referenceContext.required',
-        defaultMessage: '请选择一条输入/输出作为基准',
+        defaultMessage: 'Please select one input/output as the reference',
       })
     : undefined;
   const fieldMessageSdkValidationDetails = useMemo(
@@ -722,7 +722,41 @@ export const ProcessForm: FC<Props> = ({
     );
   };
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.process.view.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    complianceDeclarations: (
+      <FormattedMessage
+        id='pages.process.complianceDeclarations'
+        defaultMessage='Compliance declarations'
+      />
+    ),
+    exchanges: (
+      <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Inputs and Outputs' />
+    ),
+    lciaResults: (
+      <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />
+    ),
+    modellingAndValidation: (
+      <FormattedMessage
+        id='pages.process.view.modellingAndValidation'
+        defaultMessage='Modelling and validation'
+      />
+    ),
+    processInformation: (
+      <FormattedMessage
+        id='pages.process.view.processInformation'
+        defaultMessage='Process information'
+      />
+    ),
+    validation: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const issueCount = sdkValidationCountsByTab[key] ?? 0;
     const hasIssue = issueCount > 0 || validationIssueTabs.has(key);
 
@@ -737,7 +771,7 @@ export const ProcessForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -745,54 +779,38 @@ export const ProcessForm: FC<Props> = ({
   const tabList = [
     {
       key: 'processInformation',
-      tab: renderTabLabel(
-        'processInformation',
-        'pages.process.view.processInformation',
-        'Process information',
-      ),
+      tab: renderTabLabel('processInformation'),
     },
     {
       key: 'modellingAndValidation',
-      tab: renderTabLabel(
-        'modellingAndValidation',
-        'pages.process.view.modellingAndValidation',
-        'Modelling and validation',
-      ),
+      tab: renderTabLabel('modellingAndValidation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.process.view.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
     {
       key: 'exchanges',
-      tab: renderTabLabel('exchanges', 'pages.process.view.exchanges', 'Exchanges'),
+      tab: renderTabLabel('exchanges'),
     },
     {
       key: 'lciaResults',
-      tab: renderTabLabel('lciaResults', 'pages.process.view.lciaresults', 'LCIA Results'),
+      tab: renderTabLabel('lciaResults'),
     },
     {
       key: 'validation',
-      tab: renderTabLabel('validation', 'pages.process.validation', 'Validation'),
+      tab: renderTabLabel('validation'),
     },
     {
       key: 'complianceDeclarations',
-      tab: renderTabLabel(
-        'complianceDeclarations',
-        'pages.process.complianceDeclarations',
-        'Compliance declarations',
-      ),
+      tab: renderTabLabel('complianceDeclarations'),
     },
   ];
   const baseProcessExchangeColumns = getExchangeColumns(lang);
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     ...baseProcessExchangeColumns,
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       width: 128,
@@ -1225,7 +1243,7 @@ export const ProcessForm: FC<Props> = ({
           <LocationTextItemForm
             label={
               <FormattedMessage
-                id='pages.process.view.processInformation.location'
+                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
                 defaultMessage='Sub-location(s)'
               />
             }
@@ -1319,7 +1337,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
-                defaultMessage='Pictogramme of technology'
+                defaultMessage='Technology pictogram'
               />
             }
             lang={lang}
@@ -1336,7 +1354,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Flow diagram(s) or picture(s)'
               />
             }
             lang={lang}
@@ -1458,7 +1476,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                defaultMessage='Relative StdDev in %'
+                defaultMessage='Relative standard deviation (95%) in %'
               />
             }
             name={[
@@ -1507,7 +1525,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                defaultMessage='Type of data set'
+                defaultMessage='Dataset type'
               />
             }
             name={['modellingAndValidation', 'LCIMethodAndAllocation', 'typeOfDataSet']}
@@ -2283,7 +2301,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData'
-                defaultMessage='Reference to Person or Entity Entering The Data'
+                defaultMessage='Data entry by:'
               />
             }
             name={[
@@ -2394,7 +2412,7 @@ export const ProcessForm: FC<Props> = ({
             label={
               <FormattedMessage
                 id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
-                defaultMessage='Workflow and publication status	'
+                defaultMessage='Workflow and publication status'
               />
             }
             name={[

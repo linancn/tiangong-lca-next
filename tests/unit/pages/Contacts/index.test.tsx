@@ -484,7 +484,7 @@ describe('ContactsPage', () => {
       expect(mockContributeSource).toHaveBeenCalledWith('contacts', 'contact-1', '1.0.0'),
     );
     const { message } = jest.requireMock('antd');
-    expect(message.success).toHaveBeenCalledWith('Contribute successfully');
+    expect(message.success).toHaveBeenCalledWith('Data contributed to the team successfully.');
     expect(latestReloadMock).toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: /search/i }));

@@ -272,7 +272,7 @@ const UnitEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id='pages.unitgroup.unit.drawer.title.edit'
-            defaultMessage='Unit Edit'
+            defaultMessage='Edit Unit'
           ></FormattedMessage>
         }
         width='90%'

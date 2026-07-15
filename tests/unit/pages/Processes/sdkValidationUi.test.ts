@@ -189,7 +189,14 @@ describe('process sdk validation ui helpers', () => {
       getSdkSuggestedFixMessage(intl, {
         suggestedFix: 'Fill in the required value for this field.',
       }),
-    ).toBe('Fill in the required value for this field');
+    ).toBe('Check and fix this field');
+
+    expect(
+      getSdkSuggestedFixMessage(intl, {
+        suggestedFix: 'Backend-only fallback that must not leak into localized UI.',
+        validationCode: 'future_sdk_validation_code',
+      }),
+    ).toBe('Check and fix this field');
 
     expect(
       getSdkSuggestedFixMessage(intl, {
@@ -666,7 +673,9 @@ describe('process sdk validation ui helpers', () => {
       suppressSdkMessage: false,
     });
 
-    expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe('');
+    expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe(
+      'Check and fix this field',
+    );
   });
 
   it('covers normalization fallbacks for empty formatter output, empty props, and unstable schema rules getters', () => {

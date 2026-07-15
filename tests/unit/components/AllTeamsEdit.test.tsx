@@ -268,6 +268,7 @@ const createTeamResponse = () => ({
   data: [
     {
       id: 'team-1',
+      is_public: true,
       json: {
         title: [
           { '#text': 'Team EN', '@xml:lang': 'en' },
@@ -387,6 +388,7 @@ describe('TeamEdit component', () => {
     const payload = mockEditTeamMessage.mock.calls.at(-1)?.[1];
     expect(payload.lightLogo).toEqual('../sys-files/uploaded/path.png');
     expect(payload.darkLogo).toEqual('../sys-files/uploaded/path.png');
+    expect(mockEditTeamMessage).toHaveBeenLastCalledWith('team-1', payload, undefined, true);
 
     expect(getMessageMock().success).toHaveBeenCalledWith('Team updated successfully!');
     expect(actionRef.current.reload).toHaveBeenCalled();
@@ -464,7 +466,7 @@ describe('TeamEdit component', () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
 
-    render(<TeamEdit id='team-1' buttonType='custom.edit.label' actionRef={actionRef as any} />);
+    render(<TeamEdit id='team-1' buttonType='text' actionRef={actionRef as any} />);
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
@@ -474,16 +476,6 @@ describe('TeamEdit component', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
-  });
-
-  it('falls back to the default edit label when buttonType is empty', async () => {
-    const user = userEvent.setup();
-    const actionRef = { current: { reload: jest.fn() } };
-
-    render(<TeamEdit id='team-1' buttonType='' actionRef={actionRef as any} />);
-
-    await user.click(screen.getByRole('button', { name: 'Edit' }));
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
   it('closes the drawer from the drawer close action', async () => {
@@ -670,10 +662,15 @@ describe('TeamEdit component', () => {
     await waitFor(() => {
       expect(mockEditTeamMessage).toHaveBeenCalled();
     });
-    expect(mockEditTeamMessage).toHaveBeenLastCalledWith('team-1', {
-      lightLogo: 'existing/light.png',
-      darkLogo: 'existing/dark.png',
-    });
+    expect(mockEditTeamMessage).toHaveBeenLastCalledWith(
+      'team-1',
+      {
+        lightLogo: 'existing/light.png',
+        darkLogo: 'existing/dark.png',
+      },
+      undefined,
+      true,
+    );
   });
 
   it('aborts saving when the dark logo upload fails after the light logo succeeds', async () => {

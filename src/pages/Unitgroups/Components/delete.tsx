@@ -79,7 +79,7 @@ const UnitGroupDelete: FC<Props> = ({
           >
             <FormattedMessage
               id='pages.button.delete.confirm'
-              defaultMessage='Delete'
+              defaultMessage='Are you sure you want to delete this data?'
             ></FormattedMessage>
           </Modal>
         </>
@@ -98,7 +98,7 @@ const UnitGroupDelete: FC<Props> = ({
           >
             <FormattedMessage
               id='pages.button.delete.confirm'
-              defaultMessage='Delete'
+              defaultMessage='Are you sure you want to delete this data?'
             ></FormattedMessage>
           </Modal>
         </>

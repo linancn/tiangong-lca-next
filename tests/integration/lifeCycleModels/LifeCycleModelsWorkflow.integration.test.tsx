@@ -333,7 +333,7 @@ jest.mock('@/pages/LifeCycleModels/Components/edit', () => {
 
     const handleSave = async () => {
       await lifecycleApi.updateLifeCycleModel({ id, version, model: { nodes, edges: [] } });
-      message.success('Save successfully');
+      message.success('Saved successfully.');
       actionRef?.current?.reload?.();
       setOpen(false);
     };
@@ -892,7 +892,7 @@ describe('LifeCycleModels workflows', () => {
     const updatePayload = mockUpdateLifeCycleModel.mock.calls[0][0];
     expect(updatePayload.model.nodes.length).toBeGreaterThanOrEqual(1);
 
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Save successfully');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved successfully.');
   });
 
   it('loads calculation results via model result drawer', async () => {

@@ -1,0 +1,751 @@
+{
+  "schemaVersion": "tiangong.i18n-dynamic-families.v1",
+  "sourceLocales": ["en-US", "zh-CN"],
+  "policy": {
+    "callsiteIdentity": ["api", "count", "file", "expression"],
+    "driftRule": "Every computed production message callsite must exactly match one reviewed callsite summary; additions, removals, expression changes, and count changes fail enforcement.",
+    "unknownFallbackRule": "Every finite family declares either closedWorld evidence whose producer and callgraph are bounded by the exact audit, or a localizedRuntimeFallback whose status is implemented or reserved-for-followup. Reserved runtime fallbacks are enforceable violations."
+  },
+  "messageHelpers": [
+    {
+      "file": "src/pages/DataProcessing/index.tsx",
+      "name": "t",
+      "defaultArgumentIndex": 1
+    },
+    {
+      "file": "src/pages/Welcome.tsx",
+      "name": "guideMessage",
+      "prefix": "pages.welcome.carbonFootprintGuide"
+    }
+  ],
+  "families": {
+    "accountRoles": {
+      "proof": "JWT role values cross a runtime boundary and are resolved through an exact known-role descriptor map.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-generic-role-label",
+        "keys": ["pages.account.profile.role.unknown"],
+        "proof": "Unrecognized JWT roles are passed only as interpolation values to the localized unknown-role key."
+      },
+      "keys": ["pages.account.profile.role.authenticated", "pages.account.profile.role.unknown"]
+    },
+    "dataProcessing": {
+      "proof": "The local translation helper receives literals or descriptors from the finite command action configuration.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "The local translation helper receives literals or descriptors from the finite command action configuration. Literal members remain covered by source-locale key checks, and any new computed boundary changes the exact callsite registry."
+      },
+      "keys": [
+        "pages.dataProcessing.action.createBuild",
+        "pages.dataProcessing.action.previewPackage",
+        "pages.dataProcessing.action.publishPackage",
+        "pages.dataProcessing.action.unpublishPublication",
+        "pages.dataProcessing.command.buildId",
+        "pages.dataProcessing.command.createBuildSuccess",
+        "pages.dataProcessing.command.failed",
+        "pages.dataProcessing.command.packageId",
+        "pages.dataProcessing.command.previewPackageSuccess",
+        "pages.dataProcessing.command.publicationId",
+        "pages.dataProcessing.command.publishPackageSuccess",
+        "pages.dataProcessing.command.status",
+        "pages.dataProcessing.command.unpublishPublicationSuccess",
+        "pages.dataProcessing.command.workerJobId",
+        "pages.dataProcessing.coverage.globalEligible",
+        "pages.dataProcessing.coverage.subset",
+        "pages.dataProcessing.form.coverageMode",
+        "pages.dataProcessing.form.defaultImpactCategory",
+        "pages.dataProcessing.form.defaultImpactCategory.placeholder",
+        "pages.dataProcessing.form.packageName",
+        "pages.dataProcessing.form.packageSelect.empty",
+        "pages.dataProcessing.form.packageSelect.placeholder",
+        "pages.dataProcessing.form.previewPackageId",
+        "pages.dataProcessing.form.publishDefaultImpactCategory",
+        "pages.dataProcessing.form.publishPackageId",
+        "pages.dataProcessing.form.publishReason",
+        "pages.dataProcessing.jobs.action",
+        "pages.dataProcessing.jobs.empty",
+        "pages.dataProcessing.jobs.error.processOutOfScope",
+        "pages.dataProcessing.jobs.error.unsupportedWorkerVersion",
+        "pages.dataProcessing.jobs.hint",
+        "pages.dataProcessing.jobs.packageInputs",
+        "pages.dataProcessing.jobs.pendingResultSet",
+        "pages.dataProcessing.jobs.refresh",
+        "pages.dataProcessing.jobs.resultSet",
+        "pages.dataProcessing.jobs.title",
+        "pages.dataProcessing.jobs.updatedAt",
+        "pages.dataProcessing.jobs.waitingForWorker",
+        "pages.dataProcessing.preview.artifactManifestVersion",
+        "pages.dataProcessing.preview.artifactVerificationTitle",
+        "pages.dataProcessing.preview.artifacts",
+        "pages.dataProcessing.preview.coverageMode",
+        "pages.dataProcessing.preview.defaultImpactCategory",
+        "pages.dataProcessing.preview.eligibleInputs",
+        "pages.dataProcessing.preview.exportExcel",
+        "pages.dataProcessing.preview.exportFailed",
+        "pages.dataProcessing.preview.impactCategories",
+        "pages.dataProcessing.preview.includedInputs",
+        "pages.dataProcessing.preview.inputManifestHash",
+        "pages.dataProcessing.preview.inputScopeTitle",
+        "pages.dataProcessing.preview.lciaMethod",
+        "pages.dataProcessing.preview.nextPage",
+        "pages.dataProcessing.preview.packageId",
+        "pages.dataProcessing.preview.packageVersion",
+        "pages.dataProcessing.preview.predicateVersion",
+        "pages.dataProcessing.preview.previousPage",
+        "pages.dataProcessing.preview.processCount",
+        "pages.dataProcessing.preview.processName",
+        "pages.dataProcessing.preview.processUuid",
+        "pages.dataProcessing.preview.processVersion",
+        "pages.dataProcessing.preview.queryArtifact",
+        "pages.dataProcessing.preview.resultArtifact",
+        "pages.dataProcessing.preview.resultDetailsTitle",
+        "pages.dataProcessing.preview.resultUnavailable",
+        "pages.dataProcessing.preview.selectionMode",
+        "pages.dataProcessing.preview.snapshotCoverage",
+        "pages.dataProcessing.preview.snapshotId",
+        "pages.dataProcessing.preview.snapshotMatrix",
+        "pages.dataProcessing.preview.stateCode",
+        "pages.dataProcessing.preview.stateCodes",
+        "pages.dataProcessing.preview.status",
+        "pages.dataProcessing.preview.storage",
+        "pages.dataProcessing.preview.summaryTitle",
+        "pages.dataProcessing.preview.value",
+        "pages.dataProcessing.preview.warningTitle",
+        "pages.dataProcessing.publications.current",
+        "pages.dataProcessing.publications.empty",
+        "pages.dataProcessing.publications.publishedAt",
+        "pages.dataProcessing.publications.refresh",
+        "pages.dataProcessing.publications.title",
+        "pages.dataProcessing.tabs.builds",
+        "pages.dataProcessing.tabs.preview",
+        "pages.dataProcessing.tabs.publication",
+        "pages.dataProcessing.title",
+        "pages.dataProcessing.validation.defaultImpactCategoryRequired",
+        "pages.dataProcessing.validation.packageIdRequired",
+        "pages.dataProcessing.validation.packageNameRequired"
+      ]
+    },
+    "datasetEntityKinds": {
+      "keys": [
+        "pages.datasetUuidMention.entityKind.unknown",
+        "pages.validationIssues.datasetType.contact",
+        "pages.validationIssues.datasetType.flow",
+        "pages.validationIssues.datasetType.flowproperty",
+        "pages.validationIssues.datasetType.lifecyclemodel",
+        "pages.validationIssues.datasetType.process",
+        "pages.validationIssues.datasetType.source",
+        "pages.validationIssues.datasetType.unitgroup"
+      ],
+      "proof": "Known entity kinds use an exhaustive descriptor map while the RPC result type remains open to future backend values.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-generic-entity-kind",
+        "keys": ["pages.datasetUuidMention.entityKind.unknown"],
+        "proof": "An unknown backend kind is interpolated into the localized unknown-data-type key and is never used as a message id."
+      }
+    },
+    "entityTabs": {
+      "proof": "All validation-tab labels are resolved by one exact dataset-type and tab-token descriptor map.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-unknown-tab-label",
+        "keys": ["pages.validationIssues.tab.unknown"],
+        "proof": "Unknown dataset types and tab tokens are interpolation values of one localized fallback and never become message ids."
+      },
+      "keys": [
+        "pages.FlowProperties.view.administrativeInformation",
+        "pages.FlowProperties.view.flowPropertiesInformation",
+        "pages.FlowProperties.view.modellingAndValidation",
+        "pages.contact.administrativeInformation",
+        "pages.contact.contactInformation",
+        "pages.flow.view.administrativeInformation",
+        "pages.flow.view.flowInformation",
+        "pages.flow.view.flowProperties",
+        "pages.flow.view.modellingAndValidation",
+        "pages.lifeCycleModel.view.administrativeInformation",
+        "pages.lifeCycleModel.view.complianceDeclarations",
+        "pages.lifeCycleModel.view.lifeCycleModelInformation",
+        "pages.lifeCycleModel.view.modellingAndValidation",
+        "pages.lifeCycleModel.view.validation",
+        "pages.process.complianceDeclarations",
+        "pages.process.validation",
+        "pages.process.view.administrativeInformation",
+        "pages.process.view.exchanges",
+        "pages.process.view.lciaresults",
+        "pages.process.view.modellingAndValidation",
+        "pages.process.view.processInformation",
+        "pages.source.view.administrativeInformation",
+        "pages.source.view.sourceInformation",
+        "pages.unitgroup.administrativeInformation",
+        "pages.unitgroup.modellingAndValidation",
+        "pages.unitgroup.unitGroupInformation",
+        "pages.unitgroup.units",
+        "pages.validationIssues.tab.unknown"
+      ]
+    },
+    "lcaEvidenceReason": {
+      "proof": "Evidence reason suffixes originate from backend evidence values and therefore require an explicit localized unknown branch.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-unknown-reason",
+        "keys": ["pages.process.lca.evidence.reason.unknown"],
+        "proof": "The evidence notice formats the localized unknown-reason key as the default for an unrecognized reason."
+      },
+      "keys": [
+        "pages.process.lca.evidence.reason.calculation_evidence_missing_or_invalid",
+        "pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source",
+        "pages.process.lca.evidence.reason.legacy_calculation_evidence_v1_is_not_method_complete",
+        "pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch",
+        "pages.process.lca.evidence.reason.unknown"
+      ]
+    },
+    "lcaEvidenceSource": {
+      "proof": "ResolvedEvidence.sourceKind is a source-local union of static, worker, legacy, and unknown values.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "The resolver normalizes every source to its four-value union; a new computed boundary or expression changes the exact callsite registry."
+      },
+      "keys": [
+        "pages.process.lca.evidence.source.legacy",
+        "pages.process.lca.evidence.source.static",
+        "pages.process.lca.evidence.source.unknown",
+        "pages.process.lca.evidence.source.worker"
+      ]
+    },
+    "lcaEvidenceStatus": {
+      "proof": "ResolvedEvidence.status is the finite LciaCalculationStatus union normalized before presentation.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "The typed status union and resolver bound the producer; a new computed boundary or expression changes the exact callsite registry."
+      },
+      "keys": [
+        "pages.process.lca.evidence.status.calculation_failure",
+        "pages.process.lca.evidence.status.complete",
+        "pages.process.lca.evidence.status.incomplete_coverage",
+        "pages.process.lca.evidence.status.method_source_drift"
+      ]
+    },
+    "lcaSelection": {
+      "keys": [
+        "pages.process.lca.page.compare.selectionEmpty",
+        "pages.process.lca.page.compare.selectionHint",
+        "pages.process.lca.page.compare.selectionTitle",
+        "pages.process.lca.page.grouped.selectionEmpty",
+        "pages.process.lca.page.grouped.selectionHint",
+        "pages.process.lca.page.grouped.selectionTitle",
+        "pages.process.lca.page.path.selectionEmpty",
+        "pages.process.lca.page.path.selectionHint",
+        "pages.process.lca.page.path.selectionTitle"
+      ],
+      "proof": "A three-value mode union indexes an exhaustive Record of title, hint, and empty-state descriptors.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "The mode prop is a closed TypeScript union and every member is required by the exhaustive Record."
+      }
+    },
+    "reviewDetail": {
+      "proof": "Persisted review action values are checked against an exact descriptor map before formatting.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-generic-action-label",
+        "keys": ["pages.reviewDetail.unknownAction"],
+        "proof": "An unknown persisted action is interpolated into the localized unknown-action key and never becomes a message id."
+      },
+      "keys": [
+        "pages.reviewDetail.approved",
+        "pages.reviewDetail.assign_reviewers",
+        "pages.reviewDetail.assign_reviewers_temporary",
+        "pages.reviewDetail.rejected",
+        "pages.reviewDetail.reviewer_rejected",
+        "pages.reviewDetail.revoke_reviewer",
+        "pages.reviewDetail.submit_comments",
+        "pages.reviewDetail.submit_comments_temporary",
+        "pages.reviewDetail.submit_review",
+        "pages.reviewDetail.unknownAction"
+      ]
+    },
+    "reviewGateGuidance": {
+      "proof": "The three descriptors are selected from the finite REVIEW_SUBMIT_GATE_REASON_GUIDANCE registry.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "guarded-localized-fallback-summary",
+        "keys": [
+          "pages.process.reviewSubmitTaskCenter.fallback.action",
+          "pages.process.reviewSubmitTaskCenter.fallback.description",
+          "pages.process.reviewSubmitTaskCenter.fallback.title"
+        ],
+        "proof": "Unknown reason codes are guarded before descriptor formatting and use the localized task-center title, description, and action fallbacks."
+      },
+      "keys": [
+        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.action",
+        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.description",
+        "pages.process.reviewSubmitGate.reason.duplicateExchangeFingerprint.title",
+        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.action",
+        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.description",
+        "pages.process.reviewSubmitGate.reason.duplicateProcessVersion.title",
+        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.action",
+        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.description",
+        "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.title",
+        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.action",
+        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.description",
+        "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title",
+        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.action",
+        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.description",
+        "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title",
+        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.action",
+        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.description",
+        "pages.process.reviewSubmitGate.reason.invalidAllocationFraction.title",
+        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.action",
+        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.description",
+        "pages.process.reviewSubmitGate.reason.invalidExchangeAmount.title",
+        "pages.process.reviewSubmitGate.reason.invalidScopeState.action",
+        "pages.process.reviewSubmitGate.reason.invalidScopeState.description",
+        "pages.process.reviewSubmitGate.reason.invalidScopeState.title",
+        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.action",
+        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.description",
+        "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.title",
+        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.action",
+        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.description",
+        "pages.process.reviewSubmitGate.reason.missingOrZeroReference.title",
+        "pages.process.reviewSubmitGate.reason.revisionReportStale.action",
+        "pages.process.reviewSubmitGate.reason.revisionReportStale.description",
+        "pages.process.reviewSubmitGate.reason.revisionReportStale.title",
+        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.action",
+        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.description",
+        "pages.process.reviewSubmitGate.reason.serviceLoopDetected.title",
+        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action",
+        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description",
+        "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title",
+        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.action",
+        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.description",
+        "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.title",
+        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.action",
+        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.description",
+        "pages.process.reviewSubmitGate.reason.targetProcessNotCoveredByProbe.title",
+        "pages.process.reviewSubmitGate.reasonFallbackMessage",
+        "pages.process.reviewSubmitTaskCenter.fallback.action",
+        "pages.process.reviewSubmitTaskCenter.fallback.description",
+        "pages.process.reviewSubmitTaskCenter.fallback.title"
+      ]
+    },
+    "reviewMembers": {
+      "keys": ["pages.review.members.pending", "pages.review.members.reviewed"],
+      "proof": "drawerTabType is a two-value component-owned state union and therefore a finite family.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "drawerTabType is a two-value component-owned state union and therefore a finite family. Literal members remain covered by source-locale key checks, and any new computed boundary changes the exact callsite registry."
+      }
+    },
+    "schemaValidation": {
+      "keys": [
+        "validator.CASNumber.empty",
+        "validator.CASNumber.pattern",
+        "validator.NullableString.pattern",
+        "validator.STMultiLang.pattern",
+        "validator.String.pattern",
+        "validator.StringMultiLang.pattern",
+        "validator.Year.empty",
+        "validator.Year.pattern",
+        "validator.dataSetVersion.empty",
+        "validator.dataSetVersion.pattern",
+        "validator.lang.mustBeEnglish",
+        "validator.lang.mustNotContainSemicolon",
+        "validator.lang.required",
+        "validator.lang.select",
+        "validator.lang.text.required",
+        "validator.langValidation.missingEnglish",
+        "validator.langValidation.missingEnglishMore",
+        "validator.langValidation.root",
+        "validator.mandatory.empty",
+        "validator.optional.empty",
+        "validator.pages.contact.WWWAddress.invalid",
+        "validator.pages.contact.email.pattern",
+        "validator.recommended.empty"
+      ],
+      "proof": "Schema rule message keys are selected from the checked-in validation schema and validator key set.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "The schema and validator descriptors are repository-owned; exact callsite drift exposes any new computed boundary."
+      }
+    },
+    "sdkSuggestedFix": {
+      "keys": [
+        "pages.validationIssues.sdkDetail.suggestedFix.array_too_large",
+        "pages.validationIssues.sdkDetail.suggestedFix.array_too_small",
+        "pages.validationIssues.sdkDetail.suggestedFix.custom",
+        "pages.validationIssues.sdkDetail.suggestedFix.exchanges_required",
+        "pages.validationIssues.sdkDetail.suggestedFix.flow_properties_required",
+        "pages.validationIssues.sdkDetail.suggestedFix.invalid_format",
+        "pages.validationIssues.sdkDetail.suggestedFix.invalid_type",
+        "pages.validationIssues.sdkDetail.suggestedFix.invalid_union",
+        "pages.validationIssues.sdkDetail.suggestedFix.invalid_value",
+        "pages.validationIssues.sdkDetail.suggestedFix.localized_text_en_must_not_contain_chinese_character",
+        "pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character",
+        "pages.validationIssues.sdkDetail.suggestedFix.number_too_large",
+        "pages.validationIssues.sdkDetail.suggestedFix.number_too_small",
+        "pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid",
+        "pages.validationIssues.sdkDetail.suggestedFix.required_missing",
+        "pages.validationIssues.sdkDetail.suggestedFix.string_too_long",
+        "pages.validationIssues.sdkDetail.suggestedFix.string_too_short",
+        "pages.validationIssues.sdkDetail.suggestedFix.unknown",
+        "pages.validationIssues.sdkDetail.suggestedFix.unrecognized_keys"
+      ],
+      "proof": "Known SDK validation codes select localized suggested-fix messages while codes remain an open runtime boundary.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-unknown-suggested-fix",
+        "keys": ["pages.validationIssues.sdkDetail.suggestedFix.unknown"],
+        "proof": "Both SDK presentation helpers use the localized unknown suggested-fix text as the default for an unregistered code."
+      }
+    },
+    "tableFilter": {
+      "keys": [
+        "pages.table.filter.all.workflowStatus",
+        "pages.table.filter.workflowStatus.dataSetFinalised",
+        "pages.table.filter.workflowStatus.finalDraftForExternalReview",
+        "pages.table.filter.workflowStatus.workingDraft"
+      ],
+      "proof": "TABLE_FILTER_OPTIONS is the complete finite source-local option list rendered by this callsite.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "TABLE_FILTER_OPTIONS is the complete finite source-local option list rendered by this callsite. Literal members remain covered by source-locale key checks, and any new computed boundary changes the exact callsite registry."
+      }
+    },
+    "teamMemberErrors": {
+      "keys": [
+        "teams.members.add.alreadyInTeam",
+        "teams.members.add.alreadyInvitedToTeam",
+        "teams.members.add.error",
+        "teams.members.add.exists",
+        "teams.members.add.forbidden",
+        "teams.members.add.notRegistered",
+        "teams.members.add.reinviteRequired"
+      ],
+      "proof": "API error codes are mapped through the finite errorMessages table with one explicit default descriptor.",
+      "unknownHandling": {
+        "kind": "localizedRuntimeFallback",
+        "status": "implemented",
+        "strategy": "localized-default-error",
+        "keys": ["teams.members.add.error"],
+        "proof": "An unknown API error code follows the existing localized generic add-member error branch."
+      }
+    },
+    "welcomeGuide": {
+      "proof": "Guide suffixes are literals or values from the three finite guide key arrays in Welcome.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "Guide suffixes are literals or values from the three finite guide key arrays in Welcome. Literal members remain covered by source-locale key checks, and any new computed boundary changes the exact callsite registry."
+      },
+      "keys": [
+        "pages.welcome.carbonFootprintGuide.actions.browsePublicData",
+        "pages.welcome.carbonFootprintGuide.actions.enterMyData",
+        "pages.welcome.carbonFootprintGuide.entryLabel",
+        "pages.welcome.carbonFootprintGuide.intro",
+        "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.description",
+        "pages.welcome.carbonFootprintGuide.preparationItems.checkFlowsAndUnits.title",
+        "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.description",
+        "pages.welcome.carbonFootprintGuide.preparationItems.collectRawData.title",
+        "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.description",
+        "pages.welcome.carbonFootprintGuide.preparationItems.mapUnitProcesses.title",
+        "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.description",
+        "pages.welcome.carbonFootprintGuide.preparationItems.submitForReview.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.contact.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.contact.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.flow.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.flow.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.flowProperty.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.flowProperty.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.model.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.model.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.process.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.process.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.source.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.source.title",
+        "pages.welcome.carbonFootprintGuide.schemaItems.unitGroup.description",
+        "pages.welcome.carbonFootprintGuide.schemaItems.unitGroup.title",
+        "pages.welcome.carbonFootprintGuide.schemaTitle",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.createProcess.title",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.enterInputsOutputs.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.enterInputsOutputs.title",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.fillBasics.title",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.openHome.title",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.selectOrAddFlows.title",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.description",
+        "pages.welcome.carbonFootprintGuide.teachingSteps.validateAndSubmit.title",
+        "pages.welcome.carbonFootprintGuide.title",
+        "pages.welcome.carbonFootprintGuide.videoFallback",
+        "pages.welcome.carbonFootprintGuide.videoLoadErrorDescription",
+        "pages.welcome.carbonFootprintGuide.videoLoadErrorTitle",
+        "pages.welcome.carbonFootprintGuide.videoLoading",
+        "pages.welcome.carbonFootprintGuide.videoReload",
+        "pages.welcome.carbonFootprintGuide.videoTitle",
+        "pages.welcome.carbonFootprintGuide.workflowTitle"
+      ]
+    }
+  },
+  "callsites": [
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/components/DatasetUuidMentionSearch/index.tsx",
+      "expression": "ENTITY_KIND_MESSAGES[value]",
+      "family": "datasetEntityKinds"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/components/LcaTaskCenter/index.tsx",
+      "expression": "guidance.actionId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/components/LcaTaskCenter/index.tsx",
+      "expression": "guidance.descriptionId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/components/LcaTaskCenter/index.tsx",
+      "expression": "guidance.titleId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/components/TableFilter/index.tsx",
+      "expression": "option.messageId",
+      "family": "tableFilter"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Account/roleMessage.ts",
+      "expression": "ACCOUNT_ROLE_MESSAGES[normalizedRole]",
+      "family": "accountRoles"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/DataProcessing/index.tsx",
+      "expression": "id",
+      "family": "dataProcessing"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/DataProcessing/index.tsx",
+      "expression": "messages[action].id",
+      "family": "dataProcessing"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/AnnualSupplyOrProductionVolume/form.tsx",
+      "expression": "requiredRule?.messageKey ?? 'validator.lang.text.required'",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/edit.tsx",
+      "expression": "guidance.actionId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/edit.tsx",
+      "expression": "guidance.descriptionId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/edit.tsx",
+      "expression": "guidance.titleId",
+      "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
+      "expression": "`pages.process.lca.evidence.reason.${resolved.reason}`",
+      "family": "lcaEvidenceReason"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
+      "expression": "`pages.process.lca.evidence.source.${resolved.sourceKind}`",
+      "family": "lcaEvidenceSource"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx",
+      "expression": "`pages.process.lca.evidence.status.${resolved.status}`",
+      "family": "lcaEvidenceStatus"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaProcessSelectionTable.tsx",
+      "expression": "messages.empty.id",
+      "family": "lcaSelection"
+    },
+    {
+      "api": "FormattedMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaProcessSelectionTable.tsx",
+      "expression": "messages.hint.id",
+      "family": "lcaSelection"
+    },
+    {
+      "api": "FormattedMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/lcaProcessSelectionTable.tsx",
+      "expression": "messages.title.id",
+      "family": "lcaSelection"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/ReviewDetail/index.tsx",
+      "expression": "REVIEW_ACTION_MESSAGES[action as keyof typeof REVIEW_ACTION_MESSAGES]",
+      "family": "reviewDetail"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/sdkValidationUi.ts",
+      "expression": "`pages.validationIssues.sdkDetail.suggestedFix.${detail.validationCode}`",
+      "family": "sdkSuggestedFix"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/sdkValidationUi.ts",
+      "expression": "id",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/sdkValidationUi.ts",
+      "expression": "rule.messageKey ?? DEFAULT_REQUIRED_MESSAGE.id",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "FormattedMessage",
+      "count": 1,
+      "file": "src/pages/Review/Components/ReviewMember.tsx",
+      "expression": "`pages.review.members.${drawerTabType}`",
+      "family": "reviewMembers"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Teams/Components/AddMemberModal.tsx",
+      "expression": "messageConfig",
+      "family": "teamMemberErrors"
+    },
+    {
+      "api": "FormattedMessage",
+      "count": 1,
+      "file": "src/pages/Utils/index.tsx",
+      "expression": "rule.messageKey",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Utils/validation/messages.ts",
+      "expression": "`pages.validationIssues.sdkDetail.suggestedFix.${detail.validationCode}`",
+      "family": "sdkSuggestedFix"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Utils/validation/messages.ts",
+      "expression": "id",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Utils/validation/messages.ts",
+      "expression": "rule.messageKey ?? DEFAULT_REQUIRED_MESSAGE.id",
+      "family": "schemaValidation"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Utils/validation/tabMessages.ts",
+      "expression": "message",
+      "family": "entityTabs"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`${CARBON_FOOTPRINT_GUIDE_I18N_PREFIX}.${id}`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`preparationItems.${key}.description`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`preparationItems.${key}.title`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`schemaItems.${key}.description`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`schemaItems.${key}.title`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`teachingSteps.${key}.description`",
+      "family": "welcomeGuide"
+    },
+    {
+      "api": "messageHelper",
+      "count": 1,
+      "file": "src/pages/Welcome.tsx",
+      "expression": "`teachingSteps.${key}.title`",
+      "family": "welcomeGuide"
+    }
+  ]
+}

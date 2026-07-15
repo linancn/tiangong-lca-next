@@ -86,7 +86,7 @@ const LangTextItemForm: FC<Props> = ({
                         message.error(
                           intl.formatMessage({
                             id: 'validator.lang.mustBeEnglish',
-                            defaultMessage: 'English is a required language!',
+                            defaultMessage: 'English is a required language',
                           }),
                         );
                       }
@@ -125,7 +125,7 @@ const LangTextItemForm: FC<Props> = ({
                             new Error(
                               intl.formatMessage({
                                 id: 'validator.lang.text.required',
-                                defaultMessage: 'Please input this field!',
+                                defaultMessage: 'Please input this field',
                               }),
                             ),
                           );
@@ -156,7 +156,7 @@ const LangTextItemForm: FC<Props> = ({
                                         new Error(
                                           intl.formatMessage({
                                             id: 'validator.lang.select',
-                                            defaultMessage: 'Please select a language!',
+                                            defaultMessage: 'Please select a language',
                                           }),
                                         ),
                                       );
@@ -177,7 +177,7 @@ const LangTextItemForm: FC<Props> = ({
                           placeholder={
                             <FormattedMessage
                               id='pages.lang.select'
-                              defaultMessage='Select a lang'
+                              defaultMessage='Select a language'
                             />
                           }
                           optionFilterProp='lang'

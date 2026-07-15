@@ -21,8 +21,9 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-15
+lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedNote: 'Reviewed locale topology, one-key/one-concept ownership, computed-family fallback, and pre-activation leaf-module boundaries for Issue #600.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -47,7 +48,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, runtime locale fallback for Node-loaded services, and service logic |
-| `src/locales/**` | UI strings; keep `src/locales/en-US.ts` and `src/locales/zh-CN.ts` aligned when shared user-facing copy changes |
+| `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | static resource bundles consumed by the app |
 | `icons/**` | packaged app icons and release assets |
@@ -64,7 +65,9 @@ Rules:
 
 - route and page components orchestrate
 - service modules own app-side data access
-- UI copy changes must update both `src/locales/en-US.ts` and `src/locales/zh-CN.ts` when the same user-facing text ships in both languages
+- UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
+- a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
+- computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary

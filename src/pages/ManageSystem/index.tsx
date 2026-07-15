@@ -122,7 +122,9 @@ const ManageSystem = () => {
           <Flex gap='small'>
             {
               <Tooltip
-                title={<FormattedMessage id='teams.members.delete' defaultMessage='Delete' />}
+                title={
+                  <FormattedMessage id='teams.members.delete' defaultMessage='Remove Member' />
+                }
               >
                 <Button
                   disabled={
@@ -179,7 +181,9 @@ const ManageSystem = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id='teams.members.setAdmin' defaultMessage='Set Admin' />}
+                title={
+                  <FormattedMessage id='teams.members.setAdmin' defaultMessage='Set as Admin' />
+                }
               >
                 <Button
                   disabled={!(record.role === 'member' && userData?.role === 'owner')}
@@ -193,7 +197,7 @@ const ManageSystem = () => {
             {
               <Tooltip
                 title={
-                  <FormattedMessage id='teams.members.setMember' defaultMessage='Set Member' />
+                  <FormattedMessage id='teams.members.setMember' defaultMessage='Set as Member' />
                 }
               >
                 <Button
@@ -235,7 +239,7 @@ const ManageSystem = () => {
             return [
               <Tooltip
                 key={0}
-                title={<FormattedMessage id='teams.members.add' defaultMessage='Add' />}
+                title={<FormattedMessage id='teams.members.add' defaultMessage='Add Member' />}
               >
                 <Button
                   disabled={!(userData?.role === 'admin' || userData?.role === 'owner')}
@@ -283,12 +287,19 @@ const ManageSystem = () => {
   const tabs = [
     {
       key: 'teams',
-      label: <FormattedMessage id='pages.manageSystem.tabs.teams' />,
+      label: (
+        <FormattedMessage
+          id='pages.manageSystem.tabs.teams'
+          defaultMessage='Homepage Display Management'
+        />
+      ),
       children: renderTeamsRange(),
     },
     {
       key: 'settings',
-      label: <FormattedMessage id='pages.manageSystem.tabs.members' />,
+      label: (
+        <FormattedMessage id='pages.manageSystem.tabs.members' defaultMessage='Member Management' />
+      ),
       children: renderSystemMember(),
     },
   ];

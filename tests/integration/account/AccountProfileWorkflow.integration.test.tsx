@@ -41,7 +41,10 @@ const mockSetInitialState = jest.fn();
 
 const mockIntl = {
   locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  formatMessage: ({ defaultMessage, id }: any, values: Record<string, unknown> = {}) =>
+    String(defaultMessage ?? id).replace(/\{(\w+)\}/g, (placeholder, key) =>
+      values[key] === undefined ? placeholder : String(values[key]),
+    ),
 };
 
 const toText = (node: any): string => {
@@ -499,11 +502,11 @@ describe('Account profile integration workflow', () => {
       expect.objectContaining({
         email: 'user@example.com',
         name: 'Alice Cooper',
-        role: 'admin',
+        role: 'Unknown role (admin)',
       }),
     );
 
-    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(message.success).toHaveBeenCalledWith('Profile updated successfully.');
     expect(mockSetInitialState).toHaveBeenCalledTimes(1);
 
     const updater = mockSetInitialState.mock.calls[0][0];
@@ -595,7 +598,7 @@ describe('Account profile integration workflow', () => {
       ),
     );
 
-    expect(message.error).toHaveBeenCalledWith('Invalid current password');
+    expect(message.error).toHaveBeenCalledWith('Invalid password');
     expect(message.success).not.toHaveBeenCalledWith('Password changed successfully!');
   });
 

@@ -806,11 +806,11 @@ const DataProcessing = () => {
 
     if (action === 'createBuild') {
       addRow(
-        t('pages.dataProcessing.command.buildId', 'Build ID'),
+        t('pages.dataProcessing.command.buildId', 'Generation ID'),
         firstString(record?.buildId, record?.build_id, record?.id),
       );
       addRow(
-        t('pages.dataProcessing.command.workerJobId', 'Worker job'),
+        t('pages.dataProcessing.command.workerJobId', 'Worker job ID'),
         firstString(
           record?.workerJobId,
           record?.worker_job_id,
@@ -1573,7 +1573,7 @@ const DataProcessing = () => {
           <Card title={t('pages.dataProcessing.preview.summaryTitle', 'Result set overview')}>
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
-                label={t('pages.dataProcessing.preview.packageId', 'Result set id')}
+                label={t('pages.dataProcessing.preview.packageId', 'Result set ID')}
               >
                 {stringifyCommandData(previewSummary.packageId)}
               </Descriptions.Item>
@@ -1614,7 +1614,7 @@ const DataProcessing = () => {
                 {stringifyCommandData(previewSummary.eligibleInputCount)}
               </Descriptions.Item>
               <Descriptions.Item
-                label={t('pages.dataProcessing.preview.impactCategories', 'Impact categories')}
+                label={t('pages.dataProcessing.preview.impactCategories', 'Impact category count')}
               >
                 {Array.isArray(previewSummary.availableImpactCategories)
                   ? previewSummary.availableImpactCategories.length
@@ -1742,7 +1742,7 @@ const DataProcessing = () => {
                 {previewArtifactStorage || '-'}
               </Descriptions.Item>
               <Descriptions.Item
-                label={t('pages.dataProcessing.preview.snapshotId', 'Snapshot id')}
+                label={t('pages.dataProcessing.preview.snapshotId', 'Snapshot ID')}
               >
                 {stringifyCommandData(previewSnapshotBuilder.resolved_snapshot_id)}
               </Descriptions.Item>

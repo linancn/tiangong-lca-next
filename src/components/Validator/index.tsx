@@ -8,7 +8,7 @@ export const StringMultiLang_r = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -50,7 +50,7 @@ export const STMultiLang_r = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -92,7 +92,7 @@ export const FTMultiLang_r = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -129,7 +129,7 @@ export const String_r = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -175,7 +175,7 @@ export const ST_r = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -232,7 +232,7 @@ export const WWWAddress: Rule[] = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -241,7 +241,7 @@ export const WWWAddress: Rule[] = [
     message: (
       <FormattedMessage
         id='validator.pages.contact.WWWAddress.invalid'
-        defaultMessage='Please enter a valid WWWAddress!'
+        defaultMessage='Please enter a valid web address.'
       />
     ),
   },
@@ -263,7 +263,7 @@ export const CASNumber = [
     message: (
       <FormattedMessage
         id='validator.CASNumber.pattern'
-        defaultMessage='CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!'
+        defaultMessage='Enter a valid CAS Registry Number: 2-7 digits, a hyphen, 2 digits, a hyphen, and 1 check digit.'
       />
     ),
   },
@@ -276,7 +276,7 @@ export const NullableString = [
     message: (
       <FormattedMessage
         id='validator.recommended.empty'
-        defaultMessage='Recommended to fill in to enhance data detail and usability!'
+        defaultMessage='Recommended: complete this field to improve data detail and usability.'
       />
     ),
   },
@@ -286,7 +286,7 @@ export const NullableString = [
     message: (
       <FormattedMessage
         id='validator.NullableString.pattern'
-        defaultMessage='Length cannot exceed 500 characters characters and may be empty!'
+        defaultMessage='Must not exceed 500 characters; this field may be empty.'
       />
     ),
   },

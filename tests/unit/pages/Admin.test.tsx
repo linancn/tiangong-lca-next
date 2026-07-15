@@ -38,7 +38,7 @@ describe('Admin page', () => {
   it('renders the admin-only content and external guidance link', () => {
     render(<Admin />);
 
-    expect(screen.getByText('This page can only be viewed by admin')).toBeInTheDocument();
+    expect(screen.getByText('This page can only be viewed by Admin')).toBeInTheDocument();
     expect(
       screen.getByText('Faster and stronger heavy-duty components have been released.'),
     ).toBeInTheDocument();

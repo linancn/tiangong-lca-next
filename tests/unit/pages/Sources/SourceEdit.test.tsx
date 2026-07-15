@@ -33,6 +33,13 @@ const mockEnrichValidationIssuesWithOwner = jest.fn(async (issues: any[]) => iss
 const mockGenSourceJsonOrdered = jest.fn(() => ({ mocked: true }));
 const mockValidateEnhanced = jest.fn(() => ({ success: true }));
 const mockValidateDatasetWithSdk = jest.fn(() => ({ success: true, issues: [] }));
+const mockFormatMessage = (
+  { defaultMessage, id }: { defaultMessage?: string; id: string },
+  values: Record<string, unknown> = {},
+) =>
+  String(defaultMessage ?? id).replace(/\{(\w+)\}/g, (placeholder, key) =>
+    values[key] === undefined ? placeholder : String(values[key]),
+  );
 
 jest.mock('@supabase/supabase-js', () => {
   const supabaseQueryBuilder: any = {};
@@ -71,7 +78,7 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
     locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: mockFormatMessage,
   }),
 }));
 
@@ -581,7 +588,7 @@ describe('SourceEdit component', () => {
     );
 
     await waitFor(() =>
-      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!'),
+      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data saved successfully.'),
     );
 
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
@@ -770,7 +777,7 @@ describe('SourceEdit component', () => {
         nonExistent: false,
       }),
     );
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data saved successfully.');
   });
 
   it('shows file-removal errors but still attempts to save the source', async () => {
@@ -912,7 +919,7 @@ describe('SourceEdit component', () => {
     await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
     expect(mockGenSourceJsonOrdered).toHaveBeenCalled();
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'Edit Source' })).toBeInTheDocument();
   });
@@ -953,7 +960,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed!'),
+        'Source information，Administrative information：Data check failed, please check the data!',
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -987,7 +994,7 @@ describe('SourceEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('treats a null rule verification as passed during source data checks', async () => {
@@ -1060,7 +1067,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'administrativeInformation：Data check failed!',
+        'Administrative information：Data check failed, please check the data!',
       ),
     );
   });
@@ -1094,7 +1101,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'modellingAndValidation：Data check failed!',
+        'Unknown section (modellingAndValidation)：Data check failed, please check the data!',
       ),
     );
   });
@@ -1124,7 +1131,7 @@ describe('SourceEdit component', () => {
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
     expect(screen.getByText('source-rules-visible')).toBeInTheDocument();
-    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('shows the generic source data-check error when issues do not map to tabs', async () => {
@@ -1150,7 +1157,9 @@ describe('SourceEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data check failed!'),
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
     );
   });
 
@@ -1285,7 +1294,7 @@ describe('SourceEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(mockUpdateSource).toHaveBeenCalled());
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data saved successfully.');
   });
 
   it('opens automatically and triggers silent auto-check when requested', async () => {

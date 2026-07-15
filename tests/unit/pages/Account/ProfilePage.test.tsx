@@ -26,7 +26,10 @@ const mockSetInitialState = jest.fn();
 
 const mockIntl = {
   locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  formatMessage: ({ defaultMessage, id }: any, values: Record<string, unknown> = {}) =>
+    String(defaultMessage ?? id).replace(/\{(\w+)\}/g, (placeholder, key) =>
+      values[key] === undefined ? placeholder : String(values[key]),
+    ),
 };
 
 const toText = (node: any): string => {
@@ -493,7 +496,7 @@ describe('Account profile page (unit)', () => {
     expect(emailField).toBeDisabled();
 
     const roleField = screen.getByLabelText('Role') as HTMLInputElement;
-    expect(roleField.value).toBe('admin');
+    expect(roleField.value).toBe('Unknown role (admin)');
     expect(roleField).toBeDisabled();
 
     const nicknameField = screen.getByLabelText('Nickname') as HTMLInputElement;
@@ -510,11 +513,11 @@ describe('Account profile page (unit)', () => {
       expect.objectContaining({
         email: 'user@example.com',
         name: 'Alice Prime',
-        role: 'admin',
+        role: 'Unknown role (admin)',
       }),
     );
 
-    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(message.success).toHaveBeenCalledWith('Profile updated successfully.');
     expect(mockSetInitialState).toHaveBeenCalledTimes(1);
 
     const updater = mockSetInitialState.mock.calls[0][0];
@@ -675,7 +678,7 @@ describe('Account profile page (unit)', () => {
     const submitButtons = screen.getAllByRole('button', { name: /submit/i });
     await user.click(submitButtons[0]);
 
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Invalid current password'));
+    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Invalid password'));
   });
 
   it('shows specific feedback when password change reports a missing user', async () => {

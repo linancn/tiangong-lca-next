@@ -228,7 +228,7 @@ const EdgeExchangeView: FC<Props> = ({
               title={
                 <FormattedMessage
                   id='pages.flow.model.targetInputFlowName'
-                  defaultMessage='Target process input flow'
+                  defaultMessage='Target input flow name'
                 />
               }
               variant='borderless'

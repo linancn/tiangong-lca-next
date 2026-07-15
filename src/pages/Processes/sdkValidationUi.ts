@@ -380,17 +380,21 @@ export const getSdkSuggestedFixMessage = (
     return normalizeValidationMessageText(fieldSpecificMessage);
   }
 
+  const unknownSuggestedFix = intl.formatMessage({
+    id: 'pages.validationIssues.sdkDetail.suggestedFix.unknown',
+    defaultMessage: 'Check and fix this field',
+  });
   const localizedMessage = detail.validationCode
     ? intl.formatMessage(
         {
           id: `pages.validationIssues.sdkDetail.suggestedFix.${detail.validationCode}`,
-          defaultMessage: detail.suggestedFix ?? '',
+          defaultMessage: unknownSuggestedFix,
         },
         detail.validationParams as Record<string, string | number | undefined> | undefined,
       )
-    : detail.suggestedFix;
+    : unknownSuggestedFix;
 
-  return normalizeValidationMessageText(localizedMessage ?? detail.suggestedFix ?? '');
+  return normalizeValidationMessageText(localizedMessage);
 };
 
 export const sdkValidationUiTestUtils = {

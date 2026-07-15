@@ -59,7 +59,7 @@ describe('ReferenceDataDescription', () => {
     expect(screen.getByText('Reference Info')).toBeInTheDocument();
     expect(screen.getByText('Type')).toBeInTheDocument();
     expect(screen.getByText('LCI Source')).toBeInTheDocument();
-    expect(screen.getByText('Ref Object Id')).toBeInTheDocument();
+    expect(screen.getByText('Reference object ID')).toBeInTheDocument();
     expect(screen.getByText('ref-123')).toBeInTheDocument();
     expect(screen.getByText('URI')).toBeInTheDocument();
     expect(screen.getByText('http://example.com')).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('ReferenceDataDescription', () => {
     render(<ReferenceDataDescription title='Reference Info' data={undefined} />);
 
     const placeholders = screen.getAllByText('-');
-    // Type, Ref Object Id, URI, Version each render a fallback dash
+    // Type, Reference object ID, URI, and Version each render a fallback dash.
     expect(placeholders).toHaveLength(4);
     expect(LangTextItemDescriptionMock).toHaveBeenCalledWith({ data: undefined }, {});
   });

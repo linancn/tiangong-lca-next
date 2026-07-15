@@ -57,8 +57,23 @@ const createSdkDetail = (
 };
 
 const intl = {
-  formatMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) =>
-    defaultMessage ?? id,
+  formatMessage: (
+    { defaultMessage, id }: { defaultMessage?: string; id: string },
+    values?: Record<string, string | number | undefined>,
+  ) => {
+    const messages: Record<string, string> = {
+      'pages.validationIssues.sdkDetail.suggestedFix.custom': 'Check and fix this field',
+      'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
+      'pages.validationIssues.sdkDetail.suggestedFix.string_too_short':
+        'Enter at least {minimum} characters',
+      'pages.validationIssues.sdkDetail.suggestedFix.unknown': 'Check and fix this field',
+    };
+
+    return Object.entries(values ?? {}).reduce(
+      (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
+      messages[id] ?? defaultMessage ?? id,
+    );
+  },
 };
 
 describe('useDatasetSdkValidationFormSupport', () => {
@@ -241,7 +256,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
       flowProperties: 1,
     });
     expect(result.current.sdkValidationSectionMessages).toEqual({
-      flowProperties: ['Select one quantitative reference'],
+      flowProperties: ['Check and fix this field'],
     });
   });
 
@@ -383,13 +398,13 @@ describe('useDatasetSdkValidationFormSupport', () => {
 
     expect(setFields).toHaveBeenCalledWith([
       {
-        errors: ['Existing local error', 'Expand this text to at least 2 characters'],
+        errors: ['Existing local error', 'Enter at least 2 characters'],
         name: ['sourceInformation', 'dataSetInformation', 'common:shortName', 0, '#text'],
       },
     ]);
     expect(errorMap.get('sourceInformation.dataSetInformation.common:shortName.0.#text')).toEqual([
       'Existing local error',
-      'Expand this text to at least 2 characters',
+      'Enter at least 2 characters',
     ]);
 
     setFields.mockClear();
@@ -453,7 +468,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
 
     expect(setFields).toHaveBeenCalledWith([
       {
-        errors: ['Expand this text to at least 2 characters'],
+        errors: ['Enter at least 2 characters'],
         name: ['sourceInformation', 'dataSetInformation', 'common:shortName', 0, '#text'],
       },
     ]);
@@ -486,6 +501,9 @@ describe('useDatasetSdkValidationFormSupport', () => {
             suggestedFix: 'Use a longer parsed value.',
             tabName: 'sourceInformation',
             validationCode: 'string_too_short',
+            validationParams: {
+              minimum: 3,
+            },
           }),
         ],
       }),
@@ -493,7 +511,7 @@ describe('useDatasetSdkValidationFormSupport', () => {
 
     expect(setFields).toHaveBeenCalledWith([
       {
-        errors: ['Fix the parsed field', 'Use a longer parsed value'],
+        errors: ['Check and fix this field', 'Enter at least 3 characters'],
         name: ['sourceInformation', 'classification', 0, 'name'],
       },
     ]);

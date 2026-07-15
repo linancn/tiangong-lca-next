@@ -132,7 +132,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
             }),
             content: intl.formatMessage({
               id: 'teams.modal.noTeam.content',
-              defaultMessage: 'You can create a team or join an existing team',
+              defaultMessage: 'You can create a team or join an existing team.',
             }),
             closable: true,
             footer: () => (
@@ -237,12 +237,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ children }) =
     {
       key: 'team',
       icon: <TeamOutlined />,
-      label: <FormattedMessage id='menu.account.team' defaultMessage='Team Management' />,
+      label: <FormattedMessage id='menu.account.team' defaultMessage='My Team' />,
     },
     {
       key: 'system',
       icon: <SettingOutlined />,
-      label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Settings' />,
+      label: <FormattedMessage id='menu.manageSystem' defaultMessage='System Management' />,
       hidden:
         userData?.role !== 'admin' && userData?.role !== 'owner' && userData?.role !== 'member',
     },

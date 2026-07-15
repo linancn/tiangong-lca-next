@@ -19,6 +19,54 @@ interface LogItem {
   action: string;
 }
 
+const REVIEW_ACTION_MESSAGES = {
+  approved: { defaultMessage: 'Approve Review', id: 'pages.reviewDetail.approved' },
+  assign_reviewers: {
+    defaultMessage: 'Assign Reviewers',
+    id: 'pages.reviewDetail.assign_reviewers',
+  },
+  assign_reviewers_temporary: {
+    defaultMessage: 'Assign Reviewers Temporarily',
+    id: 'pages.reviewDetail.assign_reviewers_temporary',
+  },
+  rejected: { defaultMessage: 'Reject Review', id: 'pages.reviewDetail.rejected' },
+  reviewer_rejected: {
+    defaultMessage: 'Reviewer Rejected',
+    id: 'pages.reviewDetail.reviewer_rejected',
+  },
+  revoke_reviewer: {
+    defaultMessage: 'Reviewer assignment revoked',
+    id: 'pages.reviewDetail.revoke_reviewer',
+  },
+  submit_comments: {
+    defaultMessage: 'Submit Comments',
+    id: 'pages.reviewDetail.submit_comments',
+  },
+  submit_comments_temporary: {
+    defaultMessage: 'Submit Comments Temporarily',
+    id: 'pages.reviewDetail.submit_comments_temporary',
+  },
+  submit_review: { defaultMessage: 'Submit Review', id: 'pages.reviewDetail.submit_review' },
+} as const;
+
+type IntlShapeLike = Pick<ReturnType<typeof useIntl>, 'formatMessage'>;
+
+export const formatReviewDetailAction = (intl: IntlShapeLike, action: string): string => {
+  if (Object.prototype.hasOwnProperty.call(REVIEW_ACTION_MESSAGES, action)) {
+    return intl.formatMessage(
+      REVIEW_ACTION_MESSAGES[action as keyof typeof REVIEW_ACTION_MESSAGES],
+    );
+  }
+
+  return intl.formatMessage(
+    {
+      defaultMessage: 'Unknown review action ({action})',
+      id: 'pages.reviewDetail.unknownAction',
+    },
+    { action: action.trim() || '-' },
+  );
+};
+
 const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -107,12 +155,7 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
       search: false,
       sorter: false,
       ellipsis: true,
-      render: (_, record: LogItem) => {
-        return intl.formatMessage({
-          id: `pages.reviewDetail.${record.action}`,
-          defaultMessage: record.action,
-        });
-      },
+      render: (_, record: LogItem) => formatReviewDetailAction(intl, record.action),
     },
   ];
 

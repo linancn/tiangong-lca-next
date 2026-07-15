@@ -43,7 +43,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -61,12 +61,12 @@
               {
                 "required": true,
                 "messageKey": "pages.flow.validator.treatmentStandardsRoutes.required",
-                "defaultMessage": "Please input treatment,standards,routes"
+                "defaultMessage": "Please enter the treatment, standards, or routes."
               },
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -89,7 +89,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -107,7 +107,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -169,7 +169,7 @@
             {
               "pattern": "CASNumber",
               "messageKey": "validator.CASNumber.pattern",
-              "defaultMessage": "CAS Number format must be XX-XX-X or XXXXXXX-XX-X, where X is a digit!"
+              "defaultMessage": "Enter a valid CAS Registry Number: 2-7 digits, a hyphen, 2 digits, a hyphen, and 1 check digit."
             }
           ]
         },

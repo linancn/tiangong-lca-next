@@ -4,7 +4,7 @@ type IntlLike = {
 
 const OPEN_DATA_CONTRIBUTE_ERROR_MESSAGE = {
   id: 'component.contributeData.error.dataAlreadyPublished',
-  defaultMessage: 'Open data cannot be shared to a team.',
+  defaultMessage: 'Open data cannot be contributed to a team.',
 };
 
 const UNDER_REVIEW_CONTRIBUTE_ERROR_MESSAGE = {

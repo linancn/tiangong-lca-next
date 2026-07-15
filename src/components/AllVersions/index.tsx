@@ -91,7 +91,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
 
     {
       title: (
-        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Actions'></FormattedMessage>
       ),
       dataIndex: 'option',
       search: false,
@@ -153,7 +153,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
+        title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All Versions' />}
       >
         <span>
           <Button
@@ -168,7 +168,7 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
 
       <Drawer
         getContainer={() => document.body}
-        title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All version' />}
+        title={<FormattedMessage id='pages.button.allVersion' defaultMessage='All Versions' />}
         width={'90%'}
         open={showAllVersionsModal}
         onClose={closeAllVersionsModal}

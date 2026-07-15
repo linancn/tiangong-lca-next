@@ -20,7 +20,13 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+      const template = defaultMessage ?? id;
+
+      return template.replace(/\{(\w+)\}/g, (_match: string, key: string) =>
+        String(values?.[key] ?? `{${key}}`),
+      );
+    },
     locale: 'en',
   }),
 }));
@@ -624,13 +630,15 @@ describe('ToolbarEditInfo', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
     expect(
-      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+      await screen.findByRole('dialog', { name: 'Model base information' }),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     expect(onData).toHaveBeenCalledWith(expect.any(Object));
-    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Model base information' }),
+    ).not.toBeInTheDocument();
   });
 
   it('opens the refs drawer and keeps the current reference versions', async () => {
@@ -642,7 +650,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
 
@@ -668,7 +676,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
     expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
@@ -692,11 +700,11 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
 
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
     expect(mockUpdateRefsData).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'model-1', version: '1.0' }),
       [{ id: 'old-ref', version: '1.0.0' }],
@@ -740,7 +748,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'switch-validation' }));
     await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('validation'));
@@ -763,7 +771,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'switch-validation' }));
     await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('validation'));
@@ -778,7 +786,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'switch-compliance' }));
     await waitFor(() =>
@@ -803,7 +811,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'switch-compliance' }));
     await waitFor(() =>
@@ -820,7 +828,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'set-generic-value' }));
     await userEvent.click(screen.getByRole('button', { name: 'sync-form-data' }));
@@ -847,7 +855,7 @@ describe('ToolbarEditInfo', () => {
     render(<ToolbarEditInfo ref={ref} {...baseProps} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
 
     await userEvent.click(screen.getByRole('button', { name: 'switch-technology' }));
     await waitFor(() => expect(screen.getByTestId('active-tab')).toHaveTextContent('technology'));
@@ -911,7 +919,7 @@ describe('ToolbarEditInfo', () => {
     expect(mockGetUserTeamId).toHaveBeenCalled();
     expect(mockDealModel).toHaveBeenCalled();
     expect(mockDealProcress).toHaveBeenCalled();
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed, please check the data!');
     expect(result.checkResult).toBe(false);
     expect(Array.isArray(result.unReview)).toBe(true);
   });
@@ -930,7 +938,9 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
     });
 
-    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Data check failed!');
+    expect(mockAntdMessage.error).not.toHaveBeenCalledWith(
+      'Data check failed, please check the data!',
+    );
     expect(result).toEqual({ checkResult: true, problemNodes: [], unReview: [] });
   });
 
@@ -1061,7 +1071,7 @@ describe('ToolbarEditInfo', () => {
     });
 
     await waitFor(() =>
-      expect(screen.getByRole('dialog', { name: 'Model base infomation' })).toBeInTheDocument(),
+      expect(screen.getByRole('dialog', { name: 'Model base information' })).toBeInTheDocument(),
     );
     await waitFor(() => expect(mockValidateVisibleFormFields).toHaveBeenCalledTimes(2));
 
@@ -1750,10 +1760,10 @@ describe('ToolbarEditInfo', () => {
     });
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'lifeCycleModelInformation，administrativeInformation，modellingAndValidation，technology：Data check failed!',
+      'Life cycle model information，Administrative information，Modelling and validation，Unknown section (technology)：Data check failed, please check the data!',
     );
     expect(
-      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+      await screen.findByRole('dialog', { name: 'Model base information' }),
     ).toBeInTheDocument();
     expect(result.checkResult).toBe(false);
   });
@@ -1818,7 +1828,7 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
     });
 
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
     expect(result).toEqual({
       checkResult: true,
       problemNodes: [],
@@ -1872,24 +1882,30 @@ describe('ToolbarEditInfo', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
     expect(
-      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+      await screen.findByRole('dialog', { name: 'Model base information' }),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
-    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Model base information' }),
+    ).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Model base information' }),
+    ).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('dialog', { name: 'Model base infomation' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: 'Model base information' }),
+    ).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
-    await screen.findByRole('dialog', { name: 'Model base infomation' });
+    await screen.findByRole('dialog', { name: 'Model base information' });
     await userEvent.click(screen.getByRole('button', { name: 'Update Reference' }));
     expect(await screen.findByTestId('refs-drawer')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'cancel-refs' }));
@@ -1914,7 +1930,7 @@ describe('ToolbarEditInfo', () => {
       result = await ref.current?.handleCheckData('checkData', nodes, [{}]);
     });
 
-    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!');
+    expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed, please check the data!');
     expect(result.checkResult).toBe(false);
   });
 
@@ -1953,7 +1969,7 @@ describe('ToolbarEditInfo', () => {
     await userEvent.click(screen.getByRole('button', { name: 'info-icon' }));
 
     expect(
-      await screen.findByRole('dialog', { name: 'Model base infomation' }),
+      await screen.findByRole('dialog', { name: 'Model base information' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Update Reference' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();

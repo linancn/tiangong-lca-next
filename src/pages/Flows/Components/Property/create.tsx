@@ -182,7 +182,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
               label={
                 <FormattedMessage
                   id='pages.flow.view.flowProperties.relativeStandardDeviation95In'
-                  defaultMessage='Relative StdDev in %'
+                  defaultMessage='Relative standard deviation (95%) in %'
                 />
               }
               name={['relativeStandardDeviation95In']}
@@ -205,7 +205,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
               title={
                 <FormattedMessage
                   id='pages.flow.view.flowProperties.generalComment'
-                  defaultMessage='General comment on data set'
+                  defaultMessage='Comment'
                 />
               }
             >
@@ -214,7 +214,7 @@ const PropertyCreate: FC<Props> = ({ lang, onData, showRules = false }) => {
                 label={
                   <FormattedMessage
                     id='pages.flow.view.flowProperties.generalComment'
-                    defaultMessage='General comment on data set'
+                    defaultMessage='Comment'
                   />
                 }
               />

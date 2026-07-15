@@ -50,8 +50,6 @@ export default {
   'pages.source.edit.administrativeInformation.permanentDataSetURI': 'Permanent data set URI',
   'pages.source.edit.administrativeInformation.permanentDataSetURI.default': 'Automatically generated',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': 'Owner of data set',
-  //source.delete 删除
-  'pages.button.deleteMessage.Are you sure you want to delete this data': 'Are you sure you want to delete this data?',
   //source.create 创建
   'pages.source.create.sourceInformation': 'Source information',
   'pages.source.create.sourceInformation.shortName': 'Short name of source',
@@ -81,12 +79,12 @@ export default {
   'pages.source.view.sourceInformation.publicationType.softwareOrDatabase': 'Software or database',
   'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': 'Other unpublished and grey literature',
 
-  'pages.source.validator.version.required': 'Please input version',
-  'pages.source.validator.uuid.required': 'Please input UUID',
-  'pages.source.validator.shortName.required': 'Please input short name of source',
-  'pages.source.validator.class.required': 'Please input classification',
-  'pages.source.validator.timeStamp.required': 'Please input time stamp',
-  'pages.source.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
-  'pages.source.validator.dataSetVersion.required': 'Please input data set version',
-  'pages.source.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
+  'pages.source.validator.version.required': 'Please enter a version.',
+  'pages.source.validator.uuid.required': 'Please enter a UUID.',
+  'pages.source.validator.shortName.required': 'Please enter a short name for the source.',
+  'pages.source.validator.class.required': 'Please select a classification.',
+  'pages.source.validator.timeStamp.required': 'Please enter a time stamp.',
+  'pages.source.validator.referenceToDataSetFormat.required': 'Please select a data set format.',
+  'pages.source.validator.dataSetVersion.required': 'Please enter the data set version.',
+  'pages.source.validator.referenceToOwnershipOfDataSet.required': 'Please select the data set owner.',
 };

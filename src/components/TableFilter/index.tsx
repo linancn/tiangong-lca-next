@@ -4,12 +4,15 @@ import { useIntl } from 'umi';
 
 type TableFilterValue = string | number;
 
-const TABLE_FILTER_OPTIONS: { value: TableFilterValue; messageId: string }[] = [
-  { value: 'all', messageId: 'pages.table.filter.all.reviewType' },
-  { value: 0, messageId: 'pages.table.filter.unreviewed' },
-  { value: 20, messageId: 'pages.table.filter.reviewing' },
-  { value: 100, messageId: 'pages.table.filter.reviewed' },
-];
+const TABLE_FILTER_OPTIONS = [
+  { value: 'all', messageId: 'pages.table.filter.all.workflowStatus' },
+  { value: 0, messageId: 'pages.table.filter.workflowStatus.workingDraft' },
+  {
+    value: 20,
+    messageId: 'pages.table.filter.workflowStatus.finalDraftForExternalReview',
+  },
+  { value: 100, messageId: 'pages.table.filter.workflowStatus.dataSetFinalised' },
+] as const satisfies ReadonlyArray<{ value: TableFilterValue; messageId: string }>;
 
 const TableFilter = ({
   onChange,

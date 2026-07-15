@@ -21,6 +21,7 @@ import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
 } from '@/pages/Utils/validation/formSupport';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import {
   hasLangNormalizationDraftChanges,
   type LangNormalizationMetadata,
@@ -52,7 +53,7 @@ import { UnitGroupForm } from './form';
 type Props = {
   id: string;
   version: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text';
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   disabled?: boolean;
@@ -524,31 +525,26 @@ const UnitGroupEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
+            defaultMessage: 'Data validation passed.',
           }),
         );
       }
     } else if (feedbackState === 'validation-error') {
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
-        defaultMessage: 'Data check failed!',
+        defaultMessage: 'Data check failed, please check the data!',
       });
       if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'units') {
         validationHint = datasetValidationMessage;
       } else if (errTabNames && errTabNames.length > 0) {
         validationHint =
           errTabNames
-            .map((tab: string) =>
-              intl.formatMessage({
-                id: `pages.unitgroup.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
+            .map((tab: string) => formatDatasetTabLabel(intl, 'unit group data set', tab))
             .join('，') +
           '：' +
           intl.formatMessage({
             id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
+            defaultMessage: 'Data check failed, please check the data!',
           });
       }
       if (!silent && validationIssues.length > 0) {
@@ -596,10 +592,7 @@ const UnitGroupEdit: FC<Props> = ({
           </Tooltip>
         ) : (
           <Button disabled={disabled} onClick={onEdit}>
-            <FormattedMessage
-              id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage='Edit'
-            ></FormattedMessage>
+            <FormattedMessage id='pages.button.edit' defaultMessage='Edit'></FormattedMessage>
           </Button>
         ))}
 
@@ -609,7 +602,7 @@ const UnitGroupEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id={'pages.unitgroup.drawer.title.edit'}
-            defaultMessage='Edit'
+            defaultMessage='Edit Unit group'
           ></FormattedMessage>
         }
         width='90%'

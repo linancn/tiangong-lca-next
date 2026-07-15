@@ -144,7 +144,7 @@ export const completenessElementaryFlowsTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.completeness.terrestricEcoToxicity'
-        defaultMessage='Terrestric eco-toxicity'
+        defaultMessage='Terrestrial ecotoxicity'
       />
     ),
   },
@@ -315,7 +315,7 @@ export const uncertaintyDistributionTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.undefined'
-        defaultMessage='undefined'
+        defaultMessage='Undefined'
       />
     ),
   },
@@ -324,7 +324,7 @@ export const uncertaintyDistributionTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.logNormal'
-        defaultMessage='log-normal'
+        defaultMessage='Log-normal'
       />
     ),
   },
@@ -333,7 +333,7 @@ export const uncertaintyDistributionTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.normal'
-        defaultMessage='normal'
+        defaultMessage='Normal'
       />
     ),
   },
@@ -342,7 +342,7 @@ export const uncertaintyDistributionTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.triangular'
-        defaultMessage='triangular'
+        defaultMessage='Triangular'
       />
     ),
   },
@@ -351,7 +351,7 @@ export const uncertaintyDistributionTypeOptions = [
     label: (
       <FormattedMessage
         id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.uniform'
-        defaultMessage='uniform'
+        defaultMessage='Uniform'
       />
     ),
   },

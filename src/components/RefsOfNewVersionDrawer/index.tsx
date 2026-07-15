@@ -52,7 +52,7 @@ const RefsOfNewVersionDrawer: FC<Props> = ({
       title={
         <FormattedMessage
           id={'component.refsOfNewVersionDrawer.title'}
-          defaultMessage={'References Newer Versions'}
+          defaultMessage='References with newer versions'
         />
       }
       onClose={onCancel}

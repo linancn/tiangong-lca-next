@@ -163,10 +163,10 @@ describe('LifeCycleModelCreate', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^copy$/i }));
 
-    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
-    expect(screen.getByRole('dialog', { name: /create model/i })).toHaveAttribute(
+    expect(screen.getByRole('dialog', { name: /copy model/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /copy model/i })).toHaveAttribute(
       'data-container',
       'body',
     );
@@ -204,9 +204,9 @@ describe('LifeCycleModelCreate', () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^copy$/i }));
 
-    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /copy model/i })).toBeInTheDocument();
     await waitFor(() =>
       expect(latestToolbarProps).toMatchObject({
         actionType: 'copy',
@@ -254,7 +254,7 @@ describe('LifeCycleModelCreate', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /^create$/i }));
 
-    expect(screen.getByRole('dialog', { name: /create model/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /create version/i })).toBeInTheDocument();
     await waitFor(() =>
       expect(latestToolbarProps).toMatchObject({
         actionType: 'createVersion',

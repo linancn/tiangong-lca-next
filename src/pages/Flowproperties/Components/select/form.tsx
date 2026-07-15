@@ -221,7 +221,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
           label={
             <FormattedMessage
               id='pages.flow.view.flowProperties.refObjectId'
-              defaultMessage='Ref object id'
+              defaultMessage='Reference to flow property data set identifier'
             />
           }
           name={[...name, '@refObjectId']}
@@ -274,7 +274,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
               lang={lang}
               id={id}
               version={version ?? ''}
-              buttonType=''
+              buttonType='text'
             />
           )}
 

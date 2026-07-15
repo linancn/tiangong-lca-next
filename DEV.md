@@ -20,8 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedNote: 'Added the canonical deterministic locale-audit command after reviewing the Issue #600 bootstrap and validation workflow.'
 ---
 
 # Development Bootstrap
@@ -83,6 +84,7 @@ npm ci
 | full coverage | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
+| deterministic locale audit | `npm run i18n:audit` |
 | build | `npm run build` |
 | local full test gate | `npm run prepush:gate` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |

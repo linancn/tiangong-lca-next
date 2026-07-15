@@ -219,6 +219,7 @@ describe('ValidationIssueModal', () => {
         'pages.validationIssues.issue.nonExistentRef': '数据不存在',
         'pages.validationIssues.issue.ruleVerificationFailed': '数据校验不通过',
         'pages.validationIssues.issue.sdkInvalid': '当前数据集校验失败',
+        'pages.validationIssues.tab.unknown': '未知数据分区（{tab}）',
         'pages.validationIssues.listSeparator': '，',
         'pages.validationIssues.issue.sdkInvalid.navigateHint':
           '对应 tab 下的问题数据会标红，请补充后重试。',
@@ -236,6 +237,7 @@ describe('ValidationIssueModal', () => {
         'pages.process.view.modellingAndValidation': '建模信息',
         'pages.process.view.administrativeInformation': '管理信息',
         'pages.process.view.exchanges': '输入/输出',
+        'pages.flow.view.flowProperties': '流属性',
         'pages.lifeCycleModel.view.exchanges': '输入/输出',
         'pages.validationIssues.fixIssue': '修复问题',
         'pages.validationIssues.notifyDataOwner': '通知数据拥有者',
@@ -758,7 +760,7 @@ describe('ValidationIssueModal', () => {
       }) as { destroy: () => void };
     });
 
-    const tabButton = screen.getByRole('button', { name: 'flowProperties' });
+    const tabButton = screen.getByRole('button', { name: '流属性' });
     expect(tabButton).toBeInTheDocument();
     expect(screen.queryByText(/未知过程/)).not.toBeInTheDocument();
     expect(screen.queryByText(/quantitativeReference/)).not.toBeInTheDocument();
@@ -1541,12 +1543,20 @@ describe('ValidationIssueModal', () => {
     expect(
       screen.getByText('Current version is lower than the published version'),
     ).toBeInTheDocument();
-    expect(screen.getAllByText('当前数据集校验失败(baseData)').length).toBeGreaterThan(1);
-    expect(screen.getAllByText('当前数据集校验失败(basicInformation)').length).toBeGreaterThan(2);
+    expect(
+      screen.getAllByText('当前数据集校验失败(未知数据分区（baseData）)').length,
+    ).toBeGreaterThan(1);
+    expect(
+      screen.getAllByText('当前数据集校验失败(未知数据分区（basicInformation）)').length,
+    ).toBeGreaterThan(2);
     expect(screen.getAllByText('当前数据集校验失败').length).toBeGreaterThan(1);
-    expect(screen.getByText('当前数据集校验失败(过程信息，unknownTab)')).toBeInTheDocument();
-    expect(screen.getByText('当前数据集校验失败(generalInformation)')).toBeInTheDocument();
-    expect(screen.getByText('当前数据集校验失败(mysteryTab)')).toBeInTheDocument();
+    expect(
+      screen.getByText('当前数据集校验失败(过程信息，未知数据分区（unknownTab）)'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('当前数据集校验失败(未知数据分区（generalInformation）)'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('当前数据集校验失败(未知数据分区（mysteryTab）)')).toBeInTheDocument();
     expect(screen.getByText('mysteryCode')).toBeInTheDocument();
     expect(screen.getAllByText('mystery data set').length).toBeGreaterThan(1);
     expect(screen.getByText('<id&"')).toBeInTheDocument();

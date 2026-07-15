@@ -57,7 +57,7 @@ const ReviewItemView: FC<Props> = ({ data = [] }) => {
                 title={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.scope'
-                    defaultMessage='Scope of review'
+                    defaultMessage='Scope'
                   />
                 }
               >

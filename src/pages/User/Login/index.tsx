@@ -89,7 +89,7 @@ const Login: React.FC = () => {
           const defaultSignUpSuccessMessage = intl.formatMessage({
             id: 'pages.login.signUp.success',
             defaultMessage:
-              'The email has been sent successfully. Please check your inbox and follow the link to complete the process.',
+              'Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.',
           });
           messageApi.open({
             type: 'success',
@@ -102,7 +102,7 @@ const Login: React.FC = () => {
           setSendComplete(true);
           const defaultSignUpExistedMessage = intl.formatMessage({
             id: 'pages.login.signUp.existed',
-            defaultMessage: 'This email has already been registered. Try Login or Forgot Password?',
+            defaultMessage: 'This email is already registered. Try Login, or Forgot Password?',
           });
           messageApi.open({
             type: 'error',
@@ -197,7 +197,7 @@ const Login: React.FC = () => {
               <title>
                 {intl.formatMessage({
                   id: 'menu.login',
-                  defaultMessage: 'Login Page',
+                  defaultMessage: 'Login',
                 })}
                 - {appTitle}
               </title>
@@ -245,7 +245,7 @@ const Login: React.FC = () => {
                       key: 'register',
                       label: intl.formatMessage({
                         id: 'pages.login.register.tab',
-                        defaultMessage: 'Register',
+                        defaultMessage: 'Sign Up',
                       }),
                     },
                   ]}
@@ -340,7 +340,7 @@ const Login: React.FC = () => {
                       >
                         <FormattedMessage
                           id='pages.login.forgotPassword'
-                          defaultMessage='Forgot password'
+                          defaultMessage='Forgot password?'
                         />
                       </Link>
                     </div>
@@ -506,7 +506,7 @@ const Login: React.FC = () => {
                     >
                       <FormattedMessage
                         id='pages.login.terms'
-                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}.'
+                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}'
                         values={{
                           termsOfService: termsOfServiceLink,
                           privacyPolicy: privacyPolicyLink,

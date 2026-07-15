@@ -13,7 +13,7 @@ import ToolbarEdit from './toolbar/editIndex';
 type Props = {
   id: string | undefined;
   version: string | undefined;
-  buttonType: string;
+  buttonType: 'icon' | 'text' | 'toolIcon';
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   disabled?: boolean;
@@ -94,8 +94,8 @@ const LifeCycleModelEdit: FC<Props> = ({
           <Tooltip
             title={
               <FormattedMessage
-                id='pages.button.model.lifecyclemodel'
-                defaultMessage='Lifecycle model infomation'
+                id='pages.lifeCycleModel.view.lifeCycleModelInformation'
+                defaultMessage='Life cycle model information'
               ></FormattedMessage>
             }
             placement='left'
@@ -121,10 +121,7 @@ const LifeCycleModelEdit: FC<Props> = ({
           </Tooltip>
         ) : (
           <Button disabled={disabled} onClick={onEdit}>
-            <FormattedMessage
-              id={buttonType ? buttonType : 'pages.button.edit'}
-              defaultMessage='Edit'
-            />
+            <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
           </Button>
         ))}
       <Drawer

@@ -330,7 +330,7 @@ describe('UnitgroupsSelectDrawer', () => {
 
     expect(onData).toHaveBeenCalledWith('unit-group-co-search', '2.0.0');
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: /Select Unit groups/i })).not.toBeInTheDocument(),
     );
   });
 
@@ -461,7 +461,7 @@ describe('UnitgroupsSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: /Select Unit groups/i })).not.toBeInTheDocument(),
     );
 
     await userEvent.click(screen.getByRole('button', { name: /pick-unitgroup/i }));
@@ -474,15 +474,15 @@ describe('UnitgroupsSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: /Select Unit groups/i })).not.toBeInTheDocument(),
     );
 
     await userEvent.click(screen.getByRole('button', { name: /pick-unitgroup/i }));
-    await screen.findByRole('dialog', { name: /Selete Unit group/i });
+    await screen.findByRole('dialog', { name: /Select Unit groups/i });
     await userEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
 
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: /Select Unit groups/i })).not.toBeInTheDocument(),
     );
     expect(onData).not.toHaveBeenCalled();
   });
@@ -510,13 +510,13 @@ describe('UnitgroupsSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /invalid version/i }));
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: /Selete Unit group/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Select Unit groups/i })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /select historical version/i }));
 
     expect(onData).toHaveBeenCalledWith('unit-group-tg-version', '0.9.0');
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: /Selete Unit group/i })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: /Select Unit groups/i })).not.toBeInTheDocument(),
     );
   });
 

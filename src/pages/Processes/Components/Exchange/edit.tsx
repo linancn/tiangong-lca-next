@@ -443,7 +443,7 @@ const ProcessExchangeEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id='pages.process.exchange.drawer.title.edit'
-            defaultMessage='Edit exchange'
+            defaultMessage='Edit Exchange'
           />
         }
         width='90%'
@@ -733,7 +733,7 @@ const ProcessExchangeEdit: FC<Props> = ({
                     label={
                       <FormattedMessage
                         id='processExchange.relativeStandardDeviation95In'
-                        defaultMessage='Relative standard deviation 95 in'
+                        defaultMessage='Relative StdDev in %'
                       />
                     }
                     name={'relativeStandardDeviation95In'}

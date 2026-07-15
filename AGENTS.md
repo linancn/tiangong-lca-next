@@ -26,8 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-15
+lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedNote: 'Reviewed canonical locale ownership, deterministic audit entrypoints, and the separation between structural proof and linguistic/domain sign-off for Issue #600.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -102,6 +103,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
+- locale topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit command documented in `docs/agents/repo-validation.md`
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
@@ -117,6 +119,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - shared dev environment: `npm start` (`npm run start:dev` is equivalent)
 - explicit main-environment run: `npm run start:main`
 - default lint gate: `npm run lint`
+- deterministic locale audit: `npm run i18n:audit`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`

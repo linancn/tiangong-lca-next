@@ -229,7 +229,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     },
     {
       title: (
-        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Actions'></FormattedMessage>
       ),
       dataIndex: 'option',
       search: false,
@@ -457,7 +457,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         title={
           <FormattedMessage
             id='pages.unitgroup.drawer.title.select'
-            defaultMessage='Selete Unit group'
+            defaultMessage='Select Unit groups'
           />
         }
         width='90%'

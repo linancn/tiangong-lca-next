@@ -18,7 +18,11 @@ let latestRefsDrawerProps: any = null;
 const mockParentRefCheckContext = { refCheckData: [] as any[] };
 let mockProblemNodes: any = [];
 const mockIntl = {
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) =>
+    Object.entries(values ?? {}).reduce(
+      (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
+      defaultMessage ?? id,
+    ),
 };
 
 jest.mock('umi', () => ({
@@ -757,7 +761,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('cannot save draft'));
     expect(mockCheckData).toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('shows a validation error when quantitative reference count is invalid', async () => {
@@ -788,7 +792,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Unit needs to have exactly one quantitative reference open',
+        'Exactly one unit must be designated as the quantitative reference.',
       ),
     );
   });
@@ -812,7 +816,7 @@ describe('UnitGroupEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!'),
+      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.'),
     );
   });
 
@@ -861,7 +865,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'unitGroupInformation，units，validation：Data check failed!',
+        'Unit group information，Units，Unknown section (validation)：Data check failed, please check the data!',
       ),
     );
   });
@@ -892,7 +896,11 @@ describe('UnitGroupEdit', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
+    );
   });
 
   it('adds schema issue tabs that are not already present in the error tab list', async () => {
@@ -918,7 +926,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'administrativeInformation：Data check failed!',
+        'Administrative information：Data check failed, please check the data!',
       ),
     );
   });

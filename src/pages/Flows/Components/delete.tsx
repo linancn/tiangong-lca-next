@@ -71,7 +71,7 @@ const FlowsDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id='pages.flows.deleteMessage.areyousureyouwanttodeletethisdata'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>
@@ -88,7 +88,7 @@ const FlowsDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id='pages.flows.deleteMessage'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>

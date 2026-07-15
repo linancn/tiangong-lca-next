@@ -188,7 +188,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       title: (
         <FormattedMessage
           id='pages.process.view.modellingAndValidation.typeOfDataSet'
-          defaultMessage='Type of data set'
+          defaultMessage='Dataset type'
         />
       ),
       dataIndex: 'typeOfDataSet',
@@ -245,7 +245,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => renderVersionSelectActions(row),
@@ -288,7 +288,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
               </Checkbox>
             </Col>
           </Row>
@@ -354,7 +354,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
               </Checkbox>
             </Col>
           </Row>
@@ -416,7 +416,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
               </Checkbox>
             </Col>
           </Row>
@@ -481,7 +481,7 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
               </Checkbox>
             </Col>
           </Row>

@@ -233,7 +233,12 @@ const SourceSelectForm: FC<Props> = ({
     >
       <Space direction='horizontal'>
         <Form.Item
-          label={<FormattedMessage id='pages.source.refObjectId' defaultMessage='Ref object id' />}
+          label={
+            <FormattedMessage
+              id='pages.source.refObjectId'
+              defaultMessage='Reference source data set identifier'
+            />
+          }
           name={[...name, '@refObjectId']}
           required={false}
           rules={[
@@ -293,7 +298,7 @@ const SourceSelectForm: FC<Props> = ({
               lang={lang}
               id={id}
               version={version ?? ''}
-              buttonType=''
+              buttonType='text'
               setViewDrawerVisible={() => {}}
               updateErrRef={(data) => setErrRef(data)}
             />

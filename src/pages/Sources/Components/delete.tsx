@@ -99,7 +99,7 @@ const SourceDelete: FC<Props> = ({
             onCancel={handleCancel}
           >
             <FormattedMessage
-              id='pages.button.deleteMessage.Are you sure you want to delete this data'
+              id='pages.button.delete.confirm'
               defaultMessage='Are you sure you want to delete this data?'
             />
           </Modal>
@@ -116,7 +116,7 @@ const SourceDelete: FC<Props> = ({
             onCancel={handleCancel}
           >
             <FormattedMessage
-              id='pages.button.deleteMessage'
+              id='pages.button.delete.confirm'
               defaultMessage='Are you sure you want to delete this data?'
             />
           </Modal>

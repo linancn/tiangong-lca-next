@@ -128,7 +128,7 @@ describe('LifeCycleModelEdit', () => {
       <LifeCycleModelEdit id='model-1' version='1.0.0' buttonType='toolIcon' lang='en' disabled />,
     );
 
-    const trigger = screen.getByRole('button', { name: /lifecycle model infomation/i });
+    const trigger = screen.getByRole('button', { name: /life cycle model information/i });
     expect(trigger).toBeDisabled();
 
     await userEvent.click(trigger);
@@ -188,7 +188,7 @@ describe('LifeCycleModelEdit', () => {
       <LifeCycleModelEdit id='model-2' version='2.0.0' buttonType='toolIcon' lang='en' />,
     );
 
-    await userEvent.click(screen.getByRole('button', { name: /lifecycle model infomation/i }));
+    await userEvent.click(screen.getByRole('button', { name: /life cycle model information/i }));
 
     expect(screen.getByRole('dialog', { name: /edit model/i })).toBeInTheDocument();
     await waitFor(() =>

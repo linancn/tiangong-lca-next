@@ -178,7 +178,7 @@ const FlowsSelectForm: FC<Props> = ({
           label={
             <FormattedMessage
               id='pages.process.view.exchange.refObjectId'
-              defaultMessage='Ref object id'
+              defaultMessage='Reference flow dataset identifier'
             />
           }
           name={[...name, '@refObjectId']}
@@ -240,7 +240,7 @@ const FlowsSelectForm: FC<Props> = ({
               lang={lang}
               id={id}
               version={version ?? ''}
-              buttonType=''
+              buttonType='text'
             />
           )}
           {id && (

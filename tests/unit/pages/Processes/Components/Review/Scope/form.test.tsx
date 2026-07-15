@@ -68,7 +68,7 @@ describe('ProcessReviewScopeForm', () => {
     expect(screen.getAllByTestId('required-mark')).toHaveLength(2);
     expect(screen.getAllByText(/Gate to gate|Review method/).length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getByRole('button', { name: /Add Scope of review Item/i }));
+    await userEvent.click(screen.getByRole('button', { name: /Add Scope Item/i }));
     expect(screen.getAllByLabelText('remove-scope')).toHaveLength(2);
 
     await userEvent.click(screen.getAllByLabelText('remove-scope')[1]);

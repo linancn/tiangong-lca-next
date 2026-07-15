@@ -336,7 +336,7 @@ describe('ModelToolbarAdd', () => {
       expect(mockGetProcessTableAll).toHaveBeenCalled();
     });
 
-    await userEvent.click(screen.getByText('AI Search'));
+    await userEvent.click(screen.getByText('AI Recommendation'));
 
     const searchInput = screen.getByRole('textbox', { name: 'tg' });
     await userEvent.clear(searchInput);
@@ -538,7 +538,7 @@ describe('ModelToolbarAdd', () => {
     await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
     expect(await screen.findByText('process-create')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByText('AI Search'));
+    await userEvent.click(screen.getByText('AI Recommendation'));
 
     const mySearchInput = screen.getByRole('textbox', { name: 'my' });
     await userEvent.clear(mySearchInput);
@@ -604,7 +604,7 @@ describe('ModelToolbarAdd', () => {
       ),
     );
 
-    await userEvent.click(screen.getByText('AI Search'));
+    await userEvent.click(screen.getByText('AI Recommendation'));
 
     const teSearchInput = screen.getByRole('textbox', { name: 'te' });
     await userEvent.clear(teSearchInput);
@@ -644,7 +644,7 @@ describe('ModelToolbarAdd', () => {
       ),
     );
 
-    await userEvent.click(screen.getByText('AI Search'));
+    await userEvent.click(screen.getByText('AI Recommendation'));
 
     const searchInput = screen.getByRole('textbox', { name: 'co' });
     await userEvent.clear(searchInput);

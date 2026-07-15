@@ -80,7 +80,7 @@ const ReviewItemForm: FC<Props> = ({ name, lang, formRef, onData, disabled }) =>
                       title={
                         <FormattedMessage
                           id='pages.process.modellingAndValidation.validation.review.scope'
-                          defaultMessage='Scope of review'
+                          defaultMessage='Scope'
                         />
                       }
                     >

@@ -325,7 +325,7 @@ describe('SourceSelectDrawer', () => {
     expect(screen.getByText('create-source')).toBeInTheDocument();
     expect(screen.getByText('view source-my:0.0.1')).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
 
     await waitFor(() =>
       expect(mockGetSourceTableAll).toHaveBeenCalledWith(
@@ -514,7 +514,7 @@ describe('SourceSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
     await screen.findByRole('dialog', { name: 'Select Source' });
 
-    await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
     await waitFor(() =>
       expect(mockGetSourceTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),

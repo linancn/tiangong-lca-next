@@ -128,7 +128,12 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.table.title.name' defaultMessage='Base name' />,
+      title: (
+        <FormattedMessage
+          id='pages.flow.view.flowInformation.baseName'
+          defaultMessage='Base name'
+        />
+      ),
       dataIndex: 'name',
       sorter: false,
       search: false,
@@ -191,7 +196,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => renderVersionSelectActions(row),
@@ -232,7 +237,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
                   setOpenAI(e.target.checked);
                 }}
               >
-                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Search' />
+                <FormattedMessage id='pages.search.openAI' defaultMessage='AI Recommendation' />
               </Checkbox>
             </Col>
           </Row>
@@ -345,7 +350,7 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage id='pages.flow.drawer.title.select' defaultMessage='Selete flow' />
+          <FormattedMessage id='pages.flow.drawer.title.select' defaultMessage='Select Flow' />
         }
         width='90%'
         closable={false}

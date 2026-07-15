@@ -19,7 +19,7 @@ import {
 } from '@/services/flows/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   __esModule: true,
   createFlow: jest.fn().mockReturnValue({
     validateEnhanced: jest.fn().mockReturnValue({ success: true }),

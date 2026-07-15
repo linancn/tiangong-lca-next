@@ -51,14 +51,14 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
         message.error(
           intl.formatMessage({
             id: 'pages.review.members.actionError',
-            defaultMessage: 'Action failed!',
+            defaultMessage: 'Operation failed',
           }),
         );
       } else {
         message.success(
           intl.formatMessage({
             id: 'pages.review.members.actionSuccess',
-            defaultMessage: 'Action success!',
+            defaultMessage: 'Operation successful',
           }),
         );
         actionRef.current?.reload();
@@ -131,7 +131,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
       render: (_, record) => (
         <span>
           {record.role === 'review-admin' ? (
-            <FormattedMessage id='pages.review.members.role.admin' defaultMessage='Admin' />
+            <FormattedMessage id='pages.review.members.role.admin' defaultMessage='Administrator' />
           ) : record.role === 'review-member' ? (
             <FormattedMessage id='pages.review.members.role.member' defaultMessage='Member' />
           ) : (
@@ -178,14 +178,14 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
                           message.error(
                             intl.formatMessage({
                               id: 'pages.review.members.actionError',
-                              defaultMessage: 'Action failed!',
+                              defaultMessage: 'Operation failed',
                             }),
                           );
                         } else {
                           message.success(
                             intl.formatMessage({
                               id: 'pages.review.members.actionSuccess',
-                              defaultMessage: 'Action success!',
+                              defaultMessage: 'Operation successful',
                             }),
                           );
                         }
@@ -202,7 +202,10 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
           {
             <Tooltip
               title={
-                <FormattedMessage id='pages.review.members.setAdmin' defaultMessage='Set Admin' />
+                <FormattedMessage
+                  id='pages.review.members.setAdmin'
+                  defaultMessage='Set as Administrator'
+                />
               }
             >
               <Button
@@ -218,7 +221,10 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
           {
             <Tooltip
               title={
-                <FormattedMessage id='pages.review.members.setMember' defaultMessage='Set Member' />
+                <FormattedMessage
+                  id='pages.review.members.setMember'
+                  defaultMessage='Set as Member'
+                />
               }
             >
               <Button
@@ -258,7 +264,7 @@ const ReviewMember = ({ userData }: { userData: { user_id: string; role: string 
           return [
             <Tooltip
               key={0}
-              title={<FormattedMessage id='pages.review.members.add' defaultMessage='Add' />}
+              title={<FormattedMessage id='pages.review.members.add' defaultMessage='Add Member' />}
             >
               <Button
                 disabled={!(userData?.role === 'review-admin')}

@@ -113,7 +113,7 @@ const ExchangeSelect: FC<Props> = ({
 
   const processExchangeColumnsSource: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -133,7 +133,7 @@ const ExchangeSelect: FC<Props> = ({
 
   const processExchangeColumnsTarget: ProColumns<ProcessExchangeTable>[] = [
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -240,12 +240,12 @@ const ExchangeSelect: FC<Props> = ({
           optionType === 'create' ? (
             <FormattedMessage
               id='pages.flow.model.drawer.title.edge.exchange.create'
-              defaultMessage='Create exchange relation'
+              defaultMessage='Create Exchange Relation'
             />
           ) : (
             <FormattedMessage
               id='pages.flow.model.drawer.title.edge.exchange.edit'
-              defaultMessage='Edit exchange relation'
+              defaultMessage='Edit Exchange Relation'
             />
           )
         }
@@ -322,7 +322,7 @@ const ExchangeSelect: FC<Props> = ({
               title={
                 <FormattedMessage
                   id='pages.flow.model.targetInputFlowName'
-                  defaultMessage='Target process input flow'
+                  defaultMessage='Target input flow name'
                 />
               }
               variant='borderless'

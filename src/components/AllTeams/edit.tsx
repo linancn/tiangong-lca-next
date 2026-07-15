@@ -13,7 +13,7 @@ const getDrawerContainer = () => document.body;
 
 type Props = {
   id: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text';
   actionRef: React.MutableRefObject<ActionType | undefined>;
   setViewDrawerVisible?: React.Dispatch<React.SetStateAction<boolean>>;
   disabled?: boolean;
@@ -146,10 +146,7 @@ const TeamEdit: FC<Props> = ({
         </Tooltip>
       ) : (
         <Button onClick={onEdit}>
-          <FormattedMessage
-            id={buttonType.trim().length > 0 ? buttonType : 'component.allTeams.table.edit'}
-            defaultMessage='Edit'
-          />
+          <FormattedMessage id='component.allTeams.table.edit' defaultMessage='Edit' />
         </Button>
       )}
 
@@ -233,7 +230,12 @@ const TeamEdit: FC<Props> = ({
                 formValues.darkLogo =
                   typeof darkLogo === 'string' ? darkLogo : `../sys-files/${darkLogoPath}`;
               }
-              const updateResult = await editTeamMessage(id, formValues);
+              const updateResult = await editTeamMessage(
+                id,
+                formValues,
+                undefined,
+                initData?.is_public,
+              );
               if (updateResult?.data) {
                 message.success(
                   intl.formatMessage({

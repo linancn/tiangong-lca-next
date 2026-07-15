@@ -101,7 +101,7 @@ describe('RequiredSelectFormTitle Component', () => {
   it('shows under review message for pending states', () => {
     renderComponent({ ruleErrorState: false, errRef: { stateCode: 20 } });
 
-    expect(screen.getByText('Under review')).toBeInTheDocument();
+    expect(screen.getByText('Data is under review')).toBeInTheDocument();
   });
 
   it('shows under review message when the same version is already under review', () => {
@@ -110,7 +110,7 @@ describe('RequiredSelectFormTitle Component', () => {
       errRef: { version: '01.00.000', underReviewVersion: '01.00.000' },
     });
 
-    expect(screen.getByText('Under review')).toBeInTheDocument();
+    expect(screen.getByText('Data is under review')).toBeInTheDocument();
   });
 
   it('shows version-under-review details when another version is already under review', () => {

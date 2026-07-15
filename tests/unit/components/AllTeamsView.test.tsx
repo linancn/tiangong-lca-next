@@ -129,6 +129,7 @@ const teamResponse = {
     {
       id: 'team-1',
       rank: -1,
+      is_public: true,
       json: {
         title: [
           { '#text': 'Team EN', '@xml:lang': 'en' },
@@ -228,13 +229,14 @@ describe('TeamView component', () => {
     expect(await screen.findByRole('dialog')).toBeInTheDocument();
   });
 
-  it('renders non-public display text when rank is zero', async () => {
+  it('renders non-public display text from team visibility rather than homepage rank', async () => {
     const user = userEvent.setup();
     mockGetTeamMessageApi.mockResolvedValueOnce({
       data: [
         {
           ...teamResponse.data[0],
-          rank: 0,
+          rank: 1,
+          is_public: false,
         },
       ],
     });

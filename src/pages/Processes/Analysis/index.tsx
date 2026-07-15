@@ -315,7 +315,7 @@ function QueryMetaCard({ meta }: { meta: QueryMeta }) {
           label={
             <FormattedMessage
               id='pages.process.lca.taskCenter.detail.snapshotId'
-              defaultMessage='snapshot_id'
+              defaultMessage='Snapshot ID'
             />
           }
         >
@@ -325,7 +325,7 @@ function QueryMetaCard({ meta }: { meta: QueryMeta }) {
           label={
             <FormattedMessage
               id='pages.process.lca.taskCenter.detail.resultId'
-              defaultMessage='result_id'
+              defaultMessage='Result ID'
             />
           }
         >
@@ -333,7 +333,10 @@ function QueryMetaCard({ meta }: { meta: QueryMeta }) {
         </Descriptions.Item>
         <Descriptions.Item
           label={
-            <FormattedMessage id='pages.process.lca.analysis.meta.source' defaultMessage='source' />
+            <FormattedMessage
+              id='pages.process.lca.analysis.meta.source'
+              defaultMessage='Result source'
+            />
           }
         >
           {formatSourceLabel(meta.source)}
@@ -342,7 +345,7 @@ function QueryMetaCard({ meta }: { meta: QueryMeta }) {
           label={
             <FormattedMessage
               id='pages.process.lca.analysis.meta.computedAt'
-              defaultMessage='computed_at'
+              defaultMessage='Computed at'
             />
           }
         >
@@ -364,28 +367,32 @@ function resolveQueuedSnapshotMessage(
   if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_build_queued') {
     const buildJobId =
       typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
-    return intl.formatMessage(
-      {
-        id: 'pages.process.lca.analysis.error.snapshotBuilding',
-        defaultMessage:
-          'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
-      },
-      {
-        jobSuffix: buildJobId ? ` (job ${buildJobId})` : '',
-      },
-    );
+    return buildJobId
+      ? intl.formatMessage(
+          {
+            id: 'pages.process.lca.analysis.error.snapshotBuildingWithJob',
+            defaultMessage:
+              'Snapshot build job {jobId} is still running. Wait for it to finish, then rerun the analysis.',
+          },
+          { jobId: buildJobId },
+        )
+      : intl.formatMessage({
+          id: 'pages.process.lca.analysis.error.snapshotBuilding',
+          defaultMessage:
+            'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
+        });
   }
   if (isLcaFunctionInvokeError(error) && error.code === 'no_ready_snapshot') {
     return intl.formatMessage({
       id: 'pages.process.lca.analysis.error.noReadySnapshot',
-      defaultMessage: 'No ready snapshot is available for the selected data scope.',
+      defaultMessage: 'No snapshot is ready for the selected data scope.',
     });
   }
   if (isLcaFunctionInvokeError(error) && error.code === 'snapshot_stale_rebuild_required') {
     return intl.formatMessage({
       id: 'pages.process.lca.analysis.error.snapshotStale',
       defaultMessage:
-        'The ready snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
+        'The snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
     });
   }
   return error instanceof Error ? error.message : fallbackMessage;
@@ -598,7 +605,7 @@ const LcaAnalysisPage = () => {
         value: 'typeOfDataSet' as const,
         label: intl.formatMessage({
           id: 'pages.process.lca.page.grouped.groupBy.option.typeOfDataSet',
-          defaultMessage: 'Type of data set',
+          defaultMessage: 'Dataset type',
         }),
       },
       {
@@ -1261,16 +1268,20 @@ const LcaAnalysisPage = () => {
       if (submitted.mode === 'snapshot_building') {
         setPathResult(null);
         setPathError(
-          intl.formatMessage(
-            {
-              id: 'pages.process.lca.analysis.error.snapshotBuilding',
-              defaultMessage:
-                'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
-            },
-            {
-              jobSuffix: submitted.build_job_id ? ` (job ${submitted.build_job_id})` : '',
-            },
-          ),
+          submitted.build_job_id
+            ? intl.formatMessage(
+                {
+                  id: 'pages.process.lca.analysis.error.snapshotBuildingWithJob',
+                  defaultMessage:
+                    'Snapshot build job {jobId} is still running. Wait for it to finish, then rerun the analysis.',
+                },
+                { jobId: submitted.build_job_id },
+              )
+            : intl.formatMessage({
+                id: 'pages.process.lca.analysis.error.snapshotBuilding',
+                defaultMessage:
+                  'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
+              }),
         );
         return;
       }
@@ -1569,7 +1580,8 @@ const LcaAnalysisPage = () => {
             {intl.formatMessage(
               {
                 id: 'pages.process.lca.page.grouped.table.groupHint',
-                defaultMessage: '{count} processes, top process: {processName}',
+                defaultMessage:
+                  '{count, plural, one {# process; top process: {processName}} other {# processes; top process: {processName}}}',
               },
               {
                 count: item.processCount,
@@ -1935,7 +1947,7 @@ const LcaAnalysisPage = () => {
               <Typography.Text type='secondary'>
                 <FormattedMessage
                   id='pages.process.lca.page.processes.count'
-                  defaultMessage='{count} process rows are currently available for analysis.'
+                  defaultMessage='{count, plural, one {# process row is currently available for analysis.} other {# process rows are currently available for analysis.}}'
                   values={{
                     count: processTotalCount,
                   }}
@@ -2043,7 +2055,7 @@ const LcaAnalysisPage = () => {
                       >
                         <FormattedMessage
                           id='pages.process.lca.page.profile.action.run'
-                          defaultMessage='Load profile'
+                          defaultMessage='Load LCIA profile'
                         />
                       </Button>
                     </Form>
@@ -2166,7 +2178,7 @@ const LcaAnalysisPage = () => {
               label: (
                 <FormattedMessage
                   id='pages.process.lca.page.tab.compare'
-                  defaultMessage='Impact compare'
+                  defaultMessage='Impact comparison'
                 />
               ),
               children: (
@@ -2205,25 +2217,12 @@ const LcaAnalysisPage = () => {
                       </Form>
 
                       <LcaProcessSelectionTable
+                        mode='compare'
                         processOptions={processOptions}
                         selectedProcessIds={selectedCompareProcessIds}
                         selectedProcessOptions={selectedCompareProcesses}
                         totalProcessCount={processTotalCount}
                         pagination={processSelectionPagination}
-                        titleMessage={{
-                          id: 'pages.process.lca.page.compare.selectionTitle',
-                          defaultMessage: 'Process selection',
-                        }}
-                        hintMessage={{
-                          id: 'pages.process.lca.page.compare.selectionHint',
-                          defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} available options.',
-                        }}
-                        emptyMessage={{
-                          id: 'pages.process.lca.page.compare.selectionEmpty',
-                          defaultMessage:
-                            'No processes match the current data scope and search keyword.',
-                        }}
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedCompareProcessIds(selectedProcessIds);
                           setCompareResult(null);
@@ -2462,6 +2461,7 @@ const LcaAnalysisPage = () => {
                       </Form>
 
                       <LcaProcessSelectionTable
+                        mode='grouped'
                         processOptions={processOptions}
                         selectedProcessIds={selectedGroupedProcessIds}
                         selectedProcessOptions={selectedGroupedProcessIds
@@ -2469,20 +2469,6 @@ const LcaAnalysisPage = () => {
                           .filter((item): item is LcaProcessOption => !!item)}
                         totalProcessCount={processTotalCount}
                         pagination={processSelectionPagination}
-                        titleMessage={{
-                          id: 'pages.process.lca.page.grouped.selectionTitle',
-                          defaultMessage: 'Process selection',
-                        }}
-                        hintMessage={{
-                          id: 'pages.process.lca.page.grouped.selectionHint',
-                          defaultMessage:
-                            '{selectedCount} processes selected from {totalCount} available options.',
-                        }}
-                        emptyMessage={{
-                          id: 'pages.process.lca.page.grouped.selectionEmpty',
-                          defaultMessage:
-                            'No processes match the current data scope and search keyword.',
-                        }}
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedGroupedProcessIds(selectedProcessIds);
                           setGroupedResult(null);
@@ -2709,7 +2695,7 @@ const LcaAnalysisPage = () => {
                               label={
                                 <FormattedMessage
                                   id='pages.process.lca.page.path.field.amount'
-                                  defaultMessage='Amount'
+                                  defaultMessage='Demand amount'
                                 />
                               }
                             >
@@ -2751,7 +2737,7 @@ const LcaAnalysisPage = () => {
                               label={
                                 <FormattedMessage
                                   id='pages.process.lca.page.path.field.topKChildren'
-                                  defaultMessage='Top-k children'
+                                  defaultMessage='Top-K children'
                                 />
                               }
                             >
@@ -2817,26 +2803,13 @@ const LcaAnalysisPage = () => {
                       </Form>
 
                       <LcaProcessSelectionTable
+                        mode='path'
                         processOptions={processOptions}
                         selectedProcessIds={selectedPathProcessId ? [selectedPathProcessId] : []}
                         selectedProcessOptions={selectedPathProcess ? [selectedPathProcess] : []}
                         totalProcessCount={processTotalCount}
                         pagination={processSelectionPagination}
                         selectionType='radio'
-                        titleMessage={{
-                          id: 'pages.process.lca.page.path.selectionTitle',
-                          defaultMessage: 'Root process selection',
-                        }}
-                        hintMessage={{
-                          id: 'pages.process.lca.page.path.selectionHint',
-                          defaultMessage:
-                            '{selectedCount} root process selected from {totalCount} available options.',
-                        }}
-                        emptyMessage={{
-                          id: 'pages.process.lca.page.path.selectionEmpty',
-                          defaultMessage:
-                            'No processes match the current data scope and search keyword.',
-                        }}
                         onSelectionChange={(selectedProcessIds) => {
                           setSelectedPathProcessId(selectedProcessIds[0] ?? '');
                           setPathResult(null);
@@ -2866,7 +2839,7 @@ const LcaAnalysisPage = () => {
                         >
                           <FormattedMessage
                             id='pages.process.lca.page.path.action.run'
-                            defaultMessage='Run contribution path'
+                            defaultMessage='Run contribution path analysis'
                           />
                         </Button>
                       </Space>
@@ -2984,7 +2957,7 @@ const LcaAnalysisPage = () => {
                                   label={
                                     <FormattedMessage
                                       id='pages.process.lca.page.path.field.amount'
-                                      defaultMessage='Amount'
+                                      defaultMessage='Demand amount'
                                     />
                                   }
                                 >
@@ -3004,7 +2977,7 @@ const LcaAnalysisPage = () => {
                                   label={
                                     <FormattedMessage
                                       id='pages.process.lca.page.path.field.topKChildren'
-                                      defaultMessage='Top-k children'
+                                      defaultMessage='Top-K children'
                                     />
                                   }
                                 >
@@ -3086,7 +3059,7 @@ const LcaAnalysisPage = () => {
                               title={
                                 <FormattedMessage
                                   id='pages.process.lca.page.path.sankey.title'
-                                  defaultMessage='Contribution path Sankey'
+                                  defaultMessage='Contribution-path Sankey diagram'
                                 />
                               }
                             >
@@ -3094,7 +3067,7 @@ const LcaAnalysisPage = () => {
                                 <Typography.Paragraph type='secondary'>
                                   <FormattedMessage
                                     id='pages.process.lca.page.path.sankey.note'
-                                    defaultMessage='The Sankey summarizes the explored path links by absolute direct impact. Revisited processes are split by depth so the chart can keep all traversed links visible. Use the tables below for exact values and link diagnostics.'
+                                    defaultMessage='This Sankey diagram summarizes explored path links by absolute direct impact. Revisited processes are split by depth so all traversed links remain visible. Use the tables below for exact values and link diagnostics.'
                                   />
                                 </Typography.Paragraph>
                                 {pathSankeyNeedsLayeringNote && pathSankeyData ? (
@@ -3105,7 +3078,7 @@ const LcaAnalysisPage = () => {
                                       {
                                         id: 'pages.process.lca.page.path.sankey.info.layered',
                                         defaultMessage:
-                                          'Repeated or cycle-related processes are split by depth so Sankey can keep all traversed links visible. The current view includes {repeatCount} repeated node instance(s), {cycleCutCount} cycle-cut link(s), and {selfLoopCount} self-loop link(s).',
+                                          'Repeated or cycle-related processes are split by depth to keep all traversed links visible in the Sankey diagram. The current view includes {repeatCount, plural, one {# repeated node instance} other {# repeated node instances}}, {cycleCutCount, plural, one {# cycle-cut link} other {# cycle-cut links}}, and {selfLoopCount, plural, one {# self-loop link} other {# self-loop links}}.',
                                       },
                                       {
                                         repeatCount: pathSankeyData.repeatedNodeCount,

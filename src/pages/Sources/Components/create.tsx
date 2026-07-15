@@ -280,16 +280,13 @@ const SourceCreate: FC<CreateProps> = ({
     <>
       <Tooltip
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Create'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+          ) : (
+            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+          )
         }
       >
         {actionType === 'copy' ? (
@@ -322,16 +319,19 @@ const SourceCreate: FC<CreateProps> = ({
         destroyOnHidden
         getContainer={() => document.body}
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.source.drawer.title.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.source.drawer.title.createVersion'
-                  : 'pages.source.drawer.title.create'
-            }
-            defaultMessage='Create Source'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.source.drawer.title.copy' defaultMessage='Copy Source' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage
+              id='pages.source.drawer.title.createVersion'
+              defaultMessage='Create Version'
+            />
+          ) : (
+            <FormattedMessage
+              id='pages.source.drawer.title.create'
+              defaultMessage='Create Source'
+            />
+          )
         }
         width='90%'
         closable={false}

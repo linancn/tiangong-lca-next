@@ -181,7 +181,10 @@ const SelectTeams: FC<SelectTeamsProps> = ({
                 <FormattedMessage id='component.allTeams.select.calcel' defaultMessage='Cancel' />
               </Button>
               <Button type='primary' onClick={handleAddTeams} loading={loading}>
-                <FormattedMessage id='component.allTeams.select.confirm' defaultMessage='Confirm' />
+                <FormattedMessage
+                  id='component.allTeams.select.confirm'
+                  defaultMessage='Add selected teams'
+                />
               </Button>
             </Space>
           </div>

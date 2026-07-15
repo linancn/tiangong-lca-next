@@ -324,16 +324,20 @@ const LcaImpactCompareToolbar: FC<{
         const buildJobId =
           typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
         setAnalysisError(
-          intl.formatMessage(
-            {
-              id: 'pages.process.lca.analysis.error.snapshotBuilding',
-              defaultMessage:
-                'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
-            },
-            {
-              jobSuffix: buildJobId ? ` (job ${buildJobId})` : '',
-            },
-          ),
+          buildJobId
+            ? intl.formatMessage(
+                {
+                  id: 'pages.process.lca.analysis.error.snapshotBuildingWithJob',
+                  defaultMessage:
+                    'Snapshot build job {jobId} is still running. Wait for it to finish, then rerun the analysis.',
+                },
+                { jobId: buildJobId },
+              )
+            : intl.formatMessage({
+                id: 'pages.process.lca.analysis.error.snapshotBuilding',
+                defaultMessage:
+                  'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
+              }),
         );
       } else {
         setAnalysisError(
@@ -354,7 +358,7 @@ const LcaImpactCompareToolbar: FC<{
     processOptions.length > 0
       ? intl.formatMessage({
           id: 'pages.process.lca.analysis.toolbar.tooltip',
-          defaultMessage: 'Impact compare',
+          defaultMessage: 'Impact comparison',
         })
       : intl.formatMessage({
           id: 'pages.process.lca.analysis.empty.visibleProcesses',
@@ -446,7 +450,7 @@ const LcaImpactCompareToolbar: FC<{
         onClose={onClose}
         title={intl.formatMessage({
           id: 'pages.process.lca.analysis.drawer.title',
-          defaultMessage: 'LCA Impact Compare',
+          defaultMessage: 'LCA Impact Comparison',
         })}
         footer={
           <Space>
@@ -481,7 +485,7 @@ const LcaImpactCompareToolbar: FC<{
               <Typography.Paragraph>
                 <FormattedMessage
                   id='pages.process.lca.analysis.description'
-                  defaultMessage='Compare the current page processes against one impact category using the existing solver query API.'
+                  defaultMessage='Compare all visible processes on the current page for a selected impact category using the existing LCA query API.'
                 />
               </Typography.Paragraph>
               <Typography.Text strong>
@@ -527,7 +531,7 @@ const LcaImpactCompareToolbar: FC<{
               <Typography.Paragraph>
                 <FormattedMessage
                   id='pages.process.lca.analysis.processHint'
-                  defaultMessage='{selectedCount} selected from {totalCount} visible process rows on this page.'
+                  defaultMessage='{selectedCount, plural, one {# process selected from {totalCount, plural, one {# visible process row} other {# visible process rows}} on this page.} other {# processes selected from {totalCount, plural, one {# visible process row} other {# visible process rows}} on this page.}}'
                   values={{
                     selectedCount: selectedProcessIds.length,
                     totalCount: processOptions.length,
@@ -624,7 +628,7 @@ const LcaImpactCompareToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.taskCenter.detail.snapshotId'
-                            defaultMessage='snapshot_id'
+                            defaultMessage='Snapshot ID'
                           />
                         }
                       >
@@ -634,7 +638,7 @@ const LcaImpactCompareToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.taskCenter.detail.resultId'
-                            defaultMessage='result_id'
+                            defaultMessage='Result ID'
                           />
                         }
                       >
@@ -644,7 +648,7 @@ const LcaImpactCompareToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.analysis.meta.source'
-                            defaultMessage='source'
+                            defaultMessage='Result source'
                           />
                         }
                       >
@@ -654,7 +658,7 @@ const LcaImpactCompareToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.analysis.meta.computedAt'
-                            defaultMessage='computed_at'
+                            defaultMessage='Computed at'
                           />
                         }
                       >

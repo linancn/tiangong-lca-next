@@ -32,7 +32,7 @@ export const ErrRefTipMessage = ({ errRef }: { errRef: RefCheckType }) => {
     errRef?.underReviewVersion === errRef?.version;
 
   if (isUnderReviewState || hasSameVersionUnderReview) {
-    return <FormattedMessage id='pages.select.underReview' defaultMessage='Under review' />;
+    return <FormattedMessage id='pages.select.underReview' defaultMessage='Data is under review' />;
   } else if (errRef?.versionUnderReview === true) {
     return (
       <FormattedMessage

@@ -68,7 +68,7 @@ const PropertyDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id='pages.button.deleteMessage.areyousureyouwanttodeletethisdata'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>
@@ -85,7 +85,7 @@ const PropertyDelete: FC<Props> = ({
               onCancel={handleCancel}
             >
               <FormattedMessage
-                id='pages.button.deleteMessage.areyousureyouwanttodeletethisdata'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>

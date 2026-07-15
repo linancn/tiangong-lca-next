@@ -349,7 +349,7 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(viewButtons[0]);
     expect(screen.getByText('Detail information')).toBeInTheDocument();
     expect(screen.getByText('Demand type')).toBeInTheDocument();
-    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.getByText('Single-Process Calculation')).toBeInTheDocument();
     expect(screen.getByText('Data scope')).toBeInTheDocument();
     expect(screen.getByText('team')).toBeInTheDocument();
     expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
@@ -451,7 +451,7 @@ describe('LcaTaskCenter', () => {
     const viewButtons = screen.getAllByRole('button', { name: 'View' });
     fireEvent.click(viewButtons[0]);
     expect(screen.getByText('Demand type')).toBeInTheDocument();
-    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.getByText('Single-Process Calculation')).toBeInTheDocument();
     expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
 
     fireEvent.click(viewButtons[1]);
@@ -583,9 +583,9 @@ describe('LcaTaskCenter', () => {
 
     const diagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
     fireEvent.click(diagnosticsButtons[1]);
-    expect(screen.getByText('submit_worker_job_id')).toBeInTheDocument();
+    expect(screen.getByText('Submit worker job ID')).toBeInTheDocument();
     expect(screen.getAllByText('submit-worker-blocked').length).toBeGreaterThan(0);
-    expect(screen.getByText('root_job_id')).toBeInTheDocument();
+    expect(screen.getByText('Root job ID')).toBeInTheDocument();
     expect(screen.getAllByText('root-worker-blocked').length).toBeGreaterThan(0);
     expect(screen.getByText('same input/output flow')).toBeInTheDocument();
     expect(screen.getAllByText('flow_lcia_semantic_mismatch').length).toBeGreaterThan(0);
@@ -839,9 +839,9 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
 
     fireEvent.click(reviewDiagnosticsButtons[4]);
-    expect(screen.getByText('gate_run_id')).toBeInTheDocument();
+    expect(screen.getByText('Gate run ID')).toBeInTheDocument();
     expect(screen.getByText('gate-run-submitted')).toBeInTheDocument();
-    expect(screen.getByText('revision_checksum')).toBeInTheDocument();
+    expect(screen.getByText('Revision checksum')).toBeInTheDocument();
     expect(screen.getByText('checksum-submitted')).toBeInTheDocument();
     expect(
       screen.queryByText(

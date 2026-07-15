@@ -204,7 +204,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({
       <Space direction='horizontal'>
         <Form.Item
           label={
-            <FormattedMessage id='pages.unitgroup.refObjectId' defaultMessage='Ref object id' />
+            <FormattedMessage
+              id='pages.unitgroup.refObjectId'
+              defaultMessage='Reference unit group data set identifier'
+            />
           }
           name={[...name, '@refObjectId']}
           rules={[
@@ -259,7 +262,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
               lang={lang}
               id={id}
               version={version ?? ''}
-              buttonType=''
+              buttonType='text'
               setViewDrawerVisible={() => {}}
               updateErrRef={(data: RefCheckType | null) => setErrRef(data)}
             />

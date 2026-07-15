@@ -282,7 +282,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
     await waitFor(() => expect(mockGetFlowTableAll).toHaveBeenCalled());
 
-    await userEvent.click(screen.getByText('AI Search'));
+    await userEvent.click(screen.getByText('AI Recommendation'));
 
     const searchInput = screen.getByRole('textbox', { name: 'tg' });
     await userEvent.clear(searchInput);
@@ -418,12 +418,12 @@ describe('ModelToolbarAddThroughFlow', () => {
     render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={onData} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
-    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Select Flow' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 
   it('renders column helpers and supports icon trigger plus both close paths', async () => {
@@ -433,7 +433,7 @@ describe('ModelToolbarAddThroughFlow', () => {
     render(<ModelToolbarAddThroughFlow buttonType='icon' lang='en' onData={onData} />);
 
     await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
-    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Select Flow' })).toBeInTheDocument();
 
     expect(latestProTableProps?.columns).toHaveLength(8);
     const nameCell = latestProTableProps.columns[1].render(null, {
@@ -469,15 +469,15 @@ describe('ModelToolbarAddThroughFlow', () => {
     expect(onData).toHaveBeenCalledTimes(1);
 
     await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
-    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Select Flow' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'plus-icon' }));
-    expect(await screen.findByRole('dialog', { name: 'Selete flow' })).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: 'Select Flow' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 });

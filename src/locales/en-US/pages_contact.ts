@@ -54,5 +54,5 @@ export default {
   'pages.contact.validator.dataSetVersion.required': 'Please input data set version',
   'pages.contact.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
   'pages.contact.validator.timeStamp.required': 'Please input time stamp',
-  'pages.contact.validator.referenceToDataSetFormat.required': 'Please input  data set format(s)',
+  'pages.contact.validator.referenceToDataSetFormat.required': 'Please select a data set format.',
 };

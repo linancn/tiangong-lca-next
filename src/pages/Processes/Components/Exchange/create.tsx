@@ -122,7 +122,7 @@ const ProcessExchangeCreate: FC<Props> = ({
         title={
           <FormattedMessage
             id='pages.process.exchange.drawer.title.create'
-            defaultMessage='Create exchange'
+            defaultMessage='Create Exchange'
           />
         }
         width='90%'
@@ -359,7 +359,7 @@ const ProcessExchangeCreate: FC<Props> = ({
                   label={
                     <FormattedMessage
                       id='processExchange.relativeStandardDeviation95In'
-                      defaultMessage='Relative standard deviation 95 in'
+                      defaultMessage='Relative StdDev in %'
                     />
                   }
                   name={'relativeStandardDeviation95In'}

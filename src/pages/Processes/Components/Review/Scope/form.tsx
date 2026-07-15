@@ -91,7 +91,7 @@ const ScopeItemForm: FC<Props> = ({ name }) => {
               + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
               <FormattedMessage
                 id='pages.process.modellingAndValidation.validation.review.scope'
-                defaultMessage='Scope of review'
+                defaultMessage='Scope'
               />{' '}
               <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
             </Button>

@@ -40,7 +40,7 @@ export default {
   'pages.review.table.userName': '用户',
   'pages.review.table.type': '类型',
   'pages.review.table.status': '状态',
-  'pages.review.table.modifiedAt': '时间',
+  'pages.review.table.modifiedAt': '修改时间',
   'pages.review.table.actions': '操作',
   'pages.review.table.view': '查看',
 };

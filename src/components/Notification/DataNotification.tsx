@@ -215,7 +215,7 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
     {
       title: intl.formatMessage({
         id: 'pages.review.table.modifiedAt',
-        defaultMessage: 'Modified At',
+        defaultMessage: 'Modified at',
       }),
       dataIndex: 'modifiedAt',
       key: 'modifiedAt',

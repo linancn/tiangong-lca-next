@@ -73,13 +73,13 @@ const ContactView: FC<Props> = ({ id, version, lang, buttonType }) => {
           </Descriptions.Item>
         </Descriptions>
         <Divider orientationMargin='0' orientation='left' plain>
-          <FormattedMessage id='pages.contact.name' defaultMessage='Name' />
+          <FormattedMessage id='pages.contact.name' defaultMessage='Name of contact' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:name']}
         />
         <Divider orientationMargin='0' orientation='left' plain>
-          <FormattedMessage id='pages.contact.shortName' defaultMessage='Short name' />
+          <FormattedMessage id='pages.contact.shortName' defaultMessage='Short name for contact' />
         </Divider>
         <LangTextItemDescription
           data={initData.contactInformation?.dataSetInformation?.['common:shortName']}

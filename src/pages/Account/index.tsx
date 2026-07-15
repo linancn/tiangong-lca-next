@@ -13,6 +13,7 @@ import { PageContainer, ProForm, ProFormInstance, ProFormText } from '@ant-desig
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Flex, Form, Input, message, Spin, Tabs, theme } from 'antd';
 import { useEffect, useRef, useState, type FC } from 'react';
+import { formatAccountRole } from './roleMessage';
 
 const Profile: FC = () => {
   const [activeTabKey, setActiveTabKey] = useState('baseInfo');
@@ -51,7 +52,7 @@ const Profile: FC = () => {
               message.success(
                 intl.formatMessage({
                   id: 'pages.account.editsuccess',
-                  defaultMessage: 'Edit Successfully!',
+                  defaultMessage: 'Profile updated successfully.',
                 }),
               );
               setInitialState((s) => ({
@@ -142,7 +143,7 @@ const Profile: FC = () => {
                 message.error(
                   intl.formatMessage({
                     id: 'pages.account.currentPassword.invalid',
-                    defaultMessage: 'Invalid current password',
+                    defaultMessage: 'Invalid password',
                   }),
                 );
               } else {
@@ -186,7 +187,7 @@ const Profile: FC = () => {
               message: (
                 <FormattedMessage
                   id='pages.account.currentPassword.required'
-                  defaultMessage='Please input your current password!'
+                  defaultMessage='Please input the current password!'
                 />
               ),
             },
@@ -412,7 +413,7 @@ const Profile: FC = () => {
           }}
           placeholder={intl.formatMessage({
             id: 'pages.account.newEmail.placeholder',
-            defaultMessage: 'Email',
+            defaultMessage: 'New Email',
           })}
           rules={[
             {
@@ -464,7 +465,7 @@ const Profile: FC = () => {
                   new Error(
                     intl.formatMessage({
                       id: 'pages.account.emailsDoNotMatch',
-                      defaultMessage: 'The two email addresses that you entered do not match.',
+                      defaultMessage: 'The two emails that you entered do not match!',
                     }),
                   ),
                 );
@@ -640,7 +641,7 @@ const Profile: FC = () => {
                 message: (
                   <FormattedMessage
                     id='pages.account.currentPassword.required'
-                    defaultMessage='Please input your current password!'
+                    defaultMessage='Please input the current password!'
                   />
                 ),
               },
@@ -689,18 +690,11 @@ const Profile: FC = () => {
           return;
         }
         setInitData(res);
-        setRoleValue(
-          intl.formatMessage({
-            id: `pages.account.profile.role.${res?.role}`,
-            defaultMessage: res?.role,
-          }),
-        );
+        const localizedRole = formatAccountRole(intl, res?.role);
+        setRoleValue(localizedRole);
         formRefEdit.current?.setFieldsValue({
           ...res,
-          role: intl.formatMessage({
-            id: `pages.account.profile.role.${res?.role}`,
-            defaultMessage: res?.role,
-          }),
+          role: localizedRole,
         });
       } catch (error) {
         if (active) {

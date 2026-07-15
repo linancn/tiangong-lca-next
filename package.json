@@ -16,6 +16,8 @@
     "dist": "npm run build && tsc --project tsconfig.electron.json && electron-builder --config electron-builder.json",
     "electron": "tsc --project tsconfig.electron.json && electron dist-electron/main.js",
     "gh-pages": "gh-pages -d dist",
+    "i18n:audit": "node scripts/i18n/audit-locales.mjs --mode enforce --check",
+    "i18n:audit:write": "node scripts/i18n/audit-locales.mjs --mode report --write",
     "i18n-remove": "pro i18n-remove --locale=zh-CN --write",
     "postinstall": "max setup",
     "jest": "jest",
