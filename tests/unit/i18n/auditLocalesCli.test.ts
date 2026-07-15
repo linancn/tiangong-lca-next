@@ -36,6 +36,19 @@ type AuditManifest = {
 
 const AUDIT_SCRIPT = path.join(process.cwd(), 'scripts/i18n/audit-locales.mjs');
 
+const createIsolatedGitEnvironment = () => {
+  const environment = { ...process.env };
+  const localVariableNames = execFileSync('git', ['rev-parse', '--local-env-vars'], {
+    encoding: 'utf8',
+  })
+    .split('\n')
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+  localVariableNames.forEach((name) => delete environment[name]);
+  return environment;
+};
+
 const writeFixtureFile = (root: string, relativePath: string, content: string) => {
   const filePath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -44,6 +57,7 @@ const writeFixtureFile = (root: string, relativePath: string, content: string) =
 
 const initializeAuditFixture = () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tiangong-i18n-audit-'));
+  const gitEnvironment = createIsolatedGitEnvironment();
 
   writeFixtureFile(
     root,
@@ -100,8 +114,8 @@ const initializeAuditFixture = () => {
     )}\n`,
   );
 
-  execFileSync('git', ['init', '--quiet'], { cwd: root });
-  execFileSync('git', ['add', '.'], { cwd: root });
+  execFileSync('git', ['init', '--quiet'], { cwd: root, env: gitEnvironment });
+  execFileSync('git', ['add', '.'], { cwd: root, env: gitEnvironment });
   execFileSync(
     'git',
     [
@@ -114,7 +128,7 @@ const initializeAuditFixture = () => {
       '-m',
       'fixture',
     ],
-    { cwd: root },
+    { cwd: root, env: gitEnvironment },
   );
 
   return root;
