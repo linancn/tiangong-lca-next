@@ -376,10 +376,10 @@ describe('FlowsSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'select-version-flow-my' }));
     expect(onData).toHaveBeenCalledWith('flow-my', '02.00.000');
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
-    await screen.findByRole('dialog', { name: 'Selete Flow' });
+    await screen.findByRole('dialog', { name: 'Select Flow' });
 
     await userEvent.type(screen.getByLabelText('my'), 'alpha');
     await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
@@ -398,7 +398,7 @@ describe('FlowsSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).toHaveBeenCalledWith('flow-my-search', '2.0.0');
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 
   it('covers tg/co/te searches, non-my option rendering, and my-tab reopen reset', async () => {
@@ -407,7 +407,7 @@ describe('FlowsSelectDrawer', () => {
     renderWithProviders(<FlowsSelectDrawer buttonType='icon' lang='en' asInput onData={onData} />);
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
-    await screen.findByRole('dialog', { name: 'Selete Flow' });
+    await screen.findByRole('dialog', { name: 'Select Flow' });
 
     await userEvent.click(screen.getByLabelText('open-ai'));
     await userEvent.click(screen.getByLabelText('open-ai'));
@@ -480,7 +480,7 @@ describe('FlowsSelectDrawer', () => {
     );
 
     mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
-    await userEvent.click(screen.getByRole('button', { name: /te data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /team data/i }));
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
         expect.objectContaining({ current: 1, pageSize: 10 }),
@@ -526,11 +526,11 @@ describe('FlowsSelectDrawer', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
 
     mockNextRequestFilter = { flowType: ['ELEMENTARY_FLOW'] };
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
-    await screen.findByRole('dialog', { name: 'Selete Flow' });
+    await screen.findByRole('dialog', { name: 'Select Flow' });
 
     await waitFor(() =>
       expect(mockGetFlowTableAll).toHaveBeenCalledWith(
@@ -550,7 +550,7 @@ describe('FlowsSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 
   it('supports custom text buttons and closes from cancel and the extra close icon', async () => {
@@ -561,16 +561,16 @@ describe('FlowsSelectDrawer', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'choose-flow' }));
-    await screen.findByRole('dialog', { name: 'Selete Flow' });
+    await screen.findByRole('dialog', { name: 'Select Flow' });
 
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'choose-flow' }));
-    await screen.findByRole('dialog', { name: 'Selete Flow' });
+    await screen.findByRole('dialog', { name: 'Select Flow' });
     await userEvent.click(screen.getByRole('button', { name: /close-icon/i }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow' })).not.toBeInTheDocument();
   });
 });

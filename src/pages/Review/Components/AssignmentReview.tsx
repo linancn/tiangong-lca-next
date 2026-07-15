@@ -240,7 +240,7 @@ const AssignmentReview = ({
     },
     {
       title: (
-        <FormattedMessage id='pages.review.table.column.createAt' defaultMessage='Create At' />
+        <FormattedMessage id='pages.review.table.column.createAt' defaultMessage='Submitted at' />
       ),
       dataIndex: 'createAt',
       sorter: false,
@@ -469,9 +469,11 @@ const AssignmentReview = ({
   const getSubTitle = () => {
     switch (tableType) {
       case 'unassigned':
-        return <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned' />;
+        return (
+          <FormattedMessage id='pages.review.tabs.unassigned' defaultMessage='Unassigned Task' />
+        );
       case 'assigned':
-        return <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned' />;
+        return <FormattedMessage id='pages.review.tabs.assigned' defaultMessage='Assigned Task' />;
       case 'reviewed':
         return <FormattedMessage id='pages.review.tabs.reviewed' defaultMessage='Reviewed' />;
       case 'pending':
@@ -479,7 +481,9 @@ const AssignmentReview = ({
       case 'reviewer-rejected':
         return <FormattedMessage id='pages.review.tabs.rejected' defaultMessage='Rejected' />;
       case 'admin-rejected':
-        return <FormattedMessage id='pages.review.tabs.rejectedTask' defaultMessage='Rejected' />;
+        return (
+          <FormattedMessage id='pages.review.tabs.rejectedTask' defaultMessage='Rejected Task' />
+        );
       default:
     }
   };

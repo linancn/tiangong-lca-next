@@ -381,7 +381,7 @@ describe('ContactSelectDrawer', () => {
       within(allVersionActions).getByRole('button', { name: /invalid version/i }),
     );
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Select Contact' })).toBeInTheDocument();
 
     const submitButton = within(allVersionActions).getByRole('button', { name: /^submit$/i });
     expect(submitButton).toBeDisabled();
@@ -394,7 +394,7 @@ describe('ContactSelectDrawer', () => {
     await userEvent.click(submitButton);
 
     expect(onData).toHaveBeenCalledWith('contact-co-version', '0.9.0');
-    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Contact' })).not.toBeInTheDocument();
   });
 
   it('opens all tabs by default, searches tg/team datasets, and clears selection when reopened', async () => {
@@ -474,14 +474,14 @@ describe('ContactSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'tg:beta' }));
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Contact' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
-    await screen.findByRole('dialog', { name: 'Selete Contact' });
+    await screen.findByRole('dialog', { name: 'Select Contact' });
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Contact' })).not.toBeInTheDocument();
   });
 
   it('searches business data and closes through the extra close icon and footer cancel', async () => {
@@ -490,9 +490,9 @@ describe('ContactSelectDrawer', () => {
     renderWithProviders(<ContactSelectDrawer buttonType='text' lang='en' onData={onData} />);
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
-    await screen.findByRole('dialog', { name: 'Selete Contact' });
+    await screen.findByRole('dialog', { name: 'Select Contact' });
 
-    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toHaveAttribute(
+    expect(screen.getByRole('dialog', { name: 'Select Contact' })).toHaveAttribute(
       'data-has-container',
       'true',
     );
@@ -512,13 +512,13 @@ describe('ContactSelectDrawer', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Contact' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
-    await screen.findByRole('dialog', { name: 'Selete Contact' });
+    await screen.findByRole('dialog', { name: 'Select Contact' });
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
-    expect(screen.queryByRole('dialog', { name: 'Selete Contact' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Contact' })).not.toBeInTheDocument();
     expect(onData).not.toHaveBeenCalled();
   });
 
@@ -527,6 +527,6 @@ describe('ContactSelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /database-icon/i }));
 
-    expect(screen.getByRole('dialog', { name: 'Selete Contact' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Select Contact' })).toBeInTheDocument();
   });
 });

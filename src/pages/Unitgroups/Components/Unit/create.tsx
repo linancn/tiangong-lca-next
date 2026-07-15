@@ -52,7 +52,7 @@ const UnitCreate: FC<Props> = ({ onData }) => {
         title={
           <FormattedMessage
             id='pages.unitgroup.unit.drawer.title.create'
-            defaultMessage='Unit Create'
+            defaultMessage='Create Unit'
           ></FormattedMessage>
         }
         width='90%'

@@ -576,7 +576,7 @@ describe('ProcessesPage', () => {
     );
   });
 
-  it('uses the current dataset type and state filter for pgroonga and AI search', async () => {
+  it('uses the current dataset type and state filter for pgroonga and AI recommendation', async () => {
     renderWithProviders(<ProcessesPage />);
 
     await waitFor(() => expect(mockGetProcessTableAll).toHaveBeenCalled());
@@ -621,7 +621,7 @@ describe('ProcessesPage', () => {
       ),
     );
 
-    await userEvent.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    await userEvent.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
     await waitFor(() =>
       expect(mockProcessHybridSearch).toHaveBeenCalledWith(
@@ -838,7 +838,7 @@ describe('ProcessesPage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /contribute-action/i }));
     await waitFor(() => expect(mockContributeProcess).toHaveBeenCalledWith('proc-1', '1.0.0'));
-    expect(message.success).toHaveBeenCalledWith('Contribute successfully');
+    expect(message.success).toHaveBeenCalledWith('Data contributed to the team successfully.');
   });
 
   it('logs process contribution errors without showing success', async () => {
@@ -924,7 +924,7 @@ describe('ProcessesPage', () => {
     await waitFor(() =>
       expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-2', '2.0.0'),
     );
-    expect(message.success).toHaveBeenCalledWith('Contribute successfully');
+    expect(message.success).toHaveBeenCalledWith('Data contributed to the team successfully.');
   });
 
   it('renders tgdata and shared-data action layouts without my-data controls', async () => {

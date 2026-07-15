@@ -38,7 +38,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
-                    defaultMessage='Name'
+                    defaultMessage='Name of data quality indicator'
                   />
                 }
               >
@@ -59,7 +59,7 @@ const DataQualityIndicatorItemView: FC<Props> = ({ data }) => {
                 label={
                   <FormattedMessage
                     id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'
-                    defaultMessage='Value'
+                    defaultMessage='Value of data quality indicator'
                   />
                 }
               >

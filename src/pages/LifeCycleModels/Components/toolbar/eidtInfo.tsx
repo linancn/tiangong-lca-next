@@ -45,6 +45,7 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { normalizeLangPayloadForSave } from '@/services/general/api';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import type {
@@ -612,7 +613,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
           message.success(
             intl.formatMessage({
               id: 'pages.button.check.success',
-              defaultMessage: 'Data check successfully!',
+              defaultMessage: 'Data validation passed.',
             }),
           );
         }
@@ -622,23 +623,18 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
 
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
-        defaultMessage: 'Data check failed!',
+        defaultMessage: 'Data check failed, please check the data!',
       });
 
       if (errTabNames.length > 0) {
         validationHint =
           errTabNames
-            .map((tab: string) =>
-              intl.formatMessage({
-                id: `pages.lifeCycleModel.view.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
+            .map((tab: string) => formatDatasetTabLabel(intl, 'lifeCycleModel data set', tab))
             .join('，') +
           '：' +
           intl.formatMessage({
             id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
+            defaultMessage: 'Data check failed, please check the data!',
           });
         if (!drawerVisible) {
           setDrawerVisible(true);
@@ -759,7 +755,9 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
     return (
       <>
         <Tooltip
-          title={<FormattedMessage id='pages.button.model.info' defaultMessage='Base infomation' />}
+          title={
+            <FormattedMessage id='pages.button.model.info' defaultMessage='Basic information' />
+          }
           placement='left'
         >
           <Button
@@ -778,7 +776,7 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
           title={
             <FormattedMessage
               id='pages.flow.model.drawer.title.info'
-              defaultMessage='Model base infomation'
+              defaultMessage='Model base information'
             ></FormattedMessage>
           }
           width='90%'

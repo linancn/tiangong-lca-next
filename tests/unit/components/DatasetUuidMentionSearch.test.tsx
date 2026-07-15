@@ -47,7 +47,11 @@ jest.mock('antd', () => {
 jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, string>) =>
+      Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.replace(`{${key}}`, value),
+        defaultMessage ?? id,
+      ),
   }),
 }));
 
@@ -127,6 +131,15 @@ describe('DatasetUuidMentionSearch', () => {
           source_name: null,
           source_version: '01.00.000',
         },
+        {
+          matched_by: 'json_uuid',
+          matched_entity_table: 'unknown',
+          rank: 3,
+          source_entity_kind: '   ',
+          source_id: 'd1380000-0000-4000-8000-000000000003',
+          source_name: 'Blank kind',
+          source_version: '01.00.000',
+        },
       ],
       success: true,
     });
@@ -139,7 +152,8 @@ describe('DatasetUuidMentionSearch', () => {
 
     expect(await screen.findByText('Flow')).toBeInTheDocument();
     expect(screen.getByText('Flow A')).toBeInTheDocument();
-    expect(screen.getByText('unknown')).toBeInTheDocument();
+    expect(screen.getByText('Unknown data type (unknown)')).toBeInTheDocument();
+    expect(screen.getByText('Unknown data type (-)')).toBeInTheDocument();
     expect(screen.getByText('-')).toBeInTheDocument();
     expect(screen.getByText(uuid)).toBeInTheDocument();
   });

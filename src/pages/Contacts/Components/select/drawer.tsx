@@ -225,7 +225,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
       search: false,
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -487,7 +487,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
         title={
           <FormattedMessage
             id='pages.contact.drawer.title.select'
-            defaultMessage='Selete Contact'
+            defaultMessage='Select Contact'
           />
         }
         width='90%'

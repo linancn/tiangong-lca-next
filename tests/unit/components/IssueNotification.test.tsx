@@ -128,7 +128,7 @@ describe('IssueNotification Component', () => {
       expect(screen.getByText('Version')).toBeInTheDocument();
       expect(screen.getByText('Requester')).toBeInTheDocument();
       expect(screen.getByText('Issue')).toBeInTheDocument();
-      expect(screen.getByText('Modified At')).toBeInTheDocument();
+      expect(screen.getByText('Modified at')).toBeInTheDocument();
       expect(screen.getByText('Actions')).toBeInTheDocument();
     });
   });
@@ -322,7 +322,7 @@ describe('IssueNotification Component', () => {
       expect(screen.getByText('Unit group')).toBeInTheDocument();
       expect(screen.getByText('Flow property')).toBeInTheDocument();
       expect(screen.getByText('Flow')).toBeInTheDocument();
-      expect(screen.getByText('Lifecycle model')).toBeInTheDocument();
+      expect(screen.getByText('Life cycle model')).toBeInTheDocument();
       expect(screen.getByText('custom data set')).toBeInTheDocument();
     });
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);

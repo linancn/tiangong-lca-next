@@ -1144,7 +1144,7 @@ describe('General Utility Functions', () => {
       expect(getLangValidationErrorMessage(undefined as any)).toBe('');
     });
 
-    it('should summarize extra issue paths beyond the display limit', () => {
+    it('should pluralize multiple extra issue paths beyond the display limit', () => {
       const message = getLangValidationErrorMessage(
         [
           { path: 'a', code: 'missing_en', message: 'x' },
@@ -1156,8 +1156,52 @@ describe('General Utility Functions', () => {
       );
 
       expect(message).toBe(
-        'Save failed, the following fields are missing English: a,b and 2 more field(s).',
+        'Save failed, the following fields are missing English: a,b, plus 2 more fields.',
       );
+    });
+
+    it('should use the singular English form for one extra issue path', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          { path: 'a', code: 'missing_en', message: 'x' },
+          { path: 'b', code: 'missing_en', message: 'x' },
+        ],
+        1,
+      );
+
+      expect(message).toBe(
+        'Save failed, the following fields are missing English: a, plus 1 more field.',
+      );
+    });
+
+    it('should format the extra field count with the Chinese ICU branch', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          { path: 'a', code: 'missing_en', message: 'x' },
+          { path: 'b', code: 'missing_en', message: 'x' },
+          { path: 'c', code: 'missing_en', message: 'x' },
+        ],
+        1,
+        'zh-CN',
+      );
+
+      expect(message).toBe('保存失败，以下字段缺少英文：a，另有 2 个字段。');
+    });
+
+    it.each([
+      [
+        'en-US',
+        'Save failed, the following fields are missing English: field0, plus 1,001 more fields.',
+      ],
+      ['zh-CN', '保存失败，以下字段缺少英文：field0，另有 1,001 个字段。'],
+    ])('formats large counts for %s', (locale, expected) => {
+      const issues = Array.from({ length: 1002 }, (_, index) => ({
+        path: `field${index}`,
+        code: 'missing_en' as const,
+        message: 'x',
+      }));
+
+      expect(getLangValidationErrorMessage(issues, 1, locale)).toBe(expected);
     });
 
     it('should treat empty issue paths as root', () => {
@@ -1192,13 +1236,28 @@ describe('General Utility Functions', () => {
             ],
             1,
           ),
-        ).toBe('Save failed, the following fields are missing English: a and 1 more field(s).');
+        ).toBe('Save failed, the following fields are missing English: a, plus 1 more field.');
       } finally {
         mutableEnMessages['validator.langValidation.missingEnglish'] =
           originalMessages.missingEnglish;
         mutableEnMessages['validator.langValidation.missingEnglishMore'] =
           originalMessages.missingEnglishMore;
         mutableEnMessages['validator.langValidation.root'] = originalMessages.root;
+      }
+    });
+
+    it('should preserve a plural template when its numeric value is missing', () => {
+      const mutableEnMessages = enValidatorMessages as Record<string, string | undefined>;
+      const originalMessage = mutableEnMessages['validator.langValidation.missingEnglish'];
+      mutableEnMessages['validator.langValidation.missingEnglish'] =
+        'Missing {count, plural, one {# field} other {# fields}}: {fields}.';
+
+      try {
+        expect(
+          getLangValidationErrorMessage([{ path: 'name', code: 'missing_en', message: 'x' }]),
+        ).toBe('Missing {count, plural, one {# field} other {# fields}}: name.');
+      } finally {
+        mutableEnMessages['validator.langValidation.missingEnglish'] = originalMessage;
       }
     });
 

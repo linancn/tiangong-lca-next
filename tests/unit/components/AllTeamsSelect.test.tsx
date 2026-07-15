@@ -285,7 +285,7 @@ describe('SelectTeams component', () => {
     renderSelectTeams();
 
     await user.click(screen.getByRole('button', { name: /select team/i }));
-    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+    await user.click(await screen.findByRole('button', { name: /add selected teams/i }));
 
     expect(getMessageMock().warning).toHaveBeenCalledWith('Please select at least one team');
     expect(mockUpdateSort).not.toHaveBeenCalled();
@@ -315,7 +315,7 @@ describe('SelectTeams component', () => {
     await user.click(screen.getByRole('button', { name: /select team/i }));
     await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
     await user.click(await screen.findByRole('checkbox', { name: 'Beta Team' }));
-    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+    await user.click(await screen.findByRole('button', { name: /add selected teams/i }));
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalledWith([
@@ -340,7 +340,7 @@ describe('SelectTeams component', () => {
 
     await user.click(screen.getByRole('button', { name: /select team/i }));
     await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
-    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+    await user.click(await screen.findByRole('button', { name: /add selected teams/i }));
 
     await waitFor(() => {
       expect(mockUpdateSort).toHaveBeenCalledWith([{ id: 'team-1', rank: 1 }]);
@@ -358,7 +358,7 @@ describe('SelectTeams component', () => {
 
     await user.click(screen.getByRole('button', { name: /select team/i }));
     await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
-    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+    await user.click(await screen.findByRole('button', { name: /add selected teams/i }));
 
     await waitFor(() => {
       expect(getMessageMock().error).toHaveBeenCalledWith('Failed to add team');
@@ -374,7 +374,7 @@ describe('SelectTeams component', () => {
 
     await user.click(screen.getByRole('button', { name: /select team/i }));
     await user.click(await screen.findByRole('checkbox', { name: 'Alpha Team' }));
-    await user.click(await screen.findByRole('button', { name: /confirm/i }));
+    await user.click(await screen.findByRole('button', { name: /add selected teams/i }));
 
     await waitFor(() => {
       expect(getMessageMock().error).toHaveBeenCalledWith('An error occurred during operation');

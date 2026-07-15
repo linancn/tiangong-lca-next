@@ -400,7 +400,7 @@ describe('ContactCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Version' }));
 
     const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
     await waitFor(() => expect(mockGetContactDetail).toHaveBeenCalledWith('contact-1', '1.0.0'));
@@ -536,7 +536,7 @@ describe('ContactCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
 
     await screen.findByRole('dialog', { name: 'Copy Contact' });
 
@@ -558,7 +558,7 @@ describe('ContactCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
 
     const firstDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
     expect(firstDrawer).toHaveAttribute('data-container', 'BODY');
@@ -571,7 +571,7 @@ describe('ContactCreate component', () => {
       expect(screen.queryByRole('dialog', { name: 'Copy Contact' })).not.toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
     const secondDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
 
     await user.click(within(secondDrawer).getByRole('button', { name: 'Close' }));
@@ -580,7 +580,7 @@ describe('ContactCreate component', () => {
       expect(screen.queryByRole('dialog', { name: 'Copy Contact' })).not.toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
     const thirdDrawer = await screen.findByRole('dialog', { name: 'Copy Contact' });
 
     await user.click(within(thirdDrawer).getByRole('button', { name: 'Cancel' }));
@@ -603,7 +603,7 @@ describe('ContactCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Version' }));
 
     expect(await screen.findByRole('dialog', { name: 'Create Version' })).toBeInTheDocument();
     await waitFor(() => {

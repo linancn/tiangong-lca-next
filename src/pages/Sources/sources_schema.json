@@ -9,7 +9,7 @@
         {
           "required": true,
           "messageKey": "pages.source.validator.version.required",
-          "defaultMessage": "version is required"
+          "defaultMessage": "Please enter a version."
         }
       ]
     },
@@ -22,7 +22,7 @@
             {
               "required": true,
               "messageKey": "pages.source.validator.uuid.required",
-              "defaultMessage": "uuid is required"
+              "defaultMessage": "Please enter a UUID."
             }
           ]
         },
@@ -35,12 +35,12 @@
             {
               "required": true,
               "messageKey": "pages.source.validator.shortName.required",
-              "defaultMessage": "shortName is required"
+              "defaultMessage": "Please enter a short name for the source."
             },
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 500,
@@ -59,7 +59,7 @@
                   {
                     "required": true,
                     "messageKey": "pages.source.validator.class.required",
-                    "defaultMessage": "class is required"
+                    "defaultMessage": "Please select a classification."
                   }
                 ]
               },
@@ -73,7 +73,7 @@
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 1000,
@@ -122,7 +122,7 @@
             {
               "required": true,
               "messageKey": "pages.source.validator.timeStamp.required",
-              "defaultMessage": "timeStamp is required"
+              "defaultMessage": "Please enter a time stamp."
             }
           ]
         },
@@ -134,7 +134,7 @@
               {
                 "required": true,
                 "messageKey": "pages.source.validator.referenceToDataSetFormat.required",
-                "defaultMessage": "referenceToDataSetFormat is required"
+                "defaultMessage": "Please select a data set format."
               }
             ]
           },
@@ -153,7 +153,7 @@
             {
               "required": true,
               "messageKey": "pages.source.validator.dataSetVersion.required",
-              "defaultMessage": "dataSetVersion is required"
+              "defaultMessage": "Please enter the data set version."
             },
             {
               "pattern": "dataSetVersion",
@@ -181,7 +181,7 @@
               {
                 "required": true,
                 "messageKey": "pages.source.validator.referenceToOwnershipOfDataSet.required",
-                "defaultMessage": "referenceToOwnershipOfDataSet is required"
+                "defaultMessage": "Please select the data set owner."
               }
             ]
           },

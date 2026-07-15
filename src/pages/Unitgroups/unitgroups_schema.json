@@ -40,7 +40,7 @@
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 500,
@@ -79,7 +79,7 @@
             {
               "required": true,
               "messageKey": "pages.unitgroup.validator.referenceToReferenceUnit.required",
-              "defaultMessage": "Please input reference to reference unit"
+              "defaultMessage": "Please select the reference unit."
             }
           ]
         }
@@ -95,7 +95,7 @@
                 {
                   "required": true,
                   "messageKey": "pages.unitgroup.validator.referenceToComplianceSystem.required",
-                  "defaultMessage": "Please input reference to compliance system"
+                  "defaultMessage": "Please select a compliance system."
                 }
               ]
             },
@@ -139,7 +139,7 @@
               {
                 "required": true,
                 "messageKey": "pages.unitgroup.validator.referenceToDataSetFormat.required",
-                "defaultMessage": "Please input reference to data set format"
+                "defaultMessage": "Please select a data set format."
               }
             ]
           },

@@ -5,24 +5,28 @@ import LcaCalculationEvidenceNotice, {
   isTrustedLciaGapArtifactUrl,
 } from '@/pages/Processes/Components/lcaCalculationEvidenceNotice';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { formatIcuMessage } from '../../../../helpers/i18n/localeAudit';
 
 let mockLocale = 'en-US';
 let mockMessages: Record<string, string> = enMessages;
 const mockParseStaticLciaReport = jest.fn(() => null as any);
 
-jest.mock('umi', () => ({
-  __esModule: true,
-  useIntl: () => ({
-    locale: mockLocale,
-    formatMessage: ({ id, defaultMessage }: any, values: Record<string, unknown> = {}) => {
-      const template = mockMessages[id] ?? defaultMessage ?? id;
-      return Object.entries(values).reduce(
-        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
-        template,
-      );
-    },
-  }),
-}));
+jest.mock('umi', () => {
+  const {
+    formatIcuMessage: formatMockIcuMessage,
+  } = require('../../../../helpers/i18n/localeAudit');
+
+  return {
+    __esModule: true,
+    useIntl: () => ({
+      locale: mockLocale,
+      formatMessage: ({ id, defaultMessage }: any, values: Record<string, unknown> = {}) => {
+        const template = mockMessages[id] ?? defaultMessage ?? id;
+        return formatMockIcuMessage(template, values, mockLocale ?? 'en-US');
+      },
+    }),
+  };
+});
 
 const mockCounts = { matched: 1, unmatched: 0, invalid: 0, unsupported_direction: 0 };
 const mockMatrix = {
@@ -246,7 +250,11 @@ describe('LcaCalculationEvidenceNotice', () => {
     fireEvent.click(screen.getByText(enMessages['pages.process.lca.evidence.download.json']));
     fireEvent.click(
       screen.getByText(
-        enMessages['pages.process.lca.evidence.download.gaps'].replace('{count}', '1'),
+        formatIcuMessage(
+          enMessages['pages.process.lca.evidence.download.gaps'],
+          { count: 1 },
+          'en-US',
+        ),
       ),
     );
     expect(createObjectURL).toHaveBeenCalledTimes(2);
@@ -275,7 +283,11 @@ describe('LcaCalculationEvidenceNotice', () => {
     );
     expect(
       screen.getByText(
-        enMessages['pages.process.lca.evidence.download.artifact'].replace('{count}', '1'),
+        formatIcuMessage(
+          enMessages['pages.process.lca.evidence.download.artifact'],
+          { count: 1 },
+          'en-US',
+        ),
       ),
     ).toHaveAttribute('href', 'http://localhost:54321/gaps.jsonl');
   });

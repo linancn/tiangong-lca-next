@@ -9,5 +9,5 @@ export default {
   'component.importData.import': 'Import',
   'component.importData.cancel': 'Cancel',
   'component.importData.uploadText': 'Click or drag file to this area to upload',
-  'component.importData.uploadHint': 'Only supports uploading a single JSON file',
+  'component.importData.uploadHint': 'Upload one JSON file at a time.',
 };

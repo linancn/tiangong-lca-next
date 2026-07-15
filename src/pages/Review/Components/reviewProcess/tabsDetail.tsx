@@ -159,7 +159,9 @@ export const TabsDetail: FC<Props> = ({
     },
     {
       key: 'exchanges',
-      tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+      tab: (
+        <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Inputs and Outputs' />
+      ),
     },
     {
       key: 'validation',
@@ -304,7 +306,7 @@ export const TabsDetail: FC<Props> = ({
       },
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -372,7 +374,7 @@ export const TabsDetail: FC<Props> = ({
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.mixAndLocationTypes'
-              defaultMessage='Mix and Location Types'
+              defaultMessage='Mix and location types'
             />
           </Divider>
           <LangTextItemDescription
@@ -557,7 +559,7 @@ export const TabsDetail: FC<Props> = ({
             }
             label={
               <FormattedMessage
-                id='pages.process.view.processInformation.location'
+                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
                 defaultMessage='Sub-location(s)'
               />
             }
@@ -611,7 +613,7 @@ export const TabsDetail: FC<Props> = ({
             title={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Technology pictogram'
               />
             }
             data={initData.processInformation?.technology?.referenceToTechnologyPictogramme ?? {}}
@@ -622,7 +624,7 @@ export const TabsDetail: FC<Props> = ({
             title={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Flow diagram(s) or picture(s)'
               />
             }
             data={
@@ -755,7 +757,7 @@ export const TabsDetail: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                  defaultMessage='Relative StdDev in %'
+                  defaultMessage='Relative standard deviation (95%) in %'
                 />
               }
               styles={{ label: { width: '180px' } }}
@@ -796,7 +798,7 @@ export const TabsDetail: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                  defaultMessage='Type of data set'
+                  defaultMessage='Dataset type'
                 />
               }
               styles={{ label: { width: '220px' } }}
@@ -1390,7 +1392,7 @@ export const TabsDetail: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
-                  defaultMessage='Workflow and publication status	'
+                  defaultMessage='Workflow and publication status'
                 />
               }
               styles={{ label: { width: '240px' } }}

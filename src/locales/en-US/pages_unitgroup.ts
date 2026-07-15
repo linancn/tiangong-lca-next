@@ -1,6 +1,6 @@
 export default {
   'pages.unitgroup.title.tips': 'Need to add or supplement unit groups? Contact an administrator.',
-  'pages.unitgroup.refObjectId': 'Reference unit dataset identifier',
+  'pages.unitgroup.refObjectId': 'Reference unit group data set identifier',
   'pages.unitgroup.drawer.title.create': 'Create Unit group',
   'pages.unitgroup.drawer.title.view': 'View Unit group',
   'pages.unitgroup.drawer.title.edit': 'Edit Unit group',
@@ -88,9 +88,6 @@ export default {
   //'pages.unitgroup.delete.content':'您确认要删除该单位吗？',
   //
   //table 表头
-  'pages.table.title.name': 'Name',
-  'pages.table.title.index': 'Index',
-  'pages.table.title.option': 'Option',
   //'pages.table.title.generalComment':'一般性评论',
   //'pages.table.title.meanValue':'平均值',
   //'pages.table.title.quantitativeReference':'度量参考',在哪个文件？
@@ -103,13 +100,13 @@ export default {
   'pages.unitgroup.validator.uuid.required': 'Please input UUID',
   'pages.unitgroup.validator.name.required': 'Please input name of unit group',
   'pages.unitgroup.validator.class.required': 'Please input classification',
-  'pages.unitgroup.validator.referenceToReferenceUnit.required': 'Please input reference to reference unit',
-  'pages.unitgroup.validator.referenceToComplianceSystem.required': 'Please input compliance system name',
+  'pages.unitgroup.validator.referenceToReferenceUnit.required': 'Please select the reference unit.',
+  'pages.unitgroup.validator.referenceToComplianceSystem.required': 'Please select a compliance system.',
   'pages.unitgroup.validator.approvalOfOverallCompliance.required': 'Please input approval of overall compliance',
   'pages.unitgroup.validator.timeStamp.required': 'Please input time stamp',
-  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please input data set format(s)',
+  'pages.unitgroup.validator.referenceToDataSetFormat.required': 'Please select a data set format.',
   'pages.unitgroup.validator.dataSetVersion.required': 'Please input data set version',
   'pages.unitgroup.validator.referenceToOwnershipOfDataSet.required': 'Please input owner of data set',
   'pages.unitgroups.validator.unit.required': 'Please select unit',
-  'pages.unitgroups.validator.unit.quantitativeReference.required': 'Unit needs to have exactly one quantitative reference open',
+  'pages.unitgroups.validator.unit.quantitativeReference.required': 'Exactly one unit must be designated as the quantitative reference.',
 };

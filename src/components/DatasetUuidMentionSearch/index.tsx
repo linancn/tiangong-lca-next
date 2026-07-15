@@ -19,24 +19,42 @@ type DatasetUuidMentionSearchProps = {
   teamId?: string | null;
 };
 
-const ENTITY_KIND_LABELS: Record<DatasetUuidMentionEntityKind, string> = {
-  contact: 'Contact',
-  flow: 'Flow',
-  flowproperty: 'Flow property',
-  lifecyclemodel: 'Model',
-  process: 'Process',
-  source: 'Source',
-  unitgroup: 'Unit group',
-};
+const ENTITY_KIND_MESSAGES = {
+  contact: { defaultMessage: 'Contact', id: 'pages.validationIssues.datasetType.contact' },
+  flow: { defaultMessage: 'Flow', id: 'pages.validationIssues.datasetType.flow' },
+  flowproperty: {
+    defaultMessage: 'Flow property',
+    id: 'pages.validationIssues.datasetType.flowproperty',
+  },
+  lifecyclemodel: {
+    defaultMessage: 'Life cycle model',
+    id: 'pages.validationIssues.datasetType.lifecyclemodel',
+  },
+  process: { defaultMessage: 'Process', id: 'pages.validationIssues.datasetType.process' },
+  source: { defaultMessage: 'Source', id: 'pages.validationIssues.datasetType.source' },
+  unitgroup: {
+    defaultMessage: 'Unit group',
+    id: 'pages.validationIssues.datasetType.unitgroup',
+  },
+} as const satisfies Record<DatasetUuidMentionEntityKind, { defaultMessage: string; id: string }>;
 
-const ENTITY_KIND_MESSAGE_IDS: Record<DatasetUuidMentionEntityKind, string> = {
-  contact: 'menu.tgdata.contacts',
-  flow: 'menu.tgdata.flows',
-  flowproperty: 'menu.tgdata.flowproperties',
-  lifecyclemodel: 'menu.tgdata.products',
-  process: 'menu.tgdata.processes',
-  source: 'menu.tgdata.sources',
-  unitgroup: 'menu.tgdata.unitgroups',
+type IntlShapeLike = Pick<ReturnType<typeof useIntl>, 'formatMessage'>;
+
+const isKnownEntityKind = (value: string): value is DatasetUuidMentionEntityKind =>
+  Object.prototype.hasOwnProperty.call(ENTITY_KIND_MESSAGES, value);
+
+export const formatDatasetUuidMentionEntityKind = (intl: IntlShapeLike, value: string) => {
+  if (isKnownEntityKind(value)) {
+    return intl.formatMessage(ENTITY_KIND_MESSAGES[value]);
+  }
+
+  return intl.formatMessage(
+    {
+      defaultMessage: 'Unknown data type ({kind})',
+      id: 'pages.datasetUuidMention.entityKind.unknown',
+    },
+    { kind: value.trim() || '-' },
+  );
 };
 
 export default function DatasetUuidMentionSearch({
@@ -66,11 +84,7 @@ export default function DatasetUuidMentionSearch({
         dataIndex: 'source_entity_kind',
         title: <FormattedMessage id='pages.datasetUuidMention.entityKind' />,
         width: 132,
-        render: (value: DatasetUuidMentionEntityKind) =>
-          intl.formatMessage({
-            defaultMessage: ENTITY_KIND_LABELS[value] ?? value,
-            id: ENTITY_KIND_MESSAGE_IDS[value],
-          }),
+        render: (value: string) => formatDatasetUuidMentionEntityKind(intl, value),
       },
       {
         dataIndex: 'source_name',

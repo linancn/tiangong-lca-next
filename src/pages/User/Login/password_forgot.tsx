@@ -41,7 +41,7 @@ const PasswordForgot: React.FC = () => {
           message: intl.formatMessage({
             id: 'pages.login.password.forgot.success',
             defaultMessage:
-              'The email was sent successfully! Please follow the email link to reset your password.',
+              'Validation email was sent successfully! Please follow the email link to reset your password.',
           }),
           placement: 'top',
         });
@@ -109,9 +109,17 @@ const PasswordForgot: React.FC = () => {
                 <LoginForm
                   layout='vertical'
                   logo={brandTheme.logo}
-                  title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
+                  title={
+                    <FormattedMessage
+                      id='pages.login.title'
+                      defaultMessage='TianGong LCA Data Platform'
+                    />
+                  }
                   subTitle={
-                    <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />
+                    <FormattedMessage
+                      id='pages.login.subTitle'
+                      defaultMessage={"World's Largest Open LCA Data Platform"}
+                    />
                   }
                   initialValues={initData}
                   onFinish={async (values) => {

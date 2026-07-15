@@ -44,7 +44,11 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) =>
+      Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
+        defaultMessage ?? id,
+      ),
   }),
 }));
 
@@ -586,7 +590,7 @@ describe('ProcessEdit component', () => {
     });
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Save successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Saved successfully!');
   });
 
   it('handles validation-tab sync callbacks before saving', async () => {
@@ -814,7 +818,7 @@ describe('ProcessEdit component', () => {
 
     expect(mockUpdateProcess).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      expect.stringContaining('Allocated fraction total of output is greater than 100%'),
+      'The total allocated fraction for outputs cannot exceed 100%. Current total: 150%.',
     );
   });
 
@@ -863,8 +867,10 @@ describe('ProcessEdit component', () => {
     expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
-    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Data check failed!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
+    expect(mockAntdMessage.error).not.toHaveBeenCalledWith(
+      'Data check failed, please check the data!',
+    );
   });
 
   it('auto-fills a 100% allocation for the quantitative reference output when none is provided', async () => {
@@ -1405,7 +1411,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('does not close the drawer when the review-submit job fails', async () => {
@@ -2230,7 +2236,7 @@ describe('ProcessEdit component', () => {
       expect(mockAntdMessage.error).toHaveBeenCalledWith('save before check failed'),
     );
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('shows a validation error when data check runs without exchanges', async () => {
@@ -2376,7 +2382,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The following data must have exactly one item designated as the reference',
+        'Select exactly one item as the quantitative reference.',
       ),
     );
 
@@ -2582,7 +2588,9 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith('processInformation：Data check failed!'),
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Process information：Data check failed, please check the data!',
+      ),
     );
 
     await act(async () => {
@@ -2604,7 +2612,11 @@ describe('ProcessEdit component', () => {
     await screen.findByRole('dialog', { name: 'Edit process' });
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
+    );
   });
 
   it('treats missing reference-path results as an empty problem-node list', async () => {
@@ -2617,7 +2629,7 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!'),
+      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.'),
     );
   });
 
@@ -2661,7 +2673,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'administrativeInformation，modellingAndValidation，technology：Data check failed!',
+        'Administrative information，Modelling and validation，Unknown section (technology)：Data check failed, please check the data!',
       ),
     );
   });
@@ -2959,7 +2971,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('submits through the footer save button', async () => {

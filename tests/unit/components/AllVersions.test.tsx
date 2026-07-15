@@ -322,7 +322,7 @@ describe('AllVersionsList Component', () => {
     fireEvent.mouseOver(button);
 
     await waitFor(() => {
-      expect(screen.getByText('All version')).toBeInTheDocument();
+      expect(screen.getByText('All Versions')).toBeInTheDocument();
     });
   });
 
@@ -336,7 +336,7 @@ describe('AllVersionsList Component', () => {
     const button = screen.getByRole('button');
     fireEvent.click(button);
 
-    expect(screen.getByText('All version')).toBeInTheDocument();
+    expect(screen.getByText('All Versions')).toBeInTheDocument();
     expect(screen.getByTestId('children')).toBeInTheDocument();
     await waitFor(() => {
       expect(mockGetAllVersions).toHaveBeenCalled();

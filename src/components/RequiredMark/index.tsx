@@ -23,7 +23,7 @@ const RequiredMark = ({ label, errorLabel, showError = false }: IProps) => {
               ) : (
                 <FormattedMessage
                   id='validator.lang.mustBeEnglish'
-                  defaultMessage='English is a required language!'
+                  defaultMessage='English is a required language'
                 />
               )}
             </span>

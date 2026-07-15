@@ -838,7 +838,9 @@ const Welcome: React.FC = () => {
         width={modalWidth}
         destroyOnHidden
         styles={modalStyles}
-        title={<FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem' />}
+        title={
+          <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem (A-Z Order)' />
+        }
       >
         <Space direction='vertical' size={16} style={{ width: '100%' }}>
           <Typography.Paragraph style={{ margin: 0, color: token.colorTextSecondary }}>

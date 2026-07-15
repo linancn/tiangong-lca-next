@@ -28,7 +28,11 @@ const SourceDescription: FC<Props> = ({ title, data }) => {
       </Descriptions>
       <br />
       <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label='Ref Object Id' styles={{ label: { width: '120px' } }}>
+        <Descriptions.Item
+          key={0}
+          label='Reference object ID'
+          styles={{ label: { width: '120px' } }}
+        >
           {data?.['@refObjectId'] ?? '-'}
         </Descriptions.Item>
       </Descriptions>

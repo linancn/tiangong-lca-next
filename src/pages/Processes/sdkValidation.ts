@@ -35,7 +35,7 @@ const PROCESS_EXCHANGE_FIELD_LABELS: Record<string, string> = {
   referenceToFlowDataSet: 'Flow',
   referenceToVariable: 'Reference to variable',
   referencesToDataSource: 'Data source',
-  relativeStandardDeviation95In: 'Relative standard deviation (95%)',
+  relativeStandardDeviation95In: 'Relative StdDev in %',
   resultingAmount: 'Resulting amount',
   uncertaintyDistributionType: 'Uncertainty distribution type',
 };
@@ -171,7 +171,7 @@ export const buildProcessQuantitativeReferenceValidationDetails = (
     return [];
   }
 
-  const reasonMessage = 'The following data must have exactly one item designated as the reference';
+  const reasonMessage = 'Select exactly one item as the quantitative reference.';
   const details: ValidationIssueSdkDetail[] = [
     {
       fieldKey: 'quantitativeReference',

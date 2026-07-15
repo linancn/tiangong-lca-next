@@ -303,7 +303,7 @@ describe('TeamNotification Component', () => {
     });
   });
 
-  it('uses english array fallbacks for team titles and falls back to the empty status tag', async () => {
+  it('uses english array fallbacks for team titles and falls back to the no-information status tag', async () => {
     mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
       success: true,
       data: {
@@ -322,7 +322,7 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Fallback Array Team')).toBeInTheDocument();
-      expect(screen.getByText('Empty')).toBeInTheDocument();
+      expect(screen.getByText('No information')).toBeInTheDocument();
     });
 
     mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
@@ -448,7 +448,7 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Direct Team Title')).toBeInTheDocument();
-      expect(screen.getByText('Empty')).toBeInTheDocument();
+      expect(screen.getByText('No information')).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument();
   });

@@ -12,7 +12,7 @@ export default {
   'app.setting.themecolor.cyan': 'Cyan',
   'app.setting.themecolor.green': 'Polar Green',
   'app.setting.themecolor.daybreak': 'Daybreak Blue (default)',
-  'app.setting.themecolor.geekblue': 'Geek Glue',
+  'app.setting.themecolor.geekblue': 'Geek Blue',
   'app.setting.themecolor.purple': 'Golden Purple',
   'app.setting.navigationmode': 'Navigation Mode',
   'app.setting.sidemenu': 'Side Menu Layout',
@@ -25,6 +25,6 @@ export default {
   'app.setting.othersettings': 'Other Settings',
   'app.setting.weakmode': 'Color Blind Friendly Mode',
   'app.setting.copy': 'Copy Setting',
-  'app.setting.copyinfo': 'copy success, please replace defaultSettings in src/models/setting.js',
-  'app.setting.production.hint': 'Setting panel shows in development environment only, please manually modify',
+  'app.setting.copyinfo': 'Settings copied. Replace the values in config/defaultSettings.ts.',
+  'app.setting.production.hint': 'The settings panel is available only in development. To use these settings in production, update config/defaultSettings.ts manually.',
 };

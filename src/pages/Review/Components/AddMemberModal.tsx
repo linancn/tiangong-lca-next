@@ -90,7 +90,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
         message.success(
           intl.formatMessage({
             id: 'pages.review.members.querySuccess',
-            defaultMessage: 'Query successful',
+            defaultMessage: 'User found.',
           }),
         );
       } else {
@@ -99,7 +99,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
         message.error(
           intl.formatMessage({
             id: 'pages.review.members.userNotFound',
-            defaultMessage: 'User not found',
+            defaultMessage: 'User Not Found',
           }),
         );
       }
@@ -108,7 +108,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
       message.error(
         intl.formatMessage({
           id: 'pages.review.members.queryError',
-          defaultMessage: 'Query failed',
+          defaultMessage: 'Query Failed',
         }),
       );
     } finally {
@@ -124,7 +124,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
         message.error(
           intl.formatMessage({
             id: 'pages.review.members.addError.duplicate',
-            defaultMessage: 'User already exists',
+            defaultMessage: 'User is already a reviewer, please do not add again',
           }),
         );
         setLoading(false);
@@ -136,14 +136,14 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
         message.error(
           intl.formatMessage({
             id: 'pages.review.members.addError',
-            defaultMessage: 'Failed to add member!',
+            defaultMessage: 'Failed to add member',
           }),
         );
       } else {
         message.success(
           intl.formatMessage({
             id: 'pages.review.members.addSuccess',
-            defaultMessage: 'Member added successfully!',
+            defaultMessage: 'Member added successfully',
           }),
         );
         formRef?.current?.resetFields();
@@ -198,7 +198,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
               message: (
                 <FormattedMessage
                   id='pages.review.members.email.required'
-                  defaultMessage='Please enter an email address!'
+                  defaultMessage='Please enter an email address'
                 />
               ),
             },
@@ -207,7 +207,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
               message: (
                 <FormattedMessage
                   id='pages.review.members.email.invalid'
-                  defaultMessage='Please enter a valid email address!'
+                  defaultMessage='Please enter a valid email address'
                 />
               ),
             },
@@ -346,7 +346,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ open, onCancel, onSucce
             description={
               <FormattedMessage
                 id='pages.review.members.noContact'
-                defaultMessage='No contact information'
+                defaultMessage='No Contact Information'
               />
             }
             image={Empty.PRESENTED_IMAGE_SIMPLE}

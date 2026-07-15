@@ -64,7 +64,28 @@ export const FlowpropertyForm: FC<Props> = ({
     [validationIssueTabNames],
   );
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.FlowProperties.view.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    flowPropertiesInformation: (
+      <FormattedMessage
+        id='pages.FlowProperties.view.flowPropertiesInformation'
+        defaultMessage='Flow property information'
+      />
+    ),
+    modellingAndValidation: (
+      <FormattedMessage
+        id='pages.FlowProperties.view.modellingAndValidation'
+        defaultMessage='Modelling and validation'
+      />
+    ),
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -78,34 +99,22 @@ export const FlowpropertyForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
   const tabList = [
     {
       key: 'flowPropertiesInformation',
-      tab: renderTabLabel(
-        'flowPropertiesInformation',
-        'pages.FlowProperties.view.flowPropertiesInformation',
-        'Flow property information',
-      ),
+      tab: renderTabLabel('flowPropertiesInformation'),
     },
     {
       key: 'modellingAndValidation',
-      tab: renderTabLabel(
-        'modellingAndValidation',
-        'pages.FlowProperties.view.modellingAndValidation',
-        'Modelling and validation',
-      ),
+      tab: renderTabLabel('modellingAndValidation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.FlowProperties.view.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
   ];
 

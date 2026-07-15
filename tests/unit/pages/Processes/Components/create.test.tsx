@@ -26,7 +26,11 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) =>
+      Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
+        defaultMessage ?? id,
+      ),
   }),
 }));
 
@@ -304,7 +308,7 @@ describe('ProcessCreate component', () => {
 
     expect(mockCreateProcess).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      expect.stringContaining('Allocated fraction total of output is greater than 100%'),
+      'The total allocated fraction for outputs cannot exceed 100%. Current total: 120%.',
     );
   });
 
@@ -421,7 +425,7 @@ describe('ProcessCreate component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'copy-icon' }));
     await waitFor(() =>
-      expect(screen.getByRole('dialog', { name: 'Create process' })).toBeInTheDocument(),
+      expect(screen.getByRole('dialog', { name: 'Copy process' })).toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'drawer-close' }));
@@ -444,7 +448,7 @@ describe('ProcessCreate component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'copy-icon' }));
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: 'Create process' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Copy process' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());

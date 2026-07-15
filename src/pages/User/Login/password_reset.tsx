@@ -115,9 +115,17 @@ const PasswordSet: FC = () => {
                 <LoginForm
                   layout='vertical'
                   logo={brandTheme.logo}
-                  title={<FormattedMessage id='pages.login.title' defaultMessage='TianGong LCA' />}
+                  title={
+                    <FormattedMessage
+                      id='pages.login.title'
+                      defaultMessage='TianGong LCA Data Platform'
+                    />
+                  }
                   subTitle={
-                    <FormattedMessage id='pages.login.subTitle' defaultMessage='TianGong LCA' />
+                    <FormattedMessage
+                      id='pages.login.subTitle'
+                      defaultMessage={"World's Largest Open LCA Data Platform"}
+                    />
                   }
                   name='password_reset'
                   fields={initData}
@@ -217,7 +225,7 @@ const PasswordSet: FC = () => {
                     }}
                     placeholder={intl.formatMessage({
                       id: 'pages.login.newPassword.placeholder',
-                      defaultMessage: 'New password',
+                      defaultMessage: 'New Password',
                     })}
                     rules={[
                       {

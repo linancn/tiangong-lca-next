@@ -323,7 +323,7 @@ describe('ReviewProgress component', () => {
       }),
     );
     await waitFor(() => expect(mockRevokeReviewerApi).toHaveBeenCalledWith('review-1', 'user-2'));
-    expect(message.success).toHaveBeenCalledWith('Successfully revoked the auditor');
+    expect(message.success).toHaveBeenCalledWith('Reviewer assignment revoked.');
   });
 
   it('shows an error toast when revoking a reviewer fails', async () => {
@@ -339,7 +339,9 @@ describe('ReviewProgress component', () => {
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
 
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to revoke the reviewer assignment.'),
+    );
   });
 
   it('renders manual status and comment branches for rejected, reviewed, and unknown rows', async () => {
@@ -423,7 +425,9 @@ describe('ReviewProgress component', () => {
     await waitFor(() => expect(screen.getByTestId('remove-user-2')).toBeInTheDocument());
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to revoke the reviewer assignment.'),
+    );
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
     await waitFor(() =>
@@ -444,7 +448,7 @@ describe('ReviewProgress component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Approve Review' }));
 
     await waitFor(() => expect(mockApproveReviewApi).toHaveBeenCalledWith('review-1', 'processes'));
-    expect(message.success).toHaveBeenCalledWith('Review approved successfully');
+    expect(message.success).toHaveBeenCalledWith('Review approval successful');
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
@@ -661,7 +665,7 @@ describe('ReviewProgress component', () => {
     await waitFor(() =>
       expect(consoleSpy).toHaveBeenCalledWith('Failed to revoke reviewer:', expect.any(Error)),
     );
-    expect(message.success).not.toHaveBeenCalledWith('Successfully revoked the auditor');
+    expect(message.success).not.toHaveBeenCalledWith('Reviewer assignment revoked.');
     consoleSpy.mockRestore();
   });
 
@@ -678,7 +682,9 @@ describe('ReviewProgress component', () => {
 
     fireEvent.click(screen.getByTestId('remove-user-2'));
 
-    await waitFor(() => expect(message.error).toHaveBeenCalledWith('Failed to revoke the auditor'));
+    await waitFor(() =>
+      expect(message.error).toHaveBeenCalledWith('Failed to revoke the reviewer assignment.'),
+    );
   });
 
   it('surfaces thrown approval errors from the review workflow command boundary', async () => {

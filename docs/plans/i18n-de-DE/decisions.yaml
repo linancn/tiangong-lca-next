@@ -1,0 +1,397 @@
+schemaVersion: 'tiangong.i18n-decisions.v1'
+issue: 'https://github.com/linancn/tiangong-lca-next/issues/600'
+parent: 'https://github.com/tiangong-lca/workspace/issues/403'
+source:
+  repository: 'linancn/tiangong-lca-next'
+  baseRef: 'origin/dev'
+  baseCommit: '3b716e00577a5fc4e235b65d71f9a0c15082a034'
+  reviewedAt: '2026-07-15'
+artifacts:
+  manifest: 'docs/plans/i18n-de-DE/manifest.json'
+  dynamicFamilies: 'docs/plans/i18n-de-DE/dynamic-families.json'
+maintenance:
+  owner: 'next/i18n'
+  generatedFields:
+    - 'manifest.json'
+  humanMaintainedFields:
+    - 'this decision register'
+    - 'dynamic family rationale and fallback policy'
+  overwriteRule: 'Do not use --refresh-decisions after human decisions have been recorded.'
+statusValues:
+  - 'pending'
+  - 'implemented'
+  - 'rejected'
+policy:
+  oneKeyOneConcept: 'One message id may represent only one product concept and one UI role.'
+  sourceContext: 'A decision must consider English, Chinese, every defaultMessage, production callsites, placeholders, and user-visible consequences.'
+  deletion: 'A key may be removed only after literal and computed-family evidence proves it is not reachable.'
+  defaultMessageCanonical: 'Every static defaultMessage must equal canonical en-US; a differing fallback is a finding even when it is the only default for the id.'
+  dynamicFamily: 'Every computed message callsite must match one finite reviewed family and either prove an exact closed-world producer or implement a localized runtime fallback before formatting an unknown id.'
+  germanActivation: 'No top-level de-DE bundle or language-menu entry may be added by Issue #600.'
+
+baseline:
+  before:
+    enUSUniqueKeys: 2648
+    zhCNUniqueKeys: 2653
+    enOnlyKeys: 4
+    zhOnlyKeys: 9
+    duplicateDeclarations:
+      enUS: 4
+      zhCN: 4
+    activeStaticIdsMissingBothLocales: 8
+    activeOneSidedIds: 4
+    multipleDefaultMessageConflicts: 43
+    computedCallsites: 73
+  afterStaticHygiene:
+    enUSUniqueKeys: 2656
+    zhCNUniqueKeys: 2656
+    oneSidedKeys: 0
+    duplicateDeclarations:
+      enUS: 0
+      zhCN: 0
+    activeStaticIdsMissingEitherLocale: 0
+    multipleDefaultMessageConflicts: 0
+    placeholderMismatches: 0
+  finalBaseline:
+    enUSUniqueKeys: 2665
+    zhCNUniqueKeys: 2665
+    activeStaticKeys: 1729
+    activeDynamicKeys: 308
+    reservedKeys: 628
+    leafModulesPerLocale: 30
+    computedCallsites: 36
+    reviewedComputedCallsites: 36
+    dynamicFamilies: 16
+    violations: 0
+
+decisions:
+  - decisionId: 'remove-proven-dead-one-sided-keys'
+    status: 'implemented'
+    category: 'dead'
+    rationale: 'No literal reference or reviewed computed family can produce these ids; keeping them would create false German translation obligations.'
+    removedFromAllSourceLocales:
+      - 'pages.account.passwordForgot.title'
+      - 'pages.flowpropertiy.generalComment'
+      - 'pages.process.view.processInformation.quantitativeReference'
+      - 'teams.members.role.reInvite'
+      - 'pages.flowproperty.generalComment'
+      - 'pages.lifeCycleModel.modellingAndValidation.completenessDescription'
+      - 'pages.process.view.exchange.relativeStandardDeviation95In'
+      - 'pages.process.view.modellingAndValidation.completenessDescription'
+      - 'pages.unitgroup.edit.id'
+    proof:
+      - 'canonical manifest contains no production reference'
+      - 'computed-family registry contains no producer for these ids'
+      - 'English and Chinese parity tests pass after removal'
+
+  - decisionId: 'fill-one-sided-source-keys'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'These concepts are reachable and had an authoritative counterpart in the other source locale.'
+    addedOrAligned:
+      - messageId: 'component.allTeams.drawer.title.view'
+        sourceAdded: 'en-US'
+        context: 'title of the team-details drawer'
+      - messageId: 'validator.Year.empty'
+        sourceAdded: 'en-US'
+        context: 'year validation error'
+      - messageId: 'validator.pages.contact.WWWAddress.invalid'
+        sourceAdded: 'en-US'
+        context: 'contact WWW-address validation error'
+      - messageId: 'pages.button.delete.confirm'
+        sourceAligned: 'zh-CN'
+        context: 'generic destructive-action confirmation body'
+
+  - decisionId: 'add-active-missing-source-ids'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'Each id is referenced by a production callsite or schema and must exist in both canonical source locales.'
+    messageIds:
+      - 'pages.account.loadError'
+      - 'pages.login.password.forgot.failure'
+      - 'pages.process.list.loadError'
+      - 'pages.process.view.lciaresults.solver.error'
+      - 'pages.process.view.lciaresults.solver.reload'
+      - 'pages.process.view.lciaresults.solver.snapshotBuilding'
+      - 'pages.process.view.lciaresults.solver.allUnitSolving'
+      - 'pages.accessDenied.title'
+      - 'pages.accessDenied.message'
+      - 'pages.process.validator.baseName.pattern'
+    rejectedCandidate:
+      messageId: 'pages.flowproperties.deleteMessage'
+      reason: 'This was not a separate concept; its callsites were migrated to pages.button.delete.confirm.'
+    placeholderRule: 'The {message} and {jobId} placeholders were preserved exactly in English and Chinese.'
+
+  - decisionId: 'canonical-delete-confirmation'
+    status: 'implemented'
+    category: 'active-static'
+    canonicalMessageId: 'pages.button.delete.confirm'
+    english: 'Are you sure you want to delete this data?'
+    chinese: '确定要删除这条数据吗？'
+    rationale: 'All affected callsites ask the same generic destructive-action question; sentence-shaped and entity-specific ids did not encode distinct behavior.'
+    migratedSurfaces:
+      - 'contacts'
+      - 'flows'
+      - 'flow properties'
+      - 'life-cycle models'
+      - 'processes'
+      - 'process exchanges'
+      - 'sources'
+      - 'units'
+      - 'unit groups'
+    removedLegacyIds:
+      - 'pages.button.deleteMessage'
+      - 'pages.button.deleteMessage.areyousureyouwanttodeletethisdata'
+      - 'pages.button.deleteMessage.Are you sure you want to delete this data'
+      - 'pages.flowproperties.deleteMessage'
+      - 'pages.flowproperties.deleteMessage.areyousureyouwanttodeletethisdata?'
+      - 'pages.flows.deleteMessage'
+      - 'pages.flows.deleteMessage.areyousureyouwanttodeletethisdata'
+
+  - decisionId: 'single-module-ownership'
+    status: 'implemented'
+    category: 'reserved'
+    ownership:
+      - messageIds:
+          - 'pages.table.title.index'
+          - 'pages.table.title.name'
+          - 'pages.table.title.option'
+        owner: 'pages_general'
+        removedDuplicateOwner: 'pages_unitgroup'
+        semanticCorrection: 'pages.table.title.option means an actions column, so the English value is Actions.'
+      - messageIds:
+          - 'pages.lifeCycleModel.drawer.title.create'
+        owner: 'pages_model'
+        removedDuplicateOwner: 'pages_general'
+    proof: 'Both source locales now have exactly one declaration owner per key.'
+
+  - decisionId: 'split-team-visibility-and-notification-concepts'
+    status: 'implemented'
+    category: 'active-static'
+    splits:
+      - originalMessageId: 'component.allTeams.drawer.public'
+        retainedMeaning: 'public display state'
+        newMessageId: 'component.allTeams.drawer.notPublic'
+        newMeaning: 'not-public display state'
+        runtimeCorrection: 'The drawer now derives visibility from is_public; homepage rank is not a privacy signal.'
+      - originalMessageId: 'teams.members.memberName'
+        retainedMeaning: 'member-list person name'
+        newMessageId: 'teams.notifications.teamName'
+        newMeaning: 'notification-table team name'
+      - originalMessageId: 'teams.members.role'
+        retainedMeaning: 'member-list role'
+        newMessageId: 'teams.notifications.status'
+        newMeaning: 'notification-table invitation status'
+      - originalMessageId: 'teams.members.role.invited'
+        retainedMeaning: 'member invitation role/state'
+        newMessageId: 'teams.notifications.status.pending'
+        newMeaning: 'pending notification status'
+      - originalMessageId: 'teams.members.role.member'
+        retainedMeaning: 'team member role'
+        newMessageId: 'teams.notifications.status.accepted'
+        newMeaning: 'accepted notification status'
+
+  - decisionId: 'reassign-context-specific-callsites'
+    status: 'implemented'
+    category: 'active-static'
+    callsiteMigrations:
+      - from: 'pages.lifeCycleModel.information.location'
+        to: 'pages.lifeCycleModel.information.subLocationOfOperationSupplyOrProduction'
+        reason: 'The rendered field is a sub-location, not the parent location.'
+      - from: 'pages.process.view.processInformation.location'
+        to: 'pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
+        reason: 'The rendered field is a sub-location, not the parent location.'
+      - from: 'pages.table.title.name'
+        to: 'pages.flow.view.flowInformation.baseName'
+        reason: 'The flow table column is specifically the ILCD base-name field.'
+
+  - decisionId: 'normalize-shared-default-messages'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'Every listed id had multiple English defaultMessage values. Callsites were checked for concept and UI role, then aligned or split by the decisions above.'
+    canonicalEnglish:
+      'menu.account.team': 'My Team'
+      'menu.manageSystem': 'System Management'
+      'pages.button.model.result': 'Model Results'
+      'pages.button.save.success': 'Saved successfully!'
+      'pages.button.view': 'View'
+      'pages.contact.name': 'Name of contact'
+      'pages.contact.shortName': 'Short name for contact'
+      'pages.flow.drawer.title.select': 'Select Flow'
+      'pages.flow.view.flowInformation.mixAndLocationTypes': 'Mix and location types'
+      'pages.flowproperty.drawer.title.edit': 'Edit Flow property'
+      'pages.lifeCycleModel.administrativeInformation.accessRestrictions': 'Access and use restrictions'
+      'pages.lifeCycleModel.administrativeInformation.commissionerAndGoal': 'Commissioner and goal'
+      'pages.lifeCycleModel.administrativeInformation.intendedApplications': 'Intended applications'
+      'pages.lifeCycleModel.administrativeInformation.publicationAndOwnership': 'Publication and ownership'
+      'pages.lifeCycleModel.administrativeInformation.referenceToCommissioner': 'Commissioner of data set'
+      'pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess': 'Entities or persons with exclusive access to this data set'
+      'pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityGeneratingTheDataSet': 'Data set generator / modeller'
+      'pages.lifeCycleModel.information.generalComment': 'General comment'
+      'pages.lifeCycleModel.information.mixAndLocationTypes': 'Mix and location types'
+      'pages.lifeCycleModel.information.referenceToExternalDocumentation': 'Data set report, background info'
+      'pages.lifeCycleModel.information.technology.referenceToDiagram': 'Life cycle model diagram(s) or screenshot(s)'
+      'pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet': 'Use advice for data set'
+      'pages.process.exchange.drawer.title.view': 'View Exchange'
+      'pages.process.lca.mode.allUnit': 'All Processes (Reference Flow = 1)'
+      'pages.process.view.administrativeInformation.referenceToPersonOrEntityEnteringTheData': 'Data entry by:'
+      'pages.process.view.processInformation.mixAndLocationTypes': 'Mix and location types'
+      'pages.process.view.processInformation.referenceToTechnologyPictogramme': 'Technology pictogram'
+      'pages.review.members.add': 'Add Member'
+      'pages.review.members.email.required': 'Please input email'
+      'pages.review.temporarySaveSuccess': 'Temporarily saved successfully.'
+      'pages.tab.title.tedata': 'Team Data'
+      'pages.team.info.public': 'Public team information'
+      'pages.team.tabs.members': 'Team Members'
+      'teams.logo.uploadError': 'Failed to upload team logo.'
+      'teams.notifications.teamName': 'Team Name'
+      'teams.notifications.status': 'Status'
+      'teams.notifications.status.pending': 'Pending'
+      'teams.notifications.status.accepted': 'Accepted'
+    note: 'Case-only normalization is intentional where the source term is a sentence-style field label rather than a title.'
+
+  - decisionId: 'align-all-default-messages-with-canonical-english'
+    status: 'implemented'
+    category: 'active-static'
+    auditedInput:
+      uniqueMessageIds: 148
+      productionReferences: 275
+    outcomes:
+      sameConcept:
+        uniqueMessageIds: 129
+        productionReferences: 250
+        resolution: 'Aligned each fallback with the already reviewed canonical English value.'
+      canonicalEnglishCorrected:
+        uniqueMessageIds: 18
+        productionReferences: 24
+        resolution: 'Corrected canonical English from UI context and synchronized Chinese where the source meaning also changed.'
+      wrongMessageId:
+        uniqueMessageIds: 1
+        productionReferences: 1
+        resolution: 'The AllTeams non-admin table header now uses component.allTeams.table.title. component.allTeams.table.desc has no production callsite and is conservatively retained as a reserved compatibility key rather than being described as active UI copy.'
+    canonicalEnglishCorrections:
+      'component.tidasPackage.taskCenter.detail.rootCount': 'Root records'
+      'component.tidasPackage.taskCenter.detail.filename': 'File name'
+      'component.tidasPackage.taskCenter.detail.rootRef': 'Root data'
+      'pages.review.table.modifiedAt': 'Modified at'
+      'pages.login.forgotPassword': 'Forgot password?'
+      'pages.flow.model.drawer.title.refFlow': 'Reference flow'
+      'pages.button.model.setReference': 'Set as reference'
+      'pages.process.view.exchange.selectadirection': 'Select a direction'
+      'pages.review.progress.drawer.title': 'Review Progress'
+      'pages.review.ReviewProcessDetail.edit.success': 'Review submitted successfully'
+      'pages.review.ReviewProcessDetail.assigned.save': 'Approve Review'
+      'pages.review.ReviewProcessDetail.assigned.reject': 'Reject Review'
+      'pages.review.members.displayName': 'Display Name'
+      'teams.members.reInvite': 'Re-invite'
+      'teams.members.email.required': 'Please enter an email address!'
+      'teams.members.email.invalid': 'Please enter a valid email address!'
+      'teams.modal.noTeam.title': 'You are not in any team'
+      'teams.modal.noTeam.content': 'You can create a team or join an existing team.'
+    explicitlyReviewedExamples:
+      - 'The Processes annual-supply reference-context fallback was Chinese in an English defaultMessage and is now canonical English.'
+      - 'Technology pictogram and flow diagram/picture remain separate adjacent fields with separate ids.'
+      - 'The task-center single LCA mode uses Single-Process Calculation, matching the mode hint and Chinese 单过程计算.'
+    proof: 'The authoritative defaultMessageVsEnglish finding count is zero; no exact or punctuation-only mismatch is silently allowed.'
+
+  - decisionId: 'audit-json-schema-default-message-siblings'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'A JSON rule is one message descriptor: its messageKey and sibling defaultMessage must be reviewed together. Scanning only messageKey creates false zero-drift reports and leaves untranslated fallback copy hidden in schemas.'
+    implementation: 'The audit recursively carries each JSON property parent, associates a literal messageKey with the sibling literal defaultMessage, and applies the same conflict, canonical-English, ICU, and placeholder checks used for TS and TSX descriptors.'
+    initialFindings:
+      total: 19
+      multipleDefaultMessageConflicts: 3
+      defaultMessageVsEnglish: 16
+    reviewedContexts:
+      - 'CAS Registry Number syntax for flow identifiers'
+      - 'contact web-address and recommended-field guidance'
+      - 'source identity, classification, timestamp, format, version, and owner fields'
+      - 'process timestamp'
+      - 'unit-group compliance-system and data-set-format references'
+    proof:
+      - 'Focused audit fixtures cover a matching JSON sibling default, two canonical-English drifts, and one multiple-default conflict.'
+      - 'The authoritative audit reports zero JSON or TS/TSX default-message findings after contextual corrections.'
+
+  - decisionId: 'normalize-contextual-source-copy-before-german'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'German must be translated from reviewed product meaning, not from grammatical fragments, internal field names, or inconsistent English and Chinese source copy.'
+    corrections:
+      terminology:
+        - 'Use Life cycle model consistently; do not collapse it to model where the dataset type matters.'
+        - 'Use Quantitative reference consistently for the ILCD/TIDAS concept; do not translate the UI label as a generic measured-value reference.'
+        - 'Keep technology pictogram separate from flow diagrams, model diagrams, and screenshots.'
+        - 'Use reviewer assignment for revocation; do not describe it as revoking a reviewer identity or role.'
+      completeMessages:
+        - 'Snapshot-building errors are complete alternatives with and without {jobId}; no English suffix is concatenated at runtime.'
+        - 'Plural counts and path-selection guidance use ICU messages with complete one/other branches.'
+        - 'The reserved team invitation is a complete {teamName} sentence rather than a prefix fragment.'
+      actionResults:
+        - 'Team ordering, contribution, profile update, team update/create, data validation, reviewer assignment, and member lookup use action-specific result sentences.'
+      validators:
+        - 'Reference fields say select; text and version fields say enter; raw schema names such as dataSetVersion and referenceToDataSetFormat are not shown to users.'
+        - 'CAS Registry Number guidance mirrors the enforced 2-7 digit, 2 digit, and 1 check-digit pattern.'
+      sourceLocales: 'English canonical values and Chinese counterparts were reviewed together, and every production defaultMessage was synchronized with the English value.'
+
+  - decisionId: 'preserve-team-public-state-during-admin-edit'
+    status: 'implemented'
+    category: 'active-static'
+    rationale: 'Homepage rank and public visibility are separate concepts. Editing an existing team from AllTeams must not coerce an omitted is_public value to false.'
+    implementation: 'The AllTeams edit call passes the current is_public state explicitly while leaving rank unchanged unless the caller edits ordering.'
+    proof: 'Focused tests assert that both normal and undefined form-value submissions preserve an initially public team.'
+
+  - decisionId: 'review-computed-message-families'
+    status: 'implemented'
+    category: 'active-dynamic'
+    registry: 'docs/plans/i18n-de-DE/dynamic-families.json'
+    inventory:
+      computedCallsites: 36
+      reviewedCallsites: 36
+      families: 16
+      closedWorldFamilies: 8
+      localizedRuntimeFallbackFamilies: 8
+    implementation: 'Every computed callsite now matches one exact normalized registry entry. Closed-world producers have finite source-key proof; open producer boundaries normalize unknown values to a localized fallback message before formatting.'
+    proof:
+      - 'The authoritative audit reports 36 actual, 36 registered, and 36 reviewed dynamic callsites with zero unresolvedDynamicCallsites.'
+      - 'All 308 keys owned by the 16 reviewed families are classified active-dynamic in the manifest model.'
+      - 'Focused runtime-boundary tests cover known and unknown values for the implemented fallback families.'
+
+  - decisionId: 'align-top-level-locale-spread-order'
+    status: 'implemented'
+    category: 'reserved'
+    canonicalLocale: 'en-US'
+    rationale: 'Equal leaf-module sets are insufficient when object spreads can override duplicate keys differently; all source locales must merge modules in the same deterministic order.'
+    implementation: 'The zh-CN entry now follows the en-US module order. A spread-order mismatch is an enforceable localeModuleDrift finding, and the locale test asserts both zero drift and an exact active-static plus active-dynamic plus reserved partition.'
+
+  - decisionId: 'retain-unreferenced-canonical-keys'
+    status: 'implemented'
+    category: 'reserved'
+    rationale: 'Absence from static callsites does not by itself prove a locale key dead; schema evolution, forwarded descriptors, and compatibility surfaces require conservative retention.'
+    rule: 'Reserved keys remain German translation obligations unless a later explicit dead/compat decision names them.'
+
+  - decisionId: 'retain-settings-module-topology-with-runtime-caveat'
+    status: 'implemented'
+    category: 'reserved'
+    modules:
+      settings:
+        keyCountPerSourceLocale: 53
+        productionCallsites: 0
+      settingDrawer:
+        keyCountPerSourceLocale: 28
+        productionCallsites: 0
+    rationale: 'Issue #600 freezes a 30-leaf canonical topology and the repository does not yet contain enough product evidence to delete these compatibility modules safely.'
+    sourceCopyCorrections:
+      - 'The other-user notification label now matches its description instead of saying Account Password.'
+      - 'The production hint is a complete instruction that names config/defaultSettings.ts.'
+      - 'The Chinese MFA label now names multi-factor authentication rather than only an MFA device.'
+    runtimeCaveat: 'The development-only SettingDrawer is supplied by @ant-design/pro-layout and reads its own locale table; the local settingDrawer module is not proof that this upstream UI supports de-DE.'
+    activationRequirement: 'Issue #602 must either remove or wrap the development-only upstream drawer, or prove a compatible upstream German locale. It must not silently fall back to Chinese when the app locale is de-DE.'
+
+verification:
+  requiredCommands:
+    - 'npm run i18n:audit:write'
+    - 'npm run i18n:audit'
+    - 'npm run test:ci -- tests/unit/locales.test.ts --runInBand --testTimeout=20000 --no-coverage'
+    - 'npm run tsc'
+  releaseCondition: 'All manifest finding counts are zero, the manifest is current, and this register has no pending decisions.'

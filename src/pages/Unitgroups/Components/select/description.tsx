@@ -34,7 +34,10 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
           <Descriptions.Item
             key={0}
             label={
-              <FormattedMessage id='pages.unitgroup.refObjectId' defaultMessage='Ref object id' />
+              <FormattedMessage
+                id='pages.unitgroup.refObjectId'
+                defaultMessage='Reference unit group data set identifier'
+              />
             }
             styles={{ label: { width: locale === 'zh-CN' ? '210px' : '230px' } }}
           >

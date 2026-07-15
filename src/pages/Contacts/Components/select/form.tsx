@@ -252,7 +252,7 @@ const ContactSelectForm: FC<Props> = ({
               lang={lang}
               id={id}
               version={version ?? ''}
-              buttonType=''
+              buttonType='text'
               setViewDrawerVisible={() => {}}
               updateErrRef={(data) => setErrRef(data)}
             />

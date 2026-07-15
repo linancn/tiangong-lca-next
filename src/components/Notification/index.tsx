@@ -283,7 +283,7 @@ const Notification: React.FC = () => {
       <HeaderActionIcon
         title={intl.formatMessage({
           id: 'notification.title',
-          defaultMessage: 'Notifications',
+          defaultMessage: 'Notification Center',
         })}
         icon={<MessageOutlined />}
         badgeCount={unreadCounts.total}
@@ -297,7 +297,7 @@ const Notification: React.FC = () => {
             <span>
               {intl.formatMessage({
                 id: 'notification.title',
-                defaultMessage: 'Notifications',
+                defaultMessage: 'Notification Center',
               })}
             </span>
           </Space>

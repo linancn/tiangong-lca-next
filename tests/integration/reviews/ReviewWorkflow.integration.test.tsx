@@ -504,7 +504,7 @@ describe('Review workflow integration', () => {
     });
 
     await waitFor(() => {
-      expect(message.success).toHaveBeenCalledWith('Action success!');
+      expect(message.success).toHaveBeenCalledWith('Operation successful');
     });
 
     await waitFor(() => {
@@ -604,8 +604,8 @@ describe('Review workflow integration', () => {
       );
     });
 
-    expect(message.error).toHaveBeenCalledWith('Action failed!');
-    expect(message.success).not.toHaveBeenCalledWith('Action success!');
+    expect(message.error).toHaveBeenCalledWith('Operation failed');
+    expect(message.success).not.toHaveBeenCalledWith('Operation successful');
     expect(mockGetUserManageTableData).toHaveBeenCalledTimes(loadCountAfterOpen);
 
     await act(async () => {
@@ -626,7 +626,7 @@ describe('Review workflow integration', () => {
       );
     });
 
-    expect(message.error).toHaveBeenCalledWith('Action failed!');
+    expect(message.error).toHaveBeenCalledWith('Operation failed');
     await waitFor(() => {
       expect(mockGetUserManageTableData).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
     });

@@ -116,7 +116,7 @@ describe('ReviewLifeCycleModelsDetail', () => {
     await userEvent.click(screen.getByRole('button', { name: 'audit' }));
 
     expect(screen.getByTestId('drawer')).toBeInTheDocument();
-    expect(screen.getByText('Review model')).toBeInTheDocument();
+    expect(screen.getByText('Review Model')).toBeInTheDocument();
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
     expect(latestGraphProps?.transformOptions).toEqual({
@@ -134,7 +134,7 @@ describe('ReviewLifeCycleModelsDetail', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'profile' }));
 
-    expect(screen.getByText('View review')).toBeInTheDocument();
+    expect(screen.getByText('View Review')).toBeInTheDocument();
     expect(screen.getByTestId('drawer')).toHaveAttribute('data-container', 'true');
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"type":"view"');
     expect(screen.getByTestId('toolbar-view')).toHaveTextContent('"tabType":"review"');

@@ -25,7 +25,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage
                 id='pages.process.view.exchange.refObjectId'
-                defaultMessage='Ref object id'
+                defaultMessage='Reference flow dataset identifier'
               />
             }
             styles={{ label: { width: locale === 'zh-CN' ? '160px' : '240px' } }}

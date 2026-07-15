@@ -1,7 +1,7 @@
 export default {
   'pages.name': 'TianGong LCA Data Platform',
   'pages.welcome': "World's Largest Open LCA Data Platform",
-  'pages.card.title.1': 'Traceable & Crediable',
+  'pages.card.title.1': 'Traceable & Credible',
   'pages.card.description.1': 'Advanced technologies and strict quality control ensure that the data sources are clear and the modeling process is transparent and traceable, thus providing users with reliable life cycle data.',
   'pages.card.title.2': 'Completeness & Representativeness',
   'pages.card.description.2': 'The platform gathers comprehensive and authoritative life cycle data, covering diverse scenarios, and strives to present the real industry trends and environmental impacts.',

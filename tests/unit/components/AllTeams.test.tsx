@@ -4,7 +4,7 @@ let mockLastActionRef: any;
 
 jest.mock('umi', () => ({
   FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
-    <span>{defaultMessage || id}</span>
+    <span data-message-id={id}>{defaultMessage || id}</span>
   ),
   useIntl: () => ({
     formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
@@ -129,7 +129,7 @@ jest.mock('@ant-design/pro-components', () => {
     );
   };
 
-  const ProTable = ({ actionRef, request, columns }: any) => {
+  const ProTable = ({ actionRef, request, columns, headerTitle }: any) => {
     const [rows, setRows] = React.useState([] as any[]);
     const pageInfo = React.useRef({ current: 1, pageSize: 10 }).current;
 
@@ -161,6 +161,7 @@ jest.mock('@ant-design/pro-components', () => {
 
     return (
       <div data-testid='pro-table'>
+        <div data-testid='pro-table-header'>{headerTitle}</div>
         {rows.map((row: any) => (
           <div key={row.id} data-testid={`row-${row.id}`}>
             {(columns || []).map((column: any, index: number) => (
@@ -351,6 +352,12 @@ describe('AllTeams component', () => {
     renderAllTeams({ tableType: 'joinTeam' });
 
     expect(await screen.findByText('Alpha Team')).toBeInTheDocument();
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('All Teams');
+    expect(
+      screen
+        .getByTestId('pro-table-header')
+        .querySelector('[data-message-id="component.allTeams.table.title"]'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /open select teams/i })).not.toBeInTheDocument();
     expect(mockGetAllTableTeams).toHaveBeenCalledWith({ pageSize: 10, current: 1 }, 'joinTeam');
   });
@@ -408,7 +415,7 @@ describe('AllTeams component', () => {
     expect(payload).toHaveLength(2);
     expect(payload.map((item) => item.rank)).toEqual([1, 2]);
     expect(payload.map((item) => item.id).sort()).toEqual(['t1', 't2']);
-    expect(getMessageMock().success).toHaveBeenCalledWith('Sorting modified successfully');
+    expect(getMessageMock().success).toHaveBeenCalledWith('Team order updated successfully.');
     await waitFor(() => {
       expect(screen.queryByRole('img', { name: /save/i })).not.toBeInTheDocument();
     });
@@ -490,7 +497,7 @@ describe('AllTeams component', () => {
     fireEvent.click(saveIcon.closest('span') ?? saveIcon);
 
     await waitFor(() => {
-      expect(getMessageMock().error).toHaveBeenCalledWith('Sorting modified failed');
+      expect(getMessageMock().error).toHaveBeenCalledWith('Failed to update the team order.');
     });
   });
 
@@ -519,7 +526,9 @@ describe('AllTeams component', () => {
     const dragButton = await screen.findByRole('button', { name: /simulate drag reorder/i });
     fireEvent.click(dragButton);
 
-    expect(getMessageMock().error).toHaveBeenCalledWith('No permission to operate');
+    expect(getMessageMock().error).toHaveBeenCalledWith(
+      'You do not have permission to change the team order.',
+    );
     expect(screen.queryByRole('img', { name: /save/i })).not.toBeInTheDocument();
   });
 

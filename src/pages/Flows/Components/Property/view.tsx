@@ -26,7 +26,7 @@ const PropertyView: FC<Props> = ({ id, data, lang, buttonType }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View Exchange' />}>
+      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
         {buttonType === 'icon' ? (
           <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         ) : (

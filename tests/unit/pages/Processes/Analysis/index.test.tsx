@@ -609,7 +609,7 @@ describe('LcaAnalysisPage', () => {
     expect(screen.getAllByRole('button', { name: 'Back to processes' })).toHaveLength(1);
     expect(screen.getAllByRole('button', { name: 'Refresh options' })).toHaveLength(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -654,7 +654,7 @@ describe('LcaAnalysisPage', () => {
     });
     render(<LcaAnalysisPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Load profile' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Load LCIA profile' }));
 
     expect(await screen.findByText('snapshot-with-evidence')).toBeInTheDocument();
     expect(await screen.findByTestId('calculation-evidence-notice')).toHaveTextContent(
@@ -674,7 +674,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     await waitFor(() =>
       expect(screen.getAllByTestId('bar-chart')[0]).toHaveAttribute('data-border-color', '#abc123'),
@@ -884,7 +884,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
@@ -996,7 +996,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     expect(await screen.findByText('snapshot-path-rich')).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent(/split by depth/i);
@@ -1112,7 +1112,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     expect((await screen.findAllByText('Upstream silicon purification')).length).toBeGreaterThan(0);
     expect(screen.getAllByTestId(`process-view-link-${upstreamProcessId}`).length).toBeGreaterThan(
@@ -1131,11 +1131,11 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('1 process rows are currently available for analysis.'),
+      await screen.findByText('1 process row is currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
@@ -1268,7 +1268,9 @@ describe('LcaAnalysisPage', () => {
       'process-shared:01.00.000',
     );
 
-    fireEvent.click(within(pathPanel).getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(
+      within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
+    );
 
     await waitFor(() =>
       expect(submitLcaContributionPath).toHaveBeenCalledWith({
@@ -1402,7 +1404,7 @@ describe('LcaAnalysisPage', () => {
       ),
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
@@ -1479,7 +1481,7 @@ describe('LcaAnalysisPage', () => {
       target: { value: 'process-1:01.00.000' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(await screen.findByText('published profile unavailable')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -1534,7 +1536,7 @@ describe('LcaAnalysisPage', () => {
       target: { value: 'process-1:01.00.000' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(await screen.findByText('Published LCIA results are unavailable.')).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -1632,7 +1634,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
     expect(await screen.findByText('snapshot-profile-empty')).toBeInTheDocument();
@@ -1678,7 +1680,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     expect(await screen.findByText('snapshot-profile-sparse')).toBeInTheDocument();
     expect(screen.getByTestId('bar-chart')).toHaveAttribute('data-count', '1');
@@ -1705,7 +1707,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
     expect(await screen.findByText('snapshot-profile-non-array')).toBeInTheDocument();
@@ -1721,7 +1723,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(await screen.findByText('snapshot-profile')).toBeInTheDocument();
 
     const searchInput = within(screen.getByTestId('search-input'));
@@ -1788,9 +1790,9 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     queryLcaResults.mockRejectedValueOnce({ code: 'no_ready_snapshot' });
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(
-      await screen.findByText('No ready snapshot is available for the selected data scope.'),
+      await screen.findByText('No snapshot is ready for the selected data scope.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-compare'));
@@ -1810,7 +1812,7 @@ describe('LcaAnalysisPage', () => {
 
     expect(
       await screen.findByText(
-        'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
+        'Snapshot build job build-42 is still running. Wait for it to finish, then rerun the analysis.',
       ),
     ).toBeInTheDocument();
 
@@ -1822,7 +1824,7 @@ describe('LcaAnalysisPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(
       await screen.findByText(
-        'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
+        'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
       ),
     ).toBeInTheDocument();
   });
@@ -1841,10 +1843,10 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     queryLcaResults.mockRejectedValueOnce(staleError);
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(
       await screen.findByText(
-        'The ready snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
+        'The snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
       ),
     ).toBeInTheDocument();
 
@@ -1913,7 +1915,7 @@ describe('LcaAnalysisPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Run grouped analysis' }));
     expect(
       await screen.findByText(
-        'The ready snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
+        'The snapshot for the selected data scope is stale. Rebuild it before rerunning the analysis.',
       ),
     ).toBeInTheDocument();
 
@@ -1934,7 +1936,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
     expect(await screen.findByText('snapshot-path')).toBeInTheDocument();
 
     const pathPanel = screen.getByTestId('tab-panel-path');
@@ -1963,7 +1965,9 @@ describe('LcaAnalysisPage', () => {
       within(pathPanel).getByRole('button', { name: 'Mock select alternate process' }),
     );
     fireEvent.click(within(pathPanel).getByRole('button', { name: 'Clear selection' }));
-    expect(within(pathPanel).getByRole('button', { name: 'Run contribution path' })).toBeDisabled();
+    expect(
+      within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
+    ).toBeDisabled();
 
     fireEvent.click(within(pathPanel).getByRole('button', { name: 'Mock select primary process' }));
     fireEvent.change(within(pathPanel).getByLabelText('Impact category'), {
@@ -1972,7 +1976,9 @@ describe('LcaAnalysisPage', () => {
     fireEvent.change(pathNumberInputs[0], {
       target: { value: '0' },
     });
-    fireEvent.click(within(pathPanel).getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(
+      within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
+    );
     expect(await screen.findByText('Please enter a non-zero amount.')).toBeInTheDocument();
   });
 
@@ -2024,7 +2030,9 @@ describe('LcaAnalysisPage', () => {
     await waitFor(() =>
       expect(within(pathPanel).getByTestId('mock-selected-process-ids')).toHaveTextContent(''),
     );
-    expect(within(pathPanel).getByRole('button', { name: 'Run contribution path' })).toBeDisabled();
+    expect(
+      within(pathPanel).getByRole('button', { name: 'Run contribution path analysis' }),
+    ).toBeDisabled();
   });
 
   it('handles contribution path snapshot-building and failed async job states', async () => {
@@ -2040,10 +2048,10 @@ describe('LcaAnalysisPage', () => {
       mode: 'snapshot_building',
       build_job_id: 'build-7',
     });
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText(
-        'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
+        'Snapshot build job build-7 is still running. Wait for it to finish, then rerun the analysis.',
       ),
     ).toBeInTheDocument();
 
@@ -2051,10 +2059,10 @@ describe('LcaAnalysisPage', () => {
       mode: 'snapshot_building',
       build_job_id: '',
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText(
-        'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
+        'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
       ),
     ).toBeInTheDocument();
 
@@ -2066,7 +2074,7 @@ describe('LcaAnalysisPage', () => {
       status: 'failed',
       result: null,
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect(await screen.findByText('Contribution path analysis failed.')).toBeInTheDocument();
 
     submitLcaContributionPath.mockResolvedValueOnce({
@@ -2079,7 +2087,7 @@ describe('LcaAnalysisPage', () => {
         result_id: '   ',
       },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText('Contribution path analysis finished without a result.'),
     ).toBeInTheDocument();
@@ -2092,7 +2100,7 @@ describe('LcaAnalysisPage', () => {
       status: 'completed',
       result: null,
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText('Contribution path analysis finished without a result.'),
     ).toBeInTheDocument();
@@ -2153,7 +2161,7 @@ describe('LcaAnalysisPage', () => {
       },
       data: null,
     });
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText(
         'Unexpected contribution path payload returned from the analysis API.',
@@ -2241,7 +2249,7 @@ describe('LcaAnalysisPage', () => {
         links: [],
       },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
 
     expect(await screen.findByText('snapshot-path-empty')).toBeInTheDocument();
     expect(screen.getAllByText('MJ').length).toBeGreaterThan(0);
@@ -2344,7 +2352,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     expect(await screen.findByText('snapshot-path-fallback-rows')).toBeInTheDocument();
     expect(screen.getAllByText('process-fallback').length).toBeGreaterThan(0);
@@ -2423,7 +2431,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     expect(await screen.findByText('snapshot-path-branch-label')).toBeInTheDocument();
     expect(
@@ -2483,7 +2491,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
 
     expect(await screen.findByText('snapshot-path-process-id-fallback')).toBeInTheDocument();
     expect(
@@ -2579,7 +2587,7 @@ describe('LcaAnalysisPage', () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
     expect(await screen.findByText('snapshot-path-refresh-meta')).toBeInTheDocument();
     await waitFor(() => expect(getProcessDetail).toHaveBeenCalledWith('process-fallback', ''));
     expect(screen.getAllByTestId('process-view-link-process-1').length).toBeGreaterThan(0);
@@ -2681,7 +2689,7 @@ describe('LcaAnalysisPage', () => {
       ).toBeInTheDocument(),
     );
     expect(
-      screen.queryByText('1 process rows are currently available for analysis.'),
+      screen.queryByText('1 process row is currently available for analysis.'),
     ).not.toBeInTheDocument();
 
     const searchInput = within(screen.getByTestId('search-input'));
@@ -2692,7 +2700,7 @@ describe('LcaAnalysisPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Refresh options' }));
 
     expect(
-      await screen.findByText('1 process rows are currently available for analysis.'),
+      await screen.findByText('1 process row is currently available for analysis.'),
     ).toBeInTheDocument();
 
     staleSearch.reject(new Error('stale search failed'));
@@ -2896,7 +2904,7 @@ describe('LcaAnalysisPage', () => {
     render(<LcaAnalysisPage />);
 
     expect(
-      await screen.findByText('1 process rows are currently available for analysis.'),
+      await screen.findByText('1 process row is currently available for analysis.'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-grouped'));
@@ -2923,7 +2931,7 @@ describe('LcaAnalysisPage', () => {
     fireEvent.change(profileSelect, {
       target: { value: 'process-missing' },
     });
-    fireEvent.click(within(profilePanel).getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(within(profilePanel).getByRole('button', { name: 'Load LCIA profile' }));
 
     expect(await screen.findByText('Please select a process')).toBeInTheDocument();
     expect(queryLcaResults).not.toHaveBeenCalled();
@@ -2936,7 +2944,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Load LCIA profile' }));
     expect(await screen.findByText('snapshot-profile')).toBeInTheDocument();
 
     const profilePanel = screen.getByTestId('tab-panel-profile');
@@ -3029,12 +3037,12 @@ describe('LcaAnalysisPage', () => {
       mode: 'submitted',
       job_id: '',
     });
-    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Run contribution path analysis' }));
     expect(
       await screen.findByText('Contribution path analysis finished without a result.'),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect((await screen.findAllByText('process-missing')).length).toBeGreaterThan(0);
   });
 
@@ -3101,7 +3109,7 @@ describe('LcaAnalysisPage', () => {
       await screen.findByText('3 process rows are currently available for analysis.'),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('tab-path'));
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     await waitFor(() => expect(getProcessDetail).toHaveBeenCalled());
     unmount();
 
@@ -3163,7 +3171,7 @@ describe('LcaAnalysisPage', () => {
       },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect((await screen.findAllByText('kWh')).length).toBeGreaterThan(0);
 
     appendSelectOption(impactSelect, 'impact-placeholder-unit', 'Impact placeholder unit');
@@ -3207,7 +3215,7 @@ describe('LcaAnalysisPage', () => {
       },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run contribution path analysis' }));
     expect(await screen.findByText('snapshot-path-placeholder-unit')).toBeInTheDocument();
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
   });

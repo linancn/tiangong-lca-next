@@ -773,7 +773,7 @@ const getLangValidationLocaleMessages = (locale: string) => {
       'Save failed, the following fields are missing English: {fields}.',
     missingEnglishMore:
       messages['validator.langValidation.missingEnglishMore'] ??
-      'Save failed, the following fields are missing English: {fields} and {count} more field(s).',
+      'Save failed, the following fields are missing English: {fields}, plus {count, plural, one {# more field} other {# more fields}}.',
     root: messages['validator.langValidation.root'] ?? (locale === 'zh-CN' ? '根节点' : '(root)'),
   };
 };
@@ -781,10 +781,26 @@ const getLangValidationLocaleMessages = (locale: string) => {
 const formatLangValidationTemplate = (
   template: string,
   values: Record<string, string | number>,
+  locale: string,
 ) => {
+  const pluralizedTemplate = template.replace(
+    /\{([A-Za-z][A-Za-z0-9_]*),\s*plural,\s*(?:one\s*\{([^{}]*)\}\s*)?other\s*\{([^{}]*)\}\s*\}/gu,
+    (match, key: string, oneCase: string | undefined, otherCase: string) => {
+      const numericValue = Number(values[key]);
+      if (!Number.isFinite(numericValue)) {
+        return match;
+      }
+
+      const pluralCategory = new Intl.PluralRules(locale).select(numericValue);
+      const selectedCase = pluralCategory === 'one' && oneCase ? oneCase : otherCase;
+      const formattedNumber = new Intl.NumberFormat(locale).format(numericValue);
+      return selectedCase.replace(/#/gu, formattedNumber);
+    },
+  );
+
   return Object.entries(values).reduce(
     (result, [key, value]) => result.split(`{${key}}`).join(String(value)),
-    template,
+    pluralizedTemplate,
   );
 };
 
@@ -818,15 +834,23 @@ export function getLangValidationErrorMessage(
   const extraCount = uniqueFields.length - Math.min(uniqueFields.length, maxPathCount);
 
   if (extraCount > 0) {
-    return formatLangValidationTemplate(localeMessages.missingEnglishMore, {
-      fields: visibleFields,
-      count: extraCount,
-    });
+    return formatLangValidationTemplate(
+      localeMessages.missingEnglishMore,
+      {
+        fields: visibleFields,
+        count: extraCount,
+      },
+      locale,
+    );
   }
 
-  return formatLangValidationTemplate(localeMessages.missingEnglish, {
-    fields: visibleFields,
-  });
+  return formatLangValidationTemplate(
+    localeMessages.missingEnglish,
+    {
+      fields: visibleFields,
+    },
+    locale,
+  );
 }
 
 export function mergeLangArrays(...arrays: any[][]): any[] {

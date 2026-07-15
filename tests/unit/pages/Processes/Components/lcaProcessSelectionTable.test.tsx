@@ -103,22 +103,11 @@ describe('LcaProcessSelectionTable', () => {
   it('filters the current view and can show selected processes from other pages', () => {
     render(
       <LcaProcessSelectionTable
+        mode='compare'
         processOptions={[processOptions[0], processOptions[2]]}
         selectedProcessIds={['process-2:01.00.000']}
         selectedProcessOptions={[processOptions[1]]}
         totalProcessCount={12}
-        titleMessage={{
-          id: 'title',
-          defaultMessage: 'Process selection',
-        }}
-        hintMessage={{
-          id: 'hint',
-          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
-        }}
-        emptyMessage={{
-          id: 'empty',
-          defaultMessage: 'No processes available.',
-        }}
         onSelectionChange={jest.fn()}
       />,
     );
@@ -142,13 +131,13 @@ describe('LcaProcessSelectionTable', () => {
     expect(screen.queryByText('Battery pack assembly')).not.toBeInTheDocument();
     expect(screen.getByText('Wind turbine maintenance')).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('Filter processes in the current view'), {
+    fireEvent.change(screen.getByLabelText('Filter processes in this list'), {
       target: { value: 'solar' },
     });
 
     expect(screen.getByText('Solar panel manufacturing')).toBeInTheDocument();
     expect(screen.queryByText('Wind turbine maintenance')).not.toBeInTheDocument();
-    expect(screen.getByText('Showing 1 processes in the current view.')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1 process in this list.')).toBeInTheDocument();
   });
 
   it('filters out selected rows from the unselected view and forwards rowSelection changes', () => {
@@ -156,21 +145,10 @@ describe('LcaProcessSelectionTable', () => {
 
     render(
       <LcaProcessSelectionTable
+        mode='compare'
         processOptions={processOptions}
         selectedProcessIds={['process-2:01.00.000']}
         selectedProcessOptions={processOptions}
-        titleMessage={{
-          id: 'title',
-          defaultMessage: 'Process selection',
-        }}
-        hintMessage={{
-          id: 'hint',
-          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
-        }}
-        emptyMessage={{
-          id: 'empty',
-          defaultMessage: 'No processes available.',
-        }}
         onSelectionChange={onSelectionChange}
       />,
     );
@@ -190,20 +168,9 @@ describe('LcaProcessSelectionTable', () => {
   it('defaults selectedProcessOptions to an empty array when the prop is omitted', () => {
     render(
       <LcaProcessSelectionTable
+        mode='compare'
         processOptions={processOptions}
         selectedProcessIds={['process-2:01.00.000']}
-        titleMessage={{
-          id: 'title',
-          defaultMessage: 'Process selection',
-        }}
-        hintMessage={{
-          id: 'hint',
-          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
-        }}
-        emptyMessage={{
-          id: 'empty',
-          defaultMessage: 'No processes available.',
-        }}
         onSelectionChange={jest.fn()}
       />,
     );
@@ -213,7 +180,9 @@ describe('LcaProcessSelectionTable', () => {
     });
 
     expect(screen.queryByText('Battery pack assembly')).not.toBeInTheDocument();
-    expect(screen.getByText('No processes available.')).toBeInTheDocument();
+    expect(
+      screen.getByText('No processes match the current data scope and search keyword.'),
+    ).toBeInTheDocument();
   });
 
   it('renders pagination controls alongside the table footer', () => {
@@ -222,6 +191,7 @@ describe('LcaProcessSelectionTable', () => {
 
     render(
       <LcaProcessSelectionTable
+        mode='compare'
         processOptions={processOptions}
         selectedProcessIds={[]}
         totalProcessCount={12}
@@ -232,18 +202,6 @@ describe('LcaProcessSelectionTable', () => {
           rangeEnd: 20,
           onPrevious,
           onNext,
-        }}
-        titleMessage={{
-          id: 'title',
-          defaultMessage: 'Process selection',
-        }}
-        hintMessage={{
-          id: 'hint',
-          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
-        }}
-        emptyMessage={{
-          id: 'empty',
-          defaultMessage: 'No processes available.',
         }}
         onSelectionChange={jest.fn()}
       />,
@@ -260,6 +218,7 @@ describe('LcaProcessSelectionTable', () => {
   it('hides pagination controls when showing selected processes only', () => {
     render(
       <LcaProcessSelectionTable
+        mode='compare'
         processOptions={processOptions}
         selectedProcessIds={['process-2:01.00.000']}
         selectedProcessOptions={processOptions}
@@ -271,18 +230,6 @@ describe('LcaProcessSelectionTable', () => {
           rangeEnd: 20,
           onPrevious: jest.fn(),
           onNext: jest.fn(),
-        }}
-        titleMessage={{
-          id: 'title',
-          defaultMessage: 'Process selection',
-        }}
-        hintMessage={{
-          id: 'hint',
-          defaultMessage: '{selectedCount} processes selected from {totalCount} available options.',
-        }}
-        emptyMessage={{
-          id: 'empty',
-          defaultMessage: 'No processes available.',
         }}
         onSelectionChange={jest.fn()}
       />,

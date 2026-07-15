@@ -53,7 +53,7 @@ describe('validation message helpers', () => {
     ).toBe('Please enter a valid year (e.g., 2023)');
   });
 
-  it('falls back across localized templates, raw suggested fixes, and empty details', () => {
+  it('uses localized templates and a localized fallback for unknown SDK codes', () => {
     expect(
       getSdkSuggestedFixMessage(intl, {
         validationCode: 'string_too_short',
@@ -75,20 +75,20 @@ describe('validation message helpers', () => {
         validationCode: 'unmapped_validation_code',
         suggestedFix: 'Keep the fallback copy.',
       }),
-    ).toBe('Keep the fallback copy');
+    ).toBe('Check and fix this field');
 
     expect(
       getSdkSuggestedFixMessage(intl, {
         suggestedFix: 'Use the raw fallback only.',
       }),
-    ).toBe('Use the raw fallback only');
+    ).toBe('Check and fix this field');
 
     expect(
       getSdkSuggestedFixMessage(intl, {
         validationCode: 'number_too_small',
         suggestedFix: 'Keep the non-year fallback.',
       }),
-    ).toBe('Keep the non-year fallback');
+    ).toBe('Check and fix this field');
 
     expect(
       getSdkSuggestedFixMessage(intl, {
@@ -97,7 +97,9 @@ describe('validation message helpers', () => {
       }),
     ).toBe('Resolve  custom issues');
 
-    expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe('');
+    expect(getSdkSuggestedFixMessage(intl, { suggestedFix: undefined })).toBe(
+      'Check and fix this field',
+    );
     expect(getSdkSuggestedFixMessage(intl)).toBe('');
   });
 

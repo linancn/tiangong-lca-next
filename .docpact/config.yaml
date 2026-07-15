@@ -1,7 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-13'
-lastReviewedCommit: 'a8fe67fa6e2d95a0b553019ed9195bc1d500471b'
+lastReviewedAt: '2026-07-16'
+lastReviewedCommit: '3b716e00577a5fc4e235b65d71f9a0c15082a034'
+lastReviewedNote: 'Reviewed deterministic locale-audit ownership, routing, proof coverage, and governed baseline artifacts for Issue #600.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -39,6 +40,7 @@ ownership:
           - README_CN.md
           - .docpact/**
           - docs/agents/**
+          - docs/plans/i18n-de-DE/**
           - .github/PULL_REQUEST_TEMPLATE/*.md
       ownerRepo: next
     - id: repo-testing-and-quality-gates
@@ -57,6 +59,7 @@ ownership:
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
           - scripts/validate-lcia-cache.cjs
+          - scripts/i18n/**
       ownerRepo: next
 
 coverage:
@@ -81,6 +84,7 @@ coverage:
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
+    - docs/plans/i18n-de-DE/**
     - .github/PULL_REQUEST_TEMPLATE/*.md
     - config/**
     - src/**
@@ -101,6 +105,7 @@ coverage:
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
     - scripts/validate-lcia-cache.cjs
+    - scripts/i18n/**
   exclude:
     - node_modules/**
     - dist/**
@@ -123,6 +128,7 @@ routing:
         - src/pages/**
         - src/components/**
         - src/locales/**
+        - docs/plans/i18n-de-DE/**
     service-env:
       paths:
         - config/supabaseEnv.ts
@@ -145,6 +151,7 @@ routing:
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
         - scripts/validate-lcia-cache.cjs
+        - scripts/i18n/**
         - tests/**
     repo-docs:
       paths:
@@ -168,6 +175,7 @@ routing:
         - docs/agents/lcia-calculation-evidence.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
+        - docs/plans/i18n-de-DE/**
         - .github/PULL_REQUEST_TEMPLATE/*.md
     proof:
       paths:
@@ -179,7 +187,9 @@ routing:
         - .github/workflows/build.yml
         - scripts/docpact
         - scripts/docpact-gate.js
+        - scripts/i18n/**
         - tests/**
+        - docs/plans/i18n-de-DE/**
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
         - docs/agents/testing-troubleshooting.md
@@ -462,6 +472,10 @@ rules:
         kind: test-gate
       - path: scripts/validate-lcia-cache.cjs
         kind: test-gate
+      - path: scripts/i18n/**
+        kind: test-gate
+      - path: docs/plans/i18n-de-DE/**
+        kind: test-baseline
       - path: tests/data-workflows/test-api-smoke.cjs
         kind: repo-test
       - path: tests/**

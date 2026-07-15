@@ -48,7 +48,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
 
   return (
     <>
-      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View exchange' />}>
+      <Tooltip title={<FormattedMessage id='pages.button.view' defaultMessage='View' />}>
         {buttonType === 'icon' ? (
           <Button shape='circle' icon={<ProfileOutlined />} size='small' onClick={onView} />
         ) : (
@@ -62,7 +62,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
         title={
           <FormattedMessage
             id='pages.process.exchange.drawer.title.view'
-            defaultMessage='View exchange'
+            defaultMessage='View Exchange'
           />
         }
         width='90%'
@@ -244,7 +244,7 @@ const ProcessExchangeView: FC<Props> = ({ id, data, lang, buttonType }) => {
                 label={
                   <FormattedMessage
                     id='processExchange.relativeStandardDeviation95In'
-                    defaultMessage='Relative standard deviation 95 in'
+                    defaultMessage='Relative StdDev in %'
                   />
                 }
                 styles={{ label: { width: '220px' } }}

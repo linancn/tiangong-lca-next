@@ -21,8 +21,9 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-15
+lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedNote: 'Reviewed canonical locale parity, placeholder, runtime-message inventory, and non-automatable language-review boundaries for Issue #600.'
 ---
 
 # Testing Patterns Reference
@@ -84,6 +85,14 @@ Special cases:
 1. render the component with realistic props
 2. keep providers minimal but sufficient
 3. assert the contract the parent relies on
+
+## Localization Pattern
+
+1. prove leaf-file topology and canonical key parity across every supported locale
+2. compare placeholder names and occurrence counts rather than translated word order
+3. audit production literal message IDs and enumerate the exact members of each computed-ID family
+4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
+5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
 
 ## Focused Command Shapes
 

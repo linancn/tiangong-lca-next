@@ -55,7 +55,7 @@ jest.mock('umi', () => ({
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
       const template = defaultMessage ?? id;
       return Object.entries(values ?? {}).reduce(
-        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+        (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
         template,
       );
     },
@@ -759,7 +759,7 @@ describe('ProcessView component', () => {
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Modelling and validation' }));
-    expect(getDescriptionItemValue('Type of data set')).toHaveTextContent('-');
+    expect(getDescriptionItemValue('Dataset type')).toHaveTextContent('-');
     expect(getDescriptionItemValue('LCI method principle')).toHaveTextContent('-');
     expect(getDescriptionItemValue('LCI method approaches')).toHaveTextContent('-');
     expect(getDescriptionItemValue('Completeness product model')).toHaveTextContent('-');
@@ -815,7 +815,7 @@ describe('ProcessView component', () => {
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Modelling and validation' }));
-    expect(getDescriptionItemValue('Type of data set')).toHaveTextContent('LCI result');
+    expect(getDescriptionItemValue('Dataset type')).toHaveTextContent('LCI result');
     expect(getDescriptionItemValue('LCI method principle')).toHaveTextContent('Attributional');
     expect(getDescriptionItemValue('LCI method approaches')).toHaveTextContent('Allocation - mass');
     expect(getDescriptionItemValue('Completeness product model')).toHaveTextContent(
@@ -825,7 +825,7 @@ describe('ProcessView component', () => {
     expect(getDescriptionItemValue('value')).toHaveTextContent('No statement');
 
     fireEvent.click(screen.getByRole('button', { name: 'Process information' }));
-    expect(getDescriptionItemValue('Uncertainty distribution type')).toHaveTextContent('uniform');
+    expect(getDescriptionItemValue('Uncertainty distribution type')).toHaveTextContent('Uniform');
 
     fireEvent.click(screen.getByRole('button', { name: 'Administrative information' }));
     expect(getDescriptionItemValue('Copyright?')).toHaveTextContent('Yes');
@@ -983,7 +983,7 @@ describe('ProcessView component', () => {
 
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inputs and Outputs' }));
 
     await waitFor(() => expect(mockGetProcessExchange).toHaveBeenCalledTimes(2));
     expect(mockGetProcessExchange).toHaveBeenNthCalledWith(1, [{ id: 'row-1' }], 'Input', {
@@ -1044,7 +1044,7 @@ describe('ProcessView component', () => {
 
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inputs and Outputs' }));
 
     await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
     await waitFor(() =>
@@ -1104,7 +1104,7 @@ describe('ProcessView component', () => {
 
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inputs and Outputs' }));
 
     await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
     await waitFor(() =>
@@ -1130,7 +1130,7 @@ describe('ProcessView component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'LCIA Results' }));
     await waitFor(() => expect(screen.getByTestId('pro-table')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'Exchanges' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inputs and Outputs' }));
     await waitFor(() => expect(mockGetProcessExchange.mock.calls.length).toBeGreaterThanOrEqual(2));
   });
 

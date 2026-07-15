@@ -1020,7 +1020,7 @@ const ToolbarEdit: FC<Props> = ({
             message.success(
               intl.formatMessage({
                 id: 'pages.flows.savesuccess',
-                defaultMessage: 'Save successfully',
+                defaultMessage: 'Saved successfully.',
               }),
             );
           }

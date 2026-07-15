@@ -514,7 +514,7 @@ describe('LangTextItemForm', () => {
     });
 
     await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('English is a required language!');
+      expect(message.error).toHaveBeenCalledWith('English is a required language');
     });
   });
 

@@ -103,7 +103,37 @@ export const LifeCycleModelForm: FC<Props> = ({
     });
   }, [classificationSdkValidationDetail, intl]);
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.view.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    complianceDeclarations: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.complianceDeclarations'
+        defaultMessage='Compliance declarations'
+      />
+    ),
+    lifeCycleModelInformation: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.view.lifeCycleModelInformation'
+        defaultMessage='Life cycle model information'
+      />
+    ),
+    modellingAndValidation: (
+      <FormattedMessage
+        id='pages.lifeCycleModel.view.modellingAndValidation'
+        defaultMessage='Modelling and validation'
+      />
+    ),
+    validation: (
+      <FormattedMessage id='pages.lifeCycleModel.validation' defaultMessage='Validation' />
+    ),
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -117,7 +147,7 @@ export const LifeCycleModelForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -125,39 +155,23 @@ export const LifeCycleModelForm: FC<Props> = ({
   const tabList = [
     {
       key: 'lifeCycleModelInformation',
-      tab: renderTabLabel(
-        'lifeCycleModelInformation',
-        'pages.lifeCycleModel.view.lifeCycleModelInformation',
-        'Life cycle model information',
-      ),
+      tab: renderTabLabel('lifeCycleModelInformation'),
     },
     {
       key: 'modellingAndValidation',
-      tab: renderTabLabel(
-        'modellingAndValidation',
-        'pages.lifeCycleModel.view.modellingAndValidation',
-        'Modelling and validation',
-      ),
+      tab: renderTabLabel('modellingAndValidation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.lifeCycleModel.view.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
     {
       key: 'validation',
-      tab: renderTabLabel('validation', 'pages.lifeCycleModel.validation', 'Validation'),
+      tab: renderTabLabel('validation'),
     },
     {
       key: 'complianceDeclarations',
-      tab: renderTabLabel(
-        'complianceDeclarations',
-        'pages.lifeCycleModel.complianceDeclarations',
-        'Compliance declarations',
-      ),
+      tab: renderTabLabel('complianceDeclarations'),
     },
   ];
 
@@ -441,7 +455,7 @@ export const LifeCycleModelForm: FC<Props> = ({
           label={
             <FormattedMessage
               id='pages.lifeCycleModel.information.technology.referenceToDiagram'
-              defaultMessage='Life cycle model diagramm(s) or screenshot(s)'
+              defaultMessage='Life cycle model diagram(s) or screenshot(s)'
             />
           }
           name={['lifeCycleModelInformation', 'technology', 'referenceToDiagram']}

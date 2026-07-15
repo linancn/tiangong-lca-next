@@ -221,7 +221,7 @@ describe('ExchangeSelect', () => {
     expect(mockGetProcessDetail).toHaveBeenNthCalledWith(1, 'source-id', 'v1');
     expect(mockGetProcessDetail).toHaveBeenNthCalledWith(2, 'target-id', 'v2');
 
-    expect(screen.getByRole('dialog', { name: 'Create exchange relation' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Create Exchange Relation' })).toBeInTheDocument();
     expect(screen.getAllByTestId('pro-table')).toHaveLength(2);
     expect(screen.getAllByTestId('quantitative-icon')).toHaveLength(2);
     expect(screen.getAllByTestId('exchange-view')).toHaveLength(2);
@@ -244,7 +244,7 @@ describe('ExchangeSelect', () => {
     });
     await waitFor(() =>
       expect(
-        screen.queryByRole('dialog', { name: 'Create exchange relation' }),
+        screen.queryByRole('dialog', { name: 'Create Exchange Relation' }),
       ).not.toBeInTheDocument(),
     );
   });
@@ -327,7 +327,7 @@ describe('ExchangeSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('dialog', { name: 'Edit exchange relation' })).toBeInTheDocument(),
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange Relation' })).toBeInTheDocument(),
     );
 
     expect(screen.getByText('Source Flow')).toBeInTheDocument();
@@ -339,7 +339,7 @@ describe('ExchangeSelect', () => {
 
     await waitFor(() =>
       expect(
-        screen.queryByRole('dialog', { name: 'Edit exchange relation' }),
+        screen.queryByRole('dialog', { name: 'Edit Exchange Relation' }),
       ).not.toBeInTheDocument(),
     );
   });
@@ -350,23 +350,23 @@ describe('ExchangeSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('dialog', { name: 'Create exchange relation' })).toBeInTheDocument(),
+      expect(screen.getByRole('dialog', { name: 'Create Exchange Relation' })).toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getAllByRole('button', { name: 'close' })[0]);
     await waitFor(() =>
       expect(
-        screen.queryByRole('dialog', { name: 'Create exchange relation' }),
+        screen.queryByRole('dialog', { name: 'Create Exchange Relation' }),
       ).not.toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-    await screen.findByRole('dialog', { name: 'Create exchange relation' });
+    await screen.findByRole('dialog', { name: 'Create Exchange Relation' });
     fireEvent.click(screen.getAllByRole('button', { name: 'close' })[1]);
 
     await waitFor(() =>
       expect(
-        screen.queryByRole('dialog', { name: 'Create exchange relation' }),
+        screen.queryByRole('dialog', { name: 'Create Exchange Relation' }),
       ).not.toBeInTheDocument(),
     );
   });
@@ -410,7 +410,7 @@ describe('ExchangeSelect', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
 
     await waitFor(() =>
-      expect(screen.getByRole('dialog', { name: 'Edit exchange relation' })).toBeInTheDocument(),
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange Relation' })).toBeInTheDocument(),
     );
   });
 });

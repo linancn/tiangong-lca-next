@@ -171,7 +171,7 @@ const ComplianceItemForm: FC<Props> = ({ name, lang, formRef, onData }) => {
                       label={
                         <FormattedMessage
                           id='pages.process.view.modellingAndValidation.referenceToComplianceSystem'
-                          defaultMessage='Compliance system'
+                          defaultMessage='Compliance system name'
                         />
                       }
                       lang={lang}

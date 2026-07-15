@@ -27,7 +27,7 @@ jest.mock('antd', () => ({
 }));
 
 describe('RequiredMark Component', () => {
-  const defaultErrorMessage = 'English is a required language!';
+  const defaultErrorMessage = 'English is a required language';
 
   const renderComponent = (props: Partial<RequiredMarkProps> = {}) => {
     const defaultProps: RequiredMarkProps = {

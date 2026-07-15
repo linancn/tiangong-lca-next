@@ -136,11 +136,11 @@ export default function ReviewProgress({
       },
       title: intl.formatMessage({
         id: 'pages.review.progress.confirm.title',
-        defaultMessage: 'Confirm Revocation',
+        defaultMessage: 'Revoke reviewer assignment?',
       }),
       content: intl.formatMessage({
         id: 'pages.review.progress.confirm.content',
-        defaultMessage: 'Are you sure to revoke this reviewer?',
+        defaultMessage: 'This reviewer will be removed from the current review. Continue?',
       }),
       onOk: async () => {
         try {
@@ -150,14 +150,14 @@ export default function ReviewProgress({
             message.success(
               intl.formatMessage({
                 id: 'pages.review.progress.delete.success',
-                defaultMessage: 'Successfully revoked the auditor',
+                defaultMessage: 'Reviewer assignment revoked.',
               }),
             );
           } else {
             message.error(
               intl.formatMessage({
                 id: 'pages.review.progress.delete.error',
-                defaultMessage: 'Failed to revoke the auditor',
+                defaultMessage: 'Failed to revoke the reviewer assignment.',
               }),
             );
           }
@@ -201,7 +201,7 @@ export default function ReviewProgress({
       title: (
         <FormattedMessage
           id='pages.review.progress.table.reviewComment'
-          defaultMessage='审核意见'
+          defaultMessage='Review Comment'
         />
       ),
       dataIndex: 'comment',
@@ -260,7 +260,7 @@ export default function ReviewProgress({
           key='remove'
           title={intl.formatMessage({
             id: 'pages.review.progress.tooltip.revoke',
-            defaultMessage: 'Revoke Reviewer',
+            defaultMessage: 'Revoke reviewer assignment',
           })}
         >
           <Button
@@ -285,7 +285,7 @@ export default function ReviewProgress({
         message.success(
           intl.formatMessage({
             id: 'pages.review.ReviewProcessDetail.assigned.success',
-            defaultMessage: 'Review approved successfully',
+            defaultMessage: 'Review approval successful',
           }),
         );
         setDrawerVisible(false);

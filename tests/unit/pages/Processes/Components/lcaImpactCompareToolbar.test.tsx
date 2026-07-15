@@ -258,7 +258,7 @@ describe('lcaImpactCompareToolbar', () => {
 
     expect(await screen.findByText('Controls')).toBeInTheDocument();
     expect(
-      screen.getByText('3 selected from 3 visible process rows on this page.'),
+      screen.getByText('3 processes selected from 3 visible process rows on this page.'),
     ).toBeInTheDocument();
 
     expect(await screen.findByText('Climate change (kg CO2-eq)')).toBeInTheDocument();
@@ -472,7 +472,7 @@ describe('lcaImpactCompareToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
     await waitFor(() =>
       expect(
-        screen.getByText('0 selected from 2 visible process rows on this page.'),
+        screen.getByText('0 processes selected from 2 visible process rows on this page.'),
       ).toBeInTheDocument(),
     );
 
@@ -485,7 +485,7 @@ describe('lcaImpactCompareToolbar', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('1 selected from 1 visible process rows on this page.'),
+        screen.getByText('1 process selected from 1 visible process row on this page.'),
       ).toBeInTheDocument(),
     );
     expect(screen.getByRole('checkbox', { name: /battery pack assembly/i })).toBeChecked();
@@ -510,7 +510,7 @@ describe('lcaImpactCompareToolbar', () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText('2 selected from 3 visible process rows on this page.'),
+        screen.getByText('2 processes selected from 3 visible process rows on this page.'),
       ).toBeInTheDocument(),
     );
     expect(screen.queryByText('snapshot-1')).not.toBeInTheDocument();
@@ -518,21 +518,21 @@ describe('lcaImpactCompareToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
     await waitFor(() =>
       expect(
-        screen.getByText('0 selected from 3 visible process rows on this page.'),
+        screen.getByText('0 processes selected from 3 visible process rows on this page.'),
       ).toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('checkbox', { name: /battery pack assembly/i }));
     await waitFor(() =>
       expect(
-        screen.getByText('1 selected from 3 visible process rows on this page.'),
+        screen.getByText('1 process selected from 3 visible process rows on this page.'),
       ).toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Select all visible' }));
     await waitFor(() =>
       expect(
-        screen.getByText('3 selected from 3 visible process rows on this page.'),
+        screen.getByText('3 processes selected from 3 visible process rows on this page.'),
       ).toBeInTheDocument(),
     );
   });
@@ -562,7 +562,7 @@ describe('lcaImpactCompareToolbar', () => {
     );
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[1]);
-    expect(screen.getByRole('dialog', { name: 'LCA Impact Compare' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'LCA Impact Comparison' })).toBeInTheDocument();
 
     resolveQuery?.({
       snapshot_id: 'snapshot-2',
@@ -586,7 +586,9 @@ describe('lcaImpactCompareToolbar', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'LCA Impact Compare' })).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole('dialog', { name: 'LCA Impact Comparison' }),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -654,7 +656,7 @@ describe('lcaImpactCompareToolbar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Run analysis' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Snapshot build is still running (job job-42). Wait for it to finish, then rerun the analysis.',
+      'Snapshot build job job-42 is still running. Wait for it to finish, then rerun the analysis.',
     );
   });
 

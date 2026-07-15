@@ -44,7 +44,7 @@ const ExportData: FC<ExportDataProps> = ({ tableName, id, version }) => {
 
   return (
     <Spin spinning={loading}>
-      <Tooltip title={<FormattedMessage id={'pages.button.export'} defaultMessage='Export Data' />}>
+      <Tooltip title={<FormattedMessage id={'pages.button.export'} defaultMessage='Export' />}>
         <Button
           icon={<DownloadOutlined />}
           onClick={handleExport}

@@ -200,7 +200,7 @@ export const buildFlowPropertiesValidationDetails = (
     return [];
   }
 
-  const message = 'Flow property needs to have exactly one quantitative reference open';
+  const message = 'Exactly one flow property must be designated as the quantitative reference.';
   const details: ValidationIssueSdkDetail[] = [
     {
       fieldKey: 'flowProperties',

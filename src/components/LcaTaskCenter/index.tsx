@@ -963,11 +963,11 @@ function lcaModeLabel(mode: LcaBackgroundTask['mode'], intl: IntlShapeLike): str
   return mode === 'all_unit'
     ? intl.formatMessage({
         id: 'pages.process.lca.mode.allUnit',
-        defaultMessage: 'All Processes (1 Reference Unit)',
+        defaultMessage: 'All Processes (Reference Flow = 1)',
       })
     : intl.formatMessage({
         id: 'pages.process.lca.mode.single',
-        defaultMessage: 'Single Demand',
+        defaultMessage: 'Single-Process Calculation',
       });
 }
 
@@ -1593,14 +1593,62 @@ function reviewSubmitDiagnosticContent(
     <Space direction='vertical' size={8} style={{ maxWidth: 460 }}>
       <DiagnosticRows
         fields={[
-          { label: 'task_id', value: task.id },
-          { label: 'submit_worker_job_id', value: task.submitWorkerJobId },
-          { label: 'root_job_id', value: task.rootJobId },
-          { label: 'gate_worker_job_id', value: task.gateWorkerJobId },
-          { label: 'review_submit_job_id', value: task.reviewSubmitJobId },
-          { label: 'gate_run_id', value: task.gateRunId },
-          { label: 'revision_checksum', value: task.datasetRevision?.revisionChecksum },
-          { label: 'progress', value: task.progress },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.taskId',
+              defaultMessage: 'Task ID',
+            }),
+            value: task.id,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
+              defaultMessage: 'Submit worker job ID',
+            }),
+            value: task.submitWorkerJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
+              defaultMessage: 'Root job ID',
+            }),
+            value: task.rootJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId',
+              defaultMessage: 'Gate worker job ID',
+            }),
+            value: task.gateWorkerJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId',
+              defaultMessage: 'Review submission job ID',
+            }),
+            value: task.reviewSubmitJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.gateRunId',
+              defaultMessage: 'Gate run ID',
+            }),
+            value: task.gateRunId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.revisionChecksum',
+              defaultMessage: 'Revision checksum',
+            }),
+            value: task.datasetRevision?.revisionChecksum,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.progress',
+              defaultMessage: 'Progress',
+            }),
+            value: task.progress,
+          },
         ]}
       />
       {reviewSubmitDiagnosticsContent(task, intl)}

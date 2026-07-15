@@ -25,7 +25,7 @@ jest.mock('@/services/general/api', () => ({
   getAISuggestion: jest.fn(),
 }));
 
-jest.mock('@tiangong-lca/tidas-sdk', () => ({
+jest.mock('@tiangong-lca/tidas-sdk/core', () => ({
   createProcess: jest.fn(() => ({
     processDataSet: {},
     toJSONString: jest.fn(() => '{}'),
@@ -37,12 +37,15 @@ jest.mock('@tiangong-lca/tidas-sdk', () => ({
 }));
 
 jest.mock('umi', () => ({
-  FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
-    <span>{defaultMessage || id}</span>
+  FormattedMessage: ({ id, values }: { id: string; values?: Record<string, unknown> }) => (
+    <span>
+      {id}
+      {values?.count === undefined ? '' : ` (${values.count})`}
+    </span>
   ),
   useIntl: () => ({
-    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
-      defaultMessage || id,
+    formatMessage: ({ id }: { id: string }, values?: Record<string, string | number>) =>
+      `${id}${values ? ` ${Object.values(values).join(' ')}` : ''}`,
     locale: 'en',
   }),
 }));

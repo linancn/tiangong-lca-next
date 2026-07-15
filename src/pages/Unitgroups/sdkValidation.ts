@@ -144,7 +144,7 @@ export const buildUnitgroupUnitsValidationDetails = (units: any): ValidationIssu
     return [];
   }
 
-  const message = 'Unit needs to have exactly one quantitative reference open';
+  const message = 'Exactly one unit must be designated as the quantitative reference.';
   const details: ValidationIssueSdkDetail[] = [
     {
       fieldKey: 'units',

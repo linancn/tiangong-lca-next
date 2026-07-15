@@ -8,9 +8,8 @@ export default {
   'pages.flowproperty.drawer.title.createVersion': '创建版本',
   'pages.flowproperty.drawer.title.copy': '复制流属性',
   'pages.flowproperty.drawer.title.select': '选择流属性',
-  'pages.flowproperty.editsuccess': '流属性编辑成功',
+  'pages.flowproperty.editsuccess': '流属性更新成功。',
 
-  'pages.flowproperty.generalComment': '数据集一般性说明',
   'pages.FlowProperties.view.flowPropertiesInformation': '流属性信息',
   'pages.FlowProperties.view.modellingAndValidation': '建模和验证',
   'pages.FlowProperties.view.administrativeInformation': '管理信息',
@@ -41,8 +40,7 @@ export default {
   'pages.FlowProperties.view.type': '类型',
   'pages.FlowProperties.view.uri': '统一资源标识符',
   'pages.FlowProperties.view.shortDescription': '简述',
-  'pages.flowproperties.deleteMessage.areyousureyouwanttodeletethisdata?': '您确定要删除此数据吗？',
-  'pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference': '量值参考',
+  'pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference': '定量参考',
 
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.fullyCompliant': '完全符合',
   'pages.FlowProperties.view.modellingAndValidation.approvalOfOverallCompliance.notCompliant': '不符合',

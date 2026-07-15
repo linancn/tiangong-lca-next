@@ -22,7 +22,11 @@ jest.mock('@/services/reviews/api', () => ({
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, string>) =>
+      Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.replace(`{${key}}`, value),
+        defaultMessage ?? id,
+      ),
   }),
 }));
 
@@ -249,7 +253,13 @@ describe('ReviewDetail component', () => {
       await mockLastRequest?.({});
     });
 
-    expect(mockLastColumns[2].render(undefined, { action: 'custom-action' })).toBe('custom-action');
+    expect(mockLastColumns[2].render(undefined, { action: 'submit_review' })).toBe('Submit Review');
+    expect(mockLastColumns[2].render(undefined, { action: 'custom-action' })).toBe(
+      'Unknown review action (custom-action)',
+    );
+    expect(mockLastColumns[2].render(undefined, { action: '   ' })).toBe(
+      'Unknown review action (-)',
+    );
   });
 
   it('closes the drawer when the close button is clicked', () => {

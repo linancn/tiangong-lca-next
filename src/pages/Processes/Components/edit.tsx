@@ -31,6 +31,7 @@ import {
   updateRefsData,
 } from '@/pages/Utils/updateReference';
 import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getFlowDetail } from '@/services/flows/api';
 import { genFlowFromData, genFlowNameJson } from '@/services/flows/util';
 import { hasLangNormalizationDraftChanges } from '@/services/general/api';
@@ -461,7 +462,7 @@ type Props = {
   id: string;
   version: string;
   lang: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text' | 'tool' | 'toolIcon' | 'toolResultIcon';
   actionRef: React.MutableRefObject<ActionType | undefined> | undefined;
   setViewDrawerVisible: React.Dispatch<React.SetStateAction<boolean>>;
   disabled?: boolean;
@@ -649,9 +650,18 @@ const ProcessEdit: FC<Props> = ({
 
       if (!guidance) {
         return {
-          title: code,
-          description: reasonMessage,
-          action: undefined,
+          title: intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.fallback.title',
+            defaultMessage: 'Review submission did not complete',
+          }),
+          description: intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.fallback.description',
+            defaultMessage: 'The current data could not complete the pre-review check.',
+          }),
+          action: intl.formatMessage({
+            id: 'pages.process.reviewSubmitTaskCenter.fallback.action',
+            defaultMessage: 'Save the data and retry. If it still fails, contact an administrator.',
+          }),
           diagnostic: `${code}: ${reasonMessage}`,
         };
       }
@@ -1036,13 +1046,14 @@ const ProcessEdit: FC<Props> = ({
     if (allocatedFractionTotal.isGreaterThan(100)) {
       if (!silent) {
         message.error(
-          intl.formatMessage({
-            id: 'pages.process.validator.allocatedFraction',
-            defaultMessage: 'Allocated fraction total of output is greater than 100%. It is',
-          }) +
-            ' ' +
-            allocatedFractionTotal.toString() +
-            '%.',
+          intl.formatMessage(
+            {
+              id: 'pages.process.validator.allocatedFraction',
+              defaultMessage:
+                'The total allocated fraction for outputs cannot exceed 100%. Current total: {total}%.',
+            },
+            { total: allocatedFractionTotal.toString() },
+          ),
         );
       }
       setSpinning(false);
@@ -1077,7 +1088,7 @@ const ProcessEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.save.success',
-            defaultMessage: 'Save successfully!',
+            defaultMessage: 'Saved successfully!',
           }),
         );
       }
@@ -1308,7 +1319,7 @@ const ProcessEdit: FC<Props> = ({
       currentDatasetValid = false;
       datasetValidationMessage = intl.formatMessage({
         id: 'pages.process.validator.exchanges.quantitativeReference.required',
-        defaultMessage: 'The following data must have exactly one item designated as the reference',
+        defaultMessage: 'Select exactly one item as the quantitative reference.',
       });
       if (!errTabNames.includes('exchanges')) {
         errTabNames.push('exchanges');
@@ -1385,7 +1396,7 @@ const ProcessEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
+            defaultMessage: 'Data validation passed.',
           }),
         );
       }
@@ -1395,24 +1406,19 @@ const ProcessEdit: FC<Props> = ({
 
     let validationHint = intl.formatMessage({
       id: 'pages.button.check.error',
-      defaultMessage: 'Data check failed!',
+      defaultMessage: 'Data check failed, please check the data!',
     });
     if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'exchanges') {
       validationHint = datasetValidationMessage;
     } else if (errTabNames.length > 0) {
       validationHint =
         errTabNames
-          .map((tab: string) =>
-            intl.formatMessage({
-              id: `pages.process.view.${tab}`,
-              defaultMessage: tab,
-            }),
-          )
+          .map((tab: string) => formatDatasetTabLabel(intl, 'process data set', tab))
           .join('，') +
         '：' +
         intl.formatMessage({
           id: 'pages.button.check.error',
-          defaultMessage: 'Data check failed!',
+          defaultMessage: 'Data check failed, please check the data!',
         });
     }
 
@@ -1886,7 +1892,7 @@ const ProcessEdit: FC<Props> = ({
             title={
               <FormattedMessage
                 id='pages.button.model.process'
-                defaultMessage='Process infomation'
+                defaultMessage='Process information'
               ></FormattedMessage>
             }
             placement='left'
@@ -1903,7 +1909,7 @@ const ProcessEdit: FC<Props> = ({
         ) : buttonType === 'toolResultIcon' ? (
           <Tooltip
             title={
-              <FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />
+              <FormattedMessage id='pages.button.model.result' defaultMessage='Model Results' />
             }
             placement='left'
           >
@@ -1919,7 +1925,7 @@ const ProcessEdit: FC<Props> = ({
         ) : buttonType === 'tool' ? (
           <Tooltip
             title={
-              <FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />
+              <FormattedMessage id='pages.button.model.result' defaultMessage='Model Results' />
             }
             placement='left'
           >

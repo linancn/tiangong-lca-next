@@ -78,7 +78,7 @@ const ProcessDelete: FC<Props> = ({
               confirmLoading={isDeleting}
             >
               <FormattedMessage
-                id='pages.button.deleteMessage.areyousureyouwanttodeletethisdata'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>
@@ -96,7 +96,7 @@ const ProcessDelete: FC<Props> = ({
               confirmLoading={isDeleting}
             >
               <FormattedMessage
-                id='pages.button.deleteMessage'
+                id='pages.button.delete.confirm'
                 defaultMessage='Are you sure you want to delete this data?'
               />
             </Modal>

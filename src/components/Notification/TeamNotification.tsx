@@ -119,31 +119,37 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
 
   const columns: ColumnsType<TeamNotificationItem> = [
     {
-      title: intl.formatMessage({ id: 'teams.members.memberName', defaultMessage: 'Team Name' }),
+      title: intl.formatMessage({
+        id: 'teams.notifications.teamName',
+        defaultMessage: 'Team Name',
+      }),
       dataIndex: 'teamTitle',
       key: 'teamTitle',
     },
     {
-      title: intl.formatMessage({ id: 'teams.members.role', defaultMessage: 'Status' }),
+      title: intl.formatMessage({ id: 'teams.notifications.status', defaultMessage: 'Status' }),
       dataIndex: 'role',
       key: 'role',
       render: (role: string) => {
         const statusMap = {
           empty: {
             color: 'gray',
-            text: intl.formatMessage({ id: 'teams.members.role.empty', defaultMessage: 'Empty' }),
+            text: intl.formatMessage({
+              id: 'teams.members.role.empty',
+              defaultMessage: 'No information',
+            }),
           },
           is_invited: {
             color: token.orange,
             text: intl.formatMessage({
-              id: 'teams.members.role.invited',
+              id: 'teams.notifications.status.pending',
               defaultMessage: 'Pending',
             }),
           },
           member: {
             color: token.green,
             text: intl.formatMessage({
-              id: 'teams.members.role.member',
+              id: 'teams.notifications.status.accepted',
               defaultMessage: 'Accepted',
             }),
           },

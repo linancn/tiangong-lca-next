@@ -425,7 +425,7 @@ describe('Contacts workflow', () => {
     );
 
     await waitFor(() =>
-      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Save successfully!'),
+      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved successfully!'),
     );
     await waitFor(() => expect(mockGetContactTableAll).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(screen.getByText('Updated Contact')).toBeInTheDocument());

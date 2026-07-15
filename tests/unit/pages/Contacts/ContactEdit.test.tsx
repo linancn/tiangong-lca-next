@@ -50,7 +50,14 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
     locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+      const message = defaultMessage ?? id;
+      if (!values) return message;
+      return Object.entries(values).reduce(
+        (result, [key, value]) => result.split(`{${key}}`).join(String(value)),
+        message,
+      );
+    },
   }),
 }));
 
@@ -585,7 +592,7 @@ describe('ContactEdit component', () => {
     );
 
     await waitFor(() =>
-      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Save successfully!'),
+      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved successfully!'),
     );
     expect(actionRef.current.reload).toHaveBeenCalledTimes(1);
     expect(setViewDrawerVisible).toHaveBeenCalledWith(false);
@@ -890,7 +897,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() => {
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Referenced data {id}({version}) must be open data.',
+        'Referenced data source-123(01.00.000) must be open data.',
       );
     });
     expect(mockPublishDatasetApi).not.toHaveBeenCalled();
@@ -1075,7 +1082,7 @@ describe('ContactEdit component', () => {
         nonExistent: false,
       }),
     );
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Save successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved successfully!');
   });
 
   it('shows the backend error message when saving fails for another reason', async () => {
@@ -1218,7 +1225,7 @@ describe('ContactEdit component', () => {
     await waitFor(() => expect(mockUpdateContact).toHaveBeenCalled());
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
     expect(mockGenContactJsonOrdered).toHaveBeenCalled();
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('contact-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'Edit Contact' })).toBeInTheDocument();
   });
@@ -1284,7 +1291,7 @@ describe('ContactEdit component', () => {
       true,
       false,
     );
-    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('shows contact data-check errors when references or schema issues remain', async () => {
@@ -1322,7 +1329,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed!'),
+        expect.stringContaining('Data check failed, please check the data!'),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -1365,7 +1372,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'contactInformation，administrativeInformation，modellingAndValidation：Data check failed!',
+        'Contact information，Administrative information，Unknown section (modellingAndValidation)：Data check failed, please check the data!',
       ),
     );
   });
@@ -1392,7 +1399,9 @@ describe('ContactEdit component', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(getMockAntdMessage().error).toHaveBeenCalledWith('Data check failed!'),
+      expect(getMockAntdMessage().error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
     );
   });
 
@@ -1432,7 +1441,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() => expect(getMockAntdMessage().error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
-    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(getMockAntdMessage().success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('requires rule verification before syncing to open data', async () => {
@@ -1701,7 +1710,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Contact reference {id}({version}) must match the current contact ID and version.',
+        'Contact reference contact-999(99.00.000) must match the current contact ID and version.',
       ),
     );
     expect(mockPublishDatasetApi).not.toHaveBeenCalled();

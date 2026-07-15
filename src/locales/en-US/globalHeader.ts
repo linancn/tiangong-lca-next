@@ -7,7 +7,7 @@ export default {
   'component.globalHeader.notification': 'Notification',
   'component.globalHeader.notification.empty': 'You have viewed all notifications.',
   'component.globalHeader.message': 'Message',
-  'component.globalHeader.message.empty': 'You have viewed all messsages.',
+  'component.globalHeader.message.empty': 'You have viewed all messages.',
   'component.globalHeader.event': 'Event',
   'component.globalHeader.event.empty': 'You have viewed all events.',
   'component.noticeIcon.clear': 'Clear',
@@ -40,7 +40,7 @@ export default {
   'pages.review.table.userName': 'User',
   'pages.review.table.type': 'Type',
   'pages.review.table.status': 'Status',
-  'pages.review.table.modifiedAt': 'Time',
+  'pages.review.table.modifiedAt': 'Modified at',
   'pages.review.table.actions': 'Actions',
   'pages.review.table.view': 'View',
 };

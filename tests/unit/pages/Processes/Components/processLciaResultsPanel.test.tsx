@@ -27,7 +27,7 @@ jest.mock('umi', () => ({
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
       const template = defaultMessage ?? id;
       return Object.entries(values ?? {}).reduce(
-        (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+        (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
         template,
       );
     },

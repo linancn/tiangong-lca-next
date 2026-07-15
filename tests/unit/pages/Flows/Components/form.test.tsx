@@ -29,7 +29,14 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    formatMessage: ({ defaultMessage, id }: any) => {
+      const messages: Record<string, string> = {
+        'pages.validationIssues.sdkDetail.suggestedFix.flow_properties_required':
+          'Please select flow properties',
+      };
+
+      return messages[id] ?? defaultMessage ?? id;
+    },
   }),
 }));
 

@@ -100,16 +100,13 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
       {buttonType === 'icon' ? (
         <Tooltip
           title={
-            <FormattedMessage
-              id={
-                actionType === 'copy'
-                  ? 'pages.button.copy'
-                  : actionType === 'createVersion'
-                    ? 'pages.button.createVersion'
-                    : 'pages.button.create'
-              }
-              defaultMessage='Create'
-            />
+            actionType === 'copy' ? (
+              <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
+            ) : actionType === 'createVersion' ? (
+              <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+            ) : (
+              <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+            )
           }
         >
           {actionType === 'copy' ? (
@@ -130,16 +127,19 @@ const LifeCycleModelCreate: FC<CreateProps> = ({
       <Drawer
         getContainer={() => document.body}
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.flow.model.drawer.title.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.flow.model.drawer.title.createVersion'
-                  : 'pages.lifeCycleModel.drawer.title.create'
-            }
-            defaultMessage='Create Model'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.flow.model.drawer.title.copy' defaultMessage='Copy Model' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage
+              id='pages.flow.model.drawer.title.createVersion'
+              defaultMessage='Create Version'
+            />
+          ) : (
+            <FormattedMessage
+              id='pages.lifeCycleModel.drawer.title.create'
+              defaultMessage='Create Model'
+            />
+          )
         }
         width='100%'
         closable={false}

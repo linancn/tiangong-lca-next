@@ -32,7 +32,7 @@ const LIFECYCLEMODEL_FIELD_LABELS_BY_KEY: Record<string, string> = {
   baseName: 'Base name',
   functionalUnitFlowProperties: 'Quantitative product or process properties',
   mixAndLocationTypes: 'Mix and location types',
-  referenceToDiagram: 'Life cycle model diagramm(s) or screenshot(s)',
+  referenceToDiagram: 'Life cycle model diagram(s) or screenshot(s)',
   referenceToExternalDocumentation: 'Data set report, background info',
   showValue: 'Classification',
   treatmentStandardsRoutes: 'Treatment, standards, routes',

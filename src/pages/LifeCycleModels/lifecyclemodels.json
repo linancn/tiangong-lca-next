@@ -54,7 +54,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -74,12 +74,12 @@
               {
                 "required": true,
                 "messageKey": "pages.lifecyclemodel.validator.treatmentStandardsRoutes.required",
-                "defaultMessage": "Please input treatment,standards,routes"
+                "defaultMessage": "Please enter the treatment, standards, or routes."
               },
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -104,7 +104,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -124,7 +124,7 @@
               {
                 "warningOnly": true,
                 "messageKey": "validator.recommended.empty",
-                "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+                "defaultMessage": "Recommended: complete this field to improve data detail and usability."
               },
               {
                 "max": 500,
@@ -344,7 +344,7 @@
                 {
                   "required": true,
                   "messageKey": "pages.lifecyclemodel.validator.referenceToNameOfReviewerAndInstitution.required",
-                  "defaultMessage": "Please input data set report, background info"
+                  "defaultMessage": "Please select a reviewer and institution."
                 }
               ]
             },
@@ -553,7 +553,7 @@
               {
                 "required": true,
                 "messageKey": "pages.lifecyclemodel.validator.referenceToPersonOrEntityEnteringTheData.required",
-                "defaultMessage": "Please input data enter by"
+                "defaultMessage": "Please select the person or entity entering the data."
               }
             ]
           },

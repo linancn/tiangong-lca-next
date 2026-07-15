@@ -345,7 +345,7 @@ describe('Login page', () => {
   it('renders the forgot-password link as an Umi app route', () => {
     render(<LoginPage />);
 
-    expect(screen.getByText('Forgot password').closest('a')).toHaveAttribute(
+    expect(screen.getByText('Forgot password?').closest('a')).toHaveAttribute(
       'data-umi-to',
       '/user/login/password_forgot',
     );
@@ -354,7 +354,7 @@ describe('Login page', () => {
   it('submits the register flow and shows a success toast', async () => {
     render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
 
     await waitFor(() => {
@@ -368,7 +368,7 @@ describe('Login page', () => {
       expect(mockMessageApi.open).toHaveBeenCalledWith({
         type: 'success',
         content:
-          'The email has been sent successfully. Please check your inbox and follow the link to complete the process.',
+          'Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.',
         duration: 10,
       });
     });
@@ -379,13 +379,13 @@ describe('Login page', () => {
 
     render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
 
     await waitFor(() => {
       expect(mockMessageApi.open).toHaveBeenCalledWith({
         type: 'error',
-        content: 'This email has already been registered. Try Login or Forgot Password?',
+        content: 'This email is already registered. Try Login, or Forgot Password?',
         duration: 10,
       });
     });
@@ -397,7 +397,7 @@ describe('Login page', () => {
 
     render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Validation email failed to send.');
@@ -451,7 +451,7 @@ describe('Login page', () => {
   it('renders weak, medium, and strong password strength states in register mode', () => {
     render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
 
     const passwordField = mockPasswordFields.password;
 
@@ -467,7 +467,7 @@ describe('Login page', () => {
   it('validates confirm password by allowing empty or matching values and rejecting mismatches', async () => {
     render(<LoginPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
 
     const confirmPasswordField = mockPasswordFields.confirmPassword;
     const validatorFactory = confirmPasswordField.rules[1];

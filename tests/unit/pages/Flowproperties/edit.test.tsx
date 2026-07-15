@@ -22,7 +22,10 @@ const toText = (node: any): string => {
 
 const mockIntl = {
   locale: 'en-US',
-  formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  formatMessage: ({ defaultMessage, id }: any, values: Record<string, unknown> = {}) =>
+    String(defaultMessage ?? id).replace(/\{(\w+)\}/g, (placeholder, key) =>
+      values[key] === undefined ? placeholder : String(values[key]),
+    ),
 };
 let latestRefsDrawerProps: any = null;
 let latestFlowpropertyFormProps: any = null;
@@ -588,7 +591,7 @@ describe('FlowpropertiesEdit', () => {
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
     expect(screen.getByText('rules-visible')).toBeInTheDocument();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('opens the refs drawer and lets the user update or keep versions', async () => {
@@ -690,7 +693,7 @@ describe('FlowpropertiesEdit', () => {
     await waitFor(() => expect(mockUpdateFlowproperties).toHaveBeenCalled());
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
     expect(mockGenFlowpropertyJsonOrdered).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
     expect(actionRef.current.reload).not.toHaveBeenCalled();
     expect(screen.getByText('rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: /edit flow property/i })).toBeInTheDocument();
@@ -731,7 +734,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed!'),
+        'Administrative information，Modelling and validation：Data check failed, please check the data!',
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -755,7 +758,7 @@ describe('FlowpropertiesEdit', () => {
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('adds unique error tab names for unverified references', async () => {
@@ -777,7 +780,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'administrativeInformation：Data check failed!',
+        'Administrative information：Data check failed, please check the data!',
       ),
     );
   });
@@ -803,7 +806,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'modellingAndValidation：Data check failed!',
+        'Modelling and validation：Data check failed, please check the data!',
       ),
     );
   });
@@ -822,7 +825,11 @@ describe('FlowpropertiesEdit', () => {
     await screen.findByLabelText(/flow property name/i);
     await userEvent.click(screen.getByRole('button', { name: /data check/i }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
+    );
   });
 
   it('closes the refs drawer and main drawer from cancel and onClose actions', async () => {
