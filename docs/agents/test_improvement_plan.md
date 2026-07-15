@@ -21,7 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
+lastReviewedNote: 'Reviewed Issue #601 German context and human-review gates; they extend localization proof without reopening the Jest coverage strategy.'
 ---
 
 # Testing Strategy
@@ -36,6 +37,7 @@ lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
+- localization quality should combine deterministic topology/context/hash gates with independent language and domain review; do not force natural-language approval into Jest or claim that an automated audit proves fluency
 
 ## Operating Principles
 

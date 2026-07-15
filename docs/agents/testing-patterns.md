@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-15
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Reviewed canonical locale parity, placeholder, runtime-message inventory, and non-automatable language-review boundaries for Issue #600.'
+lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
+lastReviewedNote: 'Added context-ledger, pilot, hash-pinned review, and reserved-key blocking patterns for the Issue #601 German workflow.'
 ---
 
 # Testing Patterns Reference
@@ -93,6 +93,9 @@ Special cases:
 3. audit production literal message IDs and enumerate the exact members of each computed-ID family
 4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
 5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
+6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a named reviewer, concrete evidence, UI role, concept, and user consequence before translation
+7. approve a high-risk pilot before bulk translation, and pin every human approval to a stable context hash plus translation hash so source or target changes invalidate stale evidence
+8. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, or reviewers
 
 ## Focused Command Shapes
 

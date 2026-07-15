@@ -23,7 +23,8 @@ checkPaths:
   - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
+lastReviewedNote: 'Reviewed scoped German candidate and pilot gates for Issue #601; they do not change the live pre-push trigger policy while human review is intentionally pending.'
 ---
 
 # Pre-Push Gate Policy
@@ -55,6 +56,7 @@ It does not own:
 - the canonical proof bar
 - the current live hook behavior
 - the current CI implementation details
+- scoped preparation gates such as `i18n:de:pilot` and `i18n:de:audit`; their issue-local review workflow is documented under `docs/plans/i18n-de-DE/`
 
 ## Target Trigger Rules
 
@@ -74,6 +76,7 @@ It does not own:
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
+- review-only localization commands may remain explicit scoped gates until their human evidence is complete; adding such commands does not silently add them to `npm run prepush:gate`
 
 ## Short Rule Summary
 

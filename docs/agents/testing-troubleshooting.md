@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-15
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Reviewed deterministic locale-audit failure diagnosis and decision-led remediation for Issue #600.'
+lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
+lastReviewedNote: 'Added German context-ledger, pilot review-pack, hash staleness, and intentional human-review blocker diagnosis for Issue #601.'
 ---
 
 # Testing Troubleshooting
@@ -52,6 +52,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | one gate fails only while another heavy gate is running locally | shared `.umi-test` regeneration from concurrent commands | rerun `npm run test:ci` and `npm run prepush:gate` serially |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
+| German candidate audit reports `BLOCKED_CONTEXT` | a retained key has no current runtime evidence or its proposed annotation lacks a named reviewer and concrete evidence | inspect English, Chinese, all callsites/dynamic proof, neighboring UI, and the proposed annotation; obtain a real product/domain decision instead of guessing or suppressing the key |
+| German pilot audit reports missing product, native-German, or domain reviews | the candidate pack is structurally ready but required human evidence has not been recorded | use `pilot-review-pack.json`, assign qualified independent reviewers, record hash-pinned decisions in `review-log.yaml`, and rerun `npm run i18n:de:pilot`; do not substitute an AI approval |
+| German context ledger or pilot review pack is stale | canonical source, context artifacts, review log, or candidate copy changed after generation | run `npm run i18n:de:audit:write` first and `npm run i18n:de:pilot:write` second, then repeat any approvals whose pinned hash changed |
 
 ## Open-Handle Playbook
 

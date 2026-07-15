@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Updated the verified full-closure baseline after the canonical locale audit and runtime-message coverage work for Issue #600.'
+lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
+lastReviewedNote: 'Reviewed the Issue #601 German candidate and pilot gates; their open human-review evidence is a localization delivery blocker, not a reopened coverage queue.'
 ---
 
 # Testing Execution State
@@ -43,6 +43,7 @@ lastReviewedNote: 'Updated the verified full-closure baseline after the canonica
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
+- the staged German workflow adds report-mode context/pilot evidence plus final `i18n:de:pilot` and `i18n:de:audit` enforcement; these final commands intentionally remain red while qualified human reviews, reserved context, or leaf translations are incomplete and do not represent a coverage regression
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
