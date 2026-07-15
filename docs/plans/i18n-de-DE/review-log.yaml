@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "tiangong.i18n-de-review-log.v1",
+  "serialization": "JSON subset of YAML for dependency-free machine validation",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
+  "status": "blocked-awaiting-qualified-human-reviewers",
+  "roles": {
+    "productContextReviewer": {
+      "status": "required-not-assigned",
+      "identity": null,
+      "qualification": "Can confirm TianGong UI behavior, reserved-key purpose, permissions, destructive actions, and workflow state semantics."
+    },
+    "nativeGermanReviewer": {
+      "status": "required-not-assigned",
+      "identity": null,
+      "qualification": "Native German reviewer independent from the candidate translator."
+    },
+    "lcaTidasDomainReviewer": {
+      "status": "required-not-assigned",
+      "identity": null,
+      "qualification": "Can review German LCA, ILCD, TIDAS, validation, and solver terminology."
+    }
+  },
+  "independencePolicy": {
+    "candidateProducerMayReview": false,
+    "nativeReviewerMustDifferFromTranslator": true,
+    "domainReviewerMayAlsoBeNativeReviewer": true,
+    "productReviewerMayAlsoBeDomainReviewer": true
+  },
+  "pilot": {
+    "artifact": "docs/plans/i18n-de-DE/pilot.json",
+    "reviewPack": "docs/plans/i18n-de-DE/pilot-review-pack.json",
+    "candidateProducer": "Codex research synthesis",
+    "status": "candidate-ready-for-human-review",
+    "reviews": [],
+    "unresolvedFindings": []
+  },
+  "batches": [],
+  "releaseGate": {
+    "contextBlockedCount": 628,
+    "blockedTermCount": 2,
+    "nativeGermanReviewedCount": 0,
+    "nativeGermanRequiredCount": 2665,
+    "domainReviewedCount": 0,
+    "domainRequiredCount": null,
+    "unresolvedCritical": 0,
+    "unresolvedMajor": 0,
+    "staleContextApprovals": 0,
+    "staleTranslationApprovals": 0,
+    "decision": "BLOCKED",
+    "reason": "Qualified human reviewers are not assigned, the pilot is not approved, and reserved-key context remains unresolved."
+  }
+}

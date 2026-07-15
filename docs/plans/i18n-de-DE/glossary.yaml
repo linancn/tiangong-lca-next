@@ -1,0 +1,575 @@
+schemaVersion: 'tiangong.i18n-de-glossary.v1'
+issue: 'https://github.com/linancn/tiangong-lca-next/issues/601'
+
+localePolicy:
+  canonicalTag: 'de-DE'
+  displayName: 'Deutsch'
+  regionalVariants: false
+  vocabulary: 'region-neutral-standard-german'
+  orthography: 'de-DE'
+  addressForm: 'formal-Sie'
+  fallbackRule: 'Every de or de-* request resolves to the one de-DE bundle.'
+
+governance:
+  status: 'proposed-awaiting-human-approval'
+  sourcePriority:
+    - 'TianGong runtime context, canonical English, and Chinese disambiguation evidence'
+    - 'Approved project glossary decisions'
+    - 'TIDAS and ILCD concept definitions'
+    - 'German LCA authorities listed in evidence-sources.yaml'
+    - 'German orthography and UI style authorities listed in evidence-sources.yaml'
+  conflictRule: 'Mark BLOCKED_TERM; translators must not choose between conflicting sources.'
+  machineTranslationRule: 'Machine translation and LLM output may propose candidates but are never approval evidence.'
+  requiredHumanReviews:
+    nativeGerman: '100% of messages'
+    lcaTidasDomain: '100% of high-risk LCA/TIDAS messages'
+
+terms:
+  - termId: 'lca.assessment'
+    sourceEnglish: 'Life Cycle Assessment'
+    sourceChinese: ['生命周期评价']
+    germanPreferred: 'Ökobilanz'
+    abbreviation: 'LCA'
+    includeContexts: ['discipline, method, or completed assessment']
+    excludeContexts: ['life cycle model data-set type', 'impact assessment phase']
+    forbidden: ['Lebenszyklusbewertung']
+    evidenceRefs: ['uba-oekobilanz', 'din-iso-14040', 'din-iso-14044']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.life-cycle-model'
+    sourceEnglish: 'Life cycle model'
+    sourceChinese: ['生命周期模型']
+    germanPreferred: 'Lebenszyklusmodell'
+    includeContexts: ['TIDAS/ILCD model entity and its data set']
+    excludeContexts: ['generic model', 'completed life cycle assessment']
+    forbidden: ['Modell when the data-set type must remain explicit']
+    evidenceRefs: ['ilcd-life-cycle-model-format']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.process'
+    sourceEnglish: 'Process'
+    sourceChinese: ['过程']
+    germanPreferred: 'Prozess'
+    includeContexts: ['process entity or activity represented by inputs and outputs']
+    excludeContexts: ['generic workflow operation', 'process instance']
+    forbidden: []
+    evidenceRefs: ['oekobaudat-ilcd-fields', 'ilcd-process-format']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.process-data-set'
+    sourceEnglish: 'Process data set'
+    sourceChinese: ['过程数据集']
+    germanPreferred: 'Prozessdatensatz'
+    includeContexts: ['the persisted ILCD/TIDAS process record']
+    excludeContexts: ['process activity', 'process instance']
+    forbidden: ['Prozess-Daten when one data set is meant']
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.unit-process'
+    sourceEnglish: 'Unit process'
+    sourceChinese: ['单元过程']
+    germanPreferred: 'Prozessmodul'
+    includeContexts: ['ILCD process data-set type enumeration']
+    excludeContexts: ['unit group', 'generic process step']
+    forbidden: ['Einheitsprozess']
+    evidenceRefs: ['eurlex-environmental-footprint-2021']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.process-instance'
+    sourceEnglish: 'Process instance'
+    sourceChinese: ['过程实例']
+    germanPreferred: 'Prozessinstanz'
+    includeContexts: ['one occurrence of a process in a life cycle model']
+    excludeContexts: ['process data set']
+    forbidden: []
+    evidenceRefs: ['ilcd-life-cycle-model-format']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.flow'
+    sourceEnglish: 'Flow'
+    sourceChinese: ['流']
+    germanPreferred: 'Fluss'
+    includeContexts: ['ILCD/TIDAS flow entity']
+    excludeContexts: ['flow property', 'exchange', 'liquid throughput']
+    forbidden: ['Durchfluss', 'Strom as a universal translation']
+    evidenceRefs: ['oekobaudat-ilcd-fields', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.flow-data-set'
+    sourceEnglish: 'Flow data set'
+    sourceChinese: ['流数据集']
+    germanPreferred: 'Flussdatensatz'
+    includeContexts: ['the persisted ILCD/TIDAS flow record']
+    excludeContexts: ['flow property data set']
+    forbidden: ['Flusseigenschaftsdatensatz']
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.flow-property'
+    sourceEnglish: 'Flow property'
+    sourceChinese: ['流属性']
+    germanPreferred: 'Flusseigenschaft'
+    includeContexts: ['quantitative physical or technical property of a flow']
+    excludeContexts: ['generic object property', 'flow data set']
+    forbidden: ['Fluss Eigenschaft', 'Durchflusseigenschaft']
+    evidenceRefs: ['oekobaudat-ilcd-fields', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.flow-property-data-set'
+    sourceEnglish: 'Flow property data set'
+    sourceChinese: ['流属性数据集']
+    germanPreferred: 'Flusseigenschaftsdatensatz'
+    includeContexts: ['the persisted property definition record']
+    excludeContexts: ['flow data set']
+    forbidden: ['Flussdatensatz']
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.unit-group'
+    sourceEnglish: 'Unit group'
+    sourceChinese: ['单位组']
+    germanPreferred: 'Einheitengruppe'
+    includeContexts: ['group of mutually convertible units']
+    excludeContexts: ['one unit', 'unit process']
+    forbidden: []
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.unit-group-data-set'
+    sourceEnglish: 'Unit group data set'
+    sourceChinese: ['单位组数据集']
+    germanPreferred: 'Einheitengruppendatensatz'
+    includeContexts: ['persisted unit-group record']
+    excludeContexts: ['one unit']
+    forbidden: []
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.exchange'
+    sourceEnglish: 'Exchange'
+    sourceChinese: ['交换']
+    germanPreferred: 'Austausch'
+    uiAlternatives: ['Input/Output', 'Inputs und Outputs']
+    includeContexts: ['one process input or output relation']
+    excludeContexts: ['generic data exchange', 'flow entity']
+    forbidden: ['Wechsel as a process-exchange noun']
+    evidenceRefs: ['openlca-german-messages', 'ilcd-process-format']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.product-flow'
+    sourceEnglish: 'Product flow'
+    sourceChinese: ['产品流']
+    germanPreferred: 'Produktfluss'
+    includeContexts: ['flow type']
+    excludeContexts: ['product entity']
+    forbidden: []
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.elementary-flow'
+    sourceEnglish: 'Elementary flow'
+    sourceChinese: ['基础流', '基本流']
+    germanPreferred: 'Elementarfluss'
+    includeContexts: ['flow crossing between technosphere and environment']
+    excludeContexts: ['reference flow', 'basic product flow']
+    forbidden: ['Basisfluss', 'Elementarfluß']
+    evidenceRefs: ['eurlex-environmental-footprint-2021', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.waste-flow'
+    sourceEnglish: 'Waste flow'
+    sourceChinese: ['废物流']
+    germanPreferred: 'Abfallfluss'
+    includeContexts: ['flow type']
+    excludeContexts: ['waste logistics stream']
+    forbidden: ['Abfallstrom unless domain review explicitly approves the context']
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.quantitative-reference'
+    sourceEnglish: 'Quantitative reference'
+    sourceChinese: ['定量基准', '定量参考']
+    germanPreferred: 'Quantitative Referenz'
+    includeContexts: ['ILCD enclosing reference designation for a flow property, unit, or exchange']
+    excludeContexts: ['reference flow', 'functional unit']
+    forbidden: ['Messreferenz', 'Referenzfluss']
+    evidenceRefs: ['oekobaudat-ilcd-fields', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.reference-flow'
+    sourceEnglish: 'Reference flow'
+    sourceChinese: ['参考流', '基准流']
+    germanPreferred: 'Referenzfluss'
+    includeContexts: ['output quantity required to fulfil the represented function']
+    excludeContexts: ['quantitative reference section', 'reference flow property']
+    forbidden: ['Basisfluss', 'Bezugsfluss', 'Referenzstrom']
+    evidenceRefs: ['eurlex-environmental-footprint-2021', 'oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.reference-flow-property'
+    sourceEnglish: 'Reference flow property'
+    sourceChinese: ['参考流属性']
+    germanPreferred: 'Referenzflusseigenschaft'
+    includeContexts: ['flow property selected to quantify the reference flow']
+    excludeContexts: ['reference flow itself']
+    forbidden: []
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.functional-unit'
+    sourceEnglish: 'Functional unit'
+    sourceChinese: ['功能单位']
+    germanPreferred: 'funktionelle Einheit'
+    includeContexts: ['quantified performance used as LCA reference']
+    excludeContexts: ['unit group', 'reference unit']
+    forbidden: ['funktionale Einheit']
+    evidenceRefs: ['uba-oekobilanz', 'eurlex-environmental-footprint-2021']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.lci'
+    sourceEnglish: 'Life cycle inventory / LCI'
+    sourceChinese: ['生命周期清单', '清单分析']
+    germanPreferred: 'Sachbilanz'
+    abbreviation: 'LCI'
+    includeContexts: ['inventory phase or results']
+    excludeContexts: ['impact assessment']
+    forbidden: ['Lebenszyklusinventar as the default UI term']
+    evidenceRefs: ['uba-oekobilanz', 'din-iso-14040']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.lcia'
+    sourceEnglish: 'Life cycle impact assessment / LCIA'
+    sourceChinese: ['生命周期影响评价']
+    germanPreferred: 'Wirkungsabschätzung'
+    abbreviation: 'LCIA'
+    includeContexts: ['impact assessment phase, method, or results']
+    excludeContexts: ['inventory analysis', 'generic impact']
+    forbidden: ['Einflussbewertung']
+    evidenceRefs: ['uba-oekobilanz', 'din-iso-14040']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.impact-category'
+    sourceEnglish: 'Impact category'
+    sourceChinese: ['影响类别']
+    germanPreferred: 'Wirkungskategorie'
+    includeContexts: ['LCIA category']
+    excludeContexts: ['generic issue category']
+    forbidden: ['Einflusskategorie']
+    evidenceRefs: ['eurlex-environmental-footprint-2021']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.characterization-factor'
+    sourceEnglish: 'Characterization factor'
+    sourceChinese: ['表征因子']
+    germanPreferred: 'Charakterisierungsfaktor'
+    includeContexts: ['LCIA factor mapping an elementary flow to an impact category']
+    excludeContexts: ['conversion factor', 'allocation factor']
+    forbidden: ['Wirkungsfaktor as the canonical term']
+    evidenceRefs: ['eurlex-environmental-footprint-2021', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.allocation'
+    sourceEnglish: 'Allocation'
+    sourceChinese: ['分配']
+    germanPreferred: 'Allokation'
+    includeContexts: ['partitioning process inputs and outputs among products']
+    excludeContexts: ['generic assignment', 'review assignment']
+    forbidden: ['Verteilung as a universal domain replacement']
+    evidenceRefs: ['eurlex-environmental-footprint-2021', 'openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.allocated-fraction'
+    sourceEnglish: 'Allocated fraction'
+    sourceChinese: ['分配比例']
+    germanPreferred: 'Allokationsanteil'
+    includeContexts: ['fraction assigned by allocation']
+    excludeContexts: ['generic percentage']
+    forbidden: []
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.system-boundary'
+    sourceEnglish: 'System boundary'
+    sourceChinese: ['系统边界']
+    germanPreferred: 'Systemgrenze'
+    includeContexts: ['included/excluded processes and flows in an LCA system']
+    excludeContexts: ['authorization boundary']
+    forbidden: []
+    evidenceRefs: ['uba-oekobilanz', 'din-iso-14044']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.cut-off-criteria'
+    sourceEnglish: 'Cut-off criteria'
+    sourceChinese: ['截断准则', '取舍准则']
+    germanPreferred: 'Abschneidekriterien'
+    includeContexts: ['criteria for excluding insignificant inputs, outputs, or processes']
+    excludeContexts: ['UI truncation']
+    forbidden: ['Cut-off-Kriterien as the canonical expanded label']
+    evidenceRefs: ['eurlex-environmental-footprint-2021']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.representativeness'
+    sourceEnglish: 'Representativeness'
+    sourceChinese: ['代表性']
+    germanPreferred: 'Repräsentativität'
+    includeContexts: ['data quality assessment dimension']
+    excludeContexts: ['legal representation']
+    forbidden: []
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.geographical-representativeness'
+    sourceEnglish: 'Geographical representativeness'
+    sourceChinese: ['地理代表性']
+    germanPreferred: 'geografische Repräsentativität'
+    includeContexts: ['data quality geography dimension']
+    excludeContexts: []
+    forbidden: ['geographische Repräsentativität in this project']
+    evidenceRefs: ['official-german-orthography-2024', 'oekobaudat-ilcd-fields']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.uncertainty-distribution'
+    sourceEnglish: 'Uncertainty distribution'
+    sourceChinese: ['不确定性分布']
+    germanPreferred: 'Unsicherheitsverteilung'
+    includeContexts: ['probability distribution representing value uncertainty']
+    excludeContexts: ['generic confidence statement']
+    forbidden: []
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.relative-standard-deviation'
+    sourceEnglish: 'Relative standard deviation'
+    sourceChinese: ['相对标准偏差']
+    germanPreferred: 'relative Standardabweichung'
+    includeContexts: ['statistical uncertainty field']
+    excludeContexts: []
+    forbidden: []
+    evidenceRefs: ['openlca-german-messages']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'lca.modelling'
+    sourceEnglish: 'Modelling'
+    sourceChinese: ['建模']
+    germanPreferred: 'Modellierung'
+    includeContexts: ['LCA model construction and assumptions']
+    excludeContexts: ['model entity when a noun is required']
+    forbidden: []
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'quality.validation'
+    sourceEnglish: 'Validation'
+    sourceChinese: ['验证', '校验']
+    germanPreferred: 'Validierung'
+    includeContexts: ['schema, format, or rule validation']
+    excludeContexts: ['workflow review', 'compliance declaration']
+    forbidden: ['Prüfung when a schema validator is meant']
+    evidenceRefs: ['tidas-local', 'tidas-sdk-local']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'quality.review'
+    sourceEnglish: 'Review'
+    sourceChinese: ['审核', '评审']
+    germanPreferred: 'Prüfung'
+    domainVariant: 'kritische Prüfung'
+    includeContexts: ['TianGong human review workflow or formal LCA review']
+    excludeContexts: ['automated validation']
+    forbidden: ['Review as an unexamined default loanword']
+    evidenceRefs: ['din-iso-14044']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'quality.reviewer'
+    sourceEnglish: 'Reviewer'
+    sourceChinese: ['审核人', '评审人']
+    germanPreferred: 'prüfende Person'
+    compactVariant: 'Prüfende'
+    includeContexts: ['person assigned to a review']
+    excludeContexts: ['automated validator']
+    forbidden: ['Gutachter unless the workflow owner approves that legal/professional role']
+    evidenceRefs: ['microsoft-german-style-guide']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'quality.compliance'
+    sourceEnglish: 'Compliance'
+    sourceChinese: ['合规性']
+    germanPreferred: 'Konformität'
+    includeContexts: ['conformance to a declared ILCD/TIDAS system or requirement']
+    excludeContexts: ['automated validation', 'human review']
+    forbidden: ['Regelkonformität when the formal ILCD term is intended']
+    evidenceRefs: ['ilcd-process-format', 'oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'data.source-data-set'
+    sourceEnglish: 'Source data set'
+    sourceChinese: ['来源数据集']
+    germanPreferred: 'Quelldatensatz'
+    includeContexts: ['TIDAS/ILCD source entity record']
+    excludeContexts: ['data source or origin used as evidence']
+    forbidden: ['Datenquelle']
+    evidenceRefs: ['ilcd-process-format']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'data.data-source'
+    sourceEnglish: 'Data source'
+    sourceChinese: ['数据来源']
+    germanPreferred: 'Datenquelle'
+    includeContexts: ['origin from which data or evidence was obtained']
+    excludeContexts: ['source data-set entity']
+    forbidden: ['Quelldatensatz']
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'data.data-set'
+    sourceEnglish: 'Data set'
+    sourceChinese: ['数据集', '数据']
+    germanPreferred: 'Datensatz'
+    includeContexts: ['one persisted LCA/TIDAS entity record']
+    excludeContexts: ['uncountable data in general']
+    forbidden: ['Daten when one entity is meant']
+    evidenceRefs: ['oekobaudat-ilcd-fields']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'data.open-data'
+    sourceEnglish: 'Open data'
+    sourceChinese: ['开放数据']
+    germanPreferred: 'offene Daten'
+    compactVariant: 'Open Data'
+    includeContexts: ['publicly reusable data scope']
+    excludeContexts: ['team public-display flag']
+    forbidden: ['öffentlich when reusability rather than visibility is meant']
+    evidenceRefs: ['product-context']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'tidas.package'
+    sourceEnglish: 'TIDAS package'
+    sourceChinese: ['TIDAS 数据包']
+    germanPreferred: 'TIDAS-Paket'
+    includeContexts: ['TIDAS import/export archive or task']
+    excludeContexts: ['generic software package']
+    forbidden: ['TIDAS Paket without hyphen']
+    evidenceRefs: ['tidas-local', 'tidas-sdk-local']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'tidas.root-record'
+    sourceEnglish: 'Root record'
+    sourceChinese: ['根记录']
+    germanPreferred: 'Ausgangsdatensatz'
+    alternatives: ['Startdatensatz', 'Wurzeleintrag']
+    includeContexts: ['user-selected starting record whose dependency closure is packaged']
+    excludeContexts: ['tree root UI node', 'database root account']
+    forbidden: ['Wurzel blindly applied without product confirmation']
+    evidenceRefs: ['tidas-local', 'product-context']
+    risk: 'critical'
+    decisionStatus: 'blocked-term'
+
+  - termId: 'tidas.result-set'
+    sourceEnglish: 'Result set'
+    sourceChinese: ['结果集']
+    germanPreferred: 'Ergebnisdatensatz'
+    alternatives: ['Ergebnismenge']
+    includeContexts: ['TIDAS product result collection only']
+    excludeContexts: ['database query results', 'LCIA results page']
+    forbidden: ['Ergebnissatz']
+    evidenceRefs: ['tidas-local', 'product-context']
+    risk: 'critical'
+    decisionStatus: 'blocked-term'
+
+  - termId: 'tidas.snapshot'
+    sourceEnglish: 'Snapshot'
+    sourceChinese: ['快照']
+    germanPreferred: 'Snapshot'
+    includeContexts: ['immutable calculation or task artifact']
+    excludeContexts: ['screen capture']
+    forbidden: []
+    evidenceRefs: ['product-context']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+  - termId: 'calculation.evidence'
+    sourceEnglish: 'Evidence'
+    sourceChinese: ['证据']
+    germanPreferred: 'Nachweis'
+    includeContexts: ['calculation evidence proving method/source coverage']
+    excludeContexts: ['legal evidence', 'generic hint']
+    forbidden: ['Evidenz as the default product term']
+    evidenceRefs: ['product-context']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
+  - termId: 'runtime.worker'
+    sourceEnglish: 'Worker'
+    sourceChinese: ['Worker', '工作节点']
+    germanPreferred: 'Worker'
+    includeContexts: ['named TianGong runtime component']
+    excludeContexts: ['human employee']
+    forbidden: ['Arbeiter']
+    evidenceRefs: ['product-context']
+    risk: 'high'
+    decisionStatus: 'proposed'
+
+uiActions:
+  create: 'Erstellen'
+  add: 'Hinzufügen'
+  edit: 'Bearbeiten'
+  view: 'Anzeigen'
+  select: 'Auswählen'
+  save: 'Speichern'
+  delete: 'Löschen'
+  remove: 'Entfernen'
+  copy: 'Kopieren'
+  refresh: 'Aktualisieren'
+  reset: 'Zurücksetzen'
+  clearSelection: 'Auswahl aufheben'
+  submitForReview: 'Zur Prüfung einreichen'
+  approveReview: 'Prüfung genehmigen'
+  rejectReview: 'Prüfung ablehnen'
+  assignReviewer: 'Prüfende Person zuweisen'
+  revokeAssignment: 'Zuweisung aufheben'
+  runCalculation: 'Berechnung starten'
+  runAnalysis: 'Analyse starten'
+  temporarySave: 'Zwischenspeichern'
+  contributeToTeam: 'Für das Team bereitstellen'

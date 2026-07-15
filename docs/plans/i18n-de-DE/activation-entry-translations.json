@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "tiangong.i18n-german-entry-translations.v1",
+  "locale": "de-DE",
+  "activationOwner": "src/locales/de-DE.ts",
+  "activationIssue": "https://github.com/linancn/tiangong-lca-next/issues/602",
+  "messages": {
+    "app.preview.down.block": "Diese Seite in Ihr lokales Projekt herunterladen",
+    "app.welcome.link.block-list": "Standardseiten schnell auf Basis von `block`-Bausteinen erstellen",
+    "app.welcome.link.fetch-blocks": "Alle Blöcke abrufen",
+    "layout.user.link.help": "Hilfe",
+    "layout.user.link.privacy": "Datenschutz",
+    "layout.user.link.terms": "Nutzungsbedingungen",
+    "navBar.lang": "Sprachen"
+  }
+}

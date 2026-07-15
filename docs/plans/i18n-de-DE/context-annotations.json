@@ -1,0 +1,164 @@
+{
+  "schemaVersion": "tiangong.i18n-german-context-annotations.v1",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
+  "policy": {
+    "default": "Every canonical key without a production callsite or reviewed dynamic family is BLOCKED_CONTEXT.",
+    "readyRule": "A reserved key becomes READY only after a named reviewer records its concept, UI role, user-visible consequence, rationale, and concrete evidence. English and Chinese text alone are not sufficient evidence.",
+    "reviewerIdentity": "reviewedBy must identify the accountable product or domain reviewer; an AI translator or generated heuristic is not approval."
+  },
+  "messages": [
+    {
+      "messageId": "pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Heading or field label for the quantitative-reference section of a flow-property data set.",
+      "uiRole": "field-label-or-heading",
+      "consequence": "Must name the ILCD quantitative-reference concept and must not imply a reference flow.",
+      "evidence": [
+        {
+          "kind": "canonical-source-pair",
+          "reference": "src/locales/en-US/pages_flowproperty.ts and src/locales/zh-CN/pages_flowproperty.ts",
+          "rationale": "Both source locales place the key in the flow-property information namespace."
+        }
+      ],
+      "rationale": "Prepared for pilot review; no current production callsite proves the exact control or heading role.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.import.conflict.records",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Plural count of user-owned records that conflict with records already present during TIDAS import.",
+      "uiRole": "summary-count",
+      "consequence": "Must describe a conflict and must not claim that records were imported, overwritten, or deleted.",
+      "evidence": [
+        {
+          "kind": "active-successor-callsite",
+          "reference": "src/components/ImportTidasPackage/index.tsx user_conflict_count summary and conflict report handling",
+          "rationale": "The active import surface exposes the same backend count and explains that existing user data conflicts with incoming records."
+        }
+      ],
+      "rationale": "The retained key appears to be compatibility copy for an older count presentation; product review must confirm whether it may return.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.import.filtered.records",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Plural count of open-data records skipped automatically during TIDAS import.",
+      "uiRole": "summary-count",
+      "consequence": "Must say skipped and must not imply that open-data records were deleted or imported into the user's data space.",
+      "evidence": [
+        {
+          "kind": "active-successor-callsite",
+          "reference": "src/components/ImportTidasPackage/index.tsx filtered_open_data_count summary and report guidance",
+          "rationale": "The active surface states that these records are recognized as open data and skipped without being imported."
+        }
+      ],
+      "rationale": "The retained key appears to be compatibility copy for an older plural count; product review must confirm the UI role.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.import.validation.issue.classificationHierarchyError",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Validation issue type for an invalid classification hierarchy in an imported TIDAS package.",
+      "uiRole": "validation-issue-label",
+      "consequence": "Must identify classification hierarchy rather than a generic category error.",
+      "evidence": [
+        {
+          "kind": "canonical-source-pair-and-active-report-model",
+          "reference": "src/locales/*/component_tidasPackage.ts and src/components/ImportTidasPackage/index.tsx validation_issues report",
+          "rationale": "The source pair names the issue class and the active report model confirms that validation issue types are displayed from import results."
+        }
+      ],
+      "rationale": "No literal production reference currently selects this retained issue label; backend mapping must be confirmed.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Validation issue type for disagreement between a localized data text and its declared content-language tag.",
+      "uiRole": "validation-issue-label",
+      "consequence": "Must not be interpreted as a mismatch between the application UI locale and the user's browser locale.",
+      "evidence": [
+        {
+          "kind": "canonical-source-pair-and-tidas-validation-domain",
+          "reference": "src/locales/*/component_tidasPackage.ts; tiangong-lca/tidas-sdk validation semantics",
+          "rationale": "The English and Chinese pair both identify localized data text and its language marker."
+        }
+      ],
+      "rationale": "No current production callsite proves the backend issue-code mapping, so product/TIDAS review remains required.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.import.validation.issue.schemaError",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Validation issue type for imported data that does not conform to the expected TIDAS schema.",
+      "uiRole": "validation-issue-label",
+      "consequence": "Must identify structural schema non-conformance and must not imply a form-layout or network error.",
+      "evidence": [
+        {
+          "kind": "canonical-source-pair-and-active-report-model",
+          "reference": "src/locales/*/component_tidasPackage.ts and src/components/ImportTidasPackage/index.tsx validation_issues report",
+          "rationale": "The source pair defines schema mismatch and the active import report displays validation issue categories."
+        }
+      ],
+      "rationale": "No literal production reference currently maps this compatibility key to a report code.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "component.tidasPackage.taskCenter.rootCountSummary",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Plural summary of root records selected as starting points for a TIDAS package task.",
+      "uiRole": "summary-count",
+      "consequence": "Must preserve the task's dependency-root meaning and must not describe database root users or tree UI nodes.",
+      "evidence": [
+        {
+          "kind": "active-successor-callsite",
+          "reference": "src/components/LcaTaskCenter/index.tsx component.tidasPackage.taskCenter.detail.rootCount and task.rootCount",
+          "rationale": "The active detail row confirms that rootCount belongs to a package task, while the retained plural summary is not currently rendered."
+        }
+      ],
+      "rationale": "The product term for root record remains BLOCKED_TERM and the exact summary placement is not active.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "pages.flow.validator.flowProperties.quantitativeReference.required",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Validation rule requiring exactly one flow property to be designated as the quantitative reference.",
+      "uiRole": "validation-feedback",
+      "consequence": "Must preserve the exactly-one cardinality and identify a flow property, not a flow or generic item.",
+      "evidence": [
+        {
+          "kind": "commented-historical-callsite",
+          "reference": "src/pages/Flows/Components/create.tsx commented formatMessage descriptor",
+          "rationale": "The historical descriptor supports the intended create-flow validation role but is not current runtime evidence."
+        }
+      ],
+      "rationale": "Current validation behavior and the reason for retaining this inactive key require product/LCA confirmation.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    },
+    {
+      "messageId": "pages.unitgroups.validator.unit.quantitativeReference.required",
+      "status": "BLOCKED_CONTEXT",
+      "concept": "Validation rule requiring exactly one unit in a unit group to be designated as the quantitative reference.",
+      "uiRole": "validation-feedback",
+      "consequence": "Must preserve the exactly-one cardinality and identify a unit without silently substituting the potentially distinct concept reference unit.",
+      "evidence": [
+        {
+          "kind": "canonical-source-pair-and-module-neighborhood",
+          "reference": "src/locales/*/pages_unitgroup.ts quantitative-reference validation keys",
+          "rationale": "The source pair and neighboring unit-group validation copy establish the intended object and constraint family."
+        }
+      ],
+      "rationale": "No current production callsite proves that this compatibility validation message remains reachable.",
+      "reviewedBy": null,
+      "reviewedAt": null
+    }
+  ]
+}
