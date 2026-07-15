@@ -8,7 +8,8 @@
     "activationEntryKeyCount": 7,
     "canonicalKeyCount": 2665,
     "ownerRule": "Each leaf file has exactly one owner lane; lanes have no file overlap.",
-    "translationRule": "A key may enter a batch only when contextStatus permits translation and applicable glossary decisions are not blocked.",
+    "translationRule": "A key may enter a runtime-bound batch only when contextStatus permits translation and applicable glossary decisions are not blocked. Research candidates may exist outside runtime locale modules but never satisfy this rule.",
+    "evidenceRule": "Every translated key records its laneId as batchId, named producer, contextHash, and translationHash in review-log.yaml; independent human approvals pin the same hashes.",
     "reviewSliceRule": "Large owner lanes are reviewed in 200–350 key semantic slices even when one source file cannot be split between writers.",
     "activationRule": "The seven $entry keys remain staged for Issue #602 and never justify a top-level de-DE.ts in Issue #601."
   },

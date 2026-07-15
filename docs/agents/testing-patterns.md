@@ -23,7 +23,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-15
 lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Added context-ledger, pilot, hash-pinned review, and reserved-key blocking patterns for the Issue #601 German workflow.'
+lastReviewedNote: 'Reviewed context-ledger, ICU-branch, canonical-actor, GitHub-attestation, three-hash pilot, and full-catalog review patterns for the Issue #601 German workflow.'
 ---
 
 # Testing Patterns Reference
@@ -89,12 +89,12 @@ Special cases:
 ## Localization Pattern
 
 1. prove leaf-file topology and canonical key parity across every supported locale
-2. compare placeholder names and occurrence counts rather than translated word order
+2. compare placeholder names, occurrence counts, plural/select selectors, offsets, nesting, and per-branch coverage rather than translated word order
 3. audit production literal message IDs and enumerate the exact members of each computed-ID family
 4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
 5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
 6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a named reviewer, concrete evidence, UI role, concept, and user consequence before translation
-7. approve a high-risk pilot before bulk translation, and pin every human approval to a stable context hash plus translation hash so source or target changes invalidate stale evidence
+7. approve a high-risk pilot before bulk translation, represent producers as canonical actors, key GitHub humans by API-verified immutable numeric user ID, and pin context, candidate, producer, all verifier-policy sources, and pilot review scope so any material change invalidates stale evidence
 8. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, or reviewers
 
 ## Focused Command Shapes

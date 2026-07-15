@@ -101,9 +101,14 @@ The preserve list is permission, not a mandate: a translator may retain a listed
 ## Review and release gates
 
 - A translator records a candidate and pins its `contextHash` and `translationHash`.
+- A reserved-context approval additionally pins `sourceContextHash`; a pilot approval pins `reviewScopeHash`, which covers risk, rationale, declared review domains, and the authoritative ledger requirement.
 - An independent native-German reviewer must cover every message and must not be the translator.
-- A German-capable LCA/TIDAS reviewer must cover every message marked for domain review.
+- A German-capable LCA/TIDAS reviewer covers every message. Known domain messages retain specific scope reasons; unclassified messages default to review-required until a future externally attested exemption policy exists, so heuristic matching cannot create false negatives.
+- Reviewer evidence is accepted only from an assigned GitHub human identity keyed by immutable numeric user ID, with the current login/API binding, recorded qualification evidence, a different maintainer-authored assignment attestation, and a reviewer-authored scope attestation verified against Issue #601 through the GitHub API; renamed logins, display-name aliases, bots, and arbitrary local strings are not identities.
+- A message/role may have only one current decision. A later correction replaces the old record after hashes are regenerated; contradictory duplicate records fail the gate.
 - Product review resolves workflow semantics, dangerous actions, privacy/permission language, and blocked reserved-key context.
 - Any source, context, or German change invalidates a hash-pinned approval.
 - Release requires zero `BLOCKED_CONTEXT`, zero `BLOCKED_TERM`, zero stale approvals, and zero unresolved Critical or Major findings.
 - Issue #601 must not add `src/locales/de-DE.ts` or activate a language menu. Runtime activation and all `de`/`de-*` normalization belong to Issue #602.
+
+Research candidates may be drafted to make a blocked context or term concrete for reviewers. Such candidates remain `candidate-unreviewed`, are excluded from runtime locale modules, and do not count as translated or approved until context, identity, independence, hash, and finding gates all pass.

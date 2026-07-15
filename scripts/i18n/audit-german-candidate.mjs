@@ -1,18 +1,26 @@
 #!/usr/bin/env node
 
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
+import {
+  normalizeGithubLogin,
+  normalizeGithubUserId,
+  normalizeProducerActor,
+  producerActorKey,
+  verifyGithubHumanReviewEvidence,
+} from './github-review-attestation.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 const ts = require('typescript');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
-const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v1';
-const LEDGER_SCHEMA_VERSION = 'tiangong.i18n-german-context-ledger.v1';
+const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v4';
+const LEDGER_SCHEMA_VERSION = 'tiangong.i18n-german-context-ledger.v4';
 const DEFAULT_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
 const DEFAULT_LEDGER = 'docs/plans/i18n-de-DE/context-ledger.json';
 const DEFAULT_ENTRY_TRANSLATIONS = 'docs/plans/i18n-de-DE/activation-entry-translations.json';
@@ -20,6 +28,19 @@ const DEFAULT_ALLOWLIST = 'docs/plans/i18n-de-DE/source-allowlist.json';
 const DEFAULT_CONTEXT_ANNOTATIONS = 'docs/plans/i18n-de-DE/context-annotations.json';
 const DEFAULT_DYNAMIC_FAMILIES = 'docs/plans/i18n-de-DE/dynamic-families.json';
 const DEFAULT_TRANSLATION_BATCHES = 'docs/plans/i18n-de-DE/translation-batches.json';
+const DEFAULT_REVIEW_LOG = 'docs/plans/i18n-de-DE/review-log.yaml';
+const DEFAULT_GLOSSARY = 'docs/plans/i18n-de-DE/glossary.yaml';
+const DEFAULT_STYLE_GUIDE = 'docs/plans/i18n-de-DE/style-guide.md';
+const DEFAULT_EVIDENCE_SOURCES = 'docs/plans/i18n-de-DE/evidence-sources.yaml';
+const CANONICAL_AUDIT = 'scripts/i18n/audit-locales.mjs';
+const PILOT_AUDIT = 'scripts/i18n/audit-german-pilot.mjs';
+const REVIEW_GATE_POLICY_SOURCES = [
+  CANONICAL_AUDIT,
+  'scripts/i18n/audit-german-candidate.mjs',
+  PILOT_AUDIT,
+  'scripts/i18n/github-review-attestation.mjs',
+  'scripts/i18n/icu-message-parser.cjs',
+];
 const CANDIDATE_LOCALE = 'de-DE';
 const REQUIRED_GOVERNANCE_ARTIFACTS = [
   'docs/plans/i18n-de-DE/README.md',
@@ -45,6 +66,7 @@ Options:
   --allowlist <path>            reviewed source-copy allowlist relative to root
   --context-annotations <path>  human-reviewed context decisions for non-runtime keys
   --dynamic-families <path>     reviewed computed-message registry relative to root
+  --review-log <path>           named, hash-pinned human review evidence
   --help                        show this help
 `;
 }
@@ -61,6 +83,7 @@ function parseArgs(argv) {
     allowlist: DEFAULT_ALLOWLIST,
     contextAnnotations: DEFAULT_CONTEXT_ANNOTATIONS,
     dynamicFamilies: DEFAULT_DYNAMIC_FAMILIES,
+    reviewLog: DEFAULT_REVIEW_LOG,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -81,6 +104,7 @@ function parseArgs(argv) {
         '--allowlist',
         '--context-annotations',
         '--dynamic-families',
+        '--review-log',
       ].includes(argument)
     ) {
       const value = argv[index + 1];
@@ -95,6 +119,7 @@ function parseArgs(argv) {
         '--allowlist': 'allowlist',
         '--context-annotations': 'contextAnnotations',
         '--dynamic-families': 'dynamicFamilies',
+        '--review-log': 'reviewLog',
       }[argument];
       options[key] = value;
     } else if (argument !== '--write') {
@@ -176,9 +201,21 @@ function parseGermanModule(root, absolutePath, moduleName, findings) {
     });
   });
 
-  const assignment = sourceFile.statements.find(
-    (statement) => ts.isExportAssignment(statement) && !statement.isExportEquals,
-  );
+  if (
+    sourceFile.statements.length !== 1 ||
+    !ts.isExportAssignment(sourceFile.statements[0]) ||
+    sourceFile.statements[0].isExportEquals
+  ) {
+    findings.invalidModules.push({
+      module: moduleName,
+      path: relativePath(root, absolutePath),
+      reason:
+        'German leaf modules must contain exactly one side-effect-free default export and no imports, declarations, or executable statements.',
+    });
+    return [];
+  }
+
+  const assignment = sourceFile.statements[0];
   const objectLiteral = assignment ? unwrapExpression(assignment.expression) : null;
   if (!objectLiteral || !ts.isObjectLiteralExpression(objectLiteral)) {
     findings.invalidModules.push({
@@ -230,14 +267,62 @@ function parseGermanModule(root, absolutePath, moduleName, findings) {
 
 function inspectIcu(value) {
   try {
-    return { ...analyzeIcuMessage(value), error: null };
+    const analyzed = analyzeIcuMessage(value);
+    return {
+      ...analyzed,
+      structure: icuStructure(analyzed.ast),
+      error: null,
+    };
   } catch (error) {
     return {
       argumentSignature: [],
       placeholders: [],
+      structure: null,
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+function icuStructure(nodes) {
+  const structuralNodes = nodes
+    .filter((node) => node.type !== 'text')
+    .map((node) => {
+      if (node.type === 'pound') return { type: 'pound' };
+      if (node.argumentType === 'simple') {
+        return { type: 'argument', argumentType: 'simple', name: node.name };
+      }
+      if (node.argumentType === 'number') {
+        return {
+          type: 'argument',
+          argumentType: 'number',
+          name: node.name,
+          style: node.style,
+        };
+      }
+      return {
+        type: 'argument',
+        argumentType: node.argumentType,
+        name: node.name,
+        offset: node.offset,
+        options: Object.fromEntries(
+          Object.entries(node.options)
+            .sort(([left], [right]) => left.localeCompare(right, 'en'))
+            .map(([selector, optionNodes]) => [selector, icuStructure(optionNodes)]),
+        ),
+      };
+    });
+  return {
+    hasVisibleText: nodes.some(
+      (node) => node.type === 'text' && node.value.normalize('NFC').trim() !== '',
+    ),
+    nodes: structuralNodes.sort((left, right) =>
+      JSON.stringify(left).localeCompare(JSON.stringify(right), 'en'),
+    ),
+  };
+}
+
+function serializeIcuStructure(structure) {
+  return JSON.stringify(structure);
 }
 
 function serializeSignature(signature) {
@@ -291,18 +376,94 @@ function consequenceForRole(role) {
   return consequences[role];
 }
 
-function domainReviewRequired(message) {
+const DOMAIN_MODULES = new Set([
+  'component_tidasPackage',
+  'pages_flow',
+  'pages_flowproperty',
+  'pages_general',
+  'pages_model',
+  'pages_process',
+  'pages_product',
+  'pages_review',
+  'pages_source',
+  'pages_unitgroup',
+]);
+
+function parseGlossaryPolicy(root) {
+  const relativeFile = DEFAULT_GLOSSARY;
+  const absolutePath = path.resolve(root, relativeFile);
+  if (!fs.existsSync(absolutePath)) throw new Error(`Missing required file: ${relativeFile}`);
+  const source = fs.readFileSync(absolutePath, 'utf8');
+  const starts = [...source.matchAll(/^  - termId:/gmu)].map(({ index }) => index);
+  const termBlocks = starts.map((start, index) => source.slice(start, starts[index + 1]));
+  const scalar = (block, field) => {
+    const prefix = field === 'termId' ? '  - ' : '    ';
+    const match = block.match(new RegExp(`^${prefix}${field}: '((?:[^']|'')*)'$`, 'mu'));
+    return match ? match[1].replaceAll("''", "'") : null;
+  };
+  const terms = termBlocks.map((block) => ({
+    termId: scalar(block, 'termId'),
+    sourceEnglish: scalar(block, 'sourceEnglish'),
+    risk: scalar(block, 'risk'),
+    decisionStatus: scalar(block, 'decisionStatus'),
+  }));
+  const invalidTerms = terms.filter(
+    ({ termId, sourceEnglish, risk, decisionStatus }) =>
+      !termId || !sourceEnglish || !risk || !decisionStatus,
+  );
+  if (termBlocks.length === 0 || invalidTerms.length > 0) {
+    throw new Error(
+      `Glossary policy could not be parsed deterministically (${termBlocks.length} terms, ${invalidTerms.length} invalid).`,
+    );
+  }
+  return {
+    relativeFile,
+    terms,
+    blockedTerms: terms.filter(({ decisionStatus }) => decisionStatus === 'blocked-term'),
+    highRiskTerms: terms.filter(({ risk }) => ['critical', 'high'].includes(risk)),
+  };
+}
+
+function domainReviewDecision(message, glossaryPolicy) {
   const evidence = [
     message.id,
     message.translations?.['en-US']?.value ?? '',
     message.translations?.['zh-CN']?.value ?? '',
   ].join(' ');
-  return /(?:lca|lcia|life.?cycle|process|flow|exchange|impact|unit.?group|quantitative|reference|compliance|review|audit|validation|dataset|data set|tidas)/i.test(
-    evidence,
-  );
+  const normalizedEvidence = evidence.normalize('NFC').toLocaleLowerCase('en');
+  const reasons = [];
+  const module = message.moduleOwnership?.['en-US']?.[0];
+  if (DOMAIN_MODULES.has(module)) reasons.push(`domain-module:${module}`);
+  if (
+    /\b(?:lca|lcia|life[- ]?cycle|process|flow|exchange|impact|unit[- ]?group|quantitative|reference|compliance|review|audit|validation|dataset|data set|tidas)\b/i.test(
+      evidence,
+    )
+  ) {
+    reasons.push('domain-keyword-policy');
+  }
+  glossaryPolicy.highRiskTerms.forEach(({ termId, sourceEnglish }) => {
+    const normalizedTerm = sourceEnglish.normalize('NFC').toLocaleLowerCase('en');
+    const escapedTerm = normalizedTerm.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    if (
+      new RegExp(`(?:^|[^\\p{L}\\p{N}])${escapedTerm}(?:$|[^\\p{L}\\p{N}])`, 'u').test(
+        normalizedEvidence,
+      )
+    ) {
+      reasons.push(`glossary:${termId}`);
+    }
+  });
+  if (reasons.length === 0) {
+    reasons.push('conservative-full-catalog-domain-review');
+  }
+  return { required: reasons.length > 0, reasons: [...new Set(reasons)].sort() };
 }
 
-function validateContextAnnotation(message, annotation) {
+function validateContextAnnotation(
+  message,
+  annotation,
+  expectedSourceContextHash,
+  assignedReviewers,
+) {
   if (!annotation) return ['No reviewed context annotation exists.'];
   const errors = [];
   if (annotation.status !== 'READY') errors.push('status must be READY');
@@ -349,6 +510,17 @@ function validateContextAnnotation(message, annotation) {
   if (annotation.messageId !== message.id) {
     errors.push(`messageId must equal ${message.id}`);
   }
+  if (annotation.sourceContextHash !== expectedSourceContextHash) {
+    errors.push('sourceContextHash must match the current canonical source evidence');
+  }
+  if (!['product-context', 'domain'].includes(annotation.reviewRole)) {
+    errors.push('reviewRole must be product-context or domain');
+  } else if (
+    normalizeGithubLogin(annotation.reviewedBy) !==
+    assignedReviewers.get(annotation.reviewRole)?.login
+  ) {
+    errors.push(`reviewedBy must match the assigned ${annotation.reviewRole} reviewer identity`);
+  }
   return errors;
 }
 
@@ -382,7 +554,7 @@ function hashJson(value) {
     .digest('hex');
 }
 
-function contextHashForMessage(message, dynamicRegistry) {
+function sourceContextHashForMessage(message, dynamicRegistry, reviewPolicyDigest) {
   const normalizeLocation = ({ path: sourcePath, kind, symbol, defaultMessage }) => ({
     path: sourcePath,
     kind,
@@ -390,6 +562,8 @@ function contextHashForMessage(message, dynamicRegistry) {
     defaultMessage: defaultMessage ?? null,
   });
   return hashJson({
+    schemaVersion: 'tiangong.i18n-de-source-context.v2',
+    reviewPolicyDigest,
     id: message.id,
     category: message.category,
     moduleOwnership: message.moduleOwnership,
@@ -420,6 +594,93 @@ function contextHashForMessage(message, dynamicRegistry) {
   });
 }
 
+function contextHashForMessage({
+  message,
+  sourceContextHash,
+  resolvedContext,
+  domainReview,
+  reviewPolicyDigest,
+}) {
+  return hashJson({
+    schemaVersion: 'tiangong.i18n-de-review-context.v2',
+    reviewPolicyDigest,
+    sourceContextHash,
+    id: message.id,
+    resolvedContext,
+    reviewRequirements: {
+      independentNativeGerman: true,
+      lcaTidasDomain: domainReview.required,
+      domainReasons: domainReview.reasons,
+    },
+  });
+}
+
+function translationHashForMessage(messageId, module, german, contextHash) {
+  return hashJson({ id: messageId, module, german, contextHash });
+}
+
+function assignedReviewersFromLog(reviewLog, findings) {
+  const roleConfigNames = new Map([
+    ['product-context', 'productContextReviewer'],
+    ['native-german', 'nativeGermanReviewer'],
+    ['domain', 'lcaTidasDomainReviewer'],
+  ]);
+  const assigned = new Map();
+  roleConfigNames.forEach((configName, role) => {
+    const config = reviewLog.roles?.[configName];
+    const githubLogin = normalizeGithubLogin(config?.githubLogin);
+    const githubUserId = normalizeGithubUserId(config?.githubUserId);
+    const assignedByGithubUserId = normalizeGithubUserId(config?.assignedByGithubUserId);
+    if (
+      config?.status === 'assigned' &&
+      config?.identityType === 'github-human' &&
+      githubLogin !== '' &&
+      githubUserId !== '' &&
+      normalizeGithubLogin(config?.identity) === githubLogin &&
+      normalizeGithubLogin(config?.assignedBy) !== '' &&
+      assignedByGithubUserId !== '' &&
+      normalizeGithubLogin(config?.assignedBy) !== githubLogin &&
+      assignedByGithubUserId !== githubUserId &&
+      typeof config?.qualificationEvidence === 'string' &&
+      config.qualificationEvidence.trim() !== '' &&
+      typeof config?.assignmentAttestationUrl === 'string' &&
+      config.assignmentAttestationUrl.trim() !== ''
+    ) {
+      assigned.set(role, { login: githubLogin, userId: githubUserId });
+      return;
+    }
+    findings.unassignedReviewRoles.push({ role, configName });
+  });
+  return assigned;
+}
+
+function validReviewFindings(review, findingTarget, recordIndex, source) {
+  if (!Array.isArray(review.findings)) {
+    findingTarget.push({ source, index: recordIndex, reason: 'findings must be an array' });
+    return [];
+  }
+  const valid = [];
+  review.findings.forEach((finding, findingIndex) => {
+    if (
+      !finding ||
+      !['Critical', 'Major', 'Minor'].includes(finding.severity) ||
+      !['OPEN', 'RESOLVED'].includes(finding.status) ||
+      typeof finding.summary !== 'string' ||
+      finding.summary.trim() === ''
+    ) {
+      findingTarget.push({
+        source,
+        index: recordIndex,
+        findingIndex,
+        reason: 'Each finding needs severity, OPEN/RESOLVED status, and a non-empty summary.',
+      });
+      return;
+    }
+    valid.push(finding);
+  });
+  return valid;
+}
+
 function dynamicContextForMessage(message, dynamicRegistry) {
   return message.dynamicFamilies.map((family) => ({
     family,
@@ -437,15 +698,37 @@ function sortFindings(findings) {
   });
 }
 
-function buildAudit(options) {
+function walkFiles(root, relativeDirectory) {
+  const absoluteDirectory = path.resolve(root, relativeDirectory);
+  if (!fs.existsSync(absoluteDirectory)) return [];
+  return fs.readdirSync(absoluteDirectory, { withFileTypes: true }).flatMap((entry) => {
+    const relativeEntry = toPosix(path.join(relativeDirectory, entry.name));
+    if (entry.isDirectory()) return walkFiles(root, relativeEntry);
+    return entry.isFile() ? [relativeEntry] : [];
+  });
+}
+
+async function buildAudit(options) {
   const manifest = readJson(options.root, options.manifest);
   const entryArtifact = readJson(options.root, options.entryTranslations);
   const allowlist = readJson(options.root, options.allowlist);
   const contextAnnotations = readJson(options.root, options.contextAnnotations);
   const dynamicRegistry = readJson(options.root, options.dynamicFamilies);
   const translationBatches = readJson(options.root, DEFAULT_TRANSLATION_BATCHES);
+  const reviewLog = readJson(options.root, options.reviewLog);
+  const glossaryPolicy = parseGlossaryPolicy(options.root);
+  const reviewPolicyDigest = buildInputDigest(options.root, [
+    DEFAULT_GLOSSARY,
+    DEFAULT_STYLE_GUIDE,
+    DEFAULT_EVIDENCE_SOURCES,
+    ...REVIEW_GATE_POLICY_SOURCES,
+    options.allowlist,
+    options.dynamicFamilies,
+  ]);
   const findings = {
     topLevelActivated: [],
+    localePolicyViolations: [],
+    invalidEntryArtifactState: [],
     missingModules: [],
     unexpectedModules: [],
     invalidModules: [],
@@ -456,16 +739,125 @@ function buildAudit(options) {
     invalidValues: [],
     invalidIcuMessages: [],
     placeholderMismatches: [],
+    icuStructureMismatches: [],
     chineseCharacters: [],
     unapprovedEnglishCopies: [],
     blockedContexts: [],
+    duplicateContextAnnotations: [],
     unexpectedContextAnnotations: [],
     missingGovernanceArtifacts: [],
     invalidSourceAllowlist: [],
     unapprovedTechnicalTokens: [],
     mappedTokenViolations: [],
     translationBatchMismatches: [],
+    blockedGlossaryTerms: [],
+    unassignedReviewRoles: [],
+    invalidTranslationProducers: [],
+    duplicateTranslationProducers: [],
+    missingTranslationProducers: [],
+    staleTranslationProducers: [],
+    invalidTranslationReviews: [],
+    duplicateTranslationReviews: [],
+    staleTranslationReviews: [],
+    reviewerIndependenceViolations: [],
+    missingNativeGermanReviews: [],
+    missingDomainReviews: [],
+    unresolvedCriticalOrMajor: [],
+    invalidTranslationReviewState: [],
+    staleCanonicalManifest: [],
+    pilotGateFailures: [],
+    externalHumanReviewEvidence: [],
   };
+
+  const canonicalAudit = spawnSync(
+    process.execPath,
+    [
+      path.resolve(options.root, CANONICAL_AUDIT),
+      '--mode',
+      'enforce',
+      '--check',
+      '--root',
+      options.root,
+      '--manifest',
+      options.manifest,
+      '--dynamic-registry',
+      options.dynamicFamilies,
+    ],
+    { cwd: options.root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+  );
+  if (canonicalAudit.status !== 0) {
+    findings.staleCanonicalManifest.push({
+      status: canonicalAudit.status,
+      stderr: canonicalAudit.stderr.trim(),
+      reason:
+        'The canonical English/Chinese manifest and production-callsite audit must pass before German hashes are trusted.',
+    });
+  }
+
+  if (options.mode === 'enforce') {
+    const pilotAudit = spawnSync(
+      process.execPath,
+      [
+        path.resolve(options.root, PILOT_AUDIT),
+        '--mode',
+        'enforce',
+        '--check',
+        '--root',
+        options.root,
+        '--manifest',
+        options.manifest,
+        '--ledger',
+        options.ledger,
+        '--review-log',
+        options.reviewLog,
+      ],
+      { cwd: options.root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+    );
+    if (pilotAudit.status !== 0) {
+      findings.pilotGateFailures.push({
+        status: pilotAudit.status,
+        stderr: pilotAudit.stderr.trim(),
+        reason: 'The approved pilot is a mandatory prerequisite for final candidate enforcement.',
+      });
+    }
+  }
+
+  glossaryPolicy.blockedTerms.forEach(({ termId, sourceEnglish }) => {
+    findings.blockedGlossaryTerms.push({ termId, sourceEnglish });
+  });
+  [
+    [options.entryTranslations, entryArtifact],
+    [options.allowlist, allowlist],
+    [options.contextAnnotations, contextAnnotations],
+    [DEFAULT_TRANSLATION_BATCHES, translationBatches],
+    [options.reviewLog, reviewLog],
+  ].forEach(([artifact, value]) => {
+    if (value.locale !== CANDIDATE_LOCALE) {
+      findings.localePolicyViolations.push({
+        artifact,
+        locale: value.locale ?? null,
+        requiredLocale: CANDIDATE_LOCALE,
+      });
+    }
+  });
+  const assignedReviewers = assignedReviewersFromLog(reviewLog, findings);
+  if (
+    reviewLog.status !== 'translation-approved' ||
+    reviewLog.translations?.status !== 'approved-for-activation'
+  ) {
+    findings.invalidTranslationReviewState.push({
+      status: reviewLog.status ?? null,
+      translationsStatus: reviewLog.translations?.status ?? null,
+      requiredStatus: 'translation-approved / approved-for-activation',
+    });
+  }
+  if (entryArtifact.status !== 'reviewed-ready-for-activation') {
+    findings.invalidEntryArtifactState.push({
+      status: entryArtifact.status ?? null,
+      requiredStatus: 'reviewed-ready-for-activation',
+      reason: 'Staged entry messages remain research candidates until full human review passes.',
+    });
+  }
 
   REQUIRED_GOVERNANCE_ARTIFACTS.forEach((relativeFile) => {
     if (!fs.existsSync(path.resolve(options.root, relativeFile))) {
@@ -473,13 +865,33 @@ function buildAudit(options) {
     }
   });
 
-  const germanEntryPath = path.join(options.root, 'src', 'locales', `${CANDIDATE_LOCALE}.ts`);
-  if (fs.existsSync(germanEntryPath)) {
-    findings.topLevelActivated.push({
-      path: relativePath(options.root, germanEntryPath),
-      reason: 'Issue #601 may add reviewed leaf translations but must not activate de-DE.',
+  const localesRoot = path.join(options.root, 'src', 'locales');
+  fs.readdirSync(localesRoot, { withFileTypes: true })
+    .filter((entry) => /^de(?:[-_]|$)/iu.test(entry.name))
+    .filter((entry) => !(entry.isDirectory() && entry.name === CANDIDATE_LOCALE))
+    .forEach((entry) => {
+      findings.topLevelActivated.push({
+        path: relativePath(options.root, path.join(localesRoot, entry.name)),
+        reason:
+          'Issue #601 permits only the de-DE leaf staging directory; no de/de-* entry file or regional bundle is allowed.',
+      });
     });
-  }
+  const quotedGermanLocale = /(['"])de(?:[-_][A-Za-z0-9]+)*\1/gu;
+  [...walkFiles(options.root, 'config'), ...walkFiles(options.root, 'src')]
+    .filter((relativeFile) => /\.(?:c|m)?[jt]sx?$/u.test(relativeFile))
+    .filter((relativeFile) => !relativeFile.startsWith('src/.umi'))
+    .filter((relativeFile) => !relativeFile.startsWith(`src/locales/${CANDIDATE_LOCALE}/`))
+    .forEach((relativeFile) => {
+      const source = fs.readFileSync(path.resolve(options.root, relativeFile), 'utf8');
+      const matches = [...source.matchAll(quotedGermanLocale)].map((match) => match[0]);
+      if (matches.length > 0) {
+        findings.topLevelActivated.push({
+          path: relativeFile,
+          localeLiterals: [...new Set(matches)].sort(),
+          reason: 'German runtime locale literals belong to activation Issue #602.',
+        });
+      }
+    });
 
   const expectedModules = manifest.localeTopology['en-US'].leafModules;
   const expectedByModule = new Map(expectedModules.map((module) => [module, new Set()]));
@@ -567,13 +979,22 @@ function buildAudit(options) {
   }
 
   const germanRoot = path.join(options.root, 'src', 'locales', CANDIDATE_LOCALE);
-  const actualModuleFiles = fs.existsSync(germanRoot)
-    ? fs
-        .readdirSync(germanRoot, { withFileTypes: true })
-        .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
-        .map((entry) => entry.name)
-        .sort()
+  const germanRootEntries = fs.existsSync(germanRoot)
+    ? fs.readdirSync(germanRoot, { withFileTypes: true })
     : [];
+  germanRootEntries
+    .filter((entry) => !entry.isFile() || !entry.name.endsWith('.ts'))
+    .forEach((entry) => {
+      findings.invalidModules.push({
+        path: relativePath(options.root, path.join(germanRoot, entry.name)),
+        reason:
+          'The de-DE staging directory may contain only first-level static .ts leaf modules; nested directories, links, and other code/data files are forbidden.',
+      });
+    });
+  const actualModuleFiles = germanRootEntries
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.ts'))
+    .map((entry) => entry.name)
+    .sort();
   const actualModules = actualModuleFiles.map((fileName) => fileName.replace(/\.ts$/, ''));
 
   expectedModules
@@ -644,7 +1065,24 @@ function buildAudit(options) {
   });
 
   const emptyMessageIds = new Set(allowlist.emptyMessageIds ?? []);
-  const exactEnglishMessageIds = new Set(allowlist.exactEnglishMessageIds ?? []);
+  const exactEnglishEntries = allowlist.exactEnglishMessages ?? [];
+  const exactEnglishMessageIds = new Set(
+    exactEnglishEntries
+      .filter(
+        (entry) =>
+          entry &&
+          typeof entry.messageId === 'string' &&
+          typeof entry.reason === 'string' &&
+          entry.reason.trim() !== '' &&
+          typeof entry.reviewedBy === 'string' &&
+          entry.reviewedBy.trim() !== '' &&
+          [...assignedReviewers.values()].some(
+            ({ login }) => login === normalizeGithubLogin(entry.reviewedBy),
+          ) &&
+          /^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt ?? ''),
+      )
+      .map(({ messageId }) => messageId),
+  );
   const preservedTokenEntries = allowlist.preservedTokens ?? [];
   const sourcePatternTokenEntries = allowlist.sourcePatternTokens ?? [];
   const mappedTokenEntries = allowlist.mappedTokens ?? [];
@@ -652,6 +1090,20 @@ function buildAudit(options) {
     [...preservedTokenEntries, ...sourcePatternTokenEntries].map(({ token }) => token),
   );
   const tokenEntryCounts = new Map();
+  exactEnglishEntries.forEach((entry) => {
+    if (!exactEnglishMessageIds.has(entry?.messageId)) {
+      findings.invalidSourceAllowlist.push({
+        entry,
+        reason:
+          'Exact-English exceptions require messageId, reason, an assigned human reviewedBy identity, and reviewedAt (YYYY-MM-DD).',
+      });
+    }
+  });
+  if (Object.hasOwn(allowlist, 'exactEnglishMessageIds')) {
+    findings.invalidSourceAllowlist.push({
+      reason: 'Use reviewed exactEnglishMessages records, not bare exactEnglishMessageIds.',
+    });
+  }
   [...preservedTokenEntries, ...sourcePatternTokenEntries].forEach((entry) => {
     if (
       !entry ||
@@ -692,8 +1144,19 @@ function buildAudit(options) {
       findings.invalidSourceAllowlist.push({ entry, reason: 'Invalid mapped-token rule.' });
     }
   });
+  const contextAnnotationCounts = new Map();
+  (contextAnnotations.messages ?? []).forEach(({ messageId }) => {
+    contextAnnotationCounts.set(messageId, (contextAnnotationCounts.get(messageId) ?? 0) + 1);
+  });
+  [...contextAnnotationCounts]
+    .filter(([, count]) => count > 1)
+    .forEach(([messageId, count]) => {
+      findings.duplicateContextAnnotations.push({ messageId, count });
+    });
   const contextAnnotationsById = new Map(
-    (contextAnnotations.messages ?? []).map((annotation) => [annotation.messageId, annotation]),
+    (contextAnnotations.messages ?? [])
+      .filter(({ messageId }) => contextAnnotationCounts.get(messageId) === 1)
+      .map((annotation) => [annotation.messageId, annotation]),
   );
 
   (contextAnnotations.messages ?? []).forEach((annotation) => {
@@ -703,9 +1166,17 @@ function buildAudit(options) {
   });
 
   const contextById = new Map();
-  const contextHashesById = new Map();
+  const sourceContextHashesById = new Map();
+  const domainReviewById = new Map();
   manifest.messages.forEach((message) => {
-    contextHashesById.set(message.id, contextHashForMessage(message, dynamicRegistry));
+    const sourceContextHash = sourceContextHashForMessage(
+      message,
+      dynamicRegistry,
+      reviewPolicyDigest,
+    );
+    sourceContextHashesById.set(message.id, sourceContextHash);
+    const domainReview = domainReviewDecision(message, glossaryPolicy);
+    domainReviewById.set(message.id, domainReview);
     const hasRuntimeEvidence = message.references.length > 0 || message.dynamicFamilies.length > 0;
     const inferredUiRole = inferUiRole(message);
     if (hasRuntimeEvidence) {
@@ -720,12 +1191,21 @@ function buildAudit(options) {
         defaultMessages: message.defaultMessages,
         dynamicFamilies: dynamicContextForMessage(message, dynamicRegistry),
         reviewedAnnotation: null,
+        reviewPolicy: {
+          domainReviewRequired: domainReview.required,
+          domainReasons: domainReview.reasons,
+        },
       });
       return;
     }
 
     const annotation = contextAnnotationsById.get(message.id);
-    const errors = validateContextAnnotation(message, annotation);
+    const errors = validateContextAnnotation(
+      message,
+      annotation,
+      sourceContextHash,
+      assignedReviewers,
+    );
     if (errors.length > 0) {
       findings.blockedContexts.push({ messageId: message.id, errors });
       contextById.set(message.id, {
@@ -739,6 +1219,10 @@ function buildAudit(options) {
         defaultMessages: message.defaultMessages,
         dynamicFamilies: [],
         reviewedAnnotation: annotation ?? null,
+        reviewPolicy: {
+          domainReviewRequired: domainReview.required,
+          domainReasons: domainReview.reasons,
+        },
       });
       return;
     }
@@ -754,8 +1238,25 @@ function buildAudit(options) {
       defaultMessages: message.defaultMessages,
       dynamicFamilies: [],
       reviewedAnnotation: annotation,
+      reviewPolicy: {
+        domainReviewRequired: domainReview.required,
+        domainReasons: domainReview.reasons,
+      },
     });
   });
+
+  const contextHashesById = new Map(
+    manifest.messages.map((message) => [
+      message.id,
+      contextHashForMessage({
+        message,
+        sourceContextHash: sourceContextHashesById.get(message.id),
+        resolvedContext: contextById.get(message.id),
+        domainReview: domainReviewById.get(message.id),
+        reviewPolicyDigest,
+      }),
+    ]),
+  );
 
   manifest.messages.forEach((message) => {
     const german = germanById.get(message.id);
@@ -770,7 +1271,8 @@ function buildAudit(options) {
       });
       return;
     }
-    if (german.value.length === 0 && !emptyMessageIds.has(message.id)) {
+    const normalizedGerman = german.value.normalize('NFC').trim();
+    if (normalizedGerman.length === 0 && !emptyMessageIds.has(message.id)) {
       findings.invalidValues.push({ messageId: message.id, reason: 'Unexpected empty value.' });
     }
     const germanIcu = inspectIcu(german.value);
@@ -789,13 +1291,26 @@ function buildAudit(options) {
         german: germanIcu.argumentSignature,
       });
     }
+    const englishIcu = inspectIcu(message.translations?.['en-US']?.value ?? '');
+    if (
+      !germanIcu.error &&
+      !englishIcu.error &&
+      serializeIcuStructure(germanIcu.structure) !== serializeIcuStructure(englishIcu.structure)
+    ) {
+      findings.icuStructureMismatches.push({
+        messageId: message.id,
+        reason: 'ICU selector, offset, nesting, or per-branch placeholder structure differs.',
+        englishStructure: englishIcu.structure,
+        germanStructure: germanIcu.structure,
+      });
+    }
     if (/\p{Script=Han}/u.test(german.value)) {
       findings.chineseCharacters.push({ messageId: message.id, value: german.value });
     }
     const english = message.translations?.['en-US']?.value;
     if (
-      german.value.length > 0 &&
-      german.value === english &&
+      normalizedGerman.length > 0 &&
+      normalizedGerman === (english ?? '').normalize('NFC').trim() &&
       !exactEnglishMessageIds.has(message.id)
     ) {
       findings.unapprovedEnglishCopies.push({ messageId: message.id, value: german.value });
@@ -822,6 +1337,277 @@ function buildAudit(options) {
     });
   });
 
+  const laneByModule = new Map(batchModules.map(({ name, laneId }) => [name, laneId]));
+  const expectedReviewById = new Map();
+  manifest.messages.forEach((message) => {
+    const german = germanById.get(message.id);
+    if (!german || typeof german.value !== 'string') return;
+    const contextHash = contextHashesById.get(message.id);
+    expectedReviewById.set(message.id, {
+      batchId:
+        german.module === '$activation-entry'
+          ? '$activation-entry'
+          : laneByModule.get(german.module),
+      producer: null,
+      contextHash,
+      translationHash: translationHashForMessage(
+        message.id,
+        german.module,
+        german.value,
+        contextHash,
+      ),
+      domainReview: domainReviewById.get(message.id),
+      producerKey: '',
+    });
+  });
+
+  const producerRecords = reviewLog.translations?.producers ?? [];
+  const producerGroups = new Map();
+  producerRecords.forEach((record, index) => {
+    if (!producerGroups.has(record?.messageId)) producerGroups.set(record?.messageId, []);
+    producerGroups.get(record?.messageId).push({ record, index });
+  });
+  producerGroups.forEach((records, messageId) => {
+    if (records.length > 1) {
+      findings.duplicateTranslationProducers.push({ messageId, count: records.length });
+    }
+  });
+  expectedReviewById.forEach((expected, messageId) => {
+    const records = producerGroups.get(messageId) ?? [];
+    if (records.length !== 1) {
+      findings.missingTranslationProducers.push({ messageId });
+      return;
+    }
+    const { record, index } = records[0];
+    const producer = normalizeProducerActor(record.producer);
+    if (
+      !producer ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(record.producedAt ?? '') ||
+      record.batchId !== expected.batchId
+    ) {
+      findings.invalidTranslationProducers.push({ index, record });
+      findings.missingTranslationProducers.push({ messageId });
+      return;
+    }
+    if (
+      record.contextHash !== expected.contextHash ||
+      record.translationHash !== expected.translationHash
+    ) {
+      findings.staleTranslationProducers.push({ messageId, producer: record.producer });
+      findings.missingTranslationProducers.push({ messageId });
+      return;
+    }
+    expected.producer = producer;
+    expected.producerKey = producerActorKey(producer);
+  });
+  producerRecords
+    .filter(({ messageId }) => !expectedReviewById.has(messageId))
+    .forEach((record) => {
+      findings.invalidTranslationProducers.push({
+        record,
+        reason: 'Producer record does not identify a current German translation.',
+      });
+    });
+
+  expectedReviewById.forEach((expected, messageId) => {
+    if (!expected.producer) return;
+    const annotationReviewer = contextById.get(messageId)?.reviewedAnnotation?.reviewedBy;
+    const annotationReviewRole = contextById.get(messageId)?.reviewedAnnotation?.reviewRole;
+    const annotationReviewerUserId = assignedReviewers.get(annotationReviewRole)?.userId;
+    if (
+      annotationReviewer &&
+      annotationReviewerUserId &&
+      `github-human:${annotationReviewerUserId}` === expected.producerKey
+    ) {
+      findings.reviewerIndependenceViolations.push({
+        messageId,
+        role: 'reserved-context',
+        reviewer: annotationReviewer,
+      });
+    }
+    const sourceCopyReviewer = exactEnglishEntries.find(
+      (entry) => entry.messageId === messageId,
+    )?.reviewedBy;
+    const sourceCopyReviewerUserId = [...assignedReviewers.values()].find(
+      ({ login }) => login === normalizeGithubLogin(sourceCopyReviewer),
+    )?.userId;
+    if (
+      sourceCopyReviewer &&
+      sourceCopyReviewerUserId &&
+      `github-human:${sourceCopyReviewerUserId}` === expected.producerKey
+    ) {
+      findings.reviewerIndependenceViolations.push({
+        messageId,
+        role: 'source-copy-exception',
+        reviewer: sourceCopyReviewer,
+      });
+    }
+  });
+
+  const translationReviews = reviewLog.translations?.reviews ?? [];
+  const reviewGroups = new Map();
+  translationReviews.forEach((review, index) => {
+    const key = `${review?.messageId}\0${review?.role}`;
+    if (!reviewGroups.has(key)) reviewGroups.set(key, []);
+    reviewGroups.get(key).push({ review, index });
+  });
+  reviewGroups.forEach((records, key) => {
+    if (records.length > 1) {
+      const [messageId, role] = key.split('\0');
+      findings.duplicateTranslationReviews.push({ messageId, role, count: records.length });
+    }
+  });
+
+  const validTranslationApprovals = new Set();
+  reviewGroups.forEach((records, key) => {
+    if (records.length !== 1) return;
+    const { review, index } = records[0];
+    const expected = expectedReviewById.get(review.messageId);
+    const reviewer = normalizeGithubLogin(review.reviewer);
+    const validFindings = validReviewFindings(
+      review,
+      findings.invalidTranslationReviews,
+      index,
+      'translations.reviews',
+    );
+    validFindings
+      .filter(
+        ({ severity, status }) => ['Critical', 'Major'].includes(severity) && status !== 'RESOLVED',
+      )
+      .forEach((finding) => {
+        findings.unresolvedCriticalOrMajor.push({
+          messageId: review.messageId,
+          role: review.role,
+          finding,
+        });
+      });
+    if (
+      !expected ||
+      !['native-german', 'domain'].includes(review.role) ||
+      reviewer === '' ||
+      reviewer !== assignedReviewers.get(review.role)?.login ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(review.reviewedAt ?? '') ||
+      !['APPROVED', 'CHANGES_REQUESTED'].includes(review.decision) ||
+      review.batchId !== expected?.batchId ||
+      !Array.isArray(review.findings)
+    ) {
+      findings.invalidTranslationReviews.push({ index, review });
+      return;
+    }
+    if (
+      review.contextHash !== expected.contextHash ||
+      review.translationHash !== expected.translationHash
+    ) {
+      findings.staleTranslationReviews.push({
+        messageId: review.messageId,
+        role: review.role,
+        reviewer: review.reviewer,
+      });
+      return;
+    }
+    if (
+      `github-human:${assignedReviewers.get(review.role)?.userId ?? ''}` === expected.producerKey
+    ) {
+      findings.reviewerIndependenceViolations.push({
+        messageId: review.messageId,
+        role: review.role,
+        reviewer: review.reviewer,
+      });
+      return;
+    }
+    if (
+      review.decision === 'APPROVED' &&
+      validFindings.every(({ status }) => status === 'RESOLVED')
+    ) {
+      validTranslationApprovals.add(key);
+    }
+  });
+
+  expectedReviewById.forEach((expected, messageId) => {
+    if (!validTranslationApprovals.has(`${messageId}\0native-german`)) {
+      findings.missingNativeGermanReviews.push({ messageId });
+    }
+    if (expected.domainReview.required && !validTranslationApprovals.has(`${messageId}\0domain`)) {
+      findings.missingDomainReviews.push({
+        messageId,
+        reasons: expected.domainReview.reasons,
+      });
+    }
+  });
+
+  const globalTranslationFindings = reviewLog.translations?.unresolvedFindings ?? [];
+  if (!Array.isArray(globalTranslationFindings)) {
+    findings.invalidTranslationReviews.push({
+      reason: 'translations.unresolvedFindings must be an array.',
+    });
+  } else {
+    validReviewFindings(
+      { findings: globalTranslationFindings },
+      findings.invalidTranslationReviews,
+      null,
+      'translations.unresolvedFindings',
+    )
+      .filter(
+        ({ severity, status }) => ['Critical', 'Major'].includes(severity) && status !== 'RESOLVED',
+      )
+      .forEach((finding) =>
+        findings.unresolvedCriticalOrMajor.push({ source: 'translations', finding }),
+      );
+  }
+
+  const externalEvidence = await verifyGithubHumanReviewEvidence({
+    reviewLog,
+    scope: 'translation',
+    requiredRoles: ['product-context', 'native-german', 'domain'],
+    recordsByRole: new Map([
+      [
+        'product-context',
+        (contextAnnotations.messages ?? []).filter(({ status }) => status === 'READY'),
+      ],
+      [
+        'native-german',
+        {
+          producers: producerRecords,
+          reviews: translationReviews.filter(({ role }) => role === 'native-german'),
+        },
+      ],
+      [
+        'domain',
+        {
+          producers: producerRecords,
+          reviews: translationReviews.filter(({ role }) => role === 'domain'),
+        },
+      ],
+    ]),
+    contextDigest: {
+      manifestDigest: manifest.source.auditedInputDigest,
+      reviewPolicyDigest,
+      messages: [...expectedReviewById]
+        .map(([messageId, expected]) => ({
+          messageId,
+          contextHash: expected.contextHash,
+          translationHash: expected.translationHash,
+          domainReviewRequired: expected.domainReview.required,
+          producer: expected.producer,
+        }))
+        .sort((left, right) => left.messageId.localeCompare(right.messageId, 'en')),
+    },
+    producerActors: producerRecords.map(({ producer }) => producer),
+  });
+  findings.externalHumanReviewEvidence.push(...externalEvidence.findings);
+
+  const locallyReviewCompleteCandidateCount = [...expectedReviewById].filter(
+    ([messageId, expected]) =>
+      expected.producer &&
+      ['RUNTIME_EVIDENCED', 'REVIEWED_RESERVED_CONTEXT'].includes(
+        contextById.get(messageId)?.status,
+      ) &&
+      validTranslationApprovals.has(`${messageId}\0native-german`) &&
+      (!expected.domainReview.required || validTranslationApprovals.has(`${messageId}\0domain`)),
+  ).length;
+  const externallyAttestedHumanReviewApprovedCandidateCount =
+    externalEvidence.findings.length === 0 ? locallyReviewCompleteCandidateCount : 0;
+
   [...germanById.keys()]
     .filter((id) => !manifestById.has(id))
     .forEach((id) => findings.unexpectedTranslations.push({ messageId: id }));
@@ -838,11 +1624,24 @@ function buildAudit(options) {
     options.allowlist,
     options.contextAnnotations,
     options.dynamicFamilies,
+    options.reviewLog,
     ...REQUIRED_GOVERNANCE_ARTIFACTS,
     ...actualModuleFiles.map((fileName) =>
       toPosix(path.join('src', 'locales', CANDIDATE_LOCALE, fileName)),
     ),
   ];
+  const ledgerFindings = {
+    ...findings,
+    pilotGateFailures: [],
+    externalHumanReviewEvidence: [],
+  };
+  const ledgerFindingCounts = Object.fromEntries(
+    Object.entries(ledgerFindings).map(([name, values]) => [name, values.length]),
+  );
+  const ledgerFindingCount = Object.values(ledgerFindingCounts).reduce(
+    (total, count) => total + count,
+    0,
+  );
   const ledger = {
     schemaVersion: LEDGER_SCHEMA_VERSION,
     issue: 'https://github.com/linancn/tiangong-lca-next/issues/601',
@@ -858,13 +1657,17 @@ function buildAudit(options) {
       manifestDigest: manifest.source.auditedInputDigest,
       contextInputDigest: buildInputDigest(options.root, inputPaths),
       contextInputDigestAlgorithm: 'sha256(path\\0content\\0)',
+      contextInputs: [...new Set(inputPaths)].sort(),
+      reviewPolicyDigest,
+      reviewAttestationRequirements: externalEvidence.requirements,
     },
     summary: {
       canonicalMessageCount: manifest.messages.length,
-      translatedMessageCount: manifest.messages.filter(({ id }) => germanById.has(id)).length,
+      candidateMessageCount: manifest.messages.filter(({ id }) => germanById.has(id)).length,
       leafModuleCount: actualModules.filter((module) => expectedModules.includes(module)).length,
       expectedLeafModuleCount: expectedModules.length,
-      entryTranslationCount: Object.keys(entryMessages).length,
+      entryCandidateCount: Object.keys(entryMessages).length,
+      locallyReviewCompleteCandidateCount,
       runtimeEvidencedContextCount: manifest.messages.filter(
         (message) => message.references.length > 0 || message.dynamicFamilies.length > 0,
       ).length,
@@ -874,9 +1677,10 @@ function buildAudit(options) {
       blockedContextCount: [...contextById.values()].filter(
         ({ status }) => status === 'BLOCKED_CONTEXT',
       ).length,
-      domainReviewRequiredCount: manifest.messages.filter(domainReviewRequired).length,
-      findingCount,
-      findingCounts,
+      domainReviewRequiredCount: [...domainReviewById.values()].filter(({ required }) => required)
+        .length,
+      findingCount: ledgerFindingCount,
+      findingCounts: ledgerFindingCounts,
     },
     contextPolicy: {
       sourceEvidence:
@@ -905,33 +1709,40 @@ function buildAudit(options) {
                 source: german.source,
               },
         hashes: {
+          sourceContext: sourceContextHashesById.get(message.id),
           context: contextHash,
           translation:
             german === null
               ? null
-              : hashJson({
-                  id: message.id,
-                  module: german.module,
-                  german: german.value,
-                  contextHash,
-                }),
+              : translationHashForMessage(message.id, german.module, german.value, contextHash),
         },
         context,
         reviewRequirements: {
           independentNativeGerman: true,
-          lcaTidasDomain: domainReviewRequired(message),
+          lcaTidasDomain: domainReviewById.get(message.id).required,
+          domainReasons: domainReviewById.get(message.id).reasons,
         },
       };
     }),
-    findings,
+    findings: ledgerFindings,
   };
 
-  return { ledger, findingCount, findingCounts };
+  return {
+    ledger,
+    findingCount,
+    findingCounts,
+    externallyAttestedHumanReviewApprovedCandidateCount,
+  };
 }
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const { ledger, findingCount, findingCounts } = buildAudit(options);
+  const {
+    ledger,
+    findingCount,
+    findingCounts,
+    externallyAttestedHumanReviewApprovedCandidateCount,
+  } = await buildAudit(options);
   const ledgerPath = path.resolve(options.root, options.ledger);
   const ledgerText = await prettier.format(JSON.stringify(ledger), {
     ...(await prettier.resolveConfig(ledgerPath)),
@@ -955,7 +1766,12 @@ async function main() {
     checkedLedger: options.check,
     staleLedger,
     ledgerPath: relativePath(options.root, ledgerPath),
-    summary: ledger.summary,
+    summary: {
+      ...ledger.summary,
+      externallyAttestedHumanReviewApprovedCandidateCount,
+      findingCount,
+      findingCounts,
+    },
     findingCount,
     findingCounts,
   };

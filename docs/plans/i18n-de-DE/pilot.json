@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "tiangong.i18n-de-pilot.v1",
+  "schemaVersion": "tiangong.i18n-de-pilot.v2",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
   "locale": "de-DE",
   "status": "candidate-awaiting-product-native-and-domain-review",
@@ -8,7 +8,11 @@
     "purpose": "Resolve high-risk terminology, ICU grammar, validation semantics, dynamic fallbacks, numerical diagnostics, and review workflow language before bulk translation.",
     "sourcePairRequired": true,
     "runtimeContextRequired": true,
-    "candidateProducer": "Codex research synthesis",
+    "candidateProducer": {
+      "type": "ai-system",
+      "id": "openai-codex",
+      "displayName": "Codex research synthesis"
+    },
     "approvalAuthority": "Named product, native-German, and German-capable LCA/TIDAS reviewers recorded in review-log.yaml",
     "bulkTranslationBlockedUntilApproved": true
   },
@@ -404,7 +408,7 @@
       "candidate": "Unbekannt",
       "rationale": "Uses a neutral localized fallback label.",
       "risk": "None beyond context fit.",
-      "reviewDomains": ["native-german"]
+      "reviewDomains": ["native-german", "lca"]
     },
     {
       "id": "pages.process.lca.evidence.source.worker",
@@ -446,7 +450,7 @@
       "candidate": "{selectedCount, plural, one {# Prozess ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).} other {# Prozesse ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).}}",
       "rationale": "Preserves both nested counts while avoiding case problems around a numeric placeholder.",
       "risk": "Both ICU plural layers and arguments must remain intact.",
-      "reviewDomains": ["native-german", "product"]
+      "reviewDomains": ["native-german", "lca", "product"]
     },
     {
       "id": "pages.process.lca.page.path.selectionHint",
@@ -460,7 +464,7 @@
       "candidate": "Keine Prozesse entsprechen dem aktuellen Datenbereich und dem Suchbegriff.",
       "rationale": "Preserves both data-scope and search-filter conditions.",
       "risk": "Datenbereich vs. Datenumfang must align with the scope control.",
-      "reviewDomains": ["native-german", "product"]
+      "reviewDomains": ["native-german", "lca", "product"]
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title",
@@ -614,42 +618,42 @@
       "candidate": "Prüfende zuweisen",
       "rationale": "Provides a compact, neutral action label.",
       "risk": "Prüfende, Gutachter, and Reviewer require one workflow-role decision.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.revoke_reviewer",
       "candidate": "Zuweisung der prüfenden Person aufgehoben",
       "rationale": "Treats the source as a completed audit event rather than a button command.",
       "risk": "Must confirm singular vs. plural event semantics.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.approved",
       "candidate": "Prüfung genehmigen",
       "rationale": "Uses action voice for approving a review.",
       "risk": "The actual state transition may be better described as Datensatz freigeben.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.rejected",
       "candidate": "Prüfung ablehnen",
       "rationale": "Forms a clear action pair with approval.",
       "risk": "Ablehnen vs. Zurückweisen depends on the state machine.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.submit_comments",
       "candidate": "Prüfkommentare einreichen",
       "rationale": "Combines the English comments concept with the Chinese review-data context.",
       "risk": "May be too narrow if the submission contains more than comments.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.unknownAction",
       "candidate": "Unbekannte Prüfaktion ({action})",
       "rationale": "Localizes the fallback while retaining the unknown backend value as interpolation data.",
       "risk": "The {action} placeholder must never become a computed message id.",
-      "reviewDomains": ["native-german", "review-product"]
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
     }
   ]
 }

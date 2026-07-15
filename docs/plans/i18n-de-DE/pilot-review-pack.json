@@ -1,22 +1,31 @@
 {
-  "schemaVersion": "tiangong.i18n-de-pilot-review-pack.v1",
+  "schemaVersion": "tiangong.i18n-de-pilot-review-pack.v4",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
   "locale": "de-DE",
   "source": {
     "manifest": "docs/plans/i18n-de-DE/manifest.json",
     "manifestDigest": "b822fc77cf46f90458246ead5d53f91b1921782cf3e87dc15549b538549e23dc",
     "contextLedger": "docs/plans/i18n-de-DE/context-ledger.json",
-    "contextInputDigest": "27a42916606091a783956971e649638b0a5e5a1567f23ff3d2ff0fd09daffa7a",
+    "contextInputDigest": "c39125f7851349e2aa068d225307e825ab53419a1686942362e1fac97d94418b",
+    "reviewPolicyDigest": "665a54a3aa89558d1f45b74b92ace976f6a669825f9a58e75f2676733b91b8b6",
     "pilot": "docs/plans/i18n-de-DE/pilot.json",
-    "pilotDigest": "5208d67336e737f89911a9514e70bdf346fe205942dbe523f61ea85eb8f6b950"
+    "pilotDigest": "b76bb1ca41185915a397eb4f526dbe65108f9716408eec94ddd400690d5708ef"
   },
   "policy": {
     "candidateOnly": true,
     "runtimeActivationAllowed": false,
     "reviewEvidenceTarget": "docs/plans/i18n-de-DE/review-log.yaml",
-    "requiredRoles": ["product-context", "native-german", "domain-when-listed"]
+    "requiredRoles": ["product-context", "native-german", "domain-when-ledger-or-pilot-requires"],
+    "reviewerIdentitySource": "docs/plans/i18n-de-DE/review-log.yaml roles",
+    "approvalHashRule": "Every review pins contextHash, translationHash, and reviewScopeHash. Duplicate decisions are invalid.",
+    "candidateProducer": {
+      "type": "ai-system",
+      "id": "openai-codex",
+      "displayName": "Codex research synthesis"
+    }
   },
-  "summary": { "messageCount": 90, "domainReviewRequiredCount": 81, "blockedContextCount": 9 },
+  "reviewAttestationRequirements": [],
+  "summary": { "messageCount": 90, "domainReviewRequiredCount": 90, "blockedContextCount": 9 },
   "messages": [
     {
       "id": "pages.lifeCycleModel.view.lifeCycleModelInformation",
@@ -162,11 +171,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_model",
+            "glossary:lca.life-cycle-model"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "9547e20ffe4cd8e78d829d8492dcc7e876d80b92a4d92c69061ab7f33c51a96c",
-        "translationHash": "ef0257d3c92a05e3701861ca6bf348a53ddf028af85555a6f68055c9ad39eb58"
+        "contextHash": "9b92493ef64cd4d150e3580427f87ee0d0934889bdc83fce4aa105d701c94769",
+        "translationHash": "8fed7ec0a70ef4646ca3b507e2101027af6a1049328fd3c096de7eb671ee6d62",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "4f92a6583daf3dec418f1e46cc99ca6ca1d4083438a464659267f4ab792cfe06"
       }
     },
     {
@@ -263,11 +282,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "e232384d0efe71011d246e9289f9d7c49343a0fc54d6c2af112aa9324cf25bfe",
-        "translationHash": "7e0e0baa8c966656fec0f8ca048b442bbe2f1e114cca082f044de606917e6272"
+        "contextHash": "71e40395f673185d620f9bd3ff1f0dce89efa97072725374a1d9b96be79c7cc9",
+        "translationHash": "31efa1b5b095407bd21259866e0cf6a9a4a7d9221d6d8845a7fb0f90424d9e96",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "6005458d183887380421565d142e4e7912d0ba14eaa4bf423489311b2d17ce42"
       }
     },
     {
@@ -312,6 +341,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference",
+          "sourceContextHash": "7f23efbabe3879bfed5940a250c2aa168babff4a590af4ce37a91bb405b305cc",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Heading or field label for the quantitative-reference section of a flow-property data set.",
           "uiRole": "field-label-or-heading",
@@ -326,11 +357,21 @@
           "rationale": "Prepared for pilot review; no current production callsite proves the exact control or heading role.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flowproperty",
+            "glossary:lca.quantitative-reference"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "7b737a619eb6fcee890ac8eda9e394a4b5e8fdaaee8ff678ba335e5f72096d9a",
-        "translationHash": "8bac51489fd8de9b6d5683aa8ec8ec15231abf3ff9f6a4e3565756733629f018"
+        "contextHash": "d6fbf0406d8b54dad4833814b7d14a60676bcbbafa521a8f59022f98529f8620",
+        "translationHash": "45b0e567a27762875f981f15007fecbc51b948a752a254aa57f9398462be0dd0",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "74d7c60a29df1891260c7b4ef914b4edec8fbba3e82f65956f5015aa8d8e9f06"
       }
     },
     {
@@ -427,11 +468,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow",
+            "glossary:lca.reference-flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "8d4a04b08e2b4512b9f27126bb76e8d8a0e584ed58a9cb53f3542e08488ef5fd",
-        "translationHash": "95c7b93035e7e26f1c656d5c614a76e69c18a90e9a193e61657c0c1f928de14b"
+        "contextHash": "29f36f954d9ba665fc97355823a4b23d8277d4d7f450b8b913af5755621e45e3",
+        "translationHash": "ee3fee9611c6dcfd0c3c3370e27e90b626e459764d8316a76ff0c2b6cd30b55e",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "a0990a6241021d854b5e7d712b66106ea99f0e18c4924a1afecd0f4318603778"
       }
     },
     {
@@ -543,11 +595,23 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "e1911e0ed2cb4ef67a93e4151becacdf3a83ce8f607d752e5368902e0ed9e649",
-        "translationHash": "80e4c3765d2353230df36f8b9fce02f2f3e6058e3885bb0aeb6ad18f40b197a6"
+        "contextHash": "d049e1160fb7a32681579ea67775720d5bd1d4485bf298436f72e22ae2c09acb",
+        "translationHash": "d1757d605b14832cb335ef5aed4b8b76b72a6cc9f92dcb21f4dd2cb54dd0b17b",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "6a20ac504d44eb92ed3f9234496487e448a19444573fd1f8a3f423a49b1cf838"
       }
     },
     {
@@ -664,11 +728,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "5e78615910effbacb11ac057fbb50e00cf85ee409157d9558e1365c2c22b2b1f",
-        "translationHash": "6b58442b368fc6a53ca6bcb8f368972f8c2e57d63dc0bb600b45a5962aeb92db"
+        "contextHash": "c50152f5429ee2fe19d59fde8fbe5c4141dce1f0770f416315bb0c55c08d0498",
+        "translationHash": "fba4f1036ea8545aea9d600e6469aa4d5e9faf2ec481239ef3980b09af5f40d0",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "8317f679d8ee54024425880d532a70f458f3bc6a71c6a97cd7e6d32e2f366974"
       }
     },
     {
@@ -770,11 +844,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "04740f293cae18c909cdfacc78c0c522dd072d1b2e0f964db1b2955f2cc722e5",
-        "translationHash": "472a3f4004912742c32910dcc99ddc6724a733cf5858b1e7f756cbdd335ce9d9"
+        "contextHash": "eab9125fcf153e63a6c4269af4eb27b80404374e85c42eb3ee8f86a3914333bb",
+        "translationHash": "8d3f3830a550424304bb2587a515a3a838ccf84ea0ec977322813be850101f36",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "e40624ef906c11c6ea1e5630b525f1d3ade5748a01946a67ced776657f618e53"
       }
     },
     {
@@ -871,11 +955,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.allocation",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "223436c16f9c91c6da932e424529ff277c929bce98a2e0cd204b502f3291c67a",
-        "translationHash": "5661b6368e34f188881a00e88f65a320acd6a5c7bab1d080a00f73b1dee21f2c"
+        "contextHash": "bb9007b0e6b1a72540a2c1ad671a85707623b226a615e33bdbd493fd4ca1fc5a",
+        "translationHash": "44e19f5d3c27578ce8d00cab6fac8f2c867fe83dd345f9491047f3dc7b083a6f",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "087af884fd82719cc637f615dc38231b6b45c58f3b46c341e9e61bd1ecd3c38b"
       }
     },
     {
@@ -987,11 +1082,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "4e77890adf7d4e5beda4bb01bbc81a21be4fed4621f291ff03719d8f46ee059d",
-        "translationHash": "4eba659d53457906dd4422b77b0ecaa170a564871bca942d0358931407fb297e"
+        "contextHash": "aa04e85c362d7a8ad56bad62b11520fd63f7f06174ea6cdf4407aa7e8faf1e50",
+        "translationHash": "d548178cdc1a40eea0931f029725ba0fff68bc7e2d8377fa7ef952c39e7eea6f",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "8d8bd8fb351284990fa4bbd579bd222cd179a5bbc3b7f92728e81f93b9c7a02a"
       }
     },
     {
@@ -1058,11 +1163,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.elementary-flow",
+            "glossary:lca.flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "2cff537c74759ed13898b0c8b239cbcc46ff449a3302e5f03146413b01ef1d2f",
-        "translationHash": "c405798eacc817122831a8fce4539312b7ec135b3987f6d778ed4712bfb6221c"
+        "contextHash": "84347ebba81473c57356685e544e69ed9499ece6188714d696b0bbc4119e383a",
+        "translationHash": "765cbf9a496a83bfa000fd8baef6d9157b9f9072d1496c0bacdb96f0354070d5",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "c456319149208de9a1bb17c190273679e05a6ec79a26a95c1c6f61d792167c54"
       }
     },
     {
@@ -1144,11 +1260,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow",
+            "glossary:lca.product-flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "f5c9cc8e4f38d906d32be4a0e549b78afb12d8f734bf21fbb3ec29a42647bf6f",
-        "translationHash": "fe2279f926fcc090e2fcb01851d649cebbafe38091570273171d30d769ead127"
+        "contextHash": "7297f6c11acc672fdf5f6d537445ae2e41cecf1bef5acd8366113b89ced30d9a",
+        "translationHash": "6e39140c1a464a4e93fb5414ee9a14e682caf48e3a57c52eace0a282e9824ed5",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "ef547e94162f4c38aaef343a2bd52c4d1f4c7798a293de6b34e7fcd9fd4590d3"
       }
     },
     {
@@ -1230,11 +1357,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow",
+            "glossary:lca.waste-flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "81847b8af4abcc7def656041295f1aab9bef9ddac37c43ee23f1a145a10db89d",
-        "translationHash": "a6d9911e35a7d53c09fde3aaf5ae185525079f872b3bb2c0d91ae5767ed81f10"
+        "contextHash": "61cf3ffc4ba8669179ea976fccc4495e35946ea1c17853733c911d943c10ffcc",
+        "translationHash": "916c73ffaf3abadb292fc4e80a5ea94cb5328943e0452d2e6a89407568ba6e77",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "7d4cab24c300c11fa073ffbe0af5325c75987827b5977c34ac431e7b7b853a64"
       }
     },
     {
@@ -1316,11 +1454,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow",
+            "glossary:lca.relative-standard-deviation"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "343acb9831c6e875947598b676b1b62d1d42904cce2a3a9c7fac4ea5f37e3b44",
-        "translationHash": "cae9784e6cc57001416e7b6d3857398782f65bda38573d9f33be8010dbcfc0a3"
+        "contextHash": "9442f833bb6d638453023072f9126538e9927b9fb6504218103b0e82d63ecc87",
+        "translationHash": "4adfc37860a83ef881736574772abe82edc61630a7ba2ad09e57204cbbc75d29",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "c296cd1051add8b38163336c24063e0792f63493d605bf09e26a1e6d6b13ea49"
       }
     },
     {
@@ -1387,11 +1536,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "948a6c25902a8fe68759ec2b2c3e54f7291f5c4b3ffc133f57e55b6b40502892",
-        "translationHash": "60da40a1f8ebd8f5ca4822cbfd10208485c404c9a975597f0eb4c2b65fd38f63"
+        "contextHash": "d596876aafc12b34c5245c5821e4150b97742bfececd9787b232f6bfa8b570d5",
+        "translationHash": "4c1af397c6056e38e68e4d8855c2572e19c39a130a060832d55d47589ff30000",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "33211ca47b306ecbab09d1a90ca2f200f0d859b94cd2c1541c980443e25da8f0"
       }
     },
     {
@@ -1473,11 +1632,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_model"]
+        }
       },
       "hashes": {
-        "contextHash": "2c6f7b173be3bcd0e3e0ff700ae7d4cb90a923b8927c074fb6f22ee010c7bb06",
-        "translationHash": "853b7474f402d07886cbc048631399bb5d7d23f404b36af36e2354bfacfd78a9"
+        "contextHash": "164b2515b0f19aedc889b9a37c4229e621da03c1b6073ca5a1efb2f6ca21417f",
+        "translationHash": "bb2b59a7d939aaf6356d5b7de79afafa4200f4e360cd39d4f3aeeaec8979f9c2",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "bade660d9d86e82702bfb535bc22b75081d00a1dcfecf6451e8d4f1c04daf638"
       }
     },
     {
@@ -1544,11 +1709,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_model", "glossary:lca.representativeness"]
+        }
       },
       "hashes": {
-        "contextHash": "64d73b7ae9b9ec87e1dce85d88b97a334339557ab5ea137aeeeff0b6d9675f4a",
-        "translationHash": "d17e1deec9cd882d7e7752ec7161ac6712d7b670da3b6d9ef807af19355dabbe"
+        "contextHash": "5dd8f635ae2e5c7037c8e1ead492276d47a5d4f137c01e4a241ec89abf1f6879",
+        "translationHash": "0d1774e658f1c9cb9d1f4e877d204e8f67dd06b8aba887e7fb7ecda1384d5f42",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "a2e3c3280284f7bd3493b2f1d4d9fc202f851e78d33b6d18f914a5001321f4f1"
       }
     },
     {
@@ -1615,11 +1786,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_model", "glossary:lca.representativeness"]
+        }
       },
       "hashes": {
-        "contextHash": "98149ff3ac2a7d32f180949b06dcdfcfa839b07decb9ca33102320bc128d6f8f",
-        "translationHash": "cdfbf21aee3214463a06af4e3c256829cf9d7812e47acb72d8ee5339488ea4bb"
+        "contextHash": "e11277627f5f17fbca59269a5e7fa035db9ab964b59e88a9d2bc2cc3efc67d02",
+        "translationHash": "453072a2abf422b952f4fb7090e2d82fac57bb6ff36f0fd7183a7e9b89e070ca",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "3f58e2f247d176fdd06472590eb985e5371fc80ebf74c897a2ade6f5cf511d58"
       }
     },
     {
@@ -1686,11 +1863,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_model"]
+        }
       },
       "hashes": {
-        "contextHash": "c7ad7f157bd04547c8b5eaa36c60cbdb80e97120e77589969290c6717a9da5f8",
-        "translationHash": "1d838a13d95f38de7f0354e9ff2dbab21450e98db3f292ef1395718cd178bbb4"
+        "contextHash": "08085f9284f8fe6339b14a02dad6d565253ca730c09edab1c0d1d559cd90542a",
+        "translationHash": "8ada96d0b6db0fb7da4a18160fb5705efe8fd28fbea8ba5384ba6dba2674c2b0",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "74b9b6e046a50edbea2b62baf7cded239919a5cc1a2c4875dec95c45e2b02fe0"
       }
     },
     {
@@ -1757,11 +1940,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_model",
+            "glossary:lca.flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "ec41436c1a321687082f2a8e92aa7709882b16279cbb431f8b1f40294c6cbd2d",
-        "translationHash": "d4f9e72444bab13d07fc2c87a73dbdf7a9be2d1d9919a06a0e7f909004181fbe"
+        "contextHash": "d1ba4299e6c917c7d7adaa955abda7d08071ad13b6fd8b40654632689abeedbb",
+        "translationHash": "19b6493bf1891996568aca1f9bc59e3a6ec2a9d1529758c808c954fc72509c22",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "2526ec5c12ca8f1ff18352854ee18bdcf67af4bae0be70fc9af671f6872b39af"
       }
     },
     {
@@ -1858,11 +2051,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "0613f34d6e7840c5bfe8a7762a59673bdffbf2a13830afdc5d7383abd39205c7",
-        "translationHash": "6085a6a29db8e8a3fd3fd96551c7154c90898f5a37741b3c408b7b41f1059386"
+        "contextHash": "a6a0bb08442d9f4e7b302d0ce5c46eddb5a9f834c188db703cfe29ffa9b86bb1",
+        "translationHash": "1692f29e0d7b8989a01881682072ded11b149711e07511c4c697f19447083f61",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "b71922ab352db0ff94f1f9871201ec30f1a255a285b0fdec227b80ad24fa6086"
       }
     },
     {
@@ -1907,6 +2110,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.conflict.records",
+          "sourceContextHash": "3f69015657aa6be139b44508ad9bbc271636d59bd96d6b59e1330339f5ec2ac9",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural count of user-owned records that conflict with records already present during TIDAS import.",
           "uiRole": "summary-count",
@@ -1921,11 +2126,17 @@
           "rationale": "The retained key appears to be compatibility copy for an older count presentation; product review must confirm whether it may return.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage"]
         }
       },
       "hashes": {
-        "contextHash": "1fd8f983d5031aad777d7194941e1a060588b0712c9da07e58554b97b8665713",
-        "translationHash": "5e695ea597e6ca114e1e18ee3585eff7467ee5871d0259f9637df4b9f8832468"
+        "contextHash": "c7a3319bd3dde7872809620eca1eec325016dc526d9720d48c01e58077cb3657",
+        "translationHash": "0643c958f4526411869d169916c27384a3cfaa74db23decea8d9f27a2cd7d249",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "278a54670412e6ab034a532b1766cc60a6e688956de927e6ca2384390dc32dfe"
       }
     },
     {
@@ -1970,6 +2181,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.filtered.records",
+          "sourceContextHash": "9d4d562ef2ff3801df4915d720ca9a4b79ef56d774dce9fa6fb5df9241c8e3ab",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural count of open-data records skipped automatically during TIDAS import.",
           "uiRole": "summary-count",
@@ -1984,11 +2197,17 @@
           "rationale": "The retained key appears to be compatibility copy for an older plural count; product review must confirm the UI role.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage"]
         }
       },
       "hashes": {
-        "contextHash": "a7f42d222c545c37232a475bce03b749841c861fccb1740f4c24c764df58bfee",
-        "translationHash": "e9ab1b368b032634eb000860212af9a1e957f73fdca929814bb3c43d3941bbab"
+        "contextHash": "dcbe5e092346b274aba6feae98a22e101d6af19099701498a799c0ad978756ed",
+        "translationHash": "879566bab40179bb6e69d95e7636fe8a426e1f9b1fac51bf9d1d0b4f1c9fc332",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "4f9d7bae9876e20f7b90df49198adf89409e340b89f031be8a3ae596c0c0b982"
       }
     },
     {
@@ -2070,11 +2289,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage", "glossary:data.open-data"]
+        }
       },
       "hashes": {
-        "contextHash": "99f6853ee758ba4815b60c3c19a80b264475358ed2f1f8ab9f9f78a6a9920d9f",
-        "translationHash": "610458f1e6eb84e91ef41cfc2ac8450cffd987184e6084c24017cca9272bd705"
+        "contextHash": "092c5fecb4f6bffa1bc88b996764573871ad2005413c172d09c1421204b80ca6",
+        "translationHash": "deed9ae6259d04bcb3481f40be73db3348bebf480d0153dffb040ca430ebebbf",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "da23e858259bc0372d03558da66d773a4db9b50378af2280218a13bf76de09a7"
       }
     },
     {
@@ -2119,6 +2344,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.classificationHierarchyError",
+          "sourceContextHash": "edb589a8b54efd4a985c2d47b858d59e01a2db9d4122e44288d31dc14e5b187f",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for an invalid classification hierarchy in an imported TIDAS package.",
           "uiRole": "validation-issue-label",
@@ -2133,11 +2360,21 @@
           "rationale": "No literal production reference currently selects this retained issue label; backend mapping must be confirmed.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:component_tidasPackage",
+            "glossary:quality.validation"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "8d6a8b552c229ebee6fe9f2332f7992620094aa6a8187e0f1162fc52be7aba5d",
-        "translationHash": "3ac57810fa149ed45da7707affd4724f6d9c89e8a300a8df076269611d1c56dc"
+        "contextHash": "b0794d8ba40410a4d6c25479e1b5ffff0c0d92540a7deea460335481be378e60",
+        "translationHash": "945a600a45b78a362d1dfd47d7f6ad6b3076037414e3c31e6f67e039e042ae13",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "6cb1d74c3df5821b7ccca6d8b4b72c2bb132b6eb76795bacb70c506f5156d6bc"
       }
     },
     {
@@ -2182,6 +2419,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
+          "sourceContextHash": "b613ef75656cc6f5d9f60b95ca73f53222e425bfb9f4dedfd9cfd70202cad1d2",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for disagreement between a localized data text and its declared content-language tag.",
           "uiRole": "validation-issue-label",
@@ -2196,11 +2435,21 @@
           "rationale": "No current production callsite proves the backend issue-code mapping, so product/TIDAS review remains required.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:component_tidasPackage",
+            "glossary:quality.validation"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "9e80a88382f1bd6a2206171130efb8e6b61b6e0e3b3ee0974f163ea41b76bb65",
-        "translationHash": "fb16a2c4ed7e78cf2513baedbc8e6d4f360ccbab575a7d88f584b3943e1a6606"
+        "contextHash": "6bf5539b01936ad1adacbfcc470718257a8673dba859df52fc123575eb6f2ec9",
+        "translationHash": "57328864318742919f14654864209ce9131cea33334d7deb305ffc53ec218f73",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "95a6eba834edb61fdcaaa38f639341267186ffb5910638ba58cbf8fe89b5af30"
       }
     },
     {
@@ -2245,6 +2494,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.schemaError",
+          "sourceContextHash": "8ffaaf908f4277be3ffefb6c440781a21deb1e829cc1724e52b4ebaca116da31",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for imported data that does not conform to the expected TIDAS schema.",
           "uiRole": "validation-issue-label",
@@ -2259,11 +2510,21 @@
           "rationale": "No literal production reference currently maps this compatibility key to a report code.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:component_tidasPackage",
+            "glossary:quality.validation"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "98b99057226d93c421ff4a2fc74e8077c61ebbe0b428e23bbd8b3c1e30c380fd",
-        "translationHash": "6fc3d4ff3b7dfd0b605b2c447985b0d8afc2ad116aada813b3ab210fb1c8f675"
+        "contextHash": "8853e28940582f8dbd1347c7744da23ca45d31bc7003d4785e22a0400aa2fffa",
+        "translationHash": "faa844b9d60d8baff58bdaa1b471b36473d16830725fe1b9b7ca0d362a968b7e",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "8f62693642c5978304fce5ac3a718408a4f2f818c7fd14f0b4bddab0adc11de1"
       }
     },
     {
@@ -2342,11 +2603,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:component_tidasPackage",
+            "glossary:quality.validation"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "2ca571319e4cb320598f6aa3b989b1346c146fd95f706bbb4ee6b08e15f0b19d",
-        "translationHash": "440f5c20dd0680c1cc100562bf91526d0aa255393e11d7eb5491f271972805db"
+        "contextHash": "c5338b7292628cb8c6a3282ce07a15abcec44ddce94869935b6f42bd06ba5317",
+        "translationHash": "45889c06d4c4ec594dfe3a21a0c4a53bff3e319c29715e03653ab13cd3a488c9",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "9f82acd4da32d9877852322e97acafd13e63caa5a252c5aaf7478dc52dc90fab"
       }
     },
     {
@@ -2413,11 +2684,21 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:component_tidasPackage",
+            "glossary:quality.validation"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "938a96aad14fea185ae54a23f08ea58bc9d65ac492eb41783faf314b4476856a",
-        "translationHash": "8fb476732e753e0ea7ef0fd823ac5b79f0de47cf9c8bfe0cabcce66048084bfc"
+        "contextHash": "802bd07aca1ea02df3277584e61e527adbd1d91e0474cbe420ffb165cbc29b58",
+        "translationHash": "bfd86c2c77b2a7a7cc900327a4d4f738670f8ff4156da495e20e15a3de114119",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "a585c9618e61db783d7be5c9a5ad2e172ea45a9672e7f180ce4806edf74d933a"
       }
     },
     {
@@ -2484,11 +2765,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage"]
+        }
       },
       "hashes": {
-        "contextHash": "b302be4b23e6490e06f2f4f756c3a28ed2c6f15d56853727e853f3e85c1c4679",
-        "translationHash": "b41ba8d4df9827221fd95b9c4fce3291aad2e81facabf8ad8a74d2afcedb3974"
+        "contextHash": "0fe828a4110ec498a26bef35357874020d95060ed1be186212ecccbb65e4bc83",
+        "translationHash": "c4fbd406b34fea6d8ca7dcec5f2e15d173305f6284e7f473f79392e21f4408e8",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "0d4724d435749ade8f5334eda7e09e82d254e074acb0b38d29bde123827bae76"
       }
     },
     {
@@ -2555,11 +2842,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage"]
+        }
       },
       "hashes": {
-        "contextHash": "6f16755986f60e9ffeafaa0256c5bce07cd733ad24d8da6319a05e4f8fa62d4e",
-        "translationHash": "98983588b70caa53ee5c1228b8195dd035ae3345789520697affe983db1446e4"
+        "contextHash": "c108b1e9bb10ef330143183634bff6ce22efa0186d341c792869b210b3230f7b",
+        "translationHash": "845936b954fddbca8906128afdef0b5b622481efaa371a8f8944ea4b4075cb15",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "340a5408fbb14b50e68d6756636d61f847ac16d522e469f61e83669d3777e0da"
       }
     },
     {
@@ -2604,6 +2897,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.taskCenter.rootCountSummary",
+          "sourceContextHash": "aead3c3f4d7b648e435138f24673790f56d2c9272bf8e4a30d6423bcda27d521",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural summary of root records selected as starting points for a TIDAS package task.",
           "uiRole": "summary-count",
@@ -2618,11 +2913,17 @@
           "rationale": "The product term for root record remains BLOCKED_TERM and the exact summary placement is not active.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage", "glossary:tidas.root-record"]
         }
       },
       "hashes": {
-        "contextHash": "e6786584ee6d66bc4465d5714128540ecc04d219cc88f6613d35919ca885312b",
-        "translationHash": "ad98303c64c115501da809788d2c2e41366da09aa5c8c537e37c2a90e43fada3"
+        "contextHash": "a17bffab5cb4fd19b879c5e0723053f2bee8b94a528286d27adf1923f64a9acc",
+        "translationHash": "ac80db70ca44ba15f3316db040a3117788d0c57fbcefba12be00d1d2e36a3125",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "eb8c6e739ce8efe8dedb7f2ff03cadf2c66276b2b78337d5b8d47114b6c66541"
       }
     },
     {
@@ -2704,11 +3005,17 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:component_tidasPackage", "glossary:data.open-data"]
+        }
       },
       "hashes": {
-        "contextHash": "0cc9f80c1c1555156c1a4b2e63dc86969d76f585ab93ed1a13793733e0314468",
-        "translationHash": "ff1494a40e262d4da07d0c4082c87e4842e1128c4524733eb879c9753d160d08"
+        "contextHash": "0e73f22a200d894731c894df1a1290c20618b1fe3c517f2211d4bc2f58d5d0d8",
+        "translationHash": "c3c1615f4aaf6bb66c5ffd095ae398194418635c3646d46f91fca2195dd646d9",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "67cc40d242d9589a771f8c5a3e130e86922a7baa73cd7935013f6c9b84bf46ce"
       }
     },
     {
@@ -2837,11 +3144,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "db4785f35671dc5bc9f962163aa1f828995a121412566f785aac7c0ed5556c1b",
-        "translationHash": "8cd6163250428237b3ed978415fa876b6c7748b86a6564c05512d26b89642c62"
+        "contextHash": "78d1d2f5166a2dfc72ae29cec2f774a09dbc864970c3a3382d5eba3e4505ea09",
+        "translationHash": "7bff69c53285f7c4bc7b2653f076837724e7c55385a44f1f840d9b9ef1498bc7",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "5117f1fdf77d0ba4dc5c39dddbd718eab32ccee232427ac4c46093e02638a48a"
       }
     },
     {
@@ -2970,11 +3283,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "a31e7fe8e997ba91d5b77605c9eb247f068c01c7289e836b2d615294f7ffbe29",
-        "translationHash": "ded87e4e189256140a7af6b211462256631f6b954f1cdbb2657619f95d24cb18"
+        "contextHash": "ffb23ee4efb5570d14eff3751a2131ca9c387ba6cd2c793e6d6a50fe3e7c39a5",
+        "translationHash": "1c91adba669d63e468fc4e32993939b87c4ee88d3a57ef0deb9ecd87d23c2103",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "71362306cffdd2966cd77459e689975362263a2d33ef30cd1157835de7a191cd"
       }
     },
     {
@@ -3193,11 +3512,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "0ddf34bc8755283be27eac02c56fb6fb958e4bd40647d3641dc10374c4223d93",
-        "translationHash": "131f2985f4e7b4bfd269c17b25c3378e2ee0ce73144b06c8317149a6f3184fa6"
+        "contextHash": "d7831acdbe4ba20e4f260b4306eea243fa25ed4d1efdbe4898d0474d2ca61867",
+        "translationHash": "7b1845d9509ea4659c221d935cb6d813ea9c664c10147a3878f6325b8ea8c989",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "7a87d9c06364ec2238deed59ce3b2297ad1d773bdbb943a08bdf9555b2a45f6f"
       }
     },
     {
@@ -3326,11 +3651,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "ef40a559ece4653f6b99fe17bfee5ebc6e82fd4657d3e3f0c9c13c7e9143261a",
-        "translationHash": "260eec103fc8f55a9e2bf83f218637630386645e3f9ebcd86cb1a103760573d4"
+        "contextHash": "cab7fbc7df8acc655e18117f8fcc8f0039a7d4351cdea4075ad2e57b48ea613c",
+        "translationHash": "48779909fd3ca2cf77da7b8774e81489963698dd03b2ac1d3b156aaed0d123ae",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "ca1b0589a5c5b3c0604225722aa7e4343074691e85a726af0e52ae26a19fc450"
       }
     },
     {
@@ -3420,11 +3751,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "fb9e149d9be6e89f438b9b2e4f31c7b5bef311cbbe7d8929ce337a7705850f8a",
-        "translationHash": "5f0a776826b77b3b932991273f5b2e259b6a5372c04019e9c093c31e482d8a8f"
+        "contextHash": "6280c5ef2dcdc8c9877ca21d5ec7585eaa31c09f5518a57b6fcd62fbac238892",
+        "translationHash": "853cddca0332e078c451988334f572ab3c1dbf83a9521ea1a658960e10ed83b3",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "26925e7f27579fd587f46680f85c3000d3915d7f0ba5e08351e922c4f45a99c2"
       }
     },
     {
@@ -3520,11 +3857,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "049bff304be75a4e3e3b0b4c91b8da627e12381984b88d6b3dc8480471df2051",
-        "translationHash": "7b27cb4da3053dba04cd8a205d81f4fea5ac340e7cfce505e928473cd07e11e2"
+        "contextHash": "5e5de93fc8551ba5fa8e6406299aa11f65f317ea82b971a020fad14c3b2d828c",
+        "translationHash": "0bb921285418336a6d6cc309547647aed6a0fa2c717c6bd196988ffb680d73d4",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "da963b180762d9f307e1db06741645b3e3d7c4f505892a2f985db30d349ceb99"
       }
     },
     {
@@ -3638,11 +3981,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "glossary:data.data-set",
+            "glossary:quality.compliance"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "2b8ded2f26cf96fdf8cfec25a7db3439af35b98126c5d336c4f88de85e4076fb",
-        "translationHash": "6d23f94bdc6493cea2a89b3f2e3298d075022273ffccbb67723327485bf9f960"
+        "contextHash": "417fb1baf27c41a4eee78e6e7bfb7efe1b497d6af1f2249895fe42dea7d4ab82",
+        "translationHash": "9eead05ea26c6d7b74acb8e7c6f583ed57d3a360398e63f37bb3f8ffc736a5dd",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "e1c816045d4f11280de0407a4e2a41ffd17b1df8cd5e55caf06b667b06583d0c"
       }
     },
     {
@@ -4071,11 +4424,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "a114103ec576758e605236067b699d1ff1621d54cccd90584deb543aca50a6de",
-        "translationHash": "affe7d68e3f229c5460ab67543d9dd46829594791c8662e7a1e042f9bb0b5be9"
+        "contextHash": "b1fc6d83302967a3f9db85edcf95694ae72aa8102c001098785e26325b5cf178",
+        "translationHash": "1386025ca76f9cffd5689923a349a83f74fda3156deb3c3494ef2aea7110d22e",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "bbb60cacf804b3c8ebf9e2cb0026f2db0f35943d555f54ddf38d8ab92ea139aa"
       }
     },
     {
@@ -4279,11 +4638,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["conservative-full-catalog-domain-review"]
+        }
       },
       "hashes": {
-        "contextHash": "983473e4a3ab612541832e7249293ba26cf3dfe9289403bfe9174d7f1d44a629",
-        "translationHash": "8bada2d0ddb80913861a150beb599dd43482f32892497d859020fe6f950bcdb0"
+        "contextHash": "3c0dcc83f2b4d833739c906655fe6bbe066d5a3510c750a8eeeb4279e1659c8d",
+        "translationHash": "c53eba137596b790351452731a20fadfa517b1099b82d31af63c7ec3e1e141ea",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "488e27bc26fd558dc30749bd659e0a444465e40586ae17dd3ee819c21b46a66d"
       }
     },
     {
@@ -4328,6 +4693,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.flow.validator.flowProperties.quantitativeReference.required",
+          "sourceContextHash": "f95cd703cf0c0a66a05262e2d42c0bf3503ada2e3499120861c6130131c5142c",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation rule requiring exactly one flow property to be designated as the quantitative reference.",
           "uiRole": "validation-feedback",
@@ -4342,11 +4709,23 @@
           "rationale": "Current validation behavior and the reason for retaining this inactive key require product/LCA confirmation.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_flow",
+            "glossary:lca.flow",
+            "glossary:lca.flow-property",
+            "glossary:lca.quantitative-reference"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "b0aa0d828ff10e8ed786028b75ceeaa19db326b5c9cbb389ea6356fe7fab8d9f",
-        "translationHash": "7317182f53840c5104184e0963145bf1645a7a68ba5f9d0cddbbc23373dc9179"
+        "contextHash": "e1700a75bb334c1f523c3f834f292f9650f92cb1cfecf78ce9a1217f83463b81",
+        "translationHash": "0e58f5a0549c8615edd4f2ea0ba5d7b9cac1e8cd975e8abde600000264bcf7da",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "b6eb50729991eff7d7766f3b0a6532b8dd6a4378900f9bdb52036b2e50b07113"
       }
     },
     {
@@ -4413,11 +4792,22 @@
           }
         ],
         "dynamicFamilies": [],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "275e9a51b779e92827b05f1b307c8b7f136a252a1d2538f8fde4d26e32aa3e52",
-        "translationHash": "627cf13fc4ecfcf30f84001dd888f3b336a8fbc2191e76dd5ae543b35d68f81d"
+        "contextHash": "22a68670eaa8d49238a05ae8fcc603d29aa74421802f271db367fcd4cb49c8b1",
+        "translationHash": "d346ae4a4872074041e04e9cd8a9a35895280bce4398b954abc400631cfc370b",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "efc62967d34cc9cdb31c31099408711e7a911ec1e360da5e8d13c4e71716dcd9"
       }
     },
     {
@@ -4462,6 +4852,8 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.unitgroups.validator.unit.quantitativeReference.required",
+          "sourceContextHash": "b77cee239b51be70e4105ab9bb3704150dff361caf69f04899b67a3ea35245e4",
+          "reviewRole": null,
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation rule requiring exactly one unit in a unit group to be designated as the quantitative reference.",
           "uiRole": "validation-feedback",
@@ -4476,11 +4868,21 @@
           "rationale": "No current production callsite proves that this compatibility validation message remains reachable.",
           "reviewedBy": null,
           "reviewedAt": null
+        },
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_unitgroup",
+            "glossary:lca.quantitative-reference"
+          ]
         }
       },
       "hashes": {
-        "contextHash": "b3632384ad65fc3733164a8191e19958e8be43420a2cb558c22f6b14e5334a09",
-        "translationHash": "3fe269246dce8f4b9eae8920469361b25ff5983f02eca3345460f804045cd952"
+        "contextHash": "b6d11a7d1fb3e8b232e15583c9ff82c795283ae140509de855360f052b1c7ded",
+        "translationHash": "79ec3272c3caca3d6d28f271aac995d0f3d658ff84dd22e719727a9e0c69b4eb",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "964aa21783b568a5cd0818d998f28b1584f5426849eba349b0ea376227aab6c1"
       }
     },
     {
@@ -4549,11 +4951,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_general",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "9dc52b731c17ce0d85bb977a28dd897b988fcd1768dc28201b606b08437c8260",
-        "translationHash": "0c937c48c99316cd3a2e35ed630cc196b2b71f951e63b125b5050c97ba5cc152"
+        "contextHash": "20c929f1929f58b69fef4f43d74271e4fb70bb9abb2bcc21ba0d0d6ec6ce88ba",
+        "translationHash": "a3b6174701f7be88a76e1929a9791f46ad766c68d167be65bd246fffe0d31895",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "99f418f278ec8633bad215dd630e333666bc12c025a7e605df93ef7a8a84d59f"
       }
     },
     {
@@ -4622,11 +5034,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_general"]
+        }
       },
       "hashes": {
-        "contextHash": "011a1478488179cd0e2ef8ca9e6e4b353ddc89c973e6b3c88e9564a0d339959a",
-        "translationHash": "8ed354c8d79397894a0b12d723e6ec436734bdb698182bcb231fe0d4da093245"
+        "contextHash": "6e88227cef6a87219b92475b94ff4406c0f5e73426e732aa80a3fe13cb261042",
+        "translationHash": "d2ddc1b994a03140beca865e2a103f88b6a8c597446d11273689ae25db49963e",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "580d45d0564ca7b5ccaafbace8ced2501fc3f6c301c0100496496b3a2acd5b64"
       }
     },
     {
@@ -4695,11 +5113,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_general"]
+        }
       },
       "hashes": {
-        "contextHash": "4459411d7d60aa8db277e961e310d62014fa1dcef11b9ca987d81b99056f91c6",
-        "translationHash": "8f8e493b869c0d20230afb8de99284bbc98199ee86bcca478f2885f1d9d91f64"
+        "contextHash": "147abf38060334d14d00d2246d2379445e826e88c5f0e809b783cc988756ad7a",
+        "translationHash": "9dd59b8992b76449fc23f85d3f5003fa5d5e9cbfc63ed37174e554516bd15c80",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "4637fa599492caa21d14653310c0a044105fda739602d5ea276f7f3e58963cfe"
       }
     },
     {
@@ -4762,11 +5186,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "6ca84ececd6f9e38d183c126d8c862b34a04ecdb68d64eed5bc56b6a1fdfb308",
-        "translationHash": "9510645f25c21fc6a22459bcfdf752606850bb20d18db4502abc6c173392b871"
+        "contextHash": "c440faae2b08d0fa0005c887c8ad608027c9d6990af7aa239b9d85ccdbc562fa",
+        "translationHash": "77c619e5e7827cef164473798e91ff5adea454898f0a895a11031267e4692085",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "15b85cf61567ed49252e7ec93b61a6c807eed15663efdde6a2d5dab5bf442bb2"
       }
     },
     {
@@ -4829,11 +5264,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "28bb131285e4a87049046fa75fc7d3f20f8adc85fe4722e59313a17efa0cc134",
-        "translationHash": "9276484bec89560ef1d7d7220e749b70454b269905248d1fd5b5889f657a9b53"
+        "contextHash": "a4c5f6c46825764e25db6a85c5e2bb936a46e6d2c9f250f92fd73b83b9692b78",
+        "translationHash": "4ef3569cb622746501a26a6a2eef761cc26f744a9f868f3d7966b031875dd404",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "da4956699b48493aea7ee418c8cc716e15fec89a00a39a341fc5dec7b359a83c"
       }
     },
     {
@@ -4896,11 +5342,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "6471632e3e1b2052ef2a12a07c63b3faf1e2432392ea84ffb355b6e70ddcc143",
-        "translationHash": "fb1de9fe3a0b532d42511fc210cf2351c70e40fd3b0c6dadcfd1ab6d4b0010fe"
+        "contextHash": "61ca8e68a5f138cc087c85ab31b725147c964c049014f5fd8460c2c870a3f713",
+        "translationHash": "6a1ddaef79c0ff2faa2492bebe086ad3252291ca446928c49e02f060285cfa70",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "bc123f87f2307d8ddd5c4750c569122dd0f420794dc4e4bcc489b9f96ce062f5"
       }
     },
     {
@@ -4963,11 +5420,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "6e0bafe998b2740eac908054e68cbdd70f7577c1c65836e89bff8e6e1f964e88",
-        "translationHash": "1db6f0a1a5f2c3f5200ab7f05e7e4af4f6f947b18a1cdcd4a9e2f074bfe8c694"
+        "contextHash": "173e1e2643ace6a2d6a34b03bcb9714c186b50b34e9c3a1c1bbd7666f766dea8",
+        "translationHash": "12d7d446552c32b14f841790194d81f6af9b49fac222dfc9d71c89dcf0e4a8d9",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "458587cde95729ac905c7188dccdc314fe6a0a8716c837d95601a55fc0a82cef"
       }
     },
     {
@@ -5040,11 +5508,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process",
+            "glossary:quality.validation"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "188192e68ac2c66ea7c926126b119465896c4ecc267b915410ba6ad0fbe55813",
-        "translationHash": "c644ce4196027cc785c9612555822565024dc6766e274638524530976d4591ff"
+        "contextHash": "f82dda734977f11d4307486d88256ac7e422ed5007a10c58dfca49ba22294ad0",
+        "translationHash": "1ddbbcc131555bef62b289ad23180b87a20b409ff1d5fe84c14d4f49be056854",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "05e543da380528d82a0245050ce956849f6c4eaf41a8300bb3814cffe4cceba2"
       }
     },
     {
@@ -5104,11 +5584,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process",
+            "glossary:runtime.worker"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "65e6f0de71e40bc8232c5fdeced8075f6ae44ee94f9616863c967dfba0d93a21",
-        "translationHash": "318ee888de7dbd012ea541e0963108fbb659a447cffeb494b8b34295ae6923c5"
+        "contextHash": "fe628edb072491a87fbbae8faef9446a27df36e2680dcf71e439ede3e2e856c7",
+        "translationHash": "8f1752bf1663773def1538e732f6822a4b03b2a3a55f7c4e295e35e2e0a7bbd6",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "cdf92ec43973de54ce7ca547759567156246432906c67fdae52c7caca76799ec"
       }
     },
     {
@@ -5168,11 +5660,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "fdc73d16fe6f653fcf9dc83752704c20946c5527d82d74bc71385725df12db2d",
-        "translationHash": "0a5b41f8ff151edc7188a170e140a67875dafec877e5a004b9e01d192eab6b44"
+        "contextHash": "9505fa166e7f2939f0f1bbd0a2d3e4d41c7020a48379a501fa28a1874be62e49",
+        "translationHash": "1ede2f30634ec2c36a8456b7771a0689cdc8ab8c9e6fac2ebb09ab438234b47b",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "c8f149abc4c26aa7e668d79a73f72581b421a88c78534e1ed716defbb5b9dfe4"
       }
     },
     {
@@ -5204,7 +5707,7 @@
       "candidate": "Unbekannt",
       "rationale": "Uses a neutral localized fallback label.",
       "risk": "None beyond context fit.",
-      "reviewDomains": ["native-german"],
+      "reviewDomains": ["native-german", "lca"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -5232,11 +5735,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "4046ab8c380f7b9b4668786e633def6a891d773e9599562db7b2d11d17c8c062",
-        "translationHash": "60fa4f77d0207de58a1376692815fc11db1587f7248b73e31413153ef955fa68"
+        "contextHash": "42efa527a962e3a5684babe7a868188e6597415ff0236fd350b05ed62e8669cb",
+        "translationHash": "9bd93a146ddc4def328170e01edfa92663cc4214988b27520518638257164966",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "eebac66f43a5802eebbda352377aec41a5b62857e25f0d08a3ad5ed9e5a2d2b0"
       }
     },
     {
@@ -5296,11 +5810,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process",
+            "glossary:runtime.worker"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "cb674a09ab65bc42f43f61f1c61a08844c79b2de25dd25141f427eb61384506b",
-        "translationHash": "0701088d8578ddd86fccd990672a679a91095524436d8ae4ac2d1966d6550dfc"
+        "contextHash": "e8ea8098f44324d99db5813daa193075659499773aa4e54b259718d8de2e2b30",
+        "translationHash": "d1699b5f2b685f10532184e6da3cf21aae7c380799e6fe107d10dfa7102a3623",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "a4c91e8d13d01d3cc257479e6c3e9aa9d599a75c2cb8a8d3027b865782c2ad56"
       }
     },
     {
@@ -5360,11 +5886,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "d451eff89d2c5b4f53e5c5c3be391dbd842dcd16022ad65344df93047131d78d",
-        "translationHash": "323e284a273fb161715fecabe67a2721bfba0e8ff18e51fa32730cbfbfaadab1"
+        "contextHash": "81a84ac003414967fe9018e1c594e9c4a06c51d37c00a47728de6e04659f8f6a",
+        "translationHash": "57d8b8ffab483f7e82dfa47e9f8afe2b149b278c821458446d5db5d28fe7d1fa",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "5a0e56443cf6c9091df4e20bd0dd751ab36829efb56e99b77d1719922a4ef11c"
       }
     },
     {
@@ -5424,11 +5961,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "e999e410581ebe9886b6f1d197166b8b537b3dcb8e045508e85e25919e16d1be",
-        "translationHash": "c57219c29c4f99d7ceffa54fe93660ffed579d0c0ac7529e9a528542247117e8"
+        "contextHash": "43e31e8d2ed27e00ad56bcaa2dd8e112c85ab1a1efb82cdb4f6e82fda0f4c18b",
+        "translationHash": "e2e41cd4e9cd555969eded8e8620f0b3ece5112c3c16bb17278d4bd9c88aab1d",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "9634abc9239e8afb1215b525c1ef8c579bf929d2aa5e2ff94781468ef0d00d66"
       }
     },
     {
@@ -5488,11 +6036,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "c42484bcd09a8a58a8766a4cf53fb7c066d52364921c129856b44092d07efc62",
-        "translationHash": "fb65814fbebfd8afdcc1defb470d11d138c45e9c97002e945fffc02561788e9d"
+        "contextHash": "c1458a9385a9058c001c3a03dfb1f9a2be87b266cff807151702c3d41ac586dc",
+        "translationHash": "246dc1983df190bd980a5de8ac368a68c56b1efb603faba52d6a932c4307fcf2",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "5ae7af56ec7414fd333eea525bfc138d6f7370dbbe0cee185ae53b44051df0cb"
       }
     },
     {
@@ -5552,11 +6111,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:calculation.evidence",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "e9ef3afb4d6ee277489fa9e1f3e0896b4dd07281aaf4f4c6a3414136833b0432",
-        "translationHash": "039ec346bf521388cde5404fc0fffc2f36b3392c47adda6a8a8ec331ed50ddc3"
+        "contextHash": "e6b4c1dd6a49d55a2ef24f5b0537f78b89c5969e1686d5cfb3f24cb0aacb5202",
+        "translationHash": "5bcaca91cf667732d351afe8243b5fec3e2b3c453f72ead9566240777629523b",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "e2bacb19ab17e10ab25ebce1ae0ec2a36794771af84455706525660fd4cb6b2f"
       }
     },
     {
@@ -5594,7 +6164,7 @@
       "candidate": "{selectedCount, plural, one {# Prozess ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).} other {# Prozesse ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).}}",
       "rationale": "Preserves both nested counts while avoiding case problems around a numeric placeholder.",
       "risk": "Both ICU plural layers and arguments must remain intact.",
-      "reviewDomains": ["native-german", "product"],
+      "reviewDomains": ["native-german", "lca", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -5634,11 +6204,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "47adf2bc62916e0213f4ea412302e24cb3bd203cc53d01b0d0a34bf61f45b0da",
-        "translationHash": "9be1e091d7ab7354b7bd04f70f50570c5b02bd4cb64eb0baec8bbc71242c3431"
+        "contextHash": "6956567b31652b4cedcb65b3a04c574567bccdbfe1eb79d4be1ddfdd2b4b12a9",
+        "translationHash": "1bbf4159bb9e6b721363841a5db52c127dd974c4fd0a33504fb87ced08d32382",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "6c507358d7c5cb6b8ad65986a1089f9c0ad4a7802484af6472d4d6013f883485"
       }
     },
     {
@@ -5716,11 +6296,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "563a85ac6c8a0444a372abde9045512282867d625e2a91a3254a4f9cd4e23ab1",
-        "translationHash": "710d49ff021ca723ee3fa45ccf7024f74d362dfba449bc67fd8814c84e6d706a"
+        "contextHash": "55af70c9c4f48e68acec38d38e026a804771ce1b025d22c8d2dc90ca54ef87eb",
+        "translationHash": "fadb004542fd600a99e32144014259575f74bc696031fcd391dc518541a56e10",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "741c26197656871be3f2c3891d2a87882a4f6838f526dbfe652dc02418bb85a0"
       }
     },
     {
@@ -5752,7 +6342,7 @@
       "candidate": "Keine Prozesse entsprechen dem aktuellen Datenbereich und dem Suchbegriff.",
       "rationale": "Preserves both data-scope and search-filter conditions.",
       "risk": "Datenbereich vs. Datenumfang must align with the scope control.",
-      "reviewDomains": ["native-german", "product"],
+      "reviewDomains": ["native-german", "lca", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -5792,11 +6382,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "a15606992e405de13461d978f5fd3fe11215a494ff2b92eb42175ee48c4243b2",
-        "translationHash": "11b3a92152d1065bec4d95320c8c6182f95b661b01baa479ec78f6acc417033b"
+        "contextHash": "1f513d88d67c4a3fac89cab248d26f415089132c2cbd04249c7d981b98939a38",
+        "translationHash": "d6a8ed12298ac1071e12c4657ba2d3e31e0a49f2d727f9776f573a7c655c5ed5",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "e3df13ab00b78d3c80dae6540091db9b3b53be613d625b7d7d2fdb5c4b2514c5"
       }
     },
     {
@@ -5893,11 +6493,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.flow",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "75c504f8a14ec1ee44bcc6d41263c6bab56a5a563ad692e855f6490022d77de2",
-        "translationHash": "8e21c8e552ff54ca71c659f751b0d6695c8a789cdd9c216470dca3ae9be21833"
+        "contextHash": "9870188efd52bb3842e8bde1a12e9bbda61066f59fcc903aeffe51cff2c776fc",
+        "translationHash": "b767daeef396326030a644c173e18de0a96aaaf3218169453e51defbba2ec567",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "c9ce8f5f6556a578cc62589721cc0749291dd57b2b5510c2c84ca54cbe746b11"
       }
     },
     {
@@ -5994,11 +6605,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "c38d8fc16fceb9800ecd85b901d7a37695620a2475420fe1f2c3ae6a87fe01e1",
-        "translationHash": "8a76b78955025b9b0b4868525e3a609106a31411673b96949e1d4ea21a1fa912"
+        "contextHash": "8a408bac8f13708a18070593057d38bab8c4163ebf7b212dcbc77ba0d4bee48b",
+        "translationHash": "481dc2f15fb484921f2ec7b8c9864d0b5b8770c30959c1b1b3a1d08db01c026f",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "300f4d3472c8721d523cb2526b8be3a36143878f74332d3a4cde5381d187cd78"
       }
     },
     {
@@ -6095,11 +6716,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.flow",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "dcfd141323fcd795b3842bf61ceb798c378f2b76e951f1534d88cfe710aa671d",
-        "translationHash": "98fd29e97c5a6c3a9883c4888ad11ece3dbd625b715693551324acc71331d6bb"
+        "contextHash": "6f2917ce361aa723b3d01d68dd0aa3cf1bdf1572cadae0f8364e9a7f9288b632",
+        "translationHash": "2a50ccc92dfd096fdf2d3dc1ad7841fd9e4a55d16c1a63ef01c9403669135780",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "101cea660a1e27d99dd1cce3a0cb597fb1ba20c61550ae0c65484b7ceab819cd"
       }
     },
     {
@@ -6196,11 +6829,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "743fce5eeaea0dae32ec39e112c35c4c413d29a0916298cfa85250faf1ae2e85",
-        "translationHash": "04fdc051c3047a3feac91a7065707ed8e1de05c3c801f1248d14d32bdf0726e7"
+        "contextHash": "8f228c537c4b4c8a0118b649fb6416af704422e848a819e83e0ca8d64c4d0539",
+        "translationHash": "0cbc7eb5103d85ee05848767fb04e1191e38f4e013c30974c6796a663f83b018",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "0e03ba2a8eaad32d495071007be2ef8c75c311ea700646a3613811bde5ef44bf"
       }
     },
     {
@@ -6297,11 +6940,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "88bbf079f7cee2ae4a329d506d693cff64be9777639fa9599c0fc6ed12f3ea5c",
-        "translationHash": "c93fdcd66c7916ecf99e2e374b1ac22b7a2b184ecb63115579b78b4cf938f1ac"
+        "contextHash": "c3ce9b29283d173e563cb45857a3cd9d69cf6914d79905d38639016af04a6a55",
+        "translationHash": "89a709ae508ff9c144059e7ecc6aabf6920fe9ce75ab3a62fcbdc13f8b6a2a86",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "201a21da361c3e32726bed3233892ecee2862cf2cea68f690860e88e8d9d79aa"
       }
     },
     {
@@ -6398,11 +7051,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process",
+            "glossary:quality.review"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "51dca2b43c859f129271b2b64cfd60a56171d929abb913a6c228a1aba28c24d1",
-        "translationHash": "c28b61a29e1267dc3478abdbb53d31bfc85a74d137d7cc757da0aca1cd9202bc"
+        "contextHash": "4484c00636413af111a77e76d531188bb27f1a5bdd2832156d50fed2970bc559",
+        "translationHash": "e3b3470ed8b128aa61b6e4d0d63b9a5f17a2f9c0c44b7a7f7711ad69ede0f630",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "735a038a50a810626000420892d42fbe1e2f7c87625a3f2bb2fa09a69a61118c"
       }
     },
     {
@@ -6499,11 +7164,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "70264feda2514552009d3ab98d2b640f9b1cc0452580aa0caf3ca3db3ef6c19e",
-        "translationHash": "604a3b1c3f90fef254769cab4b38e3afdff92381d58226bbecb8d04a5ccfa6f1"
+        "contextHash": "56d16baf58a6b9ff41331cf7b1ed4223515ec692b49fce6605ee270ad3baead8",
+        "translationHash": "16cb39d7cfe9913ba5430e6a5c7cc2020823e885efd7c692574776c9230b9262",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "073fa49da13d8924a3f21a9fe362bd2ab71f659226b07f377ee05659d54aa02e"
       }
     },
     {
@@ -6600,11 +7275,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "3fe03415b0fb0ba798be8a4a5712c14b71b43cd77fcb872d96a26d647691ae6b",
-        "translationHash": "78c9c0fc43dbd73ce8a15fa428c82e2d8bec0470cfb11bdf6fd91cb3cd4d5e7b"
+        "contextHash": "e592ce2a35aefb208827e860b882e4ced1864b8b6cd4965220a95c5ac52d0257",
+        "translationHash": "033f578569059783a82a69a6efca989fb5ffe2046dacc2913c20648fe5509254",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "07450b78c5b76fd8ca7cacea3c932616030e7ecd0c9e01f72a9ee7964f1e683c"
       }
     },
     {
@@ -6701,11 +7386,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "196416f1c804241c3322f43a4f39e40ec34a966c49c8f17d17fbb08677c95b95",
-        "translationHash": "94116547ac285636583cef761e573fb1022734c3f26a42475760ae16f6d1de4d"
+        "contextHash": "faaf41e9871ada26f1682ee4fcac4cd09de055b6a8d9c4193dae3b2dfdc7dd93",
+        "translationHash": "82f44624663f86ef0fcab7d85c7188f54914991c6712bf05b0ede6a0ac277906",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "95b9309e107a4c025dc86e400a2466d5ec4995c6ec6a1d9b3584181ef573ea05"
       }
     },
     {
@@ -6802,11 +7498,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "0db6de3eb3ff45580bc4d36156b6bd8be690bc7ae91aeb49fa6d8d79627ca508",
-        "translationHash": "ed3bab4363ffe835d0a4df6a1b5e659f3054463c89973707e7999efb582ba306"
+        "contextHash": "661044fd1a432f2441b80b031a1605c5efff12613e7c33ae95029371b36bd0bf",
+        "translationHash": "f44876fd618afa2e0e22ae791e8aa6ede6b373ba049342accc858e2e20302204",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "121f34fd112d13977130ae0806658c8b84ff7f4c3dfe705ba8a78e50c8a30efe"
       }
     },
     {
@@ -6903,11 +7609,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process",
+            "glossary:quality.review"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "c15c88285ce3b859d5cd2dc0839fc5cba770b713827165b068d426f956402a43",
-        "translationHash": "9ae8fdc678f8282d9c8d8c391f7cf5d2ac113beb8d3c0c55e4ceefefa163db47"
+        "contextHash": "6b6c99049596e7f3e6ca0cfcf5d1131a1f27fd83350a8a21204167ab58a6c6fe",
+        "translationHash": "a65c0cdbfddb8718935cca627c62bc8780d568626f1b14116a11cf852e8fe413",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "9c1997487b3d454fc83de972598ccc702b3fb9249d1e51782a8df9b30c2857e1"
       }
     },
     {
@@ -7004,11 +7721,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "2d7c25d52c55e9ff178db8c37a98517a7ddbcb605f5121d715a95f93d035f485",
-        "translationHash": "c93784c65ad55d09ae08f947285adfa33c58aebb745cee86fcbc1fd134db34c3"
+        "contextHash": "d1fddd05215f1e2b9f8f22daf70771f4f1b2173e9bbf25e0cfb2748cacf6efbc",
+        "translationHash": "9be05a5c0ba449dc07b14147c64f83bda1b2a6ae83ab8c9b62f6a79804e02ca3",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "8108e7482e3141b484b3cc95f40d763b3e874f65a6f816ad4709fd0e5913ec0a"
       }
     },
     {
@@ -7105,11 +7832,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "730c2c79ef3878a46643c79d513ee7ba67d343a07224295dc26b2133be2870a0",
-        "translationHash": "b7fefc8a29828f353530380ef9cf26a4bb3feb9adc37884b489c4d786494a935"
+        "contextHash": "8455acc2ce39739a5143f2d3ea699d0d763479400aa9099e0c0ab06391cf0fd0",
+        "translationHash": "be26c590a68859be77a7bf7188555de2be958f0a18b549cdea3875eb7a130998",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "36322dc6f5dfe67802610900224be0861a7c2ededee68b2e7365b045fe7b6f00"
       }
     },
     {
@@ -7206,11 +7944,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "4158694fd12bf06e0cbb6a1becd1b5eb943318307097afb59c7cdb08e52cde9b",
-        "translationHash": "3e6d09e2be12acf1e2cc9a5f18b94af44a2a29407b43718f884b58e933b03800"
+        "contextHash": "190171fb133981d7ec0a0524d3c5bdc353f13cac4ef81a671330b122cf160415",
+        "translationHash": "8e9ba69b69f384b2160850d93062e85a496e09a7c06b629ae482969fb47b023d",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "a824cdef12fcee5899ed30d1fae192072a7483afaaa537e90cbaaf9efc8f50c7"
       }
     },
     {
@@ -7307,11 +8057,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process",
+            "glossary:lca.quantitative-reference"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "62a79327c3d90f879e286e60049829d5132544226b628dbda8876ca94ea736fb",
-        "translationHash": "1c7bc094a0516c617ff3c39320214bb1273dda364eff71122bf09af845c2b236"
+        "contextHash": "7b7185857f686840c145585ec4f40787a299001d5b72283f67e48f0c4e490848",
+        "translationHash": "122d861b11329c72d32fc5d844635438021a6a00c0446b346ee24ea67c50040c",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "35a6be1c683c8634d59d6e7e80daf10bbb285ddc6465190f11588095e9df734c"
       }
     },
     {
@@ -7408,11 +8170,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "11dfdf26f41c658aceb8ae29c5c40cbb1546fec35a2cb2182a5e4c946984b139",
-        "translationHash": "8bc2ee1d93b0884c66ff235df666752bce463e90dcbfeaa3d11fc45a005fa89e"
+        "contextHash": "1576043bf09fd5051982388cbac414c7fe9182b29b58d9e5d0e1205f6e668583",
+        "translationHash": "b904061b1589c98b6ae7adc69fc2bae0855f4e0c5b77cf022752730a6ba269c0",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "c6a4ab261f8183194b9b83472a37461203c2daeafda5ebf076a752cbe03911d1"
       }
     },
     {
@@ -7509,11 +8281,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "ba0c3638015e2b9411139efb0c0600790cdb62e81b16a8e066cdb35012a5b4f0",
-        "translationHash": "5243c3c3a674380fa6f6f8f7d26d5900d1b342edd2ca2b27a03053174b272758"
+        "contextHash": "938c296b7d4bc8cfce440775cfb319f6a612722892d60d063277250ce1761243",
+        "translationHash": "d9cdbac251142db0d1eca074dbde5ba82e354f93cb08618561cb16c57cde5e75",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "6ef941ce614091c136fa0a866611c4f9eac51c302b54c80aa1435d49ebdd9402"
       }
     },
     {
@@ -7610,11 +8392,22 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "9cba737f5dcfaf35697bfcc013421203aeafaa7656b5c1ca026285f1d6ae6990",
-        "translationHash": "eafd5dc0974cead626b0b8b99d6decacca7e3d6c717da35eaa3a6cffeb41aa67"
+        "contextHash": "428ce2004121f43459a4da7ac7ab59e55111a721d6ede63038970586365704b2",
+        "translationHash": "67dc9772d2102875f4e6e1f8a10a6cfb0d490c1116845ce6438044d56c72f905",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "569315f0bb17fecbee3cd3a0a5c1e1d239e344980afb1fb1686fee259222f305"
       }
     },
     {
@@ -7711,11 +8504,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "a76f156a05326f2bba0bf3e765dcc71f4ca562f32f134155ea2dba0ebf0c72e8",
-        "translationHash": "c36319ed1dffee1e9e1d716e540ae4bedafb8377e5831b40c739802d8a302b3c"
+        "contextHash": "ddc05164e78edea59e385016d32b9264d162722d0b49f9ab721a954be24502ca",
+        "translationHash": "0988296c0a6c90eb14727e618ba588e1e25e0ac1e1b38ad903977764982e30aa",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "63c27ffd5e9959dad84381acdebf566683b7152d18446f5abf0e96de4fb35a7f"
       }
     },
     {
@@ -7812,11 +8615,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "76f01294d199a6ff68f4d9cebb2353ec87595494a4bae73834728a19566649a8",
-        "translationHash": "cf861db1b35dedd3fe9a770f8e54adaa73b73a123b29fc4d2b8e9460b17a52a2"
+        "contextHash": "bbc1c829324fba6eb6a78a99119a761ad8d9f2fd5c4b9b87f5ffd5377063b8b0",
+        "translationHash": "0f1b1c57ae9b3f3111a0c5a48f0089c12294743c41ffd463ae9a6f08c709aa96",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "42ad24b2c2e3c5077ccada6bda03833b550afb0ee531b1f7e2241ac3f4199145"
       }
     },
     {
@@ -7913,11 +8726,23 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_process",
+            "glossary:lca.exchange",
+            "glossary:lca.flow",
+            "glossary:lca.process"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "ec7e12a9b4cb16fcde687b79ecfa83247fcdf2e1acd917b1f36657625c1400a6",
-        "translationHash": "dc27c943d0c8c24b99fb0668b105e2e20879b35edc8c516379932db7bca8d33e"
+        "contextHash": "0f504389f77bede48a970a60abc152f86961665f34ed4d8e11b249fdfe0f052d",
+        "translationHash": "13518f02e072dfe28fb3139e6ef58cac0d94e68e2504474da4171165cca4add9",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "9ebbb66e4790952877fcc3e1631805adca7cea2fc8efafb40a28af4b31260789"
       }
     },
     {
@@ -7949,7 +8774,7 @@
       "candidate": "Prüfende zuweisen",
       "rationale": "Provides a compact, neutral action label.",
       "risk": "Prüfende, Gutachter, and Reviewer require one workflow-role decision.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -7980,11 +8805,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_review"]
+        }
       },
       "hashes": {
-        "contextHash": "a3d4108b5d986a361ffaecf49524ea616d7a0d46b52b086df87c2736486fd70f",
-        "translationHash": "7bb4f6c6861d48e6edc8905ced949c16111738d2c11ccf15f0b6b74cc998666f"
+        "contextHash": "23a7e9ff8ff199aea3eb62037bf5d52897fe672d5f6fb2c0bfec29efd3ffd942",
+        "translationHash": "7304cedc62be2cf8e9da5fecb2c69b0ad6a85acdf2ff560eb771b7c5d90574d8",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "3e3b1432c138c012cef47828e2fdfe948467dcf08bcd4fde018fa2cda0acb5e2"
       }
     },
     {
@@ -8016,7 +8847,7 @@
       "candidate": "Zuweisung der prüfenden Person aufgehoben",
       "rationale": "Treats the source as a completed audit event rather than a button command.",
       "risk": "Must confirm singular vs. plural event semantics.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -8047,11 +8878,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_review", "glossary:quality.reviewer"]
+        }
       },
       "hashes": {
-        "contextHash": "8db0bcb128dd6ea980e7df21c5a3a005655da3c1039f1dc814ea7e7e770acd65",
-        "translationHash": "65e90db77466f6c7cc65c7dcc92b622bbca370a859d808cd2683fefad23e6a04"
+        "contextHash": "17c9f17b782118687b6ca43bd40e152ea18275ec2a1622a3fb6458adac236bb5",
+        "translationHash": "ca51fbe556c2fe148413bde8715a9e1276c238441764acb4d61d2ab9e53f9a07",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "26702a33b7e6171099c31ab39a9b579338cd3f527c191e6f12f21a52300b5784"
       }
     },
     {
@@ -8083,7 +8920,7 @@
       "candidate": "Prüfung genehmigen",
       "rationale": "Uses action voice for approving a review.",
       "risk": "The actual state transition may be better described as Datensatz freigeben.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -8114,11 +8951,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_review",
+            "glossary:quality.review"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "c58b37b17c4f35edbf902967bacdc9f63ab0b4bf06014f561d9b3fc7ec427467",
-        "translationHash": "3d92c2a3cbcca45874c5f7c3f9fbacde969f5e45c3cece3007569cc0a0a5dce5"
+        "contextHash": "45804014405ab7102141181f65affc6c8a1c7876d90351a7f64cc84344866464",
+        "translationHash": "736e6100772fefc5b24cc4a4445b6d274c4760784a398e7466834657f9ee0f34",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "53e5f90804973360e7449d198b02c0cb48389860cd2acd66964a8e616b8ddad9"
       }
     },
     {
@@ -8150,7 +8997,7 @@
       "candidate": "Prüfung ablehnen",
       "rationale": "Forms a clear action pair with approval.",
       "risk": "Ablehnen vs. Zurückweisen depends on the state machine.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -8181,11 +9028,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_review",
+            "glossary:quality.review"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "f9dabe8c93cee2b01c5961f642c6f8db9f263d36ad3436a9bfa54a485ac89b3d",
-        "translationHash": "9fbe89e3195ff196de07fc37c08f05b3f63dba6e01e9696b7a75c5ff59f5f58a"
+        "contextHash": "3ec062ebd7d40618129deb5f046496ba6935c02c0abd1a95004f3e5f1f55ad58",
+        "translationHash": "ce298c50294f160943bb1b7077995902c89ef9052d1c09901a214e0bbe03db80",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "930da2ffd8a49d20cef774e67824c367597a69032065ece72abe989aef8c923f"
       }
     },
     {
@@ -8217,7 +9074,7 @@
       "candidate": "Prüfkommentare einreichen",
       "rationale": "Combines the English comments concept with the Chinese review-data context.",
       "risk": "May be too narrow if the submission contains more than comments.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -8248,11 +9105,17 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": ["domain-module:pages_review"]
+        }
       },
       "hashes": {
-        "contextHash": "5fbcfa0eb8c2c37ed67cd90b6756abb09f515ee42c9051529b198ac6d6f6e6b3",
-        "translationHash": "b2679edb53d09ca17e949595b7f637fa29233c369ac6283924e99e09c7a95c11"
+        "contextHash": "781e15e7c44722f23888e2fd018c9b067216bf3cae7f4bd8167873c36b5fe9be",
+        "translationHash": "99f446d6dd86356d7f6a1a758a087d8c710266de6486252d1c49e76d8f7f076d",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "db4efdd92681155d795584b6d444c45c40060cab3e2c34efbe66722767984267"
       }
     },
     {
@@ -8284,7 +9147,7 @@
       "candidate": "Unbekannte Prüfaktion ({action})",
       "rationale": "Localizes the fallback while retaining the unknown backend value as interpolation data.",
       "risk": "The {action} placeholder must never become a computed message id.",
-      "reviewDomains": ["native-german", "review-product"],
+      "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
         "source": "canonical-manifest",
@@ -8339,11 +9202,21 @@
             ]
           }
         ],
-        "reviewedAnnotation": null
+        "reviewedAnnotation": null,
+        "reviewPolicy": {
+          "domainReviewRequired": true,
+          "domainReasons": [
+            "domain-keyword-policy",
+            "domain-module:pages_review",
+            "glossary:quality.review"
+          ]
+        }
       },
       "hashes": {
-        "contextHash": "4fba9422758b108b0285ab245ac297889117b70d9e1bf27f78b40edc0ce6dc49",
-        "translationHash": "450bd6ba43ac7a77e5004314ac24d964896288618f8a2e8249d3748892480fcd"
+        "contextHash": "e894f4c31c4dd546bf7168fd51c28781aa4f3383345912a1eeb55958258cb925",
+        "translationHash": "975da188ededf7fdf30986ab2b7a8c403c34fa8c4dbc074568bbf46714fccff9",
+        "domainReviewRequired": true,
+        "reviewScopeHash": "3ba847b3363299d0b7671dc1e7739845fce7824d6ac5efe867d3d9c8c8465bb5"
       }
     }
   ]

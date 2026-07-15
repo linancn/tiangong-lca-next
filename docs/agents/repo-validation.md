@@ -23,7 +23,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-15
 lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Added the staged German context/pilot proof workflow and its intentionally failing human-review gates for Issue #601.'
+lastReviewedNote: 'Reviewed the staged German workflow after adding canonical producer actors, GitHub-attested identities, verifier-policy freshness, ICU branch parity, and full-catalog review enforcement.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -83,7 +83,7 @@ Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/U
 
 Treat `npm run i18n:audit` as the deterministic structural proof for locale ownership and runtime message references. Linguistic and domain sign-off remain separate review evidence; a green structural audit does not prove translation quality.
 
-For the staged German workflow, regenerate in dependency order: canonical manifest, German context ledger, then pilot review pack. `i18n:de:pilot` pins approvals to both `contextHash` and `translationHash`; changed source context or German copy makes approval stale. Reserved messages without current runtime evidence remain `BLOCKED_CONTEXT` until a named product/domain reviewer records concrete evidence. Do not convert a report-mode inventory of missing reviews into a passing gate by weakening counts or adding an AI reviewer.
+For the staged German workflow, regenerate in dependency order: canonical manifest, German context ledger, then pilot review pack. `i18n:de:pilot` first verifies ledger freshness and pins approvals to `contextHash`, `translationHash`, `reviewScopeHash`, and a canonical producer actor; GitHub humans are keyed by API-verified immutable numeric user ID rather than a login/display-name alias. The final candidate gate requires the approved pilot and independently verifies production plus native/domain evidence for every candidate. Issue #601 assignment and scope attestations bind all review-gate policy sources and the declared policy; changed source context, policy implementation, producer, pilot risk scope, or German copy invalidates the applicable evidence. Reserved messages without runtime evidence remain `BLOCKED_CONTEXT` until an assigned human product/domain reviewer records concrete hash-pinned evidence. Do not weaken counts or use AI/arbitrary local identities to make report-mode findings pass.
 
 If a coverage change excludes framework-heavy wrapper files from `collectCoverageFrom`, document why those files are excluded and re-check the affected save, validation, navigation, and highlighting flows with focused tests before relying on `npm run prepush:gate`.
 

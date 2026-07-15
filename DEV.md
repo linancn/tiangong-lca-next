@@ -22,7 +22,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 6daa52722afddcb1b411e2c3dc2fc674c7607c68
-lastReviewedNote: 'Added the scoped German context/pilot refresh and enforcement commands after reviewing the Issue #601 pre-activation workflow.'
+lastReviewedNote: 'Reviewed the scoped German refresh/enforcement sequence after adding canonical producer actors, GitHub-attested identities, policy-bound review hashes, and full-catalog review gates.'
 ---
 
 # Development Bootstrap
@@ -104,7 +104,7 @@ npm ci
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
 - treat `npm run prepush:gate` as the authoritative local test gate
 - run staged German generation in dependency order: `npm run i18n:de:audit:write`, then `npm run i18n:de:pilot:write`
-- `npm run i18n:de:pilot` and `npm run i18n:de:audit` are final scoped gates and intentionally fail while context, named human review, or leaf translations are incomplete; use report mode to inspect honest work-in-progress state, never to claim completion
+- `npm run i18n:de:pilot` and `npm run i18n:de:audit` are final scoped gates and intentionally fail while context, externally attested human review, blocked terminology, or leaf candidates are incomplete; pilot approval pins context, candidate, immutable producer actor, all review-gate policy sources, and review-scope evidence, while the final candidate gate also requires the approved pilot and verifies every candidate; use report mode to inspect honest work-in-progress state, never to claim completion
 - when reproducing local or release gates manually, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## If You Need More Than This File

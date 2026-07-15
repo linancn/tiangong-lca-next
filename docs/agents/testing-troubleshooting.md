@@ -22,7 +22,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-15
 lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Added German context-ledger, pilot review-pack, hash staleness, and intentional human-review blocker diagnosis for Issue #601.'
+lastReviewedNote: 'Reviewed German ledger/review-pack diagnosis after adding canonical actors, GitHub attestation, duplicate-decision rejection, policy hashes, and full-catalog review gates.'
 ---
 
 # Testing Troubleshooting
@@ -53,7 +53,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
 | German candidate audit reports `BLOCKED_CONTEXT` | a retained key has no current runtime evidence or its proposed annotation lacks a named reviewer and concrete evidence | inspect English, Chinese, all callsites/dynamic proof, neighboring UI, and the proposed annotation; obtain a real product/domain decision instead of guessing or suppressing the key |
-| German pilot audit reports missing product, native-German, or domain reviews | the candidate pack is structurally ready but required human evidence has not been recorded | use `pilot-review-pack.json`, assign qualified independent reviewers, record hash-pinned decisions in `review-log.yaml`, and rerun `npm run i18n:de:pilot`; do not substitute an AI approval |
+| German pilot audit reports missing product, native-German, or domain reviews | the candidate pack is structurally ready but assigned-human evidence has not been recorded | use `pilot-review-pack.json`, assign stable human identities plus qualification evidence, record one current decision per message/role pinned to all three hashes in `review-log.yaml`, and rerun `npm run i18n:de:pilot`; do not substitute an AI approval or arbitrary string |
+| German audit reports external human-review evidence failures | the login↔immutable-user-ID binding is invalid, the assignment/review comment is absent, belongs to another Issue, is authored by the wrong account, lacks the exact whole-body marker, uses a self-assigner, or was invalidated by verifier/policy changes | correct the IDs, regenerate attestation requirements, have a different `maintain`/`admin` repository maintainer post each assignment marker on Issue #601, have each assigned reviewer post the exact scope marker, record the comment URLs, and rerun with GitHub API access |
 | German context ledger or pilot review pack is stale | canonical source, context artifacts, review log, or candidate copy changed after generation | run `npm run i18n:de:audit:write` first and `npm run i18n:de:pilot:write` second, then repeat any approvals whose pinned hash changed |
 
 ## Open-Handle Playbook

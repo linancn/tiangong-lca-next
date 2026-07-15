@@ -1,5 +1,6 @@
 {
-  "schemaVersion": "tiangong.i18n-de-review-log.v1",
+  "schemaVersion": "tiangong.i18n-de-review-log.v3",
+  "locale": "de-DE",
   "serialization": "JSON subset of YAML for dependency-free machine validation",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
   "status": "blocked-awaiting-qualified-human-reviewers",
@@ -7,16 +8,37 @@
     "productContextReviewer": {
       "status": "required-not-assigned",
       "identity": null,
+      "identityType": "github-human-required",
+      "githubLogin": null,
+      "githubUserId": null,
+      "qualificationEvidence": null,
+      "assignedBy": null,
+      "assignedByGithubUserId": null,
+      "assignmentAttestationUrl": null,
       "qualification": "Can confirm TianGong UI behavior, reserved-key purpose, permissions, destructive actions, and workflow state semantics."
     },
     "nativeGermanReviewer": {
       "status": "required-not-assigned",
       "identity": null,
+      "identityType": "github-human-required",
+      "githubLogin": null,
+      "githubUserId": null,
+      "qualificationEvidence": null,
+      "assignedBy": null,
+      "assignedByGithubUserId": null,
+      "assignmentAttestationUrl": null,
       "qualification": "Native German reviewer independent from the candidate translator."
     },
     "lcaTidasDomainReviewer": {
       "status": "required-not-assigned",
       "identity": null,
+      "identityType": "github-human-required",
+      "githubLogin": null,
+      "githubUserId": null,
+      "qualificationEvidence": null,
+      "assignedBy": null,
+      "assignedByGithubUserId": null,
+      "assignmentAttestationUrl": null,
       "qualification": "Can review German LCA, ILCD, TIDAS, validation, and solver terminology."
     }
   },
@@ -26,22 +48,184 @@
     "domainReviewerMayAlsoBeNativeReviewer": true,
     "productReviewerMayAlsoBeDomainReviewer": true
   },
+  "externalAttestationPolicy": {
+    "repository": "linancn/tiangong-lca-next",
+    "issue": 601,
+    "assignmentRule": "A different repository maintainer with maintain/admin permission assigns each qualified GitHub human in an Issue #601 comment containing only the exact generated decision=APPROVED assignment marker.",
+    "reviewRule": "Each assigned reviewer personally attests the generated scope digest in an Issue #601 comment containing only the exact generated decision=APPROVED marker; the audit verifies the comment owner, Issue, author, and marker through the GitHub API.",
+    "networkRule": "Final pilot and translation enforcement require GitHub API access when assigned reviewers or attestations exist; GH_TOKEN or GITHUB_TOKEN may be used for authenticated verification.",
+    "identityRule": "GitHub human reviewers and producers are keyed by immutable numeric GitHub user id; current logins are verified against those ids through the GitHub API."
+  },
+  "recordTemplates": {
+    "roleAssignment": {
+      "status": "assigned",
+      "identity": "<GitHub login>",
+      "identityType": "github-human",
+      "githubLogin": "<same GitHub login>",
+      "githubUserId": "<immutable numeric GitHub user id>",
+      "qualificationEvidence": "<specific evidence supporting this role>",
+      "assignedBy": "<different repository maintain/admin GitHub login>",
+      "assignedByGithubUserId": "<assigning maintainer immutable numeric GitHub user id>",
+      "assignmentAttestationUrl": "https://github.com/linancn/tiangong-lca-next/issues/601#issuecomment-<id>"
+    },
+    "pilotReview": {
+      "messageId": "<message id>",
+      "role": "<product-context | native-german | domain>",
+      "reviewer": "<assigned GitHub login>",
+      "reviewedAt": "YYYY-MM-DD",
+      "decision": "<APPROVED | CHANGES_REQUESTED>",
+      "contextHash": "<pilot-review-pack hashes.contextHash>",
+      "translationHash": "<pilot-review-pack hashes.translationHash>",
+      "reviewScopeHash": "<pilot-review-pack hashes.reviewScopeHash>",
+      "findings": []
+    },
+    "translationProducer": {
+      "messageId": "<message id>",
+      "batchId": "<laneId | $activation-entry>",
+      "producer": {
+        "type": "<github-human | ai-system>",
+        "id": "<immutable numeric GitHub user id or stable system id>",
+        "githubLogin": "<required for github-human; omitted for ai-system>",
+        "displayName": "<human-readable producer name>"
+      },
+      "producedAt": "YYYY-MM-DD",
+      "contextHash": "<context-ledger hashes.context>",
+      "translationHash": "<context-ledger hashes.translation>"
+    },
+    "translationReview": {
+      "messageId": "<message id>",
+      "batchId": "<laneId | $activation-entry>",
+      "role": "<native-german | domain>",
+      "reviewer": "<assigned GitHub login>",
+      "reviewedAt": "YYYY-MM-DD",
+      "decision": "<APPROVED | CHANGES_REQUESTED>",
+      "contextHash": "<context-ledger hashes.context>",
+      "translationHash": "<context-ledger hashes.translation>",
+      "findings": []
+    },
+    "externalAttestation": {
+      "scope": "<pilot | translation>",
+      "role": "<product-context | native-german | domain>",
+      "reviewer": "<assigned GitHub login>",
+      "scopeDigest": "<generated reviewAttestationRequirements scopeDigest>",
+      "evidenceUrl": "https://github.com/linancn/tiangong-lca-next/issues/601#issuecomment-<id>"
+    }
+  },
+  "externalAttestations": [],
   "pilot": {
     "artifact": "docs/plans/i18n-de-DE/pilot.json",
     "reviewPack": "docs/plans/i18n-de-DE/pilot-review-pack.json",
-    "candidateProducer": "Codex research synthesis",
+    "candidateProducer": {
+      "type": "ai-system",
+      "id": "openai-codex",
+      "displayName": "Codex research synthesis"
+    },
+    "candidateProducedAt": "2026-07-15",
     "status": "candidate-ready-for-human-review",
+    "reviews": [],
+    "unresolvedFindings": []
+  },
+  "translations": {
+    "status": "candidate-only",
+    "producers": [
+      {
+        "messageId": "app.preview.down.block",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "d889a37af034fe2d4491005042d9e5d150a81e227cc33d9713509026eee07054",
+        "translationHash": "30301a5abcc2b725cf55e7365755ed1505b86456c26f5d99d23aef24917b5bf1"
+      },
+      {
+        "messageId": "app.welcome.link.block-list",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "070be065d739c68b11d632e6fb44d6dc7efcaf8f1673ffd4fc571a3c64873ef7",
+        "translationHash": "3697334f872b65cf7377c30c782b673f103bdeeda77d887c21b47f2615a6e293"
+      },
+      {
+        "messageId": "app.welcome.link.fetch-blocks",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "5699039cfa6d81b7057c0c5e4c443c6941321cf5ce352859a17d487219b1011a",
+        "translationHash": "319530a2e8f0b575d38f917fb606bc589e2c38f39ab8d77a9ba81ef853c3f4e5"
+      },
+      {
+        "messageId": "layout.user.link.help",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "154d45d761f7cb6c74fa1d1bf4fc3087d06d1b8bab4257cf0fa3c65b5d13f3e1",
+        "translationHash": "f6e797ee7fb0a6672500ced2af2d0610089cb9162fc08414343fa5399844f0b6"
+      },
+      {
+        "messageId": "layout.user.link.privacy",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "7908993e8c9a2fae68de06b5ff4e17e09be41d16ac3115867b54a148a481007f",
+        "translationHash": "681a21f735a30907d795d373359746be21e25b205e36c0458d9b4a0a96586c1c"
+      },
+      {
+        "messageId": "layout.user.link.terms",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "ae625dbd8ff4ddc2a34c1cc8678ba7c49faa4b1b0289c8ee2926d3f0dca77c40",
+        "translationHash": "75d035ea407c90d255e340657ca3fa24b05fc58c827323c7d92679cb7ccfa6b6"
+      },
+      {
+        "messageId": "navBar.lang",
+        "batchId": "$activation-entry",
+        "producer": {
+          "type": "ai-system",
+          "id": "openai-codex",
+          "displayName": "Codex research synthesis"
+        },
+        "producedAt": "2026-07-15",
+        "contextHash": "780e32f6974ab3becf61d9d36ec74bbe335efc730573718d6f078350c8ddb8e5",
+        "translationHash": "caf6dececac400be35ce9d801fe052c79099a3859171ef68e4193748fcd0d58d"
+      }
+    ],
     "reviews": [],
     "unresolvedFindings": []
   },
   "batches": [],
   "releaseGate": {
+    "kind": "informational-snapshot; executable truth comes from the audit scripts",
     "contextBlockedCount": 628,
     "blockedTermCount": 2,
     "nativeGermanReviewedCount": 0,
     "nativeGermanRequiredCount": 2665,
     "domainReviewedCount": 0,
-    "domainRequiredCount": null,
+    "domainRequiredCount": 2665,
+    "pilotDomainRequiredCount": 90,
     "unresolvedCritical": 0,
     "unresolvedMajor": 0,
     "staleContextApprovals": 0,

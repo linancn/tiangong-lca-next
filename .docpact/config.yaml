@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-16'
 lastReviewedCommit: '7c2b9066f7946b55d5075f7ffd248aeea37e91fa'
-lastReviewedNote: 'Reviewed the Issue #601 German context, pilot, source-copy, and human-review gates; existing testing-gate ownership and routing already cover the new scripts and governed artifacts.'
+lastReviewedNote: 'Reviewed the strengthened Issue #601 immutable canonical-actor, GitHub-attestation, all-policy-source freshness, ICU branch, single-bundle, pilot, and full-catalog review gates; existing ownership and routing remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

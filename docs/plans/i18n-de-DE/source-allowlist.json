@@ -1,9 +1,9 @@
 {
   "schemaVersion": "tiangong.i18n-german-source-allowlist.v1",
   "locale": "de-DE",
-  "policy": "An exact English value or technical source token is allowed only when the reviewed German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. This file is a machine policy, not an evidence bibliography.",
+  "policy": "An exact English value or technical source token is allowed only when the reviewed German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. Whole-message exceptions require a reason, assigned human reviewer identity, and review date. This file is a machine policy, not an evidence bibliography.",
   "emptyMessageIds": ["pages.layouts.userLayout.title"],
-  "exactEnglishMessageIds": [],
+  "exactEnglishMessages": [],
   "preservedTokens": [
     { "token": "API", "reason": "Established technical acronym." },
     { "token": "CAS", "reason": "Chemical Abstracts Service identifier name." },
