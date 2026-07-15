@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "tiangong.i18n-de-review-log.v3",
+  "schemaVersion": "tiangong.i18n-de-review-log.v4",
   "locale": "de-DE",
   "serialization": "JSON subset of YAML for dependency-free machine validation",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
@@ -58,7 +58,7 @@
   },
   "recordTemplates": {
     "roleAssignment": {
-      "status": "assigned",
+      "status": "<pending-attestation | assigned>",
       "identity": "<GitHub login>",
       "identityType": "github-human",
       "githubLogin": "<same GitHub login>",
@@ -76,8 +76,14 @@
       "decision": "<APPROVED | CHANGES_REQUESTED>",
       "contextHash": "<pilot-review-pack hashes.contextHash>",
       "translationHash": "<pilot-review-pack hashes.translationHash>",
+      "dossierHash": "<pilot-review-pack hashes.dossierHash>",
       "reviewScopeHash": "<pilot-review-pack hashes.reviewScopeHash>",
       "findings": []
+    },
+    "finding": {
+      "severity": "<Critical | Major | Minor>",
+      "status": "<OPEN | RESOLVED>",
+      "summary": "<specific linguistic, product-context, or domain finding>"
     },
     "translationProducer": {
       "messageId": "<message id>",
@@ -137,8 +143,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "d889a37af034fe2d4491005042d9e5d150a81e227cc33d9713509026eee07054",
-        "translationHash": "30301a5abcc2b725cf55e7365755ed1505b86456c26f5d99d23aef24917b5bf1"
+        "contextHash": "adedd447dc7a5555211b38a73b1395b388a1dfc7e8d498fe76e52dc263e700d3",
+        "translationHash": "28d39a44d782da4d5dc218c78961c1bd12669c599cecf7fca1f99a27d348b05b"
       },
       {
         "messageId": "app.welcome.link.block-list",
@@ -149,8 +155,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "070be065d739c68b11d632e6fb44d6dc7efcaf8f1673ffd4fc571a3c64873ef7",
-        "translationHash": "3697334f872b65cf7377c30c782b673f103bdeeda77d887c21b47f2615a6e293"
+        "contextHash": "4d3f7a49492ad3f5f61323709c7d71d31362f08b9348e9d4f3ffee621300fddc",
+        "translationHash": "fedc2290f25a40c3508192276895eedb2bf3e155a012e729815693bd8ef3e27a"
       },
       {
         "messageId": "app.welcome.link.fetch-blocks",
@@ -161,8 +167,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "5699039cfa6d81b7057c0c5e4c443c6941321cf5ce352859a17d487219b1011a",
-        "translationHash": "319530a2e8f0b575d38f917fb606bc589e2c38f39ab8d77a9ba81ef853c3f4e5"
+        "contextHash": "ffa4833db03bdc2a9d7afb12ed1b01253026006f3c32d0fc22c23edf3276bfab",
+        "translationHash": "b6186e845f1124e74afefe5220ba8467962a19c9b29cd54c1c85994495745815"
       },
       {
         "messageId": "layout.user.link.help",
@@ -173,8 +179,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "154d45d761f7cb6c74fa1d1bf4fc3087d06d1b8bab4257cf0fa3c65b5d13f3e1",
-        "translationHash": "f6e797ee7fb0a6672500ced2af2d0610089cb9162fc08414343fa5399844f0b6"
+        "contextHash": "e83a25821c5366055828a18ec8e0648106de5df931ad408912d24c0a819c2cfc",
+        "translationHash": "d76e47b04efadd7b5c59a52fbe6133072c92560e33f42970afbaa047fbeb51b9"
       },
       {
         "messageId": "layout.user.link.privacy",
@@ -185,8 +191,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "7908993e8c9a2fae68de06b5ff4e17e09be41d16ac3115867b54a148a481007f",
-        "translationHash": "681a21f735a30907d795d373359746be21e25b205e36c0458d9b4a0a96586c1c"
+        "contextHash": "9e424d5cdc25eef2122bd7dfcbb1560a8a66c4e7ec481061ddd0461b4ea53d55",
+        "translationHash": "09c9a53871984b34ccd62bea199feed90ebc5687b176bf2402cdc2a3079c56fa"
       },
       {
         "messageId": "layout.user.link.terms",
@@ -197,8 +203,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "ae625dbd8ff4ddc2a34c1cc8678ba7c49faa4b1b0289c8ee2926d3f0dca77c40",
-        "translationHash": "75d035ea407c90d255e340657ca3fa24b05fc58c827323c7d92679cb7ccfa6b6"
+        "contextHash": "2fb37cdf44939779d2fe2c9608c3a5d9c77332006aac1b82456f1e599ca1a6ab",
+        "translationHash": "5d96dc8c99de36ff62778d8cd0eb80b77b5db7e1364d94e3afdd14476eba69be"
       },
       {
         "messageId": "navBar.lang",
@@ -209,8 +215,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "780e32f6974ab3becf61d9d36ec74bbe335efc730573718d6f078350c8ddb8e5",
-        "translationHash": "caf6dececac400be35ce9d801fe052c79099a3859171ef68e4193748fcd0d58d"
+        "contextHash": "c5009e6b3e94763d807e66d11c0a130a01701d8258b4858f46e8eaba4ee01728",
+        "translationHash": "10dd324938b2e0f6b81df923148fc30f101030d30ce8f4a3dc7e877d881dca84"
       }
     ],
     "reviews": [],

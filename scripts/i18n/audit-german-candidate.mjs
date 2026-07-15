@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import {
   normalizeGithubLogin,
   normalizeGithubUserId,
@@ -19,8 +20,12 @@ const prettier = require('prettier');
 const ts = require('typescript');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
-const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v4';
+const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v5';
 const LEDGER_SCHEMA_VERSION = 'tiangong.i18n-german-context-ledger.v4';
+const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-log.v4';
+const GLOSSARY_SCHEMA_VERSION = 'tiangong.i18n-de-glossary.v1';
+const GLOSSARY_RISK_LEVELS = new Set(['critical', 'high']);
+const GLOSSARY_DECISION_STATUSES = new Set(['proposed', 'blocked-term']);
 const DEFAULT_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
 const DEFAULT_LEDGER = 'docs/plans/i18n-de-DE/context-ledger.json';
 const DEFAULT_ENTRY_TRANSLATIONS = 'docs/plans/i18n-de-DE/activation-entry-translations.json';
@@ -389,11 +394,12 @@ const DOMAIN_MODULES = new Set([
   'pages_unitgroup',
 ]);
 
-function parseGlossaryPolicy(root) {
+export function parseGlossaryPolicy(root) {
   const relativeFile = DEFAULT_GLOSSARY;
   const absolutePath = path.resolve(root, relativeFile);
   if (!fs.existsSync(absolutePath)) throw new Error(`Missing required file: ${relativeFile}`);
   const source = fs.readFileSync(absolutePath, 'utf8');
+  const schemaVersion = source.match(/^schemaVersion: '([^']+)'$/mu)?.[1] ?? null;
   const starts = [...source.matchAll(/^  - termId:/gmu)].map(({ index }) => index);
   const termBlocks = starts.map((start, index) => source.slice(start, starts[index + 1]));
   const scalar = (block, field) => {
@@ -409,11 +415,20 @@ function parseGlossaryPolicy(root) {
   }));
   const invalidTerms = terms.filter(
     ({ termId, sourceEnglish, risk, decisionStatus }) =>
-      !termId || !sourceEnglish || !risk || !decisionStatus,
+      !termId ||
+      !sourceEnglish ||
+      !GLOSSARY_RISK_LEVELS.has(risk) ||
+      !GLOSSARY_DECISION_STATUSES.has(decisionStatus),
   );
-  if (termBlocks.length === 0 || invalidTerms.length > 0) {
+  const duplicateTermCount = terms.length - new Set(terms.map(({ termId }) => termId)).size;
+  if (
+    schemaVersion !== GLOSSARY_SCHEMA_VERSION ||
+    termBlocks.length === 0 ||
+    invalidTerms.length > 0 ||
+    duplicateTermCount > 0
+  ) {
     throw new Error(
-      `Glossary policy could not be parsed deterministically (${termBlocks.length} terms, ${invalidTerms.length} invalid).`,
+      `Glossary policy must use ${GLOSSARY_SCHEMA_VERSION} with unique terms, risk critical|high, and decisionStatus proposed|blocked-term (${termBlocks.length} terms, ${invalidTerms.length} invalid, ${duplicateTermCount} duplicate).`,
     );
   }
   return {
@@ -716,6 +731,14 @@ async function buildAudit(options) {
   const dynamicRegistry = readJson(options.root, options.dynamicFamilies);
   const translationBatches = readJson(options.root, DEFAULT_TRANSLATION_BATCHES);
   const reviewLog = readJson(options.root, options.reviewLog);
+  if (
+    reviewLog.schemaVersion !== REVIEW_LOG_SCHEMA_VERSION ||
+    reviewLog.locale !== CANDIDATE_LOCALE
+  ) {
+    throw new Error(
+      `German review log must use ${REVIEW_LOG_SCHEMA_VERSION} and locale ${CANDIDATE_LOCALE}.`,
+    );
+  }
   const glossaryPolicy = parseGlossaryPolicy(options.root);
   const reviewPolicyDigest = buildInputDigest(options.root, [
     DEFAULT_GLOSSARY,
@@ -1731,6 +1754,7 @@ async function buildAudit(options) {
     ledger,
     findingCount,
     findingCounts,
+    externalHumanReviewFindings: externalEvidence.findings,
     externallyAttestedHumanReviewApprovedCandidateCount,
   };
 }
@@ -1741,6 +1765,7 @@ async function main() {
     ledger,
     findingCount,
     findingCounts,
+    externalHumanReviewFindings,
     externallyAttestedHumanReviewApprovedCandidateCount,
   } = await buildAudit(options);
   const ledgerPath = path.resolve(options.root, options.ledger);
@@ -1774,16 +1799,19 @@ async function main() {
     },
     findingCount,
     findingCounts,
+    externalHumanReviewFindings,
   };
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (staleLedger || (options.mode === 'enforce' && findingCount > 0)) process.exitCode = 1;
 }
 
-try {
-  await main();
-} catch (error) {
-  process.stderr.write(
-    `German candidate audit failed: ${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exitCode = 2;
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    await main();
+  } catch (error) {
+    process.stderr.write(
+      `German candidate audit failed: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 2;
+  }
 }

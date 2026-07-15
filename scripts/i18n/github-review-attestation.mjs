@@ -2,8 +2,10 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const REPOSITORY = 'linancn/tiangong-lca-next';
-const ISSUE_NUMBER = 601;
+export const GITHUB_REVIEW_REPOSITORY = 'linancn/tiangong-lca-next';
+export const GITHUB_REVIEW_ISSUE_NUMBER = 601;
+const REPOSITORY = GITHUB_REVIEW_REPOSITORY;
+const ISSUE_NUMBER = GITHUB_REVIEW_ISSUE_NUMBER;
 const ISSUE_API_URL = `https://api.github.com/repos/${REPOSITORY}/issues/${ISSUE_NUMBER}`;
 const ROLE_CONFIG_NAMES = new Map([
   ['product-context', 'productContextReviewer'],
@@ -100,12 +102,20 @@ function githubHeaders() {
   };
 }
 
-async function githubJson(url, cache) {
+async function githubJson(url, cache, fetchImpl = globalThis.fetch) {
+  if (typeof fetchImpl !== 'function') {
+    throw new Error('GitHub verification requires a Fetch API implementation.');
+  }
   if (!cache.has(url)) {
     cache.set(
       url,
       (async () => {
-        const response = await fetch(url, { headers: githubHeaders() });
+        const response = await fetchImpl(url, {
+          headers: githubHeaders(),
+          ...(globalThis.AbortSignal?.timeout
+            ? { signal: globalThis.AbortSignal.timeout(15_000) }
+            : {}),
+        });
         if (!response.ok) {
           throw new Error(`GitHub API ${response.status} for ${url}`);
         }
@@ -116,12 +126,26 @@ async function githubJson(url, cache) {
   return cache.get(url);
 }
 
-async function verifyIssueComment({ evidenceUrl, expectedAuthor, expectedUserId, marker, cache }) {
+function githubUserIdFromApi(value) {
+  if (typeof value === 'number' && !Number.isSafeInteger(value)) {
+    throw new Error('GitHub returned a user id outside the JavaScript safe-integer range.');
+  }
+  return normalizeGithubUserId(String(value ?? ''));
+}
+
+async function verifyIssueComment({
+  evidenceUrl,
+  expectedAuthor,
+  expectedUserId,
+  marker,
+  cache,
+  fetchImpl = globalThis.fetch,
+}) {
   const apiUrl = issueCommentApiUrl(evidenceUrl);
   if (!apiUrl) {
     throw new Error(`Evidence URL must be an Issue #${ISSUE_NUMBER} comment in ${REPOSITORY}.`);
   }
-  const comment = await githubJson(apiUrl, cache);
+  const comment = await githubJson(apiUrl, cache, fetchImpl);
   if (comment.issue_url !== ISSUE_API_URL) {
     throw new Error(`Attestation comment must belong to ${ISSUE_API_URL}.`);
   }
@@ -133,7 +157,7 @@ async function verifyIssueComment({ evidenceUrl, expectedAuthor, expectedUserId,
       `Attestation author ${comment.user?.login ?? '<missing>'} does not match ${expectedAuthor}.`,
     );
   }
-  if (normalizeGithubUserId(String(comment.user?.id ?? '')) !== expectedUserId) {
+  if (githubUserIdFromApi(comment.user?.id) !== expectedUserId) {
     throw new Error(
       `Attestation author id ${comment.user?.id ?? '<missing>'} does not match ${expectedUserId}.`,
     );
@@ -146,16 +170,65 @@ async function verifyIssueComment({ evidenceUrl, expectedAuthor, expectedUserId,
   }
 }
 
-async function verifyMaintainerPermission(login, cache) {
+async function verifyMaintainerPermission(
+  login,
+  expectedUserId,
+  cache,
+  fetchImpl = globalThis.fetch,
+) {
   const url = `https://api.github.com/repos/${REPOSITORY}/collaborators/${encodeURIComponent(
     login,
   )}/permission`;
-  const permission = await githubJson(url, cache);
+  const permission = await githubJson(url, cache, fetchImpl);
+  if (
+    permission.user?.type !== 'User' ||
+    normalizeGithubLogin(permission.user?.login) !== normalizeGithubLogin(login) ||
+    githubUserIdFromApi(permission.user?.id) !== expectedUserId
+  ) {
+    throw new Error(
+      `Repository permission response for ${login} does not match immutable user id ${expectedUserId}.`,
+    );
+  }
   if (!MAINTAINER_PERMISSIONS.has(permission.permission)) {
     throw new Error(
       `Role assigner ${login} has ${permission.permission ?? '<missing>'} repository permission.`,
     );
   }
+  return permission.permission;
+}
+
+export async function resolveGithubHumanIdentity(
+  login,
+  { cache = new Map(), fetchImpl = globalThis.fetch, requireMaintainer = false } = {},
+) {
+  const githubLogin = normalizeGithubLogin(login);
+  if (!isGithubLogin(githubLogin)) {
+    throw new Error(`Invalid GitHub login: ${login ?? '<missing>'}`);
+  }
+  const user = await githubJson(
+    `https://api.github.com/users/${encodeURIComponent(githubLogin)}`,
+    cache,
+    fetchImpl,
+  );
+  const githubUserId = githubUserIdFromApi(user.id);
+  if (
+    user.type !== 'User' ||
+    normalizeGithubLogin(user.login) !== githubLogin ||
+    githubUserId === ''
+  ) {
+    throw new Error(
+      `GitHub account ${githubLogin} must resolve to one immutable numeric User identity.`,
+    );
+  }
+  const permission = requireMaintainer
+    ? await verifyMaintainerPermission(githubLogin, githubUserId, cache, fetchImpl)
+    : null;
+  return {
+    githubLogin,
+    githubUserId,
+    accountType: user.type,
+    permission,
+  };
 }
 
 export async function verifyGithubHumanReviewEvidence({
@@ -165,6 +238,7 @@ export async function verifyGithubHumanReviewEvidence({
   recordsByRole,
   contextDigest,
   producerActors = [],
+  fetchImpl = globalThis.fetch,
 }) {
   const findings = [];
   const requirements = [];
@@ -194,11 +268,12 @@ export async function verifyGithubHumanReviewEvidence({
         const user = await githubJson(
           `https://api.github.com/users/${encodeURIComponent(actor.githubLogin)}`,
           cache,
+          fetchImpl,
         );
         if (
           user.type !== 'User' ||
           normalizeGithubLogin(user.login) !== actor.githubLogin ||
-          normalizeGithubUserId(String(user.id ?? '')) !== actor.id
+          githubUserIdFromApi(user.id) !== actor.id
         ) {
           throw new Error(
             `GitHub producer ${actor.githubLogin} does not resolve to immutable user id ${actor.id}.`,
@@ -284,8 +359,9 @@ export async function verifyGithubHumanReviewEvidence({
         expectedUserId: assignedByUserId,
         marker,
         cache,
+        fetchImpl,
       });
-      await verifyMaintainerPermission(assignedBy, cache);
+      await verifyMaintainerPermission(assignedBy, assignedByUserId, cache, fetchImpl);
     } catch (error) {
       findings.push({
         kind: 'unverified-role-assignment',
@@ -369,6 +445,7 @@ export async function verifyGithubHumanReviewEvidence({
         expectedUserId: reviewer.userId,
         marker,
         cache,
+        fetchImpl,
       });
     } catch (error) {
       findings.push({

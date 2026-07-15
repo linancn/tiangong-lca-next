@@ -23,8 +23,8 @@ checkPaths:
   - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Reviewed scoped German candidate and pilot gates for Issue #601; they do not change the live pre-push trigger policy while human review is intentionally pending.'
+lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
+lastReviewedNote: 'Reviewed the Issue #601 onboarding and dossier test additions; they do not change the live pre-push trigger policy while human review is intentionally pending.'
 ---
 
 # Pre-Push Gate Policy

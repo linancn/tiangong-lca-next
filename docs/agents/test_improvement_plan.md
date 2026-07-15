@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Reviewed Issue #601 German context and human-review gates; they extend localization proof without reopening the Jest coverage strategy.'
+lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
+lastReviewedNote: 'Reviewed the new Issue #601 onboarding and reviewer-dossier regression proof; it extends localization validation without reopening the broader Jest coverage strategy.'
 ---
 
 # Testing Strategy

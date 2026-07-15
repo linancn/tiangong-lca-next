@@ -23,6 +23,7 @@
     "i18n:de:pilot": "node scripts/i18n/audit-german-pilot.mjs --mode enforce --check",
     "i18n:de:pilot:report": "node scripts/i18n/audit-german-pilot.mjs --mode report",
     "i18n:de:pilot:write": "node scripts/i18n/audit-german-pilot.mjs --mode report --write",
+    "i18n:de:review:onboard": "node scripts/i18n/german-review-onboarding.mjs",
     "i18n-remove": "pro i18n-remove --locale=zh-CN --write",
     "postinstall": "max setup",
     "jest": "jest",

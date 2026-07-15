@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import {
   normalizeGithubLogin,
   normalizeGithubUserId,
@@ -18,13 +19,19 @@ const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
-const SCHEMA_VERSION = 'tiangong.i18n-german-pilot-audit.v4';
+const SCHEMA_VERSION = 'tiangong.i18n-german-pilot-audit.v5';
+const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-log.v4';
+const GLOSSARY_SCHEMA_VERSION = 'tiangong.i18n-de-glossary.v1';
+const GLOSSARY_RISK_LEVELS = new Set(['critical', 'high']);
+const GLOSSARY_DECISION_STATUSES = new Set(['proposed', 'blocked-term']);
 const DEFAULT_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
 const DEFAULT_LEDGER = 'docs/plans/i18n-de-DE/context-ledger.json';
 const DEFAULT_PILOT = 'docs/plans/i18n-de-DE/pilot.json';
 const DEFAULT_REVIEW_LOG = 'docs/plans/i18n-de-DE/review-log.yaml';
 const DEFAULT_REVIEW_PACK = 'docs/plans/i18n-de-DE/pilot-review-pack.json';
 const DEFAULT_SOURCE_ALLOWLIST = 'docs/plans/i18n-de-DE/source-allowlist.json';
+const DEFAULT_GLOSSARY = 'docs/plans/i18n-de-DE/glossary.yaml';
+const DEFAULT_EVIDENCE_SOURCES = 'docs/plans/i18n-de-DE/evidence-sources.yaml';
 const CANDIDATE_AUDIT = 'scripts/i18n/audit-german-candidate.mjs';
 const MIN_PILOT_SIZE = 60;
 const MAX_PILOT_SIZE = 100;
@@ -93,6 +100,547 @@ function readJson(root, relativeFile) {
   const absolutePath = path.resolve(root, relativeFile);
   if (!fs.existsSync(absolutePath)) throw new Error(`Missing required file: ${relativeFile}`);
   return JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
+}
+
+function yamlScalar(block, field) {
+  const match = block.match(new RegExp(`^\\s+(?:-\\s+)?${field}: '((?:[^']|'')*)'$`, 'mu'));
+  return match ? match[1].replaceAll("''", "'") : null;
+}
+
+function yamlInlineList(block, field) {
+  const match = block.match(new RegExp(`^\\s+(?:-\\s+)?${field}: \\[(.*)\\]$`, 'mu'));
+  if (!match) return [];
+  return [...match[1].matchAll(/'((?:[^']|'')*)'/gu)].map((item) => item[1].replaceAll("''", "'"));
+}
+
+function yamlList(block, field) {
+  const lines = block.split(/\r?\n/u);
+  const fieldPattern = new RegExp(`^(\\s+)(?:-\\s+)?${field}:\\s*(.*)$`, 'u');
+  const fieldIndex = lines.findIndex((line) => fieldPattern.test(line));
+  if (fieldIndex < 0) return [];
+  const [, indentation, remainder] = lines[fieldIndex].match(fieldPattern);
+  if (/^\[.*\]$/u.test(remainder)) {
+    return [...remainder.matchAll(/'((?:[^']|'')*)'/gu)].map((item) =>
+      item[1].replaceAll("''", "'"),
+    );
+  }
+  if (remainder !== '') return [];
+  const fieldIndent = indentation.length;
+  const values = [];
+  for (let index = fieldIndex + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.trim() === '') continue;
+    const lineIndent = line.match(/^\s*/u)[0].length;
+    if (lineIndent <= fieldIndent) break;
+    const item = line.match(/^\s+- '((?:[^']|'')*)'$/u);
+    if (!item) break;
+    values.push(item[1].replaceAll("''", "'"));
+  }
+  return values;
+}
+
+function yamlObjectBlocks(source, idField) {
+  const starts = [...source.matchAll(new RegExp(`^  - ${idField}:`, 'gmu'))].map(
+    ({ index }) => index,
+  );
+  return starts.map((start, index) => source.slice(start, starts[index + 1]));
+}
+
+export function parseReviewerGlossary(root) {
+  const source = fs.readFileSync(path.resolve(root, DEFAULT_GLOSSARY), 'utf8');
+  const schemaVersion = source.match(/^schemaVersion: '([^']+)'$/mu)?.[1] ?? null;
+  const terms = yamlObjectBlocks(source, 'termId').map((block) => {
+    const term = {
+      termId: yamlScalar(block, 'termId'),
+      sourceEnglish: yamlScalar(block, 'sourceEnglish'),
+      sourceChinese: yamlInlineList(block, 'sourceChinese'),
+      germanPreferred: yamlScalar(block, 'germanPreferred'),
+      abbreviation: yamlScalar(block, 'abbreviation'),
+      alternatives: [
+        ...yamlList(block, 'alternatives'),
+        ...yamlList(block, 'uiAlternatives'),
+        ...[yamlScalar(block, 'compactVariant')].filter(Boolean),
+      ],
+      includeContexts: yamlList(block, 'includeContexts'),
+      excludeContexts: yamlList(block, 'excludeContexts'),
+      forbidden: yamlList(block, 'forbidden'),
+      evidenceRefs: yamlList(block, 'evidenceRefs'),
+      risk: yamlScalar(block, 'risk'),
+      decisionStatus: yamlScalar(block, 'decisionStatus'),
+    };
+    return term;
+  });
+  const termIds = terms.map(({ termId }) => termId);
+  if (
+    terms.length === 0 ||
+    terms.some(
+      ({
+        termId,
+        sourceEnglish,
+        sourceChinese,
+        germanPreferred,
+        evidenceRefs,
+        risk,
+        decisionStatus,
+      }) =>
+        !termId ||
+        !sourceEnglish ||
+        sourceChinese.length === 0 ||
+        !germanPreferred ||
+        evidenceRefs.length === 0 ||
+        !GLOSSARY_RISK_LEVELS.has(risk) ||
+        !GLOSSARY_DECISION_STATUSES.has(decisionStatus),
+    ) ||
+    new Set(termIds).size !== termIds.length ||
+    schemaVersion !== GLOSSARY_SCHEMA_VERSION
+  ) {
+    throw new Error(
+      `German reviewer glossary must use ${GLOSSARY_SCHEMA_VERSION} with unique terms, risk critical|high, decisionStatus proposed|blocked-term, and every required field.`,
+    );
+  }
+  return new Map(terms.map((term) => [term.termId, term]));
+}
+
+function parseReviewerEvidenceSources(root) {
+  const source = fs.readFileSync(path.resolve(root, DEFAULT_EVIDENCE_SOURCES), 'utf8');
+  const sources = yamlObjectBlocks(source, 'sourceId').map((block) => {
+    const evidence = {
+      sourceId: yamlScalar(block, 'sourceId'),
+      authority: yamlScalar(block, 'authority'),
+      title: yamlScalar(block, 'title'),
+      url: yamlScalar(block, 'url'),
+      repository: yamlScalar(block, 'repository'),
+      reviewedCommit: yamlScalar(block, 'reviewedCommit'),
+      localRefs: yamlList(block, 'localRefs'),
+      allowedUse: yamlList(block, 'allowedUse'),
+      caution: yamlScalar(block, 'caution'),
+      accessNote: yamlScalar(block, 'accessNote'),
+    };
+    return evidence;
+  });
+  const sourceIds = sources.map(({ sourceId }) => sourceId);
+  if (
+    sources.length === 0 ||
+    sources.some(
+      ({ sourceId, authority, title, url, repository, localRefs, allowedUse }) =>
+        !sourceId ||
+        !authority ||
+        !title ||
+        (!url && !repository && localRefs.length === 0) ||
+        allowedUse.length === 0,
+    ) ||
+    new Set(sourceIds).size !== sourceIds.length
+  ) {
+    throw new Error(
+      'German reviewer evidence register contains a missing required field or duplicate sourceId.',
+    );
+  }
+  return new Map(sources.map((evidence) => [evidence.sourceId, evidence]));
+}
+
+function safeSourceExcerpt(root, relativeFile, focusLine, radius = 2) {
+  if (typeof relativeFile !== 'string' || !Number.isInteger(focusLine) || focusLine < 1) {
+    return null;
+  }
+  const absolutePath = path.resolve(root, relativeFile);
+  const rootPrefix = `${path.resolve(root)}${path.sep}`;
+  if (!absolutePath.startsWith(rootPrefix) || !fs.existsSync(absolutePath)) return null;
+  const lines = fs.readFileSync(absolutePath, 'utf8').split(/\r?\n/u);
+  const startLine = Math.max(1, focusLine - radius);
+  const endLine = Math.min(lines.length, focusLine + radius);
+  return sourceExcerptRange(relativeFile, lines, startLine, endLine, focusLine);
+}
+
+function sourceExcerptRange(relativeFile, lines, startLine, endLine, focusLine) {
+  return {
+    path: relativeFile.split(path.sep).join('/'),
+    focusLine,
+    startLine,
+    endLine,
+    lines: lines.slice(startLine - 1, endLine).map((text, index) => ({
+      line: startLine + index,
+      text: text.length > 320 ? `${text.slice(0, 317)}...` : text,
+    })),
+  };
+}
+
+function sourceContainsExpression(source, expression) {
+  const normalizedSource = source.replace(/\s+/gu, ' ');
+  const normalizedExpression = expression.trim().replace(/\s+/gu, ' ');
+  if (normalizedExpression === '') return false;
+  const escapedExpression = normalizedExpression.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const characters = [...normalizedExpression];
+  const identifierPart = /[\p{ID_Continue}$\u200C\u200D]/u;
+  const bareIdentifier = /^[\p{ID_Start}$_][\p{ID_Continue}$\u200C\u200D]*$/u.test(
+    normalizedExpression,
+  );
+  const leftBoundary = identifierPart.test(characters[0])
+    ? bareIdentifier
+      ? '(?<![\\p{ID_Continue}$\\u200C\\u200D.])'
+      : '(?<![\\p{ID_Continue}$\\u200C\\u200D])'
+    : '';
+  const rightBoundary = identifierPart.test(characters.at(-1))
+    ? `(?![\\p{ID_Continue}$\\u200C\\u200D])${bareIdentifier ? '(?!\\s*:)' : ''}`
+    : '';
+  return new RegExp(`${leftBoundary}${escapedExpression}${rightBoundary}`, 'u').test(
+    normalizedSource,
+  );
+}
+
+function dynamicCallsiteExcerpt(root, callsite) {
+  if (typeof callsite?.file !== 'string') return null;
+  const absolutePath = path.resolve(root, callsite.file);
+  const rootPrefix = `${path.resolve(root)}${path.sep}`;
+  if (!absolutePath.startsWith(rootPrefix) || !fs.existsSync(absolutePath)) return null;
+  const lines = fs.readFileSync(absolutePath, 'utf8').split(/\r?\n/u);
+  const expression = typeof callsite.expression === 'string' ? callsite.expression.trim() : '';
+  const api = typeof callsite.api === 'string' ? callsite.api.trim() : '';
+  if (expression === '') return null;
+  const escapedApi = api.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const apiPattern =
+    api === 'FormattedMessage'
+      ? /<\s*FormattedMessage\b/u
+      : api === 'formatMessage'
+        ? /\bformatMessage\s*\(/u
+        : escapedApi
+          ? new RegExp(`\\b${escapedApi}\\b`, 'u')
+          : null;
+  const expressionWindows = [];
+  const expressionAndApiWindows = [];
+  for (let start = 0; start < lines.length; start += 1) {
+    for (let end = start; end < Math.min(lines.length, start + 10); end += 1) {
+      const window = lines.slice(start, end + 1).join('\n');
+      if (!sourceContainsExpression(window, expression)) continue;
+      expressionWindows.push({ start, end });
+      if (apiPattern?.test(window)) expressionAndApiWindows.push({ start, end });
+    }
+  }
+  const candidates =
+    expressionAndApiWindows.length > 0 ? expressionAndApiWindows : expressionWindows;
+  candidates.sort(
+    (left, right) =>
+      left.end - left.start - (right.end - right.start) ||
+      left.start - right.start ||
+      left.end - right.end,
+  );
+  const matched = candidates[0];
+  if (!matched) return null;
+  return {
+    resolution:
+      expressionAndApiWindows.length > 0 ? 'expression-and-api-window' : 'expression-window',
+    excerpt: sourceExcerptRange(
+      callsite.file,
+      lines,
+      matched.start + 1,
+      matched.end + 1,
+      matched.end + 1,
+    ),
+  };
+}
+
+function buildSurfaceEvidence(root, context) {
+  const seenReferences = new Set();
+  const literalReferences = [];
+  for (const reference of context.productionReferences ?? []) {
+    const key = `${reference.path}:${reference.line}`;
+    if (seenReferences.has(key)) continue;
+    seenReferences.add(key);
+    const excerpt = safeSourceExcerpt(root, reference.path, reference.line);
+    if (!excerpt) continue;
+    literalReferences.push({
+      kind: reference.kind,
+      symbol: reference.symbol,
+      defaultMessage: reference.defaultMessage,
+      excerpt,
+    });
+  }
+  const dynamicProducers = (context.dynamicFamilies ?? []).map((family) => ({
+    family: family.family,
+    proof: family.proof,
+    unknownHandling: family.unknownHandling,
+    callsites: (family.callsites ?? []).map((callsite) => ({
+      ...callsite,
+      locatedSource: dynamicCallsiteExcerpt(root, callsite),
+    })),
+  }));
+  const dynamicSourceResolutions = dynamicProducers
+    .flatMap(({ callsites }) => callsites)
+    .reduce((counts, { locatedSource }) => {
+      const resolution = locatedSource?.resolution ?? 'unresolved';
+      counts[resolution] = (counts[resolution] ?? 0) + 1;
+      return counts;
+    }, {});
+  return {
+    literalReferences: literalReferences.slice(0, 3),
+    omittedLiteralReferenceCount: Math.max(0, literalReferences.length - 3),
+    dynamicProducers,
+    dynamicSourceResolutions,
+    annotationEvidence: context.reviewedAnnotation?.evidence ?? [],
+  };
+}
+
+function adjacentLocaleMessages(manifest, messageId, source) {
+  const sourcePath = source.translations?.['en-US']?.source?.path;
+  const sourceLine = source.translations?.['en-US']?.source?.line;
+  if (!sourcePath || !Number.isInteger(sourceLine)) return [];
+  return manifest.messages
+    .filter(
+      (message) =>
+        message.id !== messageId && message.translations?.['en-US']?.source?.path === sourcePath,
+    )
+    .map((message) => ({
+      id: message.id,
+      line: message.translations['en-US'].source.line,
+      distance: Math.abs(message.translations['en-US'].source.line - sourceLine),
+      english: message.translations['en-US'].value,
+      chinese: message.translations['zh-CN'].value,
+    }))
+    .sort((left, right) => left.distance - right.distance || left.id.localeCompare(right.id, 'en'))
+    .slice(0, 4);
+}
+
+function sampleValueForSelector(argumentType, selector, offset = 0) {
+  if (argumentType === 'select') return selector;
+  if (/^=-?(?:\d+(?:\.\d+)?|\.\d+)$/u.test(selector)) return Number(selector.slice(1));
+  const values = { zero: 0, one: 1, two: 2, few: 3, many: 5, other: 2 };
+  return (values[selector] ?? 2) + offset;
+}
+
+function renderIcuNodesForReview(nodes, poundValue = 2) {
+  return nodes
+    .map((node) => {
+      if (node.type === 'text') return node.value;
+      if (node.type === 'pound') return String(poundValue);
+      if (node.argumentType === 'simple') return `<${node.name}>`;
+      if (node.argumentType === 'number') return `<${node.name}:number>`;
+      return `<${node.name}:${node.argumentType}>`;
+    })
+    .join('');
+}
+
+function collectIcuBranches(nodes, pathParts = [], rows = []) {
+  const occurrences = new Map();
+  nodes.forEach((node) => {
+    if (!node.options) return;
+    const argumentKey = `${node.name}:${node.argumentType}`;
+    const occurrence = occurrences.get(argumentKey) ?? 0;
+    occurrences.set(argumentKey, occurrence + 1);
+    Object.entries(node.options).forEach(([selector, branch]) => {
+      const sampleValue = sampleValueForSelector(node.argumentType, selector, node.offset ?? 0);
+      const pathPart = `${argumentKey}#${occurrence}=${selector}`;
+      const pathKey = [...pathParts, pathPart].join('/');
+      rows.push({
+        path: pathKey,
+        argument: node.name,
+        argumentType: node.argumentType,
+        selector,
+        sampleValue,
+        renderedBranch: renderIcuNodesForReview(branch, sampleValue - (node.offset ?? 0)),
+      });
+      collectIcuBranches(branch, [...pathParts, pathPart], rows);
+    });
+  });
+  return rows;
+}
+
+function buildIcuReviewerEvidence(english, german) {
+  const englishAnalysis = analyzeIcuMessage(english);
+  const germanAnalysis = analyzeIcuMessage(german);
+  const englishBranches = collectIcuBranches(englishAnalysis.ast);
+  const germanBranches = new Map(
+    collectIcuBranches(germanAnalysis.ast).map((branch) => [branch.path, branch]),
+  );
+  const sampleArguments = Object.fromEntries(
+    englishAnalysis.argumentSignature.map(({ name, type }) => [
+      name,
+      type === 'number' ? 123 : type === 'plural' || type === 'selectordinal' ? 2 : '<sample>',
+    ]),
+  );
+  return {
+    argumentSignature: englishAnalysis.argumentSignature,
+    sampleArguments,
+    branchCases: englishBranches.map((branch) => ({
+      path: branch.path,
+      argument: branch.argument,
+      argumentType: branch.argumentType,
+      selector: branch.selector,
+      sampleValue: branch.sampleValue,
+      english: branch.renderedBranch,
+      german: germanBranches.get(branch.path)?.renderedBranch ?? null,
+    })),
+  };
+}
+
+function estimatedVisibleLength(nodes) {
+  return nodes.reduce((total, node) => {
+    if (node.type === 'text') return total + [...node.value].length;
+    if (node.type === 'pound') return total + 2;
+    if (node.argumentType === 'simple') return total + [...`<${node.name}>`].length;
+    if (node.argumentType === 'number') return total + [...`<${node.name}:number>`].length;
+    return (
+      total +
+      Math.max(...Object.values(node.options).map((branch) => estimatedVisibleLength(branch)))
+    );
+  }, 0);
+}
+
+function buildLengthEvidence(english, german, uiRole) {
+  const templateEnglishLength = [...english].length;
+  const templateGermanLength = [...german].length;
+  const maximumVisibleEnglishLength = estimatedVisibleLength(analyzeIcuMessage(english).ast);
+  const maximumVisibleGermanLength = estimatedVisibleLength(analyzeIcuMessage(german).ast);
+  const ratio =
+    maximumVisibleEnglishLength === 0
+      ? null
+      : Number((maximumVisibleGermanLength / maximumVisibleEnglishLength).toFixed(3));
+  const flags = [];
+  if (maximumVisibleGermanLength > 120) flags.push('visible-branch-over-120-characters');
+  if (ratio !== null && ratio > 1.5) flags.push('candidate-over-150-percent-of-english');
+  if (
+    ['action-label', 'input-placeholder', 'navigation-label'].includes(uiRole) &&
+    maximumVisibleGermanLength > 40
+  ) {
+    flags.push('compact-control-copy-over-40-characters');
+  }
+  return {
+    templateEnglishLength,
+    templateGermanLength,
+    maximumVisibleEnglishLength,
+    maximumVisibleGermanLength,
+    visibleGermanToEnglishRatio: ratio,
+    flags,
+  };
+}
+
+function buildGlossaryEvidence(domainReasons, glossary, evidenceSources) {
+  return (domainReasons ?? [])
+    .filter((reason) => reason.startsWith('glossary:'))
+    .map((reason) => reason.slice('glossary:'.length))
+    .map((termId) => glossary.get(termId))
+    .filter(Boolean)
+    .map((term) => ({
+      ...term,
+      evidence: term.evidenceRefs.map((sourceId) => evidenceSources.get(sourceId) ?? { sourceId }),
+    }));
+}
+
+function buildDecisionPacket(pilotMessage, context, glossaryTerms) {
+  const questions = [];
+  if (context.status === 'BLOCKED_CONTEXT') {
+    questions.push(
+      'Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.',
+    );
+  }
+  if (!context.concept) {
+    questions.push(
+      'Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.',
+    );
+  }
+  if (/heuristic/iu.test(context.uiRoleSource ?? '')) {
+    questions.push(
+      `Confirm or correct the proposed UI role "${context.uiRole}" from the embedded runtime evidence; its current source is heuristic.`,
+    );
+  }
+  if (pilotMessage.risk?.trim()) questions.push(pilotMessage.risk.trim());
+  glossaryTerms
+    .filter(({ decisionStatus }) => decisionStatus === 'blocked-term')
+    .forEach(({ termId }) =>
+      questions.push(`Resolve blocked glossary term ${termId} before approving this message.`),
+    );
+  const explicitDecision =
+    context.status === 'BLOCKED_CONTEXT' ||
+    !context.concept ||
+    /heuristic/iu.test(context.uiRoleSource ?? '') ||
+    glossaryTerms.some(({ decisionStatus }) => decisionStatus === 'blocked-term') ||
+    /\b(?:decision|whether|versus|alternative|pending|still blocked|needs? .*review)\b/iu.test(
+      pilotMessage.risk ?? '',
+    );
+  return {
+    status: explicitDecision ? 'REQUIRES_EXPLICIT_DECISION' : 'REVIEW_CONFIRMATION_REQUIRED',
+    questions,
+    termOptions: glossaryTerms.map((term) => ({
+      termId: term.termId,
+      preferred: term.germanPreferred,
+      alternatives: term.alternatives,
+      forbidden: term.forbidden,
+      includeContexts: term.includeContexts,
+      excludeContexts: term.excludeContexts,
+      decisionStatus: term.decisionStatus,
+    })),
+  };
+}
+
+function buildReviewerDossier({
+  root,
+  manifest,
+  pilotMessage,
+  source,
+  ledgerMessage,
+  glossary,
+  evidenceSources,
+}) {
+  const surfaceEvidence = buildSurfaceEvidence(root, ledgerMessage.context);
+  const glossaryTerms = buildGlossaryEvidence(
+    ledgerMessage.context.reviewPolicy?.domainReasons,
+    glossary,
+    evidenceSources,
+  );
+  return {
+    schemaVersion: 'tiangong.i18n-de-pilot-reviewer-dossier.v1',
+    surfaceEvidence,
+    sourceLocaleNeighbors: adjacentLocaleMessages(manifest, pilotMessage.id, source),
+    glossaryTerms,
+    decisionPacket: buildDecisionPacket(pilotMessage, ledgerMessage.context, glossaryTerms),
+    icuReview: buildIcuReviewerEvidence(source.translations['en-US'].value, pilotMessage.candidate),
+    lengthReview: buildLengthEvidence(
+      source.translations['en-US'].value,
+      pilotMessage.candidate,
+      ledgerMessage.context.uiRole,
+    ),
+  };
+}
+
+const REVIEW_ROLE_CHECKLISTS = {
+  'product-context': [
+    'Confirm the concept and actual UI/runtime surface from the embedded references or dynamic-family proof.',
+    'Confirm the UI role and user-visible consequence, including destructive or permission-sensitive behavior.',
+    'Resolve every BLOCKED_CONTEXT proposal or request a specific evidence correction.',
+    'Confirm that the German candidate preserves the product action, state, scope, and neighboring terminology.',
+  ],
+  'native-german': [
+    'Review Standard German grammar, idiom, capitalization, punctuation, and formal Sie voice.',
+    'Review every ICU branch and placeholder example, not only the raw default branch.',
+    'Review length and expansion flags against the described control role.',
+    'Request changes for calques, ambiguous compounds, unnatural UI wording, or regional-only vocabulary.',
+  ],
+  domain: [
+    'Confirm the LCA/ILCD/TIDAS concept against the embedded glossary and authority evidence.',
+    'Confirm included and excluded contexts and reject forbidden term collisions.',
+    'Resolve every blocked term or request a specific source-backed correction.',
+    'Confirm that the candidate preserves cardinality, validation, solver, review, and data-state semantics.',
+  ],
+};
+
+function buildReviewQueues(messages, reviewLogPath) {
+  return Object.fromEntries(
+    Object.entries(REVIEW_ROLE_CHECKLISTS).map(([role, checklist]) => [
+      role,
+      messages.map((message) => ({
+        messageId: message.id,
+        role,
+        reviewer: null,
+        reviewedAt: null,
+        decision: null,
+        contextHash: message.hashes.contextHash,
+        translationHash: message.hashes.translationHash,
+        reviewScopeHash: message.hashes.reviewScopeHash,
+        dossierHash: message.hashes.dossierHash,
+        checklist,
+        findings: [],
+        copyTarget: `${reviewLogPath} pilot.reviews`,
+      })),
+    ]),
+  );
 }
 
 function sortJsonValue(value) {
@@ -215,7 +763,24 @@ async function audit(options) {
   const ledger = readJson(options.root, options.ledger);
   const pilot = readJson(options.root, options.pilot);
   const reviewLog = readJson(options.root, options.reviewLog);
+  if (reviewLog.schemaVersion !== REVIEW_LOG_SCHEMA_VERSION || reviewLog.locale !== 'de-DE') {
+    throw new Error(`German review log must use ${REVIEW_LOG_SCHEMA_VERSION} and locale de-DE.`);
+  }
   const sourceAllowlist = readJson(options.root, DEFAULT_SOURCE_ALLOWLIST);
+  const reviewerGlossary = parseReviewerGlossary(options.root);
+  const reviewerEvidenceSources = parseReviewerEvidenceSources(options.root);
+  for (const term of reviewerGlossary.values()) {
+    const unknownEvidenceRefs = term.evidenceRefs.filter(
+      (sourceId) => !reviewerEvidenceSources.has(sourceId),
+    );
+    if (unknownEvidenceRefs.length > 0) {
+      throw new Error(
+        `Glossary term ${term.termId} references unknown evidence sources: ${unknownEvidenceRefs.join(
+          ', ',
+        )}`,
+      );
+    }
+  }
   const manifestById = new Map(manifest.messages.map((message) => [message.id, message]));
   const ledgerById = new Map(ledger.messages.map((message) => [message.id, message]));
   const findings = {
@@ -245,6 +810,8 @@ async function audit(options) {
     domainRequirementMismatches: [],
     localePolicyViolations: [],
     invalidReviewDomains: [],
+    invalidReviewerDossiers: [],
+    reviewQueueMismatches: [],
     externalHumanReviewEvidence: [],
   };
   [
@@ -470,14 +1037,100 @@ async function audit(options) {
       german: pilotMessage.candidate,
       contextHash,
     });
+    const dossier = buildReviewerDossier({
+      root: options.root,
+      manifest,
+      pilotMessage,
+      source,
+      ledgerMessage,
+      glossary: reviewerGlossary,
+      evidenceSources: reviewerEvidenceSources,
+    });
+    const expectedGlossaryIds = (ledgerMessage.context.reviewPolicy?.domainReasons ?? [])
+      .filter((reason) => reason.startsWith('glossary:'))
+      .map((reason) => reason.slice('glossary:'.length));
+    const receivedGlossaryIds = new Set(dossier.glossaryTerms.map(({ termId }) => termId));
+    expectedGlossaryIds
+      .filter((termId) => !receivedGlossaryIds.has(termId))
+      .forEach((termId) =>
+        findings.invalidReviewerDossiers.push({
+          messageId: pilotMessage.id,
+          reason: 'missing-glossary-term',
+          termId,
+        }),
+      );
+    if (
+      ledgerMessage.context.status === 'RUNTIME_EVIDENCED' &&
+      dossier.surfaceEvidence.literalReferences.length === 0 &&
+      dossier.surfaceEvidence.dynamicProducers.length === 0
+    ) {
+      findings.invalidReviewerDossiers.push({
+        messageId: pilotMessage.id,
+        reason: 'runtime context has no embedded literal or dynamic surface evidence',
+      });
+    }
+    if ((dossier.surfaceEvidence.dynamicSourceResolutions.unresolved ?? 0) > 0) {
+      findings.invalidReviewerDossiers.push({
+        messageId: pilotMessage.id,
+        reason: 'one or more dynamic callsites could not be located for an embedded excerpt',
+        unresolvedCount: dossier.surfaceEvidence.dynamicSourceResolutions.unresolved,
+      });
+    }
+    if ((dossier.surfaceEvidence.dynamicSourceResolutions['expression-window'] ?? 0) > 0) {
+      findings.invalidReviewerDossiers.push({
+        messageId: pilotMessage.id,
+        reason: 'one or more dynamic excerpts contain the expression but not the declared API',
+        expressionOnlyCount: dossier.surfaceEvidence.dynamicSourceResolutions['expression-window'],
+      });
+    }
+    dossier.surfaceEvidence.dynamicProducers
+      .flatMap(({ callsites }) => callsites)
+      .filter(({ expression, locatedSource }) => {
+        if (!locatedSource) return false;
+        const excerptText = locatedSource.excerpt.lines.map(({ text }) => text).join('\n');
+        return !sourceContainsExpression(excerptText, expression ?? '');
+      })
+      .forEach(({ file, expression }) =>
+        findings.invalidReviewerDossiers.push({
+          messageId: pilotMessage.id,
+          reason: 'dynamic callsite excerpt does not contain the declared expression',
+          file,
+          expression,
+        }),
+      );
+    if (
+      source.translations['en-US'].argumentSignature.length > 0 &&
+      Object.keys(dossier.icuReview.sampleArguments).length === 0
+    ) {
+      findings.invalidReviewerDossiers.push({
+        messageId: pilotMessage.id,
+        reason: 'argument-bearing message has no deterministic reviewer sample arguments',
+      });
+    }
+    dossier.icuReview.branchCases
+      .filter(({ german }) => german === null)
+      .forEach(({ path: branchPath }) =>
+        findings.invalidReviewerDossiers.push({
+          messageId: pilotMessage.id,
+          reason: 'ICU reviewer branch could not be paired with the German candidate',
+          branchPath,
+        }),
+      );
+    const dossierHash = hashJson({
+      schemaVersion: 'tiangong.i18n-de-pilot-reviewer-dossier.v1',
+      messageId: pilotMessage.id,
+      dossier,
+    });
     expectedHashes.set(pilotMessage.id, {
       contextHash,
       translationHash,
       domainReviewRequired: authoritativeDomainReview,
+      dossierHash,
       reviewScopeHash: hashJson({
-        schemaVersion: 'tiangong.i18n-de-pilot-review-scope.v4',
+        schemaVersion: 'tiangong.i18n-de-pilot-review-scope.v5',
         contextHash,
         translationHash,
+        dossierHash,
         candidateProducer,
         rationale: pilotMessage.rationale,
         risk: pilotMessage.risk,
@@ -497,8 +1150,35 @@ async function audit(options) {
       risk: pilotMessage.risk,
       reviewDomains: pilotMessage.reviewDomains,
       context: ledgerMessage.context,
+      reviewerDossier: dossier,
       hashes: expectedHashes.get(pilotMessage.id),
     });
+  });
+
+  const reviewQueues = buildReviewQueues(reviewPackMessages, options.reviewLog);
+  Object.entries(reviewQueues).forEach(([role, queue]) => {
+    if (
+      queue.length !== reviewPackMessages.length ||
+      queue.some(
+        (record, index) =>
+          record.messageId !== reviewPackMessages[index].id ||
+          record.role !== role ||
+          record.reviewer !== null ||
+          record.reviewedAt !== null ||
+          record.decision !== null ||
+          record.contextHash !== reviewPackMessages[index].hashes.contextHash ||
+          record.translationHash !== reviewPackMessages[index].hashes.translationHash ||
+          record.dossierHash !== reviewPackMessages[index].hashes.dossierHash ||
+          record.reviewScopeHash !== reviewPackMessages[index].hashes.reviewScopeHash ||
+          record.findings.length !== 0,
+      )
+    ) {
+      findings.reviewQueueMismatches.push({
+        role,
+        expected: reviewPackMessages.length,
+        actual: queue.length,
+      });
+    }
   });
 
   const reviews = reviewLog.pilot?.reviews ?? [];
@@ -546,6 +1226,7 @@ async function audit(options) {
     if (
       review.contextHash !== expected.contextHash ||
       review.translationHash !== expected.translationHash ||
+      review.dossierHash !== expected.dossierHash ||
       review.reviewScopeHash !== expected.reviewScopeHash
     ) {
       findings.staleReviews.push({
@@ -669,6 +1350,8 @@ async function audit(options) {
     'domainRequirementMismatches',
     'localePolicyViolations',
     'invalidReviewDomains',
+    'invalidReviewerDossiers',
+    'reviewQueueMismatches',
   ];
   const structuralFindingCount = structuralFindingNames.reduce(
     (total, name) => total + findingCounts[name],
@@ -683,12 +1366,13 @@ async function audit(options) {
     structuralFindingCount,
     reviewFindingCount,
     findingCount: structuralFindingCount + reviewFindingCount,
+    externalHumanReviewFindings: externalEvidence.findings,
     pilotCount: pilotMessages.length,
     domainReviewRequiredCount: [...expectedHashes.values()].filter(
       ({ domainReviewRequired }) => domainReviewRequired,
     ).length,
     reviewPack: {
-      schemaVersion: 'tiangong.i18n-de-pilot-review-pack.v4',
+      schemaVersion: 'tiangong.i18n-de-pilot-review-pack.v5',
       issue: pilot.issue,
       locale: pilot.locale,
       source: {
@@ -704,11 +1388,13 @@ async function audit(options) {
         candidateOnly: true,
         runtimeActivationAllowed: false,
         reviewEvidenceTarget: options.reviewLog,
-        requiredRoles: ['product-context', 'native-german', 'domain-when-ledger-or-pilot-requires'],
+        requiredRoles: ['product-context', 'native-german', 'domain'],
         reviewerIdentitySource: `${options.reviewLog} roles`,
         approvalHashRule:
-          'Every review pins contextHash, translationHash, and reviewScopeHash. Duplicate decisions are invalid.',
+          'Every review pins contextHash, translationHash, dossierHash, and reviewScopeHash. Duplicate decisions are invalid.',
         candidateProducer,
+        dossierRule:
+          'Embedded excerpts, dynamic-family proof, source-locale neighboring messages, glossary evidence, ICU branch cases, and length flags are deterministic reviewer evidence, not human approval.',
       },
       reviewAttestationRequirements: externalEvidence.requirements,
       summary: {
@@ -719,53 +1405,100 @@ async function audit(options) {
         blockedContextCount: reviewPackMessages.filter(
           ({ context }) => context.status === 'BLOCKED_CONTEXT',
         ).length,
+        explicitDecisionPacketCount: reviewPackMessages.filter(
+          ({ reviewerDossier }) =>
+            reviewerDossier.decisionPacket.status === 'REQUIRES_EXPLICIT_DECISION',
+        ).length,
+        contextConfirmationRequiredCount: reviewPackMessages.filter(
+          ({ context }) => !context.concept || /heuristic/iu.test(context.uiRoleSource ?? ''),
+        ).length,
+        argumentMessageCount: reviewPackMessages.filter(
+          ({ reviewerDossier }) =>
+            Object.keys(reviewerDossier.icuReview.sampleArguments).length > 0,
+        ).length,
+        selectorMessageCount: reviewPackMessages.filter(
+          ({ reviewerDossier }) => reviewerDossier.icuReview.branchCases.length > 0,
+        ).length,
+        longCandidateCount: reviewPackMessages.filter(({ reviewerDossier }) =>
+          reviewerDossier.lengthReview.flags.includes('visible-branch-over-120-characters'),
+        ).length,
+        expansionRiskCount: reviewPackMessages.filter(({ reviewerDossier }) =>
+          reviewerDossier.lengthReview.flags.includes('candidate-over-150-percent-of-english'),
+        ).length,
+        reviewQueueCounts: Object.fromEntries(
+          Object.entries(reviewQueues).map(([role, queue]) => [role, queue.length]),
+        ),
       },
+      selectionCoverage: {
+        categories: Object.fromEntries(
+          [...new Set(reviewPackMessages.map(({ category }) => category))]
+            .sort()
+            .map((category) => [
+              category,
+              reviewPackMessages.filter((message) => message.category === category).length,
+            ]),
+        ),
+        modules: Object.fromEntries(
+          [...new Set(reviewPackMessages.map(({ module }) => module))]
+            .sort()
+            .map((module) => [
+              module,
+              reviewPackMessages.filter((message) => message.module === module).length,
+            ]),
+        ),
+      },
+      reviewQueues,
       messages: reviewPackMessages,
     },
   };
 }
 
-try {
-  const options = parseArgs(process.argv.slice(2));
-  const result = await audit(options);
-  const reviewPackPath = path.resolve(options.root, options.reviewPack);
-  const reviewPackText = await prettier.format(JSON.stringify(result.reviewPack), {
-    ...(await prettier.resolveConfig(reviewPackPath)),
-    filepath: reviewPackPath,
-  });
-  if (options.write) {
-    fs.mkdirSync(path.dirname(reviewPackPath), { recursive: true });
-    fs.writeFileSync(reviewPackPath, reviewPackText);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    const options = parseArgs(process.argv.slice(2));
+    const result = await audit(options);
+    const reviewPackPath = path.resolve(options.root, options.reviewPack);
+    const reviewPackText = await prettier.format(JSON.stringify(result.reviewPack), {
+      ...(await prettier.resolveConfig(reviewPackPath)),
+      filepath: reviewPackPath,
+    });
+    if (options.write) {
+      fs.mkdirSync(path.dirname(reviewPackPath), { recursive: true });
+      fs.writeFileSync(reviewPackPath, reviewPackText);
+    }
+    const staleReviewPack =
+      options.check &&
+      (!fs.existsSync(reviewPackPath) ||
+        fs.readFileSync(reviewPackPath, 'utf8') !== reviewPackText);
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          schemaVersion: SCHEMA_VERSION,
+          locale: 'de-DE',
+          mode: options.mode,
+          wroteReviewPack: options.write,
+          checkedReviewPack: options.check,
+          staleReviewPack,
+          pilotCount: result.pilotCount,
+          domainReviewRequiredCount: result.domainReviewRequiredCount,
+          reviewPackSummary: result.reviewPack.summary,
+          structuralFindingCount: result.structuralFindingCount,
+          reviewFindingCount: result.reviewFindingCount,
+          findingCount: result.findingCount,
+          findingCounts: result.findingCounts,
+          externalHumanReviewFindings: result.externalHumanReviewFindings,
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    if (staleReviewPack || (options.mode === 'enforce' && result.findingCount > 0)) {
+      process.exitCode = 1;
+    }
+  } catch (error) {
+    process.stderr.write(
+      `German pilot audit failed: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 2;
   }
-  const staleReviewPack =
-    options.check &&
-    (!fs.existsSync(reviewPackPath) || fs.readFileSync(reviewPackPath, 'utf8') !== reviewPackText);
-  process.stdout.write(
-    `${JSON.stringify(
-      {
-        schemaVersion: SCHEMA_VERSION,
-        locale: 'de-DE',
-        mode: options.mode,
-        wroteReviewPack: options.write,
-        checkedReviewPack: options.check,
-        staleReviewPack,
-        pilotCount: result.pilotCount,
-        domainReviewRequiredCount: result.domainReviewRequiredCount,
-        structuralFindingCount: result.structuralFindingCount,
-        reviewFindingCount: result.reviewFindingCount,
-        findingCount: result.findingCount,
-        findingCounts: result.findingCounts,
-      },
-      null,
-      2,
-    )}\n`,
-  );
-  if (staleReviewPack || (options.mode === 'enforce' && result.findingCount > 0)) {
-    process.exitCode = 1;
-  }
-} catch (error) {
-  process.stderr.write(
-    `German pilot audit failed: ${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exitCode = 2;
 }

@@ -22,7 +22,7 @@ governance:
   machineTranslationRule: 'Machine translation and LLM output may propose candidates but are never approval evidence.'
   requiredHumanReviews:
     nativeGerman: '100% of messages'
-    lcaTidasDomain: '100% of high-risk LCA/TIDAS messages'
+    lcaTidasDomain: '100% of all 2,665 canonical messages under the conservative no-exemption policy'
 
 terms:
   - termId: 'lca.assessment'

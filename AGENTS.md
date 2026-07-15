@@ -26,9 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-15
-lastReviewedCommit: 6daa52722afddcb1b411e2c3dc2fc674c7607c68
-lastReviewedNote: 'Reviewed the Issue #601 full-catalog, immutable canonical-actor, GitHub-attested reviewer, policy-source-pinned pilot, ICU-branch, single-German-bundle, and pre-activation gates; repo ownership and branch facts are unchanged.'
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
+lastReviewedNote: 'Reviewed the Issue #601 pending-attestation reviewer onboarding, deterministic dossier/four-hash pilot, single-German-bundle, and pre-activation gates; repo ownership and branch facts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 7c2b9066f7946b55d5075f7ffd248aeea37e91fa
-lastReviewedNote: 'Reviewed the Issue #601 German candidate and pilot gates; their open human-review evidence is a localization delivery blocker, not a reopened coverage queue.'
+lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
+lastReviewedNote: 'Reviewed the Issue #601 onboarding and four-hash pilot tests; qualified-human evidence remains a localization delivery blocker, not a reopened coverage queue.'
 ---
 
 # Testing Execution State
