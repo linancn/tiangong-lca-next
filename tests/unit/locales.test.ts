@@ -233,3 +233,32 @@ describe('locale bundle baseline', () => {
     });
   });
 });
+
+describe('inactive German candidate leaf catalog', () => {
+  const candidateLeafModules = loadLeafLocaleModules('de-DE');
+  const canonicalLeafModules = loadLeafLocaleModules('en-US');
+
+  it('loads every canonical leaf module without activating a runtime bundle', () => {
+    expect(candidateLeafModules.map(({ fileName }) => fileName)).toEqual(
+      canonicalLeafModules.map(({ fileName }) => fileName),
+    );
+    expect(fs.existsSync('src/locales/de-DE.ts')).toBe(false);
+  });
+
+  it('keeps complete string-key parity with the canonical English leaf catalog', () => {
+    const candidateMessages = Object.assign(
+      {},
+      ...candidateLeafModules.map(({ messages }) => messages),
+    ) as LocaleMessages;
+    const canonicalLeafMessages = Object.assign(
+      {},
+      ...canonicalLeafModules.map(({ messages }) => messages),
+    ) as LocaleMessages;
+
+    expect(findDuplicateOwners(candidateLeafModules)).toEqual([]);
+    expect(sortedKeys(candidateMessages)).toEqual(sortedKeys(canonicalLeafMessages));
+    expect(Object.values(candidateMessages).every((message) => typeof message === 'string')).toBe(
+      true,
+    );
+  });
+});
