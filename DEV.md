@@ -20,9 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Aligned the shortest work loop with the active German runtime gates and the managed, failure-activated push-retry path.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: d178316406eb97ce93eb24f562922a61281e9d29
+lastReviewedNote: 'Reviewed Issue #606 against the active German delta workflow and managed final-push path; bootstrap commands and the shortest work loop are unchanged.'
 ---
 
 # Development Bootstrap

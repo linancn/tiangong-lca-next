@@ -23,9 +23,9 @@ checkPaths:
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Aligned the Issue #602 bounded, failure-activated push-retry contract with the managed push lifecycle.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: d178316406eb97ce93eb24f562922a61281e9d29
+lastReviewedNote: 'Reviewed Issue #606 merge and retry handling; hook ownership, full-coverage policy, and bounded managed-push recovery are unchanged.'
 ---
 
 # Pre-Push Gate Policy
