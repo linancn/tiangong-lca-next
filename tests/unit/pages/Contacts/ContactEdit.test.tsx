@@ -1329,7 +1329,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed, please check the data!'),
+        expect.stringContaining('Data check failed in '),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -1372,7 +1372,7 @@ describe('ContactEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Contact information，Administrative information，Unknown section (modellingAndValidation)：Data check failed, please check the data!',
+        'Data check failed in Contact information, Administrative information, and Unknown section (modellingAndValidation). Please check the data!',
       ),
     );
   });

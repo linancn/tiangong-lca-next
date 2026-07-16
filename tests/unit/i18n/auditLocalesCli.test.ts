@@ -69,8 +69,14 @@ const initializeAuditFixture = () => {
     'src/locales/zh-CN.ts',
     "export default { 'fixture.schema.required': '规范的校验提示' };\n",
   );
+  writeFixtureFile(
+    root,
+    'src/locales/de-DE.ts',
+    "export default { 'fixture.schema.required': 'Kanonischer Validierungshinweis' };\n",
+  );
   fs.mkdirSync(path.join(root, 'src/locales/en-US'), { recursive: true });
   fs.mkdirSync(path.join(root, 'src/locales/zh-CN'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'src/locales/de-DE'), { recursive: true });
   writeFixtureFile(
     root,
     'src/fixture-schema.json',
@@ -104,7 +110,7 @@ const initializeAuditFixture = () => {
     `${JSON.stringify(
       {
         schemaVersion: 'tiangong.i18n-dynamic-families.v1',
-        sourceLocales: ['en-US', 'zh-CN'],
+        sourceLocales: ['en-US', 'zh-CN', 'de-DE'],
         messageHelpers: [],
         families: {},
         callsites: [],

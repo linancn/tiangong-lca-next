@@ -80,6 +80,8 @@ import * as generalApi from '@/services/general/api';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { message as antdMessage } from 'antd';
 
+const deTeamMessages = require('@/locales/de-DE/pages_teams').default as Record<string, string>;
+
 type MessageMock = { error: jest.Mock; success: jest.Mock };
 const messageMock = antdMessage as unknown as MessageMock;
 
@@ -1260,8 +1262,58 @@ describe('contributeSource', () => {
     const result = await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
     expect(mockFunctionsInvoke).not.toHaveBeenCalled();
-    expect(messageMock.error).toHaveBeenCalledWith('You are not a member of any team');
+    expect(messageMock.error).toHaveBeenCalledWith('You are not in any team');
     expect(result).toEqual({ error: true, message: 'Contribute failed' });
+  });
+
+  it('should show the reviewed German no-team error when the app locale is de-DE', async () => {
+    mockGetLocale.mockReturnValue('de-DE');
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'user-1' },
+        },
+      },
+    });
+    const rolesBuilder = createQueryBuilder({
+      data: [
+        {
+          user_id: 'user-1',
+          team_id: 'team-123',
+          role: 'is_invited',
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(rolesBuilder);
+
+    await generalApi.contributeSource('flows', sampleId, sampleVersion);
+
+    expect(messageMock.error).toHaveBeenCalledWith('Sie gehören keinem Team an');
+  });
+
+  it('should fall back to the English no-team error when a locale bundle omits the message', async () => {
+    const messageId = 'teams.modal.noTeam.title';
+    const reviewedGermanMessage = deTeamMessages[messageId];
+    delete deTeamMessages[messageId];
+    mockGetLocale.mockReturnValue('de-DE');
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'user-1' },
+        },
+      },
+    });
+    const rolesBuilder = createQueryBuilder({
+      data: [{ user_id: 'user-1', team_id: 'team-123', role: 'is_invited' }],
+    });
+    mockFrom.mockReturnValueOnce(rolesBuilder);
+
+    try {
+      await generalApi.contributeSource('flows', sampleId, sampleVersion);
+      expect(messageMock.error).toHaveBeenCalledWith('You are not in any team');
+    } finally {
+      deTeamMessages[messageId] = reviewedGermanMessage;
+    }
   });
 
   it('should contribute with an empty bearer token when the session lacks access token', async () => {
@@ -2081,7 +2133,7 @@ describe('Edge Cases and Error Handling', () => {
 
       await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
-      expect(messageMock.error).toHaveBeenCalledWith('您不是任何团队的成员');
+      expect(messageMock.error).toHaveBeenCalledWith('您当前不属于任何团队');
     });
 
     it('should handle function invocation error', async () => {

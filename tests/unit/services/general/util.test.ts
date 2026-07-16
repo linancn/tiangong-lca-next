@@ -8,6 +8,7 @@ jest.mock('@/services/flowproperties/api');
 jest.mock('@/services/flows/api');
 jest.mock('@/services/unitgroups/api');
 
+import deValidatorMessages from '@/locales/de-DE/validator';
 import enValidatorMessages from '@/locales/en-US/validator';
 import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
@@ -1139,6 +1140,24 @@ describe('General Utility Functions', () => {
       expect(message).toBe('保存失败，以下字段缺少英文：treatmentStandardsRoutes,baseName.');
     });
 
+    it('should return German localized field-only message when locale is de-DE', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+            code: 'missing_en',
+            message: 'x',
+          },
+        ],
+        5,
+        'de-DE',
+      );
+
+      expect(message).toBe(
+        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: baseName.',
+      );
+    });
+
     it('should return empty string when there are no issues', () => {
       expect(getLangValidationErrorMessage([])).toBe('');
       expect(getLangValidationErrorMessage(undefined as any)).toBe('');
@@ -1194,6 +1213,10 @@ describe('General Utility Functions', () => {
         'Save failed, the following fields are missing English: field0, plus 1,001 more fields.',
       ],
       ['zh-CN', '保存失败，以下字段缺少英文：field0，另有 1,001 个字段。'],
+      [
+        'de-DE',
+        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: field0; außerdem 1.001 weitere Felder.',
+      ],
     ])('formats large counts for %s', (locale, expected) => {
       const issues = Array.from({ length: 1002 }, (_, index) => ({
         path: `field${index}`,
@@ -1277,6 +1300,37 @@ describe('General Utility Functions', () => {
         ).toBe('保存失败，以下字段缺少英文：根节点.');
       } finally {
         mutableZhMessages['validator.langValidation.root'] = originalRoot;
+      }
+    });
+
+    it('should keep German fallback copy when validator locale messages are missing', () => {
+      const mutableDeMessages = deValidatorMessages as Record<string, string | undefined>;
+      const originalMessages = {
+        missingEnglish: mutableDeMessages['validator.langValidation.missingEnglish'],
+        missingEnglishMore: mutableDeMessages['validator.langValidation.missingEnglishMore'],
+        root: mutableDeMessages['validator.langValidation.root'],
+      };
+
+      mutableDeMessages['validator.langValidation.missingEnglish'] = undefined;
+      mutableDeMessages['validator.langValidation.missingEnglishMore'] = undefined;
+      mutableDeMessages['validator.langValidation.root'] = undefined;
+
+      try {
+        expect(
+          getLangValidationErrorMessage(
+            [{ path: '', code: 'missing_en', message: 'x' }],
+            5,
+            'de-DE',
+          ),
+        ).toBe(
+          'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: (Stammebene).',
+        );
+      } finally {
+        mutableDeMessages['validator.langValidation.missingEnglish'] =
+          originalMessages.missingEnglish;
+        mutableDeMessages['validator.langValidation.missingEnglishMore'] =
+          originalMessages.missingEnglishMore;
+        mutableDeMessages['validator.langValidation.root'] = originalMessages.root;
       }
     });
 

@@ -173,7 +173,9 @@ export default defineConfig({
     'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
     'process.env.APP_TITLE_ZH_CN': process.env.APP_TITLE_ZH_CN,
     'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
+    'process.env.APP_TITLE_DE_DE': process.env.APP_TITLE_DE_DE,
     'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
     'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
+    'process.env.APP_LOGIN_SUBTITLE_DE_DE': process.env.APP_LOGIN_SUBTITLE_DE_DE,
   },
 });

@@ -7,7 +7,7 @@ const DEFAULT_LOGIN_SUBTITLE = "World's Largest Open LCA Data Platform";
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
 
 type AppLayout = (typeof APP_LAYOUT_OPTIONS)[number];
-type SupportedLocale = 'zh-CN' | 'en-US';
+type SupportedLocale = 'zh-CN' | 'en-US' | 'de-DE';
 
 const readSettingEnv = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
@@ -31,6 +31,9 @@ const normalizeLocale = (locale?: string): SupportedLocale | undefined => {
   if (lowerLocale === 'en-us') {
     return 'en-US';
   }
+  if (lowerLocale === 'de-de') {
+    return 'de-DE';
+  }
 
   return undefined;
 };
@@ -50,11 +53,13 @@ const getLocalizedEnvValue = (
 const appTitleEnvValues: Partial<Record<SupportedLocale, string | undefined>> = {
   'zh-CN': readSettingEnv(process.env.APP_TITLE_ZH_CN),
   'en-US': readSettingEnv(process.env.APP_TITLE_EN_US),
+  'de-DE': readSettingEnv(process.env.APP_TITLE_DE_DE),
 };
 
 const loginSubtitleEnvValues: Partial<Record<SupportedLocale, string | undefined>> = {
   'zh-CN': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_ZH_CN),
   'en-US': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_EN_US),
+  'de-DE': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_DE_DE),
 };
 
 export const getLocalizedAppTitle = (locale?: string): string | undefined =>

@@ -17,6 +17,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
@@ -537,15 +538,10 @@ const UnitGroupEdit: FC<Props> = ({
       if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'units') {
         validationHint = datasetValidationMessage;
       } else if (errTabNames && errTabNames.length > 0) {
-        validationHint =
-          errTabNames
-            .map((tab: string) => formatDatasetTabLabel(intl, 'unit group data set', tab))
-            .join('，') +
-          '：' +
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed, please check the data!',
-          });
+        validationHint = formatDataCheckErrorWithSections(
+          intl,
+          errTabNames.map((tab: string) => formatDatasetTabLabel(intl, 'unit group data set', tab)),
+        );
       }
       if (!silent && validationIssues.length > 0) {
         const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);

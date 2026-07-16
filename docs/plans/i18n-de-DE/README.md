@@ -1,34 +1,34 @@
 # Unified German (`de-DE`) delivery workspace
 
-Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepares one region-neutral Standard German UI. `de-DE` is the canonical storage tag, but the product will not maintain separate German variants. Runtime normalization of `de` and every `de-*` input belongs to activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602).
+Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepared and locally approved one region-neutral Standard German catalog. Activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602) now owns its single runtime bundle. `de-DE` is the canonical app/storage tag; the product does not maintain separate German variants. Runtime aliases normalize to `de-DE`, while `de_DE` and `de` are controlled adapters for Ant Design/import-report schema and Day.js respectively.
 
 This directory contains tracked candidate, context, terminology, and structural evidence. Completed human confirmation files are deliberately excluded: they stay under `.local/i18n-de-DE/`, are ignored by Git, and must not be pasted into an Issue, PR, or comment.
 
 ## Current gate state
 
-- Canonical messages: 2,665 (`2,658` leaf keys plus `7` activation-entry keys).
-- Staged German candidates: all 2,665 canonical messages (`2,658` leaf candidates plus `7` activation-entry candidates); approved runtime candidates: 0.
-- Runtime-evidenced context: 2,037.
-- Reserved compatibility messages without current runtime evidence: 628; every message now has a complete, current, hash-pinned proposal for the local full-catalog scope.
-- Pilot artifact: 90 high-risk candidates, 9 reserved-context proposals, and 2 blocked glossary choices. Its human response remains local and is intentionally not represented in tracked state.
-- Full-catalog candidate: all 30 leaf modules, all 2,665 producer records, and all context proposals are prepared for the deterministic local catalog gate.
-- No `src/locales/de-DE.ts` entry exists, so the candidate catalog remains unreachable from the runtime language selector and locale loader.
+- Frozen #601 baseline: 2,665 approved messages (`2,658` leaf keys plus `7` activation-entry keys), 30 leaf modules, 628 reserved-context proposals, and 2,665 non-personal producer records.
+- Active #602 delta: 24 new app-owned message IDs, 2 modified baseline API-doc messages, and 2 bundle-external import-report prose items.
+- Final active topology: `en-US`, `zh-CN`, and the single `de-DE` bundle, each with 2,689 messages and the same 30-module spread order.
+- `runtime-activation-manifest.json` binds the immutable #601 Git snapshot, current three-locale manifest, exact ordered delta inventory, final count, adapter policy, dataset-language fallback, and tracked prose digests.
+- The local #602 approval scope binds only those 28 review items, their relevant direct/dynamic callsite evidence, the two runtime descriptor maps, and the deterministic renderer contract. Refreshing a structural manifest after an unrelated production or unrelated dynamic-family change does not by itself invalidate an otherwise unchanged human approval.
+- The old Pilot and 2,665-message catalog confirmations remain local and valid only while their frozen tracked inputs match the #601 commit.
+- The separate 28-item #602 delta form is local and ignored; its checker currently reports the generic approved state without exposing reviewer identity, date, decisions, response digest, or per-item notes.
 
 These counts are generated evidence, not a completion claim.
 
 ## Goal and execution contract
 
-The finished artifact is one inactive, region-neutral Standard German catalog. Every candidate must be decided from the canonical English and Chinese, concrete callsites or reviewed dynamic-family evidence, the product concept and user-visible consequence, neighboring messages and state transitions, LCA/TIDAS terminology, ICU structure, preserved technical tokens, and layout risk. A grammatically possible isolated-string translation is not sufficient.
+The finished artifact is one active, region-neutral Standard German runtime catalog. Every new or changed candidate must be decided from canonical English and Chinese, concrete callsites or reviewed dynamic-family evidence, the product concept and user-visible consequence, neighboring messages and state transitions, LCA/TIDAS terminology, ICU structure, preserved technical tokens, and layout risk. A grammatically possible isolated-string translation is not sufficient.
 
-Execution proceeds in five checkpoints:
+Activation proceeds in five checkpoints:
 
-1. apply the current Pilot feedback only after validating each request against the complete context above;
-2. regenerate the canonical Pilot material and obtain valid local human confirmation;
-3. translate the 2,658 leaf keys in four coherent owner batches while resolving every remaining context proposal;
-4. generate, complete, and apply the separate 2,665-message catalog confirmation;
-5. pass the scoped German gates and one final repository gate, then hand the still-inactive bundle to #602.
+1. verify the immutable #601 Pilot/catalog source artifacts and existing ignored confirmations without regenerating them;
+2. generate/check the three-locale canonical manifest and deterministic runtime activation manifest;
+3. review only the 24 new messages, 2 changed messages, and 2 external report-prose items in the separate local delta form;
+4. pass the active-runtime exact-assembly audit, including topology, ICU, token, frozen-value, adapter-literal, and regional-bundle checks;
+5. run focused runtime proof, then the single final repository gate on the immutable delivery HEAD.
 
-A reviewed form without a valid local approval block is useful feedback but never satisfies the human checkpoint. Preserve it before regeneration, apply supported findings, and generate a fresh canonical form for the final human decision.
+A generated delta form without a valid local approval block is useful review material but never satisfies the human checkpoint. Structural report mode remains runnable in that state, while enforcement fails closed; the current local form satisfies the checker.
 
 ## Privacy and evidence boundary
 
@@ -51,7 +51,7 @@ The three dimensions are review questions, not three required identities. The ca
 
 ## Artifact map
 
-- `manifest.json`: generated canonical English/Chinese inventory and production references from Issue #600.
+- `manifest.json`: generated active English/Chinese/German inventory, topology, ICU signatures, and production references.
 - `decisions.yaml`: source-baseline decisions from Issue #600.
 - `dynamic-families.json`: reviewed computed-message producers and fallback behavior.
 - `glossary.yaml`: proposed German LCA/TIDAS and product terminology; unresolved choices stay explicit.
@@ -64,41 +64,43 @@ The three dimensions are review questions, not three required identities. The ca
 - `pilot-review-pack.json`: generated machine source containing the 90 complete deterministic dossiers and current scope digest. It has no reviewer queues or human decisions.
 - `review-log.yaml`: legacy-named, tracked provenance/policy manifest. It records non-personal candidate producers and local-evidence policy only; it is not a human review log.
 - `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
-- `activation-entry-translations.json`: seven staged top-level candidates owned by #602; it does not activate German.
+- `activation-entry-translations.json`: the seven frozen #601 top-level translations assembled by `src/locales/de-DE.ts`.
+- `runtime-activation-manifest.json`: deterministic, non-personal #602 carry-forward and delta contract. It contains only tracked-input digests, counts, message IDs, and runtime policy; it contains no reviewer identity, decision, response, or confirmation digest.
 - `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.
-- `.local/i18n-de-DE/catalog-review-confirmation.md`: later full-catalog form, generated only after all 2,665 candidates and contexts exist. Pilot approval cannot substitute for it.
+- `.local/i18n-de-DE/catalog-review-confirmation.md`: completed #601 full-catalog form for the frozen 2,665-message baseline. #602 checks it locally against the immutable snapshot and does not regenerate it.
+- `.local/i18n-de-DE/issue-602-delta-review-confirmation.md`: the independent 28-item runtime-delta form. It covers only 24 new messages, 2 changed baseline messages, and 2 import-report prose items.
 
 ## Commands
 
-Refresh deterministic context and pilot artifacts in dependency order:
+Refresh the deterministic active topology and activation manifest in dependency order:
 
 ```bash
-npm run i18n:de:audit:write
-npm run i18n:de:pilot:write
+npm run i18n:audit:write
+npm run i18n:de:runtime:manifest:write
 ```
 
-Generate the local pilot form without overwriting an existing file:
+Generate the local #602 delta form without overwriting an existing file:
 
 ```bash
-npm run i18n:de:review:generate
+npm run i18n:de:delta:review:generate
 ```
 
 Use `-- --force` only when intentionally replacing an obsolete form after preserving any useful notes. The generator writes atomically with local-only permissions. Repository-local input/output is accepted only below the ignored `.local/i18n-de-DE/` directory; tracked or non-ignored review files are rejected.
 
-Check a filled local form:
+Check the filled delta form:
 
 ```bash
-npm run i18n:de:review:check
+npm run i18n:de:delta:review:check
 ```
 
-Inspect honest work-in-progress state:
+Inspect honest work-in-progress structural state without claiming human approval:
 
 ```bash
 npm run i18n:de:pilot:report
-node scripts/i18n/audit-german-candidate.mjs --mode report --check
+npm run i18n:de:runtime:manifest:check
 ```
 
-Final enforcement commands intentionally fail while required scope is incomplete:
+Final enforcement keeps the frozen #601 human proof and active #602 delta proof separate. Both commands pass only while their respective private evidence and tracked inputs remain valid:
 
 ```bash
 npm run i18n:de:pilot
@@ -107,7 +109,9 @@ npm run i18n:de:audit
 
 No command in this workflow posts a GitHub comment or calls the GitHub API.
 
-## Local pilot confirmation workflow
+## Frozen #601 pilot confirmation workflow (historical)
+
+The steps below document how the original Pilot was reviewed. In active #602 work, do not regenerate these artifacts. `npm run i18n:de:pilot` now verifies that the tracked review pack still equals the immutable #601 snapshot and that the existing local confirmation still matches it.
 
 1. Refresh the candidate ledger and pilot pack.
 2. Generate `.local/i18n-de-DE/pilot-review-confirmation.md`.
@@ -131,27 +135,27 @@ Validation has three independent evidence domains. Do not invalidate or rerun a 
 
 | Evidence domain | Controlled inputs | Proof during iteration | Invalidation |
 | --- | --- | --- | --- |
-| Pilot | its 90 candidates, 9 context proposals, 2 terms, source/context/policy/producer/dossier/risk inputs, and canonical renderer | local form check, Pilot report/enforcement, German workflow test only when the workflow implementation changes | regenerate and re-confirm only when one of these Pilot inputs changes |
-| Catalog or coherent leaf batch | the affected leaf modules, candidates, context/provenance, topology, and ICU data | candidate regeneration/report, batch topology/ICU proof, canonical i18n audit, and focused locale proof appropriate to the changed batch | rerun the affected batch proof; do not rerun the repository full gate per message |
+| Frozen #601 Pilot/catalog | immutable #601 commit, 90-message Pilot pack, 2,665-message ledger/catalog, activation entries, provenance policy, and their existing ignored confirmations | frozen-snapshot comparison plus local Pilot/catalog confirmation checks; never regenerate these forms during #602 | a mismatch against the immutable #601 inputs blocks carry-forward and requires explicit investigation; #602 changes do not silently rewrite the baseline |
+| Active #602 runtime delta | the exact 24 new messages, 2 modified baseline messages, 2 extracted report-prose items, canonical three-locale manifest, dynamic-family callsite proof, runtime policy, and deterministic renderer | runtime-manifest report, private 28-item delta form, active topology/ICU/token/frozen-value audit, and focused locale/runtime tests | regenerate and re-confirm only after one of these delta inputs changes; unchanged #601 approval remains carried forward |
 | Repository delivery checkpoint | exact committed `HEAD`, tracked tree, Node/dependency state, and lint/build/test/coverage/Docpact/gate configuration | the normal push hook runs Docpact and `npm run prepush:gate` once after the last controlled tracked change | a new controlled tracked change or relevant toolchain/dependency/configuration change requires one new final run |
 
 Ignored local confirmation content and GitHub metadata are not repository full-gate inputs. They invalidate only the applicable local Pilot or catalog evidence. During normal delivery, do not run `npm run prepush:gate` manually and then immediately run a push whose hook repeats it. Let the hook own the one final full-gate execution. Run the full gate manually only for a no-push evidence handoff.
 
-This workflow does not add a passed-gate receipt cache or bypass to the hook. If push transport fails, retry with a normal `git push`; the current hook may run again, and `--no-verify` or `HUSKY=0` must not be used to avoid it. A reusable fail-closed receipt would be separate gate-infrastructure work. The optimization guaranteed here is removal of the deliberate manual-full-gate-plus-hook duplication. Any Umi-generating focused test, coverage command, or full gate must finish before another starts because they share `.umi-test` state.
+This workflow does not add a reusable passed-gate cache. Final delivery uses `npm run push:checked -- <normal git push arguments>` so the ordinary hook owns Docpact and the full gate once. A successful managed push leaves no receipt. Only a non-zero original transport result after a valid hook payload activates the ignored, one-hour, exact-intent receipt; argument-free `npm run push:retry` verifies the bound remote/refspec, commit, clean tree, toolchain, dependencies, gate inputs, and Docpact base before its internal exact-SHA `--no-verify` transport. Already-reached remote state succeeds idempotently; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed. Raw `git push` still runs the hook but cannot activate this recovery path, and operators must never use `--no-verify` or `HUSKY=0` manually. Any Umi-generating focused test, coverage command, or full gate must finish before another starts because they share `.umi-test` state.
 
-## Pilot and catalog separation
+## Frozen #601 Pilot and catalog separation (historical)
 
 Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,575 messages or the other 619 currently reserved contexts.
 
-After the 30 leaf modules, all context proposals, and all producer records exist, generate and check the separate form with `npm run i18n:de:review:catalog:generate` and `npm run i18n:de:review:catalog:check`. Final candidate enforcement requires that file, all 2,665 candidates, exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. Human confirmation can clear only structurally complete proposals awaiting approval; it can never conceal a missing, malformed, or stale proposal. The full-catalog confirmation follows the same privacy and canonical-body rules and may be completed by the same person across the three review dimensions.
+After the 30 leaf modules, all context proposals, and all producer records existed, #601 generated and checked a separate full-catalog form. Its approval covered all 2,665 candidates with exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. #602 verifies that frozen evidence against the immutable baseline; it does not regenerate or broaden the approval.
 
 ## Review sequence
 
-1. Complete and pass the local pilot confirmation.
-2. Create the 30 leaf modules and translate the 2,658 leaf keys using English, Chinese, and the complete context ledger; do not mechanically translate isolated strings.
-3. Resolve all remaining reserved-context proposals and structural findings while retaining exact source/context hashes.
-4. Generate and complete the separate local full-catalog confirmation.
-5. Pass `npm run i18n:de:audit` and hand the reviewed but still inactive single bundle to #602.
-6. #602 alone adds the top-level locale entry, Ant Design `de_DE`, Day.js `de`, selector/persistence behavior, and normalization of every `de`/`de-*` input to the one `de-DE` bundle.
+1. Verify the frozen #601 Pilot/catalog evidence and its existing local confirmations without regeneration.
+2. Assemble the one `de-DE` top-level bundle and activate its runtime/configuration adapters; no country-specific German bundle is allowed.
+3. Generate the canonical three-locale manifest and deterministic runtime activation manifest.
+4. Review and approve the separate private 28-item #602 delta form with its direct and dynamic-family callsite context.
+5. Pass `npm run i18n:de:audit`, focused runtime/locale tests, and Docpact/scoped static checks.
+6. Freeze the delivery commit and run the repository full gate once through `npm run push:checked -- <normal git push arguments>`; rerun it only if a controlled tracked input changes afterward or an expired failed-transport receipt has removed the bounded retry authority.
 
-Research candidates may be drafted while a context is blocked so the reviewer can compare concrete alternatives. They remain excluded from runtime assets and do not unlock a batch until the applicable local scope passes.
+If step 4 becomes incomplete because a review-bound input changes, structural reports remain valid work-in-progress evidence but enforcement must fail closed until a fresh private form passes. A pending local human form is not a GitHub blocker record and must not be committed.

@@ -1,4 +1,5 @@
 import { DarkMode, SelectLang } from '@/components/RightContent';
+import { getDocumentationUrl, normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { theme } from 'antd';
 import type React from 'react';
@@ -19,9 +20,16 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
   const actionColor = token.colorTextTertiary ?? token.colorTextSecondary;
   const actionHoverBg = token.colorBgTextHover;
   const langActionRef = useRef<HTMLDivElement>(null);
-  const docsBaseUrl = 'https://docs.tiangong.earth';
-  const locale = intl?.locale?.toLowerCase() || 'zh';
-  const docsUrl = locale.startsWith('en') ? `${docsBaseUrl}/en` : docsBaseUrl;
+  const locale = normalizeRuntimeLocale(intl?.locale);
+  const docsUrl = getDocumentationUrl(locale);
+  const helpLabel = intl.formatMessage({
+    id:
+      locale === 'de-DE'
+        ? 'component.globalHeader.help.englishFallback'
+        : 'component.globalHeader.help',
+    defaultMessage:
+      locale === 'de-DE' ? 'Open help documentation (English)' : 'Open help documentation',
+  });
 
   const handleOpenDocs = () => {
     window.open(docsUrl);
@@ -36,6 +44,16 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
       'button, [role="button"], .ant-dropdown-trigger, a, span',
     );
     trigger?.click();
+  };
+
+  const handleActionKeyDown = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    activate: () => void,
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      activate();
+    }
   };
 
   return (
@@ -66,8 +84,10 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
       >
         <div
           role='button'
+          tabIndex={0}
           aria-label='toggle-dark-mode'
           onClick={onDarkModeToggle}
+          onKeyDown={(event) => handleActionKeyDown(event, onDarkModeToggle)}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -101,8 +121,7 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
       >
         <div
           ref={langActionRef}
-          role='button'
-          aria-label='open-language-menu'
+          data-testid='login-language-frame'
           onClick={handleLanguageFrameClick}
           style={{
             display: 'inline-flex',
@@ -135,8 +154,11 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
       >
         <div
           role='button'
-          aria-label='open-help-docs'
+          tabIndex={0}
+          aria-label={helpLabel}
+          title={helpLabel}
           onClick={handleOpenDocs}
+          onKeyDown={(event) => handleActionKeyDown(event, handleOpenDocs)}
           style={{
             display: 'inline-flex',
             alignItems: 'center',

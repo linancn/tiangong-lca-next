@@ -1,3 +1,4 @@
+import deValidatorMessages from '@/locales/de-DE/validator';
 import enValidatorMessages from '@/locales/en-US/validator';
 import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
@@ -762,19 +763,42 @@ export async function normalizeLangPayloadBeforeSave(
 }
 
 const getLangValidationLocaleMessages = (locale: string) => {
-  const messages = (locale === 'zh-CN' ? zhValidatorMessages : enValidatorMessages) as Record<
-    string,
-    string
-  >;
+  const normalizedLocale = locale === 'zh-CN' || locale === 'de-DE' ? locale : 'en-US';
+  const messagesByLocale = {
+    'zh-CN': zhValidatorMessages,
+    'en-US': enValidatorMessages,
+    'de-DE': deValidatorMessages,
+  } as const;
+  const fallbackMessages = {
+    'zh-CN': {
+      missingEnglish: '保存失败，以下字段缺少英文：{fields}.',
+      missingEnglishMore:
+        '保存失败，以下字段缺少英文：{fields}，另有 {count, plural, other {# 个字段}}。',
+      root: '根节点',
+    },
+    'en-US': {
+      missingEnglish: 'Save failed, the following fields are missing English: {fields}.',
+      missingEnglishMore:
+        'Save failed, the following fields are missing English: {fields}, plus {count, plural, one {# more field} other {# more fields}}.',
+      root: '(root)',
+    },
+    'de-DE': {
+      missingEnglish:
+        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}.',
+      missingEnglishMore:
+        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}; außerdem {count, plural, one {# weiteres Feld} other {# weitere Felder}}.',
+      root: '(Stammebene)',
+    },
+  } as const;
+  const messages = messagesByLocale[normalizedLocale] as Record<string, string>;
+  const fallback = fallbackMessages[normalizedLocale];
 
   return {
-    missingEnglish:
-      messages['validator.langValidation.missingEnglish'] ??
-      'Save failed, the following fields are missing English: {fields}.',
+    locale: normalizedLocale,
+    missingEnglish: messages['validator.langValidation.missingEnglish'] ?? fallback.missingEnglish,
     missingEnglishMore:
-      messages['validator.langValidation.missingEnglishMore'] ??
-      'Save failed, the following fields are missing English: {fields}, plus {count, plural, one {# more field} other {# more fields}}.',
-    root: messages['validator.langValidation.root'] ?? (locale === 'zh-CN' ? '根节点' : '(root)'),
+      messages['validator.langValidation.missingEnglishMore'] ?? fallback.missingEnglishMore,
+    root: messages['validator.langValidation.root'] ?? fallback.root,
   };
 };
 
@@ -840,7 +864,7 @@ export function getLangValidationErrorMessage(
         fields: visibleFields,
         count: extraCount,
       },
-      locale,
+      localeMessages.locale,
     );
   }
 
@@ -849,7 +873,7 @@ export function getLangValidationErrorMessage(
     {
       fields: visibleFields,
     },
-    locale,
+    localeMessages.locale,
   );
 }
 

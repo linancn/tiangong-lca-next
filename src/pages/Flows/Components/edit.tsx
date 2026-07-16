@@ -19,6 +19,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
@@ -572,13 +573,10 @@ const FlowsEdit: FC<Props> = ({
       ) {
         validationHint = datasetValidationMessage;
       } else if (errTabNames && errTabNames.length > 0) {
-        validationHint =
-          errTabNames.map((tab) => formatDatasetTabLabel(intl, 'flow data set', tab)).join('，') +
-          '：' +
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed, please check the data!',
-          });
+        validationHint = formatDataCheckErrorWithSections(
+          intl,
+          errTabNames.map((tab) => formatDatasetTabLabel(intl, 'flow data set', tab)),
+        );
       }
       if (!silent && validationIssues.length > 0) {
         const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);

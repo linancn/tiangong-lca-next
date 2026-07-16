@@ -8,7 +8,12 @@ import { Helmet, Link, useIntl } from 'umi';
 import { Footer } from '@/components';
 import { FormattedMessage } from '@umijs/max';
 import { getBrandTheme } from '../../../../config/branding';
-import Settings from '../../../../config/defaultSettings';
+import {
+  defaultAppTitle,
+  defaultLoginSubtitle,
+  getLocalizedAppTitle,
+  getLocalizedLoginSubtitle,
+} from '../../../../config/defaultSettings';
 import LoginTopActions from './Components/LoginTopActions';
 
 const PasswordForgot: React.FC = () => {
@@ -21,6 +26,12 @@ const PasswordForgot: React.FC = () => {
     () => localStorage.getItem('isDarkMode') === 'true',
   );
   const brandTheme = getBrandTheme(isDarkMode);
+  const appTitle =
+    getLocalizedAppTitle(intl.locale) ??
+    intl.formatMessage({ id: 'pages.name', defaultMessage: defaultAppTitle });
+  const loginSubtitle =
+    getLocalizedLoginSubtitle(intl.locale) ??
+    intl.formatMessage({ id: 'pages.login.subTitle', defaultMessage: defaultLoginSubtitle });
 
   const handleDarkModeToggle = () => {
     setIsDarkMode((prevIsDarkMode) => {
@@ -100,7 +111,7 @@ const PasswordForgot: React.FC = () => {
                   id: 'menu.password_forgot',
                   defaultMessage: 'Forgot Password',
                 })}
-                - {Settings.title}
+                - {appTitle}
               </title>
             </Helmet>
             <LoginTopActions isDarkMode={isDarkMode} onDarkModeToggle={handleDarkModeToggle} />
@@ -109,18 +120,8 @@ const PasswordForgot: React.FC = () => {
                 <LoginForm
                   layout='vertical'
                   logo={brandTheme.logo}
-                  title={
-                    <FormattedMessage
-                      id='pages.login.title'
-                      defaultMessage='TianGong LCA Data Platform'
-                    />
-                  }
-                  subTitle={
-                    <FormattedMessage
-                      id='pages.login.subTitle'
-                      defaultMessage={"World's Largest Open LCA Data Platform"}
-                    />
-                  }
+                  title={appTitle}
+                  subTitle={loginSubtitle}
                   initialValues={initData}
                   onFinish={async (values) => {
                     await handleSubmit(values as Auth.LoginParams);

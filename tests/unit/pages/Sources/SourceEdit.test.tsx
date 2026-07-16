@@ -960,7 +960,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Source information，Administrative information：Data check failed, please check the data!',
+        'Data check failed in Source information and Administrative information. Please check the data!',
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -1067,7 +1067,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Administrative information：Data check failed, please check the data!',
+        'Data check failed in Administrative information. Please check the data!',
       ),
     );
   });
@@ -1101,7 +1101,7 @@ describe('SourceEdit component', () => {
 
     await waitFor(() =>
       expect(getMockAntdMessage().error).toHaveBeenCalledWith(
-        'Unknown section (modellingAndValidation)：Data check failed, please check the data!',
+        'Data check failed in Unknown section (modellingAndValidation). Please check the data!',
       ),
     );
   });

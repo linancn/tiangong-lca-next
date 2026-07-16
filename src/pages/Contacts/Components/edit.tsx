@@ -19,6 +19,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
@@ -565,14 +566,10 @@ const ContactEdit: FC<Props> = ({
     } else if (feedbackState === 'validation-error') {
       const validationHint =
         errTabNames && errTabNames.length > 0
-          ? errTabNames
-              .map((tab) => formatDatasetTabLabel(intl, 'contact data set', tab))
-              .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed, please check the data!',
-            })
+          ? formatDataCheckErrorWithSections(
+              intl,
+              errTabNames.map((tab) => formatDatasetTabLabel(intl, 'contact data set', tab)),
+            )
           : intl.formatMessage({
               id: 'pages.button.check.error',
               defaultMessage: 'Data check failed, please check the data!',
