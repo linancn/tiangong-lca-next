@@ -1,0 +1,115 @@
+schemaVersion: 'tiangong.i18n-de-evidence-sources.v1'
+issue: 'https://github.com/linancn/tiangong-lca-next/issues/601'
+policy:
+  sourcePair: 'English is canonical product copy; Chinese is mandatory disambiguation evidence, not the German source sentence.'
+  authority: 'Product runtime evidence outranks external wording; standards and authorities define concepts, not UI control behavior.'
+  discoveryOnly: ['LLM output', 'machine translation', 'Wikipedia', 'general bilingual dictionaries']
+  conflict: 'When authoritative sources conflict, record BLOCKED_TERM and obtain a glossary decision.'
+
+sources:
+  - sourceId: 'product-context'
+    authority: 'primary-product'
+    title: 'TianGong canonical i18n manifest, decisions, dynamic families, and production callsites'
+    localRefs:
+      - 'docs/plans/i18n-de-DE/manifest.json'
+      - 'docs/plans/i18n-de-DE/decisions.yaml'
+      - 'docs/plans/i18n-de-DE/dynamic-families.json'
+      - 'src/** production references recorded in manifest.json'
+    allowedUse: ['product concept', 'UI role', 'runtime behavior', 'placeholder contract', 'user consequence']
+
+  - sourceId: 'tidas-local'
+    authority: 'primary-specification'
+    title: 'TIDAS specification submodule'
+    repository: 'tiangong-lca/tidas'
+    reviewedCommit: 'f135ec28be48a5e9e6fc6831a1ba732f0e713550'
+    allowedUse: ['TIDAS concept definition', 'schema field meaning', 'package semantics']
+
+  - sourceId: 'tidas-sdk-local'
+    authority: 'primary-implementation'
+    title: 'TIDAS SDK submodule'
+    repository: 'tiangong-lca/tidas-sdk'
+    reviewedCommit: '79ea567ff53c297e3f5f604e7b5a65411456d2e5'
+    allowedUse: ['validation rule behavior', 'SDK issue meaning', 'schema implementation semantics']
+
+  - sourceId: 'ilcd-handbook'
+    authority: 'primary-standard-guidance'
+    title: 'International Reference Life Cycle Data System Handbook'
+    url: 'https://op.europa.eu/en/publication-detail/-/publication/263a774f-7867-4c81-ac2e-3d715550b68e/language-en'
+    allowedUse: ['ILCD concept definition', 'LCA methodology boundary']
+
+  - sourceId: 'ilcd-process-format'
+    authority: 'primary-format-documentation'
+    title: 'ILCD Process Data Set documentation'
+    url: 'https://eplca.jrc.ec.europa.eu/LCDN/downloads/ILCD_Format_1.1_Documentation/ILCD_ProcessDataSet.html'
+    allowedUse: ['process field meaning', 'quantitative reference', 'exchange semantics', 'compliance structure']
+
+  - sourceId: 'ilcd-life-cycle-model-format'
+    authority: 'primary-format-documentation'
+    title: 'ILCD Life Cycle Model Data Set documentation'
+    url: 'https://eplca.jrc.ec.europa.eu/LCDN/downloads/ILCD_Format_1.1_Documentation/ILCD_LifeCycleModelDataSet.html'
+    allowedUse: ['life cycle model concept', 'process-instance semantics']
+
+  - sourceId: 'din-iso-14040'
+    authority: 'primary-standard-catalog'
+    title: 'DIN EN ISO 14040:2021-02'
+    url: 'https://www.dinmedia.de/de/norm/din-en-iso-14040/325953744'
+    allowedUse: ['German LCA phase names', 'core LCA conceptual boundary']
+    accessNote: 'Use only accessible metadata or a legitimately available copy; do not reproduce paywalled text.'
+
+  - sourceId: 'din-iso-14044'
+    authority: 'primary-standard-catalog'
+    title: 'DIN EN ISO 14044:2021-02'
+    url: 'https://www.dinmedia.de/de/norm/din-en-iso-14044/325953813'
+    allowedUse: ['German LCA methods and review terminology']
+    accessNote: 'Use only accessible metadata or a legitimately available copy; do not reproduce paywalled text.'
+
+  - sourceId: 'eurlex-environmental-footprint-2021'
+    authority: 'primary-regulatory-guidance'
+    title: 'European Commission Environmental Footprint recommendation 2021 (German)'
+    url: 'https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=intcom%3AC%282021%299332'
+    allowedUse: ['German LCA terminology', 'functional unit', 'reference flow', 'allocation', 'impact assessment']
+
+  - sourceId: 'uba-oekobilanz'
+    authority: 'government-guidance'
+    title: 'Umweltbundesamt — Ökobilanz'
+    url: 'https://www.umweltbundesamt.de/themen/wirtschaft-konsum/produkte/oekobilanz'
+    allowedUse: ['Ökobilanz', 'Sachbilanz', 'Wirkungsabschätzung', 'Auswertung']
+
+  - sourceId: 'uba-probas'
+    authority: 'government-domain-database'
+    title: 'Umweltbundesamt ProBas'
+    url: 'https://probas.umweltbundesamt.de/'
+    allowedUse: ['observed German LCA data terminology']
+    caution: 'Observed UI wording is supporting evidence and may contain legacy or inconsistent copy.'
+
+  - sourceId: 'oekobaudat-ilcd-fields'
+    authority: 'government-domain-database'
+    title: 'ÖKOBAUDAT ILCD field handbook'
+    url: 'https://www.oekobaudat.de/fileadmin/downloads/2021-06-28_OEBD-Handbuch.pdf'
+    allowedUse: ['German ILCD field names', 'Prozessdatensatz', 'Referenzfluss', 'Flusseigenschaft', 'quantitative reference']
+
+  - sourceId: 'ilcd-epd-bilingual-fields'
+    authority: 'domain-format-guidance'
+    title: 'ILCD+EPD bilingual field definitions'
+    url: 'https://indatawg.github.io/ILCD-EPD-Data-Format/doc/'
+    allowedUse: ['bilingual ILCD/EPD field terminology']
+
+  - sourceId: 'openlca-german-messages'
+    authority: 'domain-software-corpus'
+    title: 'GreenDelta openLCA German translation file'
+    url: 'https://github.com/GreenDelta/olca-translation-files/blob/master/app-messages/messages_de.properties'
+    allowedUse: ['established German LCA software terminology', 'candidate cross-check']
+    caution: 'A software translation corpus supports terminology but does not decide TianGong product behavior.'
+
+  - sourceId: 'official-german-orthography-2024'
+    authority: 'primary-language-standard'
+    title: 'Amtliches Regelwerk der deutschen Rechtschreibung 2024'
+    url: 'https://www.rechtschreibrat.com/DOX/RfdR_Amtliches-Regelwerk_2024.pdf'
+    allowedUse: ['orthography', 'capitalization', 'hyphenation']
+
+  - sourceId: 'microsoft-german-style-guide'
+    authority: 'industry-language-style'
+    title: 'Microsoft German localization style guide index'
+    url: 'https://learn.microsoft.com/en-us/globalization/reference/microsoft-style-guides'
+    allowedUse: ['German UI voice and localization style candidates']
+    caution: 'Project glossary and product context remain authoritative.'

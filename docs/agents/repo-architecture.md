@@ -21,9 +21,9 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-07-15
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Reviewed locale topology, one-key/one-concept ownership, computed-family fallback, and pre-activation leaf-module boundaries for Issue #600.'
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: 99300c319ed07e489b1c67bdecc130a5b3497e85
+lastReviewedNote: 'Reviewed the complete inactive de-DE leaf catalog for Issue #601: 30-module parity and locale-specific gates do not change runtime support because the top-level bundle remains owned by Issue #602.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -67,6 +67,7 @@ Rules:
 - service modules own app-side data access
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
+- `src/locales/de-DE/**` currently contains the complete Issue #601 candidate leaf catalog only. The deliberate absence of `src/locales/de-DE.ts` keeps German out of the runtime loader and language selector; Issue #602 owns that entry, Ant Design/Day.js registration, persistence, and normalization of every `de` or `de-*` request to the one canonical `de-DE` bundle
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages

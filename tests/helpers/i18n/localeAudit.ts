@@ -27,6 +27,7 @@ type IcuMessageParser = {
 const sharedIcuParser = require('../../../scripts/i18n/icu-message-parser.cjs') as IcuMessageParser;
 
 export type SupportedBaselineLocale = 'en-US' | 'zh-CN';
+export type SupportedLeafLocale = SupportedBaselineLocale | 'de-DE';
 
 export type LocaleMessages = Record<string, string>;
 
@@ -68,7 +69,7 @@ const objectPropertyName = (name: ts.PropertyName): string | undefined => {
   return undefined;
 };
 
-export const loadLeafLocaleModules = (locale: SupportedBaselineLocale): LeafLocaleModule[] => {
+export const loadLeafLocaleModules = (locale: SupportedLeafLocale): LeafLocaleModule[] => {
   const localeDir = path.join(process.cwd(), 'src', 'locales', locale);
 
   return fs

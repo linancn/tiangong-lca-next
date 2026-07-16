@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Added the canonical deterministic locale-audit command after reviewing the Issue #600 bootstrap and validation workflow.'
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Updated the shortest work loop to use scoped proof during iteration and one hook-owned full gate for the final committed checkpoint.'
 ---
 
 # Development Bootstrap
@@ -65,7 +65,9 @@ npm ci
 4. run focused validation
 5. run `npm run lint`
 6. run `npm run build` when the change affects shipped behavior or static assets
-7. run `npm run prepush:gate` before pushing or handing off local gate evidence
+7. commit the final controlled tracked change and use a normal `git push`; its hook owns the one full gate
+
+If no push will occur and a standalone handoff needs full-gate evidence, run `npm run prepush:gate` manually instead. Do not do both for the same unchanged checkpoint.
 
 ## Canonical Commands
 
@@ -85,6 +87,15 @@ npm ci
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
 | deterministic locale audit | `npm run i18n:audit` |
+| refresh staged German context ledger | `npm run i18n:de:audit:write` |
+| refresh staged German pilot review pack | `npm run i18n:de:pilot:write` |
+| generate local German pilot review form | `npm run i18n:de:review:generate` |
+| check completed local German pilot form | `npm run i18n:de:review:check` |
+| generate local German full-catalog review form | `npm run i18n:de:review:catalog:generate` |
+| check completed local German full-catalog form | `npm run i18n:de:review:catalog:check` |
+| inspect German pilot blockers | `npm run i18n:de:pilot:report` |
+| enforce approved German pilot | `npm run i18n:de:pilot` |
+| enforce complete German leaf candidate | `npm run i18n:de:audit` |
 | build | `npm run build` |
 | local full test gate | `npm run prepush:gate` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
@@ -98,7 +109,12 @@ npm ci
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
 - treat `npm run prepush:gate` as the authoritative local test gate
-- when reproducing local or release gates manually, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- during normal delivery, do not run that full gate manually immediately before the hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
+- ignored local confirmation edits and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
+- run staged German generation in dependency order: `npm run i18n:de:audit:write`, then `npm run i18n:de:pilot:write`
+- use `npm run i18n:de:review:generate` only after the context ledger and pilot pack are fresh; it atomically writes an ignored local Markdown form, rejects tracked/non-private repository paths, and refuses to overwrite one without explicit `--force`; use the separate `i18n:de:review:catalog:*` pair only after the complete catalog exists
+- `npm run i18n:de:pilot` and `npm run i18n:de:audit` are final scoped gates and intentionally fail while the local pilot/full-catalog confirmation, context, terminology, or leaf candidates are incomplete; no GitHub identity, comment, or API call is part of either gate
+- run `npm run test:ci`, coverage commands, and `npm run prepush:gate` serially because they regenerate shared `.umi-test` state; do not add broad test/coverage runs around a full gate that already contains coverage
 
 ## If You Need More Than This File
 

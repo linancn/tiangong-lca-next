@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
-lastReviewedNote: 'Updated the verified full-closure baseline after the canonical locale audit and runtime-message coverage work for Issue #600.'
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Recorded the latest verified 357-suite baseline and the scoped-first, single-final-gate execution state for Issue #601.'
 ---
 
 # Testing Execution State
@@ -32,8 +32,9 @@ lastReviewedNote: 'Updated the verified full-closure baseline after the canonica
 ## Current Baseline
 
 - latest verified full run: `npm run prepush:gate`
-- suites: `356`
-- tests: `4456`
+- verified commit: `e112fa85f4138b5094c965bd010825d8267ee75d`
+- suites: `357`
+- tests: `4464`
 - tracked source files: `369`
 - coverage: `100%` statements, branches, functions, and lines
 
@@ -43,6 +44,8 @@ lastReviewedNote: 'Updated the verified full-closure baseline after the canonica
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
+- the staged German workflow adds report-mode context/pilot evidence plus final `i18n:de:pilot` and `i18n:de:audit` enforcement; these final commands intentionally remain red while ignored local confirmation, reserved context, or leaf translations are incomplete and do not represent a coverage regression
+- Issue #601 uses focused German proof during Pilot and batch iteration; the next full baseline is recorded only after the final controlled tracked checkpoint passes the one hook-owned `prepush:gate`
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled

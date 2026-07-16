@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-16'
-lastReviewedCommit: '3b716e00577a5fc4e235b65d71f9a0c15082a034'
-lastReviewedNote: 'Reviewed deterministic locale-audit ownership, routing, proof coverage, and governed baseline artifacts for Issue #600.'
+lastReviewedCommit: 'e112fa85f4138b5094c965bd010825d8267ee75d'
+lastReviewedNote: 'Reviewed Issue #601 scoped-first proof and single final-checkpoint gate ownership; existing path ownership and routing remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
