@@ -102,7 +102,7 @@ The public release read paths are:
 
 `src/pages/Processes/Components/view.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current Process projection`
 
-Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts, and fresh signed-download requests. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
+Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts, and fresh signed-download requests. Release artifact downloads use the server-authoritative `downloadFilename`; the Edge-signed URL binds the same semantic filename into `Content-Disposition`, while the client-side deterministic name remains only a compatibility fallback. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
 
 ## Current Hotspots
 

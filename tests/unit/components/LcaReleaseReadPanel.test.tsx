@@ -84,7 +84,10 @@ describe('LcaReleaseReadPanel', () => {
     mockGetCurrent.mockResolvedValue({ data: release, error: null });
     mockGetCurrentForProcess.mockResolvedValue({ data: processRelease, error: null });
     mockCreateDownload.mockResolvedValue({
-      data: { signedDownloadUrl: 'https://download.example/release.zip' },
+      data: {
+        downloadFilename: 'server-authoritative-release.zip',
+        signedDownloadUrl: 'https://download.example/release.zip',
+      },
       error: null,
     });
     HTMLAnchorElement.prototype.click = jest.fn();
@@ -124,6 +127,9 @@ describe('LcaReleaseReadPanel', () => {
       expect(mockCreateDownload).toHaveBeenCalledWith('22222222-2222-4222-8222-222222222222'),
     );
     expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1);
+    expect((HTMLAnchorElement.prototype.click as jest.Mock).mock.instances[0].download).toBe(
+      'server-authoritative-release.zip',
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(mockGetCurrent).toHaveBeenCalledTimes(2));
@@ -145,6 +151,19 @@ describe('LcaReleaseReadPanel', () => {
     expect(mockGetCurrentForProcess).toHaveBeenCalledWith(
       'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
       '01.00.000',
+    );
+  });
+
+  it('falls back to the deterministic artifact filename for an older download projection', async () => {
+    mockCreateDownload.mockResolvedValueOnce({
+      data: { signedDownloadUrl: 'https://download.example/legacy-release.zip' },
+      error: null,
+    });
+    render(<LcaReleaseReadPanel />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Download ZIP' }))[0]);
+    await waitFor(() => expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(1));
+    expect((HTMLAnchorElement.prototype.click as jest.Mock).mock.instances[0].download).toBe(
+      'tiangong-lca-01.02.003-unit-process.tidas.zip',
     );
   });
 
