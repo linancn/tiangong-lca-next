@@ -27,7 +27,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Reviewed Issue #601 scoped-first validation and single final-checkpoint gate ownership; repo ownership and branch facts are unchanged.'
 related:
   - .docpact/config.yaml

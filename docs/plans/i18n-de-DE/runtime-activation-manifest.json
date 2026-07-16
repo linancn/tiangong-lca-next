@@ -227,7 +227,7 @@
       {
         "kind": "file",
         "path": "docs/plans/i18n-de-DE/manifest.json",
-        "sha256": "1ecfb2632a33ffe66b7b82372931877bac8a9e691624890c648702458dd0cc3e"
+        "sha256": "f661c8d85269e2bd8fb4450478796d838bd4815289d14a44bf0672179f88af38"
       },
       {
         "kind": "file",
@@ -420,6 +420,6 @@
         "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
       }
     ],
-    "inputDigest": "d272eeb79e57f2cd8af93d13de853071053207425dc0233d45be7eff3dad0754"
+    "inputDigest": "bcd6dd8de7c11da355e9515c244a01ea1a1c5bd69c58c7017af640bf75c02b58"
   }
 }
