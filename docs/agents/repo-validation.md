@@ -23,7 +23,7 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Activated German runtime proof and aligned the bounded, failure-activated push-retry contract.'
 related:
   - ../AGENTS.md

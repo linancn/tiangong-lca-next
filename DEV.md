@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Aligned the shortest work loop with the active German runtime gates and the managed, failure-activated push-retry path.'
 ---
 

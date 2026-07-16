@@ -21,7 +21,7 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: bb7c8da76e2bd0581f7f32e1bc00c4a166fa4581
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-checkpoint full gate without reopening gate-infrastructure strategy.'
 ---
 

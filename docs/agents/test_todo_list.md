@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Retained the checked-in full-closure reference and recorded the Issue #602 German runtime and single-final-gate execution state.'
 ---
 
