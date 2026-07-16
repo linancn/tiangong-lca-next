@@ -165,7 +165,6 @@ export type LcaReleaseProjection = {
 export type LcaReleaseArtifactDownload = LcaReleaseArtifact & {
   releaseRunId: string;
   public: boolean;
-  downloadFilename: string;
   signedDownloadUrl: string;
   signedDownloadExpiresInSeconds: number;
 };

@@ -128,8 +128,7 @@ const LcaReleaseReadPanel = ({ processId, processVersion, compact = false }: Pro
     } else {
       triggerDownload(
         result.data.signedDownloadUrl,
-        result.data.downloadFilename ||
-          releaseArtifactFilename(release?.releaseVersion ?? 'release', artifact),
+        releaseArtifactFilename(release?.releaseVersion ?? 'release', artifact),
       );
     }
     setDownloadId(null);
