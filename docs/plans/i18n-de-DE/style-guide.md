@@ -35,6 +35,7 @@ Use concise infinitives without a period: `Speichern`, `Löschen`, `Auswahl aufh
 - `Entfernen` removes an item from a selection, relation, or list without claiming the entity was deleted.
 - `Zur Prüfung einreichen` starts the review workflow.
 - `Prüfung genehmigen` and `Prüfung ablehnen` are review actions only after the state-machine context confirms that meaning.
+- Review-log entries describe completed events instead: `Prüfung freigegeben`, `Prüfung abgelehnt`, `Prüfende wurden zugewiesen`, and `Zuweisung der Prüfenden aufgehoben`. Do not translate a log label as though it were the separate action button.
 
 ### Labels, headings, and navigation
 
@@ -89,6 +90,8 @@ The project glossary is binding once approved. In particular:
 - `Sachbilanz`/`LCI` and `Wirkungsabschätzung`/`LCIA` are distinct phases.
 - `Quelldatensatz` is an entity; `Datenquelle` is an origin of data or evidence.
 - `Prüfung`, `Validierung`, and `Konformität` are separate workflows or concepts.
+- `Impact-Ready` is the product policy term for submission data with the required LCIA characterization factors. Use compounds such as `Impact-Ready-Daten` and `Impact-Ready-Anforderung`; do not invent `Wirkungsabschätzungsbereitschaft`.
+- Standalone uncertainty-distribution options use noun labels consistently across Flow, Process, and Life Cycle Model: `Nicht definiert`, `Lognormalverteilung`, `Normalverteilung`, `Dreiecksverteilung`, and `Gleichverteilung`.
 
 When a compact UI needs an abbreviation, retain the approved expansion elsewhere in the same surface or help copy. Do not invent a shorter synonym that changes the concept.
 

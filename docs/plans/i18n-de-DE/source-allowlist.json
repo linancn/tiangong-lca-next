@@ -12,6 +12,11 @@
     { "token": "Excel", "reason": "Microsoft product and file-format name." },
     { "token": "ID", "reason": "Established identifier abbreviation." },
     { "token": "ILCD", "reason": "Specification name." },
+    {
+      "token": "Impact-Ready",
+      "reason": "TianGong submit-review policy term retained in German compounds."
+    },
+    { "token": "Infinity", "reason": "IEEE floating-point diagnostic token." },
     { "token": "ISO", "reason": "Standards organization acronym." },
     { "token": "JSON", "reason": "Data format name." },
     {

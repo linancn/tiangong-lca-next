@@ -557,6 +557,7 @@ describe('German local human-review workflow', () => {
         expect(sha256File(file)).toBe(digest);
       });
 
+      const missingCatalogConfirmation = path.join(root, 'missing-catalog-review.md');
       const candidate = spawnSync(
         process.execPath,
         [
@@ -566,14 +567,16 @@ describe('German local human-review workflow', () => {
           '--check',
           '--pilot-confirmation',
           confirmation,
+          '--catalog-confirmation',
+          missingCatalogConfirmation,
         ],
         { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
       );
       expect(candidate.status).toBe(1);
       const candidateReport = JSON.parse(candidate.stdout);
       expect(candidateReport.findingCounts.pilotGateFailures).toBe(0);
-      expect(candidateReport.findingCounts.blockedContexts).toBe(9);
-      expect(candidateReport.findingCounts.invalidContextProposals).toBe(619);
+      expect(candidateReport.findingCounts.blockedContexts).toBe(628);
+      expect(candidateReport.findingCounts.invalidContextProposals).toBe(0);
       expect(candidateReport.findingCounts.catalogOfflineReviewConfirmation).toBe(1);
       expect(candidateReport.catalogReview.counts).toEqual({
         blockedContextProposals: 628,
@@ -609,14 +612,14 @@ describe('German local human-review workflow', () => {
         ],
         { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
       );
-      expect(candidateWithCatalogApproval.status).toBe(1);
+      expect(candidateWithCatalogApproval.status).toBe(0);
       const approvedCatalogReport = JSON.parse(candidateWithCatalogApproval.stdout);
       expect(approvedCatalogReport.catalogReview.approved).toBe(true);
       expect(approvedCatalogReport.findingCounts.blockedContexts).toBe(0);
-      expect(approvedCatalogReport.findingCounts.invalidContextProposals).toBe(619);
+      expect(approvedCatalogReport.findingCounts.invalidContextProposals).toBe(0);
       expect(approvedCatalogReport.findingCounts.catalogOfflineReviewConfirmation).toBe(0);
-      expect(approvedCatalogReport.summary.locallyReviewCompleteCandidateCount).toBe(0);
-      expect(approvedCatalogReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(0);
+      expect(approvedCatalogReport.summary.locallyReviewCompleteCandidateCount).toBe(2665);
+      expect(approvedCatalogReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(2665);
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
     }

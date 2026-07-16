@@ -1,7 +1,7 @@
 {
   "schemaVersion": "tiangong.i18n-german-entry-translations.v1",
   "locale": "de-DE",
-  "status": "candidate-awaiting-local-confirmation",
+  "status": "reviewed-ready-for-activation",
   "policy": "Research candidates may be drafted for review, but they are not approved translations and must not enter runtime assets until their non-personal producer provenance and the applicable local hash-bound confirmation pass the Issue #601 gates.",
   "activationOwner": "src/locales/de-DE.ts",
   "activationIssue": "https://github.com/linancn/tiangong-lca-next/issues/602",

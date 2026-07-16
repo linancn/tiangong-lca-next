@@ -2,7 +2,7 @@
   "schemaVersion": "tiangong.i18n-de-translation-batches.v1",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
   "locale": "de-DE",
-  "status": "blocked-until-pilot-approved",
+  "status": "full-catalog-candidate-ready",
   "policy": {
     "leafKeyCount": 2658,
     "activationEntryKeyCount": 7,
@@ -22,7 +22,7 @@
   "lanes": [
     {
       "laneId": "process-lcia",
-      "status": "blocked-by-pilot",
+      "status": "candidate-produced",
       "keyCount": 846,
       "categoryCounts": { "activeStatic": 672, "activeDynamic": 78, "reserved": 96 },
       "icuCount": 37,
@@ -43,7 +43,7 @@
     },
     {
       "laneId": "lca-tidas-entities",
-      "status": "blocked-by-pilot",
+      "status": "candidate-produced",
       "keyCount": 607,
       "categoryCounts": { "activeStatic": 402, "activeDynamic": 18, "reserved": 187 },
       "icuCount": 0,
@@ -66,7 +66,7 @@
     },
     {
       "laneId": "shell-auth-teams",
-      "status": "blocked-by-pilot",
+      "status": "candidate-produced",
       "keyCount": 600,
       "categoryCounts": { "activeStatic": 263, "activeDynamic": 143, "reserved": 194 },
       "icuCount": 7,
@@ -89,7 +89,7 @@
     },
     {
       "laneId": "shared-review-package-ai",
-      "status": "blocked-by-pilot",
+      "status": "candidate-produced",
       "keyCount": 605,
       "categoryCounts": { "activeStatic": 392, "activeDynamic": 69, "reserved": 144 },
       "icuCount": 35,

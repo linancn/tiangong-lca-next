@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the new Issue #601 offline confirmation and reviewer-dossier regression proof; it extends localization validation without reopening the broader Jest coverage strategy.'
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-checkpoint full gate without reopening gate-infrastructure strategy.'
 ---
 
 # Testing Strategy
@@ -38,12 +38,15 @@ lastReviewedNote: 'Reviewed the new Issue #601 offline confirmation and reviewer
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 - localization quality should combine deterministic topology/context/hash gates with local human language/domain confirmation; Jest validates form integrity and privacy boundaries but never claims that an automated audit proves fluency
+- proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
+- gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 
 ## Operating Principles
 
 - every touched behavior ships with matching proof
 - current-state queue data belongs in `test_todo_list.md`
 - make strategy changes explicit
+- keep focused Umi-generating tests, coverage, and full gates serial; shared generated state makes parallel execution invalid evidence
 - keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
 - dead branches should be removed instead of defended by artificial tests
 

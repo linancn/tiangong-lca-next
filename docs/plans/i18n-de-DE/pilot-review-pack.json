@@ -6,10 +6,10 @@
     "manifest": "docs/plans/i18n-de-DE/manifest.json",
     "manifestDigest": "b822fc77cf46f90458246ead5d53f91b1921782cf3e87dc15549b538549e23dc",
     "contextLedger": "docs/plans/i18n-de-DE/context-ledger.json",
-    "contextInputDigest": "c1d4383e989849f1833de62f076720e65533a9fa7bb8d0fb1bba910e7ffbec18",
-    "reviewPolicyDigest": "89851ee8e853f3ee969e4f5f650995318f7253739e3b673fd0b42b85f6431351",
+    "contextInputDigest": "993c2b30a906330c06f300a3f64c6e1d28817704dc63a107832ca91df50481b2",
+    "reviewPolicyDigest": "de02446c61ae6c9d285f3767f49dba6e1a561fa8542064dd8c36f54b7eb99864",
     "pilot": "docs/plans/i18n-de-DE/pilot.json",
-    "pilotDigest": "2335760b082e4a5e1653e3d7734f824ba1e7121428c7a589f78de09a956c4f17"
+    "pilotDigest": "5a01289def443a395f61f1a75ca44420f5f4e6359fb3ca0bef7a707f2001cd0f"
   },
   "policy": {
     "candidateOnly": true,
@@ -34,12 +34,15 @@
       "termId": "tidas.root-record",
       "sourceEnglish": "Root record",
       "sourceChinese": ["根记录"],
-      "germanPreferred": "Ausgangsdatensatz",
+      "germanPreferred": "Startdatensatz",
       "abbreviation": null,
-      "alternatives": ["Startdatensatz", "Wurzeleintrag"],
+      "alternatives": [],
       "includeContexts": ["user-selected starting record whose dependency closure is packaged"],
       "excludeContexts": ["tree root UI node", "database root account"],
-      "forbidden": ["Wurzel blindly applied without product confirmation"],
+      "forbidden": [
+        "Ausgangsdatensatz because Ausgang collides with output semantics",
+        "Wurzeldatensatz for the user-selected dependency starting record"
+      ],
       "evidenceRefs": ["tidas-local", "product-context"],
       "risk": "critical",
       "decisionStatus": "blocked-term"
@@ -50,11 +53,16 @@
       "sourceChinese": ["结果集"],
       "germanPreferred": "Ergebnisdatensatz",
       "abbreviation": null,
-      "alternatives": ["Ergebnismenge"],
-      "includeContexts": ["TIDAS product result collection only"],
-      "excludeContexts": ["database query results", "LCIA results page"],
-      "forbidden": ["Ergebnissatz"],
-      "evidenceRefs": ["tidas-local", "product-context"],
+      "alternatives": [],
+      "includeContexts": [
+        "one named, versioned LCIA data-product package containing processes, impact categories, a manifest, and result artifacts"
+      ],
+      "excludeContexts": ["database query results", "an unpersisted page-level result collection"],
+      "forbidden": [
+        "Ergebnissatz",
+        "Ergebnismenge when one persisted data-product artifact is meant"
+      ],
+      "evidenceRefs": ["product-context"],
       "risk": "critical",
       "decisionStatus": "blocked-term"
     }
@@ -71,7 +79,7 @@
     "argumentMessageCount": 12,
     "selectorMessageCount": 6,
     "longCandidateCount": 13,
-    "expansionRiskCount": 14
+    "expansionRiskCount": 10
   },
   "selectionCoverage": {
     "categories": { "active-dynamic": 58, "active-static": 23, "reserved": 9 },
@@ -115,8 +123,8 @@
         }
       },
       "candidate": "Informationen zum Lebenszyklusmodell",
-      "rationale": "Preserves the complete data-set type instead of shortening it to Modell.",
-      "risk": "Product decision between Lebenszyklusmodell and Ökobilanzmodell.",
+      "rationale": "Preserves the life-cycle-model data-set type and avoids implying a complete Ökobilanz study.",
+      "risk": "Lebenszyklusmodell must stay distinct from the assessment concept Ökobilanz.",
       "reviewDomains": ["native-german", "lca"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -415,7 +423,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Product decision between Lebenszyklusmodell and Ökobilanzmodell."
+            "Lebenszyklusmodell must stay distinct from the assessment concept Ökobilanz."
           ],
           "termOptions": [
             {
@@ -440,11 +448,11 @@
         }
       },
       "hashes": {
-        "contextHash": "7dfb66b83bce88ff153dd17acc41b3695bec90e165609f5ca611a87ccb946cce",
-        "translationHash": "6c90cec5637cd4bc4508e5a8263e5ed5c16244994d3120335e729a7b6c3aca89",
+        "contextHash": "5490418e978b169cde27cc241560a91cc6bfaebda1ca357f9f133020a882b75a",
+        "translationHash": "82cfebd5fd953156bbc6b77a46fe0de66b5b98d7c5c73ad6a3d29008f9c2f09b",
         "domainReviewRequired": true,
-        "dossierHash": "7f1d7a2ed8dc25bb0fa882b7d108dec3f7054118311b2b858f8205ac46f60445",
-        "reviewScopeHash": "27d6dadf1c527c5632cc2f00f69766ee557fd1e1f36f536e8a4dabe63ae75293"
+        "dossierHash": "687c024e29a8bc768610815c996d511fc09bc8058ed2fd85f7c8e2734aba213f",
+        "reviewScopeHash": "416b805518bc082e4b24cf4ade2096cc3783b8129cbcc42aa6f9e4166bb3813f"
       }
     },
     {
@@ -750,11 +758,11 @@
         }
       },
       "hashes": {
-        "contextHash": "7f2f18a775290681d1431418ef27d411c4aab5a4ea330e168a5d6ec5fdcf5faa",
-        "translationHash": "d6cd0622aa92d398278f7c525e7f6c5c286c722f5e336f6d75044d751256a08e",
+        "contextHash": "8a39da4932e875bd91018cd211b5d3cf309a6d2ad075f74bac87d9c98724d79b",
+        "translationHash": "318a523f4b16bb2089d75b5daf5207b69d95b8a1d1c22913c734344c71654bf7",
         "domainReviewRequired": true,
         "dossierHash": "faac60bf966f43c92fc41f1bffb291e0b02e0a451fd8b5f9f739acd2eeca27af",
-        "reviewScopeHash": "73add57ccab385683db4a49e0c8218dd1b7695c374d3685fb4d79622fd6e1c97"
+        "reviewScopeHash": "cd08bd46ce7f3c3057d6a500555eecbe0bca4fda1803c25ffae90cdab528cddb"
       }
     },
     {
@@ -799,7 +807,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference",
-          "sourceContextHash": "b8f8db96fc9220b961bc3e951444dbf66c6cb433a3c7a5e38239bbcab8968c45",
+          "sourceContextHash": "09b996469ca2ed0c9a4cf7a38492c54e13b5edb96b74dadac52e3cf28b01dd4a",
           "status": "BLOCKED_CONTEXT",
           "concept": "Heading or field label for the quantitative-reference section of a flow-property data set.",
           "uiRole": "field-label-or-heading",
@@ -951,11 +959,11 @@
         }
       },
       "hashes": {
-        "contextHash": "42044b97b1c836000e21a593cb41cdab1277c4846c20f5158ae583f48c939c3d",
-        "translationHash": "a8383ace614e0f50b3ec3e53482829bae07d631cf93de8a001e76c0ccca9d3b3",
+        "contextHash": "e8e915fc904adbce6dbc5654348b4d4e34fbc89f1f04a64f592954ff9022c60c",
+        "translationHash": "4b7516d9ce4e090c16ce31e3285f3d7e46b487dd4ae0b2a89f47b74accbe1433",
         "domainReviewRequired": true,
         "dossierHash": "fb0ce9e4b4dbe6360bbfc715b60b30ba381c6a243f7ea3ccb810bf26071e04f8",
-        "reviewScopeHash": "30021d240050f4640d6689377812cf7133267b8c36776309b0812332e33c42e5"
+        "reviewScopeHash": "26f47ea67cc2cd5a540e4603470dcbfd452d637a703999420531a2a28e2f2602"
       }
     },
     {
@@ -1308,11 +1316,11 @@
         }
       },
       "hashes": {
-        "contextHash": "ea3f1a16e29c6ccf3b50e5db8d3da22a1d9c0624be45764bc5c2c9dac26cad27",
-        "translationHash": "ab6b67113ab89569ca8ca7b47757cc4836ae7efb9bc5f9367e9900fb3dfc9efd",
+        "contextHash": "2995c07db6eb191b61410089d34c944a6646ebfedf5feb557aced4838b47d407",
+        "translationHash": "5c052ee0e87a3c23a0005b800059e36533736041e96f4783b00b3ef4d4200a78",
         "domainReviewRequired": true,
         "dossierHash": "1a7809043a72d59573bceb021e2e8cabd1dfc5716e491985fae8fda14ea7f513",
-        "reviewScopeHash": "73bffd0d1f87615f66ce25f845dc88f72b11d8160fdc992dc68f2dac2ac6f53c"
+        "reviewScopeHash": "a7945ed05b01a7f4cb23f84a9bd50feab1a440109060204e60d8a8bcae5e28c9"
       }
     },
     {
@@ -1741,11 +1749,11 @@
         }
       },
       "hashes": {
-        "contextHash": "1a3b1ed5136d77fcf03acfa6ab6f73730100adbdb5d1f9ccce9f66814eaae53e",
-        "translationHash": "ed9c0b5752c437c154f923564799856968ccf72b11a8110908db117c78defad8",
+        "contextHash": "73586862a049a0b582ee878f91d59a278067d324a4d61e818989d1430dfddd60",
+        "translationHash": "aab5e71ada0a8d7c983e7ea08f62f6845a80fac63ca210922954df08b11a25b4",
         "domainReviewRequired": true,
         "dossierHash": "c91b7ddbc84a0678c095b5aa2db5ecec3f6510b1f233b90fae8138882b65f449",
-        "reviewScopeHash": "bf9f67dbab2fd69d562545d46a0a791898a9e6ddc5d78165da0441739ed6d7ac"
+        "reviewScopeHash": "628d996ab685fbd9e77da03b346152b6a9fda35f549a9ca462e63fab7add600d"
       }
     },
     {
@@ -1776,7 +1784,7 @@
       },
       "candidate": "Inputs und Outputs",
       "rationale": "Uses a recognizable compact German LCA software label for the exchange table.",
-      "risk": "Product must decide whether Eingänge und Ausgänge or Austausch is preferred for this UI role.",
+      "risk": "This compact tab label must remain distinct from the individual Austausch entity term.",
       "reviewDomains": ["native-german", "lca", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -2065,7 +2073,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Product must decide whether Eingänge und Ausgänge or Austausch is preferred for this UI role."
+            "This compact tab label must remain distinct from the individual Austausch entity term."
           ],
           "termOptions": [
             {
@@ -2090,11 +2098,11 @@
         }
       },
       "hashes": {
-        "contextHash": "b730a72e66ee4ac70bfb0278ceb744d15cbadadbe8a505c3c96372ce7ca9a5c6",
-        "translationHash": "c3f5247e5e5c45a1c638ba5068a84df4e3ad5359cd226f5abf892f8e0ea3fe90",
+        "contextHash": "306c830f45e7fce5eaca874440e9c7bd12fd30ef853438d5c5fe8b716b660d12",
+        "translationHash": "7fe61ba71a81dc9d687e413a7eebfaef41570e84a174fd80464a0237b8bb0571",
         "domainReviewRequired": true,
-        "dossierHash": "6c51c159488f3ce74a595df001a2e80a4021908e772aea32ca237633a1ae136d",
-        "reviewScopeHash": "e665467b969c81c44fa399f852b0f0a174b00cd0e4e4826e4816924c75376cbb"
+        "dossierHash": "ed0cc9c407996a016cd6698c7e381fc0a75d133e13172054960a074452ad3980",
+        "reviewScopeHash": "b352c78d18b104d6c25daf29dbd1f6ba4330c3f42c5aeaf7066113cb39d79432"
       }
     },
     {
@@ -2403,11 +2411,11 @@
         }
       },
       "hashes": {
-        "contextHash": "ae8d653f58317716713995ec2a4f579c95422fb303e4a200cf35c027e7a4e755",
-        "translationHash": "3529e68515788628ad2ad4a61415a746eb0a2226862a263f98907f3060f03a54",
+        "contextHash": "07f46abce2453d8bf5b08126f8b0634ee43bc5521c24776a12ee3d57c4668a9a",
+        "translationHash": "1463e7075a5cf2eda4593aa7a57366b6fdb0f1e552b1dfc50ffd363ad8252501",
         "domainReviewRequired": true,
         "dossierHash": "3ca35266cd88aebb624f379a6779d52ad883ce3d5fe7fde837b5ec1a89f5cc13",
-        "reviewScopeHash": "51c3ef06680b045e0e6ae926410ac94e6cc3b6e7d84c6f00387776216a3adfe4"
+        "reviewScopeHash": "c7a6580b891fb8cbb332cef119c4cdc52950ada7a21d1daf5e9a5566bb20ceb5"
       }
     },
     {
@@ -2768,11 +2776,11 @@
         }
       },
       "hashes": {
-        "contextHash": "055709fa38feb731a9f9fa17c251057171aa70fdc805509d336801110c9ec18e",
-        "translationHash": "cd469f7358cd31e68c17c943bef498fddb890cd79d2c3943408e6a37417fac5b",
+        "contextHash": "18e411e77d65eaaa6f0ff3146d3294bfee4ce9753d019e82adc7ca9fe7ac30f8",
+        "translationHash": "acf968121ca61623a44e29b8121497b5f3971f94dd6b8d93285276ef1439551e",
         "domainReviewRequired": true,
         "dossierHash": "6288564ef6151abfada2331d21e8cad3d1f694b0b79cf0227cbec6d723f9d729",
-        "reviewScopeHash": "1d994872ddd2dc2db64b8430fd7e925c9fd82ef328919893ec8f3242dadb938f"
+        "reviewScopeHash": "ea4ad0e0c4111e17e7e4eb0e4b1c8bfd619f29ce52807a7bd0256c1b6d55ac97"
       }
     },
     {
@@ -3092,11 +3100,11 @@
         }
       },
       "hashes": {
-        "contextHash": "49611bfe93b62a442d8da5f8752206ad033c6b83e39a03d835750527071703f1",
-        "translationHash": "dfd9d6043fc3fb3b128293230a558856b4a8474b6301b843c6f6123a30c4d404",
+        "contextHash": "bc8b3e1aab5bb1b3ddac6f3e268d3cddfc0a64ceb2f97c50de228c764d3f3fbc",
+        "translationHash": "ff39ecc38c1bebd08e996fcd6bc5e711fb679f09f9522ab615728a2bc592be33",
         "domainReviewRequired": true,
         "dossierHash": "6c29664b6c26495731380a3da8c6f7da8a3a2e63c36556c5e2915e0c7198ce92",
-        "reviewScopeHash": "2d898e96b39893714b59df6939201e6b97335fe137b74b107842d82f48357bfe"
+        "reviewScopeHash": "f984656182dbf1e9744395fd049825a76bdc56aff38ec45a10393be4f7536408"
       }
     },
     {
@@ -3374,11 +3382,11 @@
         }
       },
       "hashes": {
-        "contextHash": "fade1facd07d38ad4d9986b230c0b33ab0b99f8cf4b21d7720a5c23aa719feee",
-        "translationHash": "bab9ce04f8311dab5df08972682c564cb080fa1c15d12bf2884034aa3b441b52",
+        "contextHash": "570aac42e688d396ee7bc495231f0a08f0d031a89cc3d061adaca05850f6b759",
+        "translationHash": "0857e8f8219e703722d5fb548215067568efb98dd47b0f0ebe9d33e94446d949",
         "domainReviewRequired": true,
         "dossierHash": "6ff2589bffcd4b75d8a2673d87f9162e477d93247db724fcd22603676e23b7a4",
-        "reviewScopeHash": "8f3a12841ad9bd5cb26461364065a31b85f1bc2625df45853f6674920f32151c"
+        "reviewScopeHash": "914af6c027c5ae316582a39e0640d7c8368149f6ac37d0204ba9bf71d73235a5"
       }
     },
     {
@@ -3674,11 +3682,11 @@
         }
       },
       "hashes": {
-        "contextHash": "486d38d368a04d82efd79104ded774646af91d903da012be88db824c16391038",
-        "translationHash": "14d4e8003ada0dbd335d159bcc8cdf2beca34ff46c7fe41745eac4f73a8b33fc",
+        "contextHash": "4f6d364b8813aa14e72545ae9c4aeb4a40848e9bf3afe3f3364cbd7a4e083fb3",
+        "translationHash": "153aca5e4b3b1ad2f706b2a43a2b66801d8ede45523430be1458b7debcbd8dde",
         "domainReviewRequired": true,
         "dossierHash": "725dbebd2c2e1fc04c7680cf09cde2a2285dccc957c01e6e16c3a59c72ae54ca",
-        "reviewScopeHash": "54a0a1a3d2bf2193196c4dfbf653791f78bb8d6b7cb5d9adb077c25a73c2e35f"
+        "reviewScopeHash": "4502033cd08718e72d73da15ca054cc0c9f9b264011b0be30ed8403c6052080a"
       }
     },
     {
@@ -3974,11 +3982,11 @@
         }
       },
       "hashes": {
-        "contextHash": "0ac1d7af205281de47db547d46ec850d073f5814bd56f2c32e78cf4e23a8d3db",
-        "translationHash": "7230c2a0a7ae9c97619b9c726ba8134dfb9a00a4efc135edd9072124d5e31c18",
+        "contextHash": "a96b7fd580396bd2467b385a95169f34fcd2a42a37136d95dfb2066c21ea960d",
+        "translationHash": "14d9b8fea4a53740d693c543ffe3d605c43791987482f8e1efd4a1c82de70c4a",
         "domainReviewRequired": true,
         "dossierHash": "c79ed17c188f007d468ba2743683548f96005ca34c228d09a70bf32f578a4d63",
-        "reviewScopeHash": "4386e1e3d5aeded75c1824cf25907e37d736d335fdedf1e41dba2c81673d7480"
+        "reviewScopeHash": "14fbba7ce97951becd2341b2c377224dff19baf860c15780f5a5c0583a63705b"
       }
     },
     {
@@ -4280,11 +4288,11 @@
         }
       },
       "hashes": {
-        "contextHash": "9602996c2283708efc4ffb310371e3a67bc38c34d95252cc58d4a291e2338ad7",
-        "translationHash": "eb943d1e3e78b970520a8b85445b2e6718d84deda38091dfafca797de0db685e",
+        "contextHash": "f266844ab6a10eac374bc60c6c7917ee7d73c51225b47d48b7b64d06edec5cf0",
+        "translationHash": "9945db8c92cd4306e562db0d1466955ae37fa4c922cf192b5c23bd6e31ba2fcc",
         "domainReviewRequired": true,
         "dossierHash": "050a47e655c42baa43ae67c942db881ec8958219dc78ea37edd96259fc2df626",
-        "reviewScopeHash": "990053725b6c858e419be689dbe482c278c1cc6fb3724ac92791575b89e420d4"
+        "reviewScopeHash": "4093bb561de501c7e73f8eb2bbb65c483e0b57680e5a4f9dea2edfbb7c7dc00d"
       }
     },
     {
@@ -4314,8 +4322,8 @@
         }
       },
       "candidate": "Lognormalverteilung",
-      "rationale": "Uses a noun label consistent with probability-distribution options.",
-      "risk": "Part of a set whose grammatical form must remain consistent.",
+      "rationale": "Uses the selected noun-label style for standalone distribution options: Nicht definiert, Lognormalverteilung, Normalverteilung, Dreiecksverteilung, and Gleichverteilung.",
+      "risk": "All Flow, Process, and Life Cycle Model option families must use the same noun style during full translation.",
       "reviewDomains": ["native-german", "statistics"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -4478,7 +4486,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Part of a set whose grammatical form must remain consistent."
+            "All Flow, Process, and Life Cycle Model option families must use the same noun style during full translation."
           ],
           "termOptions": [
             {
@@ -4503,11 +4511,11 @@
         }
       },
       "hashes": {
-        "contextHash": "b898a9b02bb4d948397380f209aeaeac5294c8ef65e50c64e8867a8ed61615dd",
-        "translationHash": "af3e24b1d2dba62e2ac65180af561347142cee7acb1a5ceb458dd92d1ad442d9",
+        "contextHash": "dd356b750be58cf11430eed875168d3d2524e7a51e964d534a82ed237aa93081",
+        "translationHash": "e4f0bf00ebb6f2ccf69ac8a834cce827476813a26c2473709a493aae3cbfb6a0",
         "domainReviewRequired": true,
-        "dossierHash": "7b0967632028fd5b64992389fcd6622a1a01e5d73bdc3a3cf80b0c4ea2899062",
-        "reviewScopeHash": "16bb848fc84d77a1809b500da537b92dcfb20f35268af7c6c1fec40f7702501e"
+        "dossierHash": "8be9a2b55625ca9c61184f64bcda455cecd0fcb72026d2d4ddd9084fad5058ec",
+        "reviewScopeHash": "8ebd680a48f1d73fe17aa954dd5998df7f57f0baa54c2831cbb0142c88d4bb2d"
       }
     },
     {
@@ -4698,11 +4706,11 @@
         }
       },
       "hashes": {
-        "contextHash": "e698ab8e54db496156d97ab622457b67c2beac049caa25384a5a7a57248b3dde",
-        "translationHash": "6e570f141e28ac2688a28f3be01ca0045dc1c7172c5645029262c6f1c132e73e",
+        "contextHash": "755f626560986b69eb7e312380455ea48e9ce823c3716a87506619afdd37a5c7",
+        "translationHash": "bcde4f469ad25978b3234678fc8b5c23add6dbb2b4b604aa7dff27e16f6cc84d",
         "domainReviewRequired": true,
         "dossierHash": "7772f4120f51c5e75512181f58496b77f201f235d1f9eb2fec1be38738d1318b",
-        "reviewScopeHash": "269b3190bf21e37993c4393a15cc229454060dc7bd7c2ce52f1d3bf401191585"
+        "reviewScopeHash": "c8ec93392026eec10e980129e7a3b128374b0c854063c408a2b19513323d703b"
       }
     },
     {
@@ -4908,11 +4916,11 @@
         }
       },
       "hashes": {
-        "contextHash": "581eafec3c2248a65ccdb356f41fef412be7a17fb87d269bf5bd80d315396355",
-        "translationHash": "b5de9cfc40ee5055758e37418cd43fe1ed34f2f4a158a13986266dddc13498dc",
+        "contextHash": "1eea966b1855c4e9a8dc9ab16ff0250433e86d85c84c72dd677f606ff47e14e5",
+        "translationHash": "b0c42f7e6e01927c495987065b7aff70857e212c5303fbfebec84aca6b856543",
         "domainReviewRequired": true,
         "dossierHash": "6729e08730b90248762cb75639918230e0a79959c3b138d6b4f3523103fd94eb",
-        "reviewScopeHash": "977e187193319e2b6c375f03cc3847738f486356d42138eea5d7d9a5a2df39d3"
+        "reviewScopeHash": "4bec197d7962933c2360c3ef24b4549752c96d331d6ef99fb868ab7b50e703ce"
       }
     },
     {
@@ -5115,11 +5123,11 @@
         }
       },
       "hashes": {
-        "contextHash": "1107a688d06fbb866a88f4a120902ad7f65c91cc3936ff6ed053fad0f524c1d3",
-        "translationHash": "718d596900d944bcfe80ae2850d35264d220f18f274502e8dcb78b490e2d2e55",
+        "contextHash": "14098c66429acc49ed7d11d463fac1cd83afa3478f7b48686003f15872e7cd23",
+        "translationHash": "7deb5217e9d6a5958ce23a08edc0cb05fa9f078310a0479ec69dae9d516909ce",
         "domainReviewRequired": true,
         "dossierHash": "d7ec980283e25348feb92399907f8b38529d6ac05e153282bdfe0e8fbdcdf999",
-        "reviewScopeHash": "fbe2fc4e64125d3a63a6d4905f8c769cf9e3b127cda187fcb7d023fb73c066b5"
+        "reviewScopeHash": "33dc44e5d03e188a69c67826493b1e5e552a5b9417b67a9536f7babdb6ed2a02"
       }
     },
     {
@@ -5274,11 +5282,11 @@
         }
       },
       "hashes": {
-        "contextHash": "79d6a39a64a046c5e017f9ab115d09acbc70ddbe48df944daacbe1ed60b6d4a0",
-        "translationHash": "a03db79b24872371872e6cbe1e8aa019402b1e7e26f29a2fd46e8281be761e30",
+        "contextHash": "b88ea41360277f34b7deae5b5ad1988dd5d76da29134b4a035de97f946122da0",
+        "translationHash": "cf125b8adea41223ab3b80de9a2e3e0fcfa889defd492636d948e8cc3d0783f4",
         "domainReviewRequired": true,
         "dossierHash": "d6d7a93b9bcae1ee617644f00064e7ff14366662957f49e8850f1b2871ccb8db",
-        "reviewScopeHash": "2ec686d74a9b589dcf234af06afe3a4ba921185024081656ce75ed7128586284"
+        "reviewScopeHash": "f9ab89ce3aa129b839cddc3e947cdb9f049861a780672093d5d33bd11f84e54d"
       }
     },
     {
@@ -5500,11 +5508,11 @@
         }
       },
       "hashes": {
-        "contextHash": "a53352cf3590435b5de667a3c0c96201dbf687da66aa8ab87071c1560c750704",
-        "translationHash": "5996f29ad595dbb21d15484c25a905510d837de249b830a9fb737dcc2c4f303d",
+        "contextHash": "e8be54978f326bb79a39555c83b2755d1b28df0b96c2a24b945ff7645aeb6f2e",
+        "translationHash": "d591ae1238b8855c526cdf2ca4a4c776397acd7489086b5867c93d61f8bf1b56",
         "domainReviewRequired": true,
         "dossierHash": "6c0296bca0319c3649b37b6b1713a3f82a549d7cc21f7d4afa334a44f231fce7",
-        "reviewScopeHash": "3f102aa6375feff172dc5a354ddab74435a242f2e4dd62968aa1c522cfb6ee93"
+        "reviewScopeHash": "56162269124dfb58cadcad859b6818104be88f00f9ce69ed0c8c43e9546e2712"
       }
     },
     {
@@ -5807,11 +5815,11 @@
         }
       },
       "hashes": {
-        "contextHash": "e01359c4688077d986e77326c5520ee1078fd7e8deb856f9d537044253877cf1",
-        "translationHash": "257c5bc02cbd9ad08d9bee896f3b589fe75bf3445ee31278f07b25bc3c708e53",
+        "contextHash": "8367ef6d88898e05106ca5075e3e8311bc1a610c45fd5289fb72eee2711826e6",
+        "translationHash": "513839799ed1a17369264d7e01c06c58beccf9a7fef769c1ef81ef48a19c827a",
         "domainReviewRequired": true,
         "dossierHash": "1b89dd24caad14d70431e2275470ffa2c6169537f2e4bc4896b9d3bbdf703dab",
-        "reviewScopeHash": "8879aa61c6d94632eef4e8ee8ac47d0b77a184f53cbdb625a0bf2b2260ae4f81"
+        "reviewScopeHash": "163f40e285a499eb73fbfb2f61a419b79d3411aa07d12ee7ef897d1c4f83b65c"
       }
     },
     {
@@ -5840,9 +5848,9 @@
           "module": "component_tidasPackage"
         }
       },
-      "candidate": "{count, plural, one {# kollidierender Benutzerdatensatz} other {# kollidierende Benutzerdatensätze}}",
-      "rationale": "Expresses import conflicts while preserving the ICU contract.",
-      "risk": "Konflikt vs. kollidierend must be consistent across the import UI.",
+      "candidate": "{count, plural, one {# Benutzerdatensatz mit Konflikt} other {# Benutzerdatensätze mit Konflikten}}",
+      "rationale": "Uses the same Konflikt term as the import summary while preserving the ICU count branches.",
+      "risk": "Must not imply that the conflicting records were overwritten, deleted, or imported.",
       "reviewDomains": ["native-german", "tidas"],
       "context": {
         "status": "BLOCKED_CONTEXT",
@@ -5856,7 +5864,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.conflict.records",
-          "sourceContextHash": "cb07c5cbfd2dd16dd3ee0a0703413ea4bca19e2c9b1b132f59714f6b48a805be",
+          "sourceContextHash": "e4b20ec282e3f2327e488a0eaa2f76bec64d84af8b790f0350a2e8c5f0b4744b",
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural count of user-owned records that conflict with records already present during TIDAS import.",
           "uiRole": "summary-count",
@@ -5925,7 +5933,7 @@
           "status": "REQUIRES_EXPLICIT_DECISION",
           "questions": [
             "Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.",
-            "Konflikt vs. kollidierend must be consistent across the import UI."
+            "Must not imply that the conflicting records were overwritten, deleted, or imported."
           ],
           "termOptions": []
         },
@@ -5940,7 +5948,7 @@
               "selector": "one",
               "sampleValue": 1,
               "english": "1 conflicting user record",
-              "german": "1 kollidierender Benutzerdatensatz"
+              "german": "1 Benutzerdatensatz mit Konflikt"
             },
             {
               "path": "count:plural#0=other",
@@ -5949,25 +5957,25 @@
               "selector": "other",
               "sampleValue": 2,
               "english": "2 conflicting user records",
-              "german": "2 kollidierende Benutzerdatensätze"
+              "german": "2 Benutzerdatensätze mit Konflikten"
             }
           ]
         },
         "lengthReview": {
           "templateEnglishLength": 83,
-          "templateGermanLength": 100,
+          "templateGermanLength": 99,
           "maximumVisibleEnglishLength": 27,
-          "maximumVisibleGermanLength": 35,
-          "visibleGermanToEnglishRatio": 1.296,
+          "maximumVisibleGermanLength": 36,
+          "visibleGermanToEnglishRatio": 1.333,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "ca55f06b915e90fbeb250a1750625716b2bb554f533a61770af43c41f5cfaaad",
-        "translationHash": "3beb9e232c1648126fcb4ed92bee2b7355c39da9bb50d5efc32d9938eea0c353",
+        "contextHash": "e6b90364785195f6d44dd0ca59d984ebebaa6858634c10c2563308bae4733cd6",
+        "translationHash": "cda4728588012216ae302afa40ab036a28bc74c93ae5ab2369a3bae4d87adc5e",
         "domainReviewRequired": true,
-        "dossierHash": "97d540b830d2fb1451ad7369f9994ecd902746e52c8a608d5611e082995d6abe",
-        "reviewScopeHash": "622925a02ba5f0e7a8b8dbdd7404bb75f3fa11dc51814f71d083da34d4a61b93"
+        "dossierHash": "6f582feb83711acb36b4c4af7cf45b84f74e00b74e2aed999386063359c56676",
+        "reviewScopeHash": "09f2ed5082c7c0bc05ad4c597075dd4818ed052ee14cffc5817de994022db049"
       }
     },
     {
@@ -5997,8 +6005,8 @@
         }
       },
       "candidate": "{count, plural, one {# Open-Data-Datensatz übersprungen} other {# Open-Data-Datensätze übersprungen}}",
-      "rationale": "States that records are skipped rather than deleted.",
-      "risk": "Open Data vs. offene Daten needs one product decision.",
+      "rationale": "States that records are skipped rather than deleted and uses the Open Data product-scope name as a compound modifier.",
+      "risk": "Open-Data-Datensatz and the standalone product label Open Data must remain consistent.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "BLOCKED_CONTEXT",
@@ -6012,7 +6020,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.filtered.records",
-          "sourceContextHash": "c075360aae42727d0c989e3c84f84849dda22b26a5f1c19c05520990cdf5b221",
+          "sourceContextHash": "a9f3ff13a363b6231904f62ac0d4069b1ac6b916e7cac194e4107e8ddf8e12ad",
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural count of open-data records skipped automatically during TIDAS import.",
           "uiRole": "summary-count",
@@ -6081,7 +6089,7 @@
           "status": "REQUIRES_EXPLICIT_DECISION",
           "questions": [
             "Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.",
-            "Open Data vs. offene Daten needs one product decision."
+            "Open-Data-Datensatz and the standalone product label Open Data must remain consistent."
           ],
           "termOptions": []
         },
@@ -6119,11 +6127,11 @@
         }
       },
       "hashes": {
-        "contextHash": "209ddac5429a4729eb74813c500e42a87ce625461af7a286084d501a132db5ed",
-        "translationHash": "758ba9de93d7c5c6c44d33d70632a7ef283a7c2c0688ed3aa14f2a8adf0d71ea",
+        "contextHash": "e7280e5fb2888adcf71a8a1b282d6e2b50af98c6999b1ec9d23737e6fb9b673b",
+        "translationHash": "e481564d36833ede89c66e2fb1bb0f6e619775b0b2f97baf41ec87f47571ea7a",
         "domainReviewRequired": true,
-        "dossierHash": "bc652ea9b0b6eabc6d842996323c86423e13d4d80e33b907cb4db4487144108b",
-        "reviewScopeHash": "f451ca9e5f6b4562e51896d4d65f19b426897ae7f5acb6650f8f03a21eb4d9f6"
+        "dossierHash": "65427f67757ed45e56be000f15733b079159f8463b5f558d946a9af0821c4f15",
+        "reviewScopeHash": "cfc9bee0e8a6a917004d6a166fe8f2d67b90e9966ab5930d1405a92282a51467"
       }
     },
     {
@@ -6163,8 +6171,8 @@
         }
       },
       "candidate": "Gesamt: {total}, übersprungene Open-Data-Datensätze: {filtered}, Konflikte bei Benutzerdaten: {conflicts}, importiert: {imported}",
-      "rationale": "Preserves all four import counters and their distinct meanings.",
-      "risk": "Backend filtered must be confirmed to mean skipped.",
+      "rationale": "Preserves all four import counters; the backend filtered count is specifically the Open Data records excluded from insertion and therefore skipped.",
+      "risk": "Must not imply that filtered records were deleted or imported into the user's data space.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -6280,10 +6288,12 @@
             "termId": "data.open-data",
             "sourceEnglish": "Open data",
             "sourceChinese": ["开放数据"],
-            "germanPreferred": "offene Daten",
+            "germanPreferred": "Open Data",
             "abbreviation": null,
-            "alternatives": ["Open Data"],
-            "includeContexts": ["publicly reusable data scope"],
+            "alternatives": ["offene Daten in generic descriptive prose"],
+            "includeContexts": [
+              "TianGong product scope for publicly reusable data; use Open-Data- in German compound modifiers"
+            ],
             "excludeContexts": ["team public-display flag"],
             "forbidden": ["öffentlich when reusability rather than visibility is meant"],
             "evidenceRefs": ["product-context"],
@@ -6321,15 +6331,17 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Backend filtered must be confirmed to mean skipped."
+            "Must not imply that filtered records were deleted or imported into the user's data space."
           ],
           "termOptions": [
             {
               "termId": "data.open-data",
-              "preferred": "offene Daten",
-              "alternatives": ["Open Data"],
+              "preferred": "Open Data",
+              "alternatives": ["offene Daten in generic descriptive prose"],
               "forbidden": ["öffentlich when reusability rather than visibility is meant"],
-              "includeContexts": ["publicly reusable data scope"],
+              "includeContexts": [
+                "TianGong product scope for publicly reusable data; use Open-Data- in German compound modifiers"
+              ],
               "excludeContexts": ["team public-display flag"],
               "decisionStatus": "proposed"
             }
@@ -6360,11 +6372,11 @@
         }
       },
       "hashes": {
-        "contextHash": "e8f2d8dddea698bae555da2dfe50eddfd94387af4034275a17ff23608f8c2d02",
-        "translationHash": "eb70350e351299d04d2421e29df8c60a8ff871e4bdf5a23bd2c4a048796fe8fe",
+        "contextHash": "fe47dff0eed1e9c49c23f3e5cf9aaf0520e386e38c56010577f350923599762c",
+        "translationHash": "fe4cc1625c20127db33d627382b9beece12412e8c55714031405bbcf3f8bdc2f",
         "domainReviewRequired": true,
-        "dossierHash": "49f5c3781e8ebb6398b23b15aa316f65a7d68de0dd1b4210fb68cba42b765c1d",
-        "reviewScopeHash": "81c69ca48388a9a4e2a59765becd33bb3ab89230813bdbe788861851d0cde708"
+        "dossierHash": "931f8123526a3491ef3baf041eb1ee2916d88d78d4af46576788823b33bcb40f",
+        "reviewScopeHash": "fda82fe90690295fdd1075e4815136560af38c5ff4cc76166e93b622a24edf5f"
       }
     },
     {
@@ -6409,7 +6421,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.classificationHierarchyError",
-          "sourceContextHash": "32202399a04e07154e5c86d3917ce5d47207679926b41b3e8768a6018a6a7ef6",
+          "sourceContextHash": "671cccbc9af38202dbe9e73aab4821aaf6177da7911c64bedb556c2ceca1cfc0",
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for an invalid classification hierarchy in an imported TIDAS package.",
           "uiRole": "validation-issue-label",
@@ -6556,11 +6568,11 @@
         }
       },
       "hashes": {
-        "contextHash": "97b7e994614e834c6bee29d68ad29da72edf730757adc4c4b2c7ec5c82135c56",
-        "translationHash": "e43a489234a9384e24e51c94e71834a374143443f9f367ffaf61bfeff3e0f2b4",
+        "contextHash": "dec59834a0c7d894be33dc7cfefdae22d650bd49de5223c9f5d009b9af422a1a",
+        "translationHash": "0451bb5f9da9d982c1434d3ae4fbf9d0140c8f4cacee9d4f17047957aa165cb8",
         "domainReviewRequired": true,
         "dossierHash": "d46bd727d6c368b8829c257bda5dad317fdc509ae20553d08b286aaac0d54be4",
-        "reviewScopeHash": "2347fff03b545c63eef98a0951a27ebac6be63ce8552e067c052e688f475c825"
+        "reviewScopeHash": "6e1b31a732ffd062c497da4d96ed1d8c6d2559320d28154ac21e69a148484e78"
       }
     },
     {
@@ -6589,9 +6601,9 @@
           "module": "component_tidasPackage"
         }
       },
-      "candidate": "Sprachkennzeichnung und lokalisierter Text stimmen nicht überein",
-      "rationale": "Identifies a mismatch between a data-language tag and localized data text.",
-      "risk": "Must not be understood as a UI-locale mismatch.",
+      "candidate": "Sprachkennzeichen passt nicht zum Textinhalt",
+      "rationale": "Names the mismatch between the TIDAS localized-text language tag and the actual text content in a compact validation-issue label.",
+      "risk": "Must not be understood as a mismatch between the application UI locale and the browser locale.",
       "reviewDomains": ["native-german", "tidas", "data-policy"],
       "context": {
         "status": "BLOCKED_CONTEXT",
@@ -6605,7 +6617,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
-          "sourceContextHash": "0d9fe5b5a6ce37e3a26bffe724790cd25b0c2699b159948eb55643f14fd8b17e",
+          "sourceContextHash": "ecfb88fd49373f3335edb26b7a84fbdf4ee32244c55f590be2122c15257bef3d",
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for disagreement between a localized data text and its declared content-language tag.",
           "uiRole": "validation-issue-label",
@@ -6727,7 +6739,7 @@
           "status": "REQUIRES_EXPLICIT_DECISION",
           "questions": [
             "Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.",
-            "Must not be understood as a UI-locale mismatch."
+            "Must not be understood as a mismatch between the application UI locale and the browser locale."
           ],
           "termOptions": [
             {
@@ -6744,19 +6756,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 32,
-          "templateGermanLength": 64,
+          "templateGermanLength": 44,
           "maximumVisibleEnglishLength": 32,
-          "maximumVisibleGermanLength": 64,
-          "visibleGermanToEnglishRatio": 2,
-          "flags": ["candidate-over-150-percent-of-english"]
+          "maximumVisibleGermanLength": 44,
+          "visibleGermanToEnglishRatio": 1.375,
+          "flags": []
         }
       },
       "hashes": {
-        "contextHash": "268f54a1e73f326faf52aa739ff25969a4e8d42e4019b9abae96cb2a6abf2bee",
-        "translationHash": "89845f6eec157354ea5b0ccb002e8740e1f8924d5490376044776f1b0f327430",
+        "contextHash": "593c8db72440f35512f5a29f213a8a3ca4ff53c3aff23972ccc277147e0f271b",
+        "translationHash": "dc347ef9dac123a561f3bdb74701666e0da89d9e8648447dcd80db6a1c13b16e",
         "domainReviewRequired": true,
-        "dossierHash": "b3aa76b2e00f1962a9780e5f629cdaf1133a9068e306fabd61bb447d4648d74b",
-        "reviewScopeHash": "9647c7633713f7bc614e814a92aa2864599a17563ff2298a888f861b211579c9"
+        "dossierHash": "593c8175ce3f514d230834119a9390e43523e45998355f6853b4e829496e29c4",
+        "reviewScopeHash": "24ace1ee24695c77b879db665ed2ef3bd683d9281a16c381dfcdc418551e7fcb"
       }
     },
     {
@@ -6786,8 +6798,8 @@
         }
       },
       "candidate": "Daten entsprechen nicht dem Schema",
-      "rationale": "Explains a structural data failure in user-facing terms.",
-      "risk": "Schema is technical terminology and must not become Formular.",
+      "rationale": "Uses a natural complete label for imported data that does not conform to the expected TIDAS schema.",
+      "risk": "Must identify structural schema non-conformance and must not imply a form-layout or network error.",
       "reviewDomains": ["native-german", "tidas"],
       "context": {
         "status": "BLOCKED_CONTEXT",
@@ -6801,7 +6813,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.import.validation.issue.schemaError",
-          "sourceContextHash": "0c366e2a92f501f1e9d37a9b5d6264c24731d045e851999e2ad61f8422504098",
+          "sourceContextHash": "190cc6293db871cb63245f291a2fa018f5b461541027791e19b1c2a18f281df9",
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation issue type for imported data that does not conform to the expected TIDAS schema.",
           "uiRole": "validation-issue-label",
@@ -6923,7 +6935,7 @@
           "status": "REQUIRES_EXPLICIT_DECISION",
           "questions": [
             "Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.",
-            "Schema is technical terminology and must not become Formular."
+            "Must identify structural schema non-conformance and must not imply a form-layout or network error."
           ],
           "termOptions": [
             {
@@ -6948,11 +6960,11 @@
         }
       },
       "hashes": {
-        "contextHash": "11cf33b78a40be21430520746a810cdfb857a67034776b24dd1cf320498505f1",
-        "translationHash": "7e39988416a8df7ba4c7e2413c1bd10f92f8b8fd22ae683e2c2421277debf110",
+        "contextHash": "76a8b94dcf3ebf4c97bfc313eb823a4f9afbb2e95de9d25a277bfac36334e240",
+        "translationHash": "ec80c21336dd972c50c56fb83b186cb5ea0577f47dafb7aa5450e66fb8899e6e",
         "domainReviewRequired": true,
-        "dossierHash": "350cd7be7c273d64824c70bec95fa0ae74fbb9d28ae33a561c98c0e8273b8c7a",
-        "reviewScopeHash": "6805a29e831f6e4641643941edce1bc79d0de7d651b717005eb5b254fac732e5"
+        "dossierHash": "6299199aac53064b9a561baa773976c249a71fd4e731a6e2c73010e5342d5d26",
+        "reviewScopeHash": "833d563b392e7b7462e52151d113bc479e2a79b2fbfdc8074e7c0fa664692267"
       }
     },
     {
@@ -7193,11 +7205,11 @@
         }
       },
       "hashes": {
-        "contextHash": "10854547bc62e3aa951dcb32cda89aa3d9785ba6f4840699a788c6814562eb8a",
-        "translationHash": "10aed69722b7dac19002f133207a4e28ef292573158cc78bd2a2ac1bcb946b4f",
+        "contextHash": "30e9c96ff66005a5e116196616fa03a158ef13401e933db616621f4262215372",
+        "translationHash": "9f54cd14a5da322abb0d42fe7bed52ac66beb894f67dbec2bd25803073ab22c8",
         "domainReviewRequired": true,
         "dossierHash": "c34bde54940466345e2e8f94fb426a4060d0a2a9bc9698192960c90a72d2cc2a",
-        "reviewScopeHash": "b46943b4565bbd4e2df0e109ab3b08d296a6a34177be9592cfb41eaccffc11c1"
+        "reviewScopeHash": "090aeea0b99ba79a596e2c00d30f023c8c802f493a1761002edbf989d7028aa7"
       }
     },
     {
@@ -7418,11 +7430,11 @@
         }
       },
       "hashes": {
-        "contextHash": "d03fd927c061aa4cb959fbbc6db92077d87190a7f2651811c6745429b9f1ce13",
-        "translationHash": "5b9ae02b7e3dd2f99d2dd148ead832bddd2c6b93c0b789f3674cd574f0f68da0",
+        "contextHash": "a811afdb945862a191f4faaf82cb07d353de099b8b7f1645ec709a46b2d4ce69",
+        "translationHash": "6fd12de0799612cbcfc406260f6eae469a36723a41f10b5c3ffebeacc6c47cad",
         "domainReviewRequired": true,
         "dossierHash": "204ad86edfc7753d1ff5bf95312424efabe3224be8836dc8ae6232ea18ef6217",
-        "reviewScopeHash": "1ea85ad7eb0fbba9a1bc2eb12c188123bb001a357914e57d72e3516f08a62073"
+        "reviewScopeHash": "11334a82da4bc4f5d9ac9768db8926433663238661817da6b761923bcdced59f"
       }
     },
     {
@@ -7451,9 +7463,9 @@
           "module": "component_tidasPackage"
         }
       },
-      "candidate": "Ausgangsdatensätze",
-      "rationale": "Treats roots as user-selected starting records whose dependencies are expanded.",
-      "risk": "Ausgangsdatensatz, Startdatensatz, and Wurzeldatensatz require a product/domain decision.",
+      "candidate": "Startdatensätze",
+      "rationale": "Names user-selected starting data sets whose dependency closures are packaged.",
+      "risk": "Must remain distinct from process-analysis Startprozess and from output semantics.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -7562,26 +7574,26 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Ausgangsdatensatz, Startdatensatz, and Wurzeldatensatz require a product/domain decision."
+            "Must remain distinct from process-analysis Startprozess and from output semantics."
           ],
           "termOptions": []
         },
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 12,
-          "templateGermanLength": 18,
+          "templateGermanLength": 15,
           "maximumVisibleEnglishLength": 12,
-          "maximumVisibleGermanLength": 18,
-          "visibleGermanToEnglishRatio": 1.5,
+          "maximumVisibleGermanLength": 15,
+          "visibleGermanToEnglishRatio": 1.25,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "aee96f4266571353027a2aabd8fff48f7c4de503167f394ad99abb9ac1d26cd1",
-        "translationHash": "2e1f2d2a9d8c24321395abd522adad9b631d9a24ef365947ab4b01a26bda76b6",
+        "contextHash": "469eb5573bc34742900a12460614264380959aea0576ea3a51418401ef8a1601",
+        "translationHash": "2bd16afc5c2eefb28685a6982df5f4fe07a3460ca8396585349dc196fd191f69",
         "domainReviewRequired": true,
-        "dossierHash": "9fce808c781a799d433f9e1830918920747791e3a4466532744ac87906501dd1",
-        "reviewScopeHash": "83ea7be7b4269f89ee0853e7cce0eabc68303cded42d38db026951245129dccb"
+        "dossierHash": "fb58ae6113d500508d90eefe5ede8257bdc4b056f19dbe5b9a3851478ee03a16",
+        "reviewScopeHash": "3c866229abc799defc58fb1a7292f6ab8cde1f02b967171b049d22fd2f517fd9"
       }
     },
     {
@@ -7610,9 +7622,9 @@
           "module": "component_tidasPackage"
         }
       },
-      "candidate": "Ausgangsdatensatz",
-      "rationale": "Uses singular for the one-root detail block.",
-      "risk": "Must share the chosen root-record term with the count labels.",
+      "candidate": "Startdatensatz",
+      "rationale": "Uses the selected singular term for one package dependency starting record.",
+      "risk": "Must share Startdatensatz with every TIDAS root-record count label.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -7721,26 +7733,26 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Must share the chosen root-record term with the count labels."
+            "Must share Startdatensatz with every TIDAS root-record count label."
           ],
           "termOptions": []
         },
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 9,
-          "templateGermanLength": 17,
+          "templateGermanLength": 14,
           "maximumVisibleEnglishLength": 9,
-          "maximumVisibleGermanLength": 17,
-          "visibleGermanToEnglishRatio": 1.889,
+          "maximumVisibleGermanLength": 14,
+          "visibleGermanToEnglishRatio": 1.556,
           "flags": ["candidate-over-150-percent-of-english"]
         }
       },
       "hashes": {
-        "contextHash": "892aec52249e4590b41831895fcd7a245c39186a00a98ab71fc211316c10248b",
-        "translationHash": "4bed8b24b1f51ef2f7baf5fcdcedb8066ead642c09e4504223c6960c67a38a2e",
+        "contextHash": "87b3bd01c7cbc0500189ba5c7389a27bf51a0f3148cf20335c4d73424c711b7a",
+        "translationHash": "68d7e16e2331a7cd73c398423fe7d32d13c40d212985116cf5e02647c7a361bf",
         "domainReviewRequired": true,
-        "dossierHash": "197efdbb6a093766dddd2ffea99cd06b658ab0d425d5db731dd3c5d2f79ba69b",
-        "reviewScopeHash": "9aff1013e6718846d9b842f4100a5c1995722c8ca3ecd3a9d20dfc4a74f046fe"
+        "dossierHash": "9355e097a31e862e1b7ca8647171a55d3fc1d75fcaf09da73ae430c560f204b6",
+        "reviewScopeHash": "36e7f7d9eb49b0c2604494746b43e0ecb2ff30aec42147a23c55b28bd89bbd7f"
       }
     },
     {
@@ -7769,9 +7781,9 @@
           "module": "component_tidasPackage"
         }
       },
-      "candidate": "{count, plural, one {# Ausgangsdatensatz} other {# Ausgangsdatensätze}}",
+      "candidate": "{count, plural, one {# Startdatensatz} other {# Startdatensätze}}",
       "rationale": "Preserves ICU number agreement for root records.",
-      "risk": "The root-record term is still blocked pending domain/product approval.",
+      "risk": "The selected Startdatensatz term remains subject to local Pilot confirmation.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "BLOCKED_CONTEXT",
@@ -7785,7 +7797,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "component.tidasPackage.taskCenter.rootCountSummary",
-          "sourceContextHash": "678d91a059483ee70e4face4bf53c9b362d6ee1cbe3e4b77532386f15764c88f",
+          "sourceContextHash": "0cd787276c9acae9fcb93bd768ebe5508656cafabf94956a86a727a9380bc403",
           "status": "BLOCKED_CONTEXT",
           "concept": "Plural summary of root records selected as starting points for a TIDAS package task.",
           "uiRole": "summary-count",
@@ -7854,14 +7866,17 @@
             "termId": "tidas.root-record",
             "sourceEnglish": "Root record",
             "sourceChinese": ["根记录"],
-            "germanPreferred": "Ausgangsdatensatz",
+            "germanPreferred": "Startdatensatz",
             "abbreviation": null,
-            "alternatives": ["Startdatensatz", "Wurzeleintrag"],
+            "alternatives": [],
             "includeContexts": [
               "user-selected starting record whose dependency closure is packaged"
             ],
             "excludeContexts": ["tree root UI node", "database root account"],
-            "forbidden": ["Wurzel blindly applied without product confirmation"],
+            "forbidden": [
+              "Ausgangsdatensatz because Ausgang collides with output semantics",
+              "Wurzeldatensatz for the user-selected dependency starting record"
+            ],
             "evidenceRefs": ["tidas-local", "product-context"],
             "risk": "critical",
             "decisionStatus": "blocked-term",
@@ -7912,15 +7927,18 @@
           "status": "REQUIRES_EXPLICIT_DECISION",
           "questions": [
             "Confirm whether the proposed compatibility-key concept, UI role, consequence, and cited evidence are accurate enough to mark this context READY.",
-            "The root-record term is still blocked pending domain/product approval.",
+            "The selected Startdatensatz term remains subject to local Pilot confirmation.",
             "Resolve blocked glossary term tidas.root-record before approving this message."
           ],
           "termOptions": [
             {
               "termId": "tidas.root-record",
-              "preferred": "Ausgangsdatensatz",
-              "alternatives": ["Startdatensatz", "Wurzeleintrag"],
-              "forbidden": ["Wurzel blindly applied without product confirmation"],
+              "preferred": "Startdatensatz",
+              "alternatives": [],
+              "forbidden": [
+                "Ausgangsdatensatz because Ausgang collides with output semantics",
+                "Wurzeldatensatz for the user-selected dependency starting record"
+              ],
               "includeContexts": [
                 "user-selected starting record whose dependency closure is packaged"
               ],
@@ -7940,7 +7958,7 @@
               "selector": "one",
               "sampleValue": 1,
               "english": "1 root record",
-              "german": "1 Ausgangsdatensatz"
+              "german": "1 Startdatensatz"
             },
             {
               "path": "count:plural#0=other",
@@ -7949,25 +7967,25 @@
               "selector": "other",
               "sampleValue": 2,
               "english": "2 root records",
-              "german": "2 Ausgangsdatensätze"
+              "german": "2 Startdatensätze"
             }
           ]
         },
         "lengthReview": {
           "templateEnglishLength": 59,
-          "templateGermanLength": 71,
+          "templateGermanLength": 65,
           "maximumVisibleEnglishLength": 15,
-          "maximumVisibleGermanLength": 21,
-          "visibleGermanToEnglishRatio": 1.4,
+          "maximumVisibleGermanLength": 18,
+          "visibleGermanToEnglishRatio": 1.2,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "47de655ae5505b8bd3a95d98155f1def3a99615ac59098ac85794fa45c410c42",
-        "translationHash": "14e9f402c755ea5aa6d30c504cdf2e2b8b307ed175d074007a6c5ce480bb7839",
+        "contextHash": "ef331093893fe9eba6f5d74f855dbe6e31933e3fcd5b9f0d9aa289e83a1c7a7b",
+        "translationHash": "283de3ed39378beb7d13af9aff7db195751535feffa15eb4abbce5d746a45e05",
         "domainReviewRequired": true,
-        "dossierHash": "dff1e5d5fbc7dd9d2bc10094de1c1d01d4e2c1136d73828622c9dd2b33fbeb6b",
-        "reviewScopeHash": "2cb7eaa5c57f94364cc82e75f0f336c8aab55a90e9a1596b976177546bf57d5d"
+        "dossierHash": "54463688956fc8051d82c0971e9aaf6a66debdd35339ddbd265c1dea446b95ed",
+        "reviewScopeHash": "40c0e9f2452589c0875429baf671160d83f1d76fe296264b4b328a5d6ef43c4c"
       }
     },
     {
@@ -7997,8 +8015,8 @@
         }
       },
       "candidate": "Eigene Daten + Open Data",
-      "rationale": "Provides a compact scope label.",
-      "risk": "Eigene may be inaccurate when an administrator acts for another user.",
+      "rationale": "Provides a compact scope label; current_user is always resolved from the authenticated caller rather than an impersonated target user.",
+      "risk": "If the product later adds administrator impersonation, this context must be reviewed again.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -8145,10 +8163,12 @@
             "termId": "data.open-data",
             "sourceEnglish": "Open data",
             "sourceChinese": ["开放数据"],
-            "germanPreferred": "offene Daten",
+            "germanPreferred": "Open Data",
             "abbreviation": null,
-            "alternatives": ["Open Data"],
-            "includeContexts": ["publicly reusable data scope"],
+            "alternatives": ["offene Daten in generic descriptive prose"],
+            "includeContexts": [
+              "TianGong product scope for publicly reusable data; use Open-Data- in German compound modifiers"
+            ],
             "excludeContexts": ["team public-display flag"],
             "forbidden": ["öffentlich when reusability rather than visibility is meant"],
             "evidenceRefs": ["product-context"],
@@ -8186,15 +8206,17 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Eigene may be inaccurate when an administrator acts for another user."
+            "If the product later adds administrator impersonation, this context must be reviewed again."
           ],
           "termOptions": [
             {
               "termId": "data.open-data",
-              "preferred": "offene Daten",
-              "alternatives": ["Open Data"],
+              "preferred": "Open Data",
+              "alternatives": ["offene Daten in generic descriptive prose"],
               "forbidden": ["öffentlich when reusability rather than visibility is meant"],
-              "includeContexts": ["publicly reusable data scope"],
+              "includeContexts": [
+                "TianGong product scope for publicly reusable data; use Open-Data- in German compound modifiers"
+              ],
               "excludeContexts": ["team public-display flag"],
               "decisionStatus": "proposed"
             }
@@ -8211,11 +8233,11 @@
         }
       },
       "hashes": {
-        "contextHash": "0227a39de2e89edb28b372cd29607eaeebb37513468a5b37006d7e28b5415903",
-        "translationHash": "f019474993ffb3e3573480f903dd3ed52de629e2723ef26922a91e957ab8d4c9",
+        "contextHash": "fb8d9a88ab4c72ceaa525c87eef6b17012cfd4ced3131a2205c885c565b31c38",
+        "translationHash": "99220fa6570b83f6cd0e724aa844a2a30f5470856f894d0e1a502016ef8399e6",
         "domainReviewRequired": true,
-        "dossierHash": "ade174ccd820301a7d21c65ba6724aa06d49016c8fd31c10a7000ca52dd1247f",
-        "reviewScopeHash": "e2427d638bb72e90c2dd1fa03a9a1f6bfa5fe419bade4b6aa68737cace51e30b"
+        "dossierHash": "fc2d2c82e56c8386b3ed1017d848f754945f960bcf7bfac0bf70083e3a82136f",
+        "reviewScopeHash": "1e72e3e40973b6ae2bdcf174799f6425d8d55e45959959aeda19c8e9e40556d2"
       }
     },
     {
@@ -8594,11 +8616,11 @@
         }
       },
       "hashes": {
-        "contextHash": "ca700044255f0d1f12a4cf6834550bb08ad38607fa5c8dc4469ef7ff5bbdcb1b",
-        "translationHash": "a3597e3becc82dfe49757bf102eb904590a898b0a8523a07917f1441592942b4",
+        "contextHash": "653ee5a64aff7ed3e8e7d892780205c6bd48ab0da066c61d4a2a6957f4968693",
+        "translationHash": "efe4f2b1e675002ec61854efba9521debab1353417b0678aff24d9e32f050182",
         "domainReviewRequired": true,
         "dossierHash": "bc45e71258ec6c470c3f76fda7c5baa5d9b881ebabbc8a0c7c5241c7f90f2f44",
-        "reviewScopeHash": "cd16d38a8d55a32c12daae482a5cead22ca510f3f082b424cb24eeebd5a1b936"
+        "reviewScopeHash": "9365a6626db498abf089c3ce7934d1e0182d7b789fb53ceba6d3b1e667dd17f0"
       }
     },
     {
@@ -8627,7 +8649,7 @@
           "module": "validator"
         }
       },
-      "candidate": "Geben Sie eine gültige CAS-Registriernummer ein: 2–7 Ziffern, Bindestrich, 2 Ziffern, Bindestrich und 1 Prüfziffer.",
+      "candidate": "Geben Sie eine gültige CAS-Nummer ein: 2–7 Ziffern, ein Bindestrich, 2 Ziffern, ein Bindestrich und 1 Prüfziffer.",
       "rationale": "Mirrors the validated identifier structure.",
       "risk": "Digit ranges and checksum wording must match implementation.",
       "reviewDomains": ["native-german", "chemistry", "product"],
@@ -8969,19 +8991,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 95,
-          "templateGermanLength": 115,
+          "templateGermanLength": 113,
           "maximumVisibleEnglishLength": 95,
-          "maximumVisibleGermanLength": 115,
-          "visibleGermanToEnglishRatio": 1.211,
+          "maximumVisibleGermanLength": 113,
+          "visibleGermanToEnglishRatio": 1.189,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "85b60a5fe930c5be681f3c5d4c218ac0dd50ba254ac684f9f78ebac263178945",
-        "translationHash": "102a621fa1d765390cf0694fc16dc2b966ca3d7e213c4cd681cb513089063f0f",
+        "contextHash": "145ab7b72f44c6feec8453342d1c582213a401850116856aba67bc6f3a35f3be",
+        "translationHash": "2d201d913587c812f682aedf2e9309c309aa04ce0bf2ae14901e10686c8312e8",
         "domainReviewRequired": true,
-        "dossierHash": "dfbfc7c128dedcbb21db3f422dfe16a944e47fb43a1fb3b1747ac9ff2a0ec374",
-        "reviewScopeHash": "6c06458fb39b6b397a8410e4ab6af7f6d58da7dacd702aa8a44e96cc8e4e6b50"
+        "dossierHash": "d44a8864d6613fac9ad0fe3aced2ba741f26e64713afabe4be6ed0e14b8732f3",
+        "reviewScopeHash": "86d6ccfe8046349c2df40a2f461924c3177136252adcf8070260858f045f2a3c"
       }
     },
     {
@@ -9474,11 +9496,11 @@
         }
       },
       "hashes": {
-        "contextHash": "9b7a137ae67b065f384ad2edbb07253a72ed28be3591fcffa7fe250e0f211076",
-        "translationHash": "1e53f78205a6ff465ee70ac10aa6caa06048aeb4e9c6c04c94a62e0f3837638a",
+        "contextHash": "fe0647fa26db8fdb80ca96f32342c581f90bfb6a017087e45af9704562c9b726",
+        "translationHash": "bc76e4d36272e2215ce2224b95d8c07e2154603c05f9a541d6385c16506adcd6",
         "domainReviewRequired": true,
         "dossierHash": "a198db336622925a9656bf82046fdc05f0188f8bb72f9eb2efd2b7368fa41056",
-        "reviewScopeHash": "7d35a674d0ba4a1c15ad7630bdc81bd7b929c5740d4527ca103de1cff742eb81"
+        "reviewScopeHash": "d59abe336fd90e01e7cbeb4accdaf4835ec66cfdc8bbe92b0d507061a3d8556e"
       }
     },
     {
@@ -9857,11 +9879,11 @@
         }
       },
       "hashes": {
-        "contextHash": "832b8434249dbc32535891ed5a97db4dc92684e1acc379d272e2ac0b551bc46a",
-        "translationHash": "b5d1c9b4fe330aaa4f5741e4b42caffba2ef06de3862f66eddedfdeed228e0c7",
+        "contextHash": "0746b08c4850497c5e557dcd3006f983b018a1030617e6cd144c6dc6c58dbfde",
+        "translationHash": "a4f95ed9db13c25193eda31b2f43305ef76aa3b9f2411f985eb48545f1222d1a",
         "domainReviewRequired": true,
         "dossierHash": "24101bc3cc4d9762b7baf3c4b748c2dfbee515764064d9aed47bafda3edf88e2",
-        "reviewScopeHash": "a4af5e9e7d2be59ab5671101eaa9c99b21e99972e9d1173f23315f5aa9e060c3"
+        "reviewScopeHash": "fcbaf82fc6402aad2cf72cd2b2be0581140142cef5148356d9df30365664b490"
       }
     },
     {
@@ -10159,11 +10181,11 @@
         }
       },
       "hashes": {
-        "contextHash": "5b7eaeae113ed2ff50cffb05f82f5b1361317d55fdf3e5c51990b4d44195308e",
-        "translationHash": "d117cf066b4f1aed67d4aab51e5df66a890f0599b20a6c0fac65d537a9bb735f",
+        "contextHash": "a0a1b22467427808c478a5279c27e44fed5c9b6d8988d7311c0f451d0ebd5589",
+        "translationHash": "5d7e237155f47e50da43231c9b330d2de5b120154b19eb6a79ac7d1f00c5c5ec",
         "domainReviewRequired": true,
         "dossierHash": "182744d12566bc5cc995d2f5573257fce6579c02c6d2e738d9b4e45c5095e833",
-        "reviewScopeHash": "bdad4e973f4d8ded4133f525eea8ca045762d912715413b9a24909b264a426ce"
+        "reviewScopeHash": "c9a2918d672910b1a6442f4607553cd11481a6bc4c3203cea8512afaf92f9c79"
       }
     },
     {
@@ -10489,11 +10511,11 @@
         }
       },
       "hashes": {
-        "contextHash": "f8a3638251c3ab01df7e8a499b4b8298dbf0d1784fa14497a5b88449413bfd87",
-        "translationHash": "f701c52cdb1a04f336cf6a927c2a08cd7a083814db497887f66c95f229b2d5ea",
+        "contextHash": "95ebf1b87079141f8236389a43fd94f106774269c5bb41e25a47ba87596aa3c2",
+        "translationHash": "234195da4946e1ab5c2f33dcbdfd5c53ffbad9ecbd127467a76f1604004d46da",
         "domainReviewRequired": true,
         "dossierHash": "9de080b0635eef92e2a400ff893997ba0108b3534060e4596d19d445439a0c8b",
-        "reviewScopeHash": "2547cb74e609b7772a425e37e74ca469a83e141f5355aa424de81d157bcc55e0"
+        "reviewScopeHash": "02bb293508fd12b4f08cad93649d2a593a8c1e403d26cceea09ca9fe621a071b"
       }
     },
     {
@@ -10522,9 +10544,9 @@
           "module": "validator"
         }
       },
-      "candidate": "Pflichtfeld: Füllen Sie dieses Feld aus, damit der Datensatz vollständig und regelkonform ist.",
-      "rationale": "Distinguishes a mandatory field from recommended and optional fields.",
-      "risk": "Regelkonform must not replace formal Konformität if that is the actual rule.",
+      "candidate": "Pflichtfeld: Füllen Sie dieses Feld aus, um Vollständigkeit und Konformität des Datensatzes sicherzustellen.",
+      "rationale": "Distinguishes a mandatory field from recommended and optional fields and uses the approved Konformität concept.",
+      "risk": "Must keep automated Validierung, human Prüfung, and formal Konformität distinct.",
       "reviewDomains": ["native-german", "tidas", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -10860,7 +10882,9 @@
             "alternatives": [],
             "includeContexts": ["conformance to a declared ILCD/TIDAS system or requirement"],
             "excludeContexts": ["automated validation", "human review"],
-            "forbidden": ["Regelkonformität when the formal ILCD term is intended"],
+            "forbidden": [
+              "Regelkonformität or regelkonform when the formal ILCD/TIDAS term is intended"
+            ],
             "evidenceRefs": ["ilcd-process-format", "oekobaudat-ilcd-fields"],
             "risk": "critical",
             "decisionStatus": "proposed",
@@ -10908,7 +10932,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"validation-feedback\" from the embedded runtime evidence; its current source is heuristic.",
-            "Regelkonform must not replace formal Konformität if that is the actual rule."
+            "Must keep automated Validierung, human Prüfung, and formal Konformität distinct."
           ],
           "termOptions": [
             {
@@ -10924,7 +10948,9 @@
               "termId": "quality.compliance",
               "preferred": "Konformität",
               "alternatives": [],
-              "forbidden": ["Regelkonformität when the formal ILCD term is intended"],
+              "forbidden": [
+                "Regelkonformität or regelkonform when the formal ILCD/TIDAS term is intended"
+              ],
               "includeContexts": ["conformance to a declared ILCD/TIDAS system or requirement"],
               "excludeContexts": ["automated validation", "human review"],
               "decisionStatus": "proposed"
@@ -10934,19 +10960,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 68,
-          "templateGermanLength": 94,
+          "templateGermanLength": 108,
           "maximumVisibleEnglishLength": 68,
-          "maximumVisibleGermanLength": 94,
-          "visibleGermanToEnglishRatio": 1.382,
-          "flags": []
+          "maximumVisibleGermanLength": 108,
+          "visibleGermanToEnglishRatio": 1.588,
+          "flags": ["candidate-over-150-percent-of-english"]
         }
       },
       "hashes": {
-        "contextHash": "eeec9c872c9f0819f8ac02ffaf7b9bf47d0b3854671012c468d77b7834cdf8bc",
-        "translationHash": "8cedd4682d87d8764d0fd35163e9880d8a281615a45c3926aeccde92ef2ae3e3",
+        "contextHash": "fc8c95ad050ead4b9e02fcd67c5f1d362e23d591c2117225f1faa568f206d5c0",
+        "translationHash": "120620d894180ba7bf72d2e1a722b2822c54d871637a80403f765a2c20a119f4",
         "domainReviewRequired": true,
-        "dossierHash": "cda7e32d23853b0f0d9f4086720be74e1d173aef95ed4cdf7b7c4f230909a1ec",
-        "reviewScopeHash": "66f145cfa5572317ad28bc140e4621c3fe76d216498ea312d873ac32e39a8a4f"
+        "dossierHash": "f1bf20f11ed57bad5cdaed411ebcf0d018e711e2b56ceaa4fff0b942526ff176",
+        "reviewScopeHash": "10ebeca84fde7a86985511780fe0a33c48de4163bccc31787c306f97d4e46ea8"
       }
     },
     {
@@ -11643,11 +11669,11 @@
         }
       },
       "hashes": {
-        "contextHash": "23ab5fe53abed22ae97bb79dbf8c2c86b3aa13ec86c1585ad663e267cacffd38",
-        "translationHash": "eaf08b51cfc84d1ac1e6f7c44784e9c77947f9c8899ef6fb3050640b2269db86",
+        "contextHash": "0011a51a863a45dc82de25951c41c2eaa6eda1ceef1433daca716dbb1770ab52",
+        "translationHash": "dedef2f55e4e0996a3d15da01378dfe26d1a9bc6a372a49f18794dfc83e86f7e",
         "domainReviewRequired": true,
         "dossierHash": "f3e59a2514489e7a3e030fb3d8dbd740d9b5a8b97e3c9b8d3b86c1b6c2a373b1",
-        "reviewScopeHash": "ec9c00f3136d10f18f24405542031ba128ac0ace7261c932dc1a310f5644046f"
+        "reviewScopeHash": "1a0a00352f22962673e1398bbcd323442973e3152ab341e0a15edbe53ca7d1ca"
       }
     },
     {
@@ -12119,11 +12145,11 @@
         }
       },
       "hashes": {
-        "contextHash": "6ebd41d8c46f4dc9c98ca5bc4789dcc092df8ad414588f540a067ed6e9aedd44",
-        "translationHash": "2382ea71a9ae2587375e64318e9fa534fb1ce5473304c89ad5a313380eadd421",
+        "contextHash": "a8bb89afabe68fd2dfae7c09209681f2e16aa0a755599aa97b0b32f873e525f0",
+        "translationHash": "fc72b79d446e04d86e7524a43c302ddae87283fa5a597219da8405f5e4853848",
         "domainReviewRequired": true,
         "dossierHash": "6652d2b261fc1c9a530e7fbb83d688693a31108412bda595f195de71c79e738f",
-        "reviewScopeHash": "36d9774c35c548d3e69807ff4cc62c9d768415bcc846194b0071cd2fa2fe9b67"
+        "reviewScopeHash": "e68b2497600355f4121e95c21677ab9a528fb3a0f87cc4f71eec4e170453c123"
       }
     },
     {
@@ -12168,7 +12194,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.flow.validator.flowProperties.quantitativeReference.required",
-          "sourceContextHash": "e0e3ae2fa6ca1a85f321a197857e4eb963804784e2fe694970896424b659f2ad",
+          "sourceContextHash": "c14ebf091a0800fbb8b5c57cd4ea99e764772f6da5811e1b1183f3025529ff69",
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation rule requiring exactly one flow property to be designated as the quantitative reference.",
           "uiRole": "validation-feedback",
@@ -12438,11 +12464,11 @@
         }
       },
       "hashes": {
-        "contextHash": "4602609b9272df3837d414950159b44e5a81235f5828ad0b6dd03a60651c3b61",
-        "translationHash": "304089d8a071ec99883b5ed6010f8a49e32afba3d625f4f47159dcfccc135f49",
+        "contextHash": "83f97fa60ddc3b0456e8c2aaa60592ced9e11f73dd0557c4b62cda51dc544b3b",
+        "translationHash": "3838a34e3d4f1664bcd05b7507feb7d5e901326386b80a403895f81d8c7be302",
         "domainReviewRequired": true,
         "dossierHash": "c1911cecdd92fc42bd7e7c84b1693eb99beadc39608b4724502725f2c6f1547e",
-        "reviewScopeHash": "485da454dbd551a480ae6089f14e827f74f2e92b00f1a25b709e32e146bb1212"
+        "reviewScopeHash": "61520d2d784a2ddaf226feb635a586921587eabd1713aac72b26728056f17c3f"
       }
     },
     {
@@ -12732,11 +12758,11 @@
         }
       },
       "hashes": {
-        "contextHash": "7092d7800928b07383f3f81816c7d8d90e59b4e3cf0c29d6d632c3c1a3d4530d",
-        "translationHash": "f240082fa9b9219f1a2bdc32a88dc6f4bfd84715ed7b7aa6ca7798200b1394f7",
+        "contextHash": "d6df5035969b81baa70051d7ad193bcad6e8704d71db1fe7ac69e08a86cefffd",
+        "translationHash": "2eeed71ea1ecc2950c42ceef37662330aae875d9991fc06e0839501901b092b9",
         "domainReviewRequired": true,
         "dossierHash": "3c4dac4f36b6afefdc30ab1c1c9370af3903ef7edd91eeaa910fcb8639c6af68",
-        "reviewScopeHash": "3c5ecbc282fb5670735e8c9abf7fc5e84361fad7fe67488f9c3475aa31b8b0a2"
+        "reviewScopeHash": "adbe0cc158dc2f92b8a0abf8673413a2e32097531a4c2f55d30ede5c03a95730"
       }
     },
     {
@@ -12781,7 +12807,7 @@
         "dynamicFamilies": [],
         "reviewedAnnotation": {
           "messageId": "pages.unitgroups.validator.unit.quantitativeReference.required",
-          "sourceContextHash": "d8ed04175bc131b325d81c29ff4cbf5c76c8cb789504f28c0f003d2a26fe74b6",
+          "sourceContextHash": "fa803ccb3481f49559bf6c61b58c5010be0c697fa7b5ec603c7b38be1ce8eb00",
           "status": "BLOCKED_CONTEXT",
           "concept": "Validation rule requiring exactly one unit in a unit group to be designated as the quantitative reference.",
           "uiRole": "validation-feedback",
@@ -12933,11 +12959,11 @@
         }
       },
       "hashes": {
-        "contextHash": "7e8a6789467a7b6b32c3b94b946903d02a333142940d1dbfcc83e7cf59bb9f98",
-        "translationHash": "06b1f49e4b50b1163cb174e99c368c5eb88d0bf072c70f474ccfa82e08579409",
+        "contextHash": "d127b6445894869ac6ee4e88d32498e3c60a84228881bd80445a7f7bbb2a9edb",
+        "translationHash": "6011bdbb54fc1b518b6a64bf40a29704f0a0f5d88b3a23b6dc762320071c34c1",
         "domainReviewRequired": true,
         "dossierHash": "25ee40a7dd58ae15ca024b57f179fa59991ab8e0e76e508c8e3a9223db101a22",
-        "reviewScopeHash": "b1bfb7496d6c0f6ec237ff84d379676a0b1322ec2556ca4743e72273d2e69416"
+        "reviewScopeHash": "91ddedacc8900af1bfe0e7dc6ee189aa0c636d65422026b52eeb5acc6459dc2a"
       }
     },
     {
@@ -13200,11 +13226,11 @@
         }
       },
       "hashes": {
-        "contextHash": "5c24b65d9889a76d2160c2cde905172c9ee6ab450aa45789d7fd70f0aa010708",
-        "translationHash": "0df515ce246d4899a4036231a5bba6bce21363a2d23a3cbb09715e3277680598",
+        "contextHash": "1eb8af655793024686bbe25427b0b2cb5f94e0f1e927a3920b22cefebca0d52b",
+        "translationHash": "181b06251a73ef254009ad3089c6e2b80f1794c1f676f285f98b133c6a82cbcb",
         "domainReviewRequired": true,
         "dossierHash": "699d04c5273f7ddc0838439dd1a42b44d7c3f376bceff3f152040295b5c1d974",
-        "reviewScopeHash": "d7984aef26d0184d21403ca941ed4644aa92ba618e41d3c4145bfa190e33a413"
+        "reviewScopeHash": "d57ec4d2f5b01cc815f61288d3b13d15fa2fa01b1c65e7d31a0ec6b1f42eb915"
       }
     },
     {
@@ -13399,11 +13425,11 @@
         }
       },
       "hashes": {
-        "contextHash": "61217e66bcf341295e47d3f44d3d99b9f5ab45d4cd317c8132f4a5f2f9a84ce4",
-        "translationHash": "ad38fecedf63a32f61fa0a107b4b104b3a94be816fbc738aeaeeef81a8f4a40a",
+        "contextHash": "90873d7692962d45267c374ca4cf6fdc737b37327772688ef7b5ca561b3e75eb",
+        "translationHash": "760a7f97be1b68248e73f81d35efab5ac786867d57e2e8a4bc102459698edc91",
         "domainReviewRequired": true,
         "dossierHash": "6436d0ebdc0f0116c5b6f2d7074e6022ceb985e2264600c72bd4ab3d6e7c5175",
-        "reviewScopeHash": "64e60a24c580686e80d1ee34a93e1f009a4776a4dde771fecb5bf99c66be56f6"
+        "reviewScopeHash": "7860af3d4021e418c0274eb8d5f2f0316fbe3079f21e73743610235ee0092def"
       }
     },
     {
@@ -13598,11 +13624,11 @@
         }
       },
       "hashes": {
-        "contextHash": "80fdf47cd5d4fba3720c04339e3f66e6d6417d74021397ad54f7460fcc4e84ba",
-        "translationHash": "5698cbd4eee22e88a11582ada4a29bb1d8f3380f9c18e780739657c1178a2dcf",
+        "contextHash": "fb1b4e5a6d5997c6d1e568bcf1cd09397a02f17a6ba36d8a69eb5f97df144c87",
+        "translationHash": "c660a88fceb039afd5d9a15919e28526ea9cd27bdba069b293f1ba67884c5902",
         "domainReviewRequired": true,
         "dossierHash": "ea858d85abde2ff73090c7e23e58bff40122bff7673a558b40009a9038785255",
-        "reviewScopeHash": "5c3c276ae578b95a1e64cfc9f09275e6cc191b908f5e24eea99622e7c437598f"
+        "reviewScopeHash": "aa674fba91337104b2deabd387668975391967cd8f0927bad8525c7ef512fff0"
       }
     },
     {
@@ -13882,11 +13908,11 @@
         }
       },
       "hashes": {
-        "contextHash": "127408df6024fba920087ccdb60d8ed79bc4fe891c3d318d5e73436f8295f1d6",
-        "translationHash": "65baf3f8fd0e63b409f06d2efaf86ca614b38580a1ed5e02656940e8b5b4304b",
+        "contextHash": "5e962a5b98f35c9f61a5bf3f93dd5b86e34f8318a65b652b721a7a4ae5d90f9a",
+        "translationHash": "c37c19c686ef7a4b9d86eb55ad96d035bc1777ec59fcf402592879a9c967c77b",
         "domainReviewRequired": true,
         "dossierHash": "af49f9b73d1452f422aea8835abea289c0c9d99673a9502519479c098ad6a0fc",
-        "reviewScopeHash": "50baf396d5862296f060267055095986bcc8d5304991cbcfdbdb975fd3b64eeb"
+        "reviewScopeHash": "4a2409e2c28e4ed2147df74f2ff4ee4ca7c4cb4315b6f853df873f8cae0c43b6"
       }
     },
     {
@@ -14166,11 +14192,11 @@
         }
       },
       "hashes": {
-        "contextHash": "8a3489c4680c726b850dda57c09def17cb560461ca88028cae4e251239c34874",
-        "translationHash": "7a0e5c80d691261321108e0afee66e1536986dbeaa9baf0095810f363520089e",
+        "contextHash": "a6f0ebb920e7701236cce770502c393266690e6e0ce8ae31f9242820c3cf78a0",
+        "translationHash": "031608e2441a7bb56a8c285d38fb971ad6a6d108307e2769f84048b8b5fbdd9d",
         "domainReviewRequired": true,
         "dossierHash": "19f32b05f704c7ef1e3c43c65f68074c81b40167972eb56d677a72c6cb2b5c2a",
-        "reviewScopeHash": "9f3f94c76953378f8080fdad353fa91e31b3fc0e3bbe4af5bdfe9ba9a790b093"
+        "reviewScopeHash": "dae758fdf3b4bdc29181b1792d0762984335c9e4288a26ba11060d727b8b2980"
       }
     },
     {
@@ -14450,11 +14476,11 @@
         }
       },
       "hashes": {
-        "contextHash": "65bb4d5ef68cf4a3b1dc37227d103a813d239c848880cd097e245069567f5b5a",
-        "translationHash": "1a000179cef2b60cd1480f574a396f07ea5e1aadd4edce4d942a02bb9493e4bd",
+        "contextHash": "08d35260e3ac664dbead313d9c48801da9f3ae091fe2f52935bd78553860c028",
+        "translationHash": "6f2e8edae27544db22e15fb03966160efb5ca3f65f194b2a617b2f528d88917d",
         "domainReviewRequired": true,
         "dossierHash": "ebb830ff5824ea77f9025c72e49a73303af76dbedf58152cec53e7150ed49364",
-        "reviewScopeHash": "cc3ccbc1078dc28cc830a2e6bf6760502a22428970eb3510b208830b78fe3390"
+        "reviewScopeHash": "7f669cefece06e04584dc364e4a545e801c3393c4328f17044b09665674d00b4"
       }
     },
     {
@@ -14734,11 +14760,11 @@
         }
       },
       "hashes": {
-        "contextHash": "1b2436f1e932c27bd9c53ffdc38c5de147e2b8a091fe1d2cc20b8038bb0feefb",
-        "translationHash": "516f7b90c5a4f4683d4350241b971b8aeb747716c9c5f6adce8bfb03d7452935",
+        "contextHash": "c2aa200a6df1f14f8f0a2c99d40f495727f8a19cbf8a54edc42b1e51ebab41f9",
+        "translationHash": "879cd793690e1d10e2f98018ff95c4ca87a19d2c858fdc370bc6fc010a7c5cb3",
         "domainReviewRequired": true,
         "dossierHash": "39dfdf6fada5e4bea0eade4b8e43f10709111174fbaed1f570ed1a0729ccb538",
-        "reviewScopeHash": "d6784a4ee89f3689d7cbab683c36f4288bb6bbf9f16c2e81fceaafb57e3d5f90"
+        "reviewScopeHash": "dcc7120dd22a400af211d98b13181adf7502240c9a0e09ced7a391e3cafdc498"
       }
     },
     {
@@ -14767,9 +14793,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Der Berechnungsnachweis hat die Validierung nicht bestanden.",
-      "rationale": "Provides a localized generic conclusion without inventing a cause.",
-      "risk": "Must not imply a more specific failure.",
+      "candidate": "Der Berechnungsnachweis wurde nicht erfolgreich validiert.",
+      "rationale": "Uses the native-reviewed passive validation phrasing for a generic evidence failure without inventing a cause.",
+      "risk": "Must remain a generic fallback and must not imply a more specific failure reason.",
       "reviewDomains": ["native-german", "lca", "worker"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -15068,7 +15094,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Must not imply a more specific failure."
+            "Must remain a generic fallback and must not imply a more specific failure reason."
           ],
           "termOptions": [
             {
@@ -15103,19 +15129,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 37,
-          "templateGermanLength": 60,
+          "templateGermanLength": 58,
           "maximumVisibleEnglishLength": 37,
-          "maximumVisibleGermanLength": 60,
-          "visibleGermanToEnglishRatio": 1.622,
+          "maximumVisibleGermanLength": 58,
+          "visibleGermanToEnglishRatio": 1.568,
           "flags": ["candidate-over-150-percent-of-english"]
         }
       },
       "hashes": {
-        "contextHash": "c34a790ce245e3949a19804078206e44b75eb4c926d8fd2016807ac8f4724123",
-        "translationHash": "584df7d924f445d6393e5310bfb4384a152794f9c1f8d1cbc3b9551c3b363929",
+        "contextHash": "131f0b6ecd55d3b76db690cdc4f959baa94c7d48234ac98fb096c605863a2cb0",
+        "translationHash": "a7e4a7a227c9dd092c22062a580c31bda0589b89257f50ffa12a6adad431bc22",
         "domainReviewRequired": true,
-        "dossierHash": "ad2a5fb69cc986991a4a180c5c61637e2a80fa61ee3f8c7284898aedcecca919",
-        "reviewScopeHash": "f2cc130524237b8c3e28fa3598f77f386c61384e729e916ff57bc864812934b7"
+        "dossierHash": "4849a5e58b28b7187e4aaadbf96f380b38ce7ebbec0f55032d1a912d59329049",
+        "reviewScopeHash": "5a4cef49c7ceb8288d85172a71c5dc82857bcbe894e187fcf9f7fe1306252813"
       }
     },
     {
@@ -15438,11 +15464,11 @@
         }
       },
       "hashes": {
-        "contextHash": "99f807834d98a30eeda8f1e442a7de49299f6981acdbc002fdc0b757324e13ce",
-        "translationHash": "733ac2e63b7d118cbb9afd9155b086a06a3c4b8649ce0a68665ad1bc96db23cd",
+        "contextHash": "0aefa18418f4bcd8d5a144ee2776ca7bff8ed0ef538ac9eff910f7348fcb8bef",
+        "translationHash": "cba8ed85dcfb8d72c78830cb5bcdc004bf24f02e7f14640337a2beccbdebe00d",
         "domainReviewRequired": true,
         "dossierHash": "ab7654f8b8e05e714d4b78b65766990e7baadec27c2c01a64e2938d3fe5e8176",
-        "reviewScopeHash": "a852fc11a8dbec98b69ff290e5b8dd5971d5a56d52a5acc143ab1c63c3551cc7"
+        "reviewScopeHash": "0dbde7c63c1e326f2210e020fb5c21d96a9fc5ff650acc35c0d65a1a67cee8d1"
       }
     },
     {
@@ -15720,11 +15746,11 @@
         }
       },
       "hashes": {
-        "contextHash": "05b141576b4b8a3677b37710389cc18c81609f14fcd74d87a0ba05fd2da1deb9",
-        "translationHash": "ff9c8e30a22282cab20f12d60bfa58efe1db30bf2433b69b091bab8978512b6b",
+        "contextHash": "cc84c38c87307202b3ed8c8c457783c3cf5b5cdac167744570f6486464a8c2d0",
+        "translationHash": "14468fdb323ef3241eb707189596ddbcee21e6a7bc2ddf2a680d7e3733ca72ae",
         "domainReviewRequired": true,
         "dossierHash": "f6a1ff4b3bb21c638aaeb46324de3d154c30a14da586ba8fc8f772ecd3c55a2b",
-        "reviewScopeHash": "30078416e73a381407f8366f89210fa7a77ca9f3a9e3a9df828e7975b00a9ae0"
+        "reviewScopeHash": "f46b2ecb7a55ac4a6857c486c47d6c11b7b6d0db2f80f5f3383d1728cbaa9138"
       }
     },
     {
@@ -15998,11 +16024,11 @@
         }
       },
       "hashes": {
-        "contextHash": "748a2b212b966dbc5d55fedaf644c175288d32eaafa3433eeaa13894989a13a4",
-        "translationHash": "ab37b9858ab3111bb9257007d8b79ae34f88f48491f2fa145f55853a3c5f610a",
+        "contextHash": "1872e06ed7b53df2483a4dcff7fe6ad1121a151a4fd45780f3723cfb8faa17cd",
+        "translationHash": "ebe273c02f2944e4df7dfa8b32e0717fc995582a4e4153d5546bdf9cec219581",
         "domainReviewRequired": true,
         "dossierHash": "bf894ee8a56fb566a21ed85d79d745d5812d2644de4c1e00a3d1a1f0e346db12",
-        "reviewScopeHash": "c5ab39e113cf6ca945d51e07de99ee3adecebd2c8cce8bfb5bca432a74db32ca"
+        "reviewScopeHash": "0b0743df0e25e62e6e435e3081ff6e6185ab9af2cd918d70702571c23118ed36"
       }
     },
     {
@@ -16329,11 +16355,11 @@
         }
       },
       "hashes": {
-        "contextHash": "a60eac0aa25f0fad2f7f72482e414917a11e7e1c32c4e558f066e153b871ee46",
-        "translationHash": "39c9c9e803a9953efd609f00b4126b39b9fd6e1a1cd73cf5e7541c04d80ead01",
+        "contextHash": "508587b49f6fd127c954b5059c459968971950e1599fce2ac420bcb058a31850",
+        "translationHash": "1a27dee82459dfd0b4dce7221695633503fc4702d893552269287bc0b2a74124",
         "domainReviewRequired": true,
         "dossierHash": "b574d75e0fed5203af901fdef65e03b01400e7a66e129cbee3d25f89599169a4",
-        "reviewScopeHash": "de672d1df11fe44d776b2f7b5717a3f8197b150550174ef63a2684e73491d7c6"
+        "reviewScopeHash": "c134fde426efd99b369a1b6bf1df36993822d25f0dcc025657aba115c65bacd7"
       }
     },
     {
@@ -16606,11 +16632,11 @@
         }
       },
       "hashes": {
-        "contextHash": "6d220cc5a58be60f232fe06ba83d96642c31fe6cb1eb5d32f4b29b6979f4ce8d",
-        "translationHash": "bfb602fd7fdbd8387e446fcf00516d649476068d6105f413acac0764958f1c03",
+        "contextHash": "4d3cd8f4a4c3d114670ce52198ec7bdbe5c491f9dfa271a054fd5f0eb5bb19f6",
+        "translationHash": "93df6126b38a1425617f30501a61270fa5960ff99f8702d621c181d70f532aa3",
         "domainReviewRequired": true,
         "dossierHash": "c2b0c0178e1e489536b6443d4147ee7bdd4cb16321248dbcbf3858206a17662b",
-        "reviewScopeHash": "8c8ba2487f14eedb8ef46c44367126a54158a4d45ec721b1871a254d7b9edb39"
+        "reviewScopeHash": "753d989373f8c7468c814fcd43bad332795a9463eef350487a7fcabfc315e33c"
       }
     },
     {
@@ -16883,11 +16909,11 @@
         }
       },
       "hashes": {
-        "contextHash": "fc46b98eaf2dd55e3f39f117d5488815633ecfcd011934121df658529dea7511",
-        "translationHash": "3d9d7e5e3cc43e62f829a8bfbd763f2e456f4b18fcdeb0209a6e15aa203a6611",
+        "contextHash": "b0e3fa82c7ffe73e4db73742ed883fe7f3fe2a59e0622f9e52c9de8e9db1f812",
+        "translationHash": "cf2a3cc03eea675c65e4623186f8df0d636a530f496df7142c543a221d33dbe2",
         "domainReviewRequired": true,
         "dossierHash": "62d8f2a770c07a23d2a536917ca44c85d08dfba44cd9924d7e1920775d8a4b69",
-        "reviewScopeHash": "fcac60e836b1b3e964f860d7756f5e0b9fe782f92ff142cad26949c865b4c301"
+        "reviewScopeHash": "39b200546f9690a6d56c377957753a7c4b2b58c62e3416ab371f36292de66924"
       }
     },
     {
@@ -17160,11 +17186,11 @@
         }
       },
       "hashes": {
-        "contextHash": "1a0dc2fb2c92a41f2f801ce8c2c6e1e6e27edffa48eb83f0cbb6a6003d97402b",
-        "translationHash": "80e0779bd604c7072937dce66f98ee044d259ec81c1db25b876a2783db9c0bcd",
+        "contextHash": "b68f5f41c8dc925ff37e02855ce7a7e89c18b946a3506be40034581f43ce2ad1",
+        "translationHash": "bcbe311ae509972fbe1a8f564576eaea22c2c3e9f3dfc82efd7b2a0ad9c32236",
         "domainReviewRequired": true,
         "dossierHash": "d9674c8c853748596b14ff57b129ae805d2f72058227417acdebbccf857e86a2",
-        "reviewScopeHash": "2b6a9345ec4f42b08d77ee29b744e89389b0e931c34adb5bdd82847abc1703ca"
+        "reviewScopeHash": "06c6c65b6cd1ec8b347e7d5b143827d77cea910265570eec4b2762951e959ad1"
       }
     },
     {
@@ -17193,9 +17219,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Methodenquelle stimmt nicht überein",
-      "rationale": "Explains drift as a source mismatch instead of using an English loanword.",
-      "risk": "Must match the actual comparison behavior.",
+      "candidate": "Abweichende Methodenquelle",
+      "rationale": "Uses the compact native-reviewed status-label variant because the value appears in an Alert tag and the adjacent reason explains the exact mismatch.",
+      "risk": "Must cover the fail-closed source-drift family without overclaiming one specific comparison failure.",
       "reviewDomains": ["native-german", "lca", "worker"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -17403,7 +17429,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Must match the actual comparison behavior."
+            "Must cover the fail-closed source-drift family without overclaiming one specific comparison failure."
           ],
           "termOptions": [
             {
@@ -17429,19 +17455,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 22,
-          "templateGermanLength": 35,
+          "templateGermanLength": 26,
           "maximumVisibleEnglishLength": 22,
-          "maximumVisibleGermanLength": 35,
-          "visibleGermanToEnglishRatio": 1.591,
-          "flags": ["candidate-over-150-percent-of-english"]
+          "maximumVisibleGermanLength": 26,
+          "visibleGermanToEnglishRatio": 1.182,
+          "flags": []
         }
       },
       "hashes": {
-        "contextHash": "880d3ce63fbd2a4e83084e5060785bd89b261147bed7f6a16dcd28de6f150ea2",
-        "translationHash": "2baaae0dcbe15ad61a5fbf1455e67aefefe75304e90174ce09b658ccde3eea77",
+        "contextHash": "6747428687a1be531339986703f0fe56546b18106300eb949f04b02b38e891bf",
+        "translationHash": "e08c0850d99afbe88ba0de0d0324e458076a076b93fb12700272e5768421799b",
         "domainReviewRequired": true,
-        "dossierHash": "08834a9a03cf55845498e80e14e967e75933656c18c7f976018c4dd0014db724",
-        "reviewScopeHash": "f045b4c73f8770a0f28e648a0dc62dd5d161b2126d27451eebd4f0879991b63c"
+        "dossierHash": "bad1dd54dfd7b2c3824e0f8a429db1f836e2f2d36b551f0afb69d6b9d4894390",
+        "reviewScopeHash": "77df9aaacec6b24c3caa42292e28aab88ead6fa9744a8ac77c8d85075fa28c3d"
       }
     },
     {
@@ -17783,11 +17809,11 @@
         }
       },
       "hashes": {
-        "contextHash": "39cbf59b13bf0cfe94b98158736de700e0d0861f2897fd6f4878738c390c3337",
-        "translationHash": "4885938a1c823d8fdd36eae40f68bc47dea74c69258f7008589b60b31eb26425",
+        "contextHash": "23147164ad1c98fa954bdfa0db17e0d11525d0b08d3b3f1162119aefe665a24b",
+        "translationHash": "7d415dbf0a4f723676f5eb27151a2be4236dd21d0c40b029e8e64935cbfbb8d0",
         "domainReviewRequired": true,
         "dossierHash": "d0f320fd9958578b9519c80f12b4a5871b31eecf2a2bba38ce55f77152470c8d",
-        "reviewScopeHash": "b5adb843c1e6cd778f0529b19e39523507e5728d056b1b2d9bdc147c30f3cbb7"
+        "reviewScopeHash": "40e7b396bc9841a473ecdfc225a7e7dab6de89d7432fe7e46d9566a70b35bcde"
       }
     },
     {
@@ -18129,11 +18155,11 @@
         }
       },
       "hashes": {
-        "contextHash": "13677fb4337393bc1b9a8eaf9325f10649d80e348b9e4f7656efd58eefb4d337",
-        "translationHash": "ba6b7ec046aae16dc10f3321e50c1ea5aafccdebc30a5cd60d4552faed5e9954",
+        "contextHash": "5cf04bd27c8a22a6aa1f65f5fe2db49ba0979ca034bc85ec103e970ad21e5c8e",
+        "translationHash": "775943b329e69f693e0e11bccb067c7839310b35d755bdaebc399c53836f2d18",
         "domainReviewRequired": true,
         "dossierHash": "f5cd1e0c88c04daf5b16b9524ac56c5e684dab40c39ddb94bcac4b20f322cbde",
-        "reviewScopeHash": "4f709cfd8043a1dc44d9810fe21e559470645f8278047a487e15bf4967fb782e"
+        "reviewScopeHash": "0a6d4a32e3cd3ff38b854b0be65ac6648483134c336882516f14e25a349798de"
       }
     },
     {
@@ -18407,11 +18433,11 @@
         }
       },
       "hashes": {
-        "contextHash": "9bc6dd16ff45ee29624437791b00fad9037c0d196f72720caed0a915ff6acac8",
-        "translationHash": "dfceeb7f624edfbf090532d77ae8b0a0689bbfe3b29181b9df5ce9b727daaf10",
+        "contextHash": "87a43fc5c8563e21e979bdb720b79185501989af98ddc38da210c940de93af52",
+        "translationHash": "e301f3a935805affaa421ec336ce493a048f9fa434fdfab13b0757600095ee66",
         "domainReviewRequired": true,
         "dossierHash": "c27a517cf5401094ad12bd98b3b1a0b662f9a417ca92fbfa8cdd9278cd82572c",
-        "reviewScopeHash": "4d69898c4f8db3d1ae96ab897fac2708721d8f2fdb4c49f6de01c7b8455f5dc9"
+        "reviewScopeHash": "ba398a9f95946852e44fb3ccfae656e2ded574c0201d7c773e10436e2ff034e0"
       }
     },
     {
@@ -18831,11 +18857,11 @@
         }
       },
       "hashes": {
-        "contextHash": "6f2c644310e6cbf0a8c2a30d87c4ae59475a8d7641c4313067ba823fe1fd3eae",
-        "translationHash": "1ed05e6356bf6b26793c7806a549797b4b327473f9d0e3bfdc9445ff6f64d111",
+        "contextHash": "e115b956478db6f8439ff0e07a46f92fab648c32add30d14573d6da5713b5a7a",
+        "translationHash": "2606c88873ed7eb76acd58ec060650a4368ad374bb621a93f51af6075bf6b934",
         "domainReviewRequired": true,
         "dossierHash": "2c98a227799c9c2bbe69dfca40f5c2e88ac1e5f58bc8e0eb2b614a7eb4843f24",
-        "reviewScopeHash": "f0899cfe55365c13f8f98589fdd1873592ddb47a5dd1146c8d55353b7902f1d9"
+        "reviewScopeHash": "bce826fb016200d2eb9404df14c9ee2b59a5f52846d9fd7226c0e5622e4ea509"
       }
     },
     {
@@ -19196,11 +19222,11 @@
         }
       },
       "hashes": {
-        "contextHash": "1cb0b92c54b52781152e031c0483031982f44fe8c6bae7f5fc0f35bf29ed16bb",
-        "translationHash": "7c29b03ee0b459c56f6b19b293431599c7de8b4c020ad673a3e803690579de69",
+        "contextHash": "be8843c7ae1f15b9d6ccaf953d049d905675916fa6dd5eed6ae3bd487b7769ef",
+        "translationHash": "b1a5cc678df896f86edf45d11171b53f57370d55d58f781aeb60914b5c6b14a3",
         "domainReviewRequired": true,
         "dossierHash": "ccd7412c268823506844f3dc9676234397fdc9235a3df520ab862ec2c4381e64",
-        "reviewScopeHash": "ee706e6120adc205305c57270b66ec03356594b4437b841d97a0d69c737b89d4"
+        "reviewScopeHash": "f37eee879500cf784802bbf71a2494ba2fc5ac0715b74ac83ef7cbe064091498"
       }
     },
     {
@@ -19678,11 +19704,11 @@
         }
       },
       "hashes": {
-        "contextHash": "f7f92a0ade1a7b438384ac3ffa9f1eac93050e1e96aa5a46b16a2736321d620e",
-        "translationHash": "8ddfab1864b129b3ad38a358b865c85fa7501cf40016f2eda6df6e88460f6f8c",
+        "contextHash": "b75a8375bf1c5cc12c71c2f395af78e5550341b3c2cc3c4597f80dfd51be91ac",
+        "translationHash": "bdb79fdf552cf2e45109a03bb79cf0aeb8c569977d07b68f239f75ba468c9629",
         "domainReviewRequired": true,
         "dossierHash": "a7e498d284aed194f0b2a5a08a395ac1b5a8f9c2bdd593bbb15379ca02b8b00c",
-        "reviewScopeHash": "c46d80449eaf7f53bd3f0b9a0e94c07962d6488c45d678a42e482f8c48019b95"
+        "reviewScopeHash": "9235bed0d7f4bf34c11b6113599913b7fd2e949c0f031343bb1d2101f51ba74b"
       }
     },
     {
@@ -20043,11 +20069,11 @@
         }
       },
       "hashes": {
-        "contextHash": "50ffae43d42d7b1e5a06d346eeeb02bccaff394170c929167cd8983770d16141",
-        "translationHash": "ae309cfbdaa5afae38669d401a94f7f28e6a914aa645102726c43eb04c52d18f",
+        "contextHash": "cac22ccfd31ba7c9bfa31490b9b7a1030b5dabc5c787e7c6928b4a474d8a2973",
+        "translationHash": "e0397546d3f0dbfd9d46a0fff40a04704eb8cb7d755f8ea22fccad70c95f512b",
         "domainReviewRequired": true,
         "dossierHash": "185d20d4122f9dfde85a8d9fa7881f4e3d58efe0dc7e6799968c4d94d8c4295f",
-        "reviewScopeHash": "69933145ff7590bfc5ca1efa7010cd5196d089ba90141775b5e8af7090dc1279"
+        "reviewScopeHash": "1e4d7c2281a4c4004c4daf1f2a49839186b5d42538450fd32cde69941ba9fda9"
       }
     },
     {
@@ -20408,11 +20434,11 @@
         }
       },
       "hashes": {
-        "contextHash": "3e57cde152f4dd927e7c214ea943adb75f0f0b5442a2ab1f44a8eb6b2877942e",
-        "translationHash": "ecadcd57e90e7d64922a10eec43a51145e933e9e6fe19a9f01d522d1d10ee77a",
+        "contextHash": "a1daa08094cca0f9c4102cb3ca561f40e87e25a7a238b82d3bf7eee63685f66d",
+        "translationHash": "72aa6c12b3ef91dbb653b3ed2e2b418540a4abe77efad5d7fdb71c5cb4be1c87",
         "domainReviewRequired": true,
         "dossierHash": "bff9da4bb1708740e958eeaa3570d2acf56b6098ba05f734045f771074a90e09",
-        "reviewScopeHash": "51455310c60b67485002f984b5d645ecb5d1341ee0ec0ce220c79273e7616e7c"
+        "reviewScopeHash": "226a00f9e4ee625237245c2ea8e2efd5194e561c1d33c0bd4fbf42ce9257211b"
       }
     },
     {
@@ -20869,11 +20895,11 @@
         }
       },
       "hashes": {
-        "contextHash": "5221a089b93bb23dc4be345f0ecc011ea78b02ec260981318e8ea6288b55be0d",
-        "translationHash": "8c9af4d0ab0764b1092614a28d82beb74609dcec2672e5fa83d8ecf5172126c4",
+        "contextHash": "2a0725e8163b1f7d620e226ebe0627c804733d7a7368dba0bef27688a2cd9cad",
+        "translationHash": "3456f83d3a092ed8d81b6f2fc0c7531d6fc685d0c52115228cf5a245531bc629",
         "domainReviewRequired": true,
         "dossierHash": "7be6371bc29d495b8e92c58c8de2d55b9a6d75c7162d957e83ec0e263b65b8dd",
-        "reviewScopeHash": "cb58ec5bf2d5423061dfff4457c18b14a3d194844fb7802d18dd1efdf41e6cc6"
+        "reviewScopeHash": "5d0120aa9f02367bd2af470580a4cf0981d3a23acb03b706c9037603bcf1b2df"
       }
     },
     {
@@ -20902,9 +20928,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Numerischer Faktorisierungstest fehlgeschlagen",
-      "rationale": "Uses Test instead of a mechanical translation of probe.",
-      "risk": "Probe terminology must be standardized across diagnostics.",
+      "candidate": "Numerischer Test fehlgeschlagen",
+      "rationale": "Keeps the diagnostic title concise while the adjacent description identifies the matrix-factorization test.",
+      "risk": "Must not lose the numerical-probe meaning or duplicate detail already present in the description.",
       "reviewDomains": ["native-german", "solver"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -21209,7 +21235,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"title-or-heading\" from the embedded runtime evidence; its current source is heuristic.",
-            "Probe terminology must be standardized across diagnostics."
+            "Must not lose the numerical-probe meaning or duplicate detail already present in the description."
           ],
           "termOptions": [
             {
@@ -21226,19 +21252,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 22,
-          "templateGermanLength": 46,
+          "templateGermanLength": 31,
           "maximumVisibleEnglishLength": 22,
-          "maximumVisibleGermanLength": 46,
-          "visibleGermanToEnglishRatio": 2.091,
-          "flags": ["candidate-over-150-percent-of-english"]
+          "maximumVisibleGermanLength": 31,
+          "visibleGermanToEnglishRatio": 1.409,
+          "flags": []
         }
       },
       "hashes": {
-        "contextHash": "8a47c3c38c369c73cba405dfc7636e5614251535f09ae0f9bb4d8b87d36afdc3",
-        "translationHash": "3c88c620d5f786d46957c50a0664858a1eaf79e2dac5b080c8441f81df7ee0f4",
+        "contextHash": "91660e71d74e6ba50bd4edbc6ce1e6e061b0dfc949f1dfb943a51a73969a0ffc",
+        "translationHash": "8f055a3abd39e645e165c1ee8c9b8470cbe90795b0b446a6c0e3a9eb0d105be6",
         "domainReviewRequired": true,
-        "dossierHash": "4ba1bdd15618e58bad45a2e0b72672f1e10402369a0d7e6e98d95bd4cf36aaff",
-        "reviewScopeHash": "b3eac886b833349250315c73bad0b197c8883b8502d088b1708801d89f66cd37"
+        "dossierHash": "f09133ada4d1bb14df1fc189703e8cb23aa159992774c552bb069c9f6e70ba05",
+        "reviewScopeHash": "8e20ecd9fa6c3648b11991fedd4fa9169b403d04211983ae99e6d8f649529375"
       }
     },
     {
@@ -21599,11 +21625,11 @@
         }
       },
       "hashes": {
-        "contextHash": "0410df6f78059333ba5e96036019097f91972d9078b8403022bc327bcea80022",
-        "translationHash": "ed2acd7024699f8b8180568bb37957aef3b76ca0912bac19e971e8ea9148a2a7",
+        "contextHash": "c3212db85b16d7b12cf0e9e9f9e9ea4b73dfd96b2a418381919c67d85b140e01",
+        "translationHash": "6e596901e000efc8acc24d26c6a3e12598e8d6d4b1427b34d6eabb058d9f528f",
         "domainReviewRequired": true,
         "dossierHash": "1a65584d00319ff1dcb8f1a63c200e32bde1cac62cc3fbf9f4f840ccf65de057",
-        "reviewScopeHash": "a43e1f4887b45d4a26d84ba6c7814c7aa3c400de37d92c721d0be01f4187d38a"
+        "reviewScopeHash": "3f4202537fa1f89a18a254d6a2d062c5bab2379b0e721f6df970143b86af8755"
       }
     },
     {
@@ -22022,11 +22048,11 @@
         }
       },
       "hashes": {
-        "contextHash": "9db854c96abc80a6016f35caa82b6fdbee4b21859d3ae344b101c45010c0d1d1",
-        "translationHash": "a986fbebf88a1d08c84b3de3299566505766db0cfb8df5b4cd898c1c88807a32",
+        "contextHash": "c201b317c97fd96af5060428cce94d0033e2a60c4db4dce817ef7206a656fb42",
+        "translationHash": "4e130ed0b5fa981d789625bc6bb911fac347802f94d6160f9d49d0478ab18627",
         "domainReviewRequired": true,
         "dossierHash": "e3ff336183a742c75d49f181ff74a99a447e942c0fde574afc762eec3a27e3a4",
-        "reviewScopeHash": "2dc3511212c2e81ddbb8c920533d26bd437a50f95c5612116093f6f7f3153f0b"
+        "reviewScopeHash": "c51b9becdb32511907a466817ef68f25263c4205eb5ed12a2d45d0a5de0039fa"
       }
     },
     {
@@ -22387,11 +22413,11 @@
         }
       },
       "hashes": {
-        "contextHash": "f5abb1c01c470ee950cb34515bfec5bebefd94cdcba3aa80d500ecd571fbd882",
-        "translationHash": "6127016cc482157202288bab8bee14906e2461594dfe514764dec548715af79c",
+        "contextHash": "ca56962012272f8a56706fa0537271c69313426f738695e93531659785a0badd",
+        "translationHash": "ebdf7d3f24a4e113e51efd2c2594deb94beb5009397958b5eb5edd2d5b3d4630",
         "domainReviewRequired": true,
         "dossierHash": "22edb2d6b5c3d6da9f2ee291e9857f9b9c74cff333afb52b230b222e33fef727",
-        "reviewScopeHash": "b8bbe005f4defaf662ab7c5d4f66aa61b95a753e68412794da96e1c683271b8f"
+        "reviewScopeHash": "8d36c94498f0d29fd69e555a27a27919cf00bc407030cb6a3d68d07e4d10878d"
       }
     },
     {
@@ -22420,9 +22446,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Für diese Einreichung zur Prüfung sind Daten erforderlich, die für die Wirkungsabschätzung bereit sind; es sind jedoch keine LCIA-Charakterisierungsfaktoren verfügbar.",
-      "rationale": "Explains the impact-ready requirement and missing data.",
-      "risk": "Long wording and impact-ready phrasing require native UX review.",
+      "candidate": "Für diese Einreichung zur Prüfung sind Impact-Ready-Daten erforderlich; es sind jedoch keine LCIA-Charakterisierungsfaktoren verfügbar.",
+      "rationale": "Preserves the product policy term Impact-Ready and states that its required LCIA factors are unavailable.",
+      "risk": "The product term must remain hyphenated and distinct from the LCIA phase name Wirkungsabschätzung.",
       "reviewDomains": ["native-german", "lca"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -22494,6 +22520,7 @@
           "domainReasons": [
             "domain-keyword-policy",
             "domain-module:pages_process",
+            "glossary:lca.impact-ready",
             "glossary:lca.process",
             "glossary:quality.review"
           ]
@@ -22672,6 +22699,47 @@
         ],
         "glossaryTerms": [
           {
+            "termId": "lca.impact-ready",
+            "sourceEnglish": "impact-ready",
+            "sourceChinese": ["impact-ready"],
+            "germanPreferred": "Impact-Ready",
+            "abbreviation": null,
+            "alternatives": [],
+            "includeContexts": [
+              "TianGong submit-review policy requiring the LCIA characterization factors needed for impact calculation"
+            ],
+            "excludeContexts": ["the general LCIA phase name Wirkungsabschätzung"],
+            "forbidden": ["Wirkungsabschätzungsbereitschaft"],
+            "evidenceRefs": ["product-context"],
+            "risk": "critical",
+            "decisionStatus": "proposed",
+            "evidence": [
+              {
+                "sourceId": "product-context",
+                "authority": "primary-product",
+                "title": "TianGong canonical i18n manifest, decisions, dynamic families, and production callsites",
+                "url": null,
+                "repository": null,
+                "reviewedCommit": null,
+                "localRefs": [
+                  "docs/plans/i18n-de-DE/manifest.json",
+                  "docs/plans/i18n-de-DE/decisions.yaml",
+                  "docs/plans/i18n-de-DE/dynamic-families.json",
+                  "src/** production references recorded in manifest.json"
+                ],
+                "allowedUse": [
+                  "product concept",
+                  "UI role",
+                  "runtime behavior",
+                  "placeholder contract",
+                  "user consequence"
+                ],
+                "caution": null,
+                "accessNote": null
+              }
+            ]
+          },
+          {
             "termId": "lca.process",
             "sourceEnglish": "Process",
             "sourceChinese": ["过程"],
@@ -22756,9 +22824,20 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"explanatory-help\" from the embedded runtime evidence; its current source is heuristic.",
-            "Long wording and impact-ready phrasing require native UX review."
+            "The product term must remain hyphenated and distinct from the LCIA phase name Wirkungsabschätzung."
           ],
           "termOptions": [
+            {
+              "termId": "lca.impact-ready",
+              "preferred": "Impact-Ready",
+              "alternatives": [],
+              "forbidden": ["Wirkungsabschätzungsbereitschaft"],
+              "includeContexts": [
+                "TianGong submit-review policy requiring the LCIA characterization factors needed for impact calculation"
+              ],
+              "excludeContexts": ["the general LCIA phase name Wirkungsabschätzung"],
+              "decisionStatus": "proposed"
+            },
             {
               "termId": "lca.process",
               "preferred": "Prozess",
@@ -22782,19 +22861,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 105,
-          "templateGermanLength": 167,
+          "templateGermanLength": 135,
           "maximumVisibleEnglishLength": 105,
-          "maximumVisibleGermanLength": 167,
-          "visibleGermanToEnglishRatio": 1.59,
-          "flags": ["visible-branch-over-120-characters", "candidate-over-150-percent-of-english"]
+          "maximumVisibleGermanLength": 135,
+          "visibleGermanToEnglishRatio": 1.286,
+          "flags": ["visible-branch-over-120-characters"]
         }
       },
       "hashes": {
-        "contextHash": "564d8440367967da7bc8c7e26f2db62b9102a594cb0a414d237ccc827df0be9b",
-        "translationHash": "721be3c801f608e4c178c9ea1702f58ebced074997844764455fe5ae0ad3e737",
+        "contextHash": "ce8a00e0f2dd7b6d67f08f28b6fb4acc328ba30c595fc2686bac14cfbc776cf0",
+        "translationHash": "a4aa7db5b0bf9d05bd7a490b3713e7cc57c1be98d95b3c85d184a66510edd48b",
         "domainReviewRequired": true,
-        "dossierHash": "8b7afb9cdab821a062fa75d12989f0e3d055c3c00a1182dbfa2dcad39898bbb6",
-        "reviewScopeHash": "c42c12a21810e00fe3b75aee90d67b8e3ba0923c7d643f9f19541cb3b9ef6dfa"
+        "dossierHash": "cf7dd0870f8a89892cfff3b95afe4a3a816eff5741b2344c4f44f8efa4fb63f9",
+        "reviewScopeHash": "ca4554c54f933200904fd7b46f041217f58d3e477e00a5e85bee0e25379d82a1"
       }
     },
     {
@@ -22823,9 +22902,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Fügen Sie die erforderlichen LCIA-Charakterisierungsfaktoren hinzu oder prüfen Sie, ob die Anforderung an die Wirkungsabschätzungsbereitschaft für diese Einreichung deaktiviert werden soll.",
+      "candidate": "Fügen Sie die erforderlichen LCIA-Charakterisierungsfaktoren hinzu oder prüfen Sie, ob die Impact-Ready-Anforderung für diese Einreichung deaktiviert werden soll.",
       "rationale": "Preserves both recovery options: add data or change the policy.",
-      "risk": "Wirkungsabschätzungsbereitschaft is a new compound and needs native/domain approval.",
+      "risk": "Must not invent the compound Wirkungsabschätzungsbereitschaft or omit the policy-disable option.",
       "reviewDomains": ["native-german", "lca", "product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -22897,6 +22976,7 @@
           "domainReasons": [
             "domain-keyword-policy",
             "domain-module:pages_process",
+            "glossary:lca.impact-ready",
             "glossary:lca.process"
           ]
         }
@@ -23074,6 +23154,47 @@
         ],
         "glossaryTerms": [
           {
+            "termId": "lca.impact-ready",
+            "sourceEnglish": "impact-ready",
+            "sourceChinese": ["impact-ready"],
+            "germanPreferred": "Impact-Ready",
+            "abbreviation": null,
+            "alternatives": [],
+            "includeContexts": [
+              "TianGong submit-review policy requiring the LCIA characterization factors needed for impact calculation"
+            ],
+            "excludeContexts": ["the general LCIA phase name Wirkungsabschätzung"],
+            "forbidden": ["Wirkungsabschätzungsbereitschaft"],
+            "evidenceRefs": ["product-context"],
+            "risk": "critical",
+            "decisionStatus": "proposed",
+            "evidence": [
+              {
+                "sourceId": "product-context",
+                "authority": "primary-product",
+                "title": "TianGong canonical i18n manifest, decisions, dynamic families, and production callsites",
+                "url": null,
+                "repository": null,
+                "reviewedCommit": null,
+                "localRefs": [
+                  "docs/plans/i18n-de-DE/manifest.json",
+                  "docs/plans/i18n-de-DE/decisions.yaml",
+                  "docs/plans/i18n-de-DE/dynamic-families.json",
+                  "src/** production references recorded in manifest.json"
+                ],
+                "allowedUse": [
+                  "product concept",
+                  "UI role",
+                  "runtime behavior",
+                  "placeholder contract",
+                  "user consequence"
+                ],
+                "caution": null,
+                "accessNote": null
+              }
+            ]
+          },
+          {
             "termId": "lca.process",
             "sourceEnglish": "Process",
             "sourceChinese": ["过程"],
@@ -23130,9 +23251,20 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"action-label\" from the embedded runtime evidence; its current source is heuristic.",
-            "Wirkungsabschätzungsbereitschaft is a new compound and needs native/domain approval."
+            "Must not invent the compound Wirkungsabschätzungsbereitschaft or omit the policy-disable option."
           ],
           "termOptions": [
+            {
+              "termId": "lca.impact-ready",
+              "preferred": "Impact-Ready",
+              "alternatives": [],
+              "forbidden": ["Wirkungsabschätzungsbereitschaft"],
+              "includeContexts": [
+                "TianGong submit-review policy requiring the LCIA characterization factors needed for impact calculation"
+              ],
+              "excludeContexts": ["the general LCIA phase name Wirkungsabschätzung"],
+              "decisionStatus": "proposed"
+            },
             {
               "termId": "lca.process",
               "preferred": "Prozess",
@@ -23147,23 +23279,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 118,
-          "templateGermanLength": 189,
+          "templateGermanLength": 162,
           "maximumVisibleEnglishLength": 118,
-          "maximumVisibleGermanLength": 189,
-          "visibleGermanToEnglishRatio": 1.602,
-          "flags": [
-            "visible-branch-over-120-characters",
-            "candidate-over-150-percent-of-english",
-            "compact-control-copy-over-40-characters"
-          ]
+          "maximumVisibleGermanLength": 162,
+          "visibleGermanToEnglishRatio": 1.373,
+          "flags": ["visible-branch-over-120-characters", "compact-control-copy-over-40-characters"]
         }
       },
       "hashes": {
-        "contextHash": "9dd408c56d5042e4cc896cfb207afcb01d3799cdf746c07d341613313d826de8",
-        "translationHash": "a193c1a7bc145dce48faafe5c7b01ae6472867eff9f5e30581dce16b4ef33f14",
+        "contextHash": "0a952ff11a6e0e52e3a1ac33af746397eae679f73b2f3c6caa397235a12326e6",
+        "translationHash": "311ba8025a1887197dc2c868c8cc70fb57154587728c202dd080e73fb977abe3",
         "domainReviewRequired": true,
-        "dossierHash": "c938bed9a9e4230fbb52bd5f380058a6426224ef19c53d2afffc831a6e1a9e72",
-        "reviewScopeHash": "47ec88d0b8131a533dcde26cca04c1540e49e0a70078afb8e80a2ec98ebb1a90"
+        "dossierHash": "a79e5db417d75f9436113dcea6d52a46021b7b84790301909d4a85077eb590ed",
+        "reviewScopeHash": "7dec5552bfc6bb48cd5a871118d6c5c1e47e4e41603a6534e5c0c0046ffe19da"
       }
     },
     {
@@ -23587,11 +23715,11 @@
         }
       },
       "hashes": {
-        "contextHash": "998ef9256195436dc77b38f2da7ba132196a838f1dc507378ab335154258f58b",
-        "translationHash": "715a24da61a91b69e6e61c5e1d602ad237b8a48ba8f6f8fdb67f892428834084",
+        "contextHash": "ba27679bb83684827a1431f0c9fc82f67acd9cf516b71086d8775b5323185aad",
+        "translationHash": "ce4c6ad29a85553ebe789d44008837fed3c08a07a6648634464080a781e712a3",
         "domainReviewRequired": true,
         "dossierHash": "1bba55da6fd9d7eac425dea174d11942d6d4f6adbe9ba443a1d142bd0c2a25da",
-        "reviewScopeHash": "a24f6a4136ee6230e46ab7a159a5dd65941a14193f1dc54b7095c71ac15b00bc"
+        "reviewScopeHash": "b911053bfd3781a82c2a0ccaf3c960ff7327bc8711ed856bd2daa72229603847"
       }
     },
     {
@@ -24073,11 +24201,11 @@
         }
       },
       "hashes": {
-        "contextHash": "d8db1f9d6c39c725e4d8cbc8ee0a448f220d5935c0736c1024fde098803f26b1",
-        "translationHash": "4541dd3cbc77cedae78561594c68ffaf334dbc9c509329736892516ee2787633",
+        "contextHash": "bd6c153936ff763909ec578d4891a09f39b5635fec7bff44d89d4f818f1f7c9a",
+        "translationHash": "1ef3845eeae42c932efba2e8ec3a242a7b24e5d2162f3b652f068ebb16486b49",
         "domainReviewRequired": true,
         "dossierHash": "4f3774c112fcc8c3dd5806204753feb04252f53edfff8122e5f83c4beaf7da0b",
-        "reviewScopeHash": "3fc30813f0a50846362f4b1e48cfba8d0d5ef0314ea5555320a1fb97dd0830ea"
+        "reviewScopeHash": "2afa23d5c65062f398547820b39f5086466708a9232feffacff87d4ce033154d"
       }
     },
     {
@@ -24559,11 +24687,11 @@
         }
       },
       "hashes": {
-        "contextHash": "f216c64e0d10ab3464c6edc11f9e282ffc2b1de493b9463803c6b4ce7b87d007",
-        "translationHash": "0fb4cc38bcf466bd874b76bb473fc30dfe2bbfd49da30993d06d938316ada85b",
+        "contextHash": "5cd5157d25be6f4619f5c31587f235eff6c90212082feb55c27b830379c017aa",
+        "translationHash": "e7a5394a6d0e770a3ad05b5fb9030569cfed1fb60b8db86a3ffe63df71a84549",
         "domainReviewRequired": true,
         "dossierHash": "c4ccefdddad0f7ba7347d1efc3c39a776126fea2fe15da942984e2d1884ab42a",
-        "reviewScopeHash": "8285af65214ebfc36d38b5c14f03cff6dcc8dcbfe1adf15d77a3089e7f52e438"
+        "reviewScopeHash": "6019c291d3e6cde511eda62e0a2ab14a1c5a35cd2b1baaad55cde3d6a572201d"
       }
     },
     {
@@ -24924,11 +25052,11 @@
         }
       },
       "hashes": {
-        "contextHash": "19a88e5e760c7d998e5c9cfcb00ad43882ab71180f655995ef2c5122c8b769c9",
-        "translationHash": "0ac0611458ce52cabdb7ccd24013cbf6bcb140e9f5b90ea631187ee1aa775525",
+        "contextHash": "ec348b041bb75c21298af2c521a3217553110fe6c1cc99a3b254197aeefa44f0",
+        "translationHash": "dff62a6c8f0b8f93f6d3758eb695ccf60559d834a6f4a5289d3f89ec8491e03f",
         "domainReviewRequired": true,
         "dossierHash": "90c85b1383b932ab66f288f53eee721ca79b6aff2c367ffb55bd9bbed08b46e3",
-        "reviewScopeHash": "08ff596be262ca5e91819fbaebc13f6e57bb29de011d43b4ed777a2e6bc0a896"
+        "reviewScopeHash": "fddade6a696e4a9b799751a7de7f258e39d292d13876e732ca5f9b50668b480e"
       }
     },
     {
@@ -24957,9 +25085,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Die erzeugte Matrix M = I − A hat einen Diagonaleintrag von null oder nahezu null. Dadurch kann die Lösung instabil sein oder fehlschlagen.",
-      "rationale": "Separates the matrix condition from the possible solver consequence.",
-      "risk": "Source may refer to one or more diagonal entries.",
+      "candidate": "Die erzeugte Matrix M = I − A hat auf der Diagonale Werte von null oder nahezu null. Dadurch kann die Lösung instabil sein oder fehlschlagen.",
+      "rationale": "Preserves the diagonal condition without incorrectly limiting it to exactly one entry, then states the possible solver consequence.",
+      "risk": "Must not invent a numeric near-zero threshold.",
       "reviewDomains": ["native-german", "solver"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -25264,7 +25392,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"explanatory-help\" from the embedded runtime evidence; its current source is heuristic.",
-            "Source may refer to one or more diagonal entries."
+            "Must not invent a numeric near-zero threshold."
           ],
           "termOptions": [
             {
@@ -25281,19 +25409,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 102,
-          "templateGermanLength": 139,
+          "templateGermanLength": 141,
           "maximumVisibleEnglishLength": 102,
-          "maximumVisibleGermanLength": 139,
-          "visibleGermanToEnglishRatio": 1.363,
+          "maximumVisibleGermanLength": 141,
+          "visibleGermanToEnglishRatio": 1.382,
           "flags": ["visible-branch-over-120-characters"]
         }
       },
       "hashes": {
-        "contextHash": "c91af2b8e480383f11677dfd7441fe616a037a47143ef3eb83e6864ffbbed713",
-        "translationHash": "07119afc66892fb2f882fa6576eb3d4256285c6d2103dd6a55e06b4f76f37b13",
+        "contextHash": "7b0034765621db23cf8692c803dcad1e3b68d2a98837f598f98193d3180716be",
+        "translationHash": "d69e18ddeed2a3b416171c7bc87a90808ecbe1bad647c9e67cc6339acf4777eb",
         "domainReviewRequired": true,
-        "dossierHash": "86a9ae33c630ac68f6bbab709848f29fde3e913f57561774c1a0c28cbb1805ec",
-        "reviewScopeHash": "5c60480075f11486127990661973dcbb3bad8b41edaf7203d829c05b1805fe1c"
+        "dossierHash": "a96ef398fcfe3b91e77fc289bd4f5a8bac3a6d35fbb1d2d6b76cb83c32dd15d2",
+        "reviewScopeHash": "b2cadc835a24984f3420590adf40788af6a31e57116dc31be60d74e33eca950e"
       }
     },
     {
@@ -25712,11 +25840,11 @@
         }
       },
       "hashes": {
-        "contextHash": "f106fcae346948d119ccf6cb0d685020c78d6e441d3762a903873df0078f63fc",
-        "translationHash": "676d15fcf34dcd31e49c287cf8cd316a676cdd3646adb1f20f59e31f51f7993a",
+        "contextHash": "e226b4cf341edca0263f5b86626b180862eb64cdb134d4f9a1822d7f1587b994",
+        "translationHash": "e40bbadd3c5778a6f08d5c85e2ffb1ecedb7d8122100d3b5050c7e8b3bca1d7e",
         "domainReviewRequired": true,
         "dossierHash": "6be7e0a859986d48a762c96e80611ba6b99cd746bc6042cebb9f4b19bdb2bd8a",
-        "reviewScopeHash": "50fca9a939120a0b70d486cab68fb0c1ccc131faaadc8451e9170ee6ac393eb7"
+        "reviewScopeHash": "0fdfeb54984830ba35c5d4f243b3f8b1b37f1ff1a68bc8fa97c06943ed36c096"
       }
     },
     {
@@ -25745,9 +25873,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Berechnungsergebnis des Zielprozesses ist nicht endlich",
-      "rationale": "Expresses the numerical non-finite condition.",
-      "risk": "Nicht endlich may be unfamiliar and needs UX review.",
+      "candidate": "Berechnung des Zielprozesses liefert kein endliches Ergebnis",
+      "rationale": "Uses natural technical German while preserving the non-finite solve-result condition for the target process.",
+      "risk": "The full-width diagnostic title must wrap without clipping and must remain paired with the NaN/Infinity explanation.",
       "reviewDomains": ["native-german", "solver"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -26052,7 +26180,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"title-or-heading\" from the embedded runtime evidence; its current source is heuristic.",
-            "Nicht endlich may be unfamiliar and needs UX review."
+            "The full-width diagnostic title must wrap without clipping and must remain paired with the NaN/Infinity explanation."
           ],
           "termOptions": [
             {
@@ -26069,19 +26197,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 41,
-          "templateGermanLength": 55,
+          "templateGermanLength": 60,
           "maximumVisibleEnglishLength": 41,
-          "maximumVisibleGermanLength": 55,
-          "visibleGermanToEnglishRatio": 1.341,
+          "maximumVisibleGermanLength": 60,
+          "visibleGermanToEnglishRatio": 1.463,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "978606e5dc12200f778da377462c0b292d96e803d3c77b5a89477ea9fa1ac57b",
-        "translationHash": "57a6f7c4744e4d2790b29b53acee70a51ae25a0d76e667d375aa376adfe1bd58",
+        "contextHash": "9421e04c352af961ae7da87287c53f8cdbb402e84732f29149ab4d33c3ba98a2",
+        "translationHash": "8ce22c5f822a4dff657870b6445624668230e74d048f497192b0f215db795bbb",
         "domainReviewRequired": true,
-        "dossierHash": "f8d86fc25d0d4e914836c489add811573e5cce30914d545189b7d6a690bf6b7d",
-        "reviewScopeHash": "c71ccc4123d522590c017ef8181bc29d3577173496baacd18660a3866be136ca"
+        "dossierHash": "8996559b1a87fa8c3cca0ca1f7c63c0dc724d4c84a0537e8bcfd0c32146786c3",
+        "reviewScopeHash": "09f04fa24c51c982a910a9d58ee1b7d5edfcaa2ae17d31705b0672882b193801"
       }
     },
     {
@@ -26110,9 +26238,9 @@
           "module": "pages_process"
         }
       },
-      "candidate": "Der Test für den Zielprozess ist beim Lösen fehlgeschlagen oder hat NaN- beziehungsweise Unendlichkeitswerte erzeugt.",
+      "candidate": "Der Test für den Zielprozess ist während der Berechnung fehlgeschlagen oder hat NaN- bzw. Infinity-Werte erzeugt.",
       "rationale": "Preserves solve failure, NaN, and infinity outcomes.",
-      "risk": "NaN remains a technical token.",
+      "risk": "NaN and Infinity remain exact technical diagnostic tokens.",
       "reviewDomains": ["native-german", "solver"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -26417,7 +26545,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"explanatory-help\" from the embedded runtime evidence; its current source is heuristic.",
-            "NaN remains a technical token."
+            "NaN and Infinity remain exact technical diagnostic tokens."
           ],
           "termOptions": [
             {
@@ -26434,19 +26562,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 80,
-          "templateGermanLength": 117,
+          "templateGermanLength": 113,
           "maximumVisibleEnglishLength": 80,
-          "maximumVisibleGermanLength": 117,
-          "visibleGermanToEnglishRatio": 1.462,
+          "maximumVisibleGermanLength": 113,
+          "visibleGermanToEnglishRatio": 1.413,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "0cddc3417973fa1426303c6cd05e50758b5c9a0a0be00a6d307e9372c77f643e",
-        "translationHash": "7c60792bea3690c66ae765f44bfebc91a7d870c63eda4c4517b2e4bf169e9ed1",
+        "contextHash": "a0e98b1ba3b7b810ec6619dba188779254361f8c5bd06897ef8bfed1fd8b171a",
+        "translationHash": "36fecd14f776910bd12d087e9ab8a6620e3bb056f499ee56cbd50d22ab3bda9c",
         "domainReviewRequired": true,
-        "dossierHash": "198bbe172d1036b5818c85931d0bbf7fb7d3b11ee0737dea9d9544a3fb1ebb3b",
-        "reviewScopeHash": "fd3ce2b3af988d38dcdb55253ff3c328346edacd7de575c76b57caf573fc59d3"
+        "dossierHash": "a13e009145a60d9dd73015b68e2515050dc149c69ba2506d66b5159aa1b2c5a2",
+        "reviewScopeHash": "cdb79c95159f7f74d7ba1f289a52fa4c33458ac7140bee6369ff47b4b61e403e"
       }
     },
     {
@@ -26924,11 +27052,11 @@
         }
       },
       "hashes": {
-        "contextHash": "45ba82d4bfeea74f26aeb98d5c31e4dc57447dbce18885c476987fbfe56c98c1",
-        "translationHash": "5739cfb6583fab573c03212411a6e11ddefe542c9eda169a7b5115167d0b183a",
+        "contextHash": "1da2fe8ef3757f69285378d8f2e60f18dbaae334aa338f8afa37a42e70d9b39b",
+        "translationHash": "4f8c14903774f14eef70ecd3a93e23dd61e2d8c708b9ebc555f33f1e6cbeb933",
         "domainReviewRequired": true,
         "dossierHash": "f0b612ebcd518269dff0735eb04437427a9cfbad4b468cecdd3ff85dd791f77c",
-        "reviewScopeHash": "e6f26c4a356800b210342a5eddf3883a24a173138301bb8e7df6db0318aca38b"
+        "reviewScopeHash": "1c34741c7ce19b9229669582676ae68cca5a44655f92ddae956345119069a0b2"
       }
     },
     {
@@ -26957,9 +27085,9 @@
           "module": "pages_review"
         }
       },
-      "candidate": "Prüfende zuweisen",
-      "rationale": "Provides a compact, neutral action label.",
-      "risk": "Prüfende, Gutachter, and Reviewer require one workflow-role decision.",
+      "candidate": "Prüfende wurden zugewiesen",
+      "rationale": "Uses a complete completed-event sentence because this message appears in the review log's action-details column rather than on an assignment control.",
+      "risk": "Must not be mistaken for the separate assignment button command. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
       "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -27078,26 +27206,26 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Prüfende, Gutachter, and Reviewer require one workflow-role decision."
+            "Must not be mistaken for the separate assignment button command. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation."
           ],
           "termOptions": []
         },
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 16,
-          "templateGermanLength": 17,
+          "templateGermanLength": 26,
           "maximumVisibleEnglishLength": 16,
-          "maximumVisibleGermanLength": 17,
-          "visibleGermanToEnglishRatio": 1.063,
-          "flags": []
+          "maximumVisibleGermanLength": 26,
+          "visibleGermanToEnglishRatio": 1.625,
+          "flags": ["candidate-over-150-percent-of-english"]
         }
       },
       "hashes": {
-        "contextHash": "27478f247d65e33654ffb9d1bb4b714c8f35ddec23de1a6ea876b1504303325b",
-        "translationHash": "3b4c0e3c62078f883453aa372a99d4c0cd8f22eb6915b44503366a9b4d119c55",
+        "contextHash": "625a941cb30907601e604cb4b44e7156f23ae8c6e9a7be2725c604eb2ab59458",
+        "translationHash": "8fe76f192117924f924d6e28832025991fb1a167c791713fd269a59984fd31f9",
         "domainReviewRequired": true,
-        "dossierHash": "b1c4f84b1e810d83f7d2acf9cc20be7f301d432a58b275ab1ac71944d757b1fb",
-        "reviewScopeHash": "b453fe13ac7a44b0068e5875bd278fc82bbdd2f88129493095d7189b7f0f82cc"
+        "dossierHash": "b251c9cd5914925c4fc52d10e84d6c4434f25af47a726256130112e8c3764750",
+        "reviewScopeHash": "a4158b69d7f15face01a3f6502f9058db246201a92a7f88bf2d5663b4a7958ff"
       }
     },
     {
@@ -27126,9 +27254,9 @@
           "module": "pages_review"
         }
       },
-      "candidate": "Zuweisung der prüfenden Person aufgehoben",
-      "rationale": "Treats the source as a completed audit event rather than a button command.",
-      "risk": "Must confirm singular vs. plural event semantics.",
+      "candidate": "Zuweisung der Prüfenden aufgehoben",
+      "rationale": "Treats the source as a completed review-log event without assuming that the assignment contained exactly one reviewer.",
+      "risk": "Must remain distinct from a revoke button and from the separate reviewer-rejected event.",
       "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -27278,7 +27406,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Must confirm singular vs. plural event semantics."
+            "Must remain distinct from a revoke button and from the separate reviewer-rejected event."
           ],
           "termOptions": [
             {
@@ -27297,19 +27425,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 27,
-          "templateGermanLength": 41,
+          "templateGermanLength": 34,
           "maximumVisibleEnglishLength": 27,
-          "maximumVisibleGermanLength": 41,
-          "visibleGermanToEnglishRatio": 1.519,
-          "flags": ["candidate-over-150-percent-of-english"]
+          "maximumVisibleGermanLength": 34,
+          "visibleGermanToEnglishRatio": 1.259,
+          "flags": []
         }
       },
       "hashes": {
-        "contextHash": "8c3022cbeccfcbf220312a4ee3cf4bdd44a52d6c22fe06e6120fda105528a1ed",
-        "translationHash": "acc0995534b0f61f9ab78ec3e517fddddcf616b87268f31cb03c94c124762409",
+        "contextHash": "3b9f66c01f4044a9ccabab867879ed165004774abfa2442353127664f4c5b316",
+        "translationHash": "e76dfac2c767e9226f9293c98854a84b52fe4f4b8163e0429a085be04ffd4ec9",
         "domainReviewRequired": true,
-        "dossierHash": "95260492e64b7a401c7cbaf5f8419d8420a96b916b57043a3197b1c4a8568b67",
-        "reviewScopeHash": "3eacd72d51c76b7b25bb5fcc3b32da4b94b3f87f5d43f7e2f4cf712db6f03da9"
+        "dossierHash": "05dc4b599b710f94f0a547f216606019df6a7157e44af354a50b9572e911cbf3",
+        "reviewScopeHash": "afd23a2f85eac063fffe9b7ab0ec4c3500dc8ccf43036236db65efa551a525cf"
       }
     },
     {
@@ -27338,9 +27466,9 @@
           "module": "pages_review"
         }
       },
-      "candidate": "Prüfung genehmigen",
-      "rationale": "Uses action voice for approving a review.",
-      "risk": "The actual state transition may be better described as Datensatz freigeben.",
+      "candidate": "Prüfung freigegeben",
+      "rationale": "Describes the completed final-review event that releases associated data while remaining distinct from the separate approval control.",
+      "risk": "Must not imply that the review record itself is public or assume exactly one associated data set.",
       "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -27492,7 +27620,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "The actual state transition may be better described as Datensatz freigeben."
+            "Must not imply that the review record itself is public or assume exactly one associated data set."
           ],
           "termOptions": [
             {
@@ -27509,19 +27637,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 14,
-          "templateGermanLength": 18,
+          "templateGermanLength": 19,
           "maximumVisibleEnglishLength": 14,
-          "maximumVisibleGermanLength": 18,
-          "visibleGermanToEnglishRatio": 1.286,
+          "maximumVisibleGermanLength": 19,
+          "visibleGermanToEnglishRatio": 1.357,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "7900a84ddef9373c941103ba7f1df364f253f143ec28fcbd73cd07bd530a8076",
-        "translationHash": "2b42e26d79499e22b3aedbb606ede1b6969f6a7d714a239c10f4dc943b4165c4",
+        "contextHash": "5fc7b1b522ab77619fe363527e6832636b010f453ace6bc7c00653e360566fe4",
+        "translationHash": "fbfa76033e06c8b27db83d4b59c5ba860a18ed10a86d16d2ce006352e526a09e",
         "domainReviewRequired": true,
-        "dossierHash": "8e072ac0016bb003c831ed70392a18a6b66bb066c8b0f785f053b5842a71be31",
-        "reviewScopeHash": "2e83bd1711e4eecb0fe4933370b1f9be4a3c5e8d6f39cab62eadb3b6559f1231"
+        "dossierHash": "d58c1ddff20beaf441e06b9642d595fd938469494afe0e7c47be01a1baf16066",
+        "reviewScopeHash": "5eccf5454429445d6f8c63ee7668739f77384656e3b2864818eae7fa792d8ac3"
       }
     },
     {
@@ -27550,9 +27678,9 @@
           "module": "pages_review"
         }
       },
-      "candidate": "Prüfung ablehnen",
-      "rationale": "Forms a clear action pair with approval.",
-      "risk": "Ablehnen vs. Zurückweisen depends on the state machine.",
+      "candidate": "Prüfung abgelehnt",
+      "rationale": "Forms the completed review-log event pair with Prüfung freigegeben.",
+      "risk": "Must remain distinct from the separate rejection control.",
       "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -27704,7 +27832,7 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "Ablehnen vs. Zurückweisen depends on the state machine."
+            "Must remain distinct from the separate rejection control."
           ],
           "termOptions": [
             {
@@ -27721,19 +27849,19 @@
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 13,
-          "templateGermanLength": 16,
+          "templateGermanLength": 17,
           "maximumVisibleEnglishLength": 13,
-          "maximumVisibleGermanLength": 16,
-          "visibleGermanToEnglishRatio": 1.231,
+          "maximumVisibleGermanLength": 17,
+          "visibleGermanToEnglishRatio": 1.308,
           "flags": []
         }
       },
       "hashes": {
-        "contextHash": "f619bb1b677cfc9ecbdcad9362d7d7eabc016e54a7350dfa06a3ee0352efb57a",
-        "translationHash": "54a10e22859290fd5e415c200ce10755016d1262a111c509c20b9e0aa3668d12",
+        "contextHash": "5f25526252cf8014cf6c7c382a69da436a2d4fe4425bedf874119f1b6350e3a2",
+        "translationHash": "7e6d0b2515a0a7891c022a9dff9696bd43acbabbc751a595a03b60792fefc4cf",
         "domainReviewRequired": true,
-        "dossierHash": "4363ca31726746c4165093d03e83e8ea7e60c3bec2c2731e29dcd877ede31def",
-        "reviewScopeHash": "f11213cf9cd081c94db7111e861c2ab340f1d84dc7e8f964279f4c11ad754233"
+        "dossierHash": "e99b999f6a425704a2138aa1085e2248541aba7000e84d9348b6115eefb786d1",
+        "reviewScopeHash": "6ae613933b38bfee1969413649dbf3ab6dec018a381302364607528b016f7bf0"
       }
     },
     {
@@ -27762,9 +27890,9 @@
           "module": "pages_review"
         }
       },
-      "candidate": "Prüfkommentare einreichen",
-      "rationale": "Combines the English comments concept with the Chinese review-data context.",
-      "risk": "May be too narrow if the submission contains more than comments.",
+      "candidate": "Prüfkommentare eingereicht",
+      "rationale": "Uses completed-event voice for the review-log action while retaining the comments concept.",
+      "risk": "Must remain aligned with the actual logged review payload. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
       "reviewDomains": ["native-german", "review-domain", "review-product"],
       "context": {
         "status": "RUNTIME_EVIDENCED",
@@ -27883,26 +28011,26 @@
           "questions": [
             "Confirm and record the concrete product concept represented by this runtime message; the current ledger concept is null.",
             "Confirm or correct the proposed UI role \"field-label-or-display-copy\" from the embedded runtime evidence; its current source is heuristic.",
-            "May be too narrow if the submission contains more than comments."
+            "Must remain aligned with the actual logged review payload. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation."
           ],
           "termOptions": []
         },
         "icuReview": { "argumentSignature": [], "sampleArguments": {}, "branchCases": [] },
         "lengthReview": {
           "templateEnglishLength": 15,
-          "templateGermanLength": 25,
+          "templateGermanLength": 26,
           "maximumVisibleEnglishLength": 15,
-          "maximumVisibleGermanLength": 25,
-          "visibleGermanToEnglishRatio": 1.667,
+          "maximumVisibleGermanLength": 26,
+          "visibleGermanToEnglishRatio": 1.733,
           "flags": ["candidate-over-150-percent-of-english"]
         }
       },
       "hashes": {
-        "contextHash": "bdf75bad265e7ccb0569c87c8522c7a5249c156b3f0af9e5acd6e3c729fd8ef4",
-        "translationHash": "f36efcf9c634f7cd95e01456a79c33eee1670043e221fd43042f76dd40bc7908",
+        "contextHash": "f6cd7fd763842f542ac5b35cc5807a16dedfe917a95d2b88fc7f53befea19076",
+        "translationHash": "fdb092c452dd8db898a639afce9377371acc9aaa5b663e347a4d6ac50aaf6568",
         "domainReviewRequired": true,
-        "dossierHash": "65f8be98f239700f5dbb419aaeb59b54bc3bc840527c9a904f6f898b746a1400",
-        "reviewScopeHash": "757174761a24bcdb4da8811e86dc313e23f80df76a2e82b5c66fe89f41d36c78"
+        "dossierHash": "106d52a0fdbf03977b706d930731bf0d5f98ad6291f36c53f43eee2a672cf0ec",
+        "reviewScopeHash": "1c14e21aeb075356c3bac87a3a5b4740903e1670269c4621866a528a7f1ccab0"
       }
     },
     {
@@ -28160,18 +28288,18 @@
         }
       },
       "hashes": {
-        "contextHash": "f61841855bd2e29e0bac25b4b8f149550144a9b108a422d665ca0286b6c29600",
-        "translationHash": "5dba7ec2d9e3408f528b5ad88547dfeeaa3b459d0b2361ed579ae6596d0ffaba",
+        "contextHash": "3651a45baf64dfe758ec2de1315771fb68fe009502ae6157c0ab43bf536fda07",
+        "translationHash": "1c411f197e15da90b234f74cfd531d0bccb0ac428ff92adceacbd888bdceea65",
         "domainReviewRequired": true,
         "dossierHash": "e3bab748cc3ef0fa360d59058b2a476d884582e06394ac92edd1c4cc7af8b4bc",
-        "reviewScopeHash": "8b539b2af2141168fc34a94cdf738fe1a19abf021224634b95ca2d3b0091712e"
+        "reviewScopeHash": "1ec0203ae761c8288ff78b867824d64aaf04f01e361d199f8b6313128725071e"
       }
     }
   ],
   "offlineReview": {
     "schemaVersion": "tiangong.i18n-de-offline-pilot-review-scope.v1",
     "defaultConfirmationPath": ".local/i18n-de-DE/pilot-review-confirmation.md",
-    "scopeDigest": "152e62e6512095d426cf2ebf1d1893eda35efb3c65b85b877af45a7b5a85ccfb",
+    "scopeDigest": "e32e3cf0367c66d7919c616cbe0f21cf8a12d1ffef9cd1eb7bcbf477d144c39c",
     "messageCount": 90,
     "blockedContextProposalCount": 9,
     "blockedGlossaryTermCount": 2

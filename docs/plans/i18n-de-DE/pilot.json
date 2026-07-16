@@ -17,19 +17,19 @@
     "bulkTranslationBlockedUntilApproved": true
   },
   "hardDecisionPoints": [
-    "Ausgangsdatensatz vs. Startdatensatz vs. Wurzeleintrag for TIDAS root record",
-    "Startprozess vs. Wurzelprozess for a path-analysis root process",
+    "Startdatensatz for a TIDAS dependency-closure root record",
+    "Startprozess for a path-analysis root process",
     "Mix- und Standorttypen terminology",
-    "Wirkungsabschätzungsbereitschaft wording",
-    "Prüfende vs. Gutachter vs. Reviewer for the workflow role",
-    "Austausch vs. Inputs und Outputs by UI role"
+    "Impact-Ready as the product policy term",
+    "Prüfende for the workflow role",
+    "Inputs und Outputs for the exchange-table tab"
   ],
   "messages": [
     {
       "id": "pages.lifeCycleModel.view.lifeCycleModelInformation",
       "candidate": "Informationen zum Lebenszyklusmodell",
-      "rationale": "Preserves the complete data-set type instead of shortening it to Modell.",
-      "risk": "Product decision between Lebenszyklusmodell and Ökobilanzmodell.",
+      "rationale": "Preserves the life-cycle-model data-set type and avoids implying a complete Ökobilanz study.",
+      "risk": "Lebenszyklusmodell must stay distinct from the assessment concept Ökobilanz.",
       "reviewDomains": ["native-german", "lca"]
     },
     {
@@ -64,7 +64,7 @@
       "id": "pages.process.view.exchanges",
       "candidate": "Inputs und Outputs",
       "rationale": "Uses a recognizable compact German LCA software label for the exchange table.",
-      "risk": "Product must decide whether Eingänge und Ausgänge or Austausch is preferred for this UI role.",
+      "risk": "This compact tab label must remain distinct from the individual Austausch entity term.",
       "reviewDomains": ["native-german", "lca", "product"]
     },
     {
@@ -119,8 +119,8 @@
     {
       "id": "pages.flow.view.flowProperties.uncertaintyDistributionType.logNormal",
       "candidate": "Lognormalverteilung",
-      "rationale": "Uses a noun label consistent with probability-distribution options.",
-      "risk": "Part of a set whose grammatical form must remain consistent.",
+      "rationale": "Uses the selected noun-label style for standalone distribution options: Nicht definiert, Lognormalverteilung, Normalverteilung, Dreiecksverteilung, and Gleichverteilung.",
+      "risk": "All Flow, Process, and Life Cycle Model option families must use the same noun style during full translation.",
       "reviewDomains": ["native-german", "statistics"]
     },
     {
@@ -167,23 +167,23 @@
     },
     {
       "id": "component.tidasPackage.import.conflict.records",
-      "candidate": "{count, plural, one {# kollidierender Benutzerdatensatz} other {# kollidierende Benutzerdatensätze}}",
-      "rationale": "Expresses import conflicts while preserving the ICU contract.",
-      "risk": "Konflikt vs. kollidierend must be consistent across the import UI.",
+      "candidate": "{count, plural, one {# Benutzerdatensatz mit Konflikt} other {# Benutzerdatensätze mit Konflikten}}",
+      "rationale": "Uses the same Konflikt term as the import summary while preserving the ICU count branches.",
+      "risk": "Must not imply that the conflicting records were overwritten, deleted, or imported.",
       "reviewDomains": ["native-german", "tidas"]
     },
     {
       "id": "component.tidasPackage.import.filtered.records",
       "candidate": "{count, plural, one {# Open-Data-Datensatz übersprungen} other {# Open-Data-Datensätze übersprungen}}",
-      "rationale": "States that records are skipped rather than deleted.",
-      "risk": "Open Data vs. offene Daten needs one product decision.",
+      "rationale": "States that records are skipped rather than deleted and uses the Open Data product-scope name as a compound modifier.",
+      "risk": "Open-Data-Datensatz and the standalone product label Open Data must remain consistent.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
       "id": "component.tidasPackage.import.summary",
       "candidate": "Gesamt: {total}, übersprungene Open-Data-Datensätze: {filtered}, Konflikte bei Benutzerdaten: {conflicts}, importiert: {imported}",
-      "rationale": "Preserves all four import counters and their distinct meanings.",
-      "risk": "Backend filtered must be confirmed to mean skipped.",
+      "rationale": "Preserves all four import counters; the backend filtered count is specifically the Open Data records excluded from insertion and therefore skipped.",
+      "risk": "Must not imply that filtered records were deleted or imported into the user's data space.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
@@ -195,16 +195,16 @@
     },
     {
       "id": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
-      "candidate": "Sprachkennzeichnung und lokalisierter Text stimmen nicht überein",
-      "rationale": "Identifies a mismatch between a data-language tag and localized data text.",
-      "risk": "Must not be understood as a UI-locale mismatch.",
+      "candidate": "Sprachkennzeichen passt nicht zum Textinhalt",
+      "rationale": "Names the mismatch between the TIDAS localized-text language tag and the actual text content in a compact validation-issue label.",
+      "risk": "Must not be understood as a mismatch between the application UI locale and the browser locale.",
       "reviewDomains": ["native-german", "tidas", "data-policy"]
     },
     {
       "id": "component.tidasPackage.import.validation.issue.schemaError",
       "candidate": "Daten entsprechen nicht dem Schema",
-      "rationale": "Explains a structural data failure in user-facing terms.",
-      "risk": "Schema is technical terminology and must not become Formular.",
+      "rationale": "Uses a natural complete label for imported data that does not conform to the expected TIDAS schema.",
+      "risk": "Must identify structural schema non-conformance and must not imply a form-layout or network error.",
       "reviewDomains": ["native-german", "tidas"]
     },
     {
@@ -223,30 +223,30 @@
     },
     {
       "id": "component.tidasPackage.taskCenter.detail.rootCount",
-      "candidate": "Ausgangsdatensätze",
-      "rationale": "Treats roots as user-selected starting records whose dependencies are expanded.",
-      "risk": "Ausgangsdatensatz, Startdatensatz, and Wurzeldatensatz require a product/domain decision.",
+      "candidate": "Startdatensätze",
+      "rationale": "Names user-selected starting data sets whose dependency closures are packaged.",
+      "risk": "Must remain distinct from process-analysis Startprozess and from output semantics.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
       "id": "component.tidasPackage.taskCenter.detail.rootRef",
-      "candidate": "Ausgangsdatensatz",
-      "rationale": "Uses singular for the one-root detail block.",
-      "risk": "Must share the chosen root-record term with the count labels.",
+      "candidate": "Startdatensatz",
+      "rationale": "Uses the selected singular term for one package dependency starting record.",
+      "risk": "Must share Startdatensatz with every TIDAS root-record count label.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
       "id": "component.tidasPackage.taskCenter.rootCountSummary",
-      "candidate": "{count, plural, one {# Ausgangsdatensatz} other {# Ausgangsdatensätze}}",
+      "candidate": "{count, plural, one {# Startdatensatz} other {# Startdatensätze}}",
       "rationale": "Preserves ICU number agreement for root records.",
-      "risk": "The root-record term is still blocked pending domain/product approval.",
+      "risk": "The selected Startdatensatz term remains subject to local Pilot confirmation.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
       "id": "component.tidasPackage.scope.currentUserAndOpenData",
       "candidate": "Eigene Daten + Open Data",
-      "rationale": "Provides a compact scope label.",
-      "risk": "Eigene may be inaccurate when an administrator acts for another user.",
+      "rationale": "Provides a compact scope label; current_user is always resolved from the authenticated caller rather than an impersonated target user.",
+      "risk": "If the product later adds administrator impersonation, this context must be reviewed again.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
@@ -258,7 +258,7 @@
     },
     {
       "id": "validator.CASNumber.pattern",
-      "candidate": "Geben Sie eine gültige CAS-Registriernummer ein: 2–7 Ziffern, Bindestrich, 2 Ziffern, Bindestrich und 1 Prüfziffer.",
+      "candidate": "Geben Sie eine gültige CAS-Nummer ein: 2–7 Ziffern, ein Bindestrich, 2 Ziffern, ein Bindestrich und 1 Prüfziffer.",
       "rationale": "Mirrors the validated identifier structure.",
       "risk": "Digit ranges and checksum wording must match implementation.",
       "reviewDomains": ["native-german", "chemistry", "product"]
@@ -293,9 +293,9 @@
     },
     {
       "id": "validator.mandatory.empty",
-      "candidate": "Pflichtfeld: Füllen Sie dieses Feld aus, damit der Datensatz vollständig und regelkonform ist.",
-      "rationale": "Distinguishes a mandatory field from recommended and optional fields.",
-      "risk": "Regelkonform must not replace formal Konformität if that is the actual rule.",
+      "candidate": "Pflichtfeld: Füllen Sie dieses Feld aus, um Vollständigkeit und Konformität des Datensatzes sicherzustellen.",
+      "rationale": "Distinguishes a mandatory field from recommended and optional fields and uses the approved Konformität concept.",
+      "risk": "Must keep automated Validierung, human Prüfung, and formal Konformität distinct.",
       "reviewDomains": ["native-german", "tidas", "product"]
     },
     {
@@ -384,9 +384,9 @@
     },
     {
       "id": "pages.process.lca.evidence.reason.unknown",
-      "candidate": "Der Berechnungsnachweis hat die Validierung nicht bestanden.",
-      "rationale": "Provides a localized generic conclusion without inventing a cause.",
-      "risk": "Must not imply a more specific failure.",
+      "candidate": "Der Berechnungsnachweis wurde nicht erfolgreich validiert.",
+      "rationale": "Uses the native-reviewed passive validation phrasing for a generic evidence failure without inventing a cause.",
+      "risk": "Must remain a generic fallback and must not imply a more specific failure reason.",
       "reviewDomains": ["native-german", "lca", "worker"]
     },
     {
@@ -440,9 +440,9 @@
     },
     {
       "id": "pages.process.lca.evidence.status.method_source_drift",
-      "candidate": "Methodenquelle stimmt nicht überein",
-      "rationale": "Explains drift as a source mismatch instead of using an English loanword.",
-      "risk": "Must match the actual comparison behavior.",
+      "candidate": "Abweichende Methodenquelle",
+      "rationale": "Uses the compact native-reviewed status-label variant because the value appears in an Alert tag and the adjacent reason explains the exact mismatch.",
+      "risk": "Must cover the fail-closed source-drift family without overclaiming one specific comparison failure.",
       "reviewDomains": ["native-german", "lca", "worker"]
     },
     {
@@ -510,9 +510,9 @@
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title",
-      "candidate": "Numerischer Faktorisierungstest fehlgeschlagen",
-      "rationale": "Uses Test instead of a mechanical translation of probe.",
-      "risk": "Probe terminology must be standardized across diagnostics.",
+      "candidate": "Numerischer Test fehlgeschlagen",
+      "rationale": "Keeps the diagnostic title concise while the adjacent description identifies the matrix-factorization test.",
+      "risk": "Must not lose the numerical-probe meaning or duplicate detail already present in the description.",
       "reviewDomains": ["native-german", "solver"]
     },
     {
@@ -538,16 +538,16 @@
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.description",
-      "candidate": "Für diese Einreichung zur Prüfung sind Daten erforderlich, die für die Wirkungsabschätzung bereit sind; es sind jedoch keine LCIA-Charakterisierungsfaktoren verfügbar.",
-      "rationale": "Explains the impact-ready requirement and missing data.",
-      "risk": "Long wording and impact-ready phrasing require native UX review.",
+      "candidate": "Für diese Einreichung zur Prüfung sind Impact-Ready-Daten erforderlich; es sind jedoch keine LCIA-Charakterisierungsfaktoren verfügbar.",
+      "rationale": "Preserves the product policy term Impact-Ready and states that its required LCIA factors are unavailable.",
+      "risk": "The product term must remain hyphenated and distinct from the LCIA phase name Wirkungsabschätzung.",
       "reviewDomains": ["native-german", "lca"]
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.action",
-      "candidate": "Fügen Sie die erforderlichen LCIA-Charakterisierungsfaktoren hinzu oder prüfen Sie, ob die Anforderung an die Wirkungsabschätzungsbereitschaft für diese Einreichung deaktiviert werden soll.",
+      "candidate": "Fügen Sie die erforderlichen LCIA-Charakterisierungsfaktoren hinzu oder prüfen Sie, ob die Impact-Ready-Anforderung für diese Einreichung deaktiviert werden soll.",
       "rationale": "Preserves both recovery options: add data or change the policy.",
-      "risk": "Wirkungsabschätzungsbereitschaft is a new compound and needs native/domain approval.",
+      "risk": "Must not invent the compound Wirkungsabschätzungsbereitschaft or omit the policy-disable option.",
       "reviewDomains": ["native-german", "lca", "product"]
     },
     {
@@ -580,9 +580,9 @@
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description",
-      "candidate": "Die erzeugte Matrix M = I − A hat einen Diagonaleintrag von null oder nahezu null. Dadurch kann die Lösung instabil sein oder fehlschlagen.",
-      "rationale": "Separates the matrix condition from the possible solver consequence.",
-      "risk": "Source may refer to one or more diagonal entries.",
+      "candidate": "Die erzeugte Matrix M = I − A hat auf der Diagonale Werte von null oder nahezu null. Dadurch kann die Lösung instabil sein oder fehlschlagen.",
+      "rationale": "Preserves the diagonal condition without incorrectly limiting it to exactly one entry, then states the possible solver consequence.",
+      "risk": "Must not invent a numeric near-zero threshold.",
       "reviewDomains": ["native-german", "solver"]
     },
     {
@@ -594,16 +594,16 @@
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.title",
-      "candidate": "Berechnungsergebnis des Zielprozesses ist nicht endlich",
-      "rationale": "Expresses the numerical non-finite condition.",
-      "risk": "Nicht endlich may be unfamiliar and needs UX review.",
+      "candidate": "Berechnung des Zielprozesses liefert kein endliches Ergebnis",
+      "rationale": "Uses natural technical German while preserving the non-finite solve-result condition for the target process.",
+      "risk": "The full-width diagnostic title must wrap without clipping and must remain paired with the NaN/Infinity explanation.",
       "reviewDomains": ["native-german", "solver"]
     },
     {
       "id": "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.description",
-      "candidate": "Der Test für den Zielprozess ist beim Lösen fehlgeschlagen oder hat NaN- beziehungsweise Unendlichkeitswerte erzeugt.",
+      "candidate": "Der Test für den Zielprozess ist während der Berechnung fehlgeschlagen oder hat NaN- bzw. Infinity-Werte erzeugt.",
       "rationale": "Preserves solve failure, NaN, and infinity outcomes.",
-      "risk": "NaN remains a technical token.",
+      "risk": "NaN and Infinity remain exact technical diagnostic tokens.",
       "reviewDomains": ["native-german", "solver"]
     },
     {
@@ -615,37 +615,37 @@
     },
     {
       "id": "pages.reviewDetail.assign_reviewers",
-      "candidate": "Prüfende zuweisen",
-      "rationale": "Provides a compact, neutral action label.",
-      "risk": "Prüfende, Gutachter, and Reviewer require one workflow-role decision.",
+      "candidate": "Prüfende wurden zugewiesen",
+      "rationale": "Uses a complete completed-event sentence because this message appears in the review log's action-details column rather than on an assignment control.",
+      "risk": "Must not be mistaken for the separate assignment button command. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
       "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.revoke_reviewer",
-      "candidate": "Zuweisung der prüfenden Person aufgehoben",
-      "rationale": "Treats the source as a completed audit event rather than a button command.",
-      "risk": "Must confirm singular vs. plural event semantics.",
+      "candidate": "Zuweisung der Prüfenden aufgehoben",
+      "rationale": "Treats the source as a completed review-log event without assuming that the assignment contained exactly one reviewer.",
+      "risk": "Must remain distinct from a revoke button and from the separate reviewer-rejected event.",
       "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.approved",
-      "candidate": "Prüfung genehmigen",
-      "rationale": "Uses action voice for approving a review.",
-      "risk": "The actual state transition may be better described as Datensatz freigeben.",
+      "candidate": "Prüfung freigegeben",
+      "rationale": "Describes the completed final-review event that releases associated data while remaining distinct from the separate approval control.",
+      "risk": "Must not imply that the review record itself is public or assume exactly one associated data set.",
       "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.rejected",
-      "candidate": "Prüfung ablehnen",
-      "rationale": "Forms a clear action pair with approval.",
-      "risk": "Ablehnen vs. Zurückweisen depends on the state machine.",
+      "candidate": "Prüfung abgelehnt",
+      "rationale": "Forms the completed review-log event pair with Prüfung freigegeben.",
+      "risk": "Must remain distinct from the separate rejection control.",
       "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {
       "id": "pages.reviewDetail.submit_comments",
-      "candidate": "Prüfkommentare einreichen",
-      "rationale": "Combines the English comments concept with the Chinese review-data context.",
-      "risk": "May be too narrow if the submission contains more than comments.",
+      "candidate": "Prüfkommentare eingereicht",
+      "rationale": "Uses completed-event voice for the review-log action while retaining the comments concept.",
+      "risk": "Must remain aligned with the actual logged review payload. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
       "reviewDomains": ["native-german", "review-domain", "review-product"]
     },
     {

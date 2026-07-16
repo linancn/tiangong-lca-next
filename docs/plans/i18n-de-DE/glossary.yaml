@@ -273,6 +273,17 @@ terms:
     risk: 'critical'
     decisionStatus: 'proposed'
 
+  - termId: 'lca.impact-ready'
+    sourceEnglish: 'impact-ready'
+    sourceChinese: ['impact-ready']
+    germanPreferred: 'Impact-Ready'
+    includeContexts: ['TianGong submit-review policy requiring the LCIA characterization factors needed for impact calculation']
+    excludeContexts: ['the general LCIA phase name Wirkungsabschätzung']
+    forbidden: ['Wirkungsabschätzungsbereitschaft']
+    evidenceRefs: ['product-context']
+    risk: 'critical'
+    decisionStatus: 'proposed'
+
   - termId: 'lca.impact-category'
     sourceEnglish: 'Impact category'
     sourceChinese: ['影响类别']
@@ -365,7 +376,7 @@ terms:
     sourceEnglish: 'Uncertainty distribution'
     sourceChinese: ['不确定性分布']
     germanPreferred: 'Unsicherheitsverteilung'
-    includeContexts: ['probability distribution representing value uncertainty']
+    includeContexts: ['probability distribution representing value uncertainty; standalone options use the noun labels Nicht definiert, Lognormalverteilung, Normalverteilung, Dreiecksverteilung, and Gleichverteilung']
     excludeContexts: ['generic confidence statement']
     forbidden: []
     evidenceRefs: ['openlca-german-messages']
@@ -435,7 +446,7 @@ terms:
     germanPreferred: 'Konformität'
     includeContexts: ['conformance to a declared ILCD/TIDAS system or requirement']
     excludeContexts: ['automated validation', 'human review']
-    forbidden: ['Regelkonformität when the formal ILCD term is intended']
+    forbidden: ['Regelkonformität or regelkonform when the formal ILCD/TIDAS term is intended']
     evidenceRefs: ['ilcd-process-format', 'oekobaudat-ilcd-fields']
     risk: 'critical'
     decisionStatus: 'proposed'
@@ -476,9 +487,9 @@ terms:
   - termId: 'data.open-data'
     sourceEnglish: 'Open data'
     sourceChinese: ['开放数据']
-    germanPreferred: 'offene Daten'
-    compactVariant: 'Open Data'
-    includeContexts: ['publicly reusable data scope']
+    germanPreferred: 'Open Data'
+    alternatives: ['offene Daten in generic descriptive prose']
+    includeContexts: ['TianGong product scope for publicly reusable data; use Open-Data- in German compound modifiers']
     excludeContexts: ['team public-display flag']
     forbidden: ['öffentlich when reusability rather than visibility is meant']
     evidenceRefs: ['product-context']
@@ -499,11 +510,11 @@ terms:
   - termId: 'tidas.root-record'
     sourceEnglish: 'Root record'
     sourceChinese: ['根记录']
-    germanPreferred: 'Ausgangsdatensatz'
-    alternatives: ['Startdatensatz', 'Wurzeleintrag']
+    germanPreferred: 'Startdatensatz'
+    alternatives: []
     includeContexts: ['user-selected starting record whose dependency closure is packaged']
     excludeContexts: ['tree root UI node', 'database root account']
-    forbidden: ['Wurzel blindly applied without product confirmation']
+    forbidden: ['Ausgangsdatensatz because Ausgang collides with output semantics', 'Wurzeldatensatz for the user-selected dependency starting record']
     evidenceRefs: ['tidas-local', 'product-context']
     risk: 'critical'
     decisionStatus: 'blocked-term'
@@ -512,11 +523,11 @@ terms:
     sourceEnglish: 'Result set'
     sourceChinese: ['结果集']
     germanPreferred: 'Ergebnisdatensatz'
-    alternatives: ['Ergebnismenge']
-    includeContexts: ['TIDAS product result collection only']
-    excludeContexts: ['database query results', 'LCIA results page']
-    forbidden: ['Ergebnissatz']
-    evidenceRefs: ['tidas-local', 'product-context']
+    alternatives: []
+    includeContexts: ['one named, versioned LCIA data-product package containing processes, impact categories, a manifest, and result artifacts']
+    excludeContexts: ['database query results', 'an unpersisted page-level result collection']
+    forbidden: ['Ergebnissatz', 'Ergebnismenge when one persisted data-product artifact is meant']
+    evidenceRefs: ['product-context']
     risk: 'critical'
     decisionStatus: 'blocked-term'
 

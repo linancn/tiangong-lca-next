@@ -7,14 +7,28 @@ This directory contains tracked candidate, context, terminology, and structural 
 ## Current gate state
 
 - Canonical messages: 2,665 (`2,658` leaf keys plus `7` activation-entry keys).
-- Staged German candidates: 7 activation-entry candidates; approved runtime candidates: 0.
+- Staged German candidates: all 2,665 canonical messages (`2,658` leaf candidates plus `7` activation-entry candidates); approved runtime candidates: 0.
 - Runtime-evidenced context: 2,037.
-- Reserved compatibility messages without current runtime evidence: 628; 9 currently have complete hash-pinned proposals awaiting Pilot confirmation, while the other 619 still lack a valid proposal and remain structural blockers that no confirmation can waive.
-- Pilot: 90 high-risk candidates; its 9 reserved-context proposals are structurally complete.
-- Blocked glossary choices in the pilot scope: 2.
-- The local pilot confirmation is pending. Bulk translation remains blocked and no leaf translation files exist.
+- Reserved compatibility messages without current runtime evidence: 628; every message now has a complete, current, hash-pinned proposal for the local full-catalog scope.
+- Pilot artifact: 90 high-risk candidates, 9 reserved-context proposals, and 2 blocked glossary choices. Its human response remains local and is intentionally not represented in tracked state.
+- Full-catalog candidate: all 30 leaf modules, all 2,665 producer records, and all context proposals are prepared for the deterministic local catalog gate.
+- No `src/locales/de-DE.ts` entry exists, so the candidate catalog remains unreachable from the runtime language selector and locale loader.
 
 These counts are generated evidence, not a completion claim.
+
+## Goal and execution contract
+
+The finished artifact is one inactive, region-neutral Standard German catalog. Every candidate must be decided from the canonical English and Chinese, concrete callsites or reviewed dynamic-family evidence, the product concept and user-visible consequence, neighboring messages and state transitions, LCA/TIDAS terminology, ICU structure, preserved technical tokens, and layout risk. A grammatically possible isolated-string translation is not sufficient.
+
+Execution proceeds in five checkpoints:
+
+1. apply the current Pilot feedback only after validating each request against the complete context above;
+2. regenerate the canonical Pilot material and obtain valid local human confirmation;
+3. translate the 2,658 leaf keys in four coherent owner batches while resolving every remaining context proposal;
+4. generate, complete, and apply the separate 2,665-message catalog confirmation;
+5. pass the scoped German gates and one final repository gate, then hand the still-inactive bundle to #602.
+
+A reviewed form without a valid local approval block is useful feedback but never satisfies the human checkpoint. Preserve it before regeneration, apply supported findings, and generate a fresh canonical form for the final human decision.
 
 ## Privacy and evidence boundary
 
@@ -110,6 +124,20 @@ The confirmation binds both:
 - the exact normalized body produced by the deterministic renderer, plus its visible-body digest, so deleting/replacing the English, Chinese, German, context, evidence, or risk material cannot be hidden by recomputing a digest. CRLF/LF line endings are normalized, while marked note regions remain writable.
 
 Any material source, context, candidate, dossier, terminology, ICU parser, or review-policy change invalidates the old form and requires regeneration.
+
+## Layered validation and evidence lifetime
+
+Validation has three independent evidence domains. Do not invalidate or rerun a broader domain merely because a narrower one changed.
+
+| Evidence domain | Controlled inputs | Proof during iteration | Invalidation |
+| --- | --- | --- | --- |
+| Pilot | its 90 candidates, 9 context proposals, 2 terms, source/context/policy/producer/dossier/risk inputs, and canonical renderer | local form check, Pilot report/enforcement, German workflow test only when the workflow implementation changes | regenerate and re-confirm only when one of these Pilot inputs changes |
+| Catalog or coherent leaf batch | the affected leaf modules, candidates, context/provenance, topology, and ICU data | candidate regeneration/report, batch topology/ICU proof, canonical i18n audit, and focused locale proof appropriate to the changed batch | rerun the affected batch proof; do not rerun the repository full gate per message |
+| Repository delivery checkpoint | exact committed `HEAD`, tracked tree, Node/dependency state, and lint/build/test/coverage/Docpact/gate configuration | the normal push hook runs Docpact and `npm run prepush:gate` once after the last controlled tracked change | a new controlled tracked change or relevant toolchain/dependency/configuration change requires one new final run |
+
+Ignored local confirmation content and GitHub metadata are not repository full-gate inputs. They invalidate only the applicable local Pilot or catalog evidence. During normal delivery, do not run `npm run prepush:gate` manually and then immediately run a push whose hook repeats it. Let the hook own the one final full-gate execution. Run the full gate manually only for a no-push evidence handoff.
+
+This workflow does not add a passed-gate receipt cache or bypass to the hook. If push transport fails, retry with a normal `git push`; the current hook may run again, and `--no-verify` or `HUSKY=0` must not be used to avoid it. A reusable fail-closed receipt would be separate gate-infrastructure work. The optimization guaranteed here is removal of the deliberate manual-full-gate-plus-hook duplication. Any Umi-generating focused test, coverage command, or full gate must finish before another starts because they share `.umi-test` state.
 
 ## Pilot and catalog separation
 

@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed context-ledger, ICU-branch, canonical-actor, local-confirmation, deterministic dossier, body-digest, and full-catalog review patterns for Issue #601.'
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Added scoped-first localization proof and final-checkpoint boundaries while preserving deterministic review and ICU patterns.'
 ---
 
 # Testing Patterns Reference
@@ -97,6 +97,8 @@ Special cases:
 7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
 8. test that the generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal; keep linguistic/domain judgment outside Jest and never write the completed form into a tracked fixture
 9. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, local confirmation, or translations
+10. validate each edit with the narrowest proof that covers its risk; accumulate coherent German leaf work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
+11. bind the repository full gate to the final committed controlled checkpoint and let the normal push hook own that one execution; ignored review content and GitHub metadata stay in their narrower evidence domains
 
 ## Focused Command Shapes
 
@@ -108,7 +110,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 
-- when reproducing both local test lanes, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- run Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
 
 ## Skip And TODO Policy
 

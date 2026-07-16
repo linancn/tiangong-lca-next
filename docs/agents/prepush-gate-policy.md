@@ -23,8 +23,8 @@ checkPaths:
   - scripts/docpact-gate.js
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the Issue #601 local-only confirmation and dossier test additions; they do not change the live pre-push trigger policy while human review is pending.'
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Clarified single-owner full-gate execution for Issue #601 without changing the live hook or adding a same-HEAD cache.'
 ---
 
 # Pre-Push Gate Policy
@@ -81,11 +81,14 @@ It does not own:
 ## Short Rule Summary
 
 - keep one authoritative full gate
+- for a normal delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; do not invoke the same gate manually immediately before that push
+- use manual full-gate execution only when a no-push handoff needs the evidence
+- do not add a same-HEAD receipt cache in Issue #601; a correct cache would be separate gate-infrastructure work and must fail closed across HEAD, tree, toolchain, dependencies, refs, and Docpact base
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - protect the actual local and release gates
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run
-- reproduce `npm run test:ci` and `npm run prepush:gate` serially on one workstation when both are needed
+- reproduce Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially on one workstation when they are needed; the full gate already contains coverage
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern
