@@ -6,6 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import {
+  ACTIVE_BASELINE_COMMIT,
   buildRuntimeActivationManifest,
   CANONICAL_MANIFEST,
   DELTA_CONFIRMATION,
@@ -15,7 +16,6 @@ import {
   extractReviewGateDescriptorEvidence,
   extractTrackedCopyInput,
   fileDigest,
-  FROZEN_BASELINE_COMMIT,
   FROZEN_CONTEXT_LEDGER,
   hashJson,
   messageContext,
@@ -206,7 +206,7 @@ export function buildDeltaReviewScope(root) {
     issue: 'https://github.com/linancn/tiangong-lca-next/issues/606',
     locale: 'de-DE',
     source: {
-      frozenBaselineCommit: FROZEN_BASELINE_COMMIT,
+      frozenBaselineCommit: ACTIVE_BASELINE_COMMIT,
       reviewContract: 'issue-606-exact-48-release-messages-with-related-context-v1',
       reviewRendererDigest: fileDigest(root, 'scripts/i18n/german-runtime-delta-review.mjs'),
     },

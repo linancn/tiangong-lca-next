@@ -244,17 +244,17 @@
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-activation.mjs",
-        "sha256": "991add6a2c755282a9c05ff4d37f4bd7e9babd5ce22a87cf6efa0586a62aa2c7"
+        "sha256": "3a12fc3012ac9e73d102b564eb43c98f3005c5c5e5f00111538e2a37b1ec3aaf"
       },
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-delta-review.mjs",
-        "sha256": "95cdcde68a67f31e2b70f0ad1a8f6c58c7a0dda7c5e82515fe97e0e4bd655983"
+        "sha256": "9416ae16d2021a75c715d8e946301f2be755f48d62edc840e5b55927c7d14dea"
       },
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-policy.mjs",
-        "sha256": "b933ec662a0c2efc216fa942559e336d988a89236be1ae70720ad3ac762a95cc"
+        "sha256": "3d0901a23bae02f383ea8ab67c2e5e42bdda081e1e3f33a09257350a3ae2f480"
       },
       {
         "kind": "file",
@@ -412,6 +412,6 @@
         "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
       }
     ],
-    "inputDigest": "233a797385b69669bc2aa9427ac069fa66726860a0c69f69117e44cdc36a94e4"
+    "inputDigest": "377dd07bce8ce8db8bc26546bc65a071df7b4f956d3d860ad588d549a7d78eb6"
   }
 }

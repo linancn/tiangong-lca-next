@@ -23,7 +23,8 @@ export const REVIEW_GATE_DESCRIPTOR_SYMBOLS = [
   'REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES',
 ];
 export const DELTA_CONFIRMATION = '.local/i18n-de-DE/issue-606-delta-review-confirmation.md';
-export const FROZEN_BASELINE_COMMIT = '36836f2c3461113b28af8c3c824045d0115c6cfc';
+export const FROZEN_BASELINE_COMMIT = '826f87a53032bfa9ab58baff2e4b8b7212671cdf';
+export const ACTIVE_BASELINE_COMMIT = '36836f2c3461113b28af8c3c824045d0115c6cfc';
 export const BASELINE_MESSAGE_COUNT = 2689;
 export const ACTIVE_LOCALES = ['en-US', 'zh-CN', 'de-DE'];
 
@@ -262,7 +263,7 @@ export function frozenInputDigests(root) {
   return Object.fromEntries(
     paths.map((relativeFile) => [
       relativeFile,
-      sha256(gitFileAt(root, FROZEN_BASELINE_COMMIT, relativeFile)),
+      sha256(gitFileAt(root, ACTIVE_BASELINE_COMMIT, relativeFile)),
     ]),
   );
 }
@@ -321,7 +322,7 @@ function currentInputRecords(root, canonicalManifest, externalCopies, descriptor
 
 export function buildRuntimeActivationManifest(root) {
   const canonicalManifest = readJson(root, CANONICAL_MANIFEST);
-  const baselineManifest = readJsonAtGitCommit(root, FROZEN_BASELINE_COMMIT, CANONICAL_MANIFEST);
+  const baselineManifest = readJsonAtGitCommit(root, ACTIVE_BASELINE_COMMIT, CANONICAL_MANIFEST);
   const externalCopies = EXTERNAL_TRACKED_COPY_INPUTS.map((definition) =>
     extractTrackedCopyInput(root, definition),
   );
@@ -350,7 +351,7 @@ export function buildRuntimeActivationManifest(root) {
     issue: 'https://github.com/linancn/tiangong-lca-next/issues/606',
     locale: 'de-DE',
     baseline: {
-      sourceCommit: FROZEN_BASELINE_COMMIT,
+      sourceCommit: ACTIVE_BASELINE_COMMIT,
       messageCount: BASELINE_MESSAGE_COUNT,
       leafMessageCount: 2682,
       activationEntryCount: 7,

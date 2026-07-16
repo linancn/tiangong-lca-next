@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { readDeltaConfirmation } from './german-runtime-delta-review.mjs';
 import {
   ACTIVATION_ENTRY_TRANSLATIONS,
+  ACTIVE_BASELINE_COMMIT,
   ACTIVE_LOCALES,
   BASELINE_MESSAGE_COUNT,
   buildRuntimeActivationManifest,
@@ -18,7 +19,6 @@ import {
   extractReviewGateDescriptorEvidence,
   fileDigest,
   FINAL_MESSAGE_COUNT,
-  FROZEN_BASELINE_COMMIT,
   FROZEN_CONTEXT_LEDGER,
   FROZEN_REVIEW_PROVENANCE,
   MODIFIED_BASELINE_MESSAGE_IDS,
@@ -137,23 +137,23 @@ function collectForbiddenRuntimeLiterals(root) {
 function verifyFrozenSnapshot(root, runtimeManifest, findings) {
   let resolvedCommit = null;
   try {
-    resolvedCommit = execFileSync('git', ['rev-parse', `${FROZEN_BASELINE_COMMIT}^{commit}`], {
+    resolvedCommit = execFileSync('git', ['rev-parse', `${ACTIVE_BASELINE_COMMIT}^{commit}`], {
       cwd: root,
       encoding: 'utf8',
     }).trim();
-    execFileSync('git', ['merge-base', '--is-ancestor', FROZEN_BASELINE_COMMIT, 'HEAD'], {
+    execFileSync('git', ['merge-base', '--is-ancestor', ACTIVE_BASELINE_COMMIT, 'HEAD'], {
       cwd: root,
       stdio: 'ignore',
     });
   } catch (error) {
     findings.baselineSnapshotMismatches.push({
-      sourceCommit: FROZEN_BASELINE_COMMIT,
-      reason: 'The immutable Issue #601 source commit must exist and be an ancestor of HEAD.',
+      sourceCommit: ACTIVE_BASELINE_COMMIT,
+      reason: 'The accepted active de-DE baseline commit must exist and be an ancestor of HEAD.',
     });
   }
-  if (resolvedCommit && resolvedCommit !== FROZEN_BASELINE_COMMIT) {
+  if (resolvedCommit && resolvedCommit !== ACTIVE_BASELINE_COMMIT) {
     findings.baselineSnapshotMismatches.push({
-      expected: FROZEN_BASELINE_COMMIT,
+      expected: ACTIVE_BASELINE_COMMIT,
       actual: resolvedCommit,
     });
   }
@@ -434,7 +434,7 @@ function buildFindings(options, generatedManifest) {
   const canonicalManifest = readJson(options.root, CANONICAL_MANIFEST);
   const baselineManifest = readJsonAtGitCommit(
     options.root,
-    FROZEN_BASELINE_COMMIT,
+    ACTIVE_BASELINE_COMMIT,
     CANONICAL_MANIFEST,
   );
   const entryArtifact = readJson(options.root, ACTIVATION_ENTRY_TRANSLATIONS);

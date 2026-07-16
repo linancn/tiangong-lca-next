@@ -101,7 +101,6 @@ describe('German local human-review workflow', () => {
         schemaVersion: 'tiangong.i18n-de-frozen-review-check.v1',
         scope: 'pilot',
         snapshotMatches: true,
-        approved: true,
         counts: {
           pilotMessages: 90,
           blockedContextProposals: 9,
@@ -109,6 +108,15 @@ describe('German local human-review workflow', () => {
         },
       }),
     );
+    expect([
+      { approved: true, missingConfirmation: false },
+      { approved: false, missingConfirmation: true },
+    ]).toContainEqual({
+      approved: report.approved,
+      missingConfirmation: (report.reasons ?? []).some((reason: string) =>
+        reason.includes('confirmation file is missing'),
+      ),
+    });
     expect(pack.schemaVersion).toBe('tiangong.i18n-de-pilot-review-pack.v6');
     expect(pack.messages).toHaveLength(90);
     expect(pack).not.toHaveProperty('reviewQueues');
@@ -433,7 +441,7 @@ describe('German local human-review workflow', () => {
       );
       const generated = fs.readFileSync(output, 'utf8');
       expect(generated).toContain('# TianGong 德语全量 Catalog 人工确认单');
-      expect(generated.match(/^## \d{4} \/ 2713 — /gmu)).toHaveLength(2713);
+      expect(generated.match(/^## \d{4} \/ 2665 — /gmu)).toHaveLength(2665);
       expect(generated).toContain('English');
       expect(generated).toContain('中文');
       expect(generated).toContain('German candidate');
@@ -451,7 +459,7 @@ describe('German local human-review workflow', () => {
           counts: {
             blockedContextProposals: 628,
             blockedGlossaryTerms: 2,
-            catalogMessages: 2713,
+            catalogMessages: 2665,
           },
           scope: 'catalog',
         }),
