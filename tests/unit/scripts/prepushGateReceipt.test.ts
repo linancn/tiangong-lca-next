@@ -333,6 +333,33 @@ describe('bounded checked-push transport receipt', () => {
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
+  it('treats raw and checked pushes with no ref updates as pre-checkpoint no-ops', () => {
+    const current = fixture();
+    git(current.root, ['push', '--no-verify', 'origin', 'refs/heads/main:refs/heads/main']);
+    fs.rmSync(path.join(current.root, 'node_modules/.package-lock.json'));
+
+    expect(rawPush(current).status).toBe(0);
+    expect(checkedPush(current).status).toBe(0);
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current)).toBe(current.head);
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
+  it('rejects a successful managed update when the hook returns no private payload', () => {
+    const current = fixture();
+    git(current.root, ['config', 'core.hooksPath', '.missing-hooks']);
+
+    const result = checkedPush(current);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(
+      'git push succeeded without a checked-push gate payload; no retry receipt exists',
+    );
+    expect(readGateLog(current)).toEqual([]);
+    expect(remoteSha(current)).toBe(current.head);
+    expect(fs.existsSync(current.receipt)).toBe(false);
+  });
+
   it('activates only after managed transport rejection and is consumed by success', () => {
     const current = fixture();
     activateFailedTransportReceipt(current);

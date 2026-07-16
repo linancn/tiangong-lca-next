@@ -15,6 +15,7 @@ const ZERO_SHA = '0'.repeat(40);
 const GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
 const ACTIVE_RECEIPT_KIND = 'tiangong-bounded-failed-transport-receipt';
 const PENDING_PAYLOAD_KIND = 'tiangong-prepush-gate-pending-payload';
+const NO_UPDATE_PAYLOAD_KIND = 'tiangong-prepush-no-update-payload';
 const SESSION_MANIFEST_KIND = 'tiangong-checked-push-session';
 const SESSION_DIRECTORY_ENV = 'TIANGONG_CHECKED_PUSH_SESSION_DIR';
 const SESSION_NONCE_ENV = 'TIANGONG_CHECKED_PUSH_SESSION_NONCE';
@@ -131,10 +132,6 @@ function parsePushUpdates(updatesFile) {
     .split(/\r?\n/u)
     .map((line) => line.trim())
     .filter(Boolean);
-
-  if (lines.length === 0) {
-    throw new IneligibleReceiptError('Git supplied no pre-push updates');
-  }
 
   return lines.map((line) => {
     const fields = line.split(/\s+/u);
@@ -396,6 +393,18 @@ function writePendingGatePayload(session, payload) {
   });
 }
 
+function writeNoUpdatePayload(session) {
+  const noUpdatePayload = {
+    schemaVersion: RECEIPT_SCHEMA_VERSION,
+    kind: NO_UPDATE_PAYLOAD_KIND,
+    sessionNonce: session.nonce,
+  };
+  writePrivateJson(path.join(session.directory, SESSION_PAYLOAD_FILE), {
+    ...noUpdatePayload,
+    payloadDigest: sha256(JSON.stringify(noUpdatePayload)),
+  });
+}
+
 function readPendingGatePayload(session) {
   const target = path.join(session.directory, SESSION_PAYLOAD_FILE);
   if (!fs.existsSync(target)) return null;
@@ -403,7 +412,7 @@ function readPendingGatePayload(session) {
   const { payloadDigest, ...payload } = pending;
   if (
     payload.schemaVersion !== RECEIPT_SCHEMA_VERSION ||
-    payload.kind !== PENDING_PAYLOAD_KIND ||
+    ![PENDING_PAYLOAD_KIND, NO_UPDATE_PAYLOAD_KIND].includes(payload.kind) ||
     payload.sessionNonce !== session.nonce ||
     payloadDigest !== sha256(JSON.stringify(payload))
   ) {
@@ -453,9 +462,15 @@ function runAuthoritativeGates({ root, head, mergeBase }) {
 }
 
 function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, updatesFile }) {
-  invalidateReceipt(root);
   const session = checkedPushSessionFromEnvironment();
   const updates = parsePushUpdates(updatesFile);
+  if (updates.length === 0) {
+    if (session) writeNoUpdatePayload(session);
+    process.stdout.write('No ref updates requested; skipped the checkpoint and gates.\n');
+    return null;
+  }
+
+  invalidateReceipt(root);
   const docpactBaseRef = selectDocpactBaseRef(root, updates, docpactBaseOverride);
   let before;
   try {
@@ -602,7 +617,7 @@ function checkedPush(root, pushArgs) {
     }
 
     const exitCode = typeof result.status === 'number' ? result.status : 1;
-    if (pending) {
+    if (pending?.kind === PENDING_PAYLOAD_KIND) {
       const target = activateFailedTransportReceipt(root, pending, exitCode);
       process.stderr.write(
         `Git transport failed after both gates passed. Bounded retry receipt activated at ${target}.\n`,

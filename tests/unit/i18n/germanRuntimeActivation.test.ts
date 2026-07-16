@@ -133,6 +133,8 @@ describe('German active-runtime evidence', () => {
       expect(source.match(/^## \d+ \/ /gmu)).toHaveLength(26);
       expect(source).toContain('## 26 / 26 — component.tidasPackage.import.apiGuide.summary');
       expect(source.match(/^## External \d+ \/ 2 — /gmu)).toHaveLength(2);
+      expect(source.match(/^````text\n[\s\S]*?\n````$/gmu)).toHaveLength(84);
+      expect(source.match(/^````tsx\n[\s\S]*?\n````$/gmu)).toHaveLength(6);
       expect(source.match(/family：reviewGateEvidenceLabels/gu)).toHaveLength(11);
       expect(source.match(/边界类型：closedWorld/gu)).toHaveLength(11);
       expect(source.match(/闭集成员（12）/gu)).toHaveLength(11);
