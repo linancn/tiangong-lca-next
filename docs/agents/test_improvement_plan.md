@@ -20,8 +20,8 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: b83279a68df1dcbb4a3dbf85b104787c4495f026
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Retained Issue #606 service/read-panel proof and added risk-proportional scoped-first proof plus one final-checkpoint full gate without reopening testing strategy.'
 ---
 

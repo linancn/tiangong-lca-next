@@ -27,7 +27,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: b83279a68df1dcbb4a3dbf85b104787c4495f026
+lastReviewedCommit: d178316406eb97ce93eb24f562922a61281e9d29
 lastReviewedNote: 'Reviewed Issue #606 Calculation Bundle and Release-read UI after merging the active German runtime; repo ownership, branch facts, and hard boundaries are unchanged.'
 related:
   - .docpact/config.yaml

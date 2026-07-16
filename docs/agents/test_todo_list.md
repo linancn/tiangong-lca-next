@@ -20,8 +20,8 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: b83279a68df1dcbb4a3dbf85b104787c4495f026
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
 lastReviewedNote: 'Retained the checked-in full-closure reference and recorded Issue #602 German runtime plus Issue #606 Calculation Bundle and release-read proof.'
 ---
 

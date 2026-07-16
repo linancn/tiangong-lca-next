@@ -27,8 +27,8 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: b83279a68df1dcbb4a3dbf85b104787c4495f026
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
 lastReviewedNote: 'Added the persisted Calculation Bundle and canonical release readback contract for Issue #606 without changing the reviewed static LCIA method bundle.'
 ---
 
