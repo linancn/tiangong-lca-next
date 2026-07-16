@@ -1,18 +1,17 @@
 {
-  "schemaVersion": "tiangong.i18n-german-context-annotations.v1",
+  "schemaVersion": "tiangong.i18n-german-context-annotations.v2",
   "locale": "de-DE",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
   "policy": {
     "default": "Every canonical key without a production callsite or reviewed dynamic family is BLOCKED_CONTEXT.",
-    "readyRule": "A reserved key becomes READY only after a named reviewer records its concept, UI role, user-visible consequence, rationale, concrete evidence, review role, and the current sourceContextHash. English and Chinese text alone are not sufficient evidence.",
-    "reviewerIdentity": "reviewedBy must exactly match the assigned human product-context or domain reviewer in review-log.yaml; an AI translator or generated heuristic is not approval.",
-    "hashRule": "sourceContextHash pins the canonical English, Chinese, runtime/dynamic evidence, and review-policy digest. Any source or policy change invalidates the annotation before translation review."
+    "proposalRule": "A reserved key proposal records its concept, UI role, user-visible consequence, rationale, concrete evidence, and current sourceContextHash. English and Chinese text alone are not sufficient evidence.",
+    "approvalRule": "Proposals remain BLOCKED_CONTEXT until the exact current pilot or full-catalog scope is approved in an ignored local Markdown confirmation. Reviewer identity, date, and decision are never written here.",
+    "hashRule": "sourceContextHash pins the canonical English, Chinese, runtime/dynamic evidence, and review-policy digest. Any source or policy change invalidates the proposal before local confirmation."
   },
   "messages": [
     {
       "messageId": "pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference",
-      "sourceContextHash": "7f23efbabe3879bfed5940a250c2aa168babff4a590af4ce37a91bb405b305cc",
-      "reviewRole": null,
+      "sourceContextHash": "b8f8db96fc9220b961bc3e951444dbf66c6cb433a3c7a5e38239bbcab8968c45",
       "status": "BLOCKED_CONTEXT",
       "concept": "Heading or field label for the quantitative-reference section of a flow-property data set.",
       "uiRole": "field-label-or-heading",
@@ -24,14 +23,11 @@
           "rationale": "Both source locales place the key in the flow-property information namespace."
         }
       ],
-      "rationale": "Prepared for pilot review; no current production callsite proves the exact control or heading role.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "Prepared for pilot review; no current production callsite proves the exact control or heading role."
     },
     {
       "messageId": "component.tidasPackage.import.conflict.records",
-      "sourceContextHash": "3f69015657aa6be139b44508ad9bbc271636d59bd96d6b59e1330339f5ec2ac9",
-      "reviewRole": null,
+      "sourceContextHash": "cb07c5cbfd2dd16dd3ee0a0703413ea4bca19e2c9b1b132f59714f6b48a805be",
       "status": "BLOCKED_CONTEXT",
       "concept": "Plural count of user-owned records that conflict with records already present during TIDAS import.",
       "uiRole": "summary-count",
@@ -43,14 +39,11 @@
           "rationale": "The active import surface exposes the same backend count and explains that existing user data conflicts with incoming records."
         }
       ],
-      "rationale": "The retained key appears to be compatibility copy for an older count presentation; product review must confirm whether it may return.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "The retained key appears to be compatibility copy for an older count presentation; product review must confirm whether it may return."
     },
     {
       "messageId": "component.tidasPackage.import.filtered.records",
-      "sourceContextHash": "9d4d562ef2ff3801df4915d720ca9a4b79ef56d774dce9fa6fb5df9241c8e3ab",
-      "reviewRole": null,
+      "sourceContextHash": "c075360aae42727d0c989e3c84f84849dda22b26a5f1c19c05520990cdf5b221",
       "status": "BLOCKED_CONTEXT",
       "concept": "Plural count of open-data records skipped automatically during TIDAS import.",
       "uiRole": "summary-count",
@@ -62,14 +55,11 @@
           "rationale": "The active surface states that these records are recognized as open data and skipped without being imported."
         }
       ],
-      "rationale": "The retained key appears to be compatibility copy for an older plural count; product review must confirm the UI role.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "The retained key appears to be compatibility copy for an older plural count; product review must confirm the UI role."
     },
     {
       "messageId": "component.tidasPackage.import.validation.issue.classificationHierarchyError",
-      "sourceContextHash": "edb589a8b54efd4a985c2d47b858d59e01a2db9d4122e44288d31dc14e5b187f",
-      "reviewRole": null,
+      "sourceContextHash": "32202399a04e07154e5c86d3917ce5d47207679926b41b3e8768a6018a6a7ef6",
       "status": "BLOCKED_CONTEXT",
       "concept": "Validation issue type for an invalid classification hierarchy in an imported TIDAS package.",
       "uiRole": "validation-issue-label",
@@ -81,14 +71,11 @@
           "rationale": "The source pair names the issue class and the active report model confirms that validation issue types are displayed from import results."
         }
       ],
-      "rationale": "No literal production reference currently selects this retained issue label; backend mapping must be confirmed.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "No literal production reference currently selects this retained issue label; backend mapping must be confirmed."
     },
     {
       "messageId": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
-      "sourceContextHash": "b613ef75656cc6f5d9f60b95ca73f53222e425bfb9f4dedfd9cfd70202cad1d2",
-      "reviewRole": null,
+      "sourceContextHash": "0d9fe5b5a6ce37e3a26bffe724790cd25b0c2699b159948eb55643f14fd8b17e",
       "status": "BLOCKED_CONTEXT",
       "concept": "Validation issue type for disagreement between a localized data text and its declared content-language tag.",
       "uiRole": "validation-issue-label",
@@ -100,14 +87,11 @@
           "rationale": "The English and Chinese pair both identify localized data text and its language marker."
         }
       ],
-      "rationale": "No current production callsite proves the backend issue-code mapping, so product/TIDAS review remains required.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "No current production callsite proves the backend issue-code mapping, so product/TIDAS review remains required."
     },
     {
       "messageId": "component.tidasPackage.import.validation.issue.schemaError",
-      "sourceContextHash": "8ffaaf908f4277be3ffefb6c440781a21deb1e829cc1724e52b4ebaca116da31",
-      "reviewRole": null,
+      "sourceContextHash": "0c366e2a92f501f1e9d37a9b5d6264c24731d045e851999e2ad61f8422504098",
       "status": "BLOCKED_CONTEXT",
       "concept": "Validation issue type for imported data that does not conform to the expected TIDAS schema.",
       "uiRole": "validation-issue-label",
@@ -119,14 +103,11 @@
           "rationale": "The source pair defines schema mismatch and the active import report displays validation issue categories."
         }
       ],
-      "rationale": "No literal production reference currently maps this compatibility key to a report code.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "No literal production reference currently maps this compatibility key to a report code."
     },
     {
       "messageId": "component.tidasPackage.taskCenter.rootCountSummary",
-      "sourceContextHash": "aead3c3f4d7b648e435138f24673790f56d2c9272bf8e4a30d6423bcda27d521",
-      "reviewRole": null,
+      "sourceContextHash": "678d91a059483ee70e4face4bf53c9b362d6ee1cbe3e4b77532386f15764c88f",
       "status": "BLOCKED_CONTEXT",
       "concept": "Plural summary of root records selected as starting points for a TIDAS package task.",
       "uiRole": "summary-count",
@@ -138,14 +119,11 @@
           "rationale": "The active detail row confirms that rootCount belongs to a package task, while the retained plural summary is not currently rendered."
         }
       ],
-      "rationale": "The product term for root record remains BLOCKED_TERM and the exact summary placement is not active.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "The product term for root record remains BLOCKED_TERM and the exact summary placement is not active."
     },
     {
       "messageId": "pages.flow.validator.flowProperties.quantitativeReference.required",
-      "sourceContextHash": "f95cd703cf0c0a66a05262e2d42c0bf3503ada2e3499120861c6130131c5142c",
-      "reviewRole": null,
+      "sourceContextHash": "e0e3ae2fa6ca1a85f321a197857e4eb963804784e2fe694970896424b659f2ad",
       "status": "BLOCKED_CONTEXT",
       "concept": "Validation rule requiring exactly one flow property to be designated as the quantitative reference.",
       "uiRole": "validation-feedback",
@@ -157,14 +135,11 @@
           "rationale": "The historical descriptor supports the intended create-flow validation role but is not current runtime evidence."
         }
       ],
-      "rationale": "Current validation behavior and the reason for retaining this inactive key require product/LCA confirmation.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "Current validation behavior and the reason for retaining this inactive key require product/LCA confirmation."
     },
     {
       "messageId": "pages.unitgroups.validator.unit.quantitativeReference.required",
-      "sourceContextHash": "b77cee239b51be70e4105ab9bb3704150dff361caf69f04899b67a3ea35245e4",
-      "reviewRole": null,
+      "sourceContextHash": "d8ed04175bc131b325d81c29ff4cbf5c76c8cb789504f28c0f003d2a26fe74b6",
       "status": "BLOCKED_CONTEXT",
       "concept": "Validation rule requiring exactly one unit in a unit group to be designated as the quantitative reference.",
       "uiRole": "validation-feedback",
@@ -176,9 +151,7 @@
           "rationale": "The source pair and neighboring unit-group validation copy establish the intended object and constraint family."
         }
       ],
-      "rationale": "No current production callsite proves that this compatibility validation message remains reachable.",
-      "reviewedBy": null,
-      "reviewedAt": null
+      "rationale": "No current production callsite proves that this compatibility validation message remains reachable."
     }
   ]
 }

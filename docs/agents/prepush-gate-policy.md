@@ -24,7 +24,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the Issue #601 onboarding and dossier test additions; they do not change the live pre-push trigger policy while human review is intentionally pending.'
+lastReviewedNote: 'Reviewed the Issue #601 local-only confirmation and dossier test additions; they do not change the live pre-push trigger policy while human review is pending.'
 ---
 
 # Pre-Push Gate Policy
@@ -76,7 +76,7 @@ It does not own:
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
-- review-only localization commands may remain explicit scoped gates until their human evidence is complete; adding such commands does not silently add them to `npm run prepush:gate`
+- review-only localization commands may remain explicit scoped local gates until human evidence is complete; ignored confirmation files are intentionally unavailable to clean-checkout CI and are never added to `npm run prepush:gate`
 
 ## Short Rule Summary
 

@@ -23,7 +23,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed context-ledger, ICU-branch, canonical-actor, GitHub-attestation, deterministic dossier, four-hash queue, and full-catalog review patterns for Issue #601.'
+lastReviewedNote: 'Reviewed context-ledger, ICU-branch, canonical-actor, local-confirmation, deterministic dossier, body-digest, and full-catalog review patterns for Issue #601.'
 ---
 
 # Testing Patterns Reference
@@ -93,10 +93,10 @@ Special cases:
 3. audit production literal message IDs and enumerate the exact members of each computed-ID family
 4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
 5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
-6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a named reviewer, concrete evidence, UI role, concept, and user consequence before translation
-7. approve a high-risk pilot before bulk translation, represent producers as canonical actors, key GitHub humans by API-verified immutable numeric user ID, and pin context, candidate, deterministic reviewer dossier, producer, all verifier-policy sources, and pilot review scope so any material change invalidates stale evidence
-8. test that every dossier and blank role queue is structurally complete and four-hash aligned, while keeping linguistic/domain judgment outside Jest; generated dossiers and queues are review material, never approval
-9. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, or reviewers
+6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a complete non-personal proposal with concrete evidence, UI role, concept, consequence, and current source hash before local confirmation
+7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
+8. test that the generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal; keep linguistic/domain judgment outside Jest and never write the completed form into a tracked fixture
+9. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, local confirmation, or translations
 
 ## Focused Command Shapes
 

@@ -7,22 +7,24 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { validateContextAnnotation } from './german-context-proposal.mjs';
 import {
-  normalizeGithubLogin,
-  normalizeGithubUserId,
-  normalizeProducerActor,
-  producerActorKey,
-  verifyGithubHumanReviewEvidence,
-} from './github-review-attestation.mjs';
+  DEFAULT_CATALOG_CONFIRMATION,
+  DEFAULT_PILOT_CONFIRMATION,
+  readCatalogOfflineConfirmation,
+} from './german-offline-review.mjs';
+import { normalizeProducerActor, producerActorKey } from './review-producer.mjs';
+
+export { validateContextAnnotation } from './german-context-proposal.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 const ts = require('typescript');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
-const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v5';
-const LEDGER_SCHEMA_VERSION = 'tiangong.i18n-german-context-ledger.v4';
-const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-log.v4';
+const SCHEMA_VERSION = 'tiangong.i18n-german-candidate-audit.v6';
+const LEDGER_SCHEMA_VERSION = 'tiangong.i18n-german-context-ledger.v5';
+const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-provenance.v5';
 const GLOSSARY_SCHEMA_VERSION = 'tiangong.i18n-de-glossary.v1';
 const GLOSSARY_RISK_LEVELS = new Set(['critical', 'high']);
 const GLOSSARY_DECISION_STATUSES = new Set(['proposed', 'blocked-term']);
@@ -43,7 +45,9 @@ const REVIEW_GATE_POLICY_SOURCES = [
   CANONICAL_AUDIT,
   'scripts/i18n/audit-german-candidate.mjs',
   PILOT_AUDIT,
-  'scripts/i18n/github-review-attestation.mjs',
+  'scripts/i18n/german-offline-review.mjs',
+  'scripts/i18n/german-context-proposal.mjs',
+  'scripts/i18n/review-producer.mjs',
   'scripts/i18n/icu-message-parser.cjs',
 ];
 const CANDIDATE_LOCALE = 'de-DE';
@@ -71,7 +75,9 @@ Options:
   --allowlist <path>            reviewed source-copy allowlist relative to root
   --context-annotations <path>  human-reviewed context decisions for non-runtime keys
   --dynamic-families <path>     reviewed computed-message registry relative to root
-  --review-log <path>           named, hash-pinned human review evidence
+  --review-log <path>           tracked non-personal candidate provenance
+  --pilot-confirmation <path>   local untracked pilot confirmation
+  --catalog-confirmation <path> local untracked full-catalog confirmation
   --help                        show this help
 `;
 }
@@ -89,6 +95,10 @@ function parseArgs(argv) {
     contextAnnotations: DEFAULT_CONTEXT_ANNOTATIONS,
     dynamicFamilies: DEFAULT_DYNAMIC_FAMILIES,
     reviewLog: DEFAULT_REVIEW_LOG,
+    pilotConfirmation:
+      process.env.TIANGONG_I18N_DE_PILOT_CONFIRMATION ?? DEFAULT_PILOT_CONFIRMATION,
+    catalogConfirmation:
+      process.env.TIANGONG_I18N_DE_CATALOG_CONFIRMATION ?? DEFAULT_CATALOG_CONFIRMATION,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -110,6 +120,8 @@ function parseArgs(argv) {
         '--context-annotations',
         '--dynamic-families',
         '--review-log',
+        '--pilot-confirmation',
+        '--catalog-confirmation',
       ].includes(argument)
     ) {
       const value = argv[index + 1];
@@ -125,6 +137,8 @@ function parseArgs(argv) {
         '--context-annotations': 'contextAnnotations',
         '--dynamic-families': 'dynamicFamilies',
         '--review-log': 'reviewLog',
+        '--pilot-confirmation': 'pilotConfirmation',
+        '--catalog-confirmation': 'catalogConfirmation',
       }[argument];
       options[key] = value;
     } else if (argument !== '--write') {
@@ -473,72 +487,6 @@ function domainReviewDecision(message, glossaryPolicy) {
   return { required: reasons.length > 0, reasons: [...new Set(reasons)].sort() };
 }
 
-function validateContextAnnotation(
-  message,
-  annotation,
-  expectedSourceContextHash,
-  assignedReviewers,
-) {
-  if (!annotation) return ['No reviewed context annotation exists.'];
-  const errors = [];
-  if (annotation.status !== 'READY') errors.push('status must be READY');
-  if (typeof annotation.concept !== 'string' || annotation.concept.trim().length === 0) {
-    errors.push('concept is required');
-  }
-  if (typeof annotation.uiRole !== 'string' || annotation.uiRole.trim().length === 0) {
-    errors.push('uiRole is required');
-  }
-  if (typeof annotation.consequence !== 'string' || annotation.consequence.trim().length === 0) {
-    errors.push('consequence is required');
-  }
-  if (!Array.isArray(annotation.evidence) || annotation.evidence.length === 0) {
-    errors.push('at least one evidence record is required');
-  } else {
-    annotation.evidence.forEach((evidence, index) => {
-      if (!evidence || typeof evidence !== 'object') {
-        errors.push(`evidence[${index}] must be an object`);
-        return;
-      }
-      if (typeof evidence.kind !== 'string' || evidence.kind.trim().length === 0) {
-        errors.push(`evidence[${index}].kind is required`);
-      }
-      if (typeof evidence.reference !== 'string' || evidence.reference.trim().length === 0) {
-        errors.push(`evidence[${index}].reference is required`);
-      }
-      if (typeof evidence.rationale !== 'string' || evidence.rationale.trim().length === 0) {
-        errors.push(`evidence[${index}].rationale is required`);
-      }
-    });
-  }
-  if (typeof annotation.reviewedBy !== 'string' || annotation.reviewedBy.trim().length === 0) {
-    errors.push('reviewedBy is required');
-  }
-  if (
-    typeof annotation.reviewedAt !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(annotation.reviewedAt)
-  ) {
-    errors.push('reviewedAt must be an ISO date (YYYY-MM-DD)');
-  }
-  if (typeof annotation.rationale !== 'string' || annotation.rationale.trim().length === 0) {
-    errors.push('rationale is required');
-  }
-  if (annotation.messageId !== message.id) {
-    errors.push(`messageId must equal ${message.id}`);
-  }
-  if (annotation.sourceContextHash !== expectedSourceContextHash) {
-    errors.push('sourceContextHash must match the current canonical source evidence');
-  }
-  if (!['product-context', 'domain'].includes(annotation.reviewRole)) {
-    errors.push('reviewRole must be product-context or domain');
-  } else if (
-    normalizeGithubLogin(annotation.reviewedBy) !==
-    assignedReviewers.get(annotation.reviewRole)?.login
-  ) {
-    errors.push(`reviewedBy must match the assigned ${annotation.reviewRole} reviewer identity`);
-  }
-  return errors;
-}
-
 function buildInputDigest(root, paths) {
   const hash = createHash('sha256');
   [...new Set(paths)].sort().forEach((relativeFile) => {
@@ -634,68 +582,6 @@ function translationHashForMessage(messageId, module, german, contextHash) {
   return hashJson({ id: messageId, module, german, contextHash });
 }
 
-function assignedReviewersFromLog(reviewLog, findings) {
-  const roleConfigNames = new Map([
-    ['product-context', 'productContextReviewer'],
-    ['native-german', 'nativeGermanReviewer'],
-    ['domain', 'lcaTidasDomainReviewer'],
-  ]);
-  const assigned = new Map();
-  roleConfigNames.forEach((configName, role) => {
-    const config = reviewLog.roles?.[configName];
-    const githubLogin = normalizeGithubLogin(config?.githubLogin);
-    const githubUserId = normalizeGithubUserId(config?.githubUserId);
-    const assignedByGithubUserId = normalizeGithubUserId(config?.assignedByGithubUserId);
-    if (
-      config?.status === 'assigned' &&
-      config?.identityType === 'github-human' &&
-      githubLogin !== '' &&
-      githubUserId !== '' &&
-      normalizeGithubLogin(config?.identity) === githubLogin &&
-      normalizeGithubLogin(config?.assignedBy) !== '' &&
-      assignedByGithubUserId !== '' &&
-      normalizeGithubLogin(config?.assignedBy) !== githubLogin &&
-      assignedByGithubUserId !== githubUserId &&
-      typeof config?.qualificationEvidence === 'string' &&
-      config.qualificationEvidence.trim() !== '' &&
-      typeof config?.assignmentAttestationUrl === 'string' &&
-      config.assignmentAttestationUrl.trim() !== ''
-    ) {
-      assigned.set(role, { login: githubLogin, userId: githubUserId });
-      return;
-    }
-    findings.unassignedReviewRoles.push({ role, configName });
-  });
-  return assigned;
-}
-
-function validReviewFindings(review, findingTarget, recordIndex, source) {
-  if (!Array.isArray(review.findings)) {
-    findingTarget.push({ source, index: recordIndex, reason: 'findings must be an array' });
-    return [];
-  }
-  const valid = [];
-  review.findings.forEach((finding, findingIndex) => {
-    if (
-      !finding ||
-      !['Critical', 'Major', 'Minor'].includes(finding.severity) ||
-      !['OPEN', 'RESOLVED'].includes(finding.status) ||
-      typeof finding.summary !== 'string' ||
-      finding.summary.trim() === ''
-    ) {
-      findingTarget.push({
-        source,
-        index: recordIndex,
-        findingIndex,
-        reason: 'Each finding needs severity, OPEN/RESOLVED status, and a non-empty summary.',
-      });
-      return;
-    }
-    valid.push(finding);
-  });
-  return valid;
-}
-
 function dynamicContextForMessage(message, dynamicRegistry) {
   return message.dynamicFamilies.map((family) => ({
     family,
@@ -736,7 +622,7 @@ async function buildAudit(options) {
     reviewLog.locale !== CANDIDATE_LOCALE
   ) {
     throw new Error(
-      `German review log must use ${REVIEW_LOG_SCHEMA_VERSION} and locale ${CANDIDATE_LOCALE}.`,
+      `German review provenance must use ${REVIEW_LOG_SCHEMA_VERSION} and locale ${CANDIDATE_LOCALE}.`,
     );
   }
   const glossaryPolicy = parseGlossaryPolicy(options.root);
@@ -766,6 +652,7 @@ async function buildAudit(options) {
     chineseCharacters: [],
     unapprovedEnglishCopies: [],
     blockedContexts: [],
+    invalidContextProposals: [],
     duplicateContextAnnotations: [],
     unexpectedContextAnnotations: [],
     missingGovernanceArtifacts: [],
@@ -774,22 +661,13 @@ async function buildAudit(options) {
     mappedTokenViolations: [],
     translationBatchMismatches: [],
     blockedGlossaryTerms: [],
-    unassignedReviewRoles: [],
     invalidTranslationProducers: [],
     duplicateTranslationProducers: [],
     missingTranslationProducers: [],
     staleTranslationProducers: [],
-    invalidTranslationReviews: [],
-    duplicateTranslationReviews: [],
-    staleTranslationReviews: [],
-    reviewerIndependenceViolations: [],
-    missingNativeGermanReviews: [],
-    missingDomainReviews: [],
-    unresolvedCriticalOrMajor: [],
-    invalidTranslationReviewState: [],
+    catalogOfflineReviewConfirmation: [],
     staleCanonicalManifest: [],
     pilotGateFailures: [],
-    externalHumanReviewEvidence: [],
   };
 
   const canonicalAudit = spawnSync(
@@ -833,6 +711,8 @@ async function buildAudit(options) {
         options.ledger,
         '--review-log',
         options.reviewLog,
+        '--confirmation',
+        options.pilotConfirmation,
       ],
       { cwd: options.root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
     );
@@ -845,8 +725,8 @@ async function buildAudit(options) {
     }
   }
 
-  glossaryPolicy.blockedTerms.forEach(({ termId, sourceEnglish }) => {
-    findings.blockedGlossaryTerms.push({ termId, sourceEnglish });
+  glossaryPolicy.blockedTerms.forEach((term) => {
+    findings.blockedGlossaryTerms.push(structuredClone(term));
   });
   [
     [options.entryTranslations, entryArtifact],
@@ -863,17 +743,6 @@ async function buildAudit(options) {
       });
     }
   });
-  const assignedReviewers = assignedReviewersFromLog(reviewLog, findings);
-  if (
-    reviewLog.status !== 'translation-approved' ||
-    reviewLog.translations?.status !== 'approved-for-activation'
-  ) {
-    findings.invalidTranslationReviewState.push({
-      status: reviewLog.status ?? null,
-      translationsStatus: reviewLog.translations?.status ?? null,
-      requiredStatus: 'translation-approved / approved-for-activation',
-    });
-  }
   if (entryArtifact.status !== 'reviewed-ready-for-activation') {
     findings.invalidEntryArtifactState.push({
       status: entryArtifact.status ?? null,
@@ -1097,12 +966,7 @@ async function buildAudit(options) {
           typeof entry.messageId === 'string' &&
           typeof entry.reason === 'string' &&
           entry.reason.trim() !== '' &&
-          typeof entry.reviewedBy === 'string' &&
-          entry.reviewedBy.trim() !== '' &&
-          [...assignedReviewers.values()].some(
-            ({ login }) => login === normalizeGithubLogin(entry.reviewedBy),
-          ) &&
-          /^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt ?? ''),
+          entry.decision === 'preserve-exact-english',
       )
       .map(({ messageId }) => messageId),
   );
@@ -1118,7 +982,7 @@ async function buildAudit(options) {
       findings.invalidSourceAllowlist.push({
         entry,
         reason:
-          'Exact-English exceptions require messageId, reason, an assigned human reviewedBy identity, and reviewedAt (YYYY-MM-DD).',
+          'Exact-English exceptions require messageId, reason, and decision=preserve-exact-english; the local catalog confirmation approves the current scope.',
       });
     }
   });
@@ -1223,49 +1087,35 @@ async function buildAudit(options) {
     }
 
     const annotation = contextAnnotationsById.get(message.id);
-    const errors = validateContextAnnotation(
-      message,
-      annotation,
-      sourceContextHash,
-      assignedReviewers,
-    );
-    if (errors.length > 0) {
-      findings.blockedContexts.push({ messageId: message.id, errors });
-      contextById.set(message.id, {
-        status: 'BLOCKED_CONTEXT',
-        source: 'reserved-key-without-runtime-evidence',
-        concept: annotation?.concept ?? null,
-        uiRole: annotation?.uiRole ?? inferredUiRole,
-        uiRoleSource: annotation?.uiRole ? 'reviewed-annotation' : 'unreviewed heuristic',
-        consequence: annotation?.consequence ?? consequenceForRole(inferredUiRole),
-        productionReferences: [],
-        defaultMessages: message.defaultMessages,
-        dynamicFamilies: [],
-        reviewedAnnotation: annotation ?? null,
-        reviewPolicy: {
-          domainReviewRequired: domainReview.required,
-          domainReasons: domainReview.reasons,
-        },
+    const proposalErrors = validateContextAnnotation(message, annotation, sourceContextHash);
+    if (proposalErrors.length > 0) {
+      findings.invalidContextProposals.push({
+        messageId: message.id,
+        errors: proposalErrors,
       });
-      return;
+    } else {
+      findings.blockedContexts.push({
+        messageId: message.id,
+        errors: ['The complete reserved-context proposal awaits local full-catalog confirmation.'],
+      });
     }
-
     contextById.set(message.id, {
-      status: 'REVIEWED_RESERVED_CONTEXT',
-      source: 'human-reviewed-context-annotation',
-      concept: annotation.concept,
-      uiRole: annotation.uiRole,
-      uiRoleSource: 'reviewed-annotation',
-      consequence: annotation.consequence,
+      status: 'BLOCKED_CONTEXT',
+      source: 'reserved-key-without-runtime-evidence',
+      concept: annotation?.concept ?? null,
+      uiRole: annotation?.uiRole ?? inferredUiRole,
+      uiRoleSource: annotation?.uiRole ? 'context-proposal' : 'unreviewed heuristic',
+      consequence: annotation?.consequence ?? consequenceForRole(inferredUiRole),
       productionReferences: [],
       defaultMessages: message.defaultMessages,
       dynamicFamilies: [],
-      reviewedAnnotation: annotation,
+      reviewedAnnotation: annotation ?? null,
       reviewPolicy: {
         domainReviewRequired: domainReview.required,
         domainReasons: domainReview.reasons,
       },
     });
+    return;
   });
 
   const contextHashesById = new Map(
@@ -1432,204 +1282,63 @@ async function buildAudit(options) {
       });
     });
 
-  expectedReviewById.forEach((expected, messageId) => {
-    if (!expected.producer) return;
-    const annotationReviewer = contextById.get(messageId)?.reviewedAnnotation?.reviewedBy;
-    const annotationReviewRole = contextById.get(messageId)?.reviewedAnnotation?.reviewRole;
-    const annotationReviewerUserId = assignedReviewers.get(annotationReviewRole)?.userId;
-    if (
-      annotationReviewer &&
-      annotationReviewerUserId &&
-      `github-human:${annotationReviewerUserId}` === expected.producerKey
-    ) {
-      findings.reviewerIndependenceViolations.push({
-        messageId,
-        role: 'reserved-context',
-        reviewer: annotationReviewer,
-      });
-    }
-    const sourceCopyReviewer = exactEnglishEntries.find(
-      (entry) => entry.messageId === messageId,
-    )?.reviewedBy;
-    const sourceCopyReviewerUserId = [...assignedReviewers.values()].find(
-      ({ login }) => login === normalizeGithubLogin(sourceCopyReviewer),
-    )?.userId;
-    if (
-      sourceCopyReviewer &&
-      sourceCopyReviewerUserId &&
-      `github-human:${sourceCopyReviewerUserId}` === expected.producerKey
-    ) {
-      findings.reviewerIndependenceViolations.push({
-        messageId,
-        role: 'source-copy-exception',
-        reviewer: sourceCopyReviewer,
-      });
-    }
+  const ledgerMessages = manifest.messages.map((message) => {
+    const german = germanById.get(message.id) ?? null;
+    const context = contextById.get(message.id);
+    const contextHash = contextHashesById.get(message.id);
+    return {
+      id: message.id,
+      category: message.category,
+      module: message.moduleOwnership['en-US'][0],
+      english: message.translations['en-US'],
+      chinese: message.translations['zh-CN'],
+      german:
+        german === null
+          ? null
+          : {
+              value: german.value,
+              argumentSignature: inspectIcu(german.value).argumentSignature,
+              source: german.source,
+            },
+      hashes: {
+        sourceContext: sourceContextHashesById.get(message.id),
+        context: contextHash,
+        translation:
+          german === null
+            ? null
+            : translationHashForMessage(message.id, german.module, german.value, contextHash),
+      },
+      context,
+      reviewRequirements: {
+        independentNativeGerman: true,
+        lcaTidasDomain: domainReviewById.get(message.id).required,
+        domainReasons: domainReviewById.get(message.id).reasons,
+      },
+    };
   });
-
-  const translationReviews = reviewLog.translations?.reviews ?? [];
-  const reviewGroups = new Map();
-  translationReviews.forEach((review, index) => {
-    const key = `${review?.messageId}\0${review?.role}`;
-    if (!reviewGroups.has(key)) reviewGroups.set(key, []);
-    reviewGroups.get(key).push({ review, index });
-  });
-  reviewGroups.forEach((records, key) => {
-    if (records.length > 1) {
-      const [messageId, role] = key.split('\0');
-      findings.duplicateTranslationReviews.push({ messageId, role, count: records.length });
-    }
-  });
-
-  const validTranslationApprovals = new Set();
-  reviewGroups.forEach((records, key) => {
-    if (records.length !== 1) return;
-    const { review, index } = records[0];
-    const expected = expectedReviewById.get(review.messageId);
-    const reviewer = normalizeGithubLogin(review.reviewer);
-    const validFindings = validReviewFindings(
-      review,
-      findings.invalidTranslationReviews,
-      index,
-      'translations.reviews',
-    );
-    validFindings
-      .filter(
-        ({ severity, status }) => ['Critical', 'Major'].includes(severity) && status !== 'RESOLVED',
-      )
-      .forEach((finding) => {
-        findings.unresolvedCriticalOrMajor.push({
-          messageId: review.messageId,
-          role: review.role,
-          finding,
-        });
-      });
-    if (
-      !expected ||
-      !['native-german', 'domain'].includes(review.role) ||
-      reviewer === '' ||
-      reviewer !== assignedReviewers.get(review.role)?.login ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(review.reviewedAt ?? '') ||
-      !['APPROVED', 'CHANGES_REQUESTED'].includes(review.decision) ||
-      review.batchId !== expected?.batchId ||
-      !Array.isArray(review.findings)
-    ) {
-      findings.invalidTranslationReviews.push({ index, review });
-      return;
-    }
-    if (
-      review.contextHash !== expected.contextHash ||
-      review.translationHash !== expected.translationHash
-    ) {
-      findings.staleTranslationReviews.push({
-        messageId: review.messageId,
-        role: review.role,
-        reviewer: review.reviewer,
-      });
-      return;
-    }
-    if (
-      `github-human:${assignedReviewers.get(review.role)?.userId ?? ''}` === expected.producerKey
-    ) {
-      findings.reviewerIndependenceViolations.push({
-        messageId: review.messageId,
-        role: review.role,
-        reviewer: review.reviewer,
-      });
-      return;
-    }
-    if (
-      review.decision === 'APPROVED' &&
-      validFindings.every(({ status }) => status === 'RESOLVED')
-    ) {
-      validTranslationApprovals.add(key);
-    }
-  });
-
-  expectedReviewById.forEach((expected, messageId) => {
-    if (!validTranslationApprovals.has(`${messageId}\0native-german`)) {
-      findings.missingNativeGermanReviews.push({ messageId });
-    }
-    if (expected.domainReview.required && !validTranslationApprovals.has(`${messageId}\0domain`)) {
-      findings.missingDomainReviews.push({
-        messageId,
-        reasons: expected.domainReview.reasons,
-      });
-    }
-  });
-
-  const globalTranslationFindings = reviewLog.translations?.unresolvedFindings ?? [];
-  if (!Array.isArray(globalTranslationFindings)) {
-    findings.invalidTranslationReviews.push({
-      reason: 'translations.unresolvedFindings must be an array.',
-    });
-  } else {
-    validReviewFindings(
-      { findings: globalTranslationFindings },
-      findings.invalidTranslationReviews,
-      null,
-      'translations.unresolvedFindings',
-    )
-      .filter(
-        ({ severity, status }) => ['Critical', 'Major'].includes(severity) && status !== 'RESOLVED',
-      )
-      .forEach((finding) =>
-        findings.unresolvedCriticalOrMajor.push({ source: 'translations', finding }),
-      );
-  }
-
-  const externalEvidence = await verifyGithubHumanReviewEvidence({
-    reviewLog,
-    scope: 'translation',
-    requiredRoles: ['product-context', 'native-german', 'domain'],
-    recordsByRole: new Map([
-      [
-        'product-context',
-        (contextAnnotations.messages ?? []).filter(({ status }) => status === 'READY'),
-      ],
-      [
-        'native-german',
-        {
-          producers: producerRecords,
-          reviews: translationReviews.filter(({ role }) => role === 'native-german'),
-        },
-      ],
-      [
-        'domain',
-        {
-          producers: producerRecords,
-          reviews: translationReviews.filter(({ role }) => role === 'domain'),
-        },
-      ],
-    ]),
-    contextDigest: {
+  const reviewIndependentFindings = structuredClone(findings);
+  const catalogReview = readCatalogOfflineConfirmation(options.root, options.catalogConfirmation, {
+    locale: CANDIDATE_LOCALE,
+    source: {
       manifestDigest: manifest.source.auditedInputDigest,
       reviewPolicyDigest,
-      messages: [...expectedReviewById]
-        .map(([messageId, expected]) => ({
-          messageId,
-          contextHash: expected.contextHash,
-          translationHash: expected.translationHash,
-          domainReviewRequired: expected.domainReview.required,
-          producer: expected.producer,
-        }))
-        .sort((left, right) => left.messageId.localeCompare(right.messageId, 'en')),
     },
-    producerActors: producerRecords.map(({ producer }) => producer),
+    messages: ledgerMessages,
+    findings: {
+      blockedGlossaryTerms: findings.blockedGlossaryTerms,
+    },
   });
-  findings.externalHumanReviewEvidence.push(...externalEvidence.findings);
-
-  const locallyReviewCompleteCandidateCount = [...expectedReviewById].filter(
-    ([messageId, expected]) =>
-      expected.producer &&
-      ['RUNTIME_EVIDENCED', 'REVIEWED_RESERVED_CONTEXT'].includes(
-        contextById.get(messageId)?.status,
-      ) &&
-      validTranslationApprovals.has(`${messageId}\0native-german`) &&
-      (!expected.domainReview.required || validTranslationApprovals.has(`${messageId}\0domain`)),
-  ).length;
-  const externallyAttestedHumanReviewApprovedCandidateCount =
-    externalEvidence.findings.length === 0 ? locallyReviewCompleteCandidateCount : 0;
+  if (catalogReview.approved) {
+    findings.blockedContexts.length = 0;
+    findings.blockedGlossaryTerms.length = 0;
+  } else {
+    findings.catalogOfflineReviewConfirmation.push({ reasons: catalogReview.reasons });
+  }
+  const locallyReviewCompleteCandidateCount =
+    catalogReview.approved && findings.invalidContextProposals.length === 0
+      ? [...expectedReviewById.values()].filter(({ producer }) => producer !== null).length
+      : 0;
+  const offlineHumanReviewApprovedCandidateCount = locallyReviewCompleteCandidateCount;
 
   [...germanById.keys()]
     .filter((id) => !manifestById.has(id))
@@ -1654,9 +1363,10 @@ async function buildAudit(options) {
     ),
   ];
   const ledgerFindings = {
-    ...findings,
+    ...reviewIndependentFindings,
+    unexpectedTranslations: findings.unexpectedTranslations,
     pilotGateFailures: [],
-    externalHumanReviewEvidence: [],
+    catalogOfflineReviewConfirmation: [],
   };
   const ledgerFindingCounts = Object.fromEntries(
     Object.entries(ledgerFindings).map(([name, values]) => [name, values.length]),
@@ -1682,7 +1392,13 @@ async function buildAudit(options) {
       contextInputDigestAlgorithm: 'sha256(path\\0content\\0)',
       contextInputs: [...new Set(inputPaths)].sort(),
       reviewPolicyDigest,
-      reviewAttestationRequirements: externalEvidence.requirements,
+      humanConfirmationPolicy: {
+        storage: 'local-untracked-markdown',
+        githubEvidenceRequired: false,
+        sameReviewerMayConfirmAllDimensions: true,
+        pilotDefaultPath: DEFAULT_PILOT_CONFIRMATION,
+        catalogDefaultPath: DEFAULT_CATALOG_CONFIRMATION,
+      },
     },
     summary: {
       canonicalMessageCount: manifest.messages.length,
@@ -1700,6 +1416,8 @@ async function buildAudit(options) {
       blockedContextCount: [...contextById.values()].filter(
         ({ status }) => status === 'BLOCKED_CONTEXT',
       ).length,
+      pendingContextApprovalCount: reviewIndependentFindings.blockedContexts.length,
+      invalidContextProposalCount: reviewIndependentFindings.invalidContextProposals.length,
       domainReviewRequiredCount: [...domainReviewById.values()].filter(({ required }) => required)
         .length,
       findingCount: ledgerFindingCount,
@@ -1709,44 +1427,11 @@ async function buildAudit(options) {
       sourceEvidence:
         'Every record retains canonical English, Chinese, all production references/defaultMessages, placeholders, module ownership, dynamic-family ownership, and the user-visible consequence of its UI role.',
       reservedEvidence:
-        'Reserved compatibility copy has no current production callsite and is BLOCKED_CONTEXT by default. It becomes translatable only after a named reviewer records concept, UI role, consequence, rationale, and concrete evidence in context-annotations.json.',
+        'Reserved compatibility copy has no current production callsite and is BLOCKED_CONTEXT by default. Missing, invalid, or stale proposals are structural findings that human confirmation cannot clear; a complete proposal records concept, UI role, consequence, rationale, evidence, and sourceContextHash and remains pending until the separate local catalog confirmation approves it.',
       reviewBoundary:
-        'This ledger proves context and structural translation coverage only. Native German and LCA/TIDAS domain approval remain human review evidence in review-log.yaml.',
+        'This tracked ledger proves context and structural coverage only. Human product-context, native-German, and LCA/TIDAS confirmation remains in an ignored local Markdown file and is never written into this artifact.',
     },
-    messages: manifest.messages.map((message) => {
-      const german = germanById.get(message.id) ?? null;
-      const context = contextById.get(message.id);
-      const contextHash = contextHashesById.get(message.id);
-      return {
-        id: message.id,
-        category: message.category,
-        module: message.moduleOwnership['en-US'][0],
-        english: message.translations['en-US'],
-        chinese: message.translations['zh-CN'],
-        german:
-          german === null
-            ? null
-            : {
-                value: german.value,
-                argumentSignature: inspectIcu(german.value).argumentSignature,
-                source: german.source,
-              },
-        hashes: {
-          sourceContext: sourceContextHashesById.get(message.id),
-          context: contextHash,
-          translation:
-            german === null
-              ? null
-              : translationHashForMessage(message.id, german.module, german.value, contextHash),
-        },
-        context,
-        reviewRequirements: {
-          independentNativeGerman: true,
-          lcaTidasDomain: domainReviewById.get(message.id).required,
-          domainReasons: domainReviewById.get(message.id).reasons,
-        },
-      };
-    }),
+    messages: ledgerMessages,
     findings: ledgerFindings,
   };
 
@@ -1754,8 +1439,13 @@ async function buildAudit(options) {
     ledger,
     findingCount,
     findingCounts,
-    externalHumanReviewFindings: externalEvidence.findings,
-    externallyAttestedHumanReviewApprovedCandidateCount,
+    catalogReview: {
+      approved: catalogReview.approved,
+      reasons: catalogReview.reasons,
+      scopeDigest: catalogReview.scopeDigest,
+      counts: catalogReview.counts,
+    },
+    offlineHumanReviewApprovedCandidateCount,
   };
 }
 
@@ -1765,8 +1455,8 @@ async function main() {
     ledger,
     findingCount,
     findingCounts,
-    externalHumanReviewFindings,
-    externallyAttestedHumanReviewApprovedCandidateCount,
+    catalogReview,
+    offlineHumanReviewApprovedCandidateCount,
   } = await buildAudit(options);
   const ledgerPath = path.resolve(options.root, options.ledger);
   const ledgerText = await prettier.format(JSON.stringify(ledger), {
@@ -1793,13 +1483,13 @@ async function main() {
     ledgerPath: relativePath(options.root, ledgerPath),
     summary: {
       ...ledger.summary,
-      externallyAttestedHumanReviewApprovedCandidateCount,
+      offlineHumanReviewApprovedCandidateCount,
       findingCount,
       findingCounts,
     },
     findingCount,
     findingCounts,
-    externalHumanReviewFindings,
+    catalogReview,
   };
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   if (staleLedger || (options.mode === 'enforce' && findingCount > 0)) process.exitCode = 1;

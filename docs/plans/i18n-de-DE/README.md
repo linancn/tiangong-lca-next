@@ -2,101 +2,128 @@
 
 Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepares one region-neutral Standard German UI. `de-DE` is the canonical storage tag, but the product will not maintain separate German variants. Runtime normalization of `de` and every `de-*` input belongs to activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602).
 
-This directory deliberately contains candidates and review evidence before runtime code. Issue #601 must not add `src/locales/de-DE.ts` or a language-menu option.
+This directory contains tracked candidate, context, terminology, and structural evidence. Completed human confirmation files are deliberately excluded: they stay under `.local/i18n-de-DE/`, are ignored by Git, and must not be pasted into an Issue, PR, or comment.
 
 ## Current gate state
 
 - Canonical messages: 2,665 (`2,658` leaf keys plus `7` activation-entry keys).
-- Staged German candidates: 7 activation-entry candidates; human-review-approved candidates: 0. Candidates are not counted as completed translations.
+- Staged German candidates: 7 activation-entry candidates; approved runtime candidates: 0.
 - Runtime-evidenced context: 2,037.
-- Reserved compatibility messages without current runtime evidence: 628; all default to `BLOCKED_CONTEXT`.
-- Pilot: 90 high-risk candidates; 9 are reserved messages with proposed but unapproved context.
-- Pilot domain review required: all 90 messages under the authoritative ledger-or-pilot union.
-- Full-catalog German-capable LCA/TIDAS review required: all 2,665 messages. Known domain messages carry specific machine-readable reasons; all others use a conservative no-exemption default so heuristic classification cannot silently skip review.
-- Qualified product-context, independent native-German, and German-capable LCA/TIDAS reviewers are not yet assigned.
-- Bulk translation is blocked until the pilot is approved. No leaf translation files have been created yet.
+- Reserved compatibility messages without current runtime evidence: 628; 9 currently have complete hash-pinned proposals awaiting Pilot confirmation, while the other 619 still lack a valid proposal and remain structural blockers that no confirmation can waive.
+- Pilot: 90 high-risk candidates; its 9 reserved-context proposals are structurally complete.
+- Blocked glossary choices in the pilot scope: 2.
+- The local pilot confirmation is pending. Bulk translation remains blocked and no leaf translation files exist.
 
-These counts are generated evidence, not a completion claim. Run the commands below to refresh them.
+These counts are generated evidence, not a completion claim.
+
+## Privacy and evidence boundary
+
+GitHub may retain the task scope, implementation, generated candidate evidence, and resulting German product content. It must not retain:
+
+- the local reviewer name or reference;
+- the review date, checkboxes, decisions, or findings;
+- a completed Markdown confirmation;
+- a digest of the completed human response.
+
+The tracked `scopeDigest` is allowed because it hashes only the material presented for review. It does not hash who approved it or how they answered. The checker prints only approval state and generic failure reasons; it does not echo the reviewer field or the form body.
+
+One person may confirm all three review dimensions in the same local file:
+
+1. product context and UI consequence;
+2. natural, region-neutral Standard German;
+3. LCA/TIDAS terminology.
+
+The three dimensions are review questions, not three required identities. The candidate producer remains separately recorded as non-personal provenance.
 
 ## Artifact map
 
 - `manifest.json`: generated canonical English/Chinese inventory and production references from Issue #600.
-- `decisions.yaml`: human-maintained source-baseline decisions from Issue #600.
+- `decisions.yaml`: source-baseline decisions from Issue #600.
 - `dynamic-families.json`: reviewed computed-message producers and fallback behavior.
-- `glossary.yaml`: proposed German LCA/TIDAS and product terminology; blocked terms remain explicit.
+- `glossary.yaml`: proposed German LCA/TIDAS and product terminology; unresolved choices stay explicit.
 - `style-guide.md`: Standard German voice, grammar, ICU, fragment, token, and regional-neutrality rules.
 - `evidence-sources.yaml`: authority and permitted-use register for product, TIDAS/ILCD, LCA, and language sources.
-- `source-allowlist.json`: machine policy for exact English copy, preserved technical tokens, and intentional mappings. It is not the evidence bibliography.
-- `context-annotations.json`: reviewable decisions for messages without runtime evidence. A reserved key remains blocked until an assigned human reviewer approves its evidence and pins the current source-context hash.
-- `context-ledger.json`: generated, deterministic per-message context, context hash, candidate translation hash, and audit findings. Do not edit it manually.
-- `pilot.json`: 90 proposed German candidates with rationale, risk, and required review domains.
-- `pilot-review-pack.json`: generated reviewer-facing join of English, Chinese, runtime context, candidate, risk, and a deterministic dossier containing source excerpts, dynamic-family proof, locale-source neighbors, glossary/evidence records, ICU branch examples, visible-length risks, `dossierHash`, and three blank role-specific review queues. These materials support review but are not human approval. Do not edit the pack manually.
-- `review-log.yaml`: JSON-compatible YAML record for GitHub-verified human reviewer assignments, copyable record templates, named candidate producers, hash-pinned approvals, external attestations, and findings. A non-empty reviewer string or self-declared `human` flag is not valid evidence.
-- `translation-batches.json`: four non-overlapping leaf-file owner lanes and 200–350 key internal review slices.
+- `source-allowlist.json`: machine policy for exact English copy, preserved technical tokens, and intentional mappings.
+- `context-annotations.json`: non-personal product-context proposals for reserved messages. It stores concept, UI role, consequence, rationale, evidence, and the current source-context hash, but never reviewer identity or decision.
+- `context-ledger.json`: generated per-message English, Chinese, German candidate, runtime/context evidence, hashes, and structural findings. Do not edit it manually.
+- `pilot.json`: 90 proposed German candidates with rationale, risk, and review dimensions.
+- `pilot-review-pack.json`: generated machine source containing the 90 complete deterministic dossiers and current scope digest. It has no reviewer queues or human decisions.
+- `review-log.yaml`: legacy-named, tracked provenance/policy manifest. It records non-personal candidate producers and local-evidence policy only; it is not a human review log.
+- `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
 - `activation-entry-translations.json`: seven staged top-level candidates owned by #602; it does not activate German.
+- `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.
+- `.local/i18n-de-DE/catalog-review-confirmation.md`: later full-catalog form, generated only after all 2,665 candidates and contexts exist. Pilot approval cannot substitute for it.
 
 ## Commands
 
-Refresh deterministic context and review artifacts:
+Refresh deterministic context and pilot artifacts in dependency order:
 
 ```bash
 npm run i18n:de:audit:write
 npm run i18n:de:pilot:write
 ```
 
-Inspect the honest pre-review state without failing the command:
+Generate the local pilot form without overwriting an existing file:
+
+```bash
+npm run i18n:de:review:generate
+```
+
+Use `-- --force` only when intentionally replacing an obsolete form after preserving any useful notes. The generator writes atomically with local-only permissions. Repository-local input/output is accepted only below the ignored `.local/i18n-de-DE/` directory; tracked or non-ignored review files are rejected.
+
+Check a filled local form:
+
+```bash
+npm run i18n:de:review:check
+```
+
+Inspect honest work-in-progress state:
 
 ```bash
 npm run i18n:de:pilot:report
 node scripts/i18n/audit-german-candidate.mjs --mode report --check
 ```
 
-Resolve and stage qualified reviewer identities without posting any GitHub comment:
-
-```bash
-npm run i18n:de:review:onboard -- \
-  --assigner '<assigning-maintainer-login>' \
-  --product '<product-reviewer-login>' \
-  --product-evidence '<specific product qualification evidence>' \
-  --native '<native-German-reviewer-login>' \
-  --native-evidence '<specific native-language qualification evidence>' \
-  --domain '<German-LCA-TIDAS-reviewer-login>' \
-  --domain-evidence '<specific domain qualification evidence>'
-```
-
-The default is report-only. Add `--write` only after inspecting the resolved immutable IDs and exact assignment markers. Preparation performs GitHub reads, verifies the assigner's `maintain`/`admin` permission, can write only a `pending-attestation` roster, and prints `gh issue comment` argument arrays. URL-only finalization re-verifies the frozen identities and all three comments before atomically promoting the roster to `assigned`. Neither stage posts a comment or records a review decision.
-
-Final enforcement commands intentionally fail while required evidence is missing:
+Final enforcement commands intentionally fail while required scope is incomplete:
 
 ```bash
 npm run i18n:de:pilot
 npm run i18n:de:audit
 ```
 
-`i18n:de:pilot` first revalidates the context ledger, then requires fresh product, independent native-German, and domain approvals pinned to `contextHash`, `translationHash`, `dossierHash`, and the pilot `reviewScopeHash`. Duplicate decisions are invalid. `i18n:de:audit` additionally requires all 30 leaf modules, exact topology/key parity, zero blocked context/terms, full named production evidence, 100% independent native-German review, 100% German-capable LCA/TIDAS review under the current no-exemption policy, ICU branch parity, approved source-copy exceptions, and a fresh context ledger.
+No command in this workflow posts a GitHub comment or calls the GitHub API.
 
-## Human evidence workflow
+## Local pilot confirmation workflow
 
-`review-log.yaml.recordTemplates` is the machine-readable source for pilot, structured producer, bulk-review, and external-attestation record shapes. An AI producer is a canonical `{type, id, displayName}` actor; a GitHub-human producer additionally carries `githubLogin` and uses the immutable numeric GitHub user ID as `id`. Human reviewer roles likewise record immutable reviewer and assigner IDs. The API verifies every current login↔ID binding, so a display name or renamed login cannot bypass independence. Reviewers do not need to infer fields from the scripts.
+1. Refresh the candidate ledger and pilot pack.
+2. Generate `.local/i18n-de-DE/pilot-review-confirmation.md`.
+3. Read all 90 entries with their English, Chinese, German candidate, callsite/dynamic evidence, product concept, UI role, user-visible consequence, terminology, ICU examples, length risks, rationale, and explicit questions.
+4. Review the separate summaries for all 9 reserved-context proposals and both blocked glossary terms. `tidas.result-set` is included even though no pilot message directly uses it, because the pilot gate covers the complete current blocked-term policy.
+5. Put message-specific change requests only inside the marked local note regions. If any Critical/Major issue remains, keep the applicable decision `PENDING` or use `CHANGES_REQUESTED`.
+6. When everything is acceptable, fill the one JSON confirmation block: add a local reviewer reference and date, change all three decisions to `APPROVED`, and change all three approval flags to boolean `true`.
+7. Run `npm run i18n:de:review:check`, then `npm run i18n:de:pilot`.
+8. Do not add, commit, upload, paste, or quote the completed file. The gate reads it as a local input and never rewrites tracked artifacts.
 
-1. Run `i18n:de:review:onboard` in report mode with the three reviewer logins, concrete qualification evidence, and a different assigning maintainer. Inspect the immutable IDs and generated markers, then rerun the same preparation command with `--write`. This stores `pending-attestation`; it is not an assignment approval.
-2. The assigning maintainer personally posts the three exact assignment markers on Issue #601. Each comment's entire trimmed body must be the generated `decision=APPROVED` marker.
-3. Finalize the stored roster without re-entering reviewer identities or qualification text: rerun the command with the same `--assigner`, all three `--*-assignment-url` values, and `--write`. The command verifies the Issue, author login and immutable ID, exact marker, and current maintainer permission before atomically changing all three roles to `assigned`.
-4. Use the applicable role queue in `pilot-review-pack.json` as a starting point, fill `reviewer`, `reviewedAt`, `decision`, and `findings`, and copy one current record per message/role into `review-log.yaml.pilot.reviews`. The four generated hashes must remain unchanged. Rerun the generators to produce the review-scope markers.
-5. The assigned reviewer personally posts a comment on Issue #601 whose entire trimmed body is the exact generated `decision=APPROVED` scope marker. Add its digest and comment URL to `externalAttestations`. Findings use the template's required `severity`, `status`, and concrete `summary`; an approval is valid only when every attached finding is `RESOLVED`.
-6. After all 270 pilot records are `APPROVED`, all Critical/Major findings are resolved, and the three reviewer-authored scope comments verify, a maintainer sets top-level `status` to `pilot-approved` and `pilot.status` to `approved-for-bulk-translation`. Because every `review-log.yaml` mutation changes the generated-artifact freshness input, rerun `npm run i18n:de:audit:write` and then `npm run i18n:de:pilot:write` after adding the attestation URLs and statuses. `npm run i18n:de:pilot` must then pass before bulk translation starts; the later top-level `bulk-translation-in-progress` state is allowed only after that gate.
-7. After all 2,665 candidates, production records, independent native-German reviews, German-capable LCA/TIDAS reviews, and external attestations are complete with zero blockers, a maintainer sets top-level `status` to `translation-approved` and `translations.status` to `approved-for-activation`, then refreshes `i18n:de:audit:write` followed by `i18n:de:pilot:write` once more. `npm run i18n:de:audit` must pass before #602 may consume the candidate.
-8. Enforcement re-verifies every external comment through the GitHub API. Marker context binds the canonical audit, candidate gate, pilot gate, reviewer dossier, ICU parser, attestation verifier, and declared policy sources, so a review-policy or dossier change requires new attestations. Assigned roles therefore require network access and, where needed, `GH_TOKEN` or `GITHUB_TOKEN`.
+The confirmation binds both:
+
+- a canonical scope digest over the manifest/review-policy/pilot digests, candidate producer, all 90 context/translation/dossier/review-scope hashes, the 9 context proposals, and both blocked terms;
+- the exact normalized body produced by the deterministic renderer, plus its visible-body digest, so deleting/replacing the English, Chinese, German, context, evidence, or risk material cannot be hidden by recomputing a digest. CRLF/LF line endings are normalized, while marked note regions remain writable.
+
+Any material source, context, candidate, dossier, terminology, ICU parser, or review-policy change invalidates the old form and requires regeneration.
+
+## Pilot and catalog separation
+
+Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,575 messages or the other 619 currently reserved contexts.
+
+After the 30 leaf modules, all context proposals, and all producer records exist, generate and check the separate form with `npm run i18n:de:review:catalog:generate` and `npm run i18n:de:review:catalog:check`. Final candidate enforcement requires that file, all 2,665 candidates, exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. Human confirmation can clear only structurally complete proposals awaiting approval; it can never conceal a missing, malformed, or stale proposal. The full-catalog confirmation follows the same privacy and canonical-body rules and may be completed by the same person across the three review dimensions.
 
 ## Review sequence
 
-1. Assign real GitHub human identities and qualification evidence for product-context, native-German, and German-capable LCA/TIDAS roles, then complete the externally verified assignment workflow above.
-2. Product-context and domain reviewers resolve the 9 blocked pilot contexts and 2 blocked glossary terms; the 81 runtime-evidenced records also require explicit confirmation where the current concept is null or the UI role is heuristic.
-3. Reviewers inspect `pilot-review-pack.json`, not isolated German strings.
-4. Every pilot message receives product-context, independent native-German, and domain approval.
-5. Critical or Major findings are corrected, hashes are regenerated, and approvals are repeated for changed records.
-6. Only after `npm run i18n:de:pilot` passes may the four file-owner lanes begin bulk translation.
-7. Every bulk message receives independent native-German and German-capable LCA/TIDAS review under the current conservative no-exemption policy.
-8. #602 may activate the one bundle only after #601 enforcement is clean.
+1. Complete and pass the local pilot confirmation.
+2. Create the 30 leaf modules and translate the 2,658 leaf keys using English, Chinese, and the complete context ledger; do not mechanically translate isolated strings.
+3. Resolve all remaining reserved-context proposals and structural findings while retaining exact source/context hashes.
+4. Generate and complete the separate local full-catalog confirmation.
+5. Pass `npm run i18n:de:audit` and hand the reviewed but still inactive single bundle to #602.
+6. #602 alone adds the top-level locale entry, Ant Design `de_DE`, Day.js `de`, selector/persistence behavior, and normalization of every `de`/`de-*` input to the one `de-DE` bundle.
 
-Research candidates may be drafted while context is blocked so reviewers can compare concrete alternatives. They are never approved translations, may not enter runtime locale assets, and do not unlock a batch until the context and review gates pass.
+Research candidates may be drafted while a context is blocked so the reviewer can compare concrete alternatives. They remain excluded from runtime assets and do not unlock a batch until the applicable local scope passes.

@@ -11,7 +11,9 @@ localePolicy:
   fallbackRule: 'Every de or de-* request resolves to the one de-DE bundle.'
 
 governance:
-  status: 'proposed-awaiting-human-approval'
+  status: 'proposed-awaiting-local-pilot-confirmation'
+  confirmationStorage: 'ignored local Markdown; never committed or uploaded'
+  reviewerModel: 'one local reviewer may confirm product-context, native-German, and LCA/TIDAS dimensions'
   sourcePriority:
     - 'TianGong runtime context, canonical English, and Chinese disambiguation evidence'
     - 'Approved project glossary decisions'

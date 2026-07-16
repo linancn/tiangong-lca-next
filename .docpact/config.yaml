@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-16'
 lastReviewedCommit: '62ac1df70ee1d21b952992a2d830f3fba94aad53'
-lastReviewedNote: 'Reviewed the Issue #601 reviewer-onboarding CLI, deterministic pilot dossiers, four-hash queues, detailed external findings, and full-catalog no-exemption policy; existing ownership and routing remain correct.'
+lastReviewedNote: 'Reviewed the Issue #601 local-only Markdown confirmation, canonical renderer/body binding, private path enforcement, non-waivable context proposal validation, and separate full-catalog gate; existing ownership and routing remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

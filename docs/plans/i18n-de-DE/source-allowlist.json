@@ -1,7 +1,7 @@
 {
   "schemaVersion": "tiangong.i18n-german-source-allowlist.v1",
   "locale": "de-DE",
-  "policy": "An exact English value or technical source token is allowed only when the reviewed German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. Whole-message exceptions require a reason, assigned human reviewer identity, and review date. This file is a machine policy, not an evidence bibliography.",
+  "policy": "An exact English value or technical source token is allowed only when the German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. A whole-message exception records messageId, reason, and decision=preserve-exact-english; the ignored local catalog confirmation approves the current scope without writing reviewer identity or date here. This file is a machine policy, not an evidence bibliography.",
   "emptyMessageIds": ["pages.layouts.userLayout.title"],
   "exactEnglishMessages": [],
   "preservedTokens": [

@@ -7,20 +7,20 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { validateContextAnnotation } from './german-context-proposal.mjs';
 import {
-  normalizeGithubLogin,
-  normalizeGithubUserId,
-  normalizeProducerActor,
-  producerActorKey,
-  verifyGithubHumanReviewEvidence,
-} from './github-review-attestation.mjs';
+  buildPilotOfflineReviewScope,
+  DEFAULT_PILOT_CONFIRMATION,
+  readPilotOfflineConfirmation,
+} from './german-offline-review.mjs';
+import { normalizeProducerActor, producerActorKey } from './review-producer.mjs';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
-const SCHEMA_VERSION = 'tiangong.i18n-german-pilot-audit.v5';
-const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-log.v4';
+const SCHEMA_VERSION = 'tiangong.i18n-german-pilot-audit.v6';
+const REVIEW_LOG_SCHEMA_VERSION = 'tiangong.i18n-de-review-provenance.v5';
 const GLOSSARY_SCHEMA_VERSION = 'tiangong.i18n-de-glossary.v1';
 const GLOSSARY_RISK_LEVELS = new Set(['critical', 'high']);
 const GLOSSARY_DECISION_STATUSES = new Set(['proposed', 'blocked-term']);
@@ -45,6 +45,7 @@ function parseArgs(argv) {
     pilot: DEFAULT_PILOT,
     reviewLog: DEFAULT_REVIEW_LOG,
     reviewPack: DEFAULT_REVIEW_PACK,
+    confirmation: process.env.TIANGONG_I18N_DE_PILOT_CONFIRMATION ?? DEFAULT_PILOT_CONFIRMATION,
     write: false,
     check: false,
   };
@@ -52,7 +53,7 @@ function parseArgs(argv) {
     const argument = argv[index];
     if (argument === '--help') {
       process.stdout.write(
-        'Usage: node scripts/i18n/audit-german-pilot.mjs [--mode report|enforce] [--write|--check] [--root path]\n',
+        'Usage: node scripts/i18n/audit-german-pilot.mjs [--mode report|enforce] [--write|--check] [--root path] [--confirmation path]\n',
       );
       process.exit(0);
     }
@@ -69,6 +70,7 @@ function parseArgs(argv) {
         '--pilot',
         '--review-log',
         '--review-pack',
+        '--confirmation',
       ].includes(argument)
     ) {
       const value = argv[index + 1];
@@ -82,6 +84,7 @@ function parseArgs(argv) {
         '--pilot': 'pilot',
         '--review-log': 'reviewLog',
         '--review-pack': 'reviewPack',
+        '--confirmation': 'confirmation',
       }[argument];
       options[key] = value;
     } else {
@@ -600,49 +603,6 @@ function buildReviewerDossier({
   };
 }
 
-const REVIEW_ROLE_CHECKLISTS = {
-  'product-context': [
-    'Confirm the concept and actual UI/runtime surface from the embedded references or dynamic-family proof.',
-    'Confirm the UI role and user-visible consequence, including destructive or permission-sensitive behavior.',
-    'Resolve every BLOCKED_CONTEXT proposal or request a specific evidence correction.',
-    'Confirm that the German candidate preserves the product action, state, scope, and neighboring terminology.',
-  ],
-  'native-german': [
-    'Review Standard German grammar, idiom, capitalization, punctuation, and formal Sie voice.',
-    'Review every ICU branch and placeholder example, not only the raw default branch.',
-    'Review length and expansion flags against the described control role.',
-    'Request changes for calques, ambiguous compounds, unnatural UI wording, or regional-only vocabulary.',
-  ],
-  domain: [
-    'Confirm the LCA/ILCD/TIDAS concept against the embedded glossary and authority evidence.',
-    'Confirm included and excluded contexts and reject forbidden term collisions.',
-    'Resolve every blocked term or request a specific source-backed correction.',
-    'Confirm that the candidate preserves cardinality, validation, solver, review, and data-state semantics.',
-  ],
-};
-
-function buildReviewQueues(messages, reviewLogPath) {
-  return Object.fromEntries(
-    Object.entries(REVIEW_ROLE_CHECKLISTS).map(([role, checklist]) => [
-      role,
-      messages.map((message) => ({
-        messageId: message.id,
-        role,
-        reviewer: null,
-        reviewedAt: null,
-        decision: null,
-        contextHash: message.hashes.contextHash,
-        translationHash: message.hashes.translationHash,
-        reviewScopeHash: message.hashes.reviewScopeHash,
-        dossierHash: message.hashes.dossierHash,
-        checklist,
-        findings: [],
-        copyTarget: `${reviewLogPath} pilot.reviews`,
-      })),
-    ]),
-  );
-}
-
 function sortJsonValue(value) {
   if (Array.isArray(value)) return value.map(sortJsonValue);
   if (value && typeof value === 'object') {
@@ -717,41 +677,6 @@ function pilotRequestsDomainReview(message) {
   );
 }
 
-function assignedReviewersFromLog(reviewLog, findings) {
-  const roleConfigNames = new Map([
-    ['product-context', 'productContextReviewer'],
-    ['native-german', 'nativeGermanReviewer'],
-    ['domain', 'lcaTidasDomainReviewer'],
-  ]);
-  const assigned = new Map();
-  roleConfigNames.forEach((configName, role) => {
-    const config = reviewLog.roles?.[configName];
-    const githubLogin = normalizeGithubLogin(config?.githubLogin);
-    const githubUserId = normalizeGithubUserId(config?.githubUserId);
-    const assignedByGithubUserId = normalizeGithubUserId(config?.assignedByGithubUserId);
-    if (
-      config?.status === 'assigned' &&
-      config?.identityType === 'github-human' &&
-      githubLogin !== '' &&
-      githubUserId !== '' &&
-      normalizeGithubLogin(config?.identity) === githubLogin &&
-      normalizeGithubLogin(config?.assignedBy) !== '' &&
-      assignedByGithubUserId !== '' &&
-      normalizeGithubLogin(config?.assignedBy) !== githubLogin &&
-      assignedByGithubUserId !== githubUserId &&
-      typeof config?.qualificationEvidence === 'string' &&
-      config.qualificationEvidence.trim() !== '' &&
-      typeof config?.assignmentAttestationUrl === 'string' &&
-      config.assignmentAttestationUrl.trim() !== ''
-    ) {
-      assigned.set(role, { login: githubLogin, userId: githubUserId });
-      return;
-    }
-    findings.unassignedReviewRoles.push({ role, configName });
-  });
-  return assigned;
-}
-
 function sortFindings(findings) {
   Object.values(findings).forEach((items) => {
     items.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right), 'en'));
@@ -764,7 +689,9 @@ async function audit(options) {
   const pilot = readJson(options.root, options.pilot);
   const reviewLog = readJson(options.root, options.reviewLog);
   if (reviewLog.schemaVersion !== REVIEW_LOG_SCHEMA_VERSION || reviewLog.locale !== 'de-DE') {
-    throw new Error(`German review log must use ${REVIEW_LOG_SCHEMA_VERSION} and locale de-DE.`);
+    throw new Error(
+      `German review provenance must use ${REVIEW_LOG_SCHEMA_VERSION} and locale de-DE.`,
+    );
   }
   const sourceAllowlist = readJson(options.root, DEFAULT_SOURCE_ALLOWLIST);
   const reviewerGlossary = parseReviewerGlossary(options.root);
@@ -788,31 +715,22 @@ async function audit(options) {
     duplicatePilotIds: [],
     unknownPilotIds: [],
     blockedPilotContexts: [],
+    invalidPilotContextProposals: [],
     invalidCandidates: [],
     placeholderMismatches: [],
     icuStructureMismatches: [],
     chineseCharacters: [],
     englishCopies: [],
     informalAddress: [],
-    missingProductReviews: [],
-    missingNativeGermanReviews: [],
-    missingDomainReviews: [],
-    invalidReviews: [],
-    staleReviews: [],
-    reviewerIndependenceViolations: [],
-    unresolvedCriticalOrMajor: [],
     staleContextLedger: [],
     staleCanonicalManifest: [],
     blockedGlossaryTerms: [],
-    unassignedReviewRoles: [],
-    duplicateReviews: [],
     invalidPilotReviewState: [],
     domainRequirementMismatches: [],
     localePolicyViolations: [],
     invalidReviewDomains: [],
     invalidReviewerDossiers: [],
-    reviewQueueMismatches: [],
-    externalHumanReviewEvidence: [],
+    offlineReviewConfirmation: [],
   };
   [
     [options.pilot, pilot],
@@ -826,7 +744,6 @@ async function audit(options) {
       });
     }
   });
-  const assignedReviewers = assignedReviewersFromLog(reviewLog, findings);
   const candidateCheck = spawnSync(
     process.execPath,
     [
@@ -870,18 +787,6 @@ async function audit(options) {
   (ledger.findings?.blockedGlossaryTerms ?? []).forEach((term) => {
     findings.blockedGlossaryTerms.push(term);
   });
-  if (
-    !['pilot-approved', 'bulk-translation-in-progress', 'translation-approved'].includes(
-      reviewLog.status,
-    ) ||
-    reviewLog.pilot?.status !== 'approved-for-bulk-translation'
-  ) {
-    findings.invalidPilotReviewState.push({
-      status: reviewLog.status ?? null,
-      pilotStatus: reviewLog.pilot?.status ?? null,
-      requiredStatus: 'pilot-approved or a later delivery state / approved-for-bulk-translation',
-    });
-  }
   const candidateProducer = normalizeProducerActor(reviewLog.pilot?.candidateProducer);
   const declaredCandidateProducer = normalizeProducerActor(
     pilot.selectionPolicy?.candidateProducer,
@@ -905,12 +810,7 @@ async function audit(options) {
           typeof entry.messageId === 'string' &&
           typeof entry.reason === 'string' &&
           entry.reason.trim() !== '' &&
-          typeof entry.reviewedBy === 'string' &&
-          entry.reviewedBy.trim() !== '' &&
-          [...assignedReviewers.values()].some(
-            ({ login }) => login === normalizeGithubLogin(entry.reviewedBy),
-          ) &&
-          /^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt ?? ''),
+          entry.decision === 'preserve-exact-english',
       )
       .map(({ messageId }) => messageId),
   );
@@ -972,7 +872,19 @@ async function audit(options) {
       });
     }
     if (ledgerMessage.context.status === 'BLOCKED_CONTEXT') {
-      findings.blockedPilotContexts.push({ messageId: pilotMessage.id });
+      const proposalErrors = validateContextAnnotation(
+        source,
+        ledgerMessage.context.reviewedAnnotation,
+        ledgerMessage.hashes.sourceContext,
+      );
+      if (proposalErrors.length > 0) {
+        findings.invalidPilotContextProposals.push({
+          messageId: pilotMessage.id,
+          errors: proposalErrors,
+        });
+      } else {
+        findings.blockedPilotContexts.push({ messageId: pilotMessage.id });
+      }
     }
     if (typeof pilotMessage.candidate !== 'string' || pilotMessage.candidate.length === 0) {
       findings.invalidCandidates.push({ messageId: pilotMessage.id });
@@ -1155,179 +1067,111 @@ async function audit(options) {
     });
   });
 
-  const reviewQueues = buildReviewQueues(reviewPackMessages, options.reviewLog);
-  Object.entries(reviewQueues).forEach(([role, queue]) => {
-    if (
-      queue.length !== reviewPackMessages.length ||
-      queue.some(
-        (record, index) =>
-          record.messageId !== reviewPackMessages[index].id ||
-          record.role !== role ||
-          record.reviewer !== null ||
-          record.reviewedAt !== null ||
-          record.decision !== null ||
-          record.contextHash !== reviewPackMessages[index].hashes.contextHash ||
-          record.translationHash !== reviewPackMessages[index].hashes.translationHash ||
-          record.dossierHash !== reviewPackMessages[index].hashes.dossierHash ||
-          record.reviewScopeHash !== reviewPackMessages[index].hashes.reviewScopeHash ||
-          record.findings.length !== 0,
-      )
-    ) {
-      findings.reviewQueueMismatches.push({
-        role,
-        expected: reviewPackMessages.length,
-        actual: queue.length,
-      });
-    }
-  });
-
-  const reviews = reviewLog.pilot?.reviews ?? [];
-  const validApprovals = new Map();
-  const reviewGroups = new Map();
-  reviews.forEach((review, index) => {
-    const key = `${review?.messageId}\0${review?.role}`;
-    if (!reviewGroups.has(key)) reviewGroups.set(key, []);
-    reviewGroups.get(key).push({ review, index });
-  });
-  reviewGroups.forEach((records, key) => {
-    if (records.length > 1) {
-      const [messageId, role] = key.split('\0');
-      findings.duplicateReviews.push({ messageId, role, count: records.length });
-    }
-  });
-  reviewGroups.forEach((records) => {
-    if (records.length !== 1) return;
-    const { review, index } = records[0];
-    const expected = expectedHashes.get(review.messageId);
-    const validRole = ['product-context', 'native-german', 'domain'].includes(review.role);
-    const reviewer = normalizeGithubLogin(review.reviewer);
-    const findingsAreValid =
-      Array.isArray(review.findings) &&
-      review.findings.every(
-        (finding) =>
-          finding &&
-          ['Critical', 'Major', 'Minor'].includes(finding.severity) &&
-          ['OPEN', 'RESOLVED'].includes(finding.status) &&
-          typeof finding.summary === 'string' &&
-          finding.summary.trim() !== '',
-      );
-    if (
-      !expected ||
-      !validRole ||
-      reviewer === '' ||
-      reviewer !== assignedReviewers.get(review.role)?.login ||
-      !/^\d{4}-\d{2}-\d{2}$/.test(review.reviewedAt ?? '') ||
-      !['APPROVED', 'CHANGES_REQUESTED'].includes(review.decision) ||
-      !findingsAreValid
-    ) {
-      findings.invalidReviews.push({ index, review });
-      return;
-    }
-    if (
-      review.contextHash !== expected.contextHash ||
-      review.translationHash !== expected.translationHash ||
-      review.dossierHash !== expected.dossierHash ||
-      review.reviewScopeHash !== expected.reviewScopeHash
-    ) {
-      findings.staleReviews.push({
-        messageId: review.messageId,
-        role: review.role,
-        reviewer: review.reviewer,
-      });
-      return;
-    }
-    if (
-      `github-human:${assignedReviewers.get(review.role)?.userId ?? ''}` ===
-      producerActorKey(candidateProducer)
-    ) {
-      findings.reviewerIndependenceViolations.push({
-        messageId: review.messageId,
-        role: review.role,
-        reviewer: review.reviewer,
-      });
-      return;
-    }
-    if (
-      review.decision === 'APPROVED' &&
-      review.findings.every(({ status }) => status === 'RESOLVED')
-    ) {
-      validApprovals.set(`${review.messageId}\0${review.role}`, review);
-    }
-    review.findings
-      .filter(
-        ({ severity, status }) => ['Critical', 'Major'].includes(severity) && status !== 'RESOLVED',
-      )
-      .forEach((finding) => {
-        findings.unresolvedCriticalOrMajor.push({
-          messageId: review.messageId,
-          role: review.role,
-          finding,
-        });
-      });
-  });
-
-  const pilotUnresolvedFindings = reviewLog.pilot?.unresolvedFindings ?? [];
-  if (!Array.isArray(pilotUnresolvedFindings)) {
-    findings.invalidReviews.push({ reason: 'pilot.unresolvedFindings must be an array.' });
-  } else {
-    pilotUnresolvedFindings.forEach((finding, index) => {
-      if (
-        !finding ||
-        !['Critical', 'Major', 'Minor'].includes(finding.severity) ||
-        !['OPEN', 'RESOLVED'].includes(finding.status) ||
-        typeof finding.summary !== 'string' ||
-        finding.summary.trim() === ''
-      ) {
-        findings.invalidReviews.push({
-          source: 'pilot.unresolvedFindings',
-          index,
-          finding,
-        });
-        return;
-      }
-      if (['Critical', 'Major'].includes(finding.severity) && finding.status !== 'RESOLVED') {
-        findings.unresolvedCriticalOrMajor.push({ source: 'pilot', finding });
-      }
-    });
-  }
-
-  pilotMessages.forEach((message) => {
-    if (!validApprovals.has(`${message.id}\0product-context`)) {
-      findings.missingProductReviews.push({ messageId: message.id });
-    }
-    if (!validApprovals.has(`${message.id}\0native-german`)) {
-      findings.missingNativeGermanReviews.push({ messageId: message.id });
-    }
-    if (
-      expectedHashes.get(message.id)?.domainReviewRequired &&
-      !validApprovals.has(`${message.id}\0domain`)
-    ) {
-      findings.missingDomainReviews.push({ messageId: message.id });
-    }
-  });
-
-  const externalEvidence = await verifyGithubHumanReviewEvidence({
-    reviewLog,
-    scope: 'pilot',
-    requiredRoles: ['product-context', 'native-german', 'domain'],
-    recordsByRole: new Map(
-      ['product-context', 'native-german', 'domain'].map((role) => [
-        role,
-        reviews.filter((review) => review.role === role),
-      ]),
-    ),
-    contextDigest: {
+  const blockedGlossaryTerms = [...reviewerGlossary.values()].filter(
+    ({ decisionStatus }) => decisionStatus === 'blocked-term',
+  );
+  const reviewPack = {
+    schemaVersion: 'tiangong.i18n-de-pilot-review-pack.v6',
+    issue: pilot.issue,
+    locale: pilot.locale,
+    source: {
+      manifest: options.manifest,
       manifestDigest: manifest.source.auditedInputDigest,
+      contextLedger: options.ledger,
+      contextInputDigest: ledger.source.contextInputDigest,
       reviewPolicyDigest: ledger.source.reviewPolicyDigest,
+      pilot: options.pilot,
       pilotDigest: hashJson(pilot),
-      candidateProducer,
-      messages: [...expectedHashes]
-        .map(([messageId, hashes]) => ({ messageId, ...hashes }))
-        .sort((left, right) => left.messageId.localeCompare(right.messageId, 'en')),
     },
-    producerActors: [candidateProducer],
-  });
-  findings.externalHumanReviewEvidence.push(...externalEvidence.findings);
+    policy: {
+      candidateOnly: true,
+      runtimeActivationAllowed: false,
+      humanConfirmationStorage: 'local-untracked-markdown',
+      defaultConfirmationPath: DEFAULT_PILOT_CONFIRMATION,
+      githubEvidenceRequired: false,
+      sameReviewerMayConfirmAllDimensions: true,
+      reviewDimensions: ['product-context', 'native-german', 'domain'],
+      confirmationMustNotBeCommitted: true,
+      approvalHashRule:
+        'One local confirmation binds all 90 context, translation, dossier, and review-scope hashes plus the 9 blocked context proposals and 2 blocked glossary terms.',
+      approvalBoundary:
+        'Human confirmation clears only complete pending context proposals; missing, invalid, or stale proposal structure remains blocking.',
+      candidateProducer,
+      dossierRule:
+        'Embedded excerpts, dynamic-family proof, source-locale neighboring messages, glossary evidence, ICU branch cases, and length flags are deterministic reviewer evidence, not human approval.',
+    },
+    blockedGlossaryTerms,
+    summary: {
+      messageCount: reviewPackMessages.length,
+      domainReviewRequiredCount: [...expectedHashes.values()].filter(
+        ({ domainReviewRequired }) => domainReviewRequired,
+      ).length,
+      blockedContextCount: reviewPackMessages.filter(
+        ({ context }) => context.status === 'BLOCKED_CONTEXT',
+      ).length,
+      pendingContextApprovalCount: findings.blockedPilotContexts.length,
+      invalidContextProposalCount: findings.invalidPilotContextProposals.length,
+      blockedGlossaryTermCount: blockedGlossaryTerms.length,
+      explicitDecisionPacketCount: reviewPackMessages.filter(
+        ({ reviewerDossier }) =>
+          reviewerDossier.decisionPacket.status === 'REQUIRES_EXPLICIT_DECISION',
+      ).length,
+      contextConfirmationRequiredCount: reviewPackMessages.filter(
+        ({ context }) => !context.concept || /heuristic/iu.test(context.uiRoleSource ?? ''),
+      ).length,
+      argumentMessageCount: reviewPackMessages.filter(
+        ({ reviewerDossier }) => Object.keys(reviewerDossier.icuReview.sampleArguments).length > 0,
+      ).length,
+      selectorMessageCount: reviewPackMessages.filter(
+        ({ reviewerDossier }) => reviewerDossier.icuReview.branchCases.length > 0,
+      ).length,
+      longCandidateCount: reviewPackMessages.filter(({ reviewerDossier }) =>
+        reviewerDossier.lengthReview.flags.includes('visible-branch-over-120-characters'),
+      ).length,
+      expansionRiskCount: reviewPackMessages.filter(({ reviewerDossier }) =>
+        reviewerDossier.lengthReview.flags.includes('candidate-over-150-percent-of-english'),
+      ).length,
+    },
+    selectionCoverage: {
+      categories: Object.fromEntries(
+        [...new Set(reviewPackMessages.map(({ category }) => category))]
+          .sort()
+          .map((category) => [
+            category,
+            reviewPackMessages.filter((message) => message.category === category).length,
+          ]),
+      ),
+      modules: Object.fromEntries(
+        [...new Set(reviewPackMessages.map(({ module }) => module))]
+          .sort()
+          .map((module) => [
+            module,
+            reviewPackMessages.filter((message) => message.module === module).length,
+          ]),
+      ),
+    },
+    messages: reviewPackMessages,
+  };
+  const offlineScope = buildPilotOfflineReviewScope(reviewPack);
+  reviewPack.offlineReview = {
+    schemaVersion: offlineScope.schemaVersion,
+    defaultConfirmationPath: DEFAULT_PILOT_CONFIRMATION,
+    scopeDigest: offlineScope.scopeDigest,
+    messageCount: offlineScope.messages.length,
+    blockedContextProposalCount: offlineScope.blockedContextProposals.length,
+    blockedGlossaryTermCount: offlineScope.blockedGlossaryTerms.length,
+  };
+  const offlineReview = readPilotOfflineConfirmation(
+    options.root,
+    options.confirmation,
+    reviewPack,
+  );
+  if (offlineReview.approved) {
+    findings.blockedPilotContexts.length = 0;
+    findings.blockedGlossaryTerms.length = 0;
+  } else {
+    findings.offlineReviewConfirmation.push({ reasons: offlineReview.reasons });
+  }
 
   sortFindings(findings);
   const findingCounts = Object.fromEntries(
@@ -1338,6 +1182,7 @@ async function audit(options) {
     'duplicatePilotIds',
     'unknownPilotIds',
     'blockedPilotContexts',
+    'invalidPilotContextProposals',
     'invalidCandidates',
     'placeholderMismatches',
     'icuStructureMismatches',
@@ -1351,7 +1196,6 @@ async function audit(options) {
     'localePolicyViolations',
     'invalidReviewDomains',
     'invalidReviewerDossiers',
-    'reviewQueueMismatches',
   ];
   const structuralFindingCount = structuralFindingNames.reduce(
     (total, name) => total + findingCounts[name],
@@ -1366,90 +1210,17 @@ async function audit(options) {
     structuralFindingCount,
     reviewFindingCount,
     findingCount: structuralFindingCount + reviewFindingCount,
-    externalHumanReviewFindings: externalEvidence.findings,
+    offlineReview: {
+      approved: offlineReview.approved,
+      reasons: offlineReview.reasons,
+      scopeDigest: offlineReview.scopeDigest,
+      counts: offlineReview.counts,
+    },
     pilotCount: pilotMessages.length,
     domainReviewRequiredCount: [...expectedHashes.values()].filter(
       ({ domainReviewRequired }) => domainReviewRequired,
     ).length,
-    reviewPack: {
-      schemaVersion: 'tiangong.i18n-de-pilot-review-pack.v5',
-      issue: pilot.issue,
-      locale: pilot.locale,
-      source: {
-        manifest: options.manifest,
-        manifestDigest: manifest.source.auditedInputDigest,
-        contextLedger: options.ledger,
-        contextInputDigest: ledger.source.contextInputDigest,
-        reviewPolicyDigest: ledger.source.reviewPolicyDigest,
-        pilot: options.pilot,
-        pilotDigest: hashJson(pilot),
-      },
-      policy: {
-        candidateOnly: true,
-        runtimeActivationAllowed: false,
-        reviewEvidenceTarget: options.reviewLog,
-        requiredRoles: ['product-context', 'native-german', 'domain'],
-        reviewerIdentitySource: `${options.reviewLog} roles`,
-        approvalHashRule:
-          'Every review pins contextHash, translationHash, dossierHash, and reviewScopeHash. Duplicate decisions are invalid.',
-        candidateProducer,
-        dossierRule:
-          'Embedded excerpts, dynamic-family proof, source-locale neighboring messages, glossary evidence, ICU branch cases, and length flags are deterministic reviewer evidence, not human approval.',
-      },
-      reviewAttestationRequirements: externalEvidence.requirements,
-      summary: {
-        messageCount: reviewPackMessages.length,
-        domainReviewRequiredCount: [...expectedHashes.values()].filter(
-          ({ domainReviewRequired }) => domainReviewRequired,
-        ).length,
-        blockedContextCount: reviewPackMessages.filter(
-          ({ context }) => context.status === 'BLOCKED_CONTEXT',
-        ).length,
-        explicitDecisionPacketCount: reviewPackMessages.filter(
-          ({ reviewerDossier }) =>
-            reviewerDossier.decisionPacket.status === 'REQUIRES_EXPLICIT_DECISION',
-        ).length,
-        contextConfirmationRequiredCount: reviewPackMessages.filter(
-          ({ context }) => !context.concept || /heuristic/iu.test(context.uiRoleSource ?? ''),
-        ).length,
-        argumentMessageCount: reviewPackMessages.filter(
-          ({ reviewerDossier }) =>
-            Object.keys(reviewerDossier.icuReview.sampleArguments).length > 0,
-        ).length,
-        selectorMessageCount: reviewPackMessages.filter(
-          ({ reviewerDossier }) => reviewerDossier.icuReview.branchCases.length > 0,
-        ).length,
-        longCandidateCount: reviewPackMessages.filter(({ reviewerDossier }) =>
-          reviewerDossier.lengthReview.flags.includes('visible-branch-over-120-characters'),
-        ).length,
-        expansionRiskCount: reviewPackMessages.filter(({ reviewerDossier }) =>
-          reviewerDossier.lengthReview.flags.includes('candidate-over-150-percent-of-english'),
-        ).length,
-        reviewQueueCounts: Object.fromEntries(
-          Object.entries(reviewQueues).map(([role, queue]) => [role, queue.length]),
-        ),
-      },
-      selectionCoverage: {
-        categories: Object.fromEntries(
-          [...new Set(reviewPackMessages.map(({ category }) => category))]
-            .sort()
-            .map((category) => [
-              category,
-              reviewPackMessages.filter((message) => message.category === category).length,
-            ]),
-        ),
-        modules: Object.fromEntries(
-          [...new Set(reviewPackMessages.map(({ module }) => module))]
-            .sort()
-            .map((module) => [
-              module,
-              reviewPackMessages.filter((message) => message.module === module).length,
-            ]),
-        ),
-      },
-      reviewQueues,
-      messages: reviewPackMessages,
-    },
+    reviewPack,
   };
 }
 
@@ -1486,7 +1257,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
           reviewFindingCount: result.reviewFindingCount,
           findingCount: result.findingCount,
           findingCounts: result.findingCounts,
-          externalHumanReviewFindings: result.externalHumanReviewFindings,
+          offlineReview: result.offlineReview,
         },
         null,
         2,

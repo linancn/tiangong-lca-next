@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the Issue #601 pending-attestation reviewer onboarding, deterministic dossier/four-hash pilot, single-German-bundle, and pre-activation gates; repo ownership and branch facts are unchanged.'
+lastReviewedNote: 'Reviewed the Issue #601 local-only Markdown confirmation, deterministic dossier/scope hashes, single-German-bundle, and pre-activation gates; repo ownership and branch facts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -104,7 +104,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit command documented in `docs/agents/repo-validation.md`
-- the staged unified-German context, glossary, pilot, review pack, blocked-context policy, and scoped commands live in `docs/plans/i18n-de-DE/README.md`; Issue #601 must not activate any `de`/`de-*` runtime bundle, and automated output or local identity strings cannot substitute for canonical producer actors plus externally GitHub-attested human native-German and LCA/TIDAS reviews
+- the staged unified-German context, glossary, pilot, review pack, blocked-context policy, and scoped commands live in `docs/plans/i18n-de-DE/README.md`; Issue #601 must not activate any `de`/`de-*` runtime bundle, and completed human confirmation stays in ignored local Markdown rather than GitHub or tracked artifacts
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`

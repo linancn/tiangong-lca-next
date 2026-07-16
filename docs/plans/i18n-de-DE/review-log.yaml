@@ -1,138 +1,54 @@
 {
-  "schemaVersion": "tiangong.i18n-de-review-log.v4",
+  "schemaVersion": "tiangong.i18n-de-review-provenance.v5",
   "locale": "de-DE",
   "serialization": "JSON subset of YAML for dependency-free machine validation",
   "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
-  "status": "blocked-awaiting-qualified-human-reviewers",
-  "roles": {
-    "productContextReviewer": {
-      "status": "required-not-assigned",
-      "identity": null,
-      "identityType": "github-human-required",
-      "githubLogin": null,
-      "githubUserId": null,
-      "qualificationEvidence": null,
-      "assignedBy": null,
-      "assignedByGithubUserId": null,
-      "assignmentAttestationUrl": null,
-      "qualification": "Can confirm TianGong UI behavior, reserved-key purpose, permissions, destructive actions, and workflow state semantics."
-    },
-    "nativeGermanReviewer": {
-      "status": "required-not-assigned",
-      "identity": null,
-      "identityType": "github-human-required",
-      "githubLogin": null,
-      "githubUserId": null,
-      "qualificationEvidence": null,
-      "assignedBy": null,
-      "assignedByGithubUserId": null,
-      "assignmentAttestationUrl": null,
-      "qualification": "Native German reviewer independent from the candidate translator."
-    },
-    "lcaTidasDomainReviewer": {
-      "status": "required-not-assigned",
-      "identity": null,
-      "identityType": "github-human-required",
-      "githubLogin": null,
-      "githubUserId": null,
-      "qualificationEvidence": null,
-      "assignedBy": null,
-      "assignedByGithubUserId": null,
-      "assignmentAttestationUrl": null,
-      "qualification": "Can review German LCA, ILCD, TIDAS, validation, and solver terminology."
-    }
-  },
-  "independencePolicy": {
-    "candidateProducerMayReview": false,
-    "nativeReviewerMustDifferFromTranslator": true,
-    "domainReviewerMayAlsoBeNativeReviewer": true,
-    "productReviewerMayAlsoBeDomainReviewer": true
-  },
-  "externalAttestationPolicy": {
-    "repository": "linancn/tiangong-lca-next",
-    "issue": 601,
-    "assignmentRule": "A different repository maintainer with maintain/admin permission assigns each qualified GitHub human in an Issue #601 comment containing only the exact generated decision=APPROVED assignment marker.",
-    "reviewRule": "Each assigned reviewer personally attests the generated scope digest in an Issue #601 comment containing only the exact generated decision=APPROVED marker; the audit verifies the comment owner, Issue, author, and marker through the GitHub API.",
-    "networkRule": "Final pilot and translation enforcement require GitHub API access when assigned reviewers or attestations exist; GH_TOKEN or GITHUB_TOKEN may be used for authenticated verification.",
-    "identityRule": "GitHub human reviewers and producers are keyed by immutable numeric GitHub user id; current logins are verified against those ids through the GitHub API."
+  "status": "awaiting-local-pilot-confirmation",
+  "humanConfirmationPolicy": {
+    "storage": "local-untracked-markdown",
+    "pilotDefaultPath": ".local/i18n-de-DE/pilot-review-confirmation.md",
+    "catalogDefaultPath": ".local/i18n-de-DE/catalog-review-confirmation.md",
+    "githubEvidenceRequired": false,
+    "networkRequired": false,
+    "sameReviewerMayConfirmAllDimensions": true,
+    "dimensions": [
+      "product-context",
+      "native-german",
+      "domain"
+    ],
+    "scopeBinding": "canonical review-scope digest plus exact normalized deterministic-renderer body and review-body digest",
+    "completedArtifactMustNotBeCommitted": true,
+    "privacyBoundary": "Reviewer identity, date, decisions, findings, and the completed confirmation remain only in the ignored local file. Tracked artifacts retain candidate provenance and product content, never the human response or a digest of that response."
   },
   "recordTemplates": {
-    "roleAssignment": {
-      "status": "<pending-attestation | assigned>",
-      "identity": "<GitHub login>",
-      "identityType": "github-human",
-      "githubLogin": "<same GitHub login>",
-      "githubUserId": "<immutable numeric GitHub user id>",
-      "qualificationEvidence": "<specific evidence supporting this role>",
-      "assignedBy": "<different repository maintain/admin GitHub login>",
-      "assignedByGithubUserId": "<assigning maintainer immutable numeric GitHub user id>",
-      "assignmentAttestationUrl": "https://github.com/linancn/tiangong-lca-next/issues/601#issuecomment-<id>"
-    },
-    "pilotReview": {
-      "messageId": "<message id>",
-      "role": "<product-context | native-german | domain>",
-      "reviewer": "<assigned GitHub login>",
-      "reviewedAt": "YYYY-MM-DD",
-      "decision": "<APPROVED | CHANGES_REQUESTED>",
-      "contextHash": "<pilot-review-pack hashes.contextHash>",
-      "translationHash": "<pilot-review-pack hashes.translationHash>",
-      "dossierHash": "<pilot-review-pack hashes.dossierHash>",
-      "reviewScopeHash": "<pilot-review-pack hashes.reviewScopeHash>",
-      "findings": []
-    },
-    "finding": {
-      "severity": "<Critical | Major | Minor>",
-      "status": "<OPEN | RESOLVED>",
-      "summary": "<specific linguistic, product-context, or domain finding>"
-    },
     "translationProducer": {
       "messageId": "<message id>",
       "batchId": "<laneId | $activation-entry>",
       "producer": {
-        "type": "<github-human | ai-system>",
-        "id": "<immutable numeric GitHub user id or stable system id>",
-        "githubLogin": "<required for github-human; omitted for ai-system>",
-        "displayName": "<human-readable producer name>"
+        "type": "<ai-system | human-team>",
+        "id": "<stable non-personal actor id>",
+        "displayName": "<human-readable actor or team name>"
       },
       "producedAt": "YYYY-MM-DD",
       "contextHash": "<context-ledger hashes.context>",
       "translationHash": "<context-ledger hashes.translation>"
-    },
-    "translationReview": {
-      "messageId": "<message id>",
-      "batchId": "<laneId | $activation-entry>",
-      "role": "<native-german | domain>",
-      "reviewer": "<assigned GitHub login>",
-      "reviewedAt": "YYYY-MM-DD",
-      "decision": "<APPROVED | CHANGES_REQUESTED>",
-      "contextHash": "<context-ledger hashes.context>",
-      "translationHash": "<context-ledger hashes.translation>",
-      "findings": []
-    },
-    "externalAttestation": {
-      "scope": "<pilot | translation>",
-      "role": "<product-context | native-german | domain>",
-      "reviewer": "<assigned GitHub login>",
-      "scopeDigest": "<generated reviewAttestationRequirements scopeDigest>",
-      "evidenceUrl": "https://github.com/linancn/tiangong-lca-next/issues/601#issuecomment-<id>"
     }
   },
-  "externalAttestations": [],
   "pilot": {
     "artifact": "docs/plans/i18n-de-DE/pilot.json",
     "reviewPack": "docs/plans/i18n-de-DE/pilot-review-pack.json",
+    "confirmationScope": "pilot: 90 messages, 9 blocked-context proposals, and 2 blocked glossary terms",
     "candidateProducer": {
       "type": "ai-system",
       "id": "openai-codex",
       "displayName": "Codex research synthesis"
     },
     "candidateProducedAt": "2026-07-15",
-    "status": "candidate-ready-for-human-review",
-    "reviews": [],
-    "unresolvedFindings": []
+    "status": "candidate-ready-for-local-review"
   },
   "translations": {
     "status": "candidate-only",
+    "catalogConfirmationScope": "generated only after all 2,665 candidates and their complete contexts exist",
     "producers": [
       {
         "messageId": "app.preview.down.block",
@@ -143,8 +59,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "adedd447dc7a5555211b38a73b1395b388a1dfc7e8d498fe76e52dc263e700d3",
-        "translationHash": "28d39a44d782da4d5dc218c78961c1bd12669c599cecf7fca1f99a27d348b05b"
+        "contextHash": "cbe56afdf01bf34fae8d3bae0ed329ab0368a18266c36377ef982afa490c7d6d",
+        "translationHash": "d62f1cb784f8f2235ccfb86562dd9079972ca0bf3a3c5e0d1e1bf0622c6009b1"
       },
       {
         "messageId": "app.welcome.link.block-list",
@@ -155,8 +71,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "4d3f7a49492ad3f5f61323709c7d71d31362f08b9348e9d4f3ffee621300fddc",
-        "translationHash": "fedc2290f25a40c3508192276895eedb2bf3e155a012e729815693bd8ef3e27a"
+        "contextHash": "0acc56ab3173897c4645333c2f5ac0cf00e302e715053cc480a16a2f0fbf6494",
+        "translationHash": "9bc3b59646e88179606ce19938f273f8bae4c2e36cb97c56a28cda292457bc84"
       },
       {
         "messageId": "app.welcome.link.fetch-blocks",
@@ -167,8 +83,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "ffa4833db03bdc2a9d7afb12ed1b01253026006f3c32d0fc22c23edf3276bfab",
-        "translationHash": "b6186e845f1124e74afefe5220ba8467962a19c9b29cd54c1c85994495745815"
+        "contextHash": "70d6f3c77f15c84bcf817c69af7ed23c3bc29502c9d291829b29796f74782b20",
+        "translationHash": "c93e5acb6976a48a9171b53dd690e96c897d1cfbca6ed5cf5bab19ad41afac04"
       },
       {
         "messageId": "layout.user.link.help",
@@ -179,8 +95,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "e83a25821c5366055828a18ec8e0648106de5df931ad408912d24c0a819c2cfc",
-        "translationHash": "d76e47b04efadd7b5c59a52fbe6133072c92560e33f42970afbaa047fbeb51b9"
+        "contextHash": "12c0a01da9cf8c94fee4cdf736649cc3827aa09b24e896f2c9bef56470bb69db",
+        "translationHash": "1cf2a785f6bae16016a18fed74bc8ce2caa5b86464ca1ff418cea96c35643da4"
       },
       {
         "messageId": "layout.user.link.privacy",
@@ -191,8 +107,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "9e424d5cdc25eef2122bd7dfcbb1560a8a66c4e7ec481061ddd0461b4ea53d55",
-        "translationHash": "09c9a53871984b34ccd62bea199feed90ebc5687b176bf2402cdc2a3079c56fa"
+        "contextHash": "6ec695ae320ea4246b3665670398cbc97b4b82966e6ea140f76649c30f0928e9",
+        "translationHash": "bdb45006f07ec88b677231ebe8c0ab384996710f6a5f6ed393a00d8ddc9f0121"
       },
       {
         "messageId": "layout.user.link.terms",
@@ -203,8 +119,8 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "2fb37cdf44939779d2fe2c9608c3a5d9c77332006aac1b82456f1e599ca1a6ab",
-        "translationHash": "5d96dc8c99de36ff62778d8cd0eb80b77b5db7e1364d94e3afdd14476eba69be"
+        "contextHash": "3b0498d4feb364c370fc23b2a1238d22e18b211695fb806ce9aa554cf3d463ca",
+        "translationHash": "0ea6dbdb34d3489eef7e2e7d4a1a26bc583b5ab3cba88e6c5e1ee81048aaa838"
       },
       {
         "messageId": "navBar.lang",
@@ -215,28 +131,22 @@
           "displayName": "Codex research synthesis"
         },
         "producedAt": "2026-07-15",
-        "contextHash": "c5009e6b3e94763d807e66d11c0a130a01701d8258b4858f46e8eaba4ee01728",
-        "translationHash": "10dd324938b2e0f6b81df923148fc30f101030d30ce8f4a3dc7e877d881dca84"
+        "contextHash": "382429fa078de561a862c14a986a65b53d2e20e1129cede0e4cca5ed46744c13",
+        "translationHash": "5f91cf17d43b1e55eb1239aa0d9d42e70a275f58df254eb167be90506e90a894"
       }
-    ],
-    "reviews": [],
-    "unresolvedFindings": []
+    ]
   },
   "batches": [],
   "releaseGate": {
-    "kind": "informational-snapshot; executable truth comes from the audit scripts",
+    "kind": "informational snapshot; executable truth comes from the audit scripts and local confirmation files",
     "contextBlockedCount": 628,
     "blockedTermCount": 2,
-    "nativeGermanReviewedCount": 0,
-    "nativeGermanRequiredCount": 2665,
-    "domainReviewedCount": 0,
-    "domainRequiredCount": 2665,
-    "pilotDomainRequiredCount": 90,
-    "unresolvedCritical": 0,
-    "unresolvedMajor": 0,
-    "staleContextApprovals": 0,
-    "staleTranslationApprovals": 0,
+    "pilotCandidateCount": 90,
+    "pilotLocallyApproved": false,
+    "catalogCandidateCount": 7,
+    "catalogRequiredCount": 2665,
+    "unresolvedCriticalOrMajor": 0,
     "decision": "BLOCKED",
-    "reason": "Qualified human reviewers are not assigned, the pilot is not approved, and reserved-key context remains unresolved."
+    "reason": "The local pilot confirmation is pending; bulk translation and the separate full-catalog confirmation have not started."
   }
 }

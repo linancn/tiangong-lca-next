@@ -1,6 +1,6 @@
 # German UI localization style guide
 
-Status: proposed; native-German, product, and LCA/TIDAS approval are still required.
+Status: proposed; the local pilot confirmation is still required.
 
 This guide governs the single TianGong German UI. The canonical technical tag is `de-DE`, the menu label is `Deutsch`, and every `de` or `de-*` request must resolve to this one bundle. The product does not maintain Austrian, Swiss, or other regional German copy. Use broadly understandable Standard German, `de-DE` orthography (including `ß`), and no region-specific vocabulary, examples, currencies, administrative terms, or formatting branches.
 
@@ -101,14 +101,15 @@ The preserve list is permission, not a mandate: a translator may retain a listed
 ## Review and release gates
 
 - A translator records a candidate and pins its `contextHash` and `translationHash`.
-- A reserved-context approval additionally pins `sourceContextHash`; a pilot approval pins `dossierHash` and `reviewScopeHash`. The dossier embeds the source/context evidence, glossary authorities, ICU branch examples, and visible-length risks, while the scope hash also covers risk, rationale, declared review domains, producer, and the authoritative ledger requirement.
-- An independent native-German reviewer must cover every message and must not be the translator.
-- A German-capable LCA/TIDAS reviewer covers every message. Known domain messages retain specific scope reasons; unclassified messages default to review-required until a future externally attested exemption policy exists, so heuristic matching cannot create false negatives.
-- Reviewer evidence is accepted only from an assigned GitHub human identity keyed by immutable numeric user ID, with the current login/API binding, recorded qualification evidence, a different maintainer-authored assignment attestation, and a reviewer-authored scope attestation verified against Issue #601 through the GitHub API; renamed logins, display-name aliases, bots, and arbitrary local strings are not identities.
-- A message/role may have only one current decision. A later correction replaces the old record after hashes are regenerated; contradictory duplicate records fail the gate.
+- A reserved-context proposal additionally pins `sourceContextHash`; a pilot scope pins `dossierHash` and `reviewScopeHash`. The dossier embeds source/context evidence, glossary authorities, ICU branch examples, and visible-length risks, while the scope also covers risk, rationale, declared review dimensions, producer, and the authoritative ledger requirement.
+- Every message is reviewed across product-context, native-German, and German-capable LCA/TIDAS dimensions. One local reviewer may confirm all three dimensions; these are review questions, not three identity requirements.
+- Human confirmation exists only in an ignored local Markdown file. The reviewer reference, date, decisions, and findings are never committed or uploaded, and no GitHub API or Issue comment is part of the gate.
+- Pilot and full-catalog confirmations are separate hash-bound scopes. Pilot approval cannot approve messages or reserved contexts outside its 90-message scope.
+- Each confirmation is bound to the exact normalized deterministic-renderer body as well as its digest; recomputing a digest over a shortened or replaced form is invalid. Repository-local forms outside the ignored private directory are rejected.
+- Human confirmation can clear only a structurally complete proposal awaiting approval. Missing fields, missing evidence, an incorrect message ID, or a stale `sourceContextHash` remains a structural failure after approval.
 - Product review resolves workflow semantics, dangerous actions, privacy/permission language, and blocked reserved-key context.
-- Any source, context, German candidate, reviewer dossier, or review-policy change invalidates the applicable hash-pinned approval.
+- Any source, context, German candidate, reviewer dossier, glossary choice, or review-policy change invalidates the applicable local confirmation.
 - Release requires zero `BLOCKED_CONTEXT`, zero `BLOCKED_TERM`, zero stale approvals, and zero unresolved Critical or Major findings.
 - Issue #601 must not add `src/locales/de-DE.ts` or activate a language menu. Runtime activation and all `de`/`de-*` normalization belong to Issue #602.
 
-Research candidates may be drafted to make a blocked context or term concrete for reviewers. Such candidates remain `candidate-unreviewed`, are excluded from runtime locale modules, and do not count as translated or approved until context, identity, independence, hash, and finding gates all pass.
+Research candidates may be drafted to make a blocked context or term concrete for review. Such candidates remain `candidate-unreviewed`, are excluded from runtime locale modules, and do not count as translated or approved until the applicable context, scope-digest, canonical-body, and finding gates pass.

@@ -22,7 +22,7 @@ checkPaths:
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the Issue #601 onboarding and four-hash pilot tests; qualified-human evidence remains a localization delivery blocker, not a reopened coverage queue.'
+lastReviewedNote: 'Reviewed the Issue #601 local confirmation and scope/body-digest pilot tests; pending human evidence remains a localization delivery gate, not a reopened coverage queue.'
 ---
 
 # Testing Execution State
@@ -43,7 +43,7 @@ lastReviewedNote: 'Reviewed the Issue #601 onboarding and four-hash pilot tests;
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
-- the staged German workflow adds report-mode context/pilot evidence plus final `i18n:de:pilot` and `i18n:de:audit` enforcement; these final commands intentionally remain red while qualified human reviews, reserved context, or leaf translations are incomplete and do not represent a coverage regression
+- the staged German workflow adds report-mode context/pilot evidence plus final `i18n:de:pilot` and `i18n:de:audit` enforcement; these final commands intentionally remain red while ignored local confirmation, reserved context, or leaf translations are incomplete and do not represent a coverage regression
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled

@@ -22,7 +22,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the new Issue #601 onboarding and reviewer-dossier regression proof; it extends localization validation without reopening the broader Jest coverage strategy.'
+lastReviewedNote: 'Reviewed the new Issue #601 offline confirmation and reviewer-dossier regression proof; it extends localization validation without reopening the broader Jest coverage strategy.'
 ---
 
 # Testing Strategy
@@ -37,7 +37,7 @@ lastReviewedNote: 'Reviewed the new Issue #601 onboarding and reviewer-dossier r
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
-- localization quality should combine deterministic topology/context/hash gates with independent language and domain review; do not force natural-language approval into Jest or claim that an automated audit proves fluency
+- localization quality should combine deterministic topology/context/hash gates with local human language/domain confirmation; Jest validates form integrity and privacy boundaries but never claims that an automated audit proves fluency
 
 ## Operating Principles
 

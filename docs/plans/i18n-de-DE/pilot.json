@@ -13,7 +13,7 @@
       "id": "openai-codex",
       "displayName": "Codex research synthesis"
     },
-    "approvalAuthority": "Named product, native-German, and German-capable LCA/TIDAS reviewers recorded in review-log.yaml",
+    "approvalAuthority": "One ignored local Markdown confirmation covering product context, native German, and German-capable LCA/TIDAS dimensions; the same person may confirm all three",
     "bulkTranslationBlockedUntilApproved": true
   },
   "hardDecisionPoints": [

@@ -22,7 +22,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 62ac1df70ee1d21b952992a2d830f3fba94aad53
-lastReviewedNote: 'Reviewed the scoped German reviewer-onboarding, dossier generation, four-hash review, refresh, and enforcement sequence.'
+lastReviewedNote: 'Reviewed the scoped German local Markdown generation, digest-bound confirmation, refresh, and enforcement sequence.'
 ---
 
 # Development Bootstrap
@@ -87,7 +87,10 @@ npm ci
 | deterministic locale audit | `npm run i18n:audit` |
 | refresh staged German context ledger | `npm run i18n:de:audit:write` |
 | refresh staged German pilot review pack | `npm run i18n:de:pilot:write` |
-| resolve or finalize German reviewer identities | `npm run i18n:de:review:onboard -- <options>` |
+| generate local German pilot review form | `npm run i18n:de:review:generate` |
+| check completed local German pilot form | `npm run i18n:de:review:check` |
+| generate local German full-catalog review form | `npm run i18n:de:review:catalog:generate` |
+| check completed local German full-catalog form | `npm run i18n:de:review:catalog:check` |
 | inspect German pilot blockers | `npm run i18n:de:pilot:report` |
 | enforce approved German pilot | `npm run i18n:de:pilot` |
 | enforce complete German leaf candidate | `npm run i18n:de:audit` |
@@ -105,8 +108,8 @@ npm ci
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
 - treat `npm run prepush:gate` as the authoritative local test gate
 - run staged German generation in dependency order: `npm run i18n:de:audit:write`, then `npm run i18n:de:pilot:write`
-- use `npm run i18n:de:review:onboard -- <options>` before review generation when qualified reviewers are available; it performs read-only GitHub identity/permission verification, can atomically write the pending or externally verified roster, and prints exact comment arguments, but it never posts a GitHub comment or records a review decision
-- `npm run i18n:de:pilot` and `npm run i18n:de:audit` are final scoped gates and intentionally fail while context, externally attested human review, blocked terminology, or leaf candidates are incomplete; pilot approval pins context, candidate, reviewer dossier, immutable producer actor, all review-gate policy sources, and review-scope evidence, while the final candidate gate also requires the approved pilot and verifies every candidate; use report mode to inspect honest work-in-progress state, never to claim completion
+- use `npm run i18n:de:review:generate` only after the context ledger and pilot pack are fresh; it atomically writes an ignored local Markdown form, rejects tracked/non-private repository paths, and refuses to overwrite one without explicit `--force`; use the separate `i18n:de:review:catalog:*` pair only after the complete catalog exists
+- `npm run i18n:de:pilot` and `npm run i18n:de:audit` are final scoped gates and intentionally fail while the local pilot/full-catalog confirmation, context, terminology, or leaf candidates are incomplete; no GitHub identity, comment, or API call is part of either gate
 - when reproducing local or release gates manually, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
 
 ## If You Need More Than This File
