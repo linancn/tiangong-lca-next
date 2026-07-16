@@ -28,7 +28,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Reviewed Issue #601 scoped-first validation and single final-checkpoint gate ownership; repo ownership and branch facts are unchanged.'
+lastReviewedNote: 'Reviewed Issue #606 Calculation Bundle and release readback delivery; repo ownership, branch facts, and hard boundaries are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

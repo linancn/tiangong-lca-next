@@ -22,7 +22,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-checkpoint full gate without reopening gate-infrastructure strategy.'
+lastReviewedNote: 'Reviewed Issue #606 service-unit and read-panel behavior proof; it follows the maintained strategy and does not reopen testing-strategy work.'
 ---
 
 # Testing Strategy

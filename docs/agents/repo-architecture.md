@@ -23,7 +23,7 @@ checkPaths:
   - docker/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 99300c319ed07e489b1c67bdecc130a5b3497e85
-lastReviewedNote: 'Reviewed the complete inactive de-DE leaf catalog for Issue #601: 30-module parity and locale-specific gates do not change runtime support because the top-level bundle remains owned by Issue #602.'
+lastReviewedNote: 'Added the Issue #606 persisted Calculation Bundle and public release readback paths, including their auth, integrity, and source-Process identity boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -89,9 +89,23 @@ After enqueue succeeds, the process edit page must stop long blocking loading an
 
 When the job reaches `submitted`, Edge/Database have already validated the gate and called the final submit-review RPC on behalf of the original user. The browser must not call `app_dataset_submit_review` after a gate pass in the main process flow. Database/Edge own the persisted-row checksum, freshness, policy assertion, and final submit idempotency; stale, blocked, wrong-policy, or wrong-checksum runs must remain backend rejections.
 
+### Calculation Bundle And Release Readback
+
+The persisted calculation read path is:
+
+`src/pages/DataProcessing/CalculationBundlePanel.tsx -> src/services/lcaReleases/api.ts -> authenticated Edge projection -> signed Calculation Bundle artifacts`
+
+The public release read paths are:
+
+`src/pages/DataProcessing/index.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current-release projection`
+
+`src/pages/Processes/Components/view.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current Process projection`
+
+Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts, and fresh signed-download requests. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
+
 ## Current Hotspots
 
-- lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/services/workerJobs/**`, `src/components/LcaTaskCenter/**`, `src/pages/Processes/Analysis/**`
+- lifecycle-model and calculation-adjacent UI: `src/services/lifeCycleModels/**`, `src/services/lca/**`, `src/services/lcaReleases/**`, `src/services/workerJobs/**`, `src/components/LcaReleaseReadPanel/**`, `src/components/LcaTaskCenter/**`, `src/pages/DataProcessing/CalculationBundlePanel.tsx`, `src/pages/Processes/Analysis/**`
 - dataset validation, localized field guidance, and review jump targets: `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/pages/Processes/sdkValidationUi.ts`, `src/pages/Processes/Components/**`, `src/components/ValidationIssueModal/index.tsx`, `src/components/LangTextItem/form.tsx`, `src/pages/Utils/review.tsx`
 - review, team, and system-management flows: `src/pages/Review/**`, `src/pages/ManageSystem/**`, `src/pages/Teams/**`
 - cache-backed static resources: `public/classifications/**`, `public/locations/**`, `public/lciamethods/**`, `public/maps/**`

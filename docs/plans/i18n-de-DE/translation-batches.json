@@ -4,9 +4,9 @@
   "locale": "de-DE",
   "status": "full-catalog-candidate-ready",
   "policy": {
-    "leafKeyCount": 2658,
+    "leafKeyCount": 2706,
     "activationEntryKeyCount": 7,
-    "canonicalKeyCount": 2665,
+    "canonicalKeyCount": 2713,
     "ownerRule": "Each leaf file has exactly one owner lane; lanes have no file overlap.",
     "translationRule": "A key may enter a runtime-bound batch only when contextStatus permits translation and applicable glossary decisions are not blocked. Research candidates may exist outside runtime locale modules but never satisfy this rule.",
     "evidenceRule": "Every translated key records its laneId as batchId, non-personal producer actor, contextHash, and translationHash in review-log.yaml; the ignored local full-catalog confirmation binds the complete current scope.",
@@ -14,10 +14,10 @@
     "activationRule": "The seven $entry keys remain staged for Issue #602 and never justify a top-level de-DE.ts in Issue #601."
   },
   "categoryTotals": {
-    "activeStatic": 1729,
-    "activeDynamic": 308,
+    "activeStatic": 1730,
+    "activeDynamic": 355,
     "reservedLeaf": 621,
-    "leafTotal": 2658
+    "leafTotal": 2706
   },
   "lanes": [
     {
@@ -67,11 +67,11 @@
     {
       "laneId": "shell-auth-teams",
       "status": "candidate-produced",
-      "keyCount": 600,
-      "categoryCounts": { "activeStatic": 263, "activeDynamic": 143, "reserved": 194 },
+      "keyCount": 648,
+      "categoryCounts": { "activeStatic": 264, "activeDynamic": 190, "reserved": 194 },
       "icuCount": 7,
       "modules": [
-        { "name": "pages", "keyCount": 281 },
+        { "name": "pages", "keyCount": 329 },
         { "name": "globalHeader", "keyCount": 44 },
         { "name": "menu", "keyCount": 99 },
         { "name": "pwa", "keyCount": 5 },
@@ -82,7 +82,7 @@
         { "name": "pages_manageSystem", "keyCount": 2 }
       ],
       "reviewSlices": [
-        { "selector": "pages", "keyCount": 281 },
+        { "selector": "pages", "keyCount": 329 },
         { "selector": "remaining lane modules", "keyCount": 319 }
       ],
       "dynamicFamilies": ["dataProcessing", "welcomeGuide", "teamMemberErrors", "accountRoles"]

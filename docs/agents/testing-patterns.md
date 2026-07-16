@@ -23,7 +23,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Added scoped-first localization proof and final-checkpoint boundaries while preserving deterministic review and ICU patterns.'
+lastReviewedNote: 'Reviewed Issue #606: transport and integrity branches remain unit-tested while hook-heavy Calculation Bundle and Release panels use behavior-level component proof.'
 ---
 
 # Testing Patterns Reference

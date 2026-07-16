@@ -21,6 +21,7 @@ checkPaths:
   - docker/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedNote: 'Reviewed Issue #606 release reads: Next keeps user-session and anonymous public projections in src/services/lcaReleases without taking schema, publication, or service-role ownership.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -62,6 +63,7 @@ Rules:
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
+- persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 
 ## Common Scenarios

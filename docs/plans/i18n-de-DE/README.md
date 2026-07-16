@@ -6,15 +6,17 @@ This directory contains tracked candidate, context, terminology, and structural 
 
 ## Current gate state
 
-- Canonical messages: 2,665 (`2,658` leaf keys plus `7` activation-entry keys).
-- Staged German candidates: all 2,665 canonical messages (`2,658` leaf candidates plus `7` activation-entry candidates); approved runtime candidates: 0.
-- Runtime-evidenced context: 2,037.
+- Canonical messages: 2,713 (`2,706` leaf keys plus `7` activation-entry keys).
+- Staged German candidates: all 2,713 canonical messages (`2,706` leaf candidates plus `7` activation-entry candidates); approved runtime candidates: 0.
+- Runtime-evidenced context: 2,085.
 - Reserved compatibility messages without current runtime evidence: 628; every message now has a complete, current, hash-pinned proposal for the local full-catalog scope.
 - Pilot artifact: 90 high-risk candidates, 9 reserved-context proposals, and 2 blocked glossary choices. Its human response remains local and is intentionally not represented in tracked state.
-- Full-catalog candidate: all 30 leaf modules, all 2,665 producer records, and all context proposals are prepared for the deterministic local catalog gate.
+- Full-catalog candidate: all 30 leaf modules, all 2,713 producer records, and all context proposals are prepared for the deterministic local catalog gate.
 - No `src/locales/de-DE.ts` entry exists, so the candidate catalog remains unreachable from the runtime language selector and locale loader.
 
 These counts are generated evidence, not a completion claim.
+
+`context-ledger.json` is deliberately reproducible without either ignored confirmation file. Its `locallyReviewCompleteCandidateCount` records candidates with complete tracked context and producer evidence; it does not attest human approval. Only the ephemeral audit report may expose `offlineHumanReviewApprovedCandidateCount`, and that value is non-zero only while a valid local catalog confirmation is supplied.
 
 ## Goal and execution contract
 
@@ -24,8 +26,8 @@ Execution proceeds in five checkpoints:
 
 1. apply the current Pilot feedback only after validating each request against the complete context above;
 2. regenerate the canonical Pilot material and obtain valid local human confirmation;
-3. translate the 2,658 leaf keys in four coherent owner batches while resolving every remaining context proposal;
-4. generate, complete, and apply the separate 2,665-message catalog confirmation;
+3. translate the 2,706 leaf keys in four coherent owner batches while resolving every remaining context proposal;
+4. generate, complete, and apply the separate 2,713-message catalog confirmation;
 5. pass the scoped German gates and one final repository gate, then hand the still-inactive bundle to #602.
 
 A reviewed form without a valid local approval block is useful feedback but never satisfies the human checkpoint. Preserve it before regeneration, apply supported findings, and generate a fresh canonical form for the final human decision.
@@ -66,7 +68,7 @@ The three dimensions are review questions, not three required identities. The ca
 - `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
 - `activation-entry-translations.json`: seven staged top-level candidates owned by #602; it does not activate German.
 - `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.
-- `.local/i18n-de-DE/catalog-review-confirmation.md`: later full-catalog form, generated only after all 2,665 candidates and contexts exist. Pilot approval cannot substitute for it.
+- `.local/i18n-de-DE/catalog-review-confirmation.md`: later full-catalog form, generated only after all 2,713 candidates and contexts exist. Pilot approval cannot substitute for it.
 
 ## Commands
 
@@ -141,14 +143,14 @@ This workflow does not add a passed-gate receipt cache or bypass to the hook. If
 
 ## Pilot and catalog separation
 
-Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,575 messages or the other 619 currently reserved contexts.
+Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,623 messages or the other 619 currently reserved contexts.
 
-After the 30 leaf modules, all context proposals, and all producer records exist, generate and check the separate form with `npm run i18n:de:review:catalog:generate` and `npm run i18n:de:review:catalog:check`. Final candidate enforcement requires that file, all 2,665 candidates, exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. Human confirmation can clear only structurally complete proposals awaiting approval; it can never conceal a missing, malformed, or stale proposal. The full-catalog confirmation follows the same privacy and canonical-body rules and may be completed by the same person across the three review dimensions.
+After the 30 leaf modules, all context proposals, and all producer records exist, generate and check the separate form with `npm run i18n:de:review:catalog:generate` and `npm run i18n:de:review:catalog:check`. Final candidate enforcement requires that file, all 2,713 candidates, exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. Human confirmation can clear only structurally complete proposals awaiting approval; it can never conceal a missing, malformed, or stale proposal. The full-catalog confirmation follows the same privacy and canonical-body rules and may be completed by the same person across the three review dimensions.
 
 ## Review sequence
 
 1. Complete and pass the local pilot confirmation.
-2. Create the 30 leaf modules and translate the 2,658 leaf keys using English, Chinese, and the complete context ledger; do not mechanically translate isolated strings.
+2. Create the 30 leaf modules and translate the 2,706 leaf keys using English, Chinese, and the complete context ledger; do not mechanically translate isolated strings.
 3. Resolve all remaining reserved-context proposals and structural findings while retaining exact source/context hashes.
 4. Generate and complete the separate local full-catalog confirmation.
 5. Pass `npm run i18n:de:audit` and hand the reviewed but still inactive single bundle to #602.

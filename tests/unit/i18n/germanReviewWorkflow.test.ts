@@ -426,7 +426,7 @@ describe('German local human-review workflow', () => {
       );
       const generated = fs.readFileSync(output, 'utf8');
       expect(generated).toContain('# TianGong 德语全量 Catalog 人工确认单');
-      expect(generated.match(/^## \d{4} \/ 2665 — /gmu)).toHaveLength(2665);
+      expect(generated.match(/^## \d{4} \/ 2713 — /gmu)).toHaveLength(2713);
       expect(generated).toContain('English');
       expect(generated).toContain('中文');
       expect(generated).toContain('German candidate');
@@ -444,7 +444,7 @@ describe('German local human-review workflow', () => {
           counts: {
             blockedContextProposals: 628,
             blockedGlossaryTerms: 2,
-            catalogMessages: 2665,
+            catalogMessages: 2713,
           },
           scope: 'catalog',
         }),
@@ -578,10 +578,13 @@ describe('German local human-review workflow', () => {
       expect(candidateReport.findingCounts.blockedContexts).toBe(628);
       expect(candidateReport.findingCounts.invalidContextProposals).toBe(0);
       expect(candidateReport.findingCounts.catalogOfflineReviewConfirmation).toBe(1);
+      expect(candidateReport.staleLedger).toBe(false);
+      expect(candidateReport.summary.locallyReviewCompleteCandidateCount).toBe(2713);
+      expect(candidateReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(0);
       expect(candidateReport.catalogReview.counts).toEqual({
         blockedContextProposals: 628,
         blockedGlossaryTerms: 2,
-        catalogMessages: 2665,
+        catalogMessages: 2713,
       });
 
       const catalogConfirmation = path.join(root, 'catalog-review.md');
@@ -615,11 +618,12 @@ describe('German local human-review workflow', () => {
       expect(candidateWithCatalogApproval.status).toBe(0);
       const approvedCatalogReport = JSON.parse(candidateWithCatalogApproval.stdout);
       expect(approvedCatalogReport.catalogReview.approved).toBe(true);
+      expect(approvedCatalogReport.staleLedger).toBe(false);
       expect(approvedCatalogReport.findingCounts.blockedContexts).toBe(0);
       expect(approvedCatalogReport.findingCounts.invalidContextProposals).toBe(0);
       expect(approvedCatalogReport.findingCounts.catalogOfflineReviewConfirmation).toBe(0);
-      expect(approvedCatalogReport.summary.locallyReviewCompleteCandidateCount).toBe(2665);
-      expect(approvedCatalogReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(2665);
+      expect(approvedCatalogReport.summary.locallyReviewCompleteCandidateCount).toBe(2713);
+      expect(approvedCatalogReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(2713);
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
     }

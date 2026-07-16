@@ -22,7 +22,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Clarified narrow recovery from shared Umi artifact races without triggering redundant broad or full-gate reruns.'
+lastReviewedNote: 'Reviewed Issue #606 focused suites and wrapper exclusions; no new troubleshooting command or recovery path is required.'
 ---
 
 # Testing Troubleshooting

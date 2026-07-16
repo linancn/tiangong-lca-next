@@ -22,7 +22,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Updated the shortest work loop to use scoped proof during iteration and one hook-owned full gate for the final committed checkpoint.'
+lastReviewedNote: 'Reviewed Issue #606 Calculation Bundle and release-read delivery; bootstrap commands and the scoped-iteration plus hook-owned final-gate workflow are unchanged.'
 ---
 
 # Development Bootstrap

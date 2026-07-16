@@ -24,7 +24,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Clarified single-owner full-gate execution for Issue #601 without changing the live hook or adding a same-HEAD cache.'
+lastReviewedNote: 'Reviewed the Issue #606 behavior-test exception for two hook-heavy read wrappers; the live hook, protected-branch policy, and full-coverage bar are unchanged.'
 ---
 
 # Pre-Push Gate Policy

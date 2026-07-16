@@ -9,6 +9,7 @@ import DataProcessing, {
   packageCountLabel,
   packageOptionFromBuildJob,
   packageOptionsFromBuildJobs,
+  parseDataProcessingDeepLink,
   resolveLocalizedText,
   stateCodeCountsFromProcesses,
   stateCodeCountsFromScope,
@@ -26,6 +27,14 @@ jest.mock('@ant-design/pro-components', () =>
 jest.mock('@ant-design/icons', () =>
   require('../../../mocks/antDesignIcons').createAntDesignIconsMock(),
 );
+jest.mock('@/pages/DataProcessing/CalculationBundlePanel', () => ({
+  __esModule: true,
+  default: ({ packageId }: any) => <div data-testid='calculation-bundle-panel'>{packageId}</div>,
+}));
+jest.mock('@/components/LcaReleaseReadPanel', () => ({
+  __esModule: true,
+  default: ({ processId }: any) => <div data-testid='release-read-panel'>{processId}</div>,
+}));
 
 const mockGetSystemUserRoleApi = jest.fn();
 const mockCreateLciaResultBuildRequest = jest.fn();
@@ -253,6 +262,25 @@ describe('DataProcessing page', () => {
   });
 
   it('covers data-processing display helper fallbacks', () => {
+    expect(parseDataProcessingDeepLink('')).toEqual({
+      activeTabKey: 'builds',
+      packageId: undefined,
+      processId: undefined,
+      processVersion: undefined,
+    });
+    expect(
+      parseDataProcessingDeepLink(
+        '?tab=publication&packageId=package-1&processId=process-1&processVersion=01.00.000',
+      ),
+    ).toEqual({
+      activeTabKey: 'publication',
+      packageId: 'package-1',
+      processId: 'process-1',
+      processVersion: '01.00.000',
+    });
+    expect(parseDataProcessingDeepLink('?tab=preview').activeTabKey).toBe('preview');
+    expect(parseDataProcessingDeepLink('?tab=unknown&packageId=%20').activeTabKey).toBe('builds');
+
     expect(stringifyCommandData(null)).toBe('-');
     expect(stringifyCommandData('plain')).toBe('plain');
     expect(stringifyCommandData({ value: '<quoted>' })).toBe('{"value":"<quoted>"}');

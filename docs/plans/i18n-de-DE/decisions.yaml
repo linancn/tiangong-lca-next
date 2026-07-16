@@ -53,14 +53,14 @@ baseline:
     multipleDefaultMessageConflicts: 0
     placeholderMismatches: 0
   finalBaseline:
-    enUSUniqueKeys: 2665
-    zhCNUniqueKeys: 2665
-    activeStaticKeys: 1729
-    activeDynamicKeys: 308
+    enUSUniqueKeys: 2713
+    zhCNUniqueKeys: 2713
+    activeStaticKeys: 1730
+    activeDynamicKeys: 355
     reservedKeys: 628
     leafModulesPerLocale: 30
-    computedCallsites: 36
-    reviewedComputedCallsites: 36
+    computedCallsites: 38
+    reviewedComputedCallsites: 38
     dynamicFamilies: 16
     violations: 0
 

@@ -1,0 +1,99 @@
+.fullWidth,
+.releaseCard {
+  width: 100%;
+}
+
+.releaseHero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 10px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.releaseHero > div {
+  display: grid;
+  gap: 5px;
+  padding: 16px 18px;
+  border-right: 1px solid var(--ant-color-border-secondary);
+}
+
+.releaseHero > div:last-child {
+  border-right: 0;
+}
+
+.releaseHero span,
+.identityItem span,
+.artifactItem span {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+.releaseHero strong {
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.identityGrid,
+.artifactGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.identityItem,
+.artifactItem {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container);
+}
+
+.identityItem strong,
+.identityItem code,
+.artifactItem code {
+  overflow-wrap: anywhere;
+}
+
+.artifactItem > div {
+  display: grid;
+  gap: 4px;
+}
+
+.validationStrip,
+.countStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.validationStrip span,
+.countStrip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--ant-color-fill-secondary);
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .releaseHero {
+    grid-template-columns: 1fr;
+  }
+
+  .releaseHero > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--ant-color-border-secondary);
+  }
+
+  .releaseHero > div:last-child {
+    border-bottom: 0;
+  }
+}
