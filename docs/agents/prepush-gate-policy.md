@@ -24,7 +24,7 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: d178316406eb97ce93eb24f562922a61281e9d29
+lastReviewedCommit: b83279a68df1dcbb4a3dbf85b104787c4495f026
 lastReviewedNote: 'Reviewed Issue #606 merge and retry handling; hook ownership, full-coverage policy, and bounded managed-push recovery are unchanged.'
 ---
 

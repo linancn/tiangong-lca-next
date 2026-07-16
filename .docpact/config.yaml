@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-16"
-lastReviewedCommit: "a9524dbb33b272e1c5526f33a0b8c758e186d170"
+lastReviewedAt: "2026-07-17"
+lastReviewedCommit: "b83279a68df1dcbb4a3dbf85b104787c4495f026"
 lastReviewedNote: 'Added Issue #602 German runtime, classified the shared locale-formatting helper, and retained bounded failure-activated pre-push transport-retry ownership without changing repository boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
