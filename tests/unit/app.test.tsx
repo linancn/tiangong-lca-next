@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 const mockQueryCurrentUser = jest.fn();
 const mockGetSystemUserRoleApi = jest.fn();
 const mockGetLocalizedAppTitle = jest.fn(() => 'Localized TianGong');
+const mockResolveBrowserRuntimeLocale = jest.fn(() => 'de-DE');
 const mockHistory = {
   location: {
     pathname: '/tgdata',
@@ -63,6 +64,11 @@ jest.mock('@/services/auth', () => ({
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
   getSystemUserRoleApi: (...args: any[]) => mockGetSystemUserRoleApi(...args),
+}));
+
+jest.mock('@/services/general/runtimeLocale', () => ({
+  __esModule: true,
+  resolveBrowserRuntimeLocale: () => mockResolveBrowserRuntimeLocale(),
 }));
 
 jest.mock('../../config/defaultSettings', () => ({
@@ -140,6 +146,14 @@ describe('app runtime config', () => {
     mockQueryCurrentUser.mockResolvedValue({ name: 'Current User', access: 'admin' });
     mockGetSystemUserRoleApi.mockResolvedValue({ role: 'admin' });
     mockGetLocalizedAppTitle.mockReturnValue('Localized TianGong');
+    mockResolveBrowserRuntimeLocale.mockReturnValue('de-DE');
+  });
+
+  it('exposes the canonical browser locale to Umi before provider render', () => {
+    const { locale } = require('@/app');
+
+    expect(locale.getLocale()).toBe('de-DE');
+    expect(mockResolveBrowserRuntimeLocale).toHaveBeenCalledTimes(1);
   });
 
   it('getInitialState returns current user and merged settings on protected routes', async () => {

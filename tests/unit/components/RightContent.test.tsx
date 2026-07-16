@@ -19,6 +19,15 @@ type IconProps = {
 
 const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
+const mockSelectLangClick = jest.fn();
+let renderedLocales: Array<Record<string, unknown>> = [];
+const defaultAvailableLocales = () => [
+  { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
+  { lang: 'en-US', label: 'English' },
+  { lang: 'zh-CN', label: '简体中文' },
+  { lang: 'fr-FR', label: 'Français' },
+];
+let mockAvailableLocales = defaultAvailableLocales();
 
 jest.mock('@ant-design/icons', () => ({
   MoonOutlined: ({ onClick }: IconProps) => (
@@ -31,21 +40,37 @@ jest.mock('@ant-design/icons', () => ({
       Sun
     </button>
   ),
-  QuestionCircleOutlined: () => (
-    <button type='button' aria-label='question-icon'>
-      ?
-    </button>
-  ),
+  QuestionCircleOutlined: () => <span>?</span>,
 }));
 
 jest.mock('@umijs/max', () => ({
-  SelectLang: ({ style }: { style?: Record<string, unknown> }) => (
-    <div data-testid='select-lang' style={style ?? {}}>
-      language selector
-    </div>
-  ),
+  SelectLang: ({
+    postLocalesData,
+    style,
+  }: {
+    postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
+    style?: Record<string, unknown>;
+  }) => {
+    renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
+    return (
+      <button
+        data-testid='select-lang'
+        type='button'
+        style={style ?? {}}
+        onClick={mockSelectLangClick}
+      >
+        language selector
+      </button>
+    );
+  },
   useIntl: () => ({
     locale: mockLocale,
+    formatMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => {
+      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
+        return 'Englische Hilfedokumentation öffnen';
+      }
+      return defaultMessage ?? id;
+    },
   }),
 }));
 
@@ -61,6 +86,9 @@ afterEach(() => {
   mockHandleClick.mockClear();
   configProviderThemes.length = 0;
   mockLocale = 'zh-CN';
+  mockSelectLangClick.mockClear();
+  renderedLocales = [];
+  mockAvailableLocales = defaultAvailableLocales();
 });
 
 jest.mock('antd', () => {
@@ -110,7 +138,7 @@ describe('RightContent Components', () => {
   it('opens documentation link when question icon is clicked', () => {
     render(<Question />);
 
-    const button = screen.getByRole('button', { name: 'question-icon' });
+    const button = screen.getByRole('button', { name: 'Help' });
 
     fireEvent.click(button);
 
@@ -122,7 +150,7 @@ describe('RightContent Components', () => {
 
     render(<Question />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'question-icon' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
@@ -132,9 +160,23 @@ describe('RightContent Components', () => {
 
     render(<Question />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'question-icon' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
+  });
+
+  it('opens explicitly labelled English documentation for the German app locale', () => {
+    mockLocale = 'de-DE';
+
+    render(<Question />);
+
+    const helpButton = screen.getByRole('button', {
+      name: 'Englische Hilfedokumentation öffnen',
+    });
+    expect(helpButton).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    fireEvent.click(helpButton);
+
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 
   it('renders the language selector with padding style', () => {
@@ -153,6 +195,45 @@ describe('RightContent Components', () => {
       padding: '4px',
       marginLeft: '12px',
     });
+  });
+
+  it('exposes only the three product locales and presents one country-neutral German option', () => {
+    render(<SelectLang />);
+
+    expect(renderedLocales).toEqual([
+      { lang: 'zh-CN', label: '简体中文' },
+      { lang: 'en-US', label: 'English' },
+      { lang: 'de-DE', label: 'Deutsch', icon: '🌐', title: 'Deutsch' },
+    ]);
+  });
+
+  it('opens the language menu from keyboard interaction on the accessible wrapper', () => {
+    render(<SelectLang />);
+
+    const selectorWrapper = screen.getByRole('button', { name: 'Select a language' });
+    fireEvent.keyDown(selectorWrapper, { key: 'Enter' });
+    fireEvent.keyDown(selectorWrapper, { key: ' ' });
+
+    expect(mockSelectLangClick).toHaveBeenCalledTimes(2);
+  });
+
+  it('opens the language menu from a direct wrapper click', () => {
+    render(<SelectLang />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select a language' }));
+
+    expect(mockSelectLangClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('synthesizes a supported locale entry when Umi omits one', () => {
+    mockAvailableLocales = [
+      { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
+      { lang: 'en-US', label: 'English' },
+    ];
+
+    render(<SelectLang />);
+
+    expect(renderedLocales[0]).toEqual({ lang: 'zh-CN' });
   });
 });
 afterAll(() => {

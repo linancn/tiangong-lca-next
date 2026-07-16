@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Reviewed Issue #606: transport and integrity branches remain unit-tested while hook-heavy Calculation Bundle and Release panels use behavior-level component proof.'
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Retained Issue #606 transport, integrity, and component behavior proof while adding the active German runtime delta pattern and managed final-push boundary.'
 ---
 
 # Testing Patterns Reference
@@ -95,10 +95,11 @@ Special cases:
 5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
 6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a complete non-personal proposal with concrete evidence, UI role, concept, consequence, and current source hash before local confirmation
 7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
-8. test that the generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal; keep linguistic/domain judgment outside Jest and never write the completed form into a tracked fixture
-9. keep report mode honest during staged work; final enforcement may remain intentionally failing but must never hide missing modules, context, local confirmation, or translations
-10. validate each edit with the narrowest proof that covers its risk; accumulate coherent German leaf work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
-11. bind the repository full gate to the final committed controlled checkpoint and let the normal push hook own that one execution; ignored review content and GitHub metadata stay in their narrower evidence domains
+8. preserve the frozen Issue #601 review boundary: its generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal
+9. evolve active German only through an exact runtime manifest that assembles an accepted merged baseline with the declared feature delta; for Issue #606 require the separate local form to cover exactly its 48 new release messages, and never write completed human-review content into a tracked fixture
+10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
+11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
+12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 
 ## Focused Command Shapes
 
@@ -109,6 +110,10 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
+| active German runtime assembly | `npm run i18n:de:audit` |
+| local Issue #606 delta approval | `npm run i18n:de:delta:review:check` |
+| final managed push | `npm run push:checked -- <normal-git-push-args>` |
+| receipt-bound transport retry | `npm run push:retry` |
 
 - run Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
 

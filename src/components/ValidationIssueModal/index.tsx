@@ -2,6 +2,7 @@
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
+import { formatLocaleList, getLocaleListSeparator } from '@/utils/localeFormatting';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -11,6 +12,7 @@ import { createRoot } from 'react-dom/client';
 import { getBrandTheme } from '../../../config/branding';
 
 type IntlShapeLike = {
+  locale?: string;
   formatMessage: (
     descriptor: {
       defaultMessage?: string;
@@ -39,7 +41,10 @@ const getValidationIssueTabLabels = (intl: IntlShapeLike, issue: ValidationIssue
     (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
   );
 
-  return tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)).join('，');
+  return formatLocaleList(
+    tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)),
+    intl.locale,
+  );
 };
 
 const getSdkInvalidIssueLabel = (intl: IntlShapeLike) =>
@@ -128,12 +133,6 @@ const getSdkNavigationHint = (intl: IntlShapeLike) =>
       'The invalid data in the corresponding tab will be highlighted. Complete it and try again.',
   });
 
-const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
-  intl.formatMessage({
-    id: 'pages.validationIssues.listSeparator',
-    defaultMessage: ', ',
-  });
-
 const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
 const PROCESS_INSTANCE_FIELD_PATH_PREFIX = 'processInstance[#';
 const VALIDATION_ISSUE_TABLE_SCROLL_X = 1164;
@@ -179,8 +178,7 @@ const getSdkInvalidIsolatedNodeHintText = (
 ) => {
   const nodeNames = details
     .map((detail) => getSdkProcessInstanceLabel(intl, detail))
-    .filter((label, index, labels) => label && labels.indexOf(label) === index)
-    .join(getValidationIssueListSeparator(intl));
+    .filter((label, index, labels) => label && labels.indexOf(label) === index);
 
   return intl.formatMessage(
     {
@@ -188,7 +186,7 @@ const getSdkInvalidIsolatedNodeHintText = (
       defaultMessage: 'Please check whether these nodes are isolated ({nodeNames})',
     },
     {
-      nodeNames,
+      nodeNames: formatLocaleList(nodeNames, intl.locale),
     },
   );
 };
@@ -712,7 +710,7 @@ const ValidationIssueModalContent = ({
                   {tabLabel}
                 </Button>
               </span>
-              {index < interactiveTabNames.length - 1 ? '，' : null}
+              {getLocaleListSeparator(index, interactiveTabNames.length, intl.locale)}
             </span>
           );
         })}

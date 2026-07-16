@@ -1760,7 +1760,7 @@ describe('ToolbarEditInfo', () => {
     });
 
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      'Life cycle model information，Administrative information，Modelling and validation，Unknown section (technology)：Data check failed, please check the data!',
+      'Data check failed in Life cycle model information, Administrative information, Modelling and validation, and Unknown section (technology). Please check the data!',
     );
     expect(
       await screen.findByRole('dialog', { name: 'Model base information' }),

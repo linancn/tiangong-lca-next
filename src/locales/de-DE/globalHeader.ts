@@ -4,6 +4,7 @@ export default {
   'component.globalHeader.search.example2': 'Suchbeispiel 2',
   'component.globalHeader.search.example3': 'Suchbeispiel 3',
   'component.globalHeader.help': 'Hilfe',
+  'component.globalHeader.help.englishFallback': 'Hilfedokumentation (Englisch)',
   'component.globalHeader.notification': 'Benachrichtigung',
   'component.globalHeader.notification.empty': 'Sie haben alle Benachrichtigungen angesehen.',
   'component.globalHeader.message': 'Nachricht',

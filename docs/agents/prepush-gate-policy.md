@@ -21,10 +21,11 @@ checkPaths:
   - package.json
   - scripts/docpact
   - scripts/docpact-gate.js
+  - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Reviewed the Issue #606 behavior-test exception for two hook-heavy read wrappers; the live hook, protected-branch policy, and full-coverage bar are unchanged.'
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Aligned the Issue #602 bounded, failure-activated push-retry contract with the managed push lifecycle.'
 ---
 
 # Pre-Push Gate Policy
@@ -63,6 +64,7 @@ It does not own:
 | Surface | Target rule |
 | --- | --- |
 | local `pre-push` hook on any branch | run docpact first, then run the full local gate |
+| same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
 | ordinary GitHub branch pushes | do not run standalone remote test jobs |
 | PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
@@ -83,7 +85,15 @@ It does not own:
 - keep one authoritative full gate
 - for a normal delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; do not invoke the same gate manually immediately before that push
 - use manual full-gate execution only when a no-push handoff needs the evidence
-- do not add a same-HEAD receipt cache in Issue #601; a correct cache would be separate gate-infrastructure work and must fail closed across HEAD, tree, toolchain, dependencies, refs, and Docpact base
+- use `npm run push:checked -- <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper
+- an already-up-to-date push supplies no ref updates, so the hook skips checkpoint collection and both gates; a managed no-op succeeds only with a private nonce-bound no-update acknowledgement, which can never activate a retry receipt
+- hook completion alone never creates a reusable receipt: a successful managed original push leaves no receipt, and only a non-zero original push after a valid hook payload activates an ignored, one-hour, bounded single-push-intent receipt under `.local/prepush-gate/`
+- the checked-push session directory and nonce remain private to the hook coordinator and are removed from Docpact and test-gate subprocess environments, so nested tests or helper pushes cannot forge the outer session's successful-gate payload
+- after that uncertain or failed transport, use `npm run push:retry` with no arguments; remote, ref, and commit come only from the receipt, and any operator-supplied target argument is rejected
+- the helper rechecks the remote/refspec, HEAD/tree/branch, clean worktree, Node/npm, lockfiles and installed dependency tree, hook/gate inputs, and resolved Docpact base before it internally performs the receipt-bound exact-SHA `--no-verify` transport; this internal helper call is the only bypass authority
+- if the remote already equals the receipt-bound target SHA, the helper clears the receipt and succeeds idempotently without another push or gate run
+- a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
+- never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - protect the actual local and release gates
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs

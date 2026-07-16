@@ -1,3 +1,6 @@
+import deTeamMessages from '@/locales/de-DE/pages_teams';
+import enTeamMessages from '@/locales/en-US/pages_teams';
+import zhTeamMessages from '@/locales/zh-CN/pages_teams';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
@@ -19,6 +22,21 @@ import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
 import { getRuntimeLocale } from './runtimeLocale';
 import { sortDataSetVersionRows } from './version';
+
+const NO_TEAM_MESSAGE_ID = 'teams.modal.noTeam.title';
+const noTeamMessages = {
+  'zh-CN': zhTeamMessages,
+  'en-US': enTeamMessages,
+  'de-DE': deTeamMessages,
+} as const;
+
+const getNoTeamMessage = () => {
+  const locale = getRuntimeLocale();
+  return (
+    (noTeamMessages[locale] as Record<string, string>)[NO_TEAM_MESSAGE_ID] ??
+    enTeamMessages[NO_TEAM_MESSAGE_ID]
+  );
+};
 
 type InvokeErrorBody = {
   code?: string;
@@ -1193,9 +1211,7 @@ export async function contributeSource(tableName: string, id: string, version: s
       teamId,
     });
   } else {
-    message.error(
-      getRuntimeLocale() === 'zh-CN' ? '您不是任何团队的成员' : 'You are not a member of any team',
-    );
+    message.error(getNoTeamMessage());
   }
   return {
     error: true,

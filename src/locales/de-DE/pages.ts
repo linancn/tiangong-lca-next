@@ -59,6 +59,8 @@ export default {
   'pages.login.terms': 'Mit der Registrierung stimmen Sie unseren {termsOfService} und unserem {privacyPolicy} zu',
   'pages.login.termsOfUse': 'Nutzungsbedingungen',
   'pages.login.privacyNotice': 'Datenschutzhinweis',
+  'pages.login.termsOfUse.englishFallbackLabel': 'Nutzungsbedingungen (Englisch)',
+  'pages.login.privacyNotice.englishFallbackLabel': 'Datenschutzhinweis (Englisch)',
   'pages.login.title': 'TianGong LCA-Datenplattform',
   'pages.login.subTitle': 'Die weltweit größte offene LCA-Datenplattform',
   'pages.welcome.alertMessage': 'Schnellere und leistungsfähigere Hochleistungskomponenten wurden veröffentlicht.',

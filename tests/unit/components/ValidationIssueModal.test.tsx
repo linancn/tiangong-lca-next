@@ -200,6 +200,7 @@ describe('ValidationIssueModal', () => {
   const mockUpsertValidationIssueNotification =
     upsertValidationIssueNotification as jest.MockedFunction<any>;
   const intl = {
+    locale: 'zh-CN',
     formatMessage: (
       { id, defaultMessage }: { id: string; defaultMessage?: string },
       values?: Record<string, string | number | undefined>,
@@ -580,7 +581,7 @@ describe('ValidationIssueModal', () => {
 
     expect(document.querySelectorAll('tbody tr')).toHaveLength(1);
     expect(
-      screen.getByText('当前数据集校验失败(过程信息，建模信息，管理信息，输入/输出)'),
+      screen.getByText('当前数据集校验失败(过程信息、建模信息、管理信息和输入/输出)'),
     ).toBeInTheDocument();
     expect(screen.getByText('数据校验不通过')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: '修复问题' })).toHaveLength(1);
@@ -836,7 +837,7 @@ describe('ValidationIssueModal', () => {
     });
 
     const detailButton = screen.getByRole('button', {
-      name: '请检测一下节点是否为孤立节点(nodeB，nodeC)',
+      name: '请检测一下节点是否为孤立节点(nodeB和nodeC)',
     });
     expect(detailButton).toBeInTheDocument();
     expect(screen.queryByText(/@multiplicationFactor/)).not.toBeInTheDocument();
@@ -863,6 +864,7 @@ describe('ValidationIssueModal', () => {
   it('localizes isolated-node hints for multiplication-factor lifecycle model sdk issues in English', async () => {
     const onNavigate = jest.fn();
     const enIntl = {
+      locale: 'en-US',
       formatMessage: (
         { id, defaultMessage }: { id: string; defaultMessage?: string },
         values?: Record<string, string | number | undefined>,
@@ -944,7 +946,7 @@ describe('ValidationIssueModal', () => {
 
     expect(
       screen.getByRole('button', {
-        name: 'Please check whether these nodes are isolated (nodeB, nodeC)',
+        name: 'Please check whether these nodes are isolated (nodeB and nodeC)',
       }),
     ).toBeInTheDocument();
     expect(screen.queryByText(/@multiplicationFactor/)).not.toBeInTheDocument();
@@ -1551,7 +1553,7 @@ describe('ValidationIssueModal', () => {
     ).toBeGreaterThan(2);
     expect(screen.getAllByText('当前数据集校验失败').length).toBeGreaterThan(1);
     expect(
-      screen.getByText('当前数据集校验失败(过程信息，未知数据分区（unknownTab）)'),
+      screen.getByText('当前数据集校验失败(过程信息和未知数据分区（unknownTab）)'),
     ).toBeInTheDocument();
     expect(
       screen.getByText('当前数据集校验失败(未知数据分区（generalInformation）)'),
@@ -1866,7 +1868,7 @@ describe('ValidationIssueModal', () => {
     expect(screen.getByRole('button', { name: '过程信息' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '输入/输出' })).toBeInTheDocument();
     expect(screen.getByRole('dialog').textContent).toContain(
-      '当前数据集校验失败(过程信息，输入/输出)',
+      '当前数据集校验失败(过程信息和输入/输出)',
     );
 
     fireEvent.click(screen.getByRole('button', { name: '输入/输出' }));

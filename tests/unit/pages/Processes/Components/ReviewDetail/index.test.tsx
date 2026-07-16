@@ -13,6 +13,7 @@ const toText = (node: any): string => {
 };
 
 const mockGetReviewsByProcess = jest.fn();
+let mockScreens: Record<string, boolean> = { sm: true };
 
 jest.mock('@/services/reviews/api', () => ({
   __esModule: true,
@@ -22,6 +23,7 @@ jest.mock('@/services/reviews/api', () => ({
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   useIntl: () => ({
+    locale: 'de-DE',
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, string>) =>
       Object.entries(values ?? {}).reduce(
         (message, [key, value]) => message.replace(`{${key}}`, value),
@@ -38,14 +40,17 @@ jest.mock('@ant-design/icons', () => ({
 
 let mockLastRequest: ((params?: any) => Promise<any>) | null = null;
 let mockLastColumns: any[] = [];
+let mockLastTableProps: any = null;
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request, columns = [] }: any) => {
+  const ProTable = (props: any) => {
+    const { request, columns = [] } = props;
     React.useEffect(() => {
       mockLastRequest = request;
       mockLastColumns = columns;
+      mockLastTableProps = props;
     }, [request]);
     return <div data-testid='pro-table'>table</div>;
   };
@@ -68,6 +73,10 @@ jest.mock('antd', () => {
 
   const Tooltip = ({ children }: any) => <>{children}</>;
 
+  const Typography = {
+    Text: ({ children }: any) => <span>{children}</span>,
+  };
+
   const Drawer = ({ open, title, extra, children, onClose }: any) => {
     if (!open) return null;
     const label = toText(title) || 'drawer';
@@ -87,6 +96,10 @@ jest.mock('antd', () => {
     Button,
     Tooltip,
     Drawer,
+    Grid: {
+      useBreakpoint: () => mockScreens,
+    },
+    Typography,
   };
 });
 
@@ -100,6 +113,8 @@ describe('ReviewDetail component', () => {
     jest.clearAllMocks();
     mockLastRequest = null;
     mockLastColumns = [];
+    mockLastTableProps = null;
+    mockScreens = { sm: true };
   });
 
   it('opens drawer and loads review logs sorted by time', async () => {
@@ -135,6 +150,15 @@ describe('ReviewDetail component', () => {
     expect(result?.data).toHaveLength(2);
     expect(result?.data?.map((item: any) => item.operator)).toEqual(['Bob', 'Alice']);
     expect(result?.data?.map((item: any) => item.action)).toEqual(['created', 'updated']);
+    expect(result?.data?.[0]).toEqual(
+      expect.objectContaining({
+        timestamp: Date.parse('2023-05-03T08:30:00Z'),
+        time: new Intl.DateTimeFormat('de-DE', {
+          dateStyle: 'medium',
+          timeStyle: 'medium',
+        }).format(Date.parse('2023-05-03T08:30:00Z')),
+      }),
+    );
   });
 
   it('returns empty data set when service responds with error', async () => {
@@ -184,7 +208,10 @@ describe('ReviewDetail component', () => {
         {
           id: 'review-2',
           json: {
-            logs: [{ time: undefined, action: undefined, user: {} }],
+            logs: [
+              { time: undefined, action: undefined, user: {} },
+              { time: undefined, action: undefined, user: {} },
+            ],
           },
         },
       ],
@@ -206,6 +233,14 @@ describe('ReviewDetail component', () => {
           {
             key: 'review-2-0',
             operator: '-',
+            timestamp: null,
+            time: '-',
+            action: '-',
+          },
+          {
+            key: 'review-2-1',
+            operator: '-',
+            timestamp: null,
             time: '-',
             action: '-',
           },
@@ -253,13 +288,46 @@ describe('ReviewDetail component', () => {
       await mockLastRequest?.({});
     });
 
-    expect(mockLastColumns[2].render(undefined, { action: 'submit_review' })).toBe('Submit Review');
-    expect(mockLastColumns[2].render(undefined, { action: 'custom-action' })).toBe(
+    expect(toText(mockLastColumns[2].render(undefined, { action: 'submit_review' }))).toBe(
+      'Submit Review',
+    );
+    expect(toText(mockLastColumns[2].render(undefined, { action: 'custom-action' }))).toBe(
       'Unknown review action (custom-action)',
     );
-    expect(mockLastColumns[2].render(undefined, { action: '   ' })).toBe(
+    expect(toText(mockLastColumns[2].render(undefined, { action: '   ' }))).toBe(
       'Unknown review action (-)',
     );
+    expect(toText(mockLastColumns[1].render(undefined, { time: '16.07.2026, 10:30:00' }))).toBe(
+      '16.07.2026, 10:30:00',
+    );
+    expect(mockLastTableProps).toEqual(
+      expect.objectContaining({ tableLayout: 'fixed', scroll: { x: 580 } }),
+    );
+  });
+
+  it('uses one readable card column on a 390px-class viewport without hiding fields', () => {
+    mockScreens = { sm: false, xs: true };
+
+    render(<ReviewDetail {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(mockLastColumns).toHaveLength(1);
+    expect(mockLastTableProps.scroll).toBeUndefined();
+
+    render(
+      <>
+        {mockLastColumns[0].render(undefined, {
+          action: 'submit_review',
+          operator: 'Ada Reviewer',
+          time: '16.07.2026, 10:30:00',
+        })}
+      </>,
+    );
+
+    expect(screen.getByText('Submit Review')).toBeInTheDocument();
+    expect(screen.getByText('Ada Reviewer')).toBeInTheDocument();
+    expect(screen.getByText('16.07.2026, 10:30:00')).toBeInTheDocument();
+    expect(screen.getAllByText('Action Details').length).toBeGreaterThan(0);
   });
 
   it('closes the drawer when the close button is clicked', () => {

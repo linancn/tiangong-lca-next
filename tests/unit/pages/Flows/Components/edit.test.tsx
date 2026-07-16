@@ -877,7 +877,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed, please check the data!'),
+        expect.stringContaining('Data check failed in '),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -1297,7 +1297,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed, please check the data!'),
+        expect.stringContaining('Data check failed in '),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalledTimes(3);

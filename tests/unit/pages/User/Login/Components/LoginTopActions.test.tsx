@@ -12,6 +12,12 @@ jest.mock('umi', () => ({
   __esModule: true,
   useIntl: () => ({
     locale: mockLocale,
+    formatMessage: ({ defaultMessage, id }: any) => {
+      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
+        return 'Englische Hilfedokumentation öffnen';
+      }
+      return defaultMessage ?? id;
+    },
   }),
 }));
 
@@ -78,10 +84,28 @@ describe('LoginTopActions', () => {
 
     await userEvent.hover(screen.getByTestId('login-language'));
     await userEvent.unhover(screen.getByTestId('login-language'));
-    await userEvent.click(screen.getByRole('button', { name: 'open-language-menu' }));
+    await userEvent.click(screen.getByTestId('login-language-frame'));
 
     expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
     expect(screen.getByText('dark-on')).toBeInTheDocument();
+  });
+
+  it('supports keyboard access for dark mode, language, and help actions', async () => {
+    const onDarkModeToggle = jest.fn();
+    renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={onDarkModeToggle} />);
+
+    screen.getByRole('button', { name: 'toggle-dark-mode' }).focus();
+    await userEvent.keyboard('{Enter}');
+    screen.getByRole('button', { name: 'select-lang-trigger' }).focus();
+    await userEvent.keyboard(' ');
+    screen.getByRole('button', { name: 'Open help documentation' }).focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+
+    expect(onDarkModeToggle).toHaveBeenCalledTimes(1);
+    expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
+    expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth');
+    expect(window.open).toHaveBeenCalledTimes(2);
   });
 
   it('keeps native language-trigger behavior when clicking the inner trigger directly', async () => {
@@ -99,7 +123,7 @@ describe('LoginTopActions', () => {
 
     await userEvent.hover(screen.getByTestId('login-help'));
     await userEvent.unhover(screen.getByTestId('login-help'));
-    await userEvent.click(screen.getByRole('button', { name: 'open-help-docs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open help documentation' }));
 
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
@@ -107,9 +131,23 @@ describe('LoginTopActions', () => {
   it('opens the default zh docs url when locale is not English', async () => {
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'open-help-docs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open help documentation' }));
 
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth');
+  });
+
+  it('opens explicitly labelled English docs for German without inventing a /de route', async () => {
+    mockLocale = 'de-DE';
+
+    renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
+
+    const helpAction = screen.getByRole('button', {
+      name: 'Englische Hilfedokumentation öffnen',
+    });
+    expect(helpAction).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    await userEvent.click(helpAction);
+
+    expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 
   it('falls back to secondary text color and zh locale when optional token or locale values are missing', async () => {
@@ -119,7 +157,7 @@ describe('LoginTopActions', () => {
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
 
     expect(screen.getByTestId('login-dark-mode')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'open-help-docs' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Open help documentation' }));
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth');
   });
 });

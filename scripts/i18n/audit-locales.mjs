@@ -14,7 +14,7 @@ const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
 const SCHEMA_VERSION = 'tiangong.i18n-manifest.v1';
 const DECISIONS_SCHEMA_VERSION = 'tiangong.i18n-decisions.v1';
-const LOCALES = ['en-US', 'zh-CN'];
+const LOCALES = ['en-US', 'zh-CN', 'de-DE'];
 const DEFAULT_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
 const DEFAULT_DECISIONS = 'docs/plans/i18n-de-DE/decisions.yaml';
 const DEFAULT_DYNAMIC_REGISTRY = 'docs/plans/i18n-de-DE/dynamic-families.json';
@@ -1025,13 +1025,17 @@ function buildManifest(root, baseRef, dynamicRegistryPath) {
     dynamicRegistry,
   );
   const localeModuleDrift = [...LOCALES.flatMap((locale) => localeScans[locale].topologyFindings)];
-  if (!arrayEquals(localeScans['en-US'].leafModules, localeScans['zh-CN'].leafModules)) {
-    localeModuleDrift.push({
-      findingId: 'locale-topology:leaf-module-set-drift',
-      reason: 'English and Chinese leaf module sets differ.',
-      'en-US': localeScans['en-US'].leafModules,
-      'zh-CN': localeScans['zh-CN'].leafModules,
-    });
+  const canonicalLeafModules = localeScans[LOCALES[0]].leafModules;
+  for (const locale of LOCALES.slice(1)) {
+    if (!arrayEquals(canonicalLeafModules, localeScans[locale].leafModules)) {
+      localeModuleDrift.push({
+        findingId: `locale-topology:${locale}:leaf-module-set-drift`,
+        reason: `The ${locale} leaf module set must match ${LOCALES[0]}.`,
+        canonicalLocale: LOCALES[0],
+        expectedLeafModules: canonicalLeafModules,
+        actualLeafModules: localeScans[locale].leafModules,
+      });
+    }
   }
   const canonicalSpreadOrderLocale = LOCALES[0];
   const canonicalSpreadOrder = localeScans[canonicalSpreadOrderLocale].moduleOrder;
@@ -1111,7 +1115,7 @@ function buildManifest(root, baseRef, dynamicRegistryPath) {
         : null;
       if (effective) availableLocales.push(locale);
     }
-    if (availableLocales.length === 1) {
+    if (availableLocales.length > 0 && availableLocales.length < LOCALES.length) {
       oneSidedKeys.push({
         findingId: `one-sided-key:${id}`,
         messageId: id,
@@ -1316,6 +1320,7 @@ function buildManifest(root, baseRef, dynamicRegistryPath) {
       included: [
         'src/locales/en-US.ts and src/locales/en-US/**/*.ts',
         'src/locales/zh-CN.ts and src/locales/zh-CN/**/*.ts',
+        'src/locales/de-DE.ts and src/locales/de-DE/**/*.ts',
         'production src/**/*.{ts,tsx,js,jsx} formatMessage and FormattedMessage callsites',
         'production src/**/*.{ts,tsx,js,jsx,json} messageKey properties',
       ],
@@ -1404,7 +1409,7 @@ function buildDecisionRegister(manifest) {
       'Repair the shared dynamic-family registry and its source-locale evidence.',
     unsupportedSyntax:
       'Replace or explicitly extend the deterministic locale scanner for this syntax.',
-    localeModuleDrift: 'Align the English and Chinese module topology and top-level spread order.',
+    localeModuleDrift: 'Align every active locale module topology and top-level spread order.',
     duplicateLocaleKeys:
       'Assign one module owner per key or document and implement an explicit compatibility migration.',
     oneSidedKeys: 'Add the missing source translation or remove/reclassify the key in all locales.',

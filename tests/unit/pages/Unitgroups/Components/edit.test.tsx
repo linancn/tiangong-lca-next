@@ -865,7 +865,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Unit group information，Units，Unknown section (validation)：Data check failed, please check the data!',
+        'Data check failed in Unit group information, Units, and Unknown section (validation). Please check the data!',
       ),
     );
   });
@@ -926,7 +926,7 @@ describe('UnitGroupEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Administrative information：Data check failed, please check the data!',
+        'Data check failed in Administrative information. Please check the data!',
       ),
     );
   });

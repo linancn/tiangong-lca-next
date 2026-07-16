@@ -1,3 +1,4 @@
+import deDE from '@/locales/de-DE';
 import enUS from '@/locales/en-US';
 import zhCN from '@/locales/zh-CN';
 import { execFileSync } from 'child_process';
@@ -13,12 +14,15 @@ import {
   type SupportedBaselineLocale,
 } from '../helpers/i18n/localeAudit';
 
-const LOCALES: Record<SupportedBaselineLocale, LocaleMessages> = {
+type ActiveLocale = SupportedBaselineLocale | 'de-DE';
+
+const LOCALES: Record<ActiveLocale, LocaleMessages> = {
+  'de-DE': deDE as LocaleMessages,
   'en-US': enUS as LocaleMessages,
   'zh-CN': zhCN as LocaleMessages,
 };
-const LOCALE_ENTRIES = Object.entries(LOCALES) as Array<[SupportedBaselineLocale, LocaleMessages]>;
-const LOCALE_NAMES = Object.keys(LOCALES) as SupportedBaselineLocale[];
+const LOCALE_ENTRIES = Object.entries(LOCALES) as Array<[ActiveLocale, LocaleMessages]>;
+const LOCALE_NAMES = Object.keys(LOCALES) as ActiveLocale[];
 
 const EMPTY_MESSAGE_ALLOWLIST = ['pages.layouts.userLayout.title'];
 
@@ -52,10 +56,7 @@ type AuditSummary = {
 };
 
 type AuditManifest = {
-  localeTopology: Record<
-    SupportedBaselineLocale,
-    { moduleOrder: string[]; spreadOrderAligned: boolean }
-  >;
+  localeTopology: Record<ActiveLocale, { moduleOrder: string[]; spreadOrderAligned: boolean }>;
   messages: Array<{
     category: 'active-dynamic' | 'active-static' | 'reserved';
     dynamicFamilies?: string[];
@@ -81,9 +82,9 @@ const runAudit = (...args: string[]): AuditResult =>
 const sortedKeys = (messages: LocaleMessages): string[] => Object.keys(messages).sort();
 
 const keyParityDiagnostics = (
-  leftName: SupportedBaselineLocale,
+  leftName: ActiveLocale,
   left: LocaleMessages,
-  rightName: SupportedBaselineLocale,
+  rightName: ActiveLocale,
   right: LocaleMessages,
 ): string[] => {
   const leftKeys = new Set(Object.keys(left));
@@ -100,17 +101,22 @@ const keyParityDiagnostics = (
 
 describe('locale bundle baseline', () => {
   const leafModules = {
+    'de-DE': loadLeafLocaleModules('de-DE'),
     'en-US': loadLeafLocaleModules('en-US'),
     'zh-CN': loadLeafLocaleModules('zh-CN'),
-  } satisfies Record<SupportedBaselineLocale, LeafLocaleModule[]>;
+  } satisfies Record<ActiveLocale, LeafLocaleModule[]>;
   const topLevelDirectKeys = {
+    'de-DE': readTopLevelDirectMessageKeys('de-DE' as SupportedBaselineLocale),
     'en-US': readTopLevelDirectMessageKeys('en-US'),
     'zh-CN': readTopLevelDirectMessageKeys('zh-CN'),
-  } satisfies Record<SupportedBaselineLocale, string[]>;
+  } satisfies Record<ActiveLocale, string[]>;
 
   it('keeps identical leaf topology and merges every leaf into each top-level bundle', () => {
     expect(leafModules['en-US'].map(({ fileName }) => fileName)).toEqual(
       leafModules['zh-CN'].map(({ fileName }) => fileName),
+    );
+    expect(leafModules['de-DE'].map(({ fileName }) => fileName)).toEqual(
+      leafModules['en-US'].map(({ fileName }) => fileName),
     );
 
     LOCALE_ENTRIES.forEach(([locale, bundle]) => {
@@ -123,8 +129,9 @@ describe('locale bundle baseline', () => {
     });
   });
 
-  it('keeps exact key parity between the canonical source locales', () => {
+  it('keeps exact key parity between all active locales', () => {
     expect(keyParityDiagnostics('en-US', enUS, 'zh-CN', zhCN)).toEqual([]);
+    expect(keyParityDiagnostics('en-US', enUS, 'de-DE', deDE)).toEqual([]);
   });
 
   it('exports only strings and limits empty messages to the explicit allowlist', () => {
@@ -150,17 +157,18 @@ describe('locale bundle baseline', () => {
 
   it('keeps ICU argument names and types aligned', () => {
     const enMessages = LOCALES['en-US'];
-    const zhMessages = LOCALES['zh-CN'];
-    const mismatches = sortedKeys(enMessages)
-      .filter(
-        (key) =>
-          serializeIcuArgumentSignature(enMessages[key]) !==
-          serializeIcuArgumentSignature(zhMessages[key]),
-      )
-      .map(
-        (key) =>
-          `${key}: en-US [${serializeIcuArgumentSignature(enMessages[key])}] != zh-CN [${serializeIcuArgumentSignature(zhMessages[key])}]`,
-      );
+    const mismatches = (['zh-CN', 'de-DE'] as ActiveLocale[]).flatMap((locale) =>
+      sortedKeys(enMessages)
+        .filter(
+          (key) =>
+            serializeIcuArgumentSignature(enMessages[key]) !==
+            serializeIcuArgumentSignature(LOCALES[locale][key]),
+        )
+        .map(
+          (key) =>
+            `${key}: en-US [${serializeIcuArgumentSignature(enMessages[key])}] != ${locale} [${serializeIcuArgumentSignature(LOCALES[locale][key])}]`,
+        ),
+    );
     expect(mismatches).toEqual([]);
   });
 
@@ -203,6 +211,9 @@ describe('locale bundle baseline', () => {
     expect(manifest.localeTopology['zh-CN'].moduleOrder).toEqual(
       manifest.localeTopology['en-US'].moduleOrder,
     );
+    expect(manifest.localeTopology['de-DE'].moduleOrder).toEqual(
+      manifest.localeTopology['en-US'].moduleOrder,
+    );
     expect(
       Object.values(manifest.localeTopology).every(({ spreadOrderAligned }) => spreadOrderAligned),
     ).toBe(true);
@@ -234,15 +245,15 @@ describe('locale bundle baseline', () => {
   });
 });
 
-describe('inactive German candidate leaf catalog', () => {
+describe('active German runtime catalog', () => {
   const candidateLeafModules = loadLeafLocaleModules('de-DE');
   const canonicalLeafModules = loadLeafLocaleModules('en-US');
 
-  it('loads every canonical leaf module without activating a runtime bundle', () => {
+  it('loads every canonical leaf module through the single active runtime bundle', () => {
     expect(candidateLeafModules.map(({ fileName }) => fileName)).toEqual(
       canonicalLeafModules.map(({ fileName }) => fileName),
     );
-    expect(fs.existsSync('src/locales/de-DE.ts')).toBe(false);
+    expect(fs.existsSync('src/locales/de-DE.ts')).toBe(true);
   });
 
   it('keeps complete string-key parity with the canonical English leaf catalog', () => {

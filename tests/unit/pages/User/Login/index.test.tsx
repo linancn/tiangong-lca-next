@@ -46,6 +46,8 @@ var mockPasswordFields: Record<string, any> = {};
 var mockGetLocalizedAppTitle: jest.Mock = jest.fn();
 // eslint-disable-next-line no-var
 var mockGetLocalizedLoginSubtitle: jest.Mock = jest.fn();
+// eslint-disable-next-line no-var
+var mockLocale = 'en-US';
 
 mockUseModelState.setInitialState = (...args: any[]) => mockSetInitialState(...args);
 
@@ -63,8 +65,14 @@ jest.mock('umi', () => {
     history: mockHistory,
     useLocation: () => mockLocation,
     useIntl: () => ({
-      locale: 'en-US',
-      formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+      locale: mockLocale,
+      formatMessage: ({ defaultMessage, id }: any) => {
+        const germanMessages: Record<string, string> = {
+          'pages.login.termsOfUse.englishFallbackLabel': 'Nutzungsbedingungen (Englisch)',
+          'pages.login.privacyNotice.englishFallbackLabel': 'Datenschutzhinweis (Englisch)',
+        };
+        return (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ?? defaultMessage ?? id;
+      },
     }),
     useModel: () => mockUseModelState,
   };
@@ -79,20 +87,38 @@ jest.mock('@umijs/max', () => ({
     </a>
   ),
   FormattedMessage: ({ defaultMessage, id, values }: any) => {
+    const React = require('react');
     const baseText = defaultMessage ?? id;
     if (!values) {
       return baseText;
     }
 
-    return Object.entries(values).reduce((text, [key, value]) => {
-      return text.replace(`{${key}}`, toText(value));
-    }, baseText);
+    const placeholderPattern = new RegExp(
+      `(${Object.keys(values)
+        .map((key) => `\\{${key}\\}`)
+        .join('|')})`,
+      'gu',
+    );
+    const children = baseText.split(placeholderPattern).map((part: string, index: number) => {
+      const key = part.startsWith('{') && part.endsWith('}') ? part.slice(1, -1) : undefined;
+      return key && key in values
+        ? React.createElement(React.Fragment, { key: `${key}-${index}` }, values[key])
+        : part;
+    });
+
+    return React.createElement(React.Fragment, null, ...children);
   },
   history: mockHistory,
   useLocation: () => mockLocation,
   useIntl: () => ({
-    locale: 'en-US',
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    locale: mockLocale,
+    formatMessage: ({ defaultMessage, id }: any) => {
+      const germanMessages: Record<string, string> = {
+        'pages.login.termsOfUse.englishFallbackLabel': 'Nutzungsbedingungen (Englisch)',
+        'pages.login.privacyNotice.englishFallbackLabel': 'Datenschutzhinweis (Englisch)',
+      };
+      return (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ?? defaultMessage ?? id;
+    },
   }),
   useModel: () => mockUseModelState,
 }));
@@ -245,7 +271,11 @@ jest.mock('antd', () => {
     </div>
   );
   const Typography = {
-    Link: ({ children, href }: any) => <a href={href}>{toText(children)}</a>,
+    Link: ({ children, href, ...props }: any) => (
+      <a href={href} {...props}>
+        {toText(children)}
+      </a>
+    ),
   };
   const message = {
     useMessage: () => [mockMessageApi, <div key='holder' data-testid='message-holder' />],
@@ -286,6 +316,7 @@ describe('Login page', () => {
     mockGetLocalizedLoginSubtitle.mockReset();
     mockGetLocalizedAppTitle.mockReturnValue('Tiangong LCA');
     mockGetLocalizedLoginSubtitle.mockReturnValue('Sustainable life cycle data');
+    mockLocale = 'en-US';
     window.localStorage.clear();
     window.localStorage.setItem('isDarkMode', 'false');
     mockLocation = { pathname: '/', search: '' };
@@ -490,5 +521,21 @@ describe('Login page', () => {
 
     expect(screen.getByTestId('login-title')).toHaveTextContent('Tiangong LCA');
     expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Sustainable life cycle data');
+  });
+
+  it('labels English-only legal documents explicitly for the German app locale', () => {
+    mockLocale = 'de-DE';
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    const termsLink = screen.getByRole('link', { name: 'Nutzungsbedingungen (Englisch)' });
+    const privacyLink = screen.getByRole('link', { name: 'Datenschutzhinweis (Englisch)' });
+    expect(termsLink).toHaveAttribute('href', '/terms_of_use.html');
+    expect(termsLink).toHaveAttribute('hreflang', 'en');
+    expect(termsLink).toHaveAttribute('title', 'Nutzungsbedingungen (Englisch)');
+    expect(privacyLink).toHaveAttribute('href', '/privacy_notice.html');
+    expect(privacyLink).toHaveAttribute('hreflang', 'en');
+    expect(privacyLink).toHaveAttribute('title', 'Datenschutzhinweis (Englisch)');
   });
 });

@@ -21,22 +21,24 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Reviewed Issue #606 focused Calculation Bundle and release-read proof; the latest committed full-run baseline remains the one recorded below until the final push-hook checkpoint.'
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Retained the checked-in full-closure reference and recorded Issue #602 German runtime plus Issue #606 Calculation Bundle and release-read proof.'
 ---
 
 # Testing Execution State
 
 > Source of truth for the current operational testing state. Use this file for present-state execution facts, not for long-term strategy.
 
-## Current Baseline
+## Checked-In Reference Baseline
 
-- latest verified full run: `npm run prepush:gate`
+- reference full run: `npm run prepush:gate`
 - verified commit: `e112fa85f4138b5094c965bd010825d8267ee75d`
 - suites: `357`
 - tests: `4464`
 - tracked source files: `369`
 - coverage: `100%` statements, branches, functions, and lines
+
+This is a checked-in reference, not a per-PR execution ledger. A delivery's post-commit, hook-owned full-gate result belongs in its PR validation evidence; update this section when the reference counts, coverage policy, or queue state materially changes.
 
 ## Current State
 
@@ -44,8 +46,9 @@ lastReviewedNote: 'Reviewed Issue #606 focused Calculation Bundle and release-re
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
-- the staged German workflow adds report-mode context/pilot evidence plus final `i18n:de:pilot` and `i18n:de:audit` enforcement; these final commands intentionally remain red while ignored local confirmation, reserved context, or leaf translations are incomplete and do not represent a coverage regression
-- Issue #601 uses focused German proof during Pilot and batch iteration; the next full baseline is recorded only after the final controlled tracked checkpoint passes the one hook-owned `prepush:gate`
+- the active German runtime freezes merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and binds Issue #606's 48 new release messages to one ignored local delta check without recording reviewer details in Git or GitHub
+- German structural proof uses `i18n:audit`, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; focused proof stays in the edit loop and each delivery gets one post-commit full gate through `push:checked`
+- a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
 - Issue #606 adds 85-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`

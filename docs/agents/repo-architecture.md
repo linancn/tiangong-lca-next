@@ -23,7 +23,7 @@ checkPaths:
   - docker/**
 lastReviewedAt: 2026-07-16
 lastReviewedCommit: 99300c319ed07e489b1c67bdecc130a5b3497e85
-lastReviewedNote: 'Added the Issue #606 persisted Calculation Bundle and public release readback paths, including their auth, integrity, and source-Process identity boundaries.'
+lastReviewedNote: 'Activated the single de-DE product locale and added the Issue #606 persisted Calculation Bundle and public release-read paths while preserving their separate ownership and language boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -67,7 +67,8 @@ Rules:
 - service modules own app-side data access
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
-- `src/locales/de-DE/**` currently contains the complete Issue #601 candidate leaf catalog only. The deliberate absence of `src/locales/de-DE.ts` keeps German out of the runtime loader and language selector; Issue #602 owns that entry, Ant Design/Day.js registration, persistence, and normalization of every `de` or `de-*` request to the one canonical `de-DE` bundle
+- active app locales are exactly `zh-CN`, `en-US`, and one country-neutral product German exposed through the canonical `de-DE` runtime key; supported `de` / `de-*` aliases normalize and persist only as `de-DE`, while Umi, Ant Design `de_DE`, Pro Components, and Day.js `de` use that same selection
+- app locale and TIDAS dataset language are separate boundaries: German UI continues to request English dataset text (`en`) and must not add a `de` schema/data-language value; German help, legal, and public-doc surfaces without German content visibly route to their English fallback
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages

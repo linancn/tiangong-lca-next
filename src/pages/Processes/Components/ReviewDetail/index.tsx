@@ -1,10 +1,11 @@
 import { ProcessReviewLog, ProcessReviewRecord } from '@/services/processes/data';
 import { getReviewsByProcess } from '@/services/reviews/api';
+import { formatLocaleDateTime } from '@/utils/localeFormatting';
 import { CloseOutlined, HistoryOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { useIntl } from '@umijs/max';
-import { Button, Drawer, Tooltip } from 'antd';
+import { Button, Drawer, Grid, Tooltip, Typography } from 'antd';
 import React, { useRef, useState } from 'react';
 
 interface ReviewDetailProps {
@@ -15,6 +16,7 @@ interface ReviewDetailProps {
 interface LogItem {
   key: string;
   operator: string;
+  timestamp: number | null;
   time: string;
   action: string;
 }
@@ -49,7 +51,7 @@ const REVIEW_ACTION_MESSAGES = {
   submit_review: { defaultMessage: 'Submit Review', id: 'pages.reviewDetail.submit_review' },
 } as const;
 
-type IntlShapeLike = Pick<ReturnType<typeof useIntl>, 'formatMessage'>;
+type IntlShapeLike = Pick<ReturnType<typeof useIntl>, 'formatMessage' | 'locale'>;
 
 export const formatReviewDetailAction = (intl: IntlShapeLike, action: string): string => {
   if (Object.prototype.hasOwnProperty.call(REVIEW_ACTION_MESSAGES, action)) {
@@ -72,6 +74,8 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
   const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType>();
   const intl = useIntl();
+  const screens = Grid.useBreakpoint();
+  const useCompactLogCards = screens.sm === false;
 
   const fetchLogData = async () => {
     setLoading(true);
@@ -94,16 +98,21 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
       data?.forEach((review) => {
         const logs: ProcessReviewLog[] = review.json?.logs ?? [];
         logs.forEach((log, index: number) => {
+          const timestamp = log.time ? Date.parse(log.time) : Number.NaN;
           logItems.push({
             key: `${review.id}-${index}`,
             operator: log.user?.display_name || log.user?.name || '-',
-            time: log.time ? new Date(log.time).toLocaleString('zh-CN') : '-',
+            timestamp: Number.isFinite(timestamp) ? timestamp : null,
+            time: log.time ? formatLocaleDateTime(log.time, intl.locale) : '-',
             action: log.action || '-',
           });
         });
       });
 
-      logItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      logItems.sort(
+        (a, b) =>
+          (b.timestamp ?? Number.NEGATIVE_INFINITY) - (a.timestamp ?? Number.NEGATIVE_INFINITY),
+      );
 
       return {
         data: logItems,
@@ -121,12 +130,22 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
     }
   };
 
-  const columns: ProColumns<LogItem>[] = [
+  const operatorTitle = intl.formatMessage({
+    id: 'pages.reviewDetail.operator',
+    defaultMessage: 'Operator',
+  });
+  const timeTitle = intl.formatMessage({
+    id: 'pages.reviewDetail.time',
+    defaultMessage: 'Time',
+  });
+  const actionTitle = intl.formatMessage({
+    id: 'pages.reviewDetail.action',
+    defaultMessage: 'Action Details',
+  });
+
+  const desktopColumns: ProColumns<LogItem>[] = [
     {
-      title: intl.formatMessage({
-        id: 'pages.reviewDetail.operator',
-        defaultMessage: 'Operator',
-      }),
+      title: operatorTitle,
       dataIndex: 'operator',
       key: 'operator',
       search: false,
@@ -134,30 +153,60 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
       width: 150,
     },
     {
-      title: intl.formatMessage({
-        id: 'pages.reviewDetail.time',
-        defaultMessage: 'Time',
-      }),
+      title: timeTitle,
       dataIndex: 'time',
       key: 'time',
       search: false,
       sorter: false,
       width: 180,
-      valueType: 'dateTime',
+      render: (_, record: LogItem) => (
+        <Typography.Text style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+          {record.time}
+        </Typography.Text>
+      ),
     },
     {
-      title: intl.formatMessage({
-        id: 'pages.reviewDetail.action',
-        defaultMessage: 'Action Details',
-      }),
+      title: actionTitle,
       dataIndex: 'action',
       key: 'action',
       search: false,
       sorter: false,
-      ellipsis: true,
-      render: (_, record: LogItem) => formatReviewDetailAction(intl, record.action),
+      width: 250,
+      render: (_, record: LogItem) => (
+        <Typography.Text style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+          {formatReviewDetailAction(intl, record.action)}
+        </Typography.Text>
+      ),
     },
   ];
+  const compactColumns: ProColumns<LogItem>[] = [
+    {
+      title: actionTitle,
+      key: 'review-log-card',
+      search: false,
+      sorter: false,
+      render: (_, record: LogItem) => (
+        <dl
+          aria-label={actionTitle}
+          style={{ display: 'grid', gap: 8, margin: 0, overflowWrap: 'anywhere' }}
+        >
+          <div>
+            <dt style={{ fontWeight: 600 }}>{actionTitle}</dt>
+            <dd style={{ margin: 0 }}>{formatReviewDetailAction(intl, record.action)}</dd>
+          </div>
+          <div>
+            <dt style={{ fontWeight: 600 }}>{operatorTitle}</dt>
+            <dd style={{ margin: 0 }}>{record.operator}</dd>
+          </div>
+          <div>
+            <dt style={{ fontWeight: 600 }}>{timeTitle}</dt>
+            <dd style={{ margin: 0 }}>{record.time}</dd>
+          </div>
+        </dl>
+      ),
+    },
+  ];
+  const columns = useCompactLogCards ? compactColumns : desktopColumns;
 
   const handleIconClick = () => {
     setDrawerVisible(true);
@@ -185,7 +234,7 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
           defaultMessage: 'Review Logs',
         })}
         placement='right'
-        width={600}
+        width='min(600px, 100vw)'
         open={drawerVisible}
         onClose={handleDrawerClose}
         destroyOnHidden
@@ -208,6 +257,8 @@ const ReviewDetail: React.FC<ReviewDetailProps> = ({ processId, processVersion }
           loading={loading}
           options={false}
           toolBarRender={false}
+          tableLayout='fixed'
+          scroll={useCompactLogCards ? undefined : { x: 580 }}
         />
       </Drawer>
     </>

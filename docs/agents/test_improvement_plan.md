@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
-lastReviewedNote: 'Reviewed Issue #606 service-unit and read-panel behavior proof; it follows the maintained strategy and does not reopen testing-strategy work.'
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Retained Issue #606 service/read-panel proof and added risk-proportional scoped-first proof plus one final-checkpoint full gate without reopening testing strategy.'
 ---
 
 # Testing Strategy

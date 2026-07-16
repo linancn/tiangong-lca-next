@@ -36,6 +36,7 @@ export default {
   'pages.button.check': 'Daten prüfen',
   'pages.button.check.success': 'Die Datenvalidierung war erfolgreich.',
   'pages.button.check.error': 'Die Datenprüfung ist fehlgeschlagen. Prüfen Sie die Daten.',
+  'pages.button.check.errorWithSections': 'Die Datenprüfung ist in folgenden Bereichen fehlgeschlagen: {sections}. Prüfen Sie die Daten.',
   'pages.button.review': 'Zur Prüfung einreichen',
   'pages.button.select': 'Auswählen',
   'pages.button.reselect': 'Neu auswählen',
