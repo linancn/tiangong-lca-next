@@ -59,6 +59,8 @@ export default {
   'pages.login.terms': 'By signing up, you agree to our {termsOfService} and {privacyPolicy}',
   'pages.login.termsOfUse': 'Terms of Use',
   'pages.login.privacyNotice': 'Privacy Notice',
+  'pages.login.termsOfUse.englishFallbackLabel': 'Terms of Use (English)',
+  'pages.login.privacyNotice.englishFallbackLabel': 'Privacy Notice (English)',
   'pages.login.title': 'TianGong LCA Data Platform',
   'pages.login.subTitle': "World's Largest Open LCA Data Platform",
   'pages.welcome.alertMessage': 'Faster and stronger heavy-duty components have been released.',

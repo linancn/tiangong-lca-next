@@ -36,6 +36,7 @@ export default {
   'pages.button.check': 'Data Check',
   'pages.button.check.success': 'Data validation passed.',
   'pages.button.check.error': 'Data check failed, please check the data!',
+  'pages.button.check.errorWithSections': 'Data check failed in {sections}. Please check the data!',
   'pages.button.review': 'Submit for Review',
   'pages.button.select': 'Select',
   'pages.button.reselect': 'Reselect',

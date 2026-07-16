@@ -30,6 +30,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getFlowDetail } from '@/services/flows/api';
@@ -63,6 +64,7 @@ import {
   type WorkerJobStatus,
 } from '@/services/workerJobs/api';
 import styles from '@/style/custom.less';
+import { formatLocaleList } from '@/utils/localeFormatting';
 import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { CloseOutlined, FormOutlined, ProductOutlined } from '@ant-design/icons';
@@ -101,6 +103,64 @@ type ReviewSubmitGateUiState = {
   blockingReasons?: ReviewSubmitGateBlockingReason[];
   message?: string;
 };
+type ReviewSubmitEvidenceIntl = Pick<ReturnType<typeof useIntl>, 'formatMessage'> & {
+  locale?: string;
+};
+type ReviewSubmitEvidenceMessage = { defaultMessage: string; id: string };
+
+const REVIEW_SUBMIT_EVIDENCE_MESSAGES = {
+  process: {
+    id: 'pages.process.reviewSubmitGate.evidence.process',
+    defaultMessage: 'Process',
+  },
+  version: {
+    id: 'pages.process.reviewSubmitGate.evidence.version',
+    defaultMessage: 'Version',
+  },
+  exchange: {
+    id: 'pages.process.reviewSubmitGate.evidence.exchange',
+    defaultMessage: 'Exchange',
+  },
+  flow: {
+    id: 'pages.process.reviewSubmitGate.evidence.flow',
+    defaultMessage: 'Flow',
+  },
+  consumer: {
+    id: 'pages.process.reviewSubmitGate.evidence.consumer',
+    defaultMessage: 'Consuming process',
+  },
+  provider: {
+    id: 'pages.process.reviewSubmitGate.evidence.provider',
+    defaultMessage: 'Providing process',
+  },
+  target: {
+    id: 'pages.process.reviewSubmitGate.evidence.target',
+    defaultMessage: 'Target process',
+  },
+} as const;
+
+const REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES = {
+  error: {
+    id: 'pages.process.reviewSubmitGate.diagnostics.error',
+    defaultMessage: 'error',
+  },
+  workerJobId: {
+    id: 'pages.process.reviewSubmitGate.diagnostics.workerJobId',
+    defaultMessage: 'Worker job ID',
+  },
+  submitWorkerJobId: {
+    id: 'pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId',
+    defaultMessage: 'Submit worker job ID',
+  },
+  gateWorkerJobId: {
+    id: 'pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId',
+    defaultMessage: 'Gate worker job ID',
+  },
+  reviewSubmitJobId: {
+    id: 'pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId',
+    defaultMessage: 'Review submission job ID',
+  },
+} as const;
 
 const REVIEW_SUBMIT_JOB_PENDING_STATUSES = new Set<ReviewSubmitGateUiStatus>([
   'queued',
@@ -167,7 +227,18 @@ const toReviewSubmitGateEvidenceRecord = (value: unknown): Record<string, unknow
   return value as Record<string, unknown>;
 };
 
-const formatReviewSubmitGateEvidenceRecord = (value: unknown): string | null => {
+const formatReviewSubmitGateEvidenceParts = (
+  intl: ReviewSubmitEvidenceIntl,
+  fields: Array<[ReviewSubmitEvidenceMessage, string | undefined]>,
+) =>
+  fields.flatMap(([message, evidenceValue]) =>
+    evidenceValue ? [`${intl.formatMessage(message)}: ${evidenceValue}`] : [],
+  );
+
+const formatReviewSubmitGateEvidenceRecord = (
+  intl: ReviewSubmitEvidenceIntl,
+  value: unknown,
+): string | null => {
   const record = toReviewSubmitGateEvidenceRecord(value);
   if (!record) {
     return toReviewSubmitGateEvidenceValue(value) ?? null;
@@ -179,52 +250,72 @@ const formatReviewSubmitGateEvidenceRecord = (value: unknown): string | null => 
       ? toReviewSubmitGateEvidenceRecord(record.processes[0])
       : null);
   const processRecord = nestedProcess ?? record;
-  const parts = [
-    ['process', pickReviewSubmitGateEvidenceValue(processRecord, ['process_name', 'process_id'])],
-    ['version', pickReviewSubmitGateEvidenceValue(processRecord, ['process_version'])],
+  const parts = formatReviewSubmitGateEvidenceParts(intl, [
     [
-      'exchange',
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.process,
+      pickReviewSubmitGateEvidenceValue(processRecord, ['process_name', 'process_id']),
+    ],
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.version,
+      pickReviewSubmitGateEvidenceValue(processRecord, ['process_version']),
+    ],
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.exchange,
       pickReviewSubmitGateEvidenceValue(record, [
         'exchange_id',
         'input_exchange_id',
         'output_exchange_id',
       ]),
     ],
-    ['flow', pickReviewSubmitGateEvidenceValue(record, ['flow_id', 'flow_idx'])],
-    ['consumer', pickReviewSubmitGateEvidenceValue(record, ['consumer_idx'])],
-    ['provider', pickReviewSubmitGateEvidenceValue(record, ['provider_id', 'provider_idx'])],
-    ['target', pickReviewSubmitGateEvidenceValue(record, ['process_idx'])],
-  ]
-    .filter((part): part is [string, string] => Boolean(part[1]))
-    .map(([label, value]) => `${label}: ${value}`);
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.flow,
+      pickReviewSubmitGateEvidenceValue(record, ['flow_id', 'flow_idx']),
+    ],
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.consumer,
+      pickReviewSubmitGateEvidenceValue(record, ['consumer_idx']),
+    ],
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.provider,
+      pickReviewSubmitGateEvidenceValue(record, ['provider_id', 'provider_idx']),
+    ],
+    [
+      REVIEW_SUBMIT_EVIDENCE_MESSAGES.target,
+      pickReviewSubmitGateEvidenceValue(record, ['process_idx']),
+    ],
+  ]);
 
   if (parts.length > 0) {
-    return parts.join(', ');
+    return formatLocaleList(parts, intl.locale);
   }
 
-  const diagnosticParts = [
-    ['error', pickReviewSubmitGateEvidenceValue(record, ['error'])],
-    ['worker_job_id', pickReviewSubmitGateEvidenceValue(record, ['worker_job_id', 'workerJobId'])],
+  const diagnosticParts = formatReviewSubmitGateEvidenceParts(intl, [
+    [REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.error, pickReviewSubmitGateEvidenceValue(record, ['error'])],
     [
-      'submit_worker_job_id',
+      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.workerJobId,
+      pickReviewSubmitGateEvidenceValue(record, ['worker_job_id', 'workerJobId']),
+    ],
+    [
+      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.submitWorkerJobId,
       pickReviewSubmitGateEvidenceValue(record, ['submit_worker_job_id', 'submitWorkerJobId']),
     ],
     [
-      'gate_worker_job_id',
+      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.gateWorkerJobId,
       pickReviewSubmitGateEvidenceValue(record, ['gate_worker_job_id', 'gateWorkerJobId']),
     ],
     [
-      'review_submit_job_id',
+      REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES.reviewSubmitJobId,
       pickReviewSubmitGateEvidenceValue(record, ['review_submit_job_id', 'reviewSubmitJobId']),
     ],
-  ]
-    .filter((part): part is [string, string] => Boolean(part[1]))
-    .map(([label, value]) => `${label}: ${value}`);
+  ]);
 
-  return diagnosticParts.length > 0 ? diagnosticParts.join(', ') : null;
+  return diagnosticParts.length > 0 ? formatLocaleList(diagnosticParts, intl.locale) : null;
 };
 
-const formatReviewSubmitGateEvidence = (details: unknown): string[] => {
+export const formatReviewSubmitGateEvidence = (
+  intl: ReviewSubmitEvidenceIntl,
+  details: unknown,
+): string[] => {
   const detailRecord = toReviewSubmitGateEvidenceRecord(details);
   const examples =
     detailRecord && Array.isArray(detailRecord.examples) && detailRecord.examples.length > 0
@@ -235,7 +326,7 @@ const formatReviewSubmitGateEvidence = (details: unknown): string[] => {
 
   return examples
     .slice(0, 2)
-    .map(formatReviewSubmitGateEvidenceRecord)
+    .map((example) => formatReviewSubmitGateEvidenceRecord(intl, example))
     .filter((item): item is string => Boolean(item));
 };
 
@@ -697,7 +788,7 @@ const ProcessEdit: FC<Props> = ({
         {reasons.length > 0 && (
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             {reasons.map((reason, index) => {
-              const evidence = formatReviewSubmitGateEvidence(reason.details);
+              const evidence = formatReviewSubmitGateEvidence(intl, reason.details);
               const formattedReason = formatReviewSubmitGateReason(reason, index);
 
               return (
@@ -709,7 +800,9 @@ const ProcessEdit: FC<Props> = ({
                   )}
                   <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{formattedReason.diagnostic}</div>
                   {evidence.length > 0 && (
-                    <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{evidence.join('; ')}</div>
+                    <div style={{ color: 'rgba(0, 0, 0, 0.65)' }}>
+                      {formatLocaleList(evidence, intl.locale)}
+                    </div>
                   )}
                 </li>
               );
@@ -1411,15 +1504,10 @@ const ProcessEdit: FC<Props> = ({
     if (datasetValidationMessage && errTabNames.length === 1 && errTabNames[0] === 'exchanges') {
       validationHint = datasetValidationMessage;
     } else if (errTabNames.length > 0) {
-      validationHint =
-        errTabNames
-          .map((tab: string) => formatDatasetTabLabel(intl, 'process data set', tab))
-          .join('，') +
-        '：' +
-        intl.formatMessage({
-          id: 'pages.button.check.error',
-          defaultMessage: 'Data check failed, please check the data!',
-        });
+      validationHint = formatDataCheckErrorWithSections(
+        intl,
+        errTabNames.map((tab: string) => formatDatasetTabLabel(intl, 'process data set', tab)),
+      );
     }
 
     if (!silent && validationIssues.length > 0) {

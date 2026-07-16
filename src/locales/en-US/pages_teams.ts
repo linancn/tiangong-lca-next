@@ -39,6 +39,7 @@ export default {
   'teams.logo.nameError': 'File name cannot contain Chinese characters!',
   'teams.members.memberName': 'Member Name',
   'teams.notifications.teamName': 'Team Name',
+  'teams.notifications.unknownTeam': 'Unknown Team',
   'teams.notifications.status': 'Status',
   'teams.notifications.status.pending': 'Pending',
   'teams.notifications.status.accepted': 'Accepted',

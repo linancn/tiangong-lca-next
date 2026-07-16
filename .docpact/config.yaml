@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-16'
 lastReviewedCommit: 'e112fa85f4138b5094c965bd010825d8267ee75d'
-lastReviewedNote: 'Reviewed Issue #601 scoped-first proof and single final-checkpoint gate ownership; existing path ownership and routing remain correct.'
+lastReviewedNote: 'Added Issue #602 German runtime, classified the shared locale-formatting helper, and retained bounded failure-activated pre-push transport-retry ownership without changing repository boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -59,6 +59,7 @@ ownership:
           - scripts/test-runner.cjs
           - scripts/test-coverage-report.js
           - scripts/validate-lcia-cache.cjs
+          - scripts/prepush-gate-receipt.cjs
           - scripts/i18n/**
       ownerRepo: next
 
@@ -105,6 +106,7 @@ coverage:
     - scripts/test-runner.cjs
     - scripts/test-coverage-report.js
     - scripts/validate-lcia-cache.cjs
+    - scripts/prepush-gate-receipt.cjs
     - scripts/i18n/**
   exclude:
     - node_modules/**
@@ -151,6 +153,7 @@ routing:
         - scripts/test-runner.cjs
         - scripts/test-coverage-report.js
         - scripts/validate-lcia-cache.cjs
+        - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - tests/**
     repo-docs:
@@ -187,6 +190,7 @@ routing:
         - .github/workflows/build.yml
         - scripts/docpact
         - scripts/docpact-gate.js
+        - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - tests/**
         - docs/plans/i18n-de-DE/**
@@ -364,6 +368,8 @@ rules:
         kind: app-runtime
       - path: src/utils/appUrl.ts
         kind: app-runtime
+      - path: src/utils/localeFormatting.ts
+        kind: ui-locale
       - path: src/utils/reviewSubmitGateGuidance.ts
         kind: app-runtime
       - path: src/utils/ruleVerification.ts
@@ -471,6 +477,8 @@ rules:
       - path: scripts/test-coverage-report.js
         kind: test-gate
       - path: scripts/validate-lcia-cache.cjs
+        kind: test-gate
+      - path: scripts/prepush-gate-receipt.cjs
         kind: test-gate
       - path: scripts/i18n/**
         kind: test-gate

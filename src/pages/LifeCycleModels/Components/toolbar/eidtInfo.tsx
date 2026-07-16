@@ -44,6 +44,7 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import { validateVisibleFormFields } from '@/pages/Utils/validation/formSupport';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { normalizeLangPayloadForSave } from '@/services/general/api';
@@ -627,15 +628,12 @@ const ToolbarEditInfo = forwardRef<ToolbarEditInfoHandle, Props>(
       });
 
       if (errTabNames.length > 0) {
-        validationHint =
-          errTabNames
-            .map((tab: string) => formatDatasetTabLabel(intl, 'lifeCycleModel data set', tab))
-            .join('，') +
-          '：' +
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed, please check the data!',
-          });
+        validationHint = formatDataCheckErrorWithSections(
+          intl,
+          errTabNames.map((tab: string) =>
+            formatDatasetTabLabel(intl, 'lifeCycleModel data set', tab),
+          ),
+        );
         if (!drawerVisible) {
           setDrawerVisible(true);
           onReset();

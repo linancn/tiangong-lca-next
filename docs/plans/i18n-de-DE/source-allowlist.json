@@ -3,7 +3,13 @@
   "locale": "de-DE",
   "policy": "An exact English value or technical source token is allowed only when the German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. A whole-message exception records messageId, reason, and decision=preserve-exact-english; the ignored local catalog confirmation approves the current scope without writing reviewer identity or date here. This file is a machine policy, not an evidence bibliography.",
   "emptyMessageIds": ["pages.layouts.userLayout.title"],
-  "exactEnglishMessages": [],
+  "exactEnglishMessages": [
+    {
+      "messageId": "pages.process.reviewSubmitGate.evidence.version",
+      "reason": "Version is the established and orthographically identical German field term in this diagnostic context.",
+      "decision": "preserve-exact-english"
+    }
+  ],
   "preservedTokens": [
     { "token": "API", "reason": "Established technical acronym." },
     { "token": "CAS", "reason": "Chemical Abstracts Service identifier name." },

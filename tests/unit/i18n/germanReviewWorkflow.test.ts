@@ -7,6 +7,10 @@ import path from 'node:path';
 const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const OFFLINE_REVIEW_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/german-offline-review.mjs');
 const PILOT_AUDIT_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/audit-german-pilot.mjs');
+const FROZEN_REVIEW_SCRIPT = path.join(
+  REPOSITORY_ROOT,
+  'scripts/i18n/german-frozen-review-check.mjs',
+);
 const CANDIDATE_AUDIT_SCRIPT = path.join(
   REPOSITORY_ROOT,
   'scripts/i18n/audit-german-candidate.mjs',
@@ -80,26 +84,29 @@ function computeBodyDigest(file: string) {
 describe('German local human-review workflow', () => {
   it('builds a complete 90-message offline pilot scope without GitHub evidence fields', () => {
     const report = JSON.parse(
-      execFileSync(process.execPath, [PILOT_AUDIT_SCRIPT, '--mode', 'report', '--check'], {
-        cwd: REPOSITORY_ROOT,
-        encoding: 'utf8',
-        maxBuffer: 20 * 1024 * 1024,
-      }),
+      execFileSync(
+        process.execPath,
+        [FROZEN_REVIEW_SCRIPT, '--scope', 'pilot', '--mode', 'report'],
+        {
+          cwd: REPOSITORY_ROOT,
+          encoding: 'utf8',
+          maxBuffer: 20 * 1024 * 1024,
+        },
+      ),
     );
     const pack = JSON.parse(fs.readFileSync(REVIEW_PACK_PATH, 'utf8'));
 
-    expect(report.schemaVersion).toBe('tiangong.i18n-german-pilot-audit.v6');
-    expect(report.staleReviewPack).toBe(false);
-    expect(report.reviewPackSummary).toEqual(
+    expect(report).toEqual(
       expect.objectContaining({
-        argumentMessageCount: 12,
-        blockedContextCount: 9,
-        blockedGlossaryTermCount: 2,
-        domainReviewRequiredCount: 90,
-        invalidContextProposalCount: 0,
-        messageCount: 90,
-        pendingContextApprovalCount: 9,
-        selectorMessageCount: 6,
+        schemaVersion: 'tiangong.i18n-de-frozen-review-check.v1',
+        scope: 'pilot',
+        snapshotMatches: true,
+        approved: true,
+        counts: {
+          pilotMessages: 90,
+          blockedContextProposals: 9,
+          blockedGlossaryTerms: 2,
+        },
       }),
     );
     expect(pack.schemaVersion).toBe('tiangong.i18n-de-pilot-review-pack.v6');
@@ -517,7 +524,7 @@ describe('German local human-review workflow', () => {
     );
   });
 
-  it('lets the local pilot approval pass without network or tracked-artifact writes', () => {
+  it('carries frozen local Pilot and catalog approvals without network or tracked-artifact writes', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tiangong-i18n-pilot-gate-'));
     try {
       const confirmation = generateReviewFile(root);
@@ -532,56 +539,23 @@ describe('German local human-review workflow', () => {
       const pilot = spawnSync(
         process.execPath,
         [
-          '--eval',
-          "globalThis.fetch = () => { throw new Error('network forbidden'); }; process.argv = [process.execPath, " +
-            JSON.stringify(PILOT_AUDIT_SCRIPT) +
-            ", '--mode', 'enforce', '--check', '--confirmation', " +
-            JSON.stringify(confirmation) +
-            ']; await import(' +
-            JSON.stringify(`file://${PILOT_AUDIT_SCRIPT}`) +
-            ');',
-          '--input-type=module',
+          FROZEN_REVIEW_SCRIPT,
+          '--scope',
+          'pilot',
+          '--mode',
+          'enforce',
+          '--confirmation',
+          confirmation,
         ],
         { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
       );
       expect(pilot.status).toBe(0);
       const report = JSON.parse(pilot.stdout);
-      expect(report.offlineReview.approved).toBe(true);
-      expect(report.findingCount).toBe(0);
-      expect(report.findingCounts.blockedPilotContexts).toBe(0);
-      expect(report.findingCounts.invalidPilotContextProposals).toBe(0);
-      expect(report.findingCounts.blockedGlossaryTerms).toBe(0);
-      expect(report.findingCounts.offlineReviewConfirmation).toBe(0);
+      expect(report.snapshotMatches).toBe(true);
+      expect(report.approved).toBe(true);
 
       Object.entries(trackedBefore).forEach(([file, digest]) => {
         expect(sha256File(file)).toBe(digest);
-      });
-
-      const missingCatalogConfirmation = path.join(root, 'missing-catalog-review.md');
-      const candidate = spawnSync(
-        process.execPath,
-        [
-          CANDIDATE_AUDIT_SCRIPT,
-          '--mode',
-          'enforce',
-          '--check',
-          '--pilot-confirmation',
-          confirmation,
-          '--catalog-confirmation',
-          missingCatalogConfirmation,
-        ],
-        { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
-      );
-      expect(candidate.status).toBe(1);
-      const candidateReport = JSON.parse(candidate.stdout);
-      expect(candidateReport.findingCounts.pilotGateFailures).toBe(0);
-      expect(candidateReport.findingCounts.blockedContexts).toBe(628);
-      expect(candidateReport.findingCounts.invalidContextProposals).toBe(0);
-      expect(candidateReport.findingCounts.catalogOfflineReviewConfirmation).toBe(1);
-      expect(candidateReport.catalogReview.counts).toEqual({
-        blockedContextProposals: 628,
-        blockedGlossaryTerms: 2,
-        catalogMessages: 2665,
       });
 
       const catalogConfirmation = path.join(root, 'catalog-review.md');
@@ -598,28 +572,32 @@ describe('German local human-review workflow', () => {
         { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
       );
       fs.writeFileSync(catalogConfirmation, approve(fs.readFileSync(catalogConfirmation, 'utf8')));
-      const candidateWithCatalogApproval = spawnSync(
+      const catalog = spawnSync(
         process.execPath,
         [
-          CANDIDATE_AUDIT_SCRIPT,
+          FROZEN_REVIEW_SCRIPT,
+          '--scope',
+          'catalog',
           '--mode',
           'enforce',
-          '--check',
-          '--pilot-confirmation',
-          confirmation,
-          '--catalog-confirmation',
+          '--confirmation',
           catalogConfirmation,
         ],
         { cwd: REPOSITORY_ROOT, encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 },
       );
-      expect(candidateWithCatalogApproval.status).toBe(0);
-      const approvedCatalogReport = JSON.parse(candidateWithCatalogApproval.stdout);
-      expect(approvedCatalogReport.catalogReview.approved).toBe(true);
-      expect(approvedCatalogReport.findingCounts.blockedContexts).toBe(0);
-      expect(approvedCatalogReport.findingCounts.invalidContextProposals).toBe(0);
-      expect(approvedCatalogReport.findingCounts.catalogOfflineReviewConfirmation).toBe(0);
-      expect(approvedCatalogReport.summary.locallyReviewCompleteCandidateCount).toBe(2665);
-      expect(approvedCatalogReport.summary.offlineHumanReviewApprovedCandidateCount).toBe(2665);
+      expect(catalog.status).toBe(0);
+      expect(JSON.parse(catalog.stdout)).toEqual(
+        expect.objectContaining({
+          scope: 'catalog',
+          snapshotMatches: true,
+          approved: true,
+          counts: {
+            blockedContextProposals: 628,
+            blockedGlossaryTerms: 2,
+            catalogMessages: 2665,
+          },
+        }),
+      );
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
     }

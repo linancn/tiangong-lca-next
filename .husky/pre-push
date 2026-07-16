@@ -1,23 +1,18 @@
 #!/bin/sh
 set -e
 
+push_updates_file="$(mktemp "${TMPDIR:-/tmp}/tiangong-prepush-updates.XXXXXX")"
+trap 'rm -f "$push_updates_file"' 0 1 2 15
+cat >"$push_updates_file"
+
 export NVM_DIR="$HOME/.nvm"
 if [ -s "$NVM_DIR/nvm.sh" ]; then
   . "$NVM_DIR/nvm.sh"
   nvm use 24 >/dev/null
 fi
 
-current_branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
-
-docpact_base_ref="${DOCPACT_BASE_REF:-origin/dev}"
-case "$current_branch" in
-  main | master | promote/* | hotfix/*)
-    docpact_base_ref="${DOCPACT_BASE_REF:-origin/main}"
-    ;;
-esac
-
-echo "Running docpact gate against ${docpact_base_ref}."
-npm run docpact:gate -- --base "$docpact_base_ref"
-
-echo "Running local test gate."
-npm run prepush:gate
+node scripts/prepush-gate-receipt.cjs hook-run \
+  --remote-name "${1:-}" \
+  --remote-url "${2:-}" \
+  --docpact-base-override "${DOCPACT_BASE_REF:-}" \
+  --updates-file "$push_updates_file"

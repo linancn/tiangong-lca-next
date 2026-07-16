@@ -39,6 +39,7 @@ export default {
   'teams.logo.nameError': '文件名不能包含中文字符!',
   'teams.members.memberName': '成员名称',
   'teams.notifications.teamName': '团队名称',
+  'teams.notifications.unknownTeam': '未知团队',
   'teams.notifications.status': '状态',
   'teams.notifications.status.pending': '待接受',
   'teams.notifications.status.accepted': '已接受',

@@ -734,7 +734,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Administrative information，Modelling and validation：Data check failed, please check the data!',
+        'Data check failed in Administrative information and Modelling and validation. Please check the data!',
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -780,7 +780,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Administrative information：Data check failed, please check the data!',
+        'Data check failed in Administrative information. Please check the data!',
       ),
     );
   });
@@ -806,7 +806,7 @@ describe('FlowpropertiesEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Modelling and validation：Data check failed, please check the data!',
+        'Data check failed in Modelling and validation. Please check the data!',
       ),
     );
   });

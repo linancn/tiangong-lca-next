@@ -1,6 +1,6 @@
 {
   "schemaVersion": "tiangong.i18n-dynamic-families.v1",
-  "sourceLocales": ["en-US", "zh-CN"],
+  "sourceLocales": ["en-US", "zh-CN", "de-DE"],
   "policy": {
     "callsiteIdentity": ["api", "count", "file", "expression"],
     "driftRule": "Every computed production message callsite must exactly match one reviewed callsite summary; additions, removals, expression changes, and count changes fail enforcement.",
@@ -267,6 +267,27 @@
         "pages.reviewDetail.submit_comments_temporary",
         "pages.reviewDetail.submit_review",
         "pages.reviewDetail.unknownAction"
+      ]
+    },
+    "reviewGateEvidenceLabels": {
+      "proof": "The process editor passes descriptors only from the two frozen REVIEW_SUBMIT_EVIDENCE_MESSAGES and REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES maps into one local formatter.",
+      "unknownHandling": {
+        "kind": "closedWorld",
+        "proof": "Both descriptor maps are const repository-owned objects and the formatter never accepts a backend value as a message id; map or callsite drift changes the exact audit inventory."
+      },
+      "keys": [
+        "pages.process.reviewSubmitGate.diagnostics.error",
+        "pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId",
+        "pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId",
+        "pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId",
+        "pages.process.reviewSubmitGate.diagnostics.workerJobId",
+        "pages.process.reviewSubmitGate.evidence.consumer",
+        "pages.process.reviewSubmitGate.evidence.exchange",
+        "pages.process.reviewSubmitGate.evidence.flow",
+        "pages.process.reviewSubmitGate.evidence.process",
+        "pages.process.reviewSubmitGate.evidence.provider",
+        "pages.process.reviewSubmitGate.evidence.target",
+        "pages.process.reviewSubmitGate.evidence.version"
       ]
     },
     "reviewGateGuidance": {
@@ -564,6 +585,13 @@
       "file": "src/pages/Processes/Components/edit.tsx",
       "expression": "guidance.actionId",
       "family": "reviewGateGuidance"
+    },
+    {
+      "api": "formatMessage",
+      "count": 1,
+      "file": "src/pages/Processes/Components/edit.tsx",
+      "expression": "message",
+      "family": "reviewGateEvidenceLabels"
     },
     {
       "api": "formatMessage",

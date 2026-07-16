@@ -179,10 +179,10 @@ describe('ImportTidasPackage Component', () => {
     expect(screen.getByText('API import')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'See the API import documentation for the full request flow and integration details.',
+        'See the English API import documentation for the full request flow and integration details.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
       'href',
       'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
     );
@@ -195,7 +195,20 @@ describe('ImportTidasPackage Component', () => {
 
     fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
 
-    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
+      'href',
+      'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
+    );
+  });
+
+  it('uses the english API import docs link for german locale', () => {
+    mockLocale = 'de-DE';
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+
+    expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
       'href',
       'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
     );
@@ -208,7 +221,7 @@ describe('ImportTidasPackage Component', () => {
 
     fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
 
-    expect(screen.getByRole('link', { name: 'Open API import docs' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
       'href',
       'https://docs.tiangong.earth/docs/openapi/tidas-package-import',
     );
@@ -432,7 +445,9 @@ describe('ImportTidasPackage Component', () => {
     const downloadedText = String(capturedBlobParts[0] ?? '');
 
     expect(downloadedText).toContain('imported: 8');
+    expect(downloadedText).toContain('importiert: 8');
     expect(downloadedText).toContain('validation issues: 0');
+    expect(downloadedText).toContain('Validierungsprobleme: 0');
     expect(downloadedText).toContain('"code": "USER_DATA_CONFLICT"');
 
     createElementSpy.mockRestore();
@@ -711,6 +726,7 @@ describe('ImportTidasPackage Component', () => {
     expect(downloadedText).toContain('"readme_markdown"');
     expect(downloadedText).toContain('# How to read this import report');
     expect(downloadedText).toContain('# 如何查看这个导入报告');
+    expect(downloadedText).toContain('# So lesen Sie diesen Importbericht');
     expect(downloadedText).toContain('"report"');
     expect(downloadedText).toContain('"validation_issues"');
 

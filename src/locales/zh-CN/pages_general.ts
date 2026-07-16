@@ -35,6 +35,7 @@ export default {
   'pages.button.check': '数据校验',
   'pages.button.check.success': '数据验证通过。',
   'pages.button.check.error': '数据校验失败,请检查数据!',
+  'pages.button.check.errorWithSections': '以下部分的数据校验失败：{sections}。请检查数据！',
   'pages.button.review': '提交审核',
   'pages.button.select': '选择',
   'pages.button.reselect': '重选',

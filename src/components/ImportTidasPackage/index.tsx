@@ -37,6 +37,7 @@ const buildReportFilename = (suffix: string, extension: string) => {
 const buildImportReportHumanSummary = (response: ImportTidasPackageResponse) => ({
   zh_CN: `导入结果：${response.code}。总记录 ${response.summary.total_entries} 条，开放数据跳过 ${response.summary.filtered_open_data_count} 条，用户数据冲突 ${response.summary.user_conflict_count} 条，成功导入 ${response.summary.imported_count ?? response.summary.importable_count} 条，校验问题 ${response.summary.validation_issue_count ?? 0} 条。`,
   en_US: `Import result: ${response.code}. Total records: ${response.summary.total_entries}, skipped open-data records: ${response.summary.filtered_open_data_count}, user conflicts: ${response.summary.user_conflict_count}, imported: ${response.summary.imported_count ?? response.summary.importable_count}, validation issues: ${response.summary.validation_issue_count ?? 0}.`,
+  de_DE: `Importergebnis: ${response.code}. Datensätze insgesamt: ${response.summary.total_entries}, übersprungene Open-Data-Datensätze: ${response.summary.filtered_open_data_count}, Konflikte mit benutzereigenen Daten: ${response.summary.user_conflict_count}, importiert: ${response.summary.imported_count ?? response.summary.importable_count}, Validierungsprobleme: ${response.summary.validation_issue_count ?? 0}.`,
 });
 
 const buildImportReportReadmeMarkdown = () => ({
@@ -150,6 +151,61 @@ Records in \`report.filtered_open_data\` were recognized as open data and skippe
 
 This is usually expected behavior unless you intended those records to be imported as user-owned data.
 `,
+  de_DE: `# So lesen Sie diesen Importbericht
+
+Das Objekt \`report\` in dieser Datei ist das vollständige Ergebnis der Importschnittstelle. Es kann Details zu fehlgeschlagenen Validierungen, Konflikten mit benutzereigenen Daten oder übersprungenen Open-Data-Datensätzen enthalten.
+
+## Was Sie zuerst prüfen sollten
+
+1. Beginnen Sie mit \`report.code\`:
+   - \`VALIDATION_FAILED\`: Der Inhalt des Datenpakets ist ungültig. Der Import wurde deshalb blockiert.
+   - Andere Fehlercodes bei einem nicht leeren Feld \`user_conflicts\`: In der Zielumgebung liegen bereits benutzereigene Daten vor, die mit dem Paket in Konflikt stehen.
+2. Prüfen Sie anschließend \`report.summary\`:
+   - \`total_entries\`: Gesamtzahl der im Paket gefundenen Datensätze.
+   - \`filtered_open_data_count\`: Anzahl der beim Import übersprungenen Open-Data-Datensätze.
+   - \`user_conflict_count\`: Anzahl der Datensätze, die mit vorhandenen benutzereigenen Daten in Konflikt stehen.
+   - \`validation_issue_count\`: Gesamtzahl der gefundenen Validierungsprobleme.
+
+## Wo liegt das Problem, wenn die Validierung fehlgeschlagen ist?
+
+Prüfen Sie das Array \`report.validation_issues\`. Besonders wichtig sind folgende Felder:
+
+- \`file_path\`: Datei, in der das Problem aufgetreten ist.
+- \`location\`: Betroffener Feldpfad innerhalb dieser Datei.
+- \`message\`: Direkte Erläuterung des Validators.
+- \`issue_code\`: Art des Problems.
+- \`severity\`: Schweregrad. Probleme mit \`error\` müssen in der Regel zuerst behoben werden; Probleme mit \`warning\` sollten ebenfalls geprüft werden.
+- \`context\`: Zusätzlicher Diagnosekontext für Entwicklung oder fortgeschrittene Analyse.
+
+Wenn \`location\` schwer zu lesen ist, gehen Sie wie folgt vor:
+
+1. Entpacken Sie das ursprüngliche ZIP-Datenpaket.
+2. Öffnen Sie die unter \`file_path\` angegebene Datei.
+3. Folgen Sie dem Feldpfad aus \`location\`.
+4. Korrigieren Sie die Daten entsprechend \`message\`, erstellen Sie das Paket neu und importieren Sie es erneut.
+
+## Wo liegt das Problem bei Konflikten mit benutzereigenen Daten?
+
+Prüfen Sie das Array \`report.user_conflicts\`. Besonders wichtig sind folgende Felder:
+
+- \`table\`: Tabelle oder Datensatztyp, bei dem der Konflikt aufgetreten ist.
+- \`id\`: ID des betroffenen Datensatzes.
+- \`version\`: Version des betroffenen Datensatzes.
+- \`state_code\`: Aktueller Status des vorhandenen Datensatzes im System.
+- \`user_id\`: Sofern vorhanden, die Person, der der betroffene Datensatz gehört oder zugeordnet ist.
+
+Übliche Vorgehensweisen zur Konfliktbehebung:
+
+1. Prüfen Sie, ob das Zielsystem dieselben benutzereigenen Daten bereits enthält.
+2. Wenn der vorhandene Datensatz erhalten bleiben soll, ändern Sie \`id\` / \`version\` im Paket oder entfernen Sie das Duplikat aus dem Paket.
+3. Wenn der alte Datensatz im Zielsystem nicht mehr benötigt wird, bearbeiten Sie ihn dort zuerst und starten Sie den Import anschließend erneut.
+
+## Was bedeuten übersprungene Open-Data-Datensätze?
+
+Datensätze in \`report.filtered_open_data\` wurden als offene Daten erkannt und automatisch übersprungen. Sie wurden nicht in Ihren Bereich für benutzereigene Daten importiert.
+
+Dieses Verhalten ist normalerweise beabsichtigt. Prüfen Sie es nur dann genauer, wenn diese Datensätze als benutzereigene Daten importiert werden sollten.
+`,
 });
 
 const downloadImportReportJson = (response: ImportTidasPackageResponse) => {
@@ -214,7 +270,7 @@ const getValidationIssues = (response: ImportTidasPackageResponse) =>
   response.validation_issues ?? [];
 
 const getDocsUrl = (locale: string) =>
-  `${DOCS_BASE_URL}${locale.toLowerCase().startsWith('en') ? '/en' : ''}${TIDAS_PACKAGE_IMPORT_DOCS_PATH}`;
+  `${DOCS_BASE_URL}${/^(?:en|de)(?:[-_]|$)/iu.test(locale.trim()) ? '/en' : ''}${TIDAS_PACKAGE_IMPORT_DOCS_PATH}`;
 
 const formatValidationIssues = (
   intl: ReturnType<typeof useIntl>,
@@ -429,13 +485,13 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
                 <Typography.Text>
                   <FormattedMessage
                     id='component.tidasPackage.import.apiGuide.summary'
-                    defaultMessage='See the API import documentation for the full request flow and integration details.'
+                    defaultMessage='See the English API import documentation for the full request flow and integration details.'
                   />
                 </Typography.Text>
                 <Typography.Link href={docsUrl} rel='noreferrer' target='_blank'>
                   <FormattedMessage
                     id='component.tidasPackage.import.apiGuide.docs'
-                    defaultMessage='Open API import docs'
+                    defaultMessage='Open English API import docs'
                   />
                 </Typography.Link>
               </Flex>

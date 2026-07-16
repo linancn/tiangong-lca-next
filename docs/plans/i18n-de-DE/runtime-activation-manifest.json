@@ -1,0 +1,425 @@
+{
+  "schemaVersion": "tiangong.i18n-de-runtime-activation.v1",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/602",
+  "locale": "de-DE",
+  "baseline": {
+    "sourceCommit": "826f87a53032bfa9ab58baff2e4b8b7212671cdf",
+    "messageCount": 2665,
+    "leafMessageCount": 2658,
+    "activationEntryCount": 7,
+    "frozenInputDigests": {
+      "docs/plans/i18n-de-DE/manifest.json": "8a5ed84861027fdc18c9f044951ac0ce180fef3d54b7a97361ff5bee625296a4",
+      "docs/plans/i18n-de-DE/context-ledger.json": "808d1eacda00df33b341735d5d8bbc4034fa00ffa6ba429cd63a079d4aef98de",
+      "docs/plans/i18n-de-DE/activation-entry-translations.json": "6fd22affc7a50cebbe4e0afd48121ef203f27c2fc6e4544de5ab483860e7b823",
+      "docs/plans/i18n-de-DE/review-log.yaml": "cb859cf45e49a0646431c457953fdc022e065832b7b43153772964cd38388f55"
+    },
+    "frozenCanonicalAuditedInputDigest": "b822fc77cf46f90458246ead5d53f91b1921782cf3e87dc15549b538549e23dc",
+    "evidenceContract": "The immutable Issue #601 Git snapshot and unchanged tracked context ledger retain every approved German value, canonical English/Chinese value, source/context/translation hash, context dossier, and non-personal producer record. Local human decisions remain outside Git."
+  },
+  "delta": {
+    "newMessageIds": [
+      "component.globalHeader.help.englishFallback",
+      "pages.button.check.errorWithSections",
+      "pages.login.privacyNotice.englishFallbackLabel",
+      "pages.login.termsOfUse.englishFallbackLabel",
+      "pages.process.lca.taskCenter.diagnostics.empty",
+      "pages.process.lca.taskCenter.diagnostics.jobKind",
+      "pages.process.lca.taskCenter.diagnostics.request",
+      "pages.process.lca.taskCenter.diagnostics.rootJobId",
+      "pages.process.lca.taskCenter.diagnostics.sequence",
+      "pages.process.lca.taskCenter.diagnostics.taskId",
+      "pages.process.lca.taskCenter.diagnostics.taskKind",
+      "pages.process.lca.taskCenter.diagnostics.workerJobId",
+      "pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId",
+      "pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId",
+      "pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId",
+      "pages.process.reviewSubmitGate.diagnostics.workerJobId",
+      "pages.process.reviewSubmitGate.evidence.consumer",
+      "pages.process.reviewSubmitGate.evidence.exchange",
+      "pages.process.reviewSubmitGate.evidence.flow",
+      "pages.process.reviewSubmitGate.evidence.process",
+      "pages.process.reviewSubmitGate.evidence.provider",
+      "pages.process.reviewSubmitGate.evidence.target",
+      "pages.process.reviewSubmitGate.evidence.version",
+      "teams.notifications.unknownTeam"
+    ],
+    "newMessageCount": 24,
+    "modifiedBaselineMessageIds": [
+      "component.tidasPackage.import.apiGuide.docs",
+      "component.tidasPackage.import.apiGuide.summary"
+    ],
+    "modifiedBaselineMessageCount": 2,
+    "externalTrackedCopyInputs": [
+      {
+        "id": "import-report.human-summary",
+        "path": "src/components/ImportTidasPackage/index.tsx",
+        "symbol": "buildImportReportHumanSummary",
+        "properties": ["en_US", "zh_CN", "de_DE"],
+        "extractedCopyDigest": "24333f455887d7297eab48b50fe7e615c94ca6b620f243c34b29ccf88137426b"
+      },
+      {
+        "id": "import-report.readme-markdown",
+        "path": "src/components/ImportTidasPackage/index.tsx",
+        "symbol": "buildImportReportReadmeMarkdown",
+        "properties": ["en_US", "zh_CN", "de_DE"],
+        "extractedCopyDigest": "07906471c8d1605ccbd9c65b61c6f62590dc56156e437aba484b50be35b00ac3"
+      }
+    ],
+    "externalTrackedCopyCount": 2,
+    "reviewGateDescriptorEvidence": {
+      "id": "review-gate-evidence-label-descriptor-maps",
+      "path": "src/pages/Processes/Components/edit.tsx",
+      "family": "reviewGateEvidenceLabels",
+      "maps": [
+        {
+          "symbol": "REVIEW_SUBMIT_EVIDENCE_MESSAGES",
+          "entries": [
+            {
+              "member": "process",
+              "id": "pages.process.reviewSubmitGate.evidence.process",
+              "defaultMessage": "Process"
+            },
+            {
+              "member": "version",
+              "id": "pages.process.reviewSubmitGate.evidence.version",
+              "defaultMessage": "Version"
+            },
+            {
+              "member": "exchange",
+              "id": "pages.process.reviewSubmitGate.evidence.exchange",
+              "defaultMessage": "Exchange"
+            },
+            {
+              "member": "flow",
+              "id": "pages.process.reviewSubmitGate.evidence.flow",
+              "defaultMessage": "Flow"
+            },
+            {
+              "member": "consumer",
+              "id": "pages.process.reviewSubmitGate.evidence.consumer",
+              "defaultMessage": "Consuming process"
+            },
+            {
+              "member": "provider",
+              "id": "pages.process.reviewSubmitGate.evidence.provider",
+              "defaultMessage": "Providing process"
+            },
+            {
+              "member": "target",
+              "id": "pages.process.reviewSubmitGate.evidence.target",
+              "defaultMessage": "Target process"
+            }
+          ]
+        },
+        {
+          "symbol": "REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES",
+          "entries": [
+            {
+              "member": "error",
+              "id": "pages.process.reviewSubmitGate.diagnostics.error",
+              "defaultMessage": "error"
+            },
+            {
+              "member": "workerJobId",
+              "id": "pages.process.reviewSubmitGate.diagnostics.workerJobId",
+              "defaultMessage": "Worker job ID"
+            },
+            {
+              "member": "submitWorkerJobId",
+              "id": "pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId",
+              "defaultMessage": "Submit worker job ID"
+            },
+            {
+              "member": "gateWorkerJobId",
+              "id": "pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId",
+              "defaultMessage": "Gate worker job ID"
+            },
+            {
+              "member": "reviewSubmitJobId",
+              "id": "pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId",
+              "defaultMessage": "Review submission job ID"
+            }
+          ]
+        }
+      ],
+      "messageIds": [
+        "pages.process.reviewSubmitGate.diagnostics.error",
+        "pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId",
+        "pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId",
+        "pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId",
+        "pages.process.reviewSubmitGate.diagnostics.workerJobId",
+        "pages.process.reviewSubmitGate.evidence.consumer",
+        "pages.process.reviewSubmitGate.evidence.exchange",
+        "pages.process.reviewSubmitGate.evidence.flow",
+        "pages.process.reviewSubmitGate.evidence.process",
+        "pages.process.reviewSubmitGate.evidence.provider",
+        "pages.process.reviewSubmitGate.evidence.target",
+        "pages.process.reviewSubmitGate.evidence.version"
+      ],
+      "extractedDescriptorDigest": "03dba4f458091c7db0a7addc4d12feb93f20110d8aad3e3f0d76aef2d9ceffa5"
+    },
+    "localReviewItemCount": 28,
+    "localConfirmationDefaultPath": ".local/i18n-de-DE/issue-602-delta-review-confirmation.md"
+  },
+  "activeRuntime": {
+    "activeLocales": ["en-US", "zh-CN", "de-DE"],
+    "canonicalGermanLocale": "de-DE",
+    "topLevelBundle": "src/locales/de-DE.ts",
+    "leafModuleCount": 30,
+    "leafModuleCounts": { "en-US": 30, "zh-CN": 30, "de-DE": 30 },
+    "finalMessageCount": 2689,
+    "allowedGermanRuntimeLocaleLiterals": ["de", "de-DE", "de-de", "de_DE"],
+    "regionalBundlesAllowed": false,
+    "aliasesNormalizeTo": "de-DE",
+    "antDesignAdapter": "de_DE",
+    "dayjsAdapter": "de",
+    "datasetTextLanguageFallback": "en",
+    "docsAndLegalFallback": "en"
+  },
+  "reviewPolicy": {
+    "baselineHumanReview": "carry-forward-only-when-frozen-inputs-and-values-match",
+    "deltaHumanReview": "ignored-local-hash-bound-confirmation-required",
+    "githubHumanDecisionEvidence": false,
+    "mechanicalTranslationAllowed": false,
+    "requiredContext": "English, Chinese, real callsites, product concept, UI role/state, user-visible consequence, neighboring workflow, LCA/TIDAS terminology, ICU/placeholders/technical tokens, and length risk."
+  },
+  "source": {
+    "canonicalManifest": "docs/plans/i18n-de-DE/manifest.json",
+    "canonicalAuditedInputDigest": "8620f8c27d1e009af48a5cc445e70728a4c3f50deab508c8cc806e7bcb1126e5",
+    "digestAlgorithm": "sha256",
+    "inputs": [
+      {
+        "kind": "extracted-copy",
+        "id": "import-report.human-summary",
+        "path": "src/components/ImportTidasPackage/index.tsx",
+        "symbol": "buildImportReportHumanSummary",
+        "sha256": "24333f455887d7297eab48b50fe7e615c94ca6b620f243c34b29ccf88137426b"
+      },
+      {
+        "kind": "extracted-copy",
+        "id": "import-report.readme-markdown",
+        "path": "src/components/ImportTidasPackage/index.tsx",
+        "symbol": "buildImportReportReadmeMarkdown",
+        "sha256": "07906471c8d1605ccbd9c65b61c6f62590dc56156e437aba484b50be35b00ac3"
+      },
+      {
+        "kind": "extracted-descriptor-map",
+        "id": "review-gate-evidence-label-descriptor-maps",
+        "path": "src/pages/Processes/Components/edit.tsx",
+        "family": "reviewGateEvidenceLabels",
+        "sha256": "03dba4f458091c7db0a7addc4d12feb93f20110d8aad3e3f0d76aef2d9ceffa5"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/activation-entry-translations.json",
+        "sha256": "6fd22affc7a50cebbe4e0afd48121ef203f27c2fc6e4544de5ab483860e7b823"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/context-ledger.json",
+        "sha256": "808d1eacda00df33b341735d5d8bbc4034fa00ffa6ba429cd63a079d4aef98de"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/dynamic-families.json",
+        "sha256": "ecb1c7f466aa063a1fdb67f281ca12305450db58f9100c1295140f1bea6ba5ba"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/manifest.json",
+        "sha256": "1ecfb2632a33ffe66b7b82372931877bac8a9e691624890c648702458dd0cc3e"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/review-log.yaml",
+        "sha256": "cb859cf45e49a0646431c457953fdc022e065832b7b43153772964cd38388f55"
+      },
+      {
+        "kind": "file",
+        "path": "docs/plans/i18n-de-DE/source-allowlist.json",
+        "sha256": "4826bbe360de3f6e4c027c810ecb6b1529cb45ca3207b3cd184499117436f8fc"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/i18n/audit-locales.mjs",
+        "sha256": "71788d1b91cddbf8941dc5544cf635e89f6e1e9ef739f1f9b91385f83f9d7cd7"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/i18n/german-frozen-review-check.mjs",
+        "sha256": "75e738eea693277da1a8776403a6644bfa36bb805223087c76615fa76afd392b"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/i18n/german-runtime-activation.mjs",
+        "sha256": "13291aaca361577e82430f6d06f7249bb8ba325d71faf40e3ef8df16fb2f30cb"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/i18n/german-runtime-delta-review.mjs",
+        "sha256": "98bf1664965f312df61fb61fcfc5717cfad30d1760da4dbc5d6a4b63494b2f62"
+      },
+      {
+        "kind": "file",
+        "path": "scripts/i18n/german-runtime-policy.mjs",
+        "sha256": "5251d9b119a0459204d3021293eaa5a272c9bea3358004401f42210d294fbc2b"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE.ts",
+        "sha256": "9f644655ef8bba795264820c4498e5ecaceb225401e763a164cdb7ab27e2b307"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_AISuggestion.ts",
+        "sha256": "10ddd8ed40379d85d53806b6e66387021d66722bf92cbb2f3236383f560922d6"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_allTeams.ts",
+        "sha256": "2155cc3d5ec643b1e919741943c53403a29f83ddf8ccb3d998f3cd2b6c9a23e2"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_allVersions.ts",
+        "sha256": "4d37c5b576113bb6dcd870b8807d27fe604ccab56e5b5d6cc454aec927902133"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_connectableProcesses.ts",
+        "sha256": "a3c270681ab6e53c5846a76bcc9c073f92270a1df745fc8e28a37883f6a28c82"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_contributeData.ts",
+        "sha256": "839ed9877b779c514f9fd0da21f8df3420467edda7ac5ae075395c729a1a9c8f"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_importData.ts",
+        "sha256": "786d48aa2b322a8eac9e1a505c447de4923dacf4e19fac774c6da58b0b365703"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_refsOfNewVersionDrawer.ts",
+        "sha256": "8ba0063da0f90d127f040c39a253e0474ab3917aad218d1f7cf52425b9e5b5ee"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_rejectReview.ts",
+        "sha256": "22b7b3511ae89e9fd3c1f01309faa2aea5767e3e399fdaec5b34a6e911a9a983"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component_tidasPackage.ts",
+        "sha256": "a352a2145d33032c47726e4b732dbde2dbf0f442cfdec5216e0c54a1b6ffcc73"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/component.ts",
+        "sha256": "9299ec87640b2aa7621f3fabe9f8ed199f8bcc0652d5cb454b9ea1ff9851cf71"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/globalHeader.ts",
+        "sha256": "0529b5a2aec0e6ae7ef027538b0d9929caf4321690413d37c6449a864f5e6f7c"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/menu.ts",
+        "sha256": "dc25e5be2eb9af96b7647365800c920313ab4d31c8b11bab28ae44ee5fd93b8b"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_contact.ts",
+        "sha256": "53d0dfaba4c041e747dc28fa408a82ca720943df811ad4844b32e9341c435676"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_flow.ts",
+        "sha256": "18d5dbd5016172b4196cb2598cd58157b9d9b0875698b4c720069d209d3ccf05"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_flowproperty.ts",
+        "sha256": "afcbac90c901463a36496e59a3af911b398e519b9733aef572a2a963cd399257"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_general.ts",
+        "sha256": "031ee70d2fc4e9ce2550f86c767af4b72c7ff2da66a268b0f97b32f79e458f7d"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_home.ts",
+        "sha256": "b87ce57a6b213e446511b81be3d6bb42acfdf9653f9ca98390f00d628e7d5440"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_manageSystem.ts",
+        "sha256": "ddcc1044657088600f4daf2ff3f8dc2b936960e42b04190eccc99c9c669c84ab"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_model.ts",
+        "sha256": "1ec1b57d72309e75e40e2933c5520e247fc0f2d97dbd63518b66fbffe8e0c602"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_process.ts",
+        "sha256": "72f48642d64ce38246fb7967e1ebbd0e8f0cae4624f7752ed267e1d530158c50"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_product.ts",
+        "sha256": "cbe1014ec72eafdabd2ca39b6bc803ec67e791967004b7f797d2730c122a1aff"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_review.ts",
+        "sha256": "b94b4ec5eb01d8c5b0c1548f352dd08a580bc4fe9a97db55dc4c2ee4297fe07e"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_source.ts",
+        "sha256": "ef30c4d6963972f17293fbbddc1c784f0fa553508ac01180f2bed6249321e483"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_teams.ts",
+        "sha256": "5afad557c8da2861535614cc6b378f9c5d4cd38fde3a3cc67ba1a0c86c531544"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages_unitgroup.ts",
+        "sha256": "45430d61ed9680f559f069ff9e34aabedaf3a13ba45e2916a8aa04c08e6b71df"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pages.ts",
+        "sha256": "988a8157752e242a3b42d2a9005b3bc621feb6a75cf61a0065fead43af1fd0e1"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/pwa.ts",
+        "sha256": "380a1f7028026fb21df9b1b6736ef52d58fda498890f2768b022c41598169370"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/settingDrawer.ts",
+        "sha256": "e7b2edba84e313ad6f858c485a71c5f7627d6a68d8f3a8a3210b3b3f6dd82efa"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/settings.ts",
+        "sha256": "f076bb3a71796510892aa33900f2c99467da3cb3cb28b7b2ba996206956e853c"
+      },
+      {
+        "kind": "file",
+        "path": "src/locales/de-DE/validator.ts",
+        "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
+      }
+    ],
+    "inputDigest": "d272eeb79e57f2cd8af93d13de853071053207425dc0233d45be7eff3dad0754"
+  }
+}
