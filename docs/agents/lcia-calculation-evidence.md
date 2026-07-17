@@ -21,11 +21,15 @@ checkPaths:
   - src/components/LCIACacheMonitor/**
   - src/pages/Processes/Components/lcaCalculationEvidenceNotice.tsx
   - src/services/lca/**
+  - src/services/lcaReleases/**
+  - src/pages/DataProcessing/CalculationBundlePanel.tsx
+  - src/components/LcaReleaseReadPanel/**
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedNote: 'Added the persisted Calculation Bundle and canonical release readback contract for Issue #606 without changing the reviewed static LCIA method bundle.'
 ---
 
 # LCIA Method Bundle and Calculation Evidence Contract
@@ -77,6 +81,14 @@ Frontend inline gap evidence uses `lcia-uncharacterized-jsonl:v1`; Worker v2 evi
 - the authenticated owner's `state_code=0` rows where `team_id IS NULL` and `review_id IS NULL`.
 
 Both normal listing and keyword search use that exact database predicate. This scope is separate from LCIA method provenance: access to a private process or FP/UG does not publish it and does not make an LCIA factor canonical.
+
+## Persisted Calculation Bundle And Release Readback
+
+`tiangong.calculation-bundle.v1` is the private, package-level read model for Worker-produced LCI, LCIA, coverage, and calculation evidence. Data Processing loads it by package identity through the authenticated user session. It does not reconstruct LCI or LCIA in the browser. Process-axis and fixed process-range artifacts select the exact records to display; parsed preview artifacts must match their declared byte size and SHA-256 before their NDJSON is trusted. Oversized chunks remain downloadable evidence and are not parsed inline.
+
+Published release readback is a separate sanitized projection. It becomes anonymously readable only when Database marks one release current and Edge exposes its release, validation, artifact, and source-Process identity projection. A source Process maps to the exact Unit Process plus generated LifecycleModel and Result Process UUID/version identities. The Unit Process package remains result-free; the Model/Result package carries the LCI exchanges and LCIA results without changing TIDAS schema.
+
+Next is never a publication authority. It cannot approve, publish, supersede, or repair a release, receives no service-role credential, and does not receive private storage object locators. Each download action requests a fresh short-lived URL; visible artifact byte size, SHA-256, profile, and format remain the immutable evidence used for readback and independent verification.
 
 ## FP/UG release handoff
 

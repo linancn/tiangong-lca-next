@@ -1,21 +1,22 @@
 # Unified German (`de-DE`) delivery workspace
 
-Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepared and locally approved one region-neutral Standard German catalog. Activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602) now owns its single runtime bundle. `de-DE` is the canonical app/storage tag; the product does not maintain separate German variants. Runtime aliases normalize to `de-DE`, while `de_DE` and `de` are controlled adapters for Ant Design/import-report schema and Day.js respectively.
+Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepared and locally approved one region-neutral Standard German catalog. Activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602) established its single runtime bundle, and Issue [#606](https://github.com/linancn/tiangong-lca-next/issues/606) adds only the Calculation Bundle and Release UI delta. `de-DE` is the canonical app/storage tag; the product does not maintain separate German variants. Runtime aliases normalize to `de-DE`, while `de_DE` and `de` are controlled adapters for Ant Design/import-report schema and Day.js respectively.
 
 This directory contains tracked candidate, context, terminology, and structural evidence. Completed human confirmation files are deliberately excluded: they stay under `.local/i18n-de-DE/`, are ignored by Git, and must not be pasted into an Issue, PR, or comment.
 
 ## Current gate state
 
-- Frozen #601 baseline: 2,665 approved messages (`2,658` leaf keys plus `7` activation-entry keys), 30 leaf modules, 628 reserved-context proposals, and 2,665 non-personal producer records.
-- Active #602 delta: 24 new app-owned message IDs, 2 modified baseline API-doc messages, and 2 bundle-external import-report prose items.
-- Final active topology: `en-US`, `zh-CN`, and the single `de-DE` bundle, each with 2,689 messages and the same 30-module spread order.
-- `runtime-activation-manifest.json` binds the immutable #601 Git snapshot, current three-locale manifest, exact ordered delta inventory, final count, adapter policy, dataset-language fallback, and tracked prose digests.
+- Accepted active baseline: merged `dev` commit `36836f2c` contains 2,689 messages in each of `en-US`, `zh-CN`, and the single `de-DE` runtime bundle; it carries forward the frozen #601 and merged #602 decisions without reopening them for Issue #606.
+- Issue #606 delta: 48 new Calculation Bundle and canonical Release UI messages, with no modified baseline message or bundle-external prose item.
+- Final topology: all three locales contain 2,737 messages and the same 30-module spread order.
+- `runtime-activation-manifest.json` binds the accepted active baseline commit, current three-locale manifest, exact ordered 48-message delta, final count, adapter policy, and dataset-language fallback.
 - Canonical-manifest checks reuse the checked-in source commit by default; a later movement of `origin/dev` does not invalidate unchanged locale/callsite evidence. `--write` or an explicit `--base-ref` is required to advance that provenance.
-- The local #602 approval scope binds only those 28 review items, their relevant direct/dynamic callsite evidence, the two runtime descriptor maps, and the deterministic renderer contract. Refreshing a structural manifest after an unrelated production or unrelated dynamic-family change does not by itself invalidate an otherwise unchanged human approval.
-- The old Pilot and 2,665-message catalog confirmations remain local and valid only while their frozen tracked inputs match the #601 commit.
-- The separate 28-item #602 delta form is local and ignored; its checker currently reports the generic approved state without exposing reviewer identity, date, decisions, response digest, or per-item notes.
+- The local #606 approval scope binds only those 48 new messages and their direct/dynamic callsite evidence. It does not reopen the already merged #601/#602 German catalog and activation decisions.
+- Historical Pilot confirmation remains governed by its frozen local check; the separate 48-item #606 delta form is also local and ignored. Their checkers expose only generic approval state and never reviewer identity, date, decisions, response digest, or per-item notes.
 
 These counts are generated evidence, not a completion claim.
+
+The historical `context-ledger.json` remains the frozen #601 catalog evidence. The active #606 delta is derived against the accepted 2,689-message `dev` manifest and never rewrites that historical ledger.
 
 ## Goal and execution contract
 
@@ -23,10 +24,10 @@ The finished artifact is one active, region-neutral Standard German runtime cata
 
 Activation proceeds in five checkpoints:
 
-1. verify the immutable #601 Pilot/catalog source artifacts and existing ignored confirmations without regenerating them;
+1. preserve the accepted 2,689-message active German baseline from `dev` unchanged;
 2. generate/check the three-locale canonical manifest and deterministic runtime activation manifest;
-3. review only the 24 new messages, 2 changed messages, and 2 external report-prose items in the separate local delta form;
-4. pass the active-runtime exact-assembly audit, including topology, ICU, token, frozen-value, adapter-literal, and regional-bundle checks;
+3. review only the 48 new Issue #606 Calculation Bundle and Release messages in the separate local delta form;
+4. pass the active-runtime exact-assembly audit, including topology, ICU, token, baseline-value, adapter-literal, and regional-bundle checks;
 5. run focused runtime proof, then the single final repository gate on the immutable delivery HEAD.
 
 A generated delta form without a valid local approval block is useful review material but never satisfies the human checkpoint. Structural report mode remains runnable in that state, while enforcement fails closed; the current local form satisfies the checker.
@@ -68,10 +69,10 @@ The three dimensions are review questions, not three required identities. The ca
 - `review-log.yaml`: legacy-named, tracked provenance/policy manifest. It records non-personal candidate producers and local-evidence policy only; it is not a human review log.
 - `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
 - `activation-entry-translations.json`: the seven frozen #601 top-level translations assembled by `src/locales/de-DE.ts`.
-- `runtime-activation-manifest.json`: deterministic, non-personal #602 carry-forward and delta contract. It contains only tracked-input digests, counts, message IDs, and runtime policy; it contains no reviewer identity, decision, response, or confirmation digest.
+- `runtime-activation-manifest.json`: deterministic, non-personal active-baseline and #606 delta contract. It contains only tracked-input digests, counts, message IDs, and runtime policy; it contains no reviewer identity, decision, response, or confirmation digest.
 - `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.
 - `.local/i18n-de-DE/catalog-review-confirmation.md`: completed #601 full-catalog form for the frozen 2,665-message baseline. #602 checks it locally against the immutable snapshot and does not regenerate it.
-- `.local/i18n-de-DE/issue-602-delta-review-confirmation.md`: the independent 28-item runtime-delta form. It covers only 24 new messages, 2 changed baseline messages, and 2 import-report prose items.
+- `.local/i18n-de-DE/issue-606-delta-review-confirmation.md`: the independent 48-message Calculation Bundle and Release UI delta form.
 
 ## Commands
 
@@ -82,7 +83,7 @@ npm run i18n:audit:write
 npm run i18n:de:runtime:manifest:write
 ```
 
-Generate the local #602 delta form without overwriting an existing file:
+Generate the local #606 delta form without overwriting an existing file:
 
 ```bash
 npm run i18n:de:delta:review:generate
@@ -103,10 +104,9 @@ npm run i18n:de:pilot:report
 npm run i18n:de:runtime:manifest:check
 ```
 
-Final enforcement keeps the frozen #601 human proof and active #602 delta proof separate. Both commands pass only while their respective private evidence and tracked inputs remain valid:
+Final enforcement treats the merged 2,689-message runtime as the accepted baseline and requires separate private approval only for the 48-message #606 delta:
 
 ```bash
-npm run i18n:de:pilot
 npm run i18n:de:audit
 ```
 
@@ -139,7 +139,8 @@ Validation has three independent evidence domains. Do not invalidate or rerun a 
 | Evidence domain | Controlled inputs | Proof during iteration | Invalidation |
 | --- | --- | --- | --- |
 | Frozen #601 Pilot/catalog | immutable #601 commit, 90-message Pilot pack, 2,665-message ledger/catalog, activation entries, provenance policy, and their existing ignored confirmations | frozen-snapshot comparison plus local Pilot/catalog confirmation checks; never regenerate these forms during #602 | a mismatch against the immutable #601 inputs blocks carry-forward and requires explicit investigation; #602 changes do not silently rewrite the baseline |
-| Active #602 runtime delta | the exact 24 new messages, 2 modified baseline messages, 2 extracted report-prose items, canonical three-locale manifest, dynamic-family callsite proof, runtime policy, and deterministic renderer | runtime-manifest report, private 28-item delta form, active topology/ICU/token/frozen-value audit, and focused locale/runtime tests | regenerate and re-confirm only after one of these delta inputs changes; unchanged #601 approval remains carried forward |
+| Accepted active baseline | merged `dev` commit `36836f2c`, its 2,689-message three-locale manifest, and unchanged runtime policy | immutable Git snapshot and exact baseline-value comparison | a baseline commit, value, topology, or policy mismatch blocks carry-forward |
+| Issue #606 runtime delta | the exact 48 new Calculation Bundle/Release messages, canonical three-locale manifest, dynamic-family callsite proof, runtime policy, and deterministic renderer | runtime-manifest report, private 48-item delta form, active topology/ICU/token/baseline-value audit, and focused locale/runtime tests | regenerate and re-confirm only after one of these delta inputs changes |
 | Repository delivery checkpoint | exact committed `HEAD`, tracked tree, Node/dependency state, and lint/build/test/coverage/Docpact/gate configuration | the normal push hook runs Docpact and `npm run prepush:gate` once after the last controlled tracked change | a new controlled tracked change or relevant toolchain/dependency/configuration change requires one new final run |
 
 Ignored local confirmation content and GitHub metadata are not repository full-gate inputs. They invalidate only the applicable local Pilot or catalog evidence. During normal delivery, do not run `npm run prepush:gate` manually and then immediately run a push whose hook repeats it. Let the hook own the one final full-gate execution. Run the full gate manually only for a no-push evidence handoff.
@@ -148,16 +149,16 @@ This workflow does not add a reusable passed-gate cache. Final delivery uses `np
 
 ## Frozen #601 Pilot and catalog separation (historical)
 
-Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,575 messages or the other 619 currently reserved contexts.
+Pilot confirmation approves exactly 90 candidates, 9 reserved-context proposals, and 2 term choices. It unlocks bulk translation only. It does not approve the other 2,623 messages or the other 619 currently reserved contexts.
 
 After the 30 leaf modules, all context proposals, and all producer records existed, #601 generated and checked a separate full-catalog form. Its approval covered all 2,665 candidates with exact topology/key/ICU parity, zero invalid/missing context proposals, and zero unresolved Critical/Major issues. #602 verifies that frozen evidence against the immutable baseline; it does not regenerate or broaden the approval.
 
 ## Review sequence
 
-1. Verify the frozen #601 Pilot/catalog evidence and its existing local confirmations without regeneration.
-2. Assemble the one `de-DE` top-level bundle and activate its runtime/configuration adapters; no country-specific German bundle is allowed.
+1. Preserve merged `dev` commit `36836f2c` as the accepted 2,689-message baseline; investigate any frozen #601/#602 mismatch without regenerating inherited evidence.
+2. Keep the one `de-DE` top-level bundle and its runtime/configuration adapters unchanged; no country-specific German bundle is allowed.
 3. Generate the canonical three-locale manifest and deterministic runtime activation manifest.
-4. Review and approve the separate private 28-item #602 delta form with its direct and dynamic-family callsite context.
+4. Review and approve the separate private 48-item #606 delta form with its direct and dynamic-family callsite context.
 5. Pass `npm run i18n:de:audit`, focused runtime/locale tests, and Docpact/scoped static checks.
 6. Freeze the delivery commit and run the repository full gate once through `npm run push:checked -- <normal git push arguments>`; rerun it only if a controlled tracked input changes afterward or an expired failed-transport receipt has removed the bounded retry authority.
 

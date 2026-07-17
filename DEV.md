@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
-lastReviewedNote: 'Documented the Issue #611 pre-push bootstrap path for both active Node 24 and the local NVM fallback.'
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Reviewed Issue #606 against the active German delta workflow and the Issue #611 clean-runner Node 24 bootstrap; the shortest managed final-push loop is unchanged.'
 ---
 
 # Development Bootstrap
@@ -89,8 +89,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | deterministic locale audit | `npm run i18n:audit` |
 | write active German runtime manifest | `npm run i18n:de:runtime:manifest:write` |
 | check active German runtime manifest | `npm run i18n:de:runtime:manifest:check` |
-| generate local Issue #602 delta review form | `npm run i18n:de:delta:review:generate` |
-| check completed local Issue #602 delta review | `npm run i18n:de:delta:review:check` |
+| generate local Issue #606 delta review form | `npm run i18n:de:delta:review:generate` |
+| check completed local Issue #606 delta review | `npm run i18n:de:delta:review:check` |
 | verify the frozen approved Issue #601 Pilot | `npm run i18n:de:pilot` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | build | `npm run build` |
@@ -111,8 +111,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local confirmation edits and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
-- after a controlled German source or copy change, write the runtime manifest, generate the Issue #602 delta review form, keep the completed form private and ignored, and check it before enforcing `npm run i18n:de:audit`
-- `npm run i18n:de:pilot` verifies the frozen Issue #601 approval snapshot; `npm run i18n:de:audit` additionally requires the exact active runtime assembly, the fresh manifest, and the hash-bound local Issue #602 delta approval
+- after a controlled German source or copy change, write the runtime manifest, generate the Issue #606 delta review form, keep the completed form private and ignored, and check it before enforcing `npm run i18n:de:audit`
+- `npm run i18n:de:pilot` verifies the frozen Issue #601 approval snapshot; `npm run i18n:de:audit` treats merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and additionally requires the exact active runtime assembly, the fresh manifest, and the hash-bound local Issue #606 delta approval
 - completed German review forms and reviewer identity stay outside Git and GitHub; the gates read them locally without making a network call
 - a successful managed push leaves no retry receipt; only a non-zero transport result after both hook gates passed activates the ignored, one-hour, exact-intent receipt used by argument-free `npm run push:retry`
 - a raw `git push` still runs the hook but cannot create that bounded recovery receipt; never invoke `git push --no-verify` or `HUSKY=0` manually

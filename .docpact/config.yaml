@@ -215,6 +215,12 @@ routing:
         - src/pages/Processes/Analysis/**
         - docs/agents/contribution-path-analysis-design.md
         - docs/agents/lca-analysis-visualization-plan.md
+    calculation-release-ui:
+      paths:
+        - src/services/lcaReleases/**
+        - src/components/LcaReleaseReadPanel/**
+        - src/pages/DataProcessing/CalculationBundlePanel.tsx
+        - docs/agents/lcia-calculation-evidence.md
     team-and-review-management:
       paths:
         - src/pages/Review/**
@@ -544,6 +550,28 @@ rules:
       - path: docs/agents/lcia-calculation-evidence.md
         mode: review_or_update
     reason: The reviewed LCIA bundle, validator, cache trust, and calculation-evidence contract must change together.
+  - id: next-calculation-release-read-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: src/services/lcaReleases/**
+        kind: release-read-service
+      - path: src/components/LcaReleaseReadPanel/**
+        kind: release-read-ui
+      - path: src/pages/DataProcessing/CalculationBundlePanel.tsx
+        kind: calculation-bundle-ui
+    requiredDocs:
+      - path: .docpact/config.yaml
+        mode: review_or_update
+      - path: docs/agents/repo-validation.md
+        mode: review_or_update
+      - path: docs/agents/repo-architecture.md
+        mode: review_or_update
+      - path: docs/agents/supabase-branching.md
+        mode: review_or_update
+      - path: docs/agents/lcia-calculation-evidence.md
+        mode: review_or_update
+    reason: Persisted Calculation Bundle and public release readback must retain their user-session, integrity, source-Process identity, and frontend ownership boundaries.
   - id: next-public-map-assets-contract
     scope: repo
     repo: next

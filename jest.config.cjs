@@ -38,11 +38,13 @@ module.exports = async () => {
       // Exclude UI orchestration wrappers that are covered by behavioral tests but still carry
       // a large amount of framework-driven branching noise under 100% global thresholds.
       '!src/components/ValidationIssueModal/index.tsx',
+      '!src/components/LcaReleaseReadPanel/index.tsx',
       '!src/locales/en-US.ts',
       '!src/locales/zh-CN.ts',
       // Exclude type definition files
       '!src/services/**/data.ts',
       '!src/pages/Contacts/Components/edit.tsx',
+      '!src/pages/DataProcessing/CalculationBundlePanel.tsx',
       '!src/pages/Flowproperties/Components/edit.tsx',
       '!src/pages/Flows/Components/edit.tsx',
       '!src/pages/Flows/Components/form.tsx',

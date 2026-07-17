@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
-lastReviewedNote: 'Added Issue #611 clean-runner provenance, private-evidence, and setup-node hook recovery guidance.'
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Retained Issue #606 focused-suite and active-delta recovery guidance while adopting Issue #611 clean-runner provenance, private-evidence, and setup-node hook recovery.'
 ---
 
 # Testing Troubleshooting
@@ -57,7 +57,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | clean CI reports missing German confirmation files | a repository test implicitly read ignored `.local` evidence | pass an explicit nonexistent path and assert the expected confirmation-only findings; keep approved-form coverage in generated private fixtures and never add the real form to CI |
 | frozen German Pilot check reports context or `offlineReviewConfirmation` drift | the inherited Issue #601 snapshot, context ledger, producer evidence, or ignored approval no longer matches its frozen source | stop runtime activation work and inspect the frozen English, Chinese, German, callsites, and approval hashes; do not regenerate or silently reinterpret the approved baseline |
 | active German runtime manifest is stale | a controlled locale, runtime-family, context, policy, or activation input changed after generation | inspect the diff, then run `npm run i18n:de:runtime:manifest:write` only after the controlled change is final and rerun the manifest check |
-| Issue #602 delta review is missing, malformed, or stale | the ignored local form is incomplete, its normalized body/hash changed, or the 24 new, 2 modified, and 2 external-family item boundaries no longer match | regenerate with `npm run i18n:de:delta:review:generate`, obtain fresh human approval for the entire 28-item body, and run `npm run i18n:de:delta:review:check`; never commit or upload reviewer details |
+| Issue #606 delta review is missing, malformed, or stale | the ignored local form is incomplete, its normalized body/hash changed, or the exact 48-message release scope no longer matches | regenerate with `npm run i18n:de:delta:review:generate`, obtain fresh human approval for the entire 48-item body, and run `npm run i18n:de:delta:review:check`; never commit or upload reviewer details |
 | local German review generation refuses to overwrite | an existing form may contain human notes or decisions | preserve the file, regenerate to another private path, or use explicit `--force` only after intentionally discarding the obsolete form |
 | local German review rejects its input/output path | the path is inside the repository but outside ignored `.local/i18n-de-DE/`, is tracked, or traverses a symlink | keep completed evidence in the private ignored directory (or an external private path); never move it under tracked docs |
 | active `i18n:de:audit` reports frozen-snapshot, delta-inventory, descriptor-family, or assembly drift | the active catalog no longer equals the frozen baseline plus the declared reviewed delta, or one closed runtime family disagrees with its formatter/callsites | fix the structural mismatch without broadening the approved delta, refresh the runtime manifest, obtain new local delta approval only when its reviewed body changed, then rerun the narrow German gates |

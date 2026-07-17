@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
-lastReviewedNote: 'Added clean-runner German evidence separation and active-Node hook bootstrap coverage for Issue #611.'
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Retained Issue #606 transport, integrity, component, and 48-message delta proof while adopting Issue #611 clean-runner evidence separation and active-Node hook coverage.'
 ---
 
 # Testing Patterns Reference
@@ -96,7 +96,7 @@ Special cases:
 6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a complete non-personal proposal with concrete evidence, UI role, concept, consequence, and current source hash before local confirmation
 7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
 8. preserve the frozen Issue #601 review boundary: its generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal
-9. activate German only through an exact runtime manifest that assembles the frozen 2,665-message baseline with the declared Issue #602 delta; require the separate local delta form to cover all 24 new messages, 2 modified baseline messages, and 2 external-family decisions, and never write completed human-review content into a tracked fixture
+9. evolve active German only through an exact runtime manifest that assembles an accepted merged baseline with the declared feature delta; for Issue #606 require the separate local form to cover exactly its 48 new release messages, and never write completed human-review content into a tracked fixture
 10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
 11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
@@ -116,7 +116,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
-| local Issue #602 delta approval | `npm run i18n:de:delta:review:check` |
+| local Issue #606 delta approval | `npm run i18n:de:delta:review:check` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | receipt-bound transport retry | `npm run push:retry` |
 

@@ -6,6 +6,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import {
+  ACTIVE_BASELINE_COMMIT,
   buildRuntimeActivationManifest,
   CANONICAL_MANIFEST,
   DELTA_CONFIRMATION,
@@ -15,7 +16,6 @@ import {
   extractReviewGateDescriptorEvidence,
   extractTrackedCopyInput,
   fileDigest,
-  FROZEN_BASELINE_COMMIT,
   FROZEN_CONTEXT_LEDGER,
   hashJson,
   messageContext,
@@ -30,10 +30,10 @@ export const DELTA_SCOPE_SCHEMA = 'tiangong.i18n-de-runtime-delta-scope.v1';
 export const DELTA_CONFIRMATION_SCHEMA = 'tiangong.i18n-de-runtime-delta-confirmation.v1';
 
 const PRIVATE_REVIEW_DIRECTORY = '.local/i18n-de-DE';
-const CONFIRMATION_BEGIN = '<!-- ISSUE-602-DELTA-CONFIRMATION-BEGIN -->';
-const CONFIRMATION_END = '<!-- ISSUE-602-DELTA-CONFIRMATION-END -->';
-const NOTE_BEGIN = '<!-- ISSUE-602-DELTA-NOTE-BEGIN:';
-const NOTE_END = '<!-- ISSUE-602-DELTA-NOTE-END:';
+const CONFIRMATION_BEGIN = '<!-- ISSUE-606-DELTA-CONFIRMATION-BEGIN -->';
+const CONFIRMATION_END = '<!-- ISSUE-606-DELTA-CONFIRMATION-END -->';
+const NOTE_BEGIN = '<!-- ISSUE-606-DELTA-NOTE-BEGIN:';
+const NOTE_END = '<!-- ISSUE-606-DELTA-NOTE-END:';
 const DECISION_KEYS = ['productContext', 'nativeGerman', 'lcaTidasTerminology'];
 const APPROVAL_KEYS = [
   'productContextApproved',
@@ -62,9 +62,9 @@ export function normalizeDeltaReviewBody(markdown) {
     `${CONFIRMATION_BEGIN}\n[confirmation block omitted from body digest]\n${CONFIRMATION_END}`,
   );
   normalized = normalized.replace(
-    /<!-- ISSUE-602-DELTA-NOTE-BEGIN:([^ ]+) -->[\s\S]*?<!-- ISSUE-602-DELTA-NOTE-END:\1 -->/gu,
+    /<!-- ISSUE-606-DELTA-NOTE-BEGIN:([^ ]+) -->[\s\S]*?<!-- ISSUE-606-DELTA-NOTE-END:\1 -->/gu,
     (_match, token) =>
-      `<!-- ISSUE-602-DELTA-NOTE-BEGIN:${token} -->\n[review note omitted from body digest]\n<!-- ISSUE-602-DELTA-NOTE-END:${token} -->`,
+      `<!-- ISSUE-606-DELTA-NOTE-BEGIN:${token} -->\n[review note omitted from body digest]\n<!-- ISSUE-606-DELTA-NOTE-END:${token} -->`,
   );
   return normalized;
 }
@@ -203,11 +203,11 @@ export function buildDeltaReviewScope(root) {
   });
   const scope = {
     schemaVersion: DELTA_SCOPE_SCHEMA,
-    issue: 'https://github.com/linancn/tiangong-lca-next/issues/602',
+    issue: 'https://github.com/linancn/tiangong-lca-next/issues/606',
     locale: 'de-DE',
     source: {
-      frozenBaselineCommit: FROZEN_BASELINE_COMMIT,
-      reviewContract: 'issue-602-exact-28-items-with-related-context-v1',
+      frozenBaselineCommit: ACTIVE_BASELINE_COMMIT,
+      reviewContract: 'issue-606-exact-48-release-messages-with-related-context-v1',
       reviewRendererDigest: fileDigest(root, 'scripts/i18n/german-runtime-delta-review.mjs'),
     },
     messages,
@@ -352,7 +352,7 @@ function renderConfirmation(scope, reviewBodyDigest) {
   const confirmation = {
     schemaVersion: DELTA_CONFIRMATION_SCHEMA,
     locale: 'de-DE',
-    scope: 'issue-602-runtime-delta',
+    scope: 'issue-606-release-runtime-delta',
     scopeDigest: scope.scopeDigest,
     reviewBodyDigest,
     reviewer: '',
@@ -377,9 +377,9 @@ function renderConfirmation(scope, reviewBodyDigest) {
 export function renderDeltaReviewMarkdown(scope) {
   const placeholder = renderConfirmation(scope, '__REVIEW_BODY_DIGEST__');
   const sections = [
-    '# Issue #602 German runtime delta review',
+    '# Issue #606 German release UI delta review',
     '',
-    '此文件仅审阅 #602 新增/修改的 German 文案，不重新打开 #601 已批准的 2,665 条完整目录。文件必须保持本地、Git ignored，不能上传或摘录到 GitHub。',
+    '此文件仅审阅 #606 新增的 48 条 Calculation Bundle / Release German 文案，不重新打开已合并、已激活的 2,689 条 de-DE baseline。文件必须保持本地、Git ignored，不能上传或摘录到 GitHub。',
     '',
     '## 审阅要求',
     '',
@@ -445,7 +445,7 @@ export function evaluateDeltaConfirmation(markdown, scope) {
   if (!exactKeys(confirmation, expectedKeys)) reasons.push('Confirmation fields are incomplete.');
   if (confirmation.schemaVersion !== DELTA_CONFIRMATION_SCHEMA)
     reasons.push('Confirmation schema is stale.');
-  if (confirmation.locale !== 'de-DE' || confirmation.scope !== 'issue-602-runtime-delta') {
+  if (confirmation.locale !== 'de-DE' || confirmation.scope !== 'issue-606-release-runtime-delta') {
     reasons.push('Confirmation targets the wrong locale or scope.');
   }
   if (confirmation.scopeDigest !== scope.scopeDigest) reasons.push('Confirmation scope is stale.');
@@ -488,7 +488,7 @@ export function evaluateDeltaConfirmation(markdown, scope) {
     ...scope.externalTrackedCopy.map(({ id }) => noteToken(`external:${id}`)),
   ].sort();
   const actualTokens = [
-    ...normalizeNewlines(markdown).matchAll(/<!-- ISSUE-602-DELTA-NOTE-BEGIN:([^ ]+) -->/gu),
+    ...normalizeNewlines(markdown).matchAll(/<!-- ISSUE-606-DELTA-NOTE-BEGIN:([^ ]+) -->/gu),
   ]
     .map((match) => match[1])
     .sort();

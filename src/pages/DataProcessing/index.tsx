@@ -1,4 +1,5 @@
 import AccessDenied from '@/components/AccessDenied';
+import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
   createLciaResultBuildRequest,
   listLciaResultPublications,
@@ -37,6 +38,7 @@ import {
   Tooltip,
 } from 'antd';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import CalculationBundlePanel from './CalculationBundlePanel';
 import styles from './index.less';
 
 type CommandStatus = {
@@ -84,6 +86,25 @@ type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
 const previewExportPageSize = 100;
+
+export function parseDataProcessingDeepLink(search: string): {
+  activeTabKey: 'builds' | 'preview' | 'publication';
+  packageId?: string;
+  processId?: string;
+  processVersion?: string;
+} {
+  const params = new URLSearchParams(search);
+  const requestedTab = params.get('tab');
+  const activeTabKey =
+    requestedTab === 'preview' || requestedTab === 'publication' ? requestedTab : 'builds';
+  const value = (name: string) => params.get(name)?.trim() || undefined;
+  return {
+    activeTabKey,
+    packageId: value('packageId'),
+    processId: value('processId'),
+    processVersion: value('processVersion'),
+  };
+}
 
 export function stringifyCommandData(value: unknown): string {
   if (value === null || value === undefined) {
@@ -610,6 +631,7 @@ export function buildImpactCategoryOptions(
 
 const DataProcessing = () => {
   const intl = useIntl();
+  const deepLink = useMemo(() => parseDataProcessingDeepLink(window.location.search), []);
   const locale = intl.locale ?? 'en-US';
   const t = useCallback(
     (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage }),
@@ -618,14 +640,16 @@ const DataProcessing = () => {
   const [authResolved, setAuthResolved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<string | undefined>();
-  const [activeTabKey, setActiveTabKey] = useState('builds');
+  const [activeTabKey, setActiveTabKey] = useState<string>(deepLink.activeTabKey);
   const [commandStatus, setCommandStatus] = useState<CommandStatus | null>(null);
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
   const [buildJobs, setBuildJobs] = useState<WorkerJobResult[]>([]);
   const [submittedBuildJobs, setSubmittedBuildJobs] = useState<WorkerJobResult[]>([]);
-  const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>();
+  const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
+    deepLink.packageId,
+  );
   const [previewImpactCategoryId, setPreviewImpactCategoryId] = useState<string | undefined>();
   const [exportingPreview, setExportingPreview] = useState(false);
   const [buildJobsLoading, setBuildJobsLoading] = useState(false);
@@ -1622,6 +1646,11 @@ const DataProcessing = () => {
               </Descriptions.Item>
             </Descriptions>
           </Card>
+          <CalculationBundlePanel
+            packageId={selectedPreviewPackageId as string}
+            initialProcessId={deepLink.processId}
+            initialProcessVersion={deepLink.processVersion}
+          />
           <Card title={t('pages.dataProcessing.preview.inputScopeTitle', 'Input scope')}>
             <Descriptions bordered size='small' column={1}>
               <Descriptions.Item
@@ -1777,7 +1806,11 @@ const DataProcessing = () => {
 
   const renderPublication = () => (
     <Space direction='vertical' size='middle' className={styles.workbenchPanel}>
-      <Card>
+      <LcaReleaseReadPanel
+        processId={deepLink.processId}
+        processVersion={deepLink.processVersion}
+      />
+      <Card title={t('pages.dataProcessing.publications.legacyTitle', 'Legacy LCIA publication')}>
         <Form form={publishForm}>
           <Form.Item
             label={t('pages.dataProcessing.form.publishPackageId', 'Publish result set')}
