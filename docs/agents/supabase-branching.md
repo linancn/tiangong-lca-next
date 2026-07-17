@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
 lastReviewedNote: 'Reviewed Issue #606 release reads: Next keeps user-session and anonymous public projections in src/services/lcaReleases without taking schema, publication, or service-role ownership.'
 ---
 

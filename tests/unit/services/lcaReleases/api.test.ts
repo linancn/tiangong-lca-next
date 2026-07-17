@@ -19,7 +19,9 @@ jest.mock('@/services/supabase', () => ({
 import {
   createLcaReleaseArtifactDownload,
   fetchCalculationBundleArtifactText,
+  fetchCalculationBundleDownloadBlob,
   fetchCalculationBundleRecords,
+  fetchFreshCalculationBundleDownloadBlob,
   getCalculationBundle,
   getCurrentLcaRelease,
   getCurrentLcaReleaseForProcess,
@@ -275,6 +277,223 @@ describe('lcaReleases api', () => {
     expect(global.fetch).toHaveBeenCalledWith('https://download.example/lci', {
       credentials: 'omit',
     });
+  });
+
+  it('downloads and verifies raw artifacts before exposing a browser Blob', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    setCryptoDigest(3);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bytes.buffer,
+    })) as any;
+
+    const blob = await fetchCalculationBundleDownloadBlob({
+      signedDownloadUrl: 'https://download.example/raw',
+      sha256: '03'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/x-ndjson',
+    });
+
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.size).toBe(bytes.byteLength);
+    expect(blob.type).toBe('application/x-ndjson');
+    expect(global.fetch).toHaveBeenCalledWith('https://download.example/raw', {
+      credentials: 'omit',
+    });
+
+    const fallbackTypeBlob = await fetchCalculationBundleDownloadBlob({
+      signedDownloadUrl: 'https://download.example/raw',
+      sha256: '03'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: '',
+    });
+    expect(fallbackTypeBlob.type).toBe('application/octet-stream');
+  });
+
+  it('fails closed before exposing an invalid raw download', async () => {
+    const oneByte = new Uint8Array([1]);
+    const twoBytes = new Uint8Array([1, 2]);
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 403 })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => oneByte.buffer,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => twoBytes.buffer,
+      }) as any;
+    const download = {
+      signedDownloadUrl: 'https://download.example/raw',
+      sha256: '00'.repeat(32),
+      byteSize: twoBytes.byteLength,
+      mediaType: 'application/octet-stream',
+    };
+
+    await expect(fetchCalculationBundleDownloadBlob(download)).rejects.toThrow('(403)');
+    await expect(fetchCalculationBundleDownloadBlob(download)).rejects.toThrow('size mismatch');
+    setCryptoDigest(9);
+    await expect(fetchCalculationBundleDownloadBlob(download)).rejects.toThrow('SHA-256 mismatch');
+  });
+
+  it('refreshes secure links per click and retries one expired signed URL', async () => {
+    const bytes = new Uint8Array([1, 2, 3, 4]);
+    const expected = {
+      sha256: '03'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/x-ndjson',
+    };
+    const projection = (signedDownloadUrl: string) => ({
+      calculationBundle: {
+        manifestDownload: { ...expected, signedDownloadUrl, signedDownloadExpiresInSeconds: 900 },
+        artifacts: [
+          {
+            ...expected,
+            path: 'results/lci.ndjson.gz',
+            signedDownloadUrl,
+            signedDownloadExpiresInSeconds: 900,
+          },
+        ],
+      },
+    });
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: { ok: true, data: projection('https://download.example/expired') },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { ok: true, data: projection('https://download.example/fresh') },
+        error: null,
+      });
+    setCryptoDigest(3);
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 410 })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => bytes.buffer,
+      }) as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob(
+        '11111111-1111-4111-8111-111111111111',
+        'results/lci.ndjson.gz',
+        expected,
+      ),
+    ).resolves.toMatchObject({ size: bytes.byteLength, type: expected.mediaType });
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(2);
+    expect(global.fetch).toHaveBeenNthCalledWith(1, 'https://download.example/expired', {
+      credentials: 'omit',
+    });
+    expect(global.fetch).toHaveBeenNthCalledWith(2, 'https://download.example/fresh', {
+      credentials: 'omit',
+    });
+  });
+
+  it('rejects missing, denied, or drifted fresh Calculation Bundle downloads before saving', async () => {
+    const expected = {
+      sha256: '00'.repeat(32),
+      byteSize: 2,
+      mediaType: 'application/octet-stream',
+    };
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({
+        data: { ok: false, code: 'access_denied', message: 'Access denied' },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: { calculationBundle: { manifestDownload: expected, artifacts: [] } },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: expected,
+              artifacts: [
+                {
+                  ...expected,
+                  path: 'results/lci.ndjson.gz',
+                  sha256: 'ff'.repeat(32),
+                },
+              ],
+            },
+          },
+        },
+        error: null,
+      });
+    global.fetch = jest.fn() as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', null, expected),
+    ).rejects.toThrow('Access denied');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'missing.ndjson.gz', expected),
+    ).rejects.toThrow('no longer available');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', 'results/lci.ndjson.gz', expected),
+    ).rejects.toThrow('metadata changed');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('fails closed for unavailable manifests and non-refreshable verified download failures', async () => {
+    const bytes = new Uint8Array([1, 2]);
+    const expected = {
+      sha256: '00'.repeat(32),
+      byteSize: bytes.byteLength,
+      mediaType: 'application/octet-stream',
+    };
+    mockFunctionsInvoke
+      .mockResolvedValueOnce({ data: { ok: true, data: null }, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: { calculationBundle: { artifacts: [] } },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          ok: true,
+          data: {
+            calculationBundle: {
+              manifestDownload: {
+                ...expected,
+                signedDownloadUrl: 'https://download.example/manifest',
+              },
+              artifacts: [],
+            },
+          },
+        },
+        error: null,
+      });
+    setCryptoDigest(9);
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bytes.buffer,
+    })) as any;
+
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', null, expected),
+    ).rejects.toThrow('secure links are unavailable');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', null, expected),
+    ).rejects.toThrow('no longer available: manifest');
+    await expect(
+      fetchFreshCalculationBundleDownloadBlob('package', null, expected),
+    ).rejects.toThrow('SHA-256 mismatch');
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(3);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
   it('decompresses verified gzip records and tolerates already-decoded responses', async () => {

@@ -22,7 +22,7 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
 lastReviewedNote: 'Reviewed Issue #614 text-only language options across the shared login and application-header selector; architecture and ownership boundaries are unchanged.'
 related:
   - ../AGENTS.md
@@ -102,7 +102,7 @@ The public release read paths are:
 
 `src/pages/Processes/Components/view.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current Process projection`
 
-Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts, and fresh signed-download requests. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
+Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts or saving raw Calculation Bundle downloads, and fresh signed-download requests. Verified raw downloads are saved through a local Blob instead of a cross-origin download anchor. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
 
 ## Current Hotspots
 

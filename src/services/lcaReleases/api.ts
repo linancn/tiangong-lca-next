@@ -311,6 +311,82 @@ async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
     .join('');
 }
 
+export async function fetchCalculationBundleDownloadBlob(
+  download: Pick<
+    CalculationBundleSignedDownload,
+    'signedDownloadUrl' | 'sha256' | 'byteSize' | 'mediaType'
+  >,
+): Promise<Blob> {
+  const response = await fetch(download.signedDownloadUrl, { credentials: 'omit' });
+  if (!response.ok) {
+    const error = new Error(`Calculation artifact download failed (${response.status})`);
+    Object.assign(error, { status: response.status });
+    throw error;
+  }
+  const bytes = await response.arrayBuffer();
+  if (bytes.byteLength !== download.byteSize) {
+    throw new Error(
+      `Calculation artifact size mismatch: expected ${download.byteSize}, received ${bytes.byteLength}`,
+    );
+  }
+  const digest = await sha256Hex(bytes);
+  if (digest !== download.sha256) {
+    throw new Error('Calculation artifact SHA-256 mismatch');
+  }
+  return new Blob([bytes], { type: download.mediaType || 'application/octet-stream' });
+}
+
+type CalculationBundleDownloadExpectation = Pick<
+  CalculationBundleSignedDownload,
+  'sha256' | 'byteSize' | 'mediaType'
+>;
+
+function isRefreshableSignedDownloadFailure(error: unknown): boolean {
+  const status = (error as { status?: unknown } | null)?.status;
+  return status === 401 || status === 403 || status === 404 || status === 410;
+}
+
+async function resolveFreshCalculationBundleDownload(
+  packageId: string,
+  artifactPath: string | null,
+  expected: CalculationBundleDownloadExpectation,
+): Promise<CalculationBundleSignedDownload> {
+  const result = await getCalculationBundle(packageId);
+  if (result.error || !result.data) {
+    throw new Error(result.error?.message || 'Calculation Bundle secure links are unavailable.');
+  }
+  const download =
+    artifactPath === null
+      ? result.data.calculationBundle.manifestDownload
+      : result.data.calculationBundle.artifacts.find((artifact) => artifact.path === artifactPath);
+  if (!download) {
+    throw new Error(`Calculation artifact is no longer available: ${artifactPath ?? 'manifest'}`);
+  }
+  if (
+    download.sha256 !== expected.sha256 ||
+    download.byteSize !== expected.byteSize ||
+    download.mediaType !== expected.mediaType
+  ) {
+    throw new Error('Calculation artifact metadata changed; refresh the Calculation Bundle.');
+  }
+  return download;
+}
+
+export async function fetchFreshCalculationBundleDownloadBlob(
+  packageId: string,
+  artifactPath: string | null,
+  expected: CalculationBundleDownloadExpectation,
+): Promise<Blob> {
+  let download = await resolveFreshCalculationBundleDownload(packageId, artifactPath, expected);
+  try {
+    return await fetchCalculationBundleDownloadBlob(download);
+  } catch (error) {
+    if (!isRefreshableSignedDownloadFailure(error)) throw error;
+    download = await resolveFreshCalculationBundleDownload(packageId, artifactPath, expected);
+    return fetchCalculationBundleDownloadBlob(download);
+  }
+}
+
 async function decodeArtifactBytes(bytes: ArrayBuffer, compression: string): Promise<string> {
   const view = new Uint8Array(bytes);
   const hasGzipHeader = view.length >= 2 && view[0] === 0x1f && view[1] === 0x8b;
