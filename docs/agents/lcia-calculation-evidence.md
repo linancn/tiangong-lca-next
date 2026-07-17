@@ -27,8 +27,8 @@ checkPaths:
   - src/services/processes/api.ts
   - .github/workflows/ci.yml
   - .github/workflows/build.yml
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: e112fa85f4138b5094c965bd010825d8267ee75d
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
 lastReviewedNote: 'Added the persisted Calculation Bundle and canonical release readback contract for Issue #606 without changing the reviewed static LCIA method bundle.'
 ---
 
@@ -85,6 +85,8 @@ Both normal listing and keyword search use that exact database predicate. This s
 ## Persisted Calculation Bundle And Release Readback
 
 `tiangong.calculation-bundle.v1` is the private, package-level read model for Worker-produced LCI, LCIA, coverage, and calculation evidence. Data Processing loads it by package identity through the authenticated user session. It does not reconstruct LCI or LCIA in the browser. Process-axis and fixed process-range artifacts select the exact records to display; parsed preview artifacts must match their declared byte size and SHA-256 before their NDJSON is trusted. Oversized chunks remain downloadable evidence and are not parsed inline.
+
+Raw Calculation Bundle downloads use the same fail-closed boundary: each click resolves a fresh authenticated bundle projection, requires its path, media type, stored byte size, and SHA-256 to match the already displayed immutable metadata, fetches the short-lived signed URL without credentials, and only then exposes a local Blob for saving. A `401`, `403`, `404`, or `410` object response refreshes the projection once and retries; other network, size, or digest failures create no local file. The UI must not rely on cross-origin `<a download>` behavior, because browsers may navigate to the signed object instead of downloading it, and keeps a failed action visible for manual secure-link refresh.
 
 Published release readback is a separate sanitized projection. It becomes anonymously readable only when Database marks one release current and Edge exposes its release, validation, artifact, and source-Process identity projection. A source Process maps to the exact Unit Process plus generated LifecycleModel and Result Process UUID/version identities. The Unit Process package remains result-free; the Model/Result package carries the LCI exchanges and LCIA results without changing TIDAS schema.
 

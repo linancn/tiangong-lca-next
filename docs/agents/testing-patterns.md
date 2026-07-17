@@ -22,7 +22,7 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
 lastReviewedNote: 'Reviewed Issue #614 component proof and the V8-safe single-worker recycle pattern for long-running coverage.'
 ---
 
