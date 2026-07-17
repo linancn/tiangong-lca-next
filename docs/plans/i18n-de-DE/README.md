@@ -10,6 +10,7 @@ This directory contains tracked candidate, context, terminology, and structural 
 - Active #602 delta: 24 new app-owned message IDs, 2 modified baseline API-doc messages, and 2 bundle-external import-report prose items.
 - Final active topology: `en-US`, `zh-CN`, and the single `de-DE` bundle, each with 2,689 messages and the same 30-module spread order.
 - `runtime-activation-manifest.json` binds the immutable #601 Git snapshot, current three-locale manifest, exact ordered delta inventory, final count, adapter policy, dataset-language fallback, and tracked prose digests.
+- Canonical-manifest checks reuse the checked-in source commit by default; a later movement of `origin/dev` does not invalidate unchanged locale/callsite evidence. `--write` or an explicit `--base-ref` is required to advance that provenance.
 - The local #602 approval scope binds only those 28 review items, their relevant direct/dynamic callsite evidence, the two runtime descriptor maps, and the deterministic renderer contract. Refreshing a structural manifest after an unrelated production or unrelated dynamic-family change does not by itself invalidate an otherwise unchanged human approval.
 - The old Pilot and 2,665-message catalog confirmations remain local and valid only while their frozen tracked inputs match the #601 commit.
 - The separate 28-item #602 delta form is local and ignored; its checker currently reports the generic approved state without exposing reviewer identity, date, decisions, response digest, or per-item notes.
@@ -29,6 +30,8 @@ Activation proceeds in five checkpoints:
 5. run focused runtime proof, then the single final repository gate on the immutable delivery HEAD.
 
 A generated delta form without a valid local approval block is useful review material but never satisfies the human checkpoint. Structural report mode remains runnable in that state, while enforcement fails closed; the current local form satisfies the checker.
+
+Repository Jest and clean-release gates exercise that structural report boundary with explicit nonexistent confirmation paths. They require zero tracked structural findings and the expected missing-local-evidence findings; separate generated temporary forms prove approved behavior. No clean runner infers or claims human approval.
 
 ## Privacy and evidence boundary
 

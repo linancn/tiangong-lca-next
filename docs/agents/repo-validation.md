@@ -22,9 +22,9 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Activated German runtime proof and aligned the bounded, failure-activated push-retry contract.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Separated clean-runner structural German proof from private local approval and documented setup-node-compatible hook bootstrap for Issue #611.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -77,6 +77,8 @@ npm run prepush:gate
 
 The local `pre-push` hook always runs `npm run docpact:gate` first, then runs the full `npm run prepush:gate` local test gate on every branch. The docpact gate defaults to `origin/dev` and can be redirected with `DOCPACT_BASE_REF=<ref>` for promote or hotfix branches. For a normal delivery, commit the final controlled tracked change and let that hook own the one authoritative full-gate run; do not manually run the same full gate immediately before pushing. Manual full-gate execution is for a no-push evidence handoff.
 
+The hook uses an already-active Node.js 24 from `PATH`, including GitHub `setup-node`, before consulting NVM. It sources NVM and runs `nvm use 24` only when the active Node is missing or has another major version, then fails closed with an explicit version error if Node 24 is still unavailable.
+
 Run every Umi-generating `test:ci`, coverage, and `prepush:gate` command serially because they share `.umi-test`. The full gate already includes coverage; do not surround it with redundant broad test or coverage runs for the same checkpoint.
 
 Full-gate evidence binds the exact committed `HEAD`, tracked tree, Node/dependency state, and test/lint/build/coverage/Docpact/gate configuration. Ignored review content, GitHub body changes, and read-only checks do not create a new repository checkpoint. Any changed controlled tracked input does, and requires one new final full-gate run.
@@ -87,9 +89,15 @@ After that uncertain or failed transport, run `npm run push:retry` with no argum
 
 For deployment-only workflow changes under `.github/workflows/build.yml` or the manual `.github/workflows/ci.yml` fallback, validate the workflow shape directly with YAML parsing, formatter checks, and shell syntax checks for edited deploy scripts. For EdgeOne CLI dependency changes, also validate the pinned temporary install path locally without calling the live deploy command. Do not run production deploy commands locally or from PR validation unless the task explicitly requires exercising live deploy credentials; the automatic EdgeOne Pages deploy step runs from canonical `main` pushes by creating the matching `v*` tag from `package.json.version` and continuing release in the same workflow run, unchanged-version `main` workflow hotfix pushes skip release when the matching tag already belongs to an older `main` commit, manual `v*` tag pushes and `workflow_dispatch` recovery runs remain supported when the target commit is already on `main`, and Electron publication must pre-create exactly one tag-scoped draft before the parallel matrix and finish by verifying the exact 12 expected non-empty assets in that one draft. The manual deploy fallback is guarded to `refs/heads/main` and checks out `github.sha`, and ordinary non-release branch pushes belong to the local pre-push gate.
 
+The production Release Gate runs the coverage-enabled complete Jest suite exactly once through `npm run prepush:gate`. Do not add a preceding standalone `npm run test:ci`; it exercises the same suite without producing an independent release artifact. The separate early LCIA verification remains a lightweight fail-fast publication check and `prepush:gate` retains the authoritative complete quality bar.
+
 Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**`, `src/components/ValidationIssueModal/index.tsx`, and localized validator copy under `src/locales/**` as shipped runtime work even when most of the change looks like error-message plumbing.
 
 Treat `npm run i18n:audit` as the deterministic structural proof for locale ownership and runtime message references. Linguistic and domain sign-off remain separate review evidence; a green structural audit does not prove translation quality.
+
+Canonical-manifest `--check` reuses the checked-in `source.baseRef` and immutable `source.baseCommit` unless `--base-ref` is explicitly supplied. Advancing an ambient branch such as `origin/dev` without changing audited locale/callsite inputs therefore does not stale a release checkout; `--write` and an explicit `--base-ref` still resolve and record the requested current commit.
+
+Clean-checkout Jest and release gates must pass explicit nonexistent German confirmation paths and assert that only the expected local-confirmation findings remain while every tracked structural finding is zero. Positive approval behavior stays covered by generated private temporary fixtures. These repository tests do not claim human approval, and `i18n:de:pilot`, `i18n:de:delta:review:check`, and enforced `i18n:de:audit` continue to fail closed when their local evidence is absent or stale.
 
 For the active German workflow, `i18n:de:pilot` only verifies that the frozen Issue #601 Pilot/catalog artifacts and existing ignored confirmations still match their immutable source; do not regenerate or reinterpret that baseline during Issue #602. After a controlled runtime or copy change, refresh the canonical manifest and runtime activation manifest, generate/check the separate private 28-item delta form, then enforce `i18n:de:audit`. The delta binds 24 new messages, 2 modified baseline messages, and 2 external report-prose items to their English/Chinese/context/runtime evidence without exposing reviewer identity or decisions. The completed file stays under `.local/i18n-de-DE/`, is ignored, and must not be quoted or attached to GitHub. Any changed frozen input blocks carry-forward; any changed delta-bound copy, context, family, policy, or renderer requires a fresh delta review. Missing, malformed, or stale evidence remains a structural failure, and automated output never substitutes for human linguistic approval.
 

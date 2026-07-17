@@ -26,9 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Reviewed Issue #601 scoped-first validation and single final-checkpoint gate ownership; repo ownership and branch facts are unchanged.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Reviewed Issue #611 clean-runner release-gate recovery; repo ownership and branch facts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -45,12 +45,27 @@ function approve(markdown: string, reviewer: string) {
 
 describe('German active-runtime evidence', () => {
   it('binds the immutable baseline, exact delta, and one active German locale without human data', () => {
+    const missingCatalogConfirmation = `.local/i18n-de-DE/missing-catalog-${process.pid}-${Date.now()}.md`;
+    const missingDeltaConfirmation = `.local/i18n-de-DE/missing-delta-${process.pid}-${Date.now()}.md`;
     const report = JSON.parse(
-      execFileSync(process.execPath, [ACTIVATION_SCRIPT, '--mode', 'report', '--check'], {
-        cwd: REPOSITORY_ROOT,
-        encoding: 'utf8',
-        maxBuffer: 20 * 1024 * 1024,
-      }),
+      execFileSync(
+        process.execPath,
+        [
+          ACTIVATION_SCRIPT,
+          '--mode',
+          'report',
+          '--check',
+          '--catalog-confirmation',
+          missingCatalogConfirmation,
+          '--delta-confirmation',
+          missingDeltaConfirmation,
+        ],
+        {
+          cwd: REPOSITORY_ROOT,
+          encoding: 'utf8',
+          maxBuffer: 20 * 1024 * 1024,
+        },
+      ),
     );
     const manifest = JSON.parse(fs.readFileSync(RUNTIME_MANIFEST, 'utf8'));
 
@@ -60,14 +75,24 @@ describe('German active-runtime evidence', () => {
         newMessageCount: 24,
         modifiedBaselineMessageCount: 2,
         finalMessageCount: 2689,
-        baselineCatalogReviewApproved: true,
+        baselineCatalogReviewApproved: false,
+        deltaReviewApproved: false,
       }),
     );
-    const nonDeltaFindingCounts = Object.entries(report.summary.findingCounts)
-      .filter(([category]) => category !== 'deltaReviewConfirmation')
+    const structuralFindingCounts = Object.entries(report.summary.findingCounts)
+      .filter(
+        ([category]) =>
+          !['baselineCatalogConfirmation', 'deltaReviewConfirmation'].includes(category),
+      )
       .map(([, count]) => count);
-    expect(nonDeltaFindingCounts.every((count) => count === 0)).toBe(true);
-    expect(report.summary.findingCount).toBe(report.summary.findingCounts.deltaReviewConfirmation);
+    expect(structuralFindingCounts.every((count) => count === 0)).toBe(true);
+    expect(report.summary.findingCounts).toEqual(
+      expect.objectContaining({
+        baselineCatalogConfirmation: 1,
+        deltaReviewConfirmation: 1,
+      }),
+    );
+    expect(report.summary.findingCount).toBe(2);
     expect(manifest.baseline).toEqual(
       expect.objectContaining({
         sourceCommit: '826f87a53032bfa9ab58baff2e4b8b7212671cdf',

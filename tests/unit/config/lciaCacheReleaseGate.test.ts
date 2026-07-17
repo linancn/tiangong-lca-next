@@ -21,9 +21,11 @@ describe('LCIA cache publication gates', () => {
       workflow.indexOf('  release-draft:'),
     );
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
+    expect(releaseGate).toContain('run: npm run prepush:gate');
     expect(releaseGate.indexOf('npm run lcia-cache:verify')).toBeLessThan(
-      releaseGate.indexOf('npm run test:ci'),
+      releaseGate.indexOf('npm run prepush:gate'),
     );
+    expect(releaseGate).not.toContain('run: npm run test:ci');
 
     const webDeploy = workflow.slice(
       workflow.indexOf('  web-deploy:'),

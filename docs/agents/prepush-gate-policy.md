@@ -23,9 +23,9 @@ checkPaths:
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Aligned the Issue #602 bounded, failure-activated push-retry contract with the managed push lifecycle.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Aligned the pre-push Node 24 bootstrap with both local NVM and clean setup-node runners for Issue #611.'
 ---
 
 # Pre-Push Gate Policy
@@ -73,6 +73,7 @@ It does not own:
 
 ## Adoption Conditions
 
+- the hook accepts an already-active Node.js 24 from `PATH`; it falls back to local NVM only when the active Node is absent or has another major version, and fails clearly if Node 24 is still unavailable
 - hook behavior and release-gate behavior must match the documented policy
 - no release path may bypass the full gate
 - branch policy must stay aligned with `dev -> main`
@@ -83,6 +84,7 @@ It does not own:
 ## Short Rule Summary
 
 - keep one authoritative full gate
+- do not require an NVM-managed copy of Node 24 when the runner or operator already has Node 24 active on `PATH`
 - for a normal delivery, let the existing push hook own the single full-gate execution after the final controlled tracked change; do not invoke the same gate manually immediately before that push
 - use manual full-gate execution only when a no-push handoff needs the evidence
 - use `npm run push:checked -- <normal git push arguments>` for the final managed push; its ordinary Git hook runs both authoritative gates and returns a private gate-bound payload to the wrapper
@@ -96,6 +98,7 @@ It does not own:
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - protect the actual local and release gates
+- keep one full Jest execution inside each production release workflow; `prepush:gate` already owns the coverage-enabled complete suite, so do not precede it with a second standalone `test:ci`
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
