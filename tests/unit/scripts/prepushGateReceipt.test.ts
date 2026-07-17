@@ -302,6 +302,50 @@ describe('bounded checked-push transport receipt', () => {
     expect(fixtureEnvironment).not.toHaveProperty('GIT_WORK_TREE');
   });
 
+  it('uses an already-active Node 24 without requiring an NVM-managed install', () => {
+    expect(process.versions.node.split('.')[0]).toBe('24');
+    const current = fixture();
+    const fakeHome = path.join(current.container, 'home');
+    writeExecutable(
+      path.join(fakeHome, '.nvm/nvm.sh'),
+      "#!/bin/sh\nnvm() { echo 'fixture nvm must not be used' >&2; return 42; }\n",
+    );
+
+    const result = checkedPush(current, 'refs/heads/main', {
+      HOME: fakeHome,
+      NVM_DIR: path.join(fakeHome, '.nvm'),
+    });
+
+    expect({ status: result.status, stdout: result.stdout, stderr: result.stderr }).toEqual(
+      expect.objectContaining({ status: 0 }),
+    );
+    expect(readGateLog(current)).toHaveLength(2);
+    expect(remoteSha(current)).toBe(current.head);
+  });
+
+  it('fails clearly when neither PATH nor NVM can provide Node 24', () => {
+    const current = fixture();
+    const fakeHome = path.join(current.container, 'home');
+    const fakeBin = path.join(current.container, 'fake-bin');
+    writeExecutable(path.join(fakeBin, 'node'), '#!/bin/sh\nexit 1\n');
+    writeExecutable(path.join(fakeHome, '.nvm/nvm.sh'), '#!/bin/sh\nnvm() { return 42; }\n');
+
+    const result = run(
+      current.root,
+      path.join(current.root, '.husky/pre-push'),
+      ['origin', current.remote],
+      {
+        HOME: fakeHome,
+        NVM_DIR: path.join(fakeHome, '.nvm'),
+        PATH: `${fakeBin}:${process.env.PATH ?? ''}`,
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('Node.js 24 is required for the pre-push gate.');
+    expect(readGateLog(current)).toEqual([]);
+  });
+
   it('does not activate a receipt after managed success, even if the remote is rolled back', () => {
     const current = fixture();
 

@@ -21,9 +21,9 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Added the active German runtime delta pattern and the managed, failure-activated final-push boundary.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Added clean-runner German evidence separation and active-Node hook bootstrap coverage for Issue #611.'
 ---
 
 # Testing Patterns Reference
@@ -100,6 +100,11 @@ Special cases:
 10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
 11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
+13. keep clean-runner structure proof independent from ignored human evidence: inject a guaranteed-missing confirmation path, assert only the expected confirmation findings, and cover approved behavior with a generated private temporary form
+
+Gate-bootstrap pattern:
+
+- when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
 
 ## Focused Command Shapes
 

@@ -20,9 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Aligned the shortest work loop with the active German runtime gates and the managed, failure-activated push-retry path.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Documented the Issue #611 pre-push bootstrap path for both active Node 24 and the local NVM fallback.'
 ---
 
 # Development Bootstrap
@@ -107,6 +107,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
+- the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local confirmation edits and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
