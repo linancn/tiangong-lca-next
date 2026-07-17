@@ -26,9 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: 2a523ea50a3aa38733e78c2294114bbd8058f68d
-lastReviewedNote: 'Registered the reusable i18n language delivery Goal and reviewed its native Umi flag-selector contract; repo ownership, branch facts, and hard boundaries are unchanged.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; repository ownership, bootstrap commands, and validation boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -104,9 +104,9 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
-- locale topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit command documented in `docs/agents/repo-validation.md`
+- locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons and keeps country/region variants outside the single-language product contract
-- the unified-German baseline, active-runtime assembly, delta-context review, blocked-context policy, and scoped commands live in `docs/plans/i18n-de-DE/README.md`; the product exposes exactly one canonical German locale, `de-DE`, normalizes supported `de` / `de-*` aliases to it, and keeps completed human confirmation in ignored local Markdown rather than GitHub or tracked artifacts
+- the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
@@ -123,6 +123,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - explicit main-environment run: `npm run start:main`
 - default lint gate: `npm run lint`
 - deterministic locale audit: `npm run i18n:audit`
+- locale-specific context/quality/activation proof: `npm run i18n:locale:activation:check -- --locale <canonical-locale>`
+- existing-translation correction proof: `npm run i18n:corrections:check`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`

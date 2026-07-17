@@ -45,7 +45,6 @@ const PasswordForgot: React.FC = () => {
     try {
       setLoading(true);
       const msg = await forgotPasswordSendEmail(values);
-      setLoading(false);
       if (msg.status === 'ok') {
         setSendComplete(true);
         notification.success({
@@ -75,15 +74,33 @@ const PasswordForgot: React.FC = () => {
         description: (error as Error).toString(),
         placement: 'top',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    let isMounted = true;
     setSpinning(true);
-    getCurrentUser().then((res) => {
-      setInitData(res ?? {});
-      setSpinning(false);
-    });
+    getCurrentUser()
+      .then((res) => {
+        if (isMounted) {
+          setInitData(res ?? {});
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setInitData({});
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setSpinning(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (

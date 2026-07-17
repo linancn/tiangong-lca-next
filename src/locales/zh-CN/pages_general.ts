@@ -1,4 +1,5 @@
 export default {
+  'pages.theme.toggleDarkMode': '切换深色模式',
   'pages.table.title.index': '序号',
   'pages.table.title.name': '名称',
   'pages.table.title.classification': '分类',

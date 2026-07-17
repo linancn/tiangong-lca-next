@@ -116,6 +116,7 @@ jest.mock('antd', () => {
   );
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
+  const Tooltip = ({ children }: any) => <>{children}</>;
   const Tabs = ({ items }: any) => (
     <div data-testid='tabs'>
       {items?.map((item: any) => (
@@ -142,6 +143,7 @@ jest.mock('antd', () => {
     ConfigProvider,
     Spin,
     Tabs,
+    Tooltip,
     notification: mockNotification,
     theme,
   };
@@ -290,7 +292,7 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
     const rootConfigProvider = screen.getAllByTestId('config-provider')[0];
     expect(rootConfigProvider).toHaveAttribute('data-algorithm', 'dark');
 
-    fireEvent.click(screen.getByLabelText('toggle-dark-mode'));
+    fireEvent.click(screen.getByLabelText('Toggle dark mode'));
 
     await waitFor(() => {
       expect(screen.getAllByTestId('config-provider')[0]).toHaveAttribute(
@@ -298,6 +300,19 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
         'default',
       );
       expect(localStorage.getItem('isDarkMode')).toBe('false');
+    });
+  });
+
+  it('stops prefill loading and keeps the form usable when user lookup fails', async () => {
+    mockGetCurrentUser.mockRejectedValueOnce(new Error('session lookup failed'));
+
+    render(<PasswordForgot />);
+
+    await waitFor(() => {
+      expect(mockGetCurrentUser).toHaveBeenCalled();
+      expect(screen.queryByTestId('spin')).not.toBeInTheDocument();
+      expect(screen.getByTestId('initial-values')).toHaveTextContent('{}');
+      expect(screen.getByTestId('submit')).toBeEnabled();
     });
   });
 

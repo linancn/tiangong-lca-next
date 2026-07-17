@@ -214,6 +214,19 @@ describe('ImportTidasPackage Component', () => {
     );
   });
 
+  it('uses the english API import docs fallback for french locale', () => {
+    mockLocale = 'fr-FR';
+
+    render(<ImportTidasPackage />);
+
+    fireEvent.click(screen.getByTestId(OPEN_BUTTON_TEST_ID));
+
+    expect(screen.getByRole('link', { name: 'Open English API import docs' })).toHaveAttribute(
+      'href',
+      'https://docs.tiangong.earth/en/docs/openapi/tidas-package-import',
+    );
+  });
+
   it('falls back to the default docs link when locale is missing', () => {
     mockLocale = undefined;
 
@@ -443,12 +456,73 @@ describe('ImportTidasPackage Component', () => {
     expect(revokeObjectUrlSpy).toHaveBeenCalledTimes(1);
 
     const downloadedText = String(capturedBlobParts[0] ?? '');
+    const downloadedReport = JSON.parse(downloadedText);
 
     expect(downloadedText).toContain('imported: 8');
     expect(downloadedText).toContain('importiert: 8');
+    expect(downloadedReport.human_summary.fr_FR).toBe(
+      "Résultat de l'importation : USER_DATA_CONFLICT. Nombre total d'enregistrements : 20, enregistrements de données ouvertes ignorés : 12, conflits avec les données utilisateur : 1, importés : 8, problèmes de validation : 0.",
+    );
     expect(downloadedText).toContain('validation issues: 0');
     expect(downloadedText).toContain('Validierungsprobleme: 0');
     expect(downloadedText).toContain('"code": "USER_DATA_CONFLICT"');
+    expect(downloadedReport.readme_markdown.fr_FR).toContain(
+      "# Comment lire ce rapport d'importation",
+    );
+    [
+      'report.code',
+      'VALIDATION_FAILED',
+      'user_conflicts',
+      'report.summary',
+      'total_entries',
+      'filtered_open_data_count',
+      'user_conflict_count',
+      'validation_issue_count',
+      'report.validation_issues',
+      'file_path',
+      'location',
+      'message',
+      'issue_code',
+      'severity',
+      'context',
+      'report.user_conflicts',
+      'table',
+      'id',
+      'version',
+      'state_code',
+      'user_id',
+      'report.filtered_open_data',
+    ].forEach((schemaToken) => {
+      expect(downloadedReport.readme_markdown.fr_FR).toContain(schemaToken);
+    });
+    expect(downloadedReport.report).toMatchObject({
+      ok: false,
+      code: 'USER_DATA_CONFLICT',
+      message: 'conflict',
+      summary: {
+        total_entries: 20,
+        filtered_open_data_count: 12,
+        user_conflict_count: 1,
+        importable_count: 8,
+      },
+      filtered_open_data: [
+        {
+          table: 'contacts',
+          id: 'contact-1',
+          version: '01.00.000',
+          state_code: 100,
+          user_id: 'user-1',
+        },
+      ],
+      user_conflicts: [
+        {
+          table: 'flows',
+          id: 'flow-1',
+          version: '01.00.000',
+          state_code: 10,
+        },
+      ],
+    });
 
     createElementSpy.mockRestore();
     createObjectUrlSpy.mockRestore();
@@ -727,8 +801,42 @@ describe('ImportTidasPackage Component', () => {
     expect(downloadedText).toContain('# How to read this import report');
     expect(downloadedText).toContain('# 如何查看这个导入报告');
     expect(downloadedText).toContain('# So lesen Sie diesen Importbericht');
+    expect(downloadedText).toContain("# Comment lire ce rapport d'importation");
     expect(downloadedText).toContain('"report"');
     expect(downloadedText).toContain('"validation_issues"');
+
+    const downloadedReport = JSON.parse(downloadedText);
+    expect(downloadedReport.human_summary.fr_FR).toBe(
+      "Résultat de l'importation : VALIDATION_FAILED. Nombre total d'enregistrements : 1, enregistrements de données ouvertes ignorés : 0, conflits avec les données utilisateur : 0, importés : 0, problèmes de validation : 1.",
+    );
+    expect(downloadedReport.report).toMatchObject({
+      ok: false,
+      code: 'VALIDATION_FAILED',
+      message: 'validation failed',
+      summary: {
+        total_entries: 1,
+        filtered_open_data_count: 0,
+        user_conflict_count: 0,
+        importable_count: 0,
+        imported_count: 0,
+        validation_issue_count: 1,
+        error_count: 1,
+        warning_count: 0,
+      },
+      filtered_open_data: [],
+      user_conflicts: [],
+      validation_issues: [
+        {
+          issue_code: 'schema_error',
+          severity: 'error',
+          category: 'sources',
+          file_path: 'sources/a.json',
+          location: '<root>',
+          message: 'Schema Error at <root>: missing required field',
+          context: { validator: 'required' },
+        },
+      ],
+    });
 
     createElementSpy.mockRestore();
     createObjectUrlSpy.mockRestore();

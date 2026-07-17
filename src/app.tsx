@@ -15,6 +15,7 @@ import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
+import { createPublicRoutePolicy } from '@/services/general/publicRoutePolicy';
 import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
@@ -25,6 +26,7 @@ import type { RunTimeLayoutConfig } from '@umijs/max';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
+import appRoutes from '../config/routes';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
 import LocationCacheMonitor from './components/LocationCacheMonitor';
 import { errorConfig } from './requestErrorConfig';
@@ -33,7 +35,20 @@ const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const dashboardPath = '/dashboard/national-carbon';
 const dataProcessingPath = '/data-processing';
-const unAuthorizedPath = ['/user/login/password_forgot'];
+const isPublicPath = createPublicRoutePolicy(appRoutes, {
+  exactPublicPaths: [
+    '/',
+    '/welcome',
+    loginPath,
+    '/user/login/password_forgot',
+    '/user/login/password_reset',
+  ],
+  publicUnknownFallback: true,
+});
+const isSessionAwarePublicPath = createPublicRoutePolicy(appRoutes, {
+  exactPublicPaths: ['/', '/welcome'],
+  publicUnknownFallback: false,
+});
 const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['admin', 'admin'],
   ['owner', 'admin'],
@@ -42,7 +57,7 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
 
 /**
  * Umi asks this runtime hook for the locale before mounting its providers, so
- * stale German aliases are canonicalized before any visible app render.
+ * supported aliases are canonicalized before any visible app render.
  */
 export const locale = {
   getLocale: resolveBrowserRuntimeLocale,
@@ -67,11 +82,13 @@ export async function getInitialState(): Promise<{
   isDarkMode?: boolean;
   fetchUserInfo?: () => Promise<Auth.CurrentUser | null>;
 }> {
-  const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
+  const loadUserInfo = async (redirectOnFailure: boolean): Promise<Auth.CurrentUser | null> => {
     try {
       const msg = await queryCurrentUser();
       if (!msg) {
-        history.push(loginPath);
+        if (redirectOnFailure) {
+          history.push(loginPath);
+        }
         return null;
       }
       return {
@@ -79,10 +96,13 @@ export async function getInitialState(): Promise<{
         access: await getSystemAccess(),
       };
     } catch (error) {
-      history.push(loginPath);
+      if (redirectOnFailure) {
+        history.push(loginPath);
+      }
     }
     return null;
   };
+  const fetchUserInfo = () => loadUserInfo(true);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
@@ -91,9 +111,8 @@ export async function getInitialState(): Promise<{
     ...brandTheme,
   };
 
-  // 如果不是登录页面，执行
   const { location } = history;
-  if (location.pathname !== loginPath && !unAuthorizedPath.includes(location.pathname)) {
+  if (!isPublicPath(location.pathname)) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -102,8 +121,12 @@ export async function getInitialState(): Promise<{
       isDarkMode,
     };
   }
+  const currentUser = isSessionAwarePublicPath(location.pathname)
+    ? await loadUserInfo(false)
+    : undefined;
   return {
     fetchUserInfo,
+    currentUser,
     settings: updatedSettings as Partial<LayoutSettings>,
     isDarkMode,
   };
@@ -135,6 +158,19 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
   };
   return {
     actionsRender: () => {
+      const publicActions = [
+        <DarkMode
+          key='DarkMode'
+          handleClick={handleClickFunction}
+          isDarkMode={initialState?.isDarkMode}
+        />,
+        <SelectLang key='SelectLang' />,
+        <Question key='doc' />,
+      ];
+      if (!initialState?.currentUser) {
+        return publicActions;
+      }
+
       const actions = [
         <LCIACacheMonitor key='LCIACacheMonitor' />,
         <ClassificationCacheMonitor key='ClassificationCacheMonitor' />,
@@ -143,13 +179,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         <ExportTidasPackage key='ExportTidasPackage' />,
         <LcaTaskCenter key='LcaTaskCenter' />,
         <Notification key='Notification' />,
-        <DarkMode
-          key='DarkMode'
-          handleClick={handleClickFunction}
-          isDarkMode={initialState?.isDarkMode}
-        />,
-        <SelectLang key='SelectLang' />,
-        <Question key='doc' />,
+        ...publicActions,
       ];
 
       if (canViewDashboard) {
@@ -186,30 +216,28 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 
       return actions;
     },
-    avatarProps: {
-      title: <AvatarName />,
-      render: () => {
-        return (
-          <AvatarDropdown>
-            <div className='tg-global-header-avatar-trigger'>
-              <AvatarName />
-            </div>
-          </AvatarDropdown>
-        );
-      },
-    },
+    avatarProps: initialState?.currentUser
+      ? {
+          title: <AvatarName />,
+          render: () => {
+            return (
+              <AvatarDropdown>
+                <div className='tg-global-header-avatar-trigger'>
+                  <AvatarName />
+                </div>
+              </AvatarDropdown>
+            );
+          },
+        }
+      : undefined,
     waterMarkProps: {
       // content: initialState?.currentUser?.name,
     },
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
-      // 如果没有登录，重定向到 login
-      if (
-        !initialState?.currentUser &&
-        location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(location.pathname)
-      ) {
+      // Public landing and account-recovery routes render without an authenticated session.
+      if (!initialState?.currentUser && !isPublicPath(location.pathname)) {
         history.push(loginPath);
       }
     },
@@ -217,7 +245,12 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       ? [
           <Link key='openapi' to='/umi/plugin/openapi' target='_blank'>
             <LinkOutlined />
-            <span>OpenAPI 文档</span>
+            <span>
+              {formatMessage({
+                id: 'component.globalHeader.openapiDocumentation',
+                defaultMessage: 'OpenAPI documentation',
+              })}
+            </span>
           </Link>,
         ]
       : [],
@@ -227,11 +260,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次
-      if (
-        !initialState?.currentUser &&
-        history.location.pathname !== loginPath &&
-        !unAuthorizedPath.includes(history.location.pathname)
-      ) {
+      if (!initialState?.currentUser && !isPublicPath(history.location.pathname)) {
         history.push(loginPath);
         return null;
       }
@@ -268,6 +297,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       );
     },
     menuDataRender: (menuDataProps) => {
+      if (!initialState?.currentUser) {
+        return [];
+      }
       const location = history.location;
       const searchParams = new URLSearchParams(location.search);
       const tid = searchParams.get('tid');

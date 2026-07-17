@@ -81,6 +81,7 @@ import { FunctionRegion } from '@supabase/supabase-js';
 import { message as antdMessage } from 'antd';
 
 const deTeamMessages = require('@/locales/de-DE/pages_teams').default as Record<string, string>;
+const frTeamMessages = require('@/locales/fr-FR/pages_teams').default as Record<string, string>;
 
 type MessageMock = { error: jest.Mock; success: jest.Mock };
 const messageMock = antdMessage as unknown as MessageMock;
@@ -1289,6 +1290,31 @@ describe('contributeSource', () => {
     await generalApi.contributeSource('flows', sampleId, sampleVersion);
 
     expect(messageMock.error).toHaveBeenCalledWith('Sie gehören keinem Team an');
+  });
+
+  it('should show the French no-team error when the app locale is fr-FR', async () => {
+    mockGetLocale.mockReturnValue('fr-FR');
+    mockAuthGetSession.mockResolvedValue({
+      data: {
+        session: {
+          user: { id: 'user-1' },
+        },
+      },
+    });
+    const rolesBuilder = createQueryBuilder({
+      data: [
+        {
+          user_id: 'user-1',
+          team_id: 'team-123',
+          role: 'is_invited',
+        },
+      ],
+    });
+    mockFrom.mockReturnValueOnce(rolesBuilder);
+
+    await generalApi.contributeSource('flows', sampleId, sampleVersion);
+
+    expect(messageMock.error).toHaveBeenCalledWith(frTeamMessages['teams.modal.noTeam.title']);
   });
 
   it('should fall back to the English no-team error when a locale bundle omits the message', async () => {

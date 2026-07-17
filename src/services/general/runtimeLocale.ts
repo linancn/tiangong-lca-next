@@ -1,15 +1,17 @@
 import * as umiRuntime from 'umi';
+import {
+  getLocaleDefinition,
+  normalizeSupportedAppLocale,
+  type SupportedAppLocale,
+} from './localeRegistry';
 
-export const SUPPORTED_APP_LOCALES = ['zh-CN', 'en-US', 'de-DE'] as const;
-export type SupportedAppLocale = (typeof SUPPORTED_APP_LOCALES)[number];
+export { SUPPORTED_APP_LOCALES, type SupportedAppLocale } from './localeRegistry';
 
 export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = 'zh-CN';
 export const DEFAULT_SERVICE_APP_LOCALE: SupportedAppLocale = 'en-US';
 export const UMI_LOCALE_STORAGE_KEY = 'umi_locale';
 
 const RUNTIME_LOCALE_ENV_KEYS = ['LC_ALL', 'LC_MESSAGES', 'LANGUAGE', 'LANG'] as const;
-const DOCUMENTATION_BASE_URL = 'https://docs.tiangong.earth';
-
 type RuntimeLocaleEnv = Record<string, string | undefined>;
 
 type RuntimeLocaleStorage = Pick<Storage, 'getItem' | 'removeItem' | 'setItem'>;
@@ -45,52 +47,13 @@ function getDefaultBrowserNavigator(): RuntimeLocaleNavigator | undefined {
   return typeof navigator === 'object' ? navigator : undefined;
 }
 
-function stripPosixLocaleSuffix(value: string): string {
-  return value
-    .replace(/\.[A-Za-z0-9-]+(?=@|$)/u, '')
-    .replace(/@[A-Za-z0-9_-]+$/u, '')
-    .replace(/_/gu, '-');
-}
-
-function getCanonicalLocale(value: string): string | undefined {
-  if (typeof Intl.getCanonicalLocales !== 'function') {
-    return undefined;
-  }
-
-  try {
-    return Intl.getCanonicalLocales(value)[0];
-  } catch {
-    return undefined;
-  }
-}
-
 /**
  * Normalizes only locales supported by the application. Unknown or malformed
  * values stay outside the app-locale boundary instead of leaking into Umi,
  * Intl or service-side formatting calls.
  */
 export function normalizeRuntimeLocale(value?: string | null): SupportedAppLocale | undefined {
-  const firstLocaleCandidate = value?.trim().split(':')[0]?.trim();
-  if (!firstLocaleCandidate) {
-    return undefined;
-  }
-
-  const canonicalLocale = getCanonicalLocale(stripPosixLocaleSuffix(firstLocaleCandidate));
-  const language = canonicalLocale?.split('-')[0]?.toLowerCase();
-
-  if (language === 'zh') {
-    return 'zh-CN';
-  }
-
-  if (language === 'en') {
-    return 'en-US';
-  }
-
-  if (language === 'de') {
-    return 'de-DE';
-  }
-
-  return undefined;
+  return normalizeSupportedAppLocale(value);
 }
 
 function safeReadStoredLocale(storage?: RuntimeLocaleStorage | null): string | null | undefined {
@@ -160,13 +123,10 @@ export function resolveBrowserRuntimeLocale(
   return fallbackLocale;
 }
 
-/**
- * Help is currently published in Chinese and English only. German app users
- * intentionally receive the English documentation instead of a fake /de URL.
- */
+/** Help URLs follow the explicit registry fallback instead of inventing routes. */
 export function getDocumentationUrl(locale?: string | null): string {
   const normalizedLocale = normalizeRuntimeLocale(locale) ?? DEFAULT_BROWSER_APP_LOCALE;
-  return normalizedLocale === 'zh-CN' ? DOCUMENTATION_BASE_URL : `${DOCUMENTATION_BASE_URL}/en`;
+  return getLocaleDefinition(normalizedLocale).fallbacks.documentationUrl;
 }
 
 export function getRuntimeLocale(

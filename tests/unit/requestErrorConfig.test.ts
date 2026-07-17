@@ -6,6 +6,16 @@
 import { errorConfig } from '@/requestErrorConfig';
 import { message, notification } from 'antd';
 
+const mockFormatMessage = jest.fn(
+  ({ defaultMessage }: { defaultMessage: string }, values?: Record<string, string | number>) =>
+    defaultMessage.replace('{status}', String(values?.status ?? '')),
+);
+
+jest.mock('@umijs/max', () => ({
+  __esModule: true,
+  getIntl: () => ({ formatMessage: mockFormatMessage }),
+}));
+
 jest.mock('antd', () => ({
   __esModule: true,
   message: {
@@ -160,19 +170,34 @@ describe('requestErrorConfig (src/requestErrorConfig.ts)', () => {
 
     errorHandler(error as any, {});
 
-    expect(messageMock.error).toHaveBeenCalledWith('Response status:503');
+    expect(messageMock.error).toHaveBeenCalledWith('Response status: 503');
+    expect(mockFormatMessage).toHaveBeenCalledWith(
+      {
+        id: 'component.request.responseStatus',
+        defaultMessage: 'Response status: {status}',
+      },
+      { status: 503 },
+    );
   });
 
   it('shows request missing message when request exists but no response', () => {
     errorHandler({ request: {} } as any, {});
 
-    expect(messageMock.error).toHaveBeenCalledWith('None response! Please retry.');
+    expect(messageMock.error).toHaveBeenCalledWith('No response. Please try again.');
+    expect(mockFormatMessage).toHaveBeenCalledWith({
+      id: 'component.request.noResponse',
+      defaultMessage: 'No response. Please try again.',
+    });
   });
 
   it('shows generic error message for unknown errors', () => {
     errorHandler({} as any, {});
 
-    expect(messageMock.error).toHaveBeenCalledWith('Request error, please retry.');
+    expect(messageMock.error).toHaveBeenCalledWith('Request failed. Please try again.');
+    expect(mockFormatMessage).toHaveBeenCalledWith({
+      id: 'component.request.failed',
+      defaultMessage: 'Request failed. Please try again.',
+    });
   });
 
   it('appends token query in request interceptor', () => {
@@ -191,7 +216,7 @@ describe('requestErrorConfig (src/requestErrorConfig.ts)', () => {
     const result = callResponseInterceptor(responseInterceptor, response as any);
 
     expect(result).toBe(response);
-    expect(messageMock.error).toHaveBeenCalledWith('请求失败！');
+    expect(messageMock.error).toHaveBeenCalledWith('Request failed. Please try again.');
   });
 
   it('passes through successful responses silently', () => {

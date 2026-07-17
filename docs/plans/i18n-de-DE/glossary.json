@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "tiangong.i18n-glossary.v1",
+  "locale": "de-DE",
+  "sourceOfTruth": "docs/plans/i18n-de-DE/glossary.yaml",
+  "purpose": "Compact digest input for the shared active context gate; the historical reviewed glossary remains frozen in YAML.",
+  "terms": [
+    { "concept": "life cycle assessment", "preferred": ["Ökobilanz", "Lebenszyklusanalyse"] },
+    { "concept": "process", "preferred": ["Prozess", "Prozessmodul"] },
+    { "concept": "flow", "preferred": ["Fluss"] },
+    { "concept": "flow property", "preferred": ["Flusseigenschaft"] },
+    { "concept": "unit group", "preferred": ["Einheitengruppe"] },
+    { "concept": "dataset", "preferred": ["Datensatz"] },
+    { "concept": "TIDAS", "preferred": ["TIDAS"] }
+  ]
+}

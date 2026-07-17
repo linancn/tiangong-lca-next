@@ -20,8 +20,8 @@ checkPaths:
   - src/services/**
   - docker/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #606 release reads: Next keeps user-session and anonymous public projections in src/services/lcaReleases without taking schema, publication, or service-role ownership.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Reviewed Issue #625 team-loading behavior: preserving a service failure as a localized frontend error/retry state does not change Supabase environment, schema, or Edge ownership.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -65,6 +65,7 @@ Rules:
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
+- app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 
 ## Common Scenarios
 

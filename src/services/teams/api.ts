@@ -84,6 +84,12 @@ export async function getTeams() {
     )
     .gt('rank', 0)
     .order('rank', { ascending: true });
+  if (result.error) {
+    return Promise.resolve({
+      data: [],
+      success: false,
+    });
+  }
   return Promise.resolve({
     data: result.data ?? [],
     success: true,

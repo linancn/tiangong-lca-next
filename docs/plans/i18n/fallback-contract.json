@@ -1,0 +1,225 @@
+{
+  "schemaVersion": "tiangong.i18n-fallback-contract.v1",
+  "policy": {
+    "unknownLocale": "Normalize supported aliases through the typed registry; otherwise use the explicit browser or service default.",
+    "forbiddenBehavior": "Never invent a documentation URL, pretend an English dataset is localized, or omit the language disclosure for English-only legal content."
+  },
+  "rows": [
+    {
+      "surface": "documentation",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh-CN",
+      "urlOrPayload": "https://docs.tiangong.earth",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not redirect to a nonexistent locale segment.",
+      "test": "runtimeLocale getDocumentationUrl"
+    },
+    {
+      "surface": "documentation",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "https://docs.tiangong.earth/en",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not redirect to a nonexistent locale segment.",
+      "test": "runtimeLocale getDocumentationUrl"
+    },
+    {
+      "surface": "documentation",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "https://docs.tiangong.earth/en",
+      "userDisclosure": true,
+      "forbiddenBehavior": "Do not invent /de.",
+      "test": "RightContent and LoginTopActions English fallback"
+    },
+    {
+      "surface": "documentation",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "https://docs.tiangong.earth/en",
+      "userDisclosure": true,
+      "forbiddenBehavior": "Do not invent /fr.",
+      "test": "RightContent and LoginTopActions English fallback"
+    },
+    {
+      "surface": "legal",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "/terms_of_use.html and /privacy_notice.html; hrefLang=en",
+      "userDisclosure": true,
+      "forbiddenBehavior": "Do not label the English document as Chinese.",
+      "test": "Login legal fallback labels"
+    },
+    {
+      "surface": "legal",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "/terms_of_use.html and /privacy_notice.html; hrefLang=en",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not change the static legal URL by locale.",
+      "test": "Login legal links"
+    },
+    {
+      "surface": "legal",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "/terms_of_use.html and /privacy_notice.html; hrefLang=en",
+      "userDisclosure": true,
+      "forbiddenBehavior": "Do not label the English document as German.",
+      "test": "Login legal fallback labels"
+    },
+    {
+      "surface": "legal",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "/terms_of_use.html and /privacy_notice.html; hrefLang=en",
+      "userDisclosure": true,
+      "forbiddenBehavior": "Do not label the English document as French.",
+      "test": "Login legal fallback labels"
+    },
+    {
+      "surface": "dataset-language-parameter",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh",
+      "urlOrPayload": "getLang(locale) -> zh",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not request an unsupported dataset language.",
+      "test": "general util getLang"
+    },
+    {
+      "surface": "dataset-language-parameter",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en",
+      "urlOrPayload": "getLang(locale) -> en",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not request an unsupported dataset language.",
+      "test": "general util getLang"
+    },
+    {
+      "surface": "dataset-language-parameter",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "en",
+      "urlOrPayload": "getLang(locale) -> en",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not send de when the service supports only en/zh.",
+      "test": "general util getLang"
+    },
+    {
+      "surface": "dataset-language-parameter",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "en",
+      "urlOrPayload": "getLang(locale) -> en",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not send fr when the service supports only en/zh.",
+      "test": "general util getLang"
+    },
+    {
+      "surface": "service-errors",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh-CN",
+      "urlOrPayload": "localized catalog message",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not expose a raw service token.",
+      "test": "general api and validator messages"
+    },
+    {
+      "surface": "service-errors",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "localized catalog message",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not expose a raw service token.",
+      "test": "general api and validator messages"
+    },
+    {
+      "surface": "service-errors",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "de-DE",
+      "urlOrPayload": "localized catalog message",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not expose a raw service token.",
+      "test": "general api and validator messages"
+    },
+    {
+      "surface": "service-errors",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "English service payload with French catalog boundary messages",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not invent a French service payload contract.",
+      "test": "general api and validator messages"
+    },
+    {
+      "surface": "TIDAS-import-report",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh_CN",
+      "urlOrPayload": "human_summary.zh_CN and readme_markdown.zh_CN",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not alter schema keys or technical tokens.",
+      "test": "ImportTidasPackage report adapter"
+    },
+    {
+      "surface": "TIDAS-import-report",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en_US",
+      "urlOrPayload": "human_summary.en_US and readme_markdown.en_US",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not alter schema keys or technical tokens.",
+      "test": "ImportTidasPackage report adapter"
+    },
+    {
+      "surface": "TIDAS-import-report",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "de_DE",
+      "urlOrPayload": "human_summary.de_DE and readme_markdown.de_DE",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not alter schema keys or technical tokens.",
+      "test": "ImportTidasPackage report adapter"
+    },
+    {
+      "surface": "TIDAS-import-report",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "fr_FR",
+      "urlOrPayload": "human_summary.fr_FR and readme_markdown.fr_FR",
+      "userDisclosure": false,
+      "forbiddenBehavior": "fr_FR is an output adapter only; never create a second product locale.",
+      "test": "ImportTidasPackage report adapter"
+    },
+    {
+      "surface": "environment-branding",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh-CN",
+      "urlOrPayload": "APP_TITLE_ZH_CN and APP_LOGIN_SUBTITLE_ZH_CN",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not silently read another locale's environment key.",
+      "test": "defaultSettings localized branding"
+    },
+    {
+      "surface": "environment-branding",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en-US",
+      "urlOrPayload": "APP_TITLE_EN_US and APP_LOGIN_SUBTITLE_EN_US",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not silently read another locale's environment key.",
+      "test": "defaultSettings localized branding"
+    },
+    {
+      "surface": "environment-branding",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "de-DE",
+      "urlOrPayload": "APP_TITLE_DE_DE and APP_LOGIN_SUBTITLE_DE_DE",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not silently read another locale's environment key.",
+      "test": "defaultSettings localized branding"
+    },
+    {
+      "surface": "environment-branding",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "fr-FR",
+      "urlOrPayload": "APP_TITLE_FR_FR and APP_LOGIN_SUBTITLE_FR_FR",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not silently read another locale's environment key.",
+      "test": "defaultSettings localized branding"
+    }
+  ]
+}

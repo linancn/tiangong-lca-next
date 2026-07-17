@@ -1,3 +1,4 @@
+import type { SupportedAppLocale } from '@/services/general/localeRegistry';
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
@@ -26,8 +27,8 @@ type IcuMessageParser = {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const sharedIcuParser = require('../../../scripts/i18n/icu-message-parser.cjs') as IcuMessageParser;
 
-export type SupportedBaselineLocale = 'en-US' | 'zh-CN';
-export type SupportedLeafLocale = SupportedBaselineLocale | 'de-DE';
+export type SupportedBaselineLocale = SupportedAppLocale;
+export type SupportedLeafLocale = SupportedAppLocale;
 
 export type LocaleMessages = Record<string, string>;
 

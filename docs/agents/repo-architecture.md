@@ -22,8 +22,8 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 shared login/application-header selector and action behavior; architecture and ownership boundaries are unchanged.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Reviewed Issue #625 French delivery: documented the typed locale registry, explicit public-route policy, localized route-state ownership, and typed import-report content boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -47,7 +47,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/**` | route-level product pages |
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
-| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, runtime locale fallback for Node-loaded services, and service logic |
+| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit public-route policy, and service logic |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | static resource bundles consumed by the app |
@@ -67,12 +67,15 @@ Rules:
 - service modules own app-side data access
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
-- active app locales are exactly `zh-CN`, `en-US`, and one country-neutral product German exposed through the canonical `de-DE` runtime key; supported `de` / `de-*` aliases normalize and persist only as `de-DE`, while Umi, Ant Design `de_DE`, Pro Components, and Day.js `de` use that same selection
+- active app locales are registered once in `src/services/general/localeRegistry.ts`; the current canonical keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`. Language, region, underscore, and POSIX-style inputs normalize to one canonical product locale, while Umi, Ant Design, Pro Components, Day.js, Intl, and report-schema names remain boundary adapters rather than additional product locales
 - app locale and TIDAS dataset language are separate boundaries: German UI continues to request English dataset text (`en`) and must not add a `de` schema/data-language value; German help, legal, and public-doc surfaces without German content visibly route to their English fallback
+- public access is an explicit route-policy decision: login/recovery and approved public roots are anonymous, configured application routes are protected by default, and unmatched anonymous paths resolve to the localized public 404 without being converted into login redirects. Redirects that drive localized query/hash views must preserve their URL state
+- query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
+- structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
 
 ### Process Review-Submit Gate
 

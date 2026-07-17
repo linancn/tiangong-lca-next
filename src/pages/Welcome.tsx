@@ -33,7 +33,7 @@ import {
   Typography,
   theme,
 } from 'antd';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { getSignedStorageFileUrl, getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
@@ -102,7 +102,7 @@ const Welcome: React.FC = () => {
   const location = useLocation();
 
   const { formatMessage, locale } = useIntl();
-  const lang = getLang(locale) as 'en' | 'zh';
+  const lang = getLang(locale);
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
   const activeViewFromLocation: WelcomeView = useMemo(() => {
     const searchParams = new URLSearchParams(location.search ?? '');
@@ -116,9 +116,11 @@ const Welcome: React.FC = () => {
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
 
   const [teams, setTeams] = React.useState<any>(null);
+  const teamsLoadingRef = useRef(false);
   const [teamsCount, setTeamsCount] = React.useState<number>(0);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isTeamsLoading, setIsTeamsLoading] = useState(false);
+  const [teamsLoadError, setTeamsLoadError] = useState(false);
   const [modalWidth, setModalWidth] = useState(720);
   const [isTidasModalOpen, setIsTidasModalOpen] = useState(false);
   const [activeWelcomeView, setActiveWelcomeView] = useState<WelcomeView>(activeViewFromLocation);
@@ -181,12 +183,17 @@ const Welcome: React.FC = () => {
   }, []);
 
   const loadTeams = React.useCallback(async () => {
-    if (teams || isTeamsLoading) {
+    if (teams || teamsLoadingRef.current) {
       return;
     }
+    teamsLoadingRef.current = true;
     setIsTeamsLoading(true);
+    setTeamsLoadError(false);
     try {
       const res = await getTeams();
+      if (!res?.success) {
+        throw new Error('teams unavailable');
+      }
       if (res?.data && res.data.length > 0) {
         const processTeams = [...res.data];
         const promises = processTeams.map(async (team, index) => {
@@ -218,14 +225,22 @@ const Welcome: React.FC = () => {
       } else {
         setTeams(res?.data);
       }
+    } catch {
+      setTeams(null);
+      setTeamsLoadError(true);
     } finally {
+      teamsLoadingRef.current = false;
       setIsTeamsLoading(false);
     }
-  }, [isTeamsLoading, teams]);
+  }, [teams]);
 
   const getTeamCount = async () => {
-    const res = await getTeams();
-    setTeamsCount(res?.data?.length ?? 0);
+    try {
+      const res = await getTeams();
+      setTeamsCount(res?.data?.length ?? 0);
+    } catch {
+      setTeamsCount(0);
+    }
   };
 
   useEffect(() => {
@@ -257,74 +272,6 @@ const Welcome: React.FC = () => {
     };
   }, [isDataModalOpen, isTidasModalOpen]);
 
-  const info = {
-    data1: {
-      value: 16694,
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '单元过程 & 清单',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Unit Processes & Inventories',
-        },
-      ],
-    },
-    data2: {
-      value: 834,
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '行业 / 部门',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Domains / Sectors',
-        },
-      ],
-    },
-    data3: {
-      value: 5619,
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '产品',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Products',
-        },
-      ],
-    },
-    data4: {
-      value: 311,
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '全球贡献者',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Global Contributors',
-        },
-      ],
-    },
-    data5: {
-      value: 12,
-      title: [
-        {
-          '@xml:lang': 'zh',
-          '#text': '数据团队',
-        },
-        {
-          '@xml:lang': 'en',
-          '#text': 'Data Teams',
-        },
-      ],
-    },
-  };
-
   const formatter: StatisticProps['formatter'] = (value) => (
     <CountUp end={value as number} separator=',' />
   );
@@ -342,76 +289,50 @@ const Welcome: React.FC = () => {
     modelingTraceability: <ApartmentOutlined />,
   };
 
-  const tidasContent: Record<
-    'en' | 'zh',
-    {
-      intro: string;
-      sections: Array<{ key: SectionKey; heading: string; description: string }>;
-    }
-  > = {
-    zh: {
-      intro:
-        '天工LCA数据平台，一个支持全流程生命周期分析与产品碳管理的开放平台。基于开源TIDAS核心构建，融合了标准化、互操作性与可扩展性三大特性，旨在实现碳数据管理的四个核心目标：合规透明、国际互通、结果可信、数据安全。',
-      sections: [
-        {
-          heading: '严谨合规',
-          key: 'internationalMethodology',
-          description:
-            '平台集成了国标(GB)、ISO、ILCD、GHGP等国内外公认的LCA方法论。其计算过程与数据结构严格遵循相应准则，以保障分析结果的透明性、可比性与可复现性。',
-        },
-        {
-          heading: '开放互联',
-          key: 'ecosystemInteroperability',
-          description:
-            '基于TIDAS统一数据格式，平台实现了与eILCD数据结构的原生兼容，数据可便捷地进行导入或导出，在支持eILCD数据结构的其他主流LCA工具上使用。',
-        },
-        {
-          heading: '智能安全',
-          key: 'architectureExtensibility',
-          description:
-            '平台内嵌AI算法以辅助数据的研制与验证。其模块化架构亦支持集成区块链、隐私计算等前沿技术，用以保障企业数据的完整性与保密性。',
-        },
-        {
-          heading: '可溯建模',
-          key: 'modelingTraceability',
-          description:
-            '平台面向复杂生产系统提供可溯建模能力，实现过程与模型的双向关联，覆盖多产品、多去向及回流场景，使产品建模路径与分配逻辑清晰可见，一次建模即可生成各产品及副产品结果。',
-        },
-      ],
-    },
-    en: {
-      intro:
-        'TianGong LCA Data Platform is an open platform for lifecycle assessment and product carbon management. Based on the TianGong LCA Data System (TIDAS), it is founded on three key principles: standardization, interoperability, and extensibility. Our mission is to achieve four core objectives in carbon data management: regulatory compliance, global interoperability, verifiable results, and robust data security.',
-      sections: [
-        {
-          heading: 'Standards & Compliance',
-          key: 'internationalMethodology',
-          description:
-            'The platform integrates internationally recognized LCA methodologies, including ISO, ILCD, GHG Protocol, and national standards. Its calculation processes and data structures strictly adhere to these guidelines to ensure the transparency, comparability, and reproducibility of all analysis results.',
-        },
-        {
-          heading: 'Openness & Interoperability',
-          key: 'ecosystemInteroperability',
-          description:
-            'Based on the unified TIDAS format, the platform offers native compatibility with the eILCD data structure. This allows for seamless data import and export, ensuring usability across other mainstream LCA tools that support the eILCD format.',
-        },
-        {
-          heading: 'Intelligence & Security',
-          key: 'architectureExtensibility',
-          description:
-            'The platform embeds AI algorithms to assist in data modeling and validation. Its modular architecture also supports the integration of cutting-edge technologies like blockchain and privacy-enhancing computation (PEC) to ensure the integrity and confidentiality of enterprise data.',
-        },
-        {
-          heading: 'Modeling & Traceability',
-          key: 'modelingTraceability',
-          description:
-            'Traceable modeling for complex production systems links process datasets and model datasets bidirectionally, covering multi-product, multi-destination, and recycle scenarios so product pathways and allocation logic remain transparent. Model the plant once and output impacts for every product and by-product straight away.',
-        },
-      ],
-    },
+  const overviewContent: {
+    intro: string;
+    sections: Array<{ key: SectionKey; heading: string; description: string }>;
+  } = {
+    intro: formatMessage({ id: 'pages.welcome.overview.intro' }),
+    sections: [
+      {
+        key: 'internationalMethodology',
+        heading: formatMessage({
+          id: 'pages.welcome.overview.sections.internationalMethodology.title',
+        }),
+        description: formatMessage({
+          id: 'pages.welcome.overview.sections.internationalMethodology.description',
+        }),
+      },
+      {
+        key: 'ecosystemInteroperability',
+        heading: formatMessage({
+          id: 'pages.welcome.overview.sections.ecosystemInteroperability.title',
+        }),
+        description: formatMessage({
+          id: 'pages.welcome.overview.sections.ecosystemInteroperability.description',
+        }),
+      },
+      {
+        key: 'architectureExtensibility',
+        heading: formatMessage({
+          id: 'pages.welcome.overview.sections.architectureExtensibility.title',
+        }),
+        description: formatMessage({
+          id: 'pages.welcome.overview.sections.architectureExtensibility.description',
+        }),
+      },
+      {
+        key: 'modelingTraceability',
+        heading: formatMessage({
+          id: 'pages.welcome.overview.sections.modelingTraceability.title',
+        }),
+        description: formatMessage({
+          id: 'pages.welcome.overview.sections.modelingTraceability.description',
+        }),
+      },
+    ],
   };
-
-  const currentContent = tidasContent[lang] ?? tidasContent.en;
   const guideMessage = React.useCallback(
     (id: string) => formatMessage({ id: `${CARBON_FOOTPRINT_GUIDE_I18N_PREFIX}.${id}` }),
     [formatMessage],
@@ -453,49 +374,44 @@ const Welcome: React.FC = () => {
     {
       key: 'data1',
       icon: <ShareAltOutlined />,
-      title: getLangText(info.data1.title, lang),
-      value: info.data1.value,
+      title: formatMessage({ id: 'pages.welcome.overview.metrics.unitProcessesAndInventories' }),
+      value: 16694,
     },
     {
       key: 'data2',
       icon: <BuildOutlined />,
-      title: getLangText(info.data2.title, lang),
-      value: info.data2.value,
+      title: formatMessage({ id: 'pages.welcome.overview.metrics.domainsAndSectors' }),
+      value: 834,
     },
     {
       key: 'data3',
       icon: <ProductOutlined />,
-      title: getLangText(info.data3.title, lang),
-      value: info.data3.value,
+      title: formatMessage({ id: 'pages.welcome.overview.metrics.products' }),
+      value: 5619,
     },
     {
       key: 'data4',
       icon: <UserOutlined />,
-      title: getLangText(info.data4.title, lang),
-      value: info.data4.value,
+      title: formatMessage({ id: 'pages.welcome.overview.metrics.globalContributors' }),
+      value: 311,
     },
     {
       key: 'data5',
       icon: <TeamOutlined />,
-      title: getLangText(info.data5.title, lang),
+      title: formatMessage({ id: 'pages.welcome.overview.metrics.dataTeams' }),
       value: teamsCount,
     },
   ];
-  const modalSubtitle =
-    lang === 'zh'
-      ? '由全球合作伙伴共建的行业数据网络'
-      : 'A global network of lifecycle data partners.';
-
-  const tidasTitle = lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture';
-  const tidasDescription =
-    lang === 'zh'
-      ? '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。'
-      : 'An open ecosystem of modular data packs, APIs, and toolkits enabling collaborative, verifiable exchanges.';
-  const tidasDocUrl =
-    lang === 'zh'
-      ? 'https://tidas.tiangong.earth/docs/intro'
-      : 'https://tidas.tiangong.earth/en/docs/intro';
-  const tidasReadMoreLabel = lang === 'zh' ? '了解更多' : 'Learn more';
+  const dataEcosystemLabel = formatMessage({
+    id: 'pages.welcome.overview.actions.dataEcosystem',
+  });
+  const modalSubtitle = formatMessage({
+    id: 'pages.welcome.overview.dataEcosystemSubtitle',
+  });
+  const tidasTitle = formatMessage({ id: 'pages.welcome.overview.tidas.title' });
+  const tidasDescription = formatMessage({ id: 'pages.welcome.overview.tidas.description' });
+  const tidasDocUrl = formatMessage({ id: 'pages.welcome.overview.tidas.docsUrl' });
+  const tidasReadMoreLabel = formatMessage({ id: 'pages.welcome.overview.tidas.readMore' });
   const tidasImageSrc =
     lang === 'zh'
       ? isDarkMode
@@ -504,7 +420,7 @@ const Welcome: React.FC = () => {
       : isDarkMode
         ? '/images/tidas/TIDAS-en-dark.svg'
         : '/images/tidas/TIDAS-en.svg';
-  const tidasImageAlt = currentContent.intro;
+  const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
   const WELCOME_RADIUS = 8;
 
@@ -772,15 +688,13 @@ const Welcome: React.FC = () => {
               lineHeight: 1.7,
             }}
           >
-            {currentContent.intro}
+            {overviewContent.intro}
           </Typography.Paragraph>
           <Space size={12} wrap>
             <Button type='primary' onClick={() => setIsTidasModalOpen(true)}>
-              {lang === 'zh' ? 'TIDAS 数据体系架构' : 'TIDAS Architecture'}
+              {tidasTitle}
             </Button>
-            <Button onClick={handleOpenDataModal}>
-              {lang === 'zh' ? '天工数据生态' : 'TianGong Data Ecosystem'}
-            </Button>
+            <Button onClick={handleOpenDataModal}>{dataEcosystemLabel}</Button>
             <Button onClick={handleOpenCarbonFootprintGuide}>
               {currentGuideContent.entryLabel}
             </Button>
@@ -789,7 +703,7 @@ const Welcome: React.FC = () => {
       </Card>
 
       <Row gutter={[16, 16]} align='stretch'>
-        {currentContent.sections.map((section) => (
+        {overviewContent.sections.map((section) => (
           <Col xs={24} md={12} key={section.key}>
             <Card
               className={`${styles.welcome_card} ${styles.welcome_section_card}`}
@@ -850,6 +764,33 @@ const Welcome: React.FC = () => {
             <Row justify='center' style={{ minHeight: 180 }}>
               <Spin />
             </Row>
+          ) : teamsLoadError ? (
+            <Space direction='vertical' align='center' style={{ width: '100%', padding: 24 }}>
+              <Typography.Text type='danger' role='alert'>
+                {formatMessage({
+                  id: 'pages.welcome.overview.dataEcosystem.error',
+                  defaultMessage: 'Data teams could not be loaded.',
+                })}
+              </Typography.Text>
+              <Button icon={<ReloadOutlined />} onClick={loadTeams}>
+                {formatMessage({
+                  id: 'pages.welcome.overview.dataEcosystem.retry',
+                  defaultMessage: 'Try again',
+                })}
+              </Button>
+            </Space>
+          ) : !teams?.length ? (
+            <Typography.Text
+              type='secondary'
+              role='status'
+              aria-live='polite'
+              style={{ display: 'block', padding: 24, textAlign: 'center' }}
+            >
+              {formatMessage({
+                id: 'pages.welcome.overview.dataEcosystem.empty',
+                defaultMessage: 'No data teams are available yet.',
+              })}
+            </Typography.Text>
           ) : (
             <Row gutter={[16, 16]}>
               {teams?.map((team: any, index: number) => {
