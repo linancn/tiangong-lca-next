@@ -1,0 +1,336 @@
+{
+  "schemaVersion": "tiangong.i18n-locale-context.v2",
+  "locale": "fr-FR",
+  "source": {
+    "repository": "linancn/tiangong-lca-next",
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
+    "sourceManifestDigest": "4f5dc2600ec7150246cf76b5f338a41a6bf1e2943327f639aaf3ef00a4414391",
+    "auditedInputDigest": "c73422fc16728aca23b72991488141347178845fef45f54fb21acd37a01465ef"
+  },
+  "inventory": {
+    "sourceMessageCount": 3026,
+    "localeMessageCount": 3026,
+    "leafModuleCount": 30,
+    "dynamicFamilyCount": 17,
+    "dynamicCallsiteCount": 39,
+    "routeViewRowCount": 10,
+    "typedContentUnitCount": 2,
+    "blockedContextCount": 0,
+    "unownedStaticContentCount": 0
+  },
+  "evidenceLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+  "contextDimensions": [
+    "callsite-and-dynamic-producer",
+    "ui-role-and-adjacent-copy",
+    "state-transition-and-user-consequence",
+    "route-view-and-static-content-ownership",
+    "icu-placeholder-and-technical-token-signature",
+    "glossary-style-and-fallback-contract",
+    "candidate-rationale-risk-and-validation"
+  ],
+  "messageDossiers": {
+    "schemaVersion": "tiangong.i18n-message-dossier.v1",
+    "generator": "scripts/i18n/locale-delivery.mjs#buildMessageDossiers",
+    "requiredFields": [
+      "message/source/module/all translations",
+      "callsite or audited dynamic/retention evidence",
+      "page/component/route/UI role",
+      "state/adjacent copy/transition/user consequence",
+      "terminology/trusted sources",
+      "ICU/placeholders/rich text/interpolation/newlines",
+      "preserved tokens and layout/RTL/dark risks",
+      "candidate/rationale/risk/validation"
+    ],
+    "messageCount": 3026,
+    "completeCount": 3026,
+    "blockedCount": 0,
+    "dossierDigest": "bf5f08515aa653f2f18253f0adf25a471ea68ad0809f663bb11c42c07e4f11db",
+    "catalogDigest": "aca5a8d39e2d6c3bc9f2eb48d28a4b86546cb292711d05810098e79b8c862bed",
+    "moduleCount": 31,
+    "moduleDigest": "46fb10d2d29c762e23a92a65d644a45d9f5e3cd5f2cd7c56e5a9c57ed428cd4f",
+    "roleCounts": {
+      "error-or-validation": 341,
+      "explanatory-copy": 109,
+      "field-guidance": 48,
+      "label-or-body-copy": 1225,
+      "navigation-or-tab": 224,
+      "reserved-catalog-copy": 273,
+      "status-or-empty-state": 92,
+      "success-notification": 176,
+      "title-or-heading": 237,
+      "user-action": 301
+    },
+    "stateCounts": {
+      "destructive-or-rejecting-action": 43,
+      "failure-or-invalid-input": 341,
+      "interactive-ready": 509,
+      "retained-not-currently-reachable": 351,
+      "successful-completion": 176,
+      "visible": 1606
+    },
+    "riskCounts": { "high": 1337, "low": 1471, "medium": 218 },
+    "highRiskMessageCount": 1337,
+    "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b"
+  },
+  "typedContentDossiers": {
+    "sourcePath": "src/components/ImportTidasPackage/reportContent.ts",
+    "sourceId": "tidas-import-report-content",
+    "contentKinds": ["human_summary", "readme_markdown"],
+    "registryLocaleCount": 4,
+    "targetContentUnitCount": 2,
+    "targetContentDigest": "950491d33e094078f7a12ac0a286a8d8868ce3d478d74241acd002c3a28e0fcc",
+    "dossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
+    "topologyDigest": "ef2ad8ea5fa6246a8e1c691bf80cfb0edd150e3493eb10541ccb007e7eb612e8",
+    "blockedContextCount": 0
+  },
+  "usageIndex": {
+    "source": "docs/plans/i18n-de-DE/manifest.json messages[*].references/moduleOwnership/dynamicFamilies",
+    "literalReferenceCount": 3995,
+    "dynamicCallsiteCount": 39,
+    "glossaryRuleScope": "full target catalog at the automated quality gate",
+    "onDemandCommand": "npm run i18n:context:dossier -- --locale fr-FR --message <MESSAGE_ID>"
+  },
+  "routeViewCoverage": {
+    "path": "docs/plans/i18n/route-view-coverage.json",
+    "digest": "6c3acda5349217420e6f8a018d8cc8df11bff457844dc5620eb43c3b4b1321cf",
+    "requiredPublicViews": ["/", "/welcome", "/welcome?view=carbon-footprint"],
+    "derivedEvidence": {
+      "schemaVersion": "tiangong.i18n-route-view-derived-evidence.v1",
+      "sourceRouteConfig": "config/routes.ts",
+      "routeConfigDigest": "da3dc62956eb5a900af470746ddc8922ecc2a2aa9ce22f8be4dc235f7c32d7ca",
+      "configuredRouteCount": 46,
+      "publicPolicy": {
+        "exactPublicPaths": [
+          "/",
+          "/welcome",
+          "/user/login",
+          "/user/login/password_forgot",
+          "/user/login/password_reset"
+        ],
+        "publicUnknownFallback": true,
+        "sourcePath": "src/app.tsx"
+      },
+      "sourceFileCount": 19,
+      "sourceEvidenceDigest": "ecfb92ca750b0cb5dfaecc53abdef9676ce69583ae70add95bdb7dcdb8a19cfc",
+      "rowEvidence": [
+        {
+          "route": "/",
+          "viewState": "redirect-to-welcome",
+          "sourceDigest": "6281c7a948b99c88d6c103c7b692b445e5de1ea93e97be88ca70264b5cc6c9ee",
+          "focusedTestDigest": "f3b487dbdf7bd32dbca23c499f44cc98fa786a8d54ac9133ab5b5a22f321fcda",
+          "derivedMessageCount": 42,
+          "derivedMessageDigest": "0cb4b87fd81102552ac61d6a8de95dc6f2f607abfaed05d282ff8dcc3389feff",
+          "stateSignals": ["empty", "error", "loading", "modal", "retry"],
+          "queryParameters": ["tid", "view"],
+          "navigationTargets": [
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/mydata/processes",
+            "/tgdata/flows",
+            "/tgdata/models?tid=${team.id}",
+            "/umi/plugin/openapi",
+            "/user/login",
+            "/welcome?view=carbon-footprint"
+          ],
+          "interactionKinds": ["modal", "spin"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/welcome",
+          "viewState": "overview",
+          "sourceDigest": "567f02d68dd447cf91701d93b3d97cd08f8a7c9333196bedd68f22d8b356478e",
+          "focusedTestDigest": "22fd0cc5233c96c0ddb166089718a1b9165e025ebdbdb2fca7504c56126eb244",
+          "derivedMessageCount": 43,
+          "derivedMessageDigest": "bcc3e3606151a0e995f3401c3980cf2cb7f614e7eae007310b68c65e1edf04a7",
+          "stateSignals": ["empty", "error", "loading", "modal", "retry"],
+          "queryParameters": ["tid", "view"],
+          "navigationTargets": [
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/mydata/processes",
+            "/tgdata/flows",
+            "/tgdata/models?tid=${team.id}",
+            "/umi/plugin/openapi",
+            "/user/login",
+            "/welcome?view=carbon-footprint"
+          ],
+          "interactionKinds": ["modal", "spin"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/welcome?view=carbon-footprint",
+          "viewState": "carbon-footprint-guide",
+          "sourceDigest": "567f02d68dd447cf91701d93b3d97cd08f8a7c9333196bedd68f22d8b356478e",
+          "focusedTestDigest": "22fd0cc5233c96c0ddb166089718a1b9165e025ebdbdb2fca7504c56126eb244",
+          "derivedMessageCount": 76,
+          "derivedMessageDigest": "47404e25a36d94f49ff0b50d26cebeff7027b556d6bc11991bed3e839f89cb23",
+          "stateSignals": ["empty", "error", "loading", "modal", "retry"],
+          "queryParameters": ["tid", "view"],
+          "navigationTargets": [
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/mydata/processes",
+            "/tgdata/flows",
+            "/tgdata/models?tid=${team.id}",
+            "/umi/plugin/openapi",
+            "/user/login",
+            "/welcome?view=carbon-footprint"
+          ],
+          "interactionKinds": ["modal", "spin"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/user/login",
+          "viewState": "login-and-register",
+          "sourceDigest": "9ef47c5775e788ef5870963930e7f38a262ad3f64cfbf26e001c746b1a988241",
+          "focusedTestDigest": "99ddbad82419d77b80d5ff89d5128e64a9a1ee490be9fe3aa49d5e010b198227",
+          "derivedMessageCount": 70,
+          "derivedMessageDigest": "5055e5693f7e02b4122461263cfd71fea9ec742137a083cc0ae5c6b28bdec1fb",
+          "stateSignals": ["dark", "error", "loading", "success"],
+          "queryParameters": ["tid"],
+          "navigationTargets": [
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/privacy_notice.html",
+            "/terms_of_use.html",
+            "/umi/plugin/openapi",
+            "/user/login",
+            "/user/login/password_forgot"
+          ],
+          "interactionKinds": ["alert", "tabs"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/user/login/password_forgot",
+          "viewState": "password-forgot",
+          "sourceDigest": "64377f38b69196a5902f0b1500d40b2d6c4c876b3562758d21ea473909a8a4e1",
+          "focusedTestDigest": "ffc0ed480e6685c7db37fb781305987ff168e0b3b186609591cfb24cca871529",
+          "derivedMessageCount": 14,
+          "derivedMessageDigest": "f926858d3405d3319b6cd4766cf1df473ef04de83a59da6625edcb2126f6856c",
+          "stateSignals": ["dark", "error", "loading", "success"],
+          "queryParameters": ["tid"],
+          "navigationTargets": [
+            "/",
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/umi/plugin/openapi",
+            "/user/login"
+          ],
+          "interactionKinds": ["spin", "tabs"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/user/login/password_reset",
+          "viewState": "password-reset",
+          "sourceDigest": "4e08ddf3f3f565f41914faca1b291cddda87a3170e5502368a3ce46aebcbd5c9",
+          "focusedTestDigest": "281b45545a6503bf7a3804fbf1b027082847887cb749df7ee434572a00d4e144",
+          "derivedMessageCount": 23,
+          "derivedMessageDigest": "bc806c4f9214450f89d0be8fc70dcbce4b6d4cd96493a944061761d7cea86b55",
+          "stateSignals": ["dark", "error", "loading", "retry", "success", "unavailable"],
+          "queryParameters": ["tid"],
+          "navigationTargets": [
+            "/",
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/umi/plugin/openapi",
+            "/user/login",
+            "/user/login/password_forgot"
+          ],
+          "interactionKinds": ["spin", "tabs"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/dashboard/national-carbon",
+          "viewState": "national-carbon-dashboard",
+          "sourceDigest": "98bbb2554b2d60abc9dddbb8823f29b18a08d9c14d85d6f95d5d99d6ee6a15c9",
+          "focusedTestDigest": "bd7f5d3a3c87501c4977a19d41cd50481eecf48f79dcb1f545d10e65e7a14e58",
+          "derivedMessageCount": 258,
+          "derivedMessageDigest": "02833e0d1eed0287781329392e4cf99b9ae0058d65206ca455e84a64b5ce65cb",
+          "stateSignals": ["empty", "error", "loading", "modal", "retry", "success", "unavailable"],
+          "queryParameters": ["autoplay", "screen"],
+          "navigationTargets": [],
+          "interactionKinds": [],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/terms_of_use.html",
+          "viewState": "static-legal-English-fallback",
+          "sourceDigest": "e12732a422fcf1d836e2a44190548c87cefbde934ad055b29480d294ff206305",
+          "focusedTestDigest": "de970931876f6cf2a24f063db37e744ebee99a0cb57b7b31ee44d0d31b89e6e4",
+          "derivedMessageCount": 32,
+          "derivedMessageDigest": "97e4953fd7f748ba2be5cd17358ffdd722877e95ab7230e1ac9026056b538321",
+          "stateSignals": ["dark", "error", "loading", "success"],
+          "queryParameters": [],
+          "navigationTargets": [
+            "/privacy_notice.html",
+            "/terms_of_use.html",
+            "/user/login/password_forgot"
+          ],
+          "interactionKinds": ["alert", "tabs"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "/privacy_notice.html",
+          "viewState": "static-legal-English-fallback",
+          "sourceDigest": "0059173ae9e040f3dea9fbe7fa33d0c5dd60a7dca502d34e337089250c12c27c",
+          "focusedTestDigest": "de970931876f6cf2a24f063db37e744ebee99a0cb57b7b31ee44d0d31b89e6e4",
+          "derivedMessageCount": 32,
+          "derivedMessageDigest": "97e4953fd7f748ba2be5cd17358ffdd722877e95ab7230e1ac9026056b538321",
+          "stateSignals": ["dark", "error", "loading", "success"],
+          "queryParameters": [],
+          "navigationTargets": [
+            "/privacy_notice.html",
+            "/terms_of_use.html",
+            "/user/login/password_forgot"
+          ],
+          "interactionKinds": ["alert", "tabs"],
+          "acceptedTechnicalLiteralCount": 0,
+          "unownedVisibleLiteralCount": 0
+        },
+        {
+          "route": "*",
+          "viewState": "not-found",
+          "sourceDigest": "9902d84cea1db6b177fc1387d38d620bfd1e2f2b9f6c1315e6ed48bae50702eb",
+          "focusedTestDigest": "726f2f00f36d58f3af811094cf346b5f3efbb65d76bf506e0480bf57aef67735",
+          "derivedMessageCount": 6,
+          "derivedMessageDigest": "378d1a6d1defaf341183bab377b2fb240f33e6ed1b0179ea2d2a2481b8036bcf",
+          "stateSignals": [],
+          "queryParameters": ["tid"],
+          "navigationTargets": [
+            "/",
+            "/dashboard/national-carbon",
+            "/data-processing",
+            "/umi/plugin/openapi",
+            "/user/login"
+          ],
+          "interactionKinds": [],
+          "acceptedTechnicalLiteralCount": 1,
+          "unownedVisibleLiteralCount": 0
+        }
+      ],
+      "rowEvidenceDigest": "f74ced5478a67a1b53b996050e6f08783823ae77d6ef5816b1104cb763a5e4c5",
+      "blockedDerivedStateCount": 0,
+      "unownedVisibleLiteralCount": 0
+    }
+  },
+  "inputs": {
+    "src/services/general/localeRegistry.ts": "b4703b214db281020397fa5714021d7cd912b66bde9c5bd2a55108259ad06bd8",
+    "src/components/ImportTidasPackage/reportContent.ts": "48170a699ff0ea169d6977648d918f5ed32e72e4138b15189e7baf49e8c1d93b",
+    "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
+    "docs/plans/i18n/route-view-coverage.json": "6c3acda5349217420e6f8a018d8cc8df11bff457844dc5620eb43c3b4b1321cf",
+    "docs/plans/i18n/fallback-contract.json": "d90c7df3c25816430450a197b7adf1eff7081ae3945c7a8d6932232f3c7b6a75",
+    "docs/plans/i18n-fr-FR/glossary.json": "057cb494f02d980106469f6a16befc102d26db5ac362b9777cd5f97c7729c91b",
+    "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
+  },
+  "blockedContext": [],
+  "contextDigest": "4e0cf9a9735eff960024fab3671d13c0163b5f6eba03cbffd3b1660eaaf64f3a"
+}

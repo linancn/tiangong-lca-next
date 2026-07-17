@@ -31,8 +31,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 2a523ea50a3aa38733e78c2294114bbd8058f68d
-lastReviewedNote: 'Extended the reusable Goal to cover public/static routes and every query-driven view state, including Welcome overview and carbon-footprint content.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Reviewed while applying Issue #625 for canonical fr-FR (with fr_FR only as a boundary adapter); the reusable delivery contract is unchanged.'
 baselineObservedAt: 2026-07-17
 related:
   - ../../AGENTS.md

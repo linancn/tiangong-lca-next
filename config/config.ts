@@ -2,6 +2,7 @@ import { favicon } from './branding';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
+import { LOCALE_REGISTRY } from '../src/services/general/localeRegistry';
 import proxy from './proxy';
 import routes from './routes';
 import { applySupabaseFrontendEnv } from './supabaseEnv';
@@ -9,6 +10,15 @@ import { applySupabaseFrontendEnv } from './supabaseEnv';
 const { REACT_APP_ENV = 'main' } = process.env;
 
 applySupabaseFrontendEnv(process.cwd(), REACT_APP_ENV);
+
+const localeEnvironmentDefines = Object.fromEntries(
+  LOCALE_REGISTRY.flatMap(({ environment }) =>
+    [environment.titleKey, environment.loginSubtitleKey].map((key) => [
+      `process.env.${key}`,
+      process.env[key],
+    ]),
+  ),
+);
 
 export default defineConfig({
   /**
@@ -171,11 +181,6 @@ export default defineConfig({
     'process.env.APP_LIGHT_LOGO': process.env.APP_LIGHT_LOGO,
     'process.env.APP_DARK_LOGO': process.env.APP_DARK_LOGO,
     'process.env.APP_LAYOUT': process.env.APP_LAYOUT,
-    'process.env.APP_TITLE_ZH_CN': process.env.APP_TITLE_ZH_CN,
-    'process.env.APP_TITLE_EN_US': process.env.APP_TITLE_EN_US,
-    'process.env.APP_TITLE_DE_DE': process.env.APP_TITLE_DE_DE,
-    'process.env.APP_LOGIN_SUBTITLE_ZH_CN': process.env.APP_LOGIN_SUBTITLE_ZH_CN,
-    'process.env.APP_LOGIN_SUBTITLE_EN_US': process.env.APP_LOGIN_SUBTITLE_EN_US,
-    'process.env.APP_LOGIN_SUBTITLE_DE_DE': process.env.APP_LOGIN_SUBTITLE_DE_DE,
+    ...localeEnvironmentDefines,
   },
 });

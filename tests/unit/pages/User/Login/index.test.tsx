@@ -71,7 +71,16 @@ jest.mock('umi', () => {
           'pages.login.termsOfUse.englishFallbackLabel': 'Nutzungsbedingungen (Englisch)',
           'pages.login.privacyNotice.englishFallbackLabel': 'Datenschutzhinweis (Englisch)',
         };
-        return (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ?? defaultMessage ?? id;
+        const frenchMessages: Record<string, string> = {
+          'pages.login.termsOfUse.englishFallbackLabel': 'Conditions d’utilisation (en anglais)',
+          'pages.login.privacyNotice.englishFallbackLabel': 'Avis de confidentialité (en anglais)',
+        };
+        return (
+          (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ??
+          (mockLocale === 'fr-FR' ? frenchMessages[id] : undefined) ??
+          defaultMessage ??
+          id
+        );
       },
     }),
     useModel: () => mockUseModelState,
@@ -117,7 +126,16 @@ jest.mock('@umijs/max', () => ({
         'pages.login.termsOfUse.englishFallbackLabel': 'Nutzungsbedingungen (Englisch)',
         'pages.login.privacyNotice.englishFallbackLabel': 'Datenschutzhinweis (Englisch)',
       };
-      return (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ?? defaultMessage ?? id;
+      const frenchMessages: Record<string, string> = {
+        'pages.login.termsOfUse.englishFallbackLabel': 'Conditions d’utilisation (en anglais)',
+        'pages.login.privacyNotice.englishFallbackLabel': 'Avis de confidentialité (en anglais)',
+      };
+      return (
+        (mockLocale === 'de-DE' ? germanMessages[id] : undefined) ??
+        (mockLocale === 'fr-FR' ? frenchMessages[id] : undefined) ??
+        defaultMessage ??
+        id
+      );
     },
   }),
   useModel: () => mockUseModelState,
@@ -537,5 +555,25 @@ describe('Login page', () => {
     expect(privacyLink).toHaveAttribute('href', '/privacy_notice.html');
     expect(privacyLink).toHaveAttribute('hreflang', 'en');
     expect(privacyLink).toHaveAttribute('title', 'Datenschutzhinweis (Englisch)');
+  });
+
+  it('labels English-only legal documents explicitly for the French app locale', () => {
+    mockLocale = 'fr-FR';
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    const termsLink = screen.getByRole('link', {
+      name: 'Conditions d’utilisation (en anglais)',
+    });
+    const privacyLink = screen.getByRole('link', {
+      name: 'Avis de confidentialité (en anglais)',
+    });
+    expect(termsLink).toHaveAttribute('href', '/terms_of_use.html');
+    expect(termsLink).toHaveAttribute('hreflang', 'en');
+    expect(termsLink).toHaveAttribute('title', 'Conditions d’utilisation (en anglais)');
+    expect(privacyLink).toHaveAttribute('href', '/privacy_notice.html');
+    expect(privacyLink).toHaveAttribute('hreflang', 'en');
+    expect(privacyLink).toHaveAttribute('title', 'Avis de confidentialité (en anglais)');
   });
 });

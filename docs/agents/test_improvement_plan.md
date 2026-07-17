@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 component proof and the v0.0.49 release checkpoint; the full-closure strategy and quality bar remain unchanged.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Reviewed registry-driven locale context, quality, correction, route-view, and activation proof; the full-closure strategy and quality bar remain unchanged.'
 ---
 
 # Testing Strategy
@@ -37,8 +37,8 @@ lastReviewedNote: 'Reviewed Issue #621 component proof and the v0.0.49 release c
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
-- localization quality should combine deterministic topology/context/hash gates with local human language/domain confirmation; Jest validates form integrity and privacy boundaries but never claims that an automated audit proves fluency
-- clean-runner localization tests should prove tracked structure with explicitly absent private forms, while generated temporary approvals separately cover the fail-closed local human-evidence path
+- localization quality should combine deterministic topology, context, terminology, route-view, fallback, correction, and activation gates with independent automated review; delivery does not create a human translation-approval state
+- clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, recycles that worker at the documented memory boundary, and retains unchanged 100% `src/**` coverage without a preceding duplicate `test:ci` or coverage run

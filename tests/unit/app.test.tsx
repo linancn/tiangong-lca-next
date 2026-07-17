@@ -244,15 +244,92 @@ describe('app runtime config', () => {
     expect(state.currentUser).toBeNull();
   });
 
-  it('getInitialState skips user loading on login routes', async () => {
+  it.each(['/', '/welcome', '/welcome/'])(
+    'getInitialState silently hydrates an existing session on public landing route %s',
+    async (pathname) => {
+      const { getInitialState } = require('@/app');
+      mockHistory.location.pathname = pathname;
+
+      const state = await getInitialState();
+
+      expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+      expect(mockGetSystemUserRoleApi).toHaveBeenCalledTimes(1);
+      expect(mockHistory.push).not.toHaveBeenCalled();
+      expect(state.currentUser).toEqual({ name: 'Current User', access: 'admin' });
+    },
+  );
+
+  it('keeps an anonymous public landing session anonymous without redirecting', async () => {
     const { getInitialState } = require('@/app');
-    mockHistory.location.pathname = '/user/login';
+    mockHistory.location.pathname = '/welcome';
+    mockQueryCurrentUser.mockResolvedValueOnce(null);
+
+    const state = await getInitialState();
+
+    expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+    expect(mockGetSystemUserRoleApi).not.toHaveBeenCalled();
+    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(state.currentUser).toBeNull();
+  });
+
+  it.each([
+    '/missing-public-page',
+    '/user/login',
+    '/user/login/password_forgot',
+    '/user/login/password_reset',
+  ])('getInitialState skips user loading on non-layout public route %s', async (pathname) => {
+    const { getInitialState } = require('@/app');
+    mockHistory.location.pathname = pathname;
 
     const state = await getInitialState();
 
     expect(mockQueryCurrentUser).not.toHaveBeenCalled();
     expect(state.currentUser).toBeUndefined();
     expect(typeof state.fetchUserInfo).toBe('function');
+  });
+
+  it.each(['/', '/welcome'])(
+    'layout renders anonymous landing route %s without redirecting',
+    (pathname) => {
+      const { layout } = require('@/app');
+      const setInitialState = jest.fn();
+      mockHistory.location.pathname = pathname;
+
+      const runtimeLayout = layout({
+        initialState: {
+          currentUser: undefined,
+          isDarkMode: false,
+          settings: { navTheme: 'light' },
+        },
+        setInitialState,
+      });
+
+      runtimeLayout.onPageChange?.();
+      const children = runtimeLayout.childrenRender?.(<div data-testid='public-child'>child</div>);
+      render(children);
+
+      expect(mockHistory.push).not.toHaveBeenCalled();
+      expect(screen.getByTestId('public-child')).toHaveTextContent('child');
+    },
+  );
+
+  it('preserves the anonymous welcome query state through runtime guards', async () => {
+    const { getInitialState, layout } = require('@/app');
+    const setInitialState = jest.fn();
+    mockHistory.location.pathname = '/welcome';
+    mockHistory.location.search = '?view=carbon-footprint';
+    mockQueryCurrentUser.mockResolvedValueOnce(null);
+
+    const state = await getInitialState();
+    const runtimeLayout = layout({ initialState: state, setInitialState });
+    runtimeLayout.onPageChange?.();
+    const children = runtimeLayout.childrenRender?.(<div data-testid='guide-child'>guide</div>);
+    render(children);
+
+    expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(mockHistory.location.search).toBe('?view=carbon-footprint');
+    expect(screen.getByTestId('guide-child')).toHaveTextContent('guide');
   });
 
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
@@ -274,7 +351,25 @@ describe('app runtime config', () => {
     runtimeLayout.onPageChange?.();
     expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
 
-    const transformedMenu = runtimeLayout.menuDataRender?.([
+    expect(
+      runtimeLayout.menuDataRender?.([
+        {
+          path: '/tgdata',
+          children: [{ path: '/tgdata/processes' }],
+        },
+      ]),
+    ).toEqual([]);
+
+    const authenticatedRuntimeLayout = layout({
+      initialState: {
+        currentUser: { name: 'Alice' },
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState,
+    });
+
+    const transformedMenu = authenticatedRuntimeLayout.menuDataRender?.([
       {
         path: '/tgdata',
         children: [{ path: '/tgdata/processes' }],
@@ -301,7 +396,7 @@ describe('app runtime config', () => {
     ]);
 
     expect(
-      runtimeLayout.menuDataRender?.([
+      authenticatedRuntimeLayout.menuDataRender?.([
         {
           path: '/tgdata',
         },
@@ -324,9 +419,9 @@ describe('app runtime config', () => {
 
     mockHistory.location.search = '';
     const originalMenu = [{ path: '/mydata', children: [{ path: '/mydata/contacts' }] }];
-    expect(runtimeLayout.menuDataRender?.(originalMenu)).toEqual(originalMenu);
+    expect(authenticatedRuntimeLayout.menuDataRender?.(originalMenu)).toEqual(originalMenu);
 
-    const renderedMenuItem = runtimeLayout.menuItemRender?.(
+    const renderedMenuItem = authenticatedRuntimeLayout.menuItemRender?.(
       { path: '/team', icon: <span>icon</span>, name: 'Team' },
       <span>fallback</span>,
     );
@@ -334,8 +429,31 @@ describe('app runtime config', () => {
     expect(renderedMenuItem.props.to).toBe('/team');
     expect(renderedMenuItem.props.children[1].props.children).toBe('Team');
     expect(
-      runtimeLayout.menuItemRender?.({ isUrl: true }, <span>fallback</span>)?.props.children,
+      authenticatedRuntimeLayout.menuItemRender?.({ isUrl: true }, <span>fallback</span>)?.props
+        .children,
     ).toBe('fallback');
+  });
+
+  it('limits anonymous public header actions and hides the private avatar and menu', () => {
+    const { layout } = require('@/app');
+    const runtimeLayout = layout({
+      initialState: {
+        currentUser: null,
+        isDarkMode: false,
+        settings: { navTheme: 'light' },
+      },
+      setInitialState: jest.fn(),
+    });
+
+    const actions = runtimeLayout.actionsRender?.();
+    expect(actions).toHaveLength(3);
+    expect(actions.map((action: any) => action.type)).toEqual([
+      'dark-mode',
+      'select-lang',
+      'question-link',
+    ]);
+    expect(runtimeLayout.avatarProps).toBeUndefined();
+    expect(runtimeLayout.menuDataRender?.([{ path: '/tgdata' }])).toEqual([]);
   });
 
   it('falls back to the default formatted app title when no localized title is available', () => {
@@ -415,7 +533,7 @@ describe('app runtime config', () => {
     );
     expect(screen.getByTestId('child')).toHaveTextContent('child');
 
-    mockHistory.location.pathname = '/processes';
+    mockHistory.location.pathname = '/tgdata/processes';
     const guardedLayout = layout({
       initialState: {
         currentUser: undefined,
@@ -510,6 +628,8 @@ describe('app runtime config', () => {
       },
       setInitialState,
     });
+
+    expect(runtimeLayout.links?.[0].props.children[1].props.children).toBe('OpenAPI documentation');
 
     const rendered = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
     render(rendered);

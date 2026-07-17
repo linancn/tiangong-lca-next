@@ -1,4 +1,9 @@
 import { ProLayoutProps } from '@ant-design/pro-components';
+import {
+  LOCALE_REGISTRY,
+  normalizeSupportedAppLocale,
+  type SupportedAppLocale,
+} from '../src/services/general/localeRegistry';
 import { lightBrandTheme } from './branding';
 
 const DEFAULT_LAYOUT = 'mix';
@@ -7,7 +12,6 @@ const DEFAULT_LOGIN_SUBTITLE = "World's Largest Open LCA Data Platform";
 const APP_LAYOUT_OPTIONS = ['side', 'top', 'mix'] as const;
 
 type AppLayout = (typeof APP_LAYOUT_OPTIONS)[number];
-type SupportedLocale = 'zh-CN' | 'en-US' | 'de-DE';
 
 const readSettingEnv = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
@@ -23,24 +27,13 @@ const readLayoutEnv = (value: string | undefined): AppLayout => {
   return DEFAULT_LAYOUT;
 };
 
-const normalizeLocale = (locale?: string): SupportedLocale | undefined => {
-  const lowerLocale = locale?.trim().toLowerCase();
-  if (lowerLocale === 'zh-cn') {
-    return 'zh-CN';
-  }
-  if (lowerLocale === 'en-us') {
-    return 'en-US';
-  }
-  if (lowerLocale === 'de-de') {
-    return 'de-DE';
-  }
-
-  return undefined;
+const normalizeLocale = (locale?: string): SupportedAppLocale | undefined => {
+  return normalizeSupportedAppLocale(locale);
 };
 
 const getLocalizedEnvValue = (
   locale: string | undefined,
-  values: Partial<Record<SupportedLocale, string | undefined>>,
+  values: Partial<Record<SupportedAppLocale, string | undefined>>,
 ): string | undefined => {
   const normalizedLocale = normalizeLocale(locale);
   if (!normalizedLocale) {
@@ -50,17 +43,19 @@ const getLocalizedEnvValue = (
   return values[normalizedLocale];
 };
 
-const appTitleEnvValues: Partial<Record<SupportedLocale, string | undefined>> = {
-  'zh-CN': readSettingEnv(process.env.APP_TITLE_ZH_CN),
-  'en-US': readSettingEnv(process.env.APP_TITLE_EN_US),
-  'de-DE': readSettingEnv(process.env.APP_TITLE_DE_DE),
-};
+const appTitleEnvValues = Object.fromEntries(
+  LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
+    canonicalLocale,
+    readSettingEnv(process.env[environment.titleKey]),
+  ]),
+) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
-const loginSubtitleEnvValues: Partial<Record<SupportedLocale, string | undefined>> = {
-  'zh-CN': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_ZH_CN),
-  'en-US': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_EN_US),
-  'de-DE': readSettingEnv(process.env.APP_LOGIN_SUBTITLE_DE_DE),
-};
+const loginSubtitleEnvValues = Object.fromEntries(
+  LOCALE_REGISTRY.map(({ canonicalLocale, environment }) => [
+    canonicalLocale,
+    readSettingEnv(process.env[environment.loginSubtitleKey]),
+  ]),
+) as Partial<Record<SupportedAppLocale, string | undefined>>;
 
 export const getLocalizedAppTitle = (locale?: string): string | undefined =>
   getLocalizedEnvValue(locale, appTitleEnvValues);

@@ -1,3 +1,9 @@
+import {
+  getLocaleDefinition,
+  normalizeSupportedAppLocale,
+  type LocaleRegistryEntry,
+} from '@/services/general/localeRegistry';
+
 const DEFAULT_FORMATTING_LOCALE = 'en-US';
 
 type ListFormatter = { format: (items: readonly string[]) => string };
@@ -9,27 +15,25 @@ type ListFormatterConstructor = new (
 const nonEmptyStrings = (items: readonly string[]) =>
   items.map((item) => item.trim()).filter((item) => item.length > 0);
 
+const getFormattingDefinition = (locale?: string): LocaleRegistryEntry => {
+  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? DEFAULT_FORMATTING_LOCALE;
+  return getLocaleDefinition(normalizedLocale);
+};
+
 const fallbackConjunction = (items: readonly string[], locale: string): string => {
   if (items.length < 2) {
     return items[0] ?? '';
   }
 
-  const language = locale.toLowerCase().split(/[-_]/, 1)[0];
+  const { formatting } = getFormattingDefinition(locale);
   const lastItem = items[items.length - 1];
-  if (language === 'zh') {
-    return `${items.slice(0, -1).join('、')}和${lastItem}`;
-  }
-
-  const conjunction = language === 'de' ? ' und ' : ' and ';
   if (items.length === 2) {
-    return items.join(conjunction);
+    return items.join(formatting.twoItemConjunction);
   }
 
-  if (language === 'de') {
-    return `${items.slice(0, -1).join(', ')}${conjunction}${lastItem}`;
-  }
-
-  return `${items.slice(0, -1).join(', ')},${conjunction}${lastItem}`;
+  return `${items.slice(0, -1).join(formatting.listSeparator)}${
+    formatting.manyItemConjunction
+  }${lastItem}`;
 };
 
 /**
@@ -38,7 +42,7 @@ const fallbackConjunction = (items: readonly string[], locale: string): string =
  */
 export const formatLocaleList = (items: readonly string[], locale?: string): string => {
   const values = nonEmptyStrings(items);
-  const formattingLocale = locale?.trim() || DEFAULT_FORMATTING_LOCALE;
+  const formattingLocale = getFormattingDefinition(locale).adapters.intl;
 
   try {
     const ListFormat = (Intl as typeof Intl & { ListFormat?: ListFormatterConstructor }).ListFormat;
@@ -83,7 +87,7 @@ export const formatLocaleDateTime = (value: string, locale?: string): string => 
     return value;
   }
 
-  const formattingLocale = locale?.trim() || DEFAULT_FORMATTING_LOCALE;
+  const formattingLocale = getFormattingDefinition(locale).adapters.intl;
   try {
     return new Intl.DateTimeFormat(formattingLocale, {
       dateStyle: 'medium',

@@ -74,9 +74,15 @@ const initializeAuditFixture = () => {
     'src/locales/de-DE.ts',
     "export default { 'fixture.schema.required': 'Kanonischer Validierungshinweis' };\n",
   );
+  writeFixtureFile(
+    root,
+    'src/locales/fr-FR.ts',
+    "export default { 'fixture.schema.required': 'Message de validation canonique' };\n",
+  );
   fs.mkdirSync(path.join(root, 'src/locales/en-US'), { recursive: true });
   fs.mkdirSync(path.join(root, 'src/locales/zh-CN'), { recursive: true });
   fs.mkdirSync(path.join(root, 'src/locales/de-DE'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'src/locales/fr-FR'), { recursive: true });
   writeFixtureFile(
     root,
     'src/fixture-schema.json',
@@ -110,7 +116,7 @@ const initializeAuditFixture = () => {
     `${JSON.stringify(
       {
         schemaVersion: 'tiangong.i18n-dynamic-families.v1',
-        sourceLocales: ['en-US', 'zh-CN', 'de-DE'],
+        sourceLocales: ['en-US', 'zh-CN', 'de-DE', 'fr-FR'],
         messageHelpers: [],
         families: {},
         callsites: [],
@@ -149,6 +155,8 @@ describe('locale audit CLI schema defaults', () => {
       execFileSync(
         process.execPath,
         [
+          '--import',
+          'tsx',
           AUDIT_SCRIPT,
           '--root',
           root,
@@ -228,7 +236,7 @@ describe('locale audit CLI schema defaults', () => {
     const git = (args: string[]) =>
       execFileSync('git', args, { cwd: root, encoding: 'utf8', env: gitEnvironment }).trim();
     const runAudit = (args: string[]) =>
-      spawnSync(process.execPath, [AUDIT_SCRIPT, '--root', root, ...args], {
+      spawnSync(process.execPath, ['--import', 'tsx', AUDIT_SCRIPT, '--root', root, ...args], {
         encoding: 'utf8',
         env: gitEnvironment,
       });

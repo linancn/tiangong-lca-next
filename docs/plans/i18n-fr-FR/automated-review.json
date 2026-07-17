@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "tiangong.i18n-automated-review.v1",
+  "locale": "fr-FR",
+  "reviewClosure": {
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "auditedInputDigest": "c73422fc16728aca23b72991488141347178845fef45f54fb21acd37a01465ef",
+    "reviewedMessageCount": 3026,
+    "reviewedModules": [
+      "$entry",
+      "component",
+      "component_AISuggestion",
+      "component_allTeams",
+      "component_allVersions",
+      "component_connectableProcesses",
+      "component_contributeData",
+      "component_importData",
+      "component_refsOfNewVersionDrawer",
+      "component_rejectReview",
+      "component_tidasPackage",
+      "globalHeader",
+      "menu",
+      "pages",
+      "pages_contact",
+      "pages_flow",
+      "pages_flowproperty",
+      "pages_general",
+      "pages_home",
+      "pages_manageSystem",
+      "pages_model",
+      "pages_process",
+      "pages_product",
+      "pages_review",
+      "pages_source",
+      "pages_teams",
+      "pages_unitgroup",
+      "pwa",
+      "settingDrawer",
+      "settings",
+      "validator"
+    ],
+    "highRiskMessageCount": 1337,
+    "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
+    "lowRiskPolicy": "validated family rules with cross-module sampling; no unreviewed exceptions",
+    "catalogDigest": "aca5a8d39e2d6c3bc9f2eb48d28a4b86546cb292711d05810098e79b8c862bed",
+    "dossierDigest": "bf5f08515aa653f2f18253f0adf25a471ea68ad0809f663bb11c42c07e4f11db",
+    "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
+    "routeEvidenceDigest": "f74ced5478a67a1b53b996050e6f08783823ae77d6ef5816b1104cb763a5e4c5"
+  },
+  "reviewLanes": [
+    {
+      "laneId": "runtime-shell-and-public-states",
+      "executionContext": "independent-automated-review",
+      "modules": [
+        "$entry",
+        "component",
+        "globalHeader",
+        "menu",
+        "pages",
+        "pages_general",
+        "pages_home",
+        "pwa",
+        "settingDrawer",
+        "settings",
+        "validator"
+      ],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "canonical English/Chinese/German comparison",
+        "runtime callsites and route-state consequences",
+        "accessibility, fallback and responsive-risk checks"
+      ],
+      "result": "passed"
+    },
+    {
+      "laneId": "entity-data-and-report-contract",
+      "executionContext": "independent-automated-review",
+      "modules": [
+        "component_AISuggestion",
+        "component_allTeams",
+        "component_allVersions",
+        "component_connectableProcesses",
+        "component_contributeData",
+        "component_importData",
+        "component_refsOfNewVersionDrawer",
+        "component_rejectReview",
+        "component_tidasPackage",
+        "pages_contact",
+        "pages_flow",
+        "pages_flowproperty",
+        "pages_manageSystem",
+        "pages_source",
+        "pages_teams",
+        "pages_unitgroup"
+      ],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "entity form/list/view callsites",
+        "TIDAS/ILCD schema and technical-token closure",
+        "typed import-report registry topology"
+      ],
+      "result": "passed"
+    },
+    {
+      "laneId": "lca-process-terminology-closure",
+      "executionContext": "independent-automated-review",
+      "modules": ["pages_model", "pages_process", "pages_product", "pages_review"],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "ACV/process/review/allocation glossary closure",
+        "high-risk partial-English and forbidden-term scans",
+        "ICU/defaultMessage/dynamic-family proof"
+      ],
+      "result": "passed"
+    },
+    {
+      "laneId": "fr-FR-catalog-high-risk-independent-review",
+      "executionContext": "independent-automated-review",
+      "modules": [
+        "$entry",
+        "component",
+        "component_AISuggestion",
+        "component_allTeams",
+        "component_allVersions",
+        "component_connectableProcesses",
+        "component_contributeData",
+        "component_importData",
+        "component_refsOfNewVersionDrawer",
+        "component_rejectReview",
+        "component_tidasPackage",
+        "globalHeader",
+        "menu",
+        "pages",
+        "pages_contact",
+        "pages_flow",
+        "pages_flowproperty",
+        "pages_general",
+        "pages_home",
+        "pages_manageSystem",
+        "pages_model",
+        "pages_process",
+        "pages_product",
+        "pages_review",
+        "pages_source",
+        "pages_teams",
+        "pages_unitgroup",
+        "pwa",
+        "settingDrawer",
+        "settings",
+        "validator"
+      ],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "exact English/French full-catalog dossier comparison",
+        "callsite/UI-role/state/consequence review for auth, legal, errors, destructive actions, Welcome, and NationalCarbon",
+        "ACV/TIDAS/eILCD glossary closure",
+        "ICU/placeholders/dynamic-family plus CJK/partial-English/forbidden/source-equality scans",
+        "Chinese/German cross-evidence and focused runtime tests"
+      ],
+      "result": "passed"
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "closure": "initial full-catalog language review",
+      "messageCount": 212,
+      "result": "corrected and re-reviewed"
+    },
+    {
+      "closure": "NationalCarbon French terminology and partial-English residue",
+      "messageCount": 6,
+      "result": "corrected and re-reviewed"
+    },
+    {
+      "closure": "password recovery and Welcome state deltas",
+      "messageCount": 5,
+      "result": "independently reviewed with route-state proof"
+    }
+  ],
+  "blockedItems": [],
+  "reviewDigest": "51c6ac0ee2865fabe611f5e4e3ea60c62f2473a84316c92e396592f22522f822"
+}

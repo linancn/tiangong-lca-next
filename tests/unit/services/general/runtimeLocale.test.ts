@@ -37,11 +37,18 @@ describe('runtimeLocale', () => {
     ['de_DE.UTF-8@euro', 'de-DE'],
     ['de-Latn-DE', 'de-DE'],
     ['de-DE-u-co-phonebk', 'de-DE'],
+    ['fr', 'fr-FR'],
+    ['fr-FR', 'fr-FR'],
+    ['fr_CA', 'fr-FR'],
+    ['fr_BE.UTF-8@euro', 'fr-FR'],
+    ['fr_FR.UTF_8@euro', 'fr-FR'],
+    ['fr-Latn-CH', 'fr-FR'],
+    ['fr-FR-u-nu-latn', 'fr-FR'],
   ])('normalizes supported BCP47/POSIX locale %s to %s', (value, expected) => {
     expect(normalizeRuntimeLocale(value)).toBe(expected);
   });
 
-  it.each(['', 'fr-FR', 'devalue', 'debug', 'de-', 'de--DE', 'de_DE_bad', 'C', 'POSIX'])(
+  it.each(['', 'es-ES', 'devalue', 'debug', 'de-', 'de--DE', 'de_DE_bad', 'C', 'POSIX'])(
     'rejects unsupported or malformed locale %p',
     (value) => {
       expect(normalizeRuntimeLocale(value)).toBeUndefined();
@@ -88,17 +95,31 @@ describe('runtimeLocale', () => {
     ).toBe('en-US');
   });
 
+  it('honors POSIX environment precedence while resolving French canonically', () => {
+    expect(
+      getRuntimeLocale(
+        {},
+        {
+          LC_ALL: 'fr_FR.UTF-8',
+          LC_MESSAGES: 'de_DE.UTF-8',
+          LANGUAGE: 'zh_CN:en_US',
+          LANG: 'en_US.UTF-8',
+        },
+      ),
+    ).toBe('fr-FR');
+  });
+
   it('skips unsupported Umi and LANGUAGE entries before selecting a supported locale', () => {
     expect(
       getRuntimeLocale(
         {
-          getLocale: () => 'fr-FR',
+          getLocale: () => 'es-ES',
         },
         {
-          LANGUAGE: 'fr_FR:de_AT:en_US',
+          LANGUAGE: 'es_ES:fr_FR:de_AT:en_US',
         },
       ),
-    ).toBe('de-DE');
+    ).toBe('fr-FR');
   });
 
   it('falls back to environment locale values when the Umi getter throws', () => {
@@ -118,7 +139,7 @@ describe('runtimeLocale', () => {
 
   it('defaults Node/service consumers to en-US when no supported locale exists', () => {
     expect(getRuntimeLocale({}, {})).toBe('en-US');
-    expect(getRuntimeLocale({ getLocale: () => 'fr-FR' }, { LANG: 'C.UTF-8' })).toBe('en-US');
+    expect(getRuntimeLocale({ getLocale: () => 'es-ES' }, { LANG: 'C.UTF-8' })).toBe('en-US');
   });
 
   it('uses process.env as the default runtime environment without leaking unsupported locales', () => {
@@ -173,6 +194,18 @@ describe('runtimeLocale', () => {
       }),
     ).toBe('de-DE');
     expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'de-DE');
+  });
+
+  it('migrates a cached French adapter alias to the canonical product locale', () => {
+    const storage = createStorage('fr_FR');
+
+    expect(
+      resolveBrowserRuntimeLocale({
+        storage,
+        navigator: { language: 'en-US', languages: ['en-US'] },
+      }),
+    ).toBe('fr-FR');
+    expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'fr-FR');
   });
 
   it('uses the default browser storage and navigator before the first render', () => {
@@ -235,23 +268,23 @@ describe('runtimeLocale', () => {
   });
 
   it('discards an unsupported cached locale and uses the first supported navigator preference', () => {
-    const storage = createStorage('fr-FR');
+    const storage = createStorage('es-ES');
 
     expect(
       resolveBrowserRuntimeLocale({
         storage,
-        navigator: { language: 'en-US', languages: ['fr-FR', 'de-AT', 'en-US'] },
+        navigator: { language: 'en-US', languages: ['es-ES', 'fr-CA', 'de-AT', 'en-US'] },
       }),
-    ).toBe('de-DE');
+    ).toBe('fr-FR');
     expect(storage.removeItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY);
-    expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'de-DE');
+    expect(storage.setItem).toHaveBeenCalledWith(UMI_LOCALE_STORAGE_KEY, 'fr-FR');
   });
 
   it('uses the browser default when cache and navigator do not contain a supported locale', () => {
     expect(
       resolveBrowserRuntimeLocale({
         storage: null,
-        navigator: { language: 'fr-FR', languages: ['fr-FR'] },
+        navigator: { language: 'es-ES', languages: ['es-ES'] },
       }),
     ).toBe(DEFAULT_BROWSER_APP_LOCALE);
   });
@@ -277,11 +310,13 @@ describe('runtimeLocale', () => {
     ).toBe('de-DE');
   });
 
-  it('routes German and English app locales to English docs without inventing /de', () => {
+  it('routes German, French, and English app locales to English docs without fake routes', () => {
     expect(getDocumentationUrl('de-DE')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('de-CH')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('en-US')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('zh-CN')).toBe('https://docs.tiangong.earth');
-    expect(getDocumentationUrl('fr-FR')).toBe('https://docs.tiangong.earth');
+    expect(getDocumentationUrl('fr-FR')).toBe('https://docs.tiangong.earth/en');
+    expect(getDocumentationUrl('fr-CA')).toBe('https://docs.tiangong.earth/en');
+    expect(getDocumentationUrl('fr_FR.UTF-8')).toBe('https://docs.tiangong.earth/en');
   });
 });

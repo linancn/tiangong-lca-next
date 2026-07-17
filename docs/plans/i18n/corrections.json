@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "tiangong.i18n-corrections.v1",
+  "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+  "baseline": {
+    "acceptedScope": "Current zh-CN and de-DE catalog at the main-to-dev goal backmerge; historical German Issue #601/#602/#606 confirmations remain frozen evidence only.",
+    "messageCount": 2737,
+    "catalogManifestDigest": "295b807f35a94d4e2ccd9da81a704b6a689212d829a71301212b50aa5bfbf36d",
+    "germanCatalogDigest": "935afd6cd3dc38ac60b2512ba34b1b42becb57107fefc17b0622549febf355fc",
+    "germanRuntimeManifestDigest": "7cb220de14ab5d9989a622315c46740f928da696d3d9e8afae3771b6f3de7483"
+  },
+  "trackedLocales": ["zh-CN", "de-DE"],
+  "policy": {
+    "newSourceMessages": "Allowed through the shared source/context/quality closure and do not constitute an existing-translation correction.",
+    "existingTranslationChanges": "Every post-baseline change requires an exact compact dossier below; no private or human confirmation is read.",
+    "historicalGermanConfirmations": "Frozen snapshot only; never an input to current German or new-locale activation."
+  },
+  "corrections": [],
+  "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2"
+}

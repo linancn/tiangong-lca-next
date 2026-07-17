@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
@@ -161,7 +162,13 @@ const Login: React.FC = () => {
   const loginSubtitle =
     getLocalizedLoginSubtitle(intl.locale) ??
     intl.formatMessage({ id: 'pages.login.subTitle', defaultMessage: defaultLoginSubtitle });
-  const usesEnglishLegalFallback = normalizeRuntimeLocale(intl.locale) === 'de-DE';
+  const normalizedLocale = normalizeRuntimeLocale(intl.locale);
+  const localeDefinition = normalizedLocale ? getLocaleDefinition(normalizedLocale) : undefined;
+  const usesEnglishLegalFallback = Boolean(
+    localeDefinition &&
+    localeDefinition.fallbacks.legalLocale === 'en-US' &&
+    localeDefinition.fallbacks.legalLocale !== localeDefinition.canonicalLocale,
+  );
   const termsOfServiceLabel = intl.formatMessage({
     id: usesEnglishLegalFallback
       ? 'pages.login.termsOfUse.englishFallbackLabel'

@@ -3,7 +3,7 @@ import Welcome from '@/pages/Welcome';
 import { getLang, getLangText } from '@/services/general/util';
 import { getSignedStorageFileUrl, getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
-import { fireEvent } from '@testing-library/react';
+import { act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 
@@ -13,7 +13,11 @@ let mockLocation = { pathname: '/welcome', search: '' };
 const mockFormatMessage = ({ defaultMessage, id }: any) => {
   const localeMessages = mockLocale.startsWith('zh')
     ? jest.requireActual('@/locales/zh-CN/pages_home').default
-    : jest.requireActual('@/locales/en-US/pages_home').default;
+    : mockLocale.startsWith('de')
+      ? jest.requireActual('@/locales/de-DE/pages_home').default
+      : mockLocale.startsWith('fr')
+        ? jest.requireActual('@/locales/fr-FR/pages_home').default
+        : jest.requireActual('@/locales/en-US/pages_home').default;
 
   return localeMessages[id] ?? defaultMessage ?? id;
 };
@@ -151,7 +155,9 @@ describe('Welcome page', () => {
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: /tianGong lca data platform/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'TIDAS data system architecture diagram' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Learn more' })).toHaveAttribute(
       'href',
       'https://tidas.tiangong.earth/en/docs/intro',
@@ -197,18 +203,59 @@ describe('Welcome page', () => {
     expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
-  it('renders the carbon footprint guide directly from the welcome view query', async () => {
+  it('preserves the carbon footprint query across locale switching and refresh', async () => {
     mockLocation = { pathname: '/welcome', search: '?view=carbon-footprint' };
+    let resolveVideoUrl = (url: string): void => {
+      void url;
+    };
+    mockGetSignedStorageFileUrl
+      .mockImplementationOnce(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveVideoUrl = resolve;
+          }),
+      )
+      .mockResolvedValueOnce(
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=refresh',
+      );
 
-    renderWithProviders(<Welcome />);
+    const { rerender, unmount } = renderWithProviders(<Welcome />);
 
     expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
     expect(screen.getByText('Operation Demo Video')).toBeInTheDocument();
     expect(screen.queryByText('Unit Processes & Inventories')).not.toBeInTheDocument();
+
+    mockLocale = 'fr-FR';
+    mockGetLang.mockReturnValue('en');
+    rerender(<Welcome />);
+
+    expect(screen.getByText('TianGong Life Cycle Database')).toBeInTheDocument();
+    expect(screen.getByText('Vidéo de démonstration')).toBeInTheDocument();
+    expect(screen.getByText('Chargement de la vidéo…')).toBeInTheDocument();
+    expect(screen.queryByText('Processus élémentaires et inventaires')).not.toBeInTheDocument();
+    expect(mockHistoryPush).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveVideoUrl(
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=switched',
+      );
+    });
     await waitFor(() =>
       expect(document.querySelector('video source')).toHaveAttribute(
         'src',
-        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=signed',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=switched',
+      ),
+    );
+
+    unmount();
+    renderWithProviders(<Welcome />);
+
+    expect(screen.getByText('Vidéo de démonstration')).toBeInTheDocument();
+    expect(screen.queryByText('Processus élémentaires et inventaires')).not.toBeInTheDocument();
+    await waitFor(() =>
+      expect(document.querySelector('video source')).toHaveAttribute(
+        'src',
+        'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=refresh',
       ),
     );
   });
@@ -245,6 +292,8 @@ describe('Welcome page', () => {
 
   it('allows reloading the video after playback fails', async () => {
     const user = userEvent.setup();
+    mockLocale = 'fr-FR';
+    mockGetLang.mockReturnValue('en');
     mockGetSignedStorageFileUrl
       .mockResolvedValueOnce(
         'https://cdn.example/sign/sys-files/video/platform_usage_process_first_matched.mp4?token=first',
@@ -257,7 +306,7 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
 
-    await user.click(screen.getByRole('button', { name: 'Data Development Guide' }));
+    await user.click(screen.getByRole('button', { name: 'Guide de développement des données' }));
 
     await waitFor(() =>
       expect(document.querySelector('video source')).toHaveAttribute(
@@ -268,9 +317,9 @@ describe('Welcome page', () => {
 
     fireEvent.error(document.querySelector('video source') as HTMLSourceElement);
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Video failed to load');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Échec du chargement de la vidéo');
 
-    await user.click(screen.getByRole('button', { name: 'Reload' }));
+    await user.click(screen.getByRole('button', { name: 'Recharger' }));
 
     await waitFor(() => expect(mockGetSignedStorageFileUrl).toHaveBeenCalledTimes(2));
     await waitFor(() =>
@@ -348,6 +397,26 @@ describe('Welcome page', () => {
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(2));
     expect(mockGetThumbFileUrls).not.toHaveBeenCalled();
     expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('No data teams are available yet.');
+  });
+
+  it('shows a localized team-load error and retries successfully', async () => {
+    const user = userEvent.setup();
+    mockGetTeams
+      .mockResolvedValueOnce({ success: true, data: [] })
+      .mockResolvedValueOnce({ success: false, data: [] })
+      .mockResolvedValueOnce({ success: true, data: teamsPayload });
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TianGong Data Ecosystem' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Data teams could not be loaded.');
+    await user.click(screen.getByRole('button', { name: /Try again/ }));
+
+    expect(await screen.findByText('Team Alpha')).toBeInTheDocument();
+    expect(mockGetTeams).toHaveBeenCalledTimes(3);
   });
 
   it('switches to localized dark-mode TIDAS assets for zh locales', async () => {
@@ -361,7 +430,7 @@ describe('Welcome page', () => {
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole('button', { name: 'TIDAS 数据体系架构' }));
 
-    const tidasImage = await screen.findByAltText(/天工LCA数据平台/);
+    const tidasImage = await screen.findByAltText('TIDAS 数据体系架构图');
     expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN-dark.svg');
     expect(screen.getByRole('link', { name: '了解更多' })).toHaveAttribute(
       'href',
@@ -380,14 +449,14 @@ describe('Welcome page', () => {
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
     await user.click(screen.getByRole('button', { name: 'TIDAS 数据体系架构' }));
 
-    const tidasImage = await screen.findByAltText(/天工LCA数据平台/);
+    const tidasImage = await screen.findByAltText('TIDAS 数据体系架构图');
     expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
   });
 
-  it('falls back to english TIDAS content and a zero team count when locale and team data are missing', async () => {
+  it('localizes the French overview and modal copy while preserving TIDAS fallbacks', async () => {
     const user = userEvent.setup();
     mockLocale = 'fr-FR';
-    mockGetLang.mockReturnValue('fr');
+    mockGetLang.mockReturnValue('en');
     localStorage.setItem('isDarkMode', 'true');
     mockGetTeams.mockResolvedValue({ success: true });
 
@@ -395,12 +464,33 @@ describe('Welcome page', () => {
 
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
     expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText('Processus élémentaires et inventaires')).toBeInTheDocument();
+    expect(screen.getByText('Normes et conformité')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Architecture TIDAS' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Écosystème de données TianGong' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Standards & Compliance')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+    await user.click(screen.getByRole('button', { name: 'Écosystème de données TianGong' }));
+    expect(
+      await screen.findByText(
+        'Un réseau mondial de partenaires spécialisés dans les données de cycle de vie.',
+      ),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /close/i }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    const tidasImage = await screen.findByAltText(/TianGong LCA Data Platform/i);
+    await user.click(screen.getByRole('button', { name: 'Architecture TIDAS' }));
+
+    const tidasImage = await screen.findByAltText(
+      'Schéma de l’architecture du système de données TIDAS',
+    );
     expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-en-dark.svg');
-    expect(screen.getByRole('link', { name: 'Learn more' })).toHaveAttribute(
+    expect(
+      screen.getByText(/Un écosystème ouvert fondé sur des paquets de données modulaires/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'En savoir plus' })).toHaveAttribute(
       'href',
       'https://tidas.tiangong.earth/en/docs/intro',
     );

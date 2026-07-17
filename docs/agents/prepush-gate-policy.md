@@ -24,8 +24,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 and the v0.0.49 release checkpoint; single full-gate ownership and 100% src coverage remain unchanged.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Clarified that active locale and full-gate paths never depend on ignored confirmation files; single full-gate ownership remains unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -57,7 +57,7 @@ It does not own:
 - the canonical proof bar
 - the current live hook behavior
 - the current CI implementation details
-- scoped preparation gates such as `i18n:de:pilot` and `i18n:de:audit`; their issue-local review workflow is documented under `docs/plans/i18n-de-DE/`
+- scoped locale preparation and historical German compatibility gates; active locale proof is documented in `docs/agents/repo-validation.md`, while frozen German history is retained under `docs/plans/i18n-de-DE/`
 
 ## Target Trigger Rules
 
@@ -79,7 +79,7 @@ It does not own:
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
-- review-only localization commands may remain explicit scoped local gates until human evidence is complete; ignored confirmation files are intentionally unavailable to clean-checkout CI and are never added to `npm run prepush:gate`
+- historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `npm run prepush:gate` must never read ignored confirmation files
 
 ## Short Rule Summary
 

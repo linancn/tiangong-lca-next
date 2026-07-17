@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 selector/header coverage and the v0.0.49 release checkpoint; full closure remains intact with no new queue.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Recorded the active locale automation boundary and German correction-overlay baseline; final French delivery proof remains in progress.'
 ---
 
 # Testing Execution State
@@ -46,9 +46,9 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
-- the active German runtime freezes merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and binds Issue #606's 48 new release messages to one ignored local delta check without recording reviewer details in Git or GitHub
-- German structural proof uses `i18n:audit`, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; the historical frozen `i18n:de:pilot` check remains independently fail-closed, focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
-- clean-checkout German suites inject missing private confirmation paths and require every tracked structural finding to stay at zero; the active-runtime suite expects only the Issue #606 delta-confirmation finding, while generated temporary forms retain positive and fail-closed approval coverage without making `.local` a repository-gate input
+- active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
+- active locale proof uses `i18n:audit`, registry-driven context/quality, `i18n:corrections:check`, and activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
+- clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - the production Release Gate delegates the complete test inventory to one `prepush:gate` step: the nested-process receipt suite runs once without coverage in its own Jest process, while every remaining suite runs once through a single-worker coordinator that recycles workers above `64MB` and retains unchanged 100% `src/**` coverage; no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate

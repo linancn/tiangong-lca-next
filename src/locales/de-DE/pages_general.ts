@@ -1,4 +1,5 @@
 export default {
+  'pages.theme.toggleDarkMode': 'Dunkelmodus umschalten',
   'pages.table.title.index': 'Nr.',
   'pages.table.title.name': 'Bezeichnung',
   'pages.table.title.description': 'Beschreibung',

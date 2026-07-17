@@ -6,6 +6,10 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
+import {
+  CANONICAL_SOURCE_APP_LOCALE,
+  SUPPORTED_APP_LOCALES,
+} from '../../src/services/general/localeRegistry.ts';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
@@ -14,7 +18,10 @@ const { analyzeIcuMessage } = require('./icu-message-parser.cjs');
 
 const SCHEMA_VERSION = 'tiangong.i18n-manifest.v1';
 const DECISIONS_SCHEMA_VERSION = 'tiangong.i18n-decisions.v1';
-const LOCALES = ['en-US', 'zh-CN', 'de-DE'];
+const LOCALES = [
+  CANONICAL_SOURCE_APP_LOCALE,
+  ...SUPPORTED_APP_LOCALES.filter((locale) => locale !== CANONICAL_SOURCE_APP_LOCALE),
+];
 const DEFAULT_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
 const DEFAULT_DECISIONS = 'docs/plans/i18n-de-DE/decisions.yaml';
 const DEFAULT_DYNAMIC_REGISTRY = 'docs/plans/i18n-de-DE/dynamic-families.json';
@@ -47,7 +54,7 @@ const EXCLUSIONS = [
 ];
 
 function usage() {
-  return `Usage: node scripts/i18n/audit-locales.mjs [options]
+  return `Usage: node --import tsx scripts/i18n/audit-locales.mjs [options]
 
 Options:
   --mode <report|enforce>  report exits zero with findings; enforce exits nonzero (default: enforce)
@@ -1325,7 +1332,7 @@ function buildManifest(root, baseRef, dynamicRegistryPath, pinnedBaseCommit = nu
       included: [
         'src/locales/en-US.ts and src/locales/en-US/**/*.ts',
         'src/locales/zh-CN.ts and src/locales/zh-CN/**/*.ts',
-        'src/locales/de-DE.ts and src/locales/de-DE/**/*.ts',
+        'all locale entries and leaf modules discovered from the typed locale registry',
         'production src/**/*.{ts,tsx,js,jsx} formatMessage and FormattedMessage callsites',
         'production src/**/*.{ts,tsx,js,jsx,json} messageKey properties',
       ],

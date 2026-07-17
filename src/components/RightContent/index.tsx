@@ -1,3 +1,4 @@
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 import {
   getDocumentationUrl,
   normalizeRuntimeLocale,
@@ -25,16 +26,13 @@ export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
         const localesByKey = new Map(locales.map((locale) => [locale.lang, locale]));
         return SUPPORTED_APP_LOCALES.map((locale) => {
           const existingLocale = localesByKey.get(locale) ?? { lang: locale };
-
-          if (locale !== 'de-DE') {
-            return existingLocale;
-          }
+          const localeDefinition = getLocaleDefinition(locale);
 
           return {
             ...existingLocale,
-            lang: 'de-DE',
-            label: 'Deutsch',
-            title: 'Deutsch',
+            lang: locale,
+            label: localeDefinition.nativeLabel,
+            title: localeDefinition.nativeLabel,
           };
         });
       }}
@@ -46,12 +44,17 @@ export const Question = () => {
   const intl = useIntl();
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const isGermanEnglishFallback = locale === 'de-DE';
+  const localeDefinition = locale ? getLocaleDefinition(locale) : undefined;
+  const usesEnglishFallback = Boolean(
+    localeDefinition &&
+    localeDefinition.fallbacks.documentationLocale === 'en-US' &&
+    localeDefinition.fallbacks.documentationLocale !== localeDefinition.canonicalLocale,
+  );
   const helpLabel = intl.formatMessage({
-    id: isGermanEnglishFallback
+    id: usesEnglishFallback
       ? 'component.globalHeader.help.englishFallback'
       : 'component.globalHeader.help',
-    defaultMessage: isGermanEnglishFallback ? 'Open help documentation (English)' : 'Help',
+    defaultMessage: usesEnglishFallback ? 'Open help documentation (English)' : 'Help',
   });
 
   return (
@@ -76,9 +79,24 @@ interface DarkModeProps {
 }
 
 export const DarkMode: React.FC<DarkModeProps> = ({ handleClick, isDarkMode }) => {
+  const intl = useIntl();
+  const toggleLabel = intl.formatMessage({
+    id: 'pages.theme.toggleDarkMode',
+    defaultMessage: 'Toggle dark mode',
+  });
+
   return (
     <ConfigProvider theme={{ algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm }}>
-      {isDarkMode ? <SunFilled onClick={handleClick} /> : <MoonOutlined onClick={handleClick} />}
+      <Tooltip title={toggleLabel}>
+        <button
+          type='button'
+          className='tg-global-header-help-action'
+          aria-label={toggleLabel}
+          onClick={handleClick}
+        >
+          {isDarkMode ? <SunFilled aria-hidden /> : <MoonOutlined aria-hidden />}
+        </button>
+      </Tooltip>
     </ConfigProvider>
   );
 };

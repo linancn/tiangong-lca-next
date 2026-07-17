@@ -36,14 +36,16 @@ jest.mock('umi', () => {
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
   const Helmet = ({ children }: any) => <>{children}</>;
+  const Link = ({ children, to }: any) => <a href={to}>{children}</a>;
   const SelectLang = () => <div data-testid='select-lang' />;
   return {
     __esModule: true,
     ...actual,
     Helmet,
+    Link,
     SelectLang,
     useIntl,
-    default: { ...(actual.default || {}), Helmet, SelectLang, useIntl },
+    default: { ...(actual.default || {}), Helmet, Link, SelectLang, useIntl },
   };
 });
 
@@ -55,6 +57,7 @@ jest.mock('@umijs/max', () => {
     FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     history: mockHistory,
     Helmet: ({ children }: any) => <>{children}</>,
+    Link: ({ children, to }: any) => <a href={to}>{children}</a>,
     SelectLang: () => <div data-testid='select-lang' />,
     useIntl: () => ({
       locale: mockLocale,
@@ -111,6 +114,7 @@ jest.mock('antd', () => {
   const ConfigProvider = ({ children }: any) => <div>{children}</div>;
   const Spin = ({ spinning, children }: any) =>
     spinning ? <div data-testid='spin'>{children}</div> : <div>{children}</div>;
+  const Tooltip = ({ children }: any) => <>{children}</>;
   const Tabs = ({ items }: any) => (
     <div data-testid='tabs'>
       {items?.map((item: any) => (
@@ -136,7 +140,7 @@ jest.mock('antd', () => {
       },
     }),
   };
-  return { __esModule: true, App, ConfigProvider, Spin, Tabs, message, theme };
+  return { __esModule: true, App, ConfigProvider, Spin, Tabs, Tooltip, message, theme };
 });
 
 jest.mock('@/services/auth', () => {
@@ -300,15 +304,35 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
     );
   });
 
-  it('keeps the form in loading state when the current user is unavailable', async () => {
+  it('shows a recovery action when the current user is unavailable', async () => {
     mockGetCurrentUser.mockResolvedValueOnce({ userid: '', email: 'ghost@test.com' });
 
     render(<PasswordReset />);
 
     await waitFor(() => {
       expect(mockGetCurrentUser).toHaveBeenCalled();
-      expect(screen.getByTestId('fields')).toHaveTextContent('[]');
-      expect(screen.getByTestId('spin')).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'This password reset link is invalid or has expired. Request a new link.',
+      );
+      expect(screen.getByRole('link', { name: 'Request a new reset link' })).toHaveAttribute(
+        'href',
+        '/user/login/password_forgot',
+      );
+      expect(screen.queryByTestId('spin')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('submit')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows the same recovery action when the current user lookup rejects', async () => {
+    mockGetCurrentUser.mockRejectedValueOnce(new Error('session lookup failed'));
+
+    render(<PasswordReset />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'This password reset link is invalid or has expired. Request a new link.',
+      );
+      expect(screen.queryByTestId('spin')).not.toBeInTheDocument();
     });
   });
 

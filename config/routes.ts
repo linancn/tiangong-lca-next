@@ -302,6 +302,7 @@ export default [
   {
     path: '/',
     redirect: '/welcome',
+    keepQuery: true,
   },
   {
     path: '*',

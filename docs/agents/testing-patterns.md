@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 component and browser proof; existing component-testing and full-gate patterns remain sufficient.'
+lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedNote: 'Updated reusable localization patterns for autonomous context-grounded review, route-view closure, and tracked existing-translation corrections.'
 ---
 
 # Testing Patterns Reference
@@ -92,15 +92,14 @@ Special cases:
 2. compare placeholder names, occurrence counts, plural/select selectors, offsets, nesting, and per-branch coverage rather than translated word order
 3. audit production literal message IDs and enumerate the exact members of each computed-ID family
 4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
-5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
-6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a complete non-personal proposal with concrete evidence, UI role, concept, consequence, and current source hash before local confirmation
-7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
-8. preserve the frozen Issue #601 review boundary: its generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal
-9. evolve active German only through an exact runtime manifest that assembles an accepted merged baseline with the declared feature delta; for Issue #606 require the separate local form to cover exactly its 48 new release messages, and never write completed human-review content into a tracked fixture
-10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
-11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
-12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
-13. keep clean-runner structure proof independent from ignored human evidence: inject a guaranteed-missing confirmation path, assert only the expected confirmation findings, and cover approved behavior with a generated private temporary form
+5. build a compact context manifest from callsites, adjacent states, route/view ownership, source locales, glossary, style, fallbacks, ICU, and technical-token evidence; `BLOCKED_CONTEXT` must be zero before activation
+6. translate and independently review high-risk lanes with automated evidence; this workflow has no Pilot, catalog approval, or delta approval state
+7. represent every changed existing translation with an exact tracked correction dossier and verify the affected closure; uncertain wording may remain unchanged as a non-blocking candidate
+8. preserve the frozen Issue #601/#602/#606 German confirmation boundary as historical compatibility evidence only; active German uses the same automated correction and activation gate as other registry locales
+9. cross-check locale inventory with route/view inventory so component-local maps, media/error states, static pages, redirects, and query views cannot hide outside catalog parity
+10. validate each edit with the narrowest proof that covers its risk; accumulate coherent locale work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
+11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
+12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 
 Gate-bootstrap pattern:
 
@@ -117,7 +116,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
-| local Issue #606 delta approval | `npm run i18n:de:delta:review:check` |
+| active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
+| existing-translation correction overlay | `npm run i18n:corrections:check` |
+| historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | receipt-bound transport retry | `npm run push:retry` |
 

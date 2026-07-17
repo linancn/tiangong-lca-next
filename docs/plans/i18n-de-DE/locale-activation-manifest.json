@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "tiangong.i18n-locale-activation.v1",
+  "locale": "de-DE",
+  "source": {
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "4f5dc2600ec7150246cf76b5f338a41a6bf1e2943327f639aaf3ef00a4414391"
+  },
+  "registry": {
+    "canonicalLocale": "de-DE",
+    "aliases": ["de", "de-*", "de_*", "de_*.UTF-8", "de_*.UTF-8@*"],
+    "direction": "ltr",
+    "adapters": { "antDesign": "de_DE", "dayjs": "de", "intl": "de-DE", "report": "de_DE" },
+    "fallbacks": {
+      "documentationLocale": "en-US",
+      "documentationUrl": "https://docs.tiangong.earth/en",
+      "legalLocale": "en-US",
+      "dataLanguage": "en",
+      "serviceLocale": "de-DE"
+    },
+    "environment": {
+      "titleKey": "APP_TITLE_DE_DE",
+      "loginSubtitleKey": "APP_LOGIN_SUBTITLE_DE_DE"
+    },
+    "registryDigest": "b4703b214db281020397fa5714021d7cd912b66bde9c5bd2a55108259ad06bd8"
+  },
+  "evidence": {
+    "contextDigest": "fd7e224625f87c621ca08cbe81d224b49fc1a0dc4a6a3356a3a6b71bfd47df40",
+    "qualityDigest": "bcbdbaa300c7f7068b9f2978f9c5a851a929439b8f7b8c85d30ce2230b836453",
+    "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
+    "routeViewCoverageDigest": "6c3acda5349217420e6f8a018d8cc8df11bff457844dc5620eb43c3b4b1321cf",
+    "fallbackContractDigest": "d90c7df3c25816430450a197b7adf1eff7081ae3945c7a8d6932232f3c7b6a75",
+    "localeFallbackRowCount": 6
+  },
+  "ciSafeCommands": {
+    "localeAudit": "npm run i18n:locale:audit -- --locale de-DE",
+    "context": "npm run i18n:context:check -- --locale de-DE",
+    "quality": "npm run i18n:locale:quality:check -- --locale de-DE",
+    "corrections": "npm run i18n:corrections:check",
+    "activation": "npm run i18n:locale:activation:check -- --locale de-DE"
+  },
+  "privateConfirmationDependencies": [],
+  "historicalGermanBoundary": "Historical Pilot/catalog/delta confirmations validate only their frozen snapshots; active German copy uses this automated correction and activation gate.",
+  "checks": {
+    "exactTopology": true,
+    "contextComplete": true,
+    "automatedQualityPassed": true,
+    "correctionOverlayPassed": true,
+    "fallbackContractPassed": true,
+    "ltrCondition": "single-standard; RTL work not applicable",
+    "humanTranslationReviewRequired": false
+  },
+  "activationDigest": "7a03fcc616890937969101c949798c64e4292a94bd789dad59476cb224592884"
+}

@@ -1,38 +1,34 @@
 # Unified German (`de-DE`) delivery workspace
 
-Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepared and locally approved one region-neutral Standard German catalog. Activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602) established its single runtime bundle, and Issue [#606](https://github.com/linancn/tiangong-lca-next/issues/606) adds only the Calculation Bundle and Release UI delta. `de-DE` is the canonical app/storage tag; the product does not maintain separate German variants. Runtime aliases normalize to `de-DE`, while `de_DE` and `de` are controlled adapters for Ant Design/import-report schema and Day.js respectively.
+Issue [#601](https://github.com/linancn/tiangong-lca-next/issues/601) prepared and locally approved one region-neutral Standard German catalog. Activation Issue [#602](https://github.com/linancn/tiangong-lca-next/issues/602) established its single runtime bundle, and Issue [#606](https://github.com/linancn/tiangong-lca-next/issues/606) added the Calculation Bundle and Release UI delta. `de-DE` is the canonical app/storage tag; the product does not maintain separate German variants. Runtime aliases normalize to `de-DE`, while `de_DE` and `de` are controlled adapters for Ant Design/import-report schema and Day.js respectively.
 
 This directory contains tracked candidate, context, terminology, and structural evidence. Completed human confirmation files are deliberately excluded: they stay under `.local/i18n-de-DE/`, are ignored by Git, and must not be pasted into an Issue, PR, or comment.
 
-## Current gate state
+## Current active gate state
 
-- Accepted active baseline: merged `dev` commit `36836f2c` contains 2,689 messages in each of `en-US`, `zh-CN`, and the single `de-DE` runtime bundle; it carries forward the frozen #601 and merged #602 decisions without reopening them for Issue #606.
-- Issue #606 delta: 48 new Calculation Bundle and canonical Release UI messages, with no modified baseline message or bundle-external prose item.
-- Final topology: all three locales contain 2,737 messages and the same 30-module spread order.
-- `runtime-activation-manifest.json` binds the accepted active baseline commit, current three-locale manifest, exact ordered 48-message delta, final count, adapter policy, and dataset-language fallback.
-- Canonical-manifest checks reuse the checked-in source commit by default; a later movement of `origin/dev` does not invalidate unchanged locale/callsite evidence. `--write` or an explicit `--base-ref` is required to advance that provenance.
-- The local #606 approval scope binds only those 48 new messages and their direct/dynamic callsite evidence. It does not reopen the already merged #601/#602 German catalog and activation decisions.
-- Historical Pilot confirmation remains governed by its frozen local check; the separate 48-item #606 delta form is also local and ignored. Their checkers expose only generic approval state and never reviewer identity, date, decisions, response digest, or per-item notes.
+- Accepted current baseline: merged `dev` commit `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d` pins the accepted 2,737-message `zh-CN`/`de-DE` catalog and German runtime-manifest digests in `docs/plans/i18n/corrections.json`.
+- Active topology, context, quality, and runtime activation are registry-driven and checked by `scripts/i18n/locale-delivery.mjs`.
+- New source messages use the shared source/context closure. A post-baseline change to an existing German message requires an exact tracked correction dossier with before/after, evidence, affected closure, tests, and digest.
+- Active German validation and the repository full gate do not read `.local/**confirmation*`.
+- Historical Pilot/catalog/#606 delta confirmations remain governed by their frozen compatibility checkers only. They are never regenerated to approve current German copy.
 
-These counts are generated evidence, not a completion claim.
+The historical counts and manifests below are retained evidence, not the active gate contract.
 
 The historical `context-ledger.json` remains the frozen #601 catalog evidence. The active #606 delta is derived against the accepted 2,689-message `dev` manifest and never rewrites that historical ledger.
 
-## Goal and execution contract
+## Active execution contract
 
 The finished artifact is one active, region-neutral Standard German runtime catalog. Every new or changed candidate must be decided from canonical English and Chinese, concrete callsites or reviewed dynamic-family evidence, the product concept and user-visible consequence, neighboring messages and state transitions, LCA/TIDAS terminology, ICU structure, preserved technical tokens, and layout risk. A grammatically possible isolated-string translation is not sufficient.
 
 Activation proceeds in five checkpoints:
 
-1. preserve the accepted 2,689-message active German baseline from `dev` unchanged;
-2. generate/check the three-locale canonical manifest and deterministic runtime activation manifest;
-3. review only the 48 new Issue #606 Calculation Bundle and Release messages in the separate local delta form;
-4. pass the active-runtime exact-assembly audit, including topology, ICU, token, baseline-value, adapter-literal, and regional-bundle checks;
+1. preserve the accepted current baseline SHA and digests in the correction ledger;
+2. generate/check the shared all-registry-locale manifest and compact German context/quality/activation artifacts;
+3. record every changed existing German value in the automated correction overlay;
+4. pass exact topology, ICU/token, route-view, context, quality, fallback, correction, adapter, and single-bundle checks;
 5. run focused runtime proof, then the single final repository gate on the immutable delivery HEAD.
 
-A generated delta form without a valid local approval block is useful review material but never satisfies the human checkpoint. Structural report mode remains runnable in that state, while enforcement fails closed; the current local form satisfies the checker.
-
-Repository Jest and clean-release gates exercise that structural report boundary with explicit nonexistent confirmation paths. They require zero tracked structural findings and the expected missing-local-evidence findings; separate generated temporary forms prove approved behavior. No clean runner infers or claims human approval.
+There is no current human confirmation checkpoint. Repository Jest and clean-release gates require zero active private-confirmation dependencies. Historical checker tests may still create private temporary fixtures to prove their frozen compatibility behavior.
 
 ## Privacy and evidence boundary
 
@@ -55,7 +51,7 @@ The three dimensions are review questions, not three required identities. The ca
 
 ## Artifact map
 
-- `manifest.json`: generated active English/Chinese/German inventory, topology, ICU signatures, and production references.
+- `manifest.json`: legacy-located shared generated inventory for every registry locale, topology, ICU signatures, and production references; it is not German-only.
 - `decisions.yaml`: source-baseline decisions from Issue #600.
 - `dynamic-families.json`: reviewed computed-message producers and fallback behavior.
 - `glossary.yaml`: proposed German LCA/TIDAS and product terminology; unresolved choices stay explicit.
@@ -69,19 +65,34 @@ The three dimensions are review questions, not three required identities. The ca
 - `review-log.yaml`: legacy-named, tracked provenance/policy manifest. It records non-personal candidate producers and local-evidence policy only; it is not a human review log.
 - `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
 - `activation-entry-translations.json`: the seven frozen #601 top-level translations assembled by `src/locales/de-DE.ts`.
-- `runtime-activation-manifest.json`: deterministic, non-personal active-baseline and #606 delta contract. It contains only tracked-input digests, counts, message IDs, and runtime policy; it contains no reviewer identity, decision, response, or confirmation digest.
+- `runtime-activation-manifest.json`: frozen historical active-baseline/#606 delta contract.
+- `context-manifest.json`, `automated-review.json`, `quality-manifest.json`, and `locale-activation-manifest.json`: compact current German automated gate artifacts; the review record is digest-bound automation evidence, not human approval.
+- `glossary.json`: compact shared-gate input; `glossary.yaml` remains the richer historical source.
+- `docs/plans/i18n/corrections.json`: current accepted baseline and exact post-baseline correction overlay.
 - `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.
 - `.local/i18n-de-DE/catalog-review-confirmation.md`: completed #601 full-catalog form for the frozen 2,665-message baseline. #602 checks it locally against the immutable snapshot and does not regenerate it.
 - `.local/i18n-de-DE/issue-606-delta-review-confirmation.md`: the independent 48-message Calculation Bundle and Release UI delta form.
 
 ## Commands
 
-Refresh the deterministic active topology and activation manifest in dependency order:
+Refresh the deterministic shared topology and compact current German artifacts in dependency order:
 
 ```bash
-npm run i18n:audit:write
-npm run i18n:de:runtime:manifest:write
+npm run i18n:locale:manifest:write -- --locale de-DE
+npm run i18n:locale:artifacts:write -- --locale de-DE
 ```
+
+Check the active path:
+
+```bash
+npm run i18n:locale:audit -- --locale de-DE
+npm run i18n:context:check -- --locale de-DE
+npm run i18n:locale:quality:check -- --locale de-DE
+npm run i18n:corrections:check
+npm run i18n:de:audit
+```
+
+The commands below are historical compatibility commands. Run them only for a task explicitly concerning the frozen #601/#602/#606 evidence; never use them to approve a current correction.
 
 Generate the local #606 delta form without overwriting an existing file:
 
@@ -97,17 +108,11 @@ Check the filled delta form:
 npm run i18n:de:delta:review:check
 ```
 
-Inspect honest work-in-progress structural state without claiming human approval:
+Inspect historical work-in-progress state without claiming active approval:
 
 ```bash
 npm run i18n:de:pilot:report
 npm run i18n:de:runtime:manifest:check
-```
-
-Final enforcement treats the merged 2,689-message runtime as the accepted baseline and requires separate private approval only for the 48-message #606 delta:
-
-```bash
-npm run i18n:de:audit
 ```
 
 No command in this workflow posts a GitHub comment or calls the GitHub API.

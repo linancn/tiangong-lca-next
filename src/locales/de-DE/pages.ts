@@ -68,6 +68,8 @@ export default {
   'pages.login.passwordReset.title': 'Passwort zurücksetzen',
   'pages.login.passwordReset.tab': 'Passwort zurücksetzen',
   'pages.login.passwordReset.submit': 'Absenden',
+  'pages.login.passwordReset.sessionUnavailable': 'Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen. Fordern Sie einen neuen Link an.',
+  'pages.login.passwordReset.requestNewLink': 'Neuen Link anfordern',
   'pages.login.newPassword.placeholder': 'Neues Passwort',
   'pages.login.confirmNewPassword.placeholder': 'Neues Passwort bestätigen',
   'pages.login.password.reset.success': 'Das Passwort wurde erfolgreich zurückgesetzt.',

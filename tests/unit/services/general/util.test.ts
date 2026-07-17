@@ -10,6 +10,7 @@ jest.mock('@/services/unitgroups/api');
 
 import deValidatorMessages from '@/locales/de-DE/validator';
 import enValidatorMessages from '@/locales/en-US/validator';
+import frValidatorMessages from '@/locales/fr-FR/validator';
 import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
@@ -683,10 +684,12 @@ describe('General Utility Functions', () => {
       expect(getLang('zh-CN')).toBe('zh');
     });
 
-    it('should return "en" for other locales', () => {
+    it('should use the declared English dataset fallback for non-Chinese app locales', () => {
       expect(getLang('en-US')).toBe('en');
       expect(getLang('fr-FR')).toBe('en');
+      expect(getLang('fr_FR.UTF-8')).toBe('en');
       expect(getLang('de-DE')).toBe('en');
+      expect(getLang('es-ES')).toBe('en');
     });
   });
 
@@ -1158,6 +1161,24 @@ describe('General Utility Functions', () => {
       );
     });
 
+    it('should return French localized field-only message when locale is fr-FR', () => {
+      const message = getLangValidationErrorMessage(
+        [
+          {
+            path: 'processDataSet.processInformation.dataSetInformation.name.baseName',
+            code: 'missing_en',
+            message: 'x',
+          },
+        ],
+        5,
+        'fr-FR',
+      );
+
+      expect(message).toBe(
+        "Échec de l'enregistrement : les champs suivants ne sont pas renseignés en anglais : baseName.",
+      );
+    });
+
     it('should return empty string when there are no issues', () => {
       expect(getLangValidationErrorMessage([])).toBe('');
       expect(getLangValidationErrorMessage(undefined as any)).toBe('');
@@ -1216,6 +1237,10 @@ describe('General Utility Functions', () => {
       [
         'de-DE',
         'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: field0; außerdem 1.001 weitere Felder.',
+      ],
+      [
+        'fr-FR',
+        "Échec de l'enregistrement : les champs suivants ne sont pas renseignés en anglais : field0, plus 1 001 autres champs.",
       ],
     ])('formats large counts for %s', (locale, expected) => {
       const issues = Array.from({ length: 1002 }, (_, index) => ({
@@ -1331,6 +1356,37 @@ describe('General Utility Functions', () => {
         mutableDeMessages['validator.langValidation.missingEnglishMore'] =
           originalMessages.missingEnglishMore;
         mutableDeMessages['validator.langValidation.root'] = originalMessages.root;
+      }
+    });
+
+    it('should keep French fallback copy when validator locale messages are missing', () => {
+      const mutableFrMessages = frValidatorMessages as Record<string, string | undefined>;
+      const originalMessages = {
+        missingEnglish: mutableFrMessages['validator.langValidation.missingEnglish'],
+        missingEnglishMore: mutableFrMessages['validator.langValidation.missingEnglishMore'],
+        root: mutableFrMessages['validator.langValidation.root'],
+      };
+
+      mutableFrMessages['validator.langValidation.missingEnglish'] = undefined;
+      mutableFrMessages['validator.langValidation.missingEnglishMore'] = undefined;
+      mutableFrMessages['validator.langValidation.root'] = undefined;
+
+      try {
+        expect(
+          getLangValidationErrorMessage(
+            [{ path: '', code: 'missing_en', message: 'x' }],
+            5,
+            'fr-FR',
+          ),
+        ).toBe(
+          'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : (racine).',
+        );
+      } finally {
+        mutableFrMessages['validator.langValidation.missingEnglish'] =
+          originalMessages.missingEnglish;
+        mutableFrMessages['validator.langValidation.missingEnglishMore'] =
+          originalMessages.missingEnglishMore;
+        mutableFrMessages['validator.langValidation.root'] = originalMessages.root;
       }
     });
 

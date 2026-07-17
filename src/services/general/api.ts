@@ -1,5 +1,6 @@
 import deTeamMessages from '@/locales/de-DE/pages_teams';
 import enTeamMessages from '@/locales/en-US/pages_teams';
+import frTeamMessages from '@/locales/fr-FR/pages_teams';
 import zhTeamMessages from '@/locales/zh-CN/pages_teams';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
@@ -20,6 +21,7 @@ import {
 } from '../general/util';
 import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
+import type { SupportedAppLocale } from './localeRegistry';
 import { getRuntimeLocale } from './runtimeLocale';
 import { sortDataSetVersionRows } from './version';
 
@@ -28,7 +30,8 @@ const noTeamMessages = {
   'zh-CN': zhTeamMessages,
   'en-US': enTeamMessages,
   'de-DE': deTeamMessages,
-} as const;
+  'fr-FR': frTeamMessages,
+} as const satisfies Record<SupportedAppLocale, Record<string, string>>;
 
 const getNoTeamMessage = () => {
   const locale = getRuntimeLocale();
