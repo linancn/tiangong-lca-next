@@ -22,57 +22,66 @@ export const REVIEW_GATE_DESCRIPTOR_SYMBOLS = [
   'REVIEW_SUBMIT_EVIDENCE_MESSAGES',
   'REVIEW_SUBMIT_DIAGNOSTIC_MESSAGES',
 ];
-export const DELTA_CONFIRMATION = '.local/i18n-de-DE/issue-602-delta-review-confirmation.md';
+export const DELTA_CONFIRMATION = '.local/i18n-de-DE/issue-606-delta-review-confirmation.md';
 export const FROZEN_BASELINE_COMMIT = '826f87a53032bfa9ab58baff2e4b8b7212671cdf';
-export const BASELINE_MESSAGE_COUNT = 2665;
+export const ACTIVE_BASELINE_COMMIT = '36836f2c3461113b28af8c3c824045d0115c6cfc';
+export const BASELINE_MESSAGE_COUNT = 2689;
 export const ACTIVE_LOCALES = ['en-US', 'zh-CN', 'de-DE'];
 
 export const NEW_MESSAGE_IDS = [
-  'component.globalHeader.help.englishFallback',
-  'pages.button.check.errorWithSections',
-  'pages.login.privacyNotice.englishFallbackLabel',
-  'pages.login.termsOfUse.englishFallbackLabel',
-  'pages.process.lca.taskCenter.diagnostics.empty',
-  'pages.process.lca.taskCenter.diagnostics.jobKind',
-  'pages.process.lca.taskCenter.diagnostics.request',
-  'pages.process.lca.taskCenter.diagnostics.rootJobId',
-  'pages.process.lca.taskCenter.diagnostics.sequence',
-  'pages.process.lca.taskCenter.diagnostics.taskId',
-  'pages.process.lca.taskCenter.diagnostics.taskKind',
-  'pages.process.lca.taskCenter.diagnostics.workerJobId',
-  'pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId',
-  'pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId',
-  'pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId',
-  'pages.process.reviewSubmitGate.diagnostics.workerJobId',
-  'pages.process.reviewSubmitGate.evidence.consumer',
-  'pages.process.reviewSubmitGate.evidence.exchange',
-  'pages.process.reviewSubmitGate.evidence.flow',
-  'pages.process.reviewSubmitGate.evidence.process',
-  'pages.process.reviewSubmitGate.evidence.provider',
-  'pages.process.reviewSubmitGate.evidence.target',
-  'pages.process.reviewSubmitGate.evidence.version',
-  'teams.notifications.unknownTeam',
+  'pages.dataProcessing.bundle.amount',
+  'pages.dataProcessing.bundle.artifactCount',
+  'pages.dataProcessing.bundle.blocked',
+  'pages.dataProcessing.bundle.complete',
+  'pages.dataProcessing.bundle.contentHash',
+  'pages.dataProcessing.bundle.coverage',
+  'pages.dataProcessing.bundle.direction',
+  'pages.dataProcessing.bundle.download',
+  'pages.dataProcessing.bundle.downloads',
+  'pages.dataProcessing.bundle.evidence',
+  'pages.dataProcessing.bundle.exportCsv',
+  'pages.dataProcessing.bundle.exportJson',
+  'pages.dataProcessing.bundle.factorHash',
+  'pages.dataProcessing.bundle.flow',
+  'pages.dataProcessing.bundle.impactCount',
+  'pages.dataProcessing.bundle.legacy',
+  'pages.dataProcessing.bundle.location',
+  'pages.dataProcessing.bundle.method',
+  'pages.dataProcessing.bundle.methodSetHash',
+  'pages.dataProcessing.bundle.process',
+  'pages.dataProcessing.bundle.processCount',
+  'pages.dataProcessing.bundle.refresh',
+  'pages.dataProcessing.bundle.retry',
+  'pages.dataProcessing.bundle.schema',
+  'pages.dataProcessing.bundle.selectionHash',
+  'pages.dataProcessing.bundle.snapshot',
+  'pages.dataProcessing.bundle.snapshotHash',
+  'pages.dataProcessing.bundle.title',
+  'pages.dataProcessing.bundle.unit',
+  'pages.dataProcessing.bundle.version',
+  'pages.dataProcessing.publications.legacyTitle',
+  'pages.dataProcessing.release.artifactSetHash',
+  'pages.dataProcessing.release.blockers',
+  'pages.dataProcessing.release.download',
+  'pages.dataProcessing.release.downloadExpired',
+  'pages.dataProcessing.release.empty',
+  'pages.dataProcessing.release.manifestHash',
+  'pages.dataProcessing.release.pending',
+  'pages.dataProcessing.release.processTitle',
+  'pages.dataProcessing.release.readback',
+  'pages.dataProcessing.release.refresh',
+  'pages.dataProcessing.release.retry',
+  'pages.dataProcessing.release.runId',
+  'pages.dataProcessing.release.status',
+  'pages.dataProcessing.release.title',
+  'pages.dataProcessing.release.verified',
+  'pages.dataProcessing.release.version',
+  'pages.process.view.releases',
 ];
 
-export const MODIFIED_BASELINE_MESSAGE_IDS = [
-  'component.tidasPackage.import.apiGuide.docs',
-  'component.tidasPackage.import.apiGuide.summary',
-];
+export const MODIFIED_BASELINE_MESSAGE_IDS = [];
 
-export const EXTERNAL_TRACKED_COPY_INPUTS = [
-  {
-    id: 'import-report.human-summary',
-    path: 'src/components/ImportTidasPackage/index.tsx',
-    symbol: 'buildImportReportHumanSummary',
-    properties: ['en_US', 'zh_CN', 'de_DE'],
-  },
-  {
-    id: 'import-report.readme-markdown',
-    path: 'src/components/ImportTidasPackage/index.tsx',
-    symbol: 'buildImportReportReadmeMarkdown',
-    properties: ['en_US', 'zh_CN', 'de_DE'],
-  },
-];
+export const EXTERNAL_TRACKED_COPY_INPUTS = [];
 
 export const FINAL_MESSAGE_COUNT = BASELINE_MESSAGE_COUNT + NEW_MESSAGE_IDS.length;
 
@@ -240,6 +249,10 @@ function gitFileAt(root, commit, relativeFile) {
   });
 }
 
+export function readJsonAtGitCommit(root, commit, relativeFile) {
+  return JSON.parse(gitFileAt(root, commit, relativeFile).toString('utf8'));
+}
+
 export function frozenInputDigests(root) {
   const paths = [
     CANONICAL_MANIFEST,
@@ -250,7 +263,7 @@ export function frozenInputDigests(root) {
   return Object.fromEntries(
     paths.map((relativeFile) => [
       relativeFile,
-      sha256(gitFileAt(root, FROZEN_BASELINE_COMMIT, relativeFile)),
+      sha256(gitFileAt(root, ACTIVE_BASELINE_COMMIT, relativeFile)),
     ]),
   );
 }
@@ -309,7 +322,7 @@ function currentInputRecords(root, canonicalManifest, externalCopies, descriptor
 
 export function buildRuntimeActivationManifest(root) {
   const canonicalManifest = readJson(root, CANONICAL_MANIFEST);
-  const ledger = readJson(root, FROZEN_CONTEXT_LEDGER);
+  const baselineManifest = readJsonAtGitCommit(root, ACTIVE_BASELINE_COMMIT, CANONICAL_MANIFEST);
   const externalCopies = EXTERNAL_TRACKED_COPY_INPUTS.map((definition) =>
     extractTrackedCopyInput(root, definition),
   );
@@ -335,17 +348,17 @@ export function buildRuntimeActivationManifest(root) {
 
   const manifest = {
     schemaVersion: RUNTIME_ACTIVATION_SCHEMA,
-    issue: 'https://github.com/linancn/tiangong-lca-next/issues/602',
+    issue: 'https://github.com/linancn/tiangong-lca-next/issues/606',
     locale: 'de-DE',
     baseline: {
-      sourceCommit: FROZEN_BASELINE_COMMIT,
+      sourceCommit: ACTIVE_BASELINE_COMMIT,
       messageCount: BASELINE_MESSAGE_COUNT,
-      leafMessageCount: 2658,
+      leafMessageCount: 2682,
       activationEntryCount: 7,
       frozenInputDigests: baselineDigests,
-      frozenCanonicalAuditedInputDigest: ledger.source?.manifestDigest ?? null,
+      frozenCanonicalAuditedInputDigest: baselineManifest.source?.auditedInputDigest ?? null,
       evidenceContract:
-        'The immutable Issue #601 Git snapshot and unchanged tracked context ledger retain every approved German value, canonical English/Chinese value, source/context/translation hash, context dossier, and non-personal producer record. Local human decisions remain outside Git.',
+        'The immutable merged de-DE runtime baseline retains every previously accepted German, English, and Chinese value. Issue #606 reviews only its explicit new-message delta; local human decisions remain outside Git.',
     },
     delta: {
       newMessageIds: NEW_MESSAGE_IDS,
@@ -396,6 +409,74 @@ export function buildRuntimeActivationManifest(root) {
 }
 
 export function messageContext(messageId) {
+  if (messageId.startsWith('pages.dataProcessing.bundle.')) {
+    return {
+      concept:
+        'Persisted Calculation Bundle inventory, integrity evidence, LCI/LCIA rows, and guarded artifact downloads.',
+      uiRole: messageId.includes('download')
+        ? 'download action or recoverable download feedback'
+        : 'calculation-result panel label, status, or evidence field',
+      consequence:
+        'Data managers must distinguish directed inventory values, LCIA methods, completeness, hashes, and download controls without confusing the private calculation evidence with a public release.',
+      rationale:
+        'LCI, LCIA, UUID, JSON, CSV, hash values, units, locations, and directions remain exact technical concepts while surrounding actions and state are natural German.',
+      terminology: [
+        'Berechnungspaket',
+        'Abdeckung',
+        'LCIA-Methode',
+        'Momentaufnahme',
+        'Nachweis',
+        'Artefakt',
+      ],
+      lengthRisk:
+        'High: field labels, badges, tables, tabs, and compact action rows share a responsive management panel.',
+    };
+  }
+  if (messageId.startsWith('pages.dataProcessing.release.')) {
+    return {
+      concept:
+        'Canonical LifecycleModel and Result Process release state, independent readback verification, and self-contained package download.',
+      uiRole: messageId.includes('download')
+        ? 'release download action or expired-link feedback'
+        : 'release panel title, state, identity, verification, or blocker label',
+      consequence:
+        'Users must understand whether a result is published, independently read back, blocked, or awaiting verification before downloading a TIDAS/ILCD package.',
+      rationale:
+        'Model/Result, Release, ID, hash values, TIDAS, and ILCD are retained as domain identifiers; workflow state and recovery instructions are localized.',
+      terminology: [
+        'Model-/Result-Release',
+        'Rückleseprüfung',
+        'Release-Version',
+        'Blockade',
+        'Artefaktsatz',
+      ],
+      lengthRisk:
+        'High: status labels and recovery copy appear beside hashes and download controls in a narrow panel.',
+    };
+  }
+  if (messageId === 'pages.dataProcessing.publications.legacyTitle') {
+    return {
+      concept: 'Label separating legacy LCIA publication records from canonical releases.',
+      uiRole: 'legacy-publication section title',
+      consequence:
+        'Users must not mistake an older LCIA-only publication for the new verified Model/Result release.',
+      rationale: 'The wording preserves LCIA while clearly marking the older publication path.',
+      terminology: ['Alte LCIA-Veröffentlichung'],
+      lengthRisk: 'Low: a short section heading.',
+    };
+  }
+  if (messageId === 'pages.process.view.releases') {
+    return {
+      concept:
+        'Process-detail tab containing canonical releases associated with the source Process.',
+      uiRole: 'process-detail tab label',
+      consequence:
+        'Users need a concise route from the source Process to its independently identified result releases.',
+      rationale: 'The short plural label matches the existing process-detail navigation style.',
+      terminology: ['Veröffentlichungen'],
+      lengthRisk: 'Low: compact tab label.',
+    };
+  }
   if (messageId === 'pages.button.check.errorWithSections') {
     return {
       concept: 'Dataset validation failure summary across one or more editor sections.',

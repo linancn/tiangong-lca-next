@@ -1334,11 +1334,16 @@ async function buildAudit(options) {
   } else {
     findings.catalogOfflineReviewConfirmation.push({ reasons: catalogReview.reasons });
   }
+  // The tracked ledger must be reproducible without the ignored local confirmation file.
+  // This count therefore proves only that every candidate has complete tracked context and
+  // producer evidence. Human approval remains an ephemeral property of the runtime report.
   const locallyReviewCompleteCandidateCount =
-    catalogReview.approved && findings.invalidContextProposals.length === 0
+    findings.invalidContextProposals.length === 0
       ? [...expectedReviewById.values()].filter(({ producer }) => producer !== null).length
       : 0;
-  const offlineHumanReviewApprovedCandidateCount = locallyReviewCompleteCandidateCount;
+  const offlineHumanReviewApprovedCandidateCount = catalogReview.approved
+    ? locallyReviewCompleteCandidateCount
+    : 0;
 
   [...germanById.keys()]
     .filter((id) => !manifestById.has(id))

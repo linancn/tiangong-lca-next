@@ -21,10 +21,11 @@ const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
 const mockSelectLangClick = jest.fn();
 let renderedLocales: Array<Record<string, unknown>> = [];
+let renderedOverlayClassName: string | undefined;
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
-  { lang: 'en-US', label: 'English' },
-  { lang: 'zh-CN', label: '简体中文' },
+  { lang: 'en-US', label: 'English', icon: '🇺🇸' },
+  { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳' },
   { lang: 'fr-FR', label: 'Français' },
 ];
 let mockAvailableLocales = defaultAvailableLocales();
@@ -45,12 +46,15 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@umijs/max', () => ({
   SelectLang: ({
+    overlayClassName,
     postLocalesData,
     style,
   }: {
+    overlayClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
     style?: Record<string, unknown>;
   }) => {
+    renderedOverlayClassName = overlayClassName;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
       <button
@@ -88,6 +92,7 @@ afterEach(() => {
   mockLocale = 'zh-CN';
   mockSelectLangClick.mockClear();
   renderedLocales = [];
+  renderedOverlayClassName = undefined;
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -197,13 +202,14 @@ describe('RightContent Components', () => {
     });
   });
 
-  it('exposes only the three product locales and presents one country-neutral German option', () => {
+  it('exposes the three product locales as text-only country-neutral options', () => {
     render(<SelectLang />);
 
+    expect(renderedOverlayClassName).toBe('tg-language-selector-dropdown');
     expect(renderedLocales).toEqual([
       { lang: 'zh-CN', label: '简体中文' },
       { lang: 'en-US', label: 'English' },
-      { lang: 'de-DE', label: 'Deutsch', icon: '🌐', title: 'Deutsch' },
+      { lang: 'de-DE', label: 'Deutsch', title: 'Deutsch' },
     ]);
   });
 

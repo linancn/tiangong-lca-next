@@ -6,10 +6,10 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { readCatalogOfflineConfirmation } from './german-offline-review.mjs';
 import { readDeltaConfirmation } from './german-runtime-delta-review.mjs';
 import {
   ACTIVATION_ENTRY_TRANSLATIONS,
+  ACTIVE_BASELINE_COMMIT,
   ACTIVE_LOCALES,
   BASELINE_MESSAGE_COUNT,
   buildRuntimeActivationManifest,
@@ -19,12 +19,12 @@ import {
   extractReviewGateDescriptorEvidence,
   fileDigest,
   FINAL_MESSAGE_COUNT,
-  FROZEN_BASELINE_COMMIT,
   FROZEN_CONTEXT_LEDGER,
   FROZEN_REVIEW_PROVENANCE,
   MODIFIED_BASELINE_MESSAGE_IDS,
   NEW_MESSAGE_IDS,
   readJson,
+  readJsonAtGitCommit,
   REVIEW_GATE_FAMILY,
   RUNTIME_ACTIVATION_MANIFEST,
   RUNTIME_ACTIVATION_SCHEMA,
@@ -35,7 +35,6 @@ const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 
 const CANONICAL_AUDIT = 'scripts/i18n/audit-locales.mjs';
-const FROZEN_CATALOG_CONFIRMATION = '.local/i18n-de-DE/catalog-review-confirmation.md';
 const ALLOWED_GERMAN_RUNTIME_LITERALS = new Set(['de', 'de-DE', 'de-de', 'de_DE']);
 
 function parseArgs(argv) {
@@ -46,17 +45,12 @@ function parseArgs(argv) {
     check: false,
     manifest: RUNTIME_ACTIVATION_MANIFEST,
     deltaConfirmation: DELTA_CONFIRMATION,
-    catalogConfirmation: FROZEN_CATALOG_CONFIRMATION,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--write') options.write = true;
     else if (argument === '--check') options.check = true;
-    else if (
-      ['--root', '--mode', '--manifest', '--delta-confirmation', '--catalog-confirmation'].includes(
-        argument,
-      )
-    ) {
+    else if (['--root', '--mode', '--manifest', '--delta-confirmation'].includes(argument)) {
       const value = argv[index + 1];
       if (!value) throw new Error(`Missing value for ${argument}`);
       const key = {
@@ -64,7 +58,6 @@ function parseArgs(argv) {
         '--mode': 'mode',
         '--manifest': 'manifest',
         '--delta-confirmation': 'deltaConfirmation',
-        '--catalog-confirmation': 'catalogConfirmation',
       }[argument];
       options[key] = value;
       index += 1;
@@ -86,8 +79,7 @@ function currentGermanValue(message) {
 }
 
 function baselineLocaleValue(message, locale) {
-  const field = { 'en-US': 'english', 'zh-CN': 'chinese', 'de-DE': 'german' }[locale];
-  return message?.[field]?.value;
+  return message?.translations?.[locale]?.value;
 }
 
 function technicalTokens(value) {
@@ -145,23 +137,23 @@ function collectForbiddenRuntimeLiterals(root) {
 function verifyFrozenSnapshot(root, runtimeManifest, findings) {
   let resolvedCommit = null;
   try {
-    resolvedCommit = execFileSync('git', ['rev-parse', `${FROZEN_BASELINE_COMMIT}^{commit}`], {
+    resolvedCommit = execFileSync('git', ['rev-parse', `${ACTIVE_BASELINE_COMMIT}^{commit}`], {
       cwd: root,
       encoding: 'utf8',
     }).trim();
-    execFileSync('git', ['merge-base', '--is-ancestor', FROZEN_BASELINE_COMMIT, 'HEAD'], {
+    execFileSync('git', ['merge-base', '--is-ancestor', ACTIVE_BASELINE_COMMIT, 'HEAD'], {
       cwd: root,
       stdio: 'ignore',
     });
   } catch (error) {
     findings.baselineSnapshotMismatches.push({
-      sourceCommit: FROZEN_BASELINE_COMMIT,
-      reason: 'The immutable Issue #601 source commit must exist and be an ancestor of HEAD.',
+      sourceCommit: ACTIVE_BASELINE_COMMIT,
+      reason: 'The accepted active de-DE baseline commit must exist and be an ancestor of HEAD.',
     });
   }
-  if (resolvedCommit && resolvedCommit !== FROZEN_BASELINE_COMMIT) {
+  if (resolvedCommit && resolvedCommit !== ACTIVE_BASELINE_COMMIT) {
     findings.baselineSnapshotMismatches.push({
-      expected: FROZEN_BASELINE_COMMIT,
+      expected: ACTIVE_BASELINE_COMMIT,
       actual: resolvedCommit,
     });
   }
@@ -184,9 +176,9 @@ function verifyFrozenSnapshot(root, runtimeManifest, findings) {
   );
 }
 
-function verifyActiveInventory(canonicalManifest, frozenLedger, entryArtifact, findings) {
+function verifyActiveInventory(canonicalManifest, baselineManifest, entryArtifact, findings) {
   const canonicalIds = new Set(canonicalManifest.messages.map(({ id }) => id));
-  const baselineIds = new Set(frozenLedger.messages.map(({ id }) => id));
+  const baselineIds = new Set(baselineManifest.messages.map(({ id }) => id));
   const expectedNew = new Set(NEW_MESSAGE_IDS);
   const actualNew = sorted([...canonicalIds].filter((id) => !baselineIds.has(id)));
   const removedBaseline = sorted([...baselineIds].filter((id) => !canonicalIds.has(id)));
@@ -223,7 +215,7 @@ function verifyActiveInventory(canonicalManifest, frozenLedger, entryArtifact, f
     });
   });
 
-  const frozenById = new Map(frozenLedger.messages.map((message) => [message.id, message]));
+  const frozenById = new Map(baselineManifest.messages.map((message) => [message.id, message]));
   const currentById = new Map(canonicalManifest.messages.map((message) => [message.id, message]));
   const modified = new Set(MODIFIED_BASELINE_MESSAGE_IDS);
   frozenById.forEach((frozen, id) => {
@@ -245,7 +237,7 @@ function verifyActiveInventory(canonicalManifest, frozenLedger, entryArtifact, f
       findings.baselineMessageMismatches.push({
         messageId: id,
         changedLocales: differences,
-        reason: 'An unchanged #601 baseline value differs from the frozen context ledger.',
+        reason: 'An unchanged merged de-DE baseline value differs from the frozen manifest.',
       });
     }
   });
@@ -440,29 +432,22 @@ function buildFindings(options, generatedManifest) {
   }
 
   const canonicalManifest = readJson(options.root, CANONICAL_MANIFEST);
-  const frozenLedger = readJson(options.root, FROZEN_CONTEXT_LEDGER);
+  const baselineManifest = readJsonAtGitCommit(
+    options.root,
+    ACTIVE_BASELINE_COMMIT,
+    CANONICAL_MANIFEST,
+  );
   const entryArtifact = readJson(options.root, ACTIVATION_ENTRY_TRANSLATIONS);
   const allowlist = readJson(options.root, SOURCE_ALLOWLIST);
   verifyFrozenSnapshot(options.root, generatedManifest, findings);
-  verifyActiveInventory(canonicalManifest, frozenLedger, entryArtifact, findings);
+  verifyActiveInventory(canonicalManifest, baselineManifest, entryArtifact, findings);
   verifyReviewGateDescriptorAssembly(options.root, generatedManifest, findings);
   verifyGermanValues(canonicalManifest, allowlist, findings);
 
-  const catalogReview = readCatalogOfflineConfirmation(
-    options.root,
-    options.catalogConfirmation,
-    frozenLedger,
-  );
-  if (!catalogReview.approved) {
-    findings.baselineCatalogConfirmation.push({
-      reason: 'The local #601 full-catalog confirmation is missing, malformed, or stale.',
-      details: catalogReview.reasons,
-    });
-  }
   const deltaReview = readDeltaConfirmation(options.root, options.deltaConfirmation);
   if (!deltaReview.approved) {
     findings.deltaReviewConfirmation.push({
-      reason: 'The local Issue #602 delta confirmation is missing, malformed, or stale.',
+      reason: 'The local Issue #606 delta confirmation is missing, malformed, or stale.',
       details: deltaReview.reasons,
     });
   }
@@ -471,7 +456,7 @@ function buildFindings(options, generatedManifest) {
   );
   return {
     findings,
-    catalogReviewApproved: catalogReview.approved,
+    catalogReviewApproved: true,
     deltaReviewApproved: deltaReview.approved,
   };
 }

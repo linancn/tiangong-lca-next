@@ -161,6 +161,48 @@
   width: 100%;
 }
 
+.bundleCard {
+  width: 100%;
+  border-top: 3px solid var(--ant-color-primary);
+}
+
+.bundleToolbar {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-fill-quaternary);
+}
+
+.bundleToolbar :global(.ant-select) {
+  min-width: min(680px, 75vw);
+}
+
+.bundleDownloadGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.bundleDownloadItem {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container);
+}
+
+.bundleDownloadItem span {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+.bundleDownloadItem code {
+  overflow-wrap: anywhere;
+}
+
 .previewTags {
   display: flex;
   flex-wrap: wrap;

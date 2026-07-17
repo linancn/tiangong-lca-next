@@ -14,8 +14,8 @@ const RUNTIME_MANIFEST = path.join(
   REPOSITORY_ROOT,
   'docs/plans/i18n-de-DE/runtime-activation-manifest.json',
 );
-const CONFIRMATION_BEGIN = '<!-- ISSUE-602-DELTA-CONFIRMATION-BEGIN -->';
-const CONFIRMATION_END = '<!-- ISSUE-602-DELTA-CONFIRMATION-END -->';
+const CONFIRMATION_BEGIN = '<!-- ISSUE-606-DELTA-CONFIRMATION-BEGIN -->';
+const CONFIRMATION_END = '<!-- ISSUE-606-DELTA-CONFIRMATION-END -->';
 
 function approve(markdown: string, reviewer: string) {
   const normalized = markdown.replace(/\r\n?/gu, '\n');
@@ -45,7 +45,6 @@ function approve(markdown: string, reviewer: string) {
 
 describe('German active-runtime evidence', () => {
   it('binds the immutable baseline, exact delta, and one active German locale without human data', () => {
-    const missingCatalogConfirmation = `.local/i18n-de-DE/missing-catalog-${process.pid}-${Date.now()}.md`;
     const missingDeltaConfirmation = `.local/i18n-de-DE/missing-delta-${process.pid}-${Date.now()}.md`;
     const report = JSON.parse(
       execFileSync(
@@ -55,8 +54,6 @@ describe('German active-runtime evidence', () => {
           '--mode',
           'report',
           '--check',
-          '--catalog-confirmation',
-          missingCatalogConfirmation,
           '--delta-confirmation',
           missingDeltaConfirmation,
         ],
@@ -71,11 +68,11 @@ describe('German active-runtime evidence', () => {
 
     expect(report.summary).toEqual(
       expect.objectContaining({
-        baselineMessageCount: 2665,
-        newMessageCount: 24,
-        modifiedBaselineMessageCount: 2,
-        finalMessageCount: 2689,
-        baselineCatalogReviewApproved: false,
+        baselineMessageCount: 2689,
+        newMessageCount: 48,
+        modifiedBaselineMessageCount: 0,
+        finalMessageCount: 2737,
+        baselineCatalogReviewApproved: true,
         deltaReviewApproved: false,
       }),
     );
@@ -88,21 +85,21 @@ describe('German active-runtime evidence', () => {
     expect(structuralFindingCounts.every((count) => count === 0)).toBe(true);
     expect(report.summary.findingCounts).toEqual(
       expect.objectContaining({
-        baselineCatalogConfirmation: 1,
+        baselineCatalogConfirmation: 0,
         deltaReviewConfirmation: 1,
       }),
     );
-    expect(report.summary.findingCount).toBe(2);
+    expect(report.summary.findingCount).toBe(1);
     expect(manifest.baseline).toEqual(
       expect.objectContaining({
-        sourceCommit: '826f87a53032bfa9ab58baff2e4b8b7212671cdf',
-        messageCount: 2665,
+        sourceCommit: '36836f2c3461113b28af8c3c824045d0115c6cfc',
+        messageCount: 2689,
       }),
     );
-    expect(manifest.delta.newMessageIds).toHaveLength(24);
-    expect(manifest.delta.modifiedBaselineMessageIds).toHaveLength(2);
-    expect(manifest.delta.externalTrackedCopyInputs).toHaveLength(2);
-    expect(manifest.delta.localReviewItemCount).toBe(28);
+    expect(manifest.delta.newMessageIds).toHaveLength(48);
+    expect(manifest.delta.modifiedBaselineMessageIds).toHaveLength(0);
+    expect(manifest.delta.externalTrackedCopyInputs).toHaveLength(0);
+    expect(manifest.delta.localReviewItemCount).toBe(48);
     expect(manifest.delta.reviewGateDescriptorEvidence.messageIds).toHaveLength(12);
     expect(manifest.delta.reviewGateDescriptorEvidence.maps).toEqual(
       expect.arrayContaining([
@@ -114,7 +111,7 @@ describe('German active-runtime evidence', () => {
       expect.objectContaining({
         activeLocales: ['en-US', 'zh-CN', 'de-DE'],
         canonicalGermanLocale: 'de-DE',
-        finalMessageCount: 2689,
+        finalMessageCount: 2737,
         regionalBundlesAllowed: false,
         aliasesNormalizeTo: 'de-DE',
         antDesignAdapter: 'de_DE',
@@ -141,7 +138,7 @@ describe('German active-runtime evidence', () => {
     );
   });
 
-  it('renders and hash-binds all 28 delta items with real dynamic-family context', () => {
+  it('renders and hash-binds all 48 release delta items with real dynamic-family context', () => {
     const relativeFile = `.local/i18n-de-DE/runtime-delta-test-${process.pid}-${Date.now()}.md`;
     const absoluteFile = path.join(REPOSITORY_ROOT, relativeFile);
     const privateReviewer = 'DO-NOT-ECHO-LOCAL-DELTA-REVIEWER';
@@ -155,23 +152,14 @@ describe('German active-runtime evidence', () => {
       expect(fs.statSync(absoluteFile).mode & 0o777).toBe(0o600);
 
       const source = fs.readFileSync(absoluteFile, 'utf8');
-      expect(source.match(/^## \d+ \/ /gmu)).toHaveLength(26);
-      expect(source).toContain('## 26 / 26 — component.tidasPackage.import.apiGuide.summary');
-      expect(source.match(/^## External \d+ \/ 2 — /gmu)).toHaveLength(2);
-      expect(source.match(/^````text\n[\s\S]*?\n````$/gmu)).toHaveLength(84);
-      expect(source.match(/^````tsx\n[\s\S]*?\n````$/gmu)).toHaveLength(6);
-      expect(source.match(/family：reviewGateEvidenceLabels/gu)).toHaveLength(11);
-      expect(source.match(/边界类型：closedWorld/gu)).toHaveLength(11);
-      expect(source.match(/闭集成员（12）/gu)).toHaveLength(11);
-      expect(
-        source.match(
-          /src\/pages\/Processes\/Components\/edit\.tsx · formatMessage\(message\) · expression="message" · count=1/gu,
-        ),
-      ).toHaveLength(11);
-      expect(source.match(/运行时 descriptor maps：/gu)).toHaveLength(11);
-      expect(source.match(/### Frozen #601 English \(before this delta\)/gu)).toHaveLength(2);
-      expect(source.match(/### Frozen #601 Chinese \(before this delta\)/gu)).toHaveLength(2);
-      expect(source.match(/### Frozen #601 German \(before this delta\)/gu)).toHaveLength(2);
+      expect(source.match(/^## \d+ \/ /gmu)).toHaveLength(48);
+      expect(source).toContain('## 48 / 48 — pages.process.view.releases');
+      expect(source.match(/^## External /gmu)).toBeNull();
+      expect(source.match(/^````text\n[\s\S]*?\n````$/gmu)).toHaveLength(144);
+      expect(source.match(/family：dataProcessing/gu)).toHaveLength(47);
+      expect(source.match(/边界类型：closedWorld/gu)).toHaveLength(47);
+      expect(source.match(/闭集成员（/gu)).toHaveLength(47);
+      expect(source).not.toContain('### Frozen #601 English (before this delta)');
 
       const overwrite = spawnSync(
         process.execPath,
@@ -182,8 +170,8 @@ describe('German active-runtime evidence', () => {
       expect(overwrite.stderr).toContain('Refusing to overwrite');
 
       const approvedWithNote = approve(source, privateReviewer).replace(
-        /<!-- ISSUE-602-DELTA-NOTE-BEGIN:([^ ]+) -->\n\n<!-- ISSUE-602-DELTA-NOTE-END:\1 -->/u,
-        '<!-- ISSUE-602-DELTA-NOTE-BEGIN:$1 -->\n人工复核备注不参与正文摘要。\n<!-- ISSUE-602-DELTA-NOTE-END:$1 -->',
+        /<!-- ISSUE-606-DELTA-NOTE-BEGIN:([^ ]+) -->\n\n<!-- ISSUE-606-DELTA-NOTE-END:\1 -->/u,
+        '<!-- ISSUE-606-DELTA-NOTE-BEGIN:$1 -->\n人工复核备注不参与正文摘要。\n<!-- ISSUE-606-DELTA-NOTE-END:$1 -->',
       );
       fs.writeFileSync(absoluteFile, approvedWithNote, { mode: 0o600 });
       const checked = spawnSync(
@@ -196,10 +184,10 @@ describe('German active-runtime evidence', () => {
         expect.objectContaining({
           approved: true,
           counts: {
-            newMessages: 24,
-            modifiedBaselineMessages: 2,
-            externalTrackedCopy: 2,
-            totalItems: 28,
+            newMessages: 48,
+            modifiedBaselineMessages: 0,
+            externalTrackedCopy: 0,
+            totalItems: 48,
           },
         }),
       );
@@ -240,11 +228,11 @@ describe('German active-runtime evidence', () => {
       ),
     );
     expect(probe.source).toEqual({
-      frozenBaselineCommit: '826f87a53032bfa9ab58baff2e4b8b7212671cdf',
-      reviewContract: 'issue-602-exact-28-items-with-related-context-v1',
+      frozenBaselineCommit: '36836f2c3461113b28af8c3c824045d0115c6cfc',
+      reviewContract: 'issue-606-exact-48-release-messages-with-related-context-v1',
       reviewRendererDigest: expect.stringMatching(/^[a-f0-9]{64}$/u),
     });
-    expect(probe.families).toEqual(['reviewGateEvidenceLabels']);
+    expect(probe.families).toEqual(['dataProcessing']);
 
     const emptyRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tiangong-i18n-missing-delta-'));
     try {
@@ -262,10 +250,10 @@ describe('German active-runtime evidence', () => {
       );
       expect(result.approved).toBe(false);
       expect(result.counts).toEqual({
-        newMessages: 24,
-        modifiedBaselineMessages: 2,
-        externalTrackedCopy: 2,
-        totalItems: 28,
+        newMessages: 48,
+        modifiedBaselineMessages: 0,
+        externalTrackedCopy: 0,
+        totalItems: 48,
       });
       expect(result.reasons).toHaveLength(1);
     } finally {

@@ -1,71 +1,77 @@
 {
   "schemaVersion": "tiangong.i18n-de-runtime-activation.v1",
-  "issue": "https://github.com/linancn/tiangong-lca-next/issues/602",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/606",
   "locale": "de-DE",
   "baseline": {
-    "sourceCommit": "826f87a53032bfa9ab58baff2e4b8b7212671cdf",
-    "messageCount": 2665,
-    "leafMessageCount": 2658,
+    "sourceCommit": "36836f2c3461113b28af8c3c824045d0115c6cfc",
+    "messageCount": 2689,
+    "leafMessageCount": 2682,
     "activationEntryCount": 7,
     "frozenInputDigests": {
-      "docs/plans/i18n-de-DE/manifest.json": "8a5ed84861027fdc18c9f044951ac0ce180fef3d54b7a97361ff5bee625296a4",
+      "docs/plans/i18n-de-DE/manifest.json": "f661c8d85269e2bd8fb4450478796d838bd4815289d14a44bf0672179f88af38",
       "docs/plans/i18n-de-DE/context-ledger.json": "808d1eacda00df33b341735d5d8bbc4034fa00ffa6ba429cd63a079d4aef98de",
       "docs/plans/i18n-de-DE/activation-entry-translations.json": "6fd22affc7a50cebbe4e0afd48121ef203f27c2fc6e4544de5ab483860e7b823",
       "docs/plans/i18n-de-DE/review-log.yaml": "cb859cf45e49a0646431c457953fdc022e065832b7b43153772964cd38388f55"
     },
-    "frozenCanonicalAuditedInputDigest": "b822fc77cf46f90458246ead5d53f91b1921782cf3e87dc15549b538549e23dc",
-    "evidenceContract": "The immutable Issue #601 Git snapshot and unchanged tracked context ledger retain every approved German value, canonical English/Chinese value, source/context/translation hash, context dossier, and non-personal producer record. Local human decisions remain outside Git."
+    "frozenCanonicalAuditedInputDigest": "8620f8c27d1e009af48a5cc445e70728a4c3f50deab508c8cc806e7bcb1126e5",
+    "evidenceContract": "The immutable merged de-DE runtime baseline retains every previously accepted German, English, and Chinese value. Issue #606 reviews only its explicit new-message delta; local human decisions remain outside Git."
   },
   "delta": {
     "newMessageIds": [
-      "component.globalHeader.help.englishFallback",
-      "pages.button.check.errorWithSections",
-      "pages.login.privacyNotice.englishFallbackLabel",
-      "pages.login.termsOfUse.englishFallbackLabel",
-      "pages.process.lca.taskCenter.diagnostics.empty",
-      "pages.process.lca.taskCenter.diagnostics.jobKind",
-      "pages.process.lca.taskCenter.diagnostics.request",
-      "pages.process.lca.taskCenter.diagnostics.rootJobId",
-      "pages.process.lca.taskCenter.diagnostics.sequence",
-      "pages.process.lca.taskCenter.diagnostics.taskId",
-      "pages.process.lca.taskCenter.diagnostics.taskKind",
-      "pages.process.lca.taskCenter.diagnostics.workerJobId",
-      "pages.process.reviewSubmitGate.diagnostics.gateWorkerJobId",
-      "pages.process.reviewSubmitGate.diagnostics.reviewSubmitJobId",
-      "pages.process.reviewSubmitGate.diagnostics.submitWorkerJobId",
-      "pages.process.reviewSubmitGate.diagnostics.workerJobId",
-      "pages.process.reviewSubmitGate.evidence.consumer",
-      "pages.process.reviewSubmitGate.evidence.exchange",
-      "pages.process.reviewSubmitGate.evidence.flow",
-      "pages.process.reviewSubmitGate.evidence.process",
-      "pages.process.reviewSubmitGate.evidence.provider",
-      "pages.process.reviewSubmitGate.evidence.target",
-      "pages.process.reviewSubmitGate.evidence.version",
-      "teams.notifications.unknownTeam"
+      "pages.dataProcessing.bundle.amount",
+      "pages.dataProcessing.bundle.artifactCount",
+      "pages.dataProcessing.bundle.blocked",
+      "pages.dataProcessing.bundle.complete",
+      "pages.dataProcessing.bundle.contentHash",
+      "pages.dataProcessing.bundle.coverage",
+      "pages.dataProcessing.bundle.direction",
+      "pages.dataProcessing.bundle.download",
+      "pages.dataProcessing.bundle.downloads",
+      "pages.dataProcessing.bundle.evidence",
+      "pages.dataProcessing.bundle.exportCsv",
+      "pages.dataProcessing.bundle.exportJson",
+      "pages.dataProcessing.bundle.factorHash",
+      "pages.dataProcessing.bundle.flow",
+      "pages.dataProcessing.bundle.impactCount",
+      "pages.dataProcessing.bundle.legacy",
+      "pages.dataProcessing.bundle.location",
+      "pages.dataProcessing.bundle.method",
+      "pages.dataProcessing.bundle.methodSetHash",
+      "pages.dataProcessing.bundle.process",
+      "pages.dataProcessing.bundle.processCount",
+      "pages.dataProcessing.bundle.refresh",
+      "pages.dataProcessing.bundle.retry",
+      "pages.dataProcessing.bundle.schema",
+      "pages.dataProcessing.bundle.selectionHash",
+      "pages.dataProcessing.bundle.snapshot",
+      "pages.dataProcessing.bundle.snapshotHash",
+      "pages.dataProcessing.bundle.title",
+      "pages.dataProcessing.bundle.unit",
+      "pages.dataProcessing.bundle.version",
+      "pages.dataProcessing.publications.legacyTitle",
+      "pages.dataProcessing.release.artifactSetHash",
+      "pages.dataProcessing.release.blockers",
+      "pages.dataProcessing.release.download",
+      "pages.dataProcessing.release.downloadExpired",
+      "pages.dataProcessing.release.empty",
+      "pages.dataProcessing.release.manifestHash",
+      "pages.dataProcessing.release.pending",
+      "pages.dataProcessing.release.processTitle",
+      "pages.dataProcessing.release.readback",
+      "pages.dataProcessing.release.refresh",
+      "pages.dataProcessing.release.retry",
+      "pages.dataProcessing.release.runId",
+      "pages.dataProcessing.release.status",
+      "pages.dataProcessing.release.title",
+      "pages.dataProcessing.release.verified",
+      "pages.dataProcessing.release.version",
+      "pages.process.view.releases"
     ],
-    "newMessageCount": 24,
-    "modifiedBaselineMessageIds": [
-      "component.tidasPackage.import.apiGuide.docs",
-      "component.tidasPackage.import.apiGuide.summary"
-    ],
-    "modifiedBaselineMessageCount": 2,
-    "externalTrackedCopyInputs": [
-      {
-        "id": "import-report.human-summary",
-        "path": "src/components/ImportTidasPackage/index.tsx",
-        "symbol": "buildImportReportHumanSummary",
-        "properties": ["en_US", "zh_CN", "de_DE"],
-        "extractedCopyDigest": "24333f455887d7297eab48b50fe7e615c94ca6b620f243c34b29ccf88137426b"
-      },
-      {
-        "id": "import-report.readme-markdown",
-        "path": "src/components/ImportTidasPackage/index.tsx",
-        "symbol": "buildImportReportReadmeMarkdown",
-        "properties": ["en_US", "zh_CN", "de_DE"],
-        "extractedCopyDigest": "07906471c8d1605ccbd9c65b61c6f62590dc56156e437aba484b50be35b00ac3"
-      }
-    ],
-    "externalTrackedCopyCount": 2,
+    "newMessageCount": 48,
+    "modifiedBaselineMessageIds": [],
+    "modifiedBaselineMessageCount": 0,
+    "externalTrackedCopyInputs": [],
+    "externalTrackedCopyCount": 0,
     "reviewGateDescriptorEvidence": {
       "id": "review-gate-evidence-label-descriptor-maps",
       "path": "src/pages/Processes/Components/edit.tsx",
@@ -158,8 +164,8 @@
       ],
       "extractedDescriptorDigest": "03dba4f458091c7db0a7addc4d12feb93f20110d8aad3e3f0d76aef2d9ceffa5"
     },
-    "localReviewItemCount": 28,
-    "localConfirmationDefaultPath": ".local/i18n-de-DE/issue-602-delta-review-confirmation.md"
+    "localReviewItemCount": 48,
+    "localConfirmationDefaultPath": ".local/i18n-de-DE/issue-606-delta-review-confirmation.md"
   },
   "activeRuntime": {
     "activeLocales": ["en-US", "zh-CN", "de-DE"],
@@ -167,7 +173,7 @@
     "topLevelBundle": "src/locales/de-DE.ts",
     "leafModuleCount": 30,
     "leafModuleCounts": { "en-US": 30, "zh-CN": 30, "de-DE": 30 },
-    "finalMessageCount": 2689,
+    "finalMessageCount": 2737,
     "allowedGermanRuntimeLocaleLiterals": ["de", "de-DE", "de-de", "de_DE"],
     "regionalBundlesAllowed": false,
     "aliasesNormalizeTo": "de-DE",
@@ -185,23 +191,9 @@
   },
   "source": {
     "canonicalManifest": "docs/plans/i18n-de-DE/manifest.json",
-    "canonicalAuditedInputDigest": "8620f8c27d1e009af48a5cc445e70728a4c3f50deab508c8cc806e7bcb1126e5",
+    "canonicalAuditedInputDigest": "e09825c1df69ab6146397e6efb698b106faffbad198897d07e922a15df1e0d6c",
     "digestAlgorithm": "sha256",
     "inputs": [
-      {
-        "kind": "extracted-copy",
-        "id": "import-report.human-summary",
-        "path": "src/components/ImportTidasPackage/index.tsx",
-        "symbol": "buildImportReportHumanSummary",
-        "sha256": "24333f455887d7297eab48b50fe7e615c94ca6b620f243c34b29ccf88137426b"
-      },
-      {
-        "kind": "extracted-copy",
-        "id": "import-report.readme-markdown",
-        "path": "src/components/ImportTidasPackage/index.tsx",
-        "symbol": "buildImportReportReadmeMarkdown",
-        "sha256": "07906471c8d1605ccbd9c65b61c6f62590dc56156e437aba484b50be35b00ac3"
-      },
       {
         "kind": "extracted-descriptor-map",
         "id": "review-gate-evidence-label-descriptor-maps",
@@ -222,12 +214,12 @@
       {
         "kind": "file",
         "path": "docs/plans/i18n-de-DE/dynamic-families.json",
-        "sha256": "ecb1c7f466aa063a1fdb67f281ca12305450db58f9100c1295140f1bea6ba5ba"
+        "sha256": "58c377badef4e8d31bd2be48e9bd6117d91cb08dc8a4c2e73f79e5b64485caae"
       },
       {
         "kind": "file",
         "path": "docs/plans/i18n-de-DE/manifest.json",
-        "sha256": "f661c8d85269e2bd8fb4450478796d838bd4815289d14a44bf0672179f88af38"
+        "sha256": "38f297699de956b74144c7c6e1362ea29727c051840522875264174c64de2c32"
       },
       {
         "kind": "file",
@@ -252,17 +244,17 @@
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-activation.mjs",
-        "sha256": "13291aaca361577e82430f6d06f7249bb8ba325d71faf40e3ef8df16fb2f30cb"
+        "sha256": "3a12fc3012ac9e73d102b564eb43c98f3005c5c5e5f00111538e2a37b1ec3aaf"
       },
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-delta-review.mjs",
-        "sha256": "98bf1664965f312df61fb61fcfc5717cfad30d1760da4dbc5d6a4b63494b2f62"
+        "sha256": "9416ae16d2021a75c715d8e946301f2be755f48d62edc840e5b55927c7d14dea"
       },
       {
         "kind": "file",
         "path": "scripts/i18n/german-runtime-policy.mjs",
-        "sha256": "5251d9b119a0459204d3021293eaa5a272c9bea3358004401f42210d294fbc2b"
+        "sha256": "3d0901a23bae02f383ea8ab67c2e5e42bdda081e1e3f33a09257350a3ae2f480"
       },
       {
         "kind": "file",
@@ -397,7 +389,7 @@
       {
         "kind": "file",
         "path": "src/locales/de-DE/pages.ts",
-        "sha256": "988a8157752e242a3b42d2a9005b3bc621feb6a75cf61a0065fead43af1fd0e1"
+        "sha256": "8a398b526e06d51bd3469c26810db2cbde6235550dbdcfdc42997103b8e39ad0"
       },
       {
         "kind": "file",
@@ -420,6 +412,6 @@
         "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
       }
     ],
-    "inputDigest": "8adf8d543b068f162be2a2de1af3ef26c375c70f2e539cdbab1713d12b878abc"
+    "inputDigest": "50fc68e13579bc81839d3fa7543c67261743566da44bf5b0f1a202fc7e176cdf"
   }
 }

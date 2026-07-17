@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
-lastReviewedNote: 'Retained the checked-in reference and recorded Issue #611 clean-runner privacy and Node-bootstrap regression coverage.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 selector coverage and the V8-safe single-worker recycle boundary; full closure remains intact with no new queue.'
 ---
 
 # Testing Execution State
@@ -46,12 +46,13 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
-- the active German runtime preserves the frozen Issue #601 approval snapshot and adds exact runtime-manifest assembly plus a hash-bound, ignored local Issue #602 delta check; the 24 new messages, 2 modified baseline messages, and 2 external-family decisions are reviewed as one 28-item delta without recording reviewer details in Git or GitHub
-- German structural proof uses `i18n:audit`, the frozen `i18n:de:pilot` check, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; focused proof stays in the edit loop and each delivery gets one post-commit full gate through `push:checked`
-- clean-checkout German suites inject missing private confirmation paths and require every tracked structural finding to stay at zero; generated temporary forms retain positive and fail-closed approval coverage without making `.local` a repository-gate input
+- the active German runtime freezes merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and binds Issue #606's 48 new release messages to one ignored local delta check without recording reviewer details in Git or GitHub
+- German structural proof uses `i18n:audit`, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; the historical frozen `i18n:de:pilot` check remains independently fail-closed, focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
+- clean-checkout German suites inject missing private confirmation paths and require every tracked structural finding to stay at zero; the active-runtime suite expects only the Issue #606 delta-confirmation finding, while generated temporary forms retain positive and fail-closed approval coverage without making `.local` a repository-gate input
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
-- the production Release Gate delegates the complete coverage-enabled suite to one `prepush:gate` step and no longer repeats all Jest tests through an earlier standalone `test:ci`
+- the production Release Gate delegates the complete test inventory to one `prepush:gate` step: the nested-process receipt suite runs once without coverage in its own Jest process, while every remaining suite runs once through a single-worker coordinator that recycles workers above `64MB` and retains unchanged 100% `src/**` coverage; no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
+- Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
