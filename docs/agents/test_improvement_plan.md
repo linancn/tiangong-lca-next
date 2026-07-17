@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained Issue #606 service/read-panel and scoped-first proof while adopting the Issue #611 clean-runner recovery, without reopening the long-term testing strategy.'
+lastReviewedCommit: ba30c48a4157e5a30e3ab57b23263ae021923668
+lastReviewedNote: 'Reviewed the v0.0.48 version-only release checkpoint without reopening the long-term testing strategy.'
 ---
 
 # Testing Strategy

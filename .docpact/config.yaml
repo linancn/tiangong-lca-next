@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-17'
-lastReviewedCommit: '8ad1c1692ccf2bdac8b06762cf840185ab7a55bb'
-lastReviewedNote: 'Reviewed Issue #611 clean-runner release recovery; test-gate and i18n script ownership remain correctly covered by the existing rule graph.'
+lastReviewedCommit: 'ba30c48a4157e5a30e3ab57b23263ae021923668'
+lastReviewedNote: 'Reviewed the v0.0.48 version-only release checkpoint; ownership, routing, and the test-gate rule graph are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

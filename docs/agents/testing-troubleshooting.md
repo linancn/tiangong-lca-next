@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained Issue #606 focused-suite and active-delta recovery guidance while adopting Issue #611 clean-runner provenance, private-evidence, and setup-node hook recovery.'
+lastReviewedCommit: ba30c48a4157e5a30e3ab57b23263ae021923668
+lastReviewedNote: 'Reviewed the v0.0.48 version-only release checkpoint; focused-test, localization, and managed-push recovery guidance is unchanged.'
 ---
 
 # Testing Troubleshooting

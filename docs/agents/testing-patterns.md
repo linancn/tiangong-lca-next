@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained Issue #606 transport, integrity, component, and 48-message delta proof while adopting Issue #611 clean-runner evidence separation and active-Node hook coverage.'
+lastReviewedCommit: ba30c48a4157e5a30e3ab57b23263ae021923668
+lastReviewedNote: 'Reviewed the v0.0.48 version-only release checkpoint; testing, localization, and managed-push patterns are unchanged.'
 ---
 
 # Testing Patterns Reference
