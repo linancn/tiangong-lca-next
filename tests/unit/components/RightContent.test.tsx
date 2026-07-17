@@ -19,7 +19,6 @@ type IconProps = {
 
 const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
-const mockSelectLangClick = jest.fn();
 let renderedLocales: Array<Record<string, unknown>> = [];
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
@@ -53,12 +52,7 @@ jest.mock('@umijs/max', () => ({
   }) => {
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
-      <button
-        data-testid='select-lang'
-        type='button'
-        style={style ?? {}}
-        onClick={mockSelectLangClick}
-      >
+      <button data-testid='select-lang' type='button' style={style ?? {}}>
         language selector
       </button>
     );
@@ -86,7 +80,6 @@ afterEach(() => {
   mockHandleClick.mockClear();
   configProviderThemes.length = 0;
   mockLocale = 'zh-CN';
-  mockSelectLangClick.mockClear();
   renderedLocales = [];
   mockAvailableLocales = defaultAvailableLocales();
 });
@@ -207,22 +200,10 @@ describe('RightContent Components', () => {
     ]);
   });
 
-  it('opens the language menu from keyboard interaction on the accessible wrapper', () => {
-    render(<SelectLang />);
+  it('renders the Umi selector directly without an extra action wrapper', () => {
+    const { container } = render(<SelectLang />);
 
-    const selectorWrapper = screen.getByRole('button', { name: 'Select a language' });
-    fireEvent.keyDown(selectorWrapper, { key: 'Enter' });
-    fireEvent.keyDown(selectorWrapper, { key: ' ' });
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(2);
-  });
-
-  it('opens the language menu from a direct wrapper click', () => {
-    render(<SelectLang />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Select a language' }));
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(1);
+    expect(container.firstElementChild).toBe(screen.getByTestId('select-lang'));
   });
 
   it('synthesizes a supported locale entry when Umi omits one', () => {

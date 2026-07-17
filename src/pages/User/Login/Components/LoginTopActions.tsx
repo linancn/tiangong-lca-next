@@ -35,15 +35,19 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
     window.open(docsUrl);
   };
 
+  const openLanguageMenu = () => {
+    const trigger = langActionRef.current?.querySelector<HTMLElement>(
+      '.ant-dropdown-trigger, button, [role="button"], a, span',
+    );
+    trigger?.click();
+  };
+
   const handleLanguageFrameClick = (event: React.MouseEvent<HTMLDivElement>) => {
     // Keep native SelectLang behavior when clicking its own trigger.
     if (event.target !== event.currentTarget) {
       return;
     }
-    const trigger = langActionRef.current?.querySelector<HTMLElement>(
-      'button, [role="button"], .ant-dropdown-trigger, a, span',
-    );
-    trigger?.click();
+    openLanguageMenu();
   };
 
   const handleActionKeyDown = (
@@ -122,7 +126,14 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
         <div
           ref={langActionRef}
           data-testid='login-language-frame'
+          role='button'
+          tabIndex={0}
+          aria-label={intl.formatMessage({
+            id: 'pages.lang.select',
+            defaultMessage: 'Select a language',
+          })}
           onClick={handleLanguageFrameClick}
+          onKeyDown={(event) => handleActionKeyDown(event, openLanguageMenu)}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -134,7 +145,7 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
             backgroundColor: hoveredAction === 'lang' ? actionHoverBg : undefined,
           }}
         >
-          <SelectLang style={{ padding: 0, color: actionColor }} />
+          <SelectLang style={{ padding: 0, color: actionColor, fontSize: 16, lineHeight: 1 }} />
         </div>
       </div>
       <div
