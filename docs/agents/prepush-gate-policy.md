@@ -25,7 +25,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
 lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
-lastReviewedNote: 'Reviewed Issue #614 focused UI proof; hook ownership, single full-gate policy, and managed-push recovery are unchanged.'
+lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker recycle boundary; single full-gate ownership and 100% src coverage remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -98,10 +98,10 @@ It does not own:
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
 - protect the actual local and release gates
-- keep one full Jest execution inside each production release workflow; `prepush:gate` already owns the coverage-enabled complete suite, so do not precede it with a second standalone `test:ci`
+- keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run
-- reproduce Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially on one workstation when they are needed; the full gate already contains coverage
+- reproduce Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially on one workstation when they are needed; the full gate already contains the complete test inventory and unchanged 100% `src/**` coverage
 - keep `100%` coverage on every tracked file, and treat any direct-collection exclusions as a reviewed exception rather than a default pattern

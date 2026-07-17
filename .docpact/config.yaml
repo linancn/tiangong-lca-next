@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-17'
 lastReviewedCommit: '7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea'
-lastReviewedNote: 'Reviewed Issue #614 text-only application language selector; routing, ownership, and review requirements remain unchanged.'
+lastReviewedNote: 'Reviewed Issue #614 text-only selector and the V8-safe single-worker coverage model; testing and gate ownership remain covered by the existing rule graph.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

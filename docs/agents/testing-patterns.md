@@ -23,7 +23,7 @@ checkPaths:
   - package.json
 lastReviewedAt: 2026-07-17
 lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
-lastReviewedNote: 'Reviewed Issue #614 component assertions and one targeted browser smoke; established testing patterns remain sufficient.'
+lastReviewedNote: 'Reviewed Issue #614 component proof and the V8-safe single-worker recycle pattern for long-running coverage.'
 ---
 
 # Testing Patterns Reference
@@ -105,6 +105,7 @@ Special cases:
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
+- when a long in-band coverage run reproducibly crashes the native runtime, isolate any operational suite that imports no `src/**`, then run all remaining suites through one worker at a time with a documented idle-memory recycle boundary; lock the exact selection/exclusion and worker contract in the isolated suite, and let the coordinator retain the global 100% source threshold across worker replacements
 
 ## Focused Command Shapes
 
