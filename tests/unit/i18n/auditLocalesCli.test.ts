@@ -1,4 +1,4 @@
-import { execFileSync } from 'child_process';
+import { execFileSync, spawnSync } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -216,6 +216,90 @@ describe('locale audit CLI schema defaults', () => {
           ]),
         }),
       ]);
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  it('keeps check provenance pinned when the ambient base branch moves', () => {
+    const root = initializeAuditFixture();
+    const manifestPath = path.join(root, 'manifest.json');
+    const gitEnvironment = createIsolatedGitEnvironment();
+    const git = (args: string[]) =>
+      execFileSync('git', args, { cwd: root, encoding: 'utf8', env: gitEnvironment }).trim();
+    const runAudit = (args: string[]) =>
+      spawnSync(process.execPath, [AUDIT_SCRIPT, '--root', root, ...args], {
+        encoding: 'utf8',
+        env: gitEnvironment,
+      });
+
+    try {
+      const originalBase = git(['rev-parse', 'HEAD']);
+      git(['update-ref', 'refs/remotes/origin/dev', originalBase]);
+      const written = runAudit([
+        '--base-ref',
+        'origin/dev',
+        '--mode',
+        'report',
+        '--write',
+        '--manifest',
+        manifestPath,
+      ]);
+      expect(written.status).toBe(0);
+
+      writeFixtureFile(root, 'unrelated.txt', 'unrelated checkpoint\n');
+      git(['add', 'unrelated.txt']);
+      git([
+        '-c',
+        'user.name=Locale Audit Test',
+        '-c',
+        'user.email=locale-audit@example.invalid',
+        'commit',
+        '--quiet',
+        '-m',
+        'unrelated checkpoint',
+      ]);
+      const movedBase = git(['rev-parse', 'HEAD']);
+      git(['update-ref', 'refs/remotes/origin/dev', movedBase]);
+
+      const pinnedCheck = runAudit(['--mode', 'report', '--check', '--manifest', manifestPath]);
+      expect(pinnedCheck.status).toBe(0);
+      expect(JSON.parse(pinnedCheck.stdout)).toEqual(
+        expect.objectContaining({
+          staleManifest: false,
+          source: expect.objectContaining({
+            baseRef: 'origin/dev',
+            baseCommit: originalBase,
+          }),
+        }),
+      );
+
+      const explicitMovingCheck = runAudit([
+        '--base-ref',
+        'origin/dev',
+        '--mode',
+        'report',
+        '--check',
+        '--manifest',
+        manifestPath,
+      ]);
+      expect(explicitMovingCheck.status).toBe(1);
+      expect(JSON.parse(explicitMovingCheck.stdout).staleManifest).toBe(true);
+
+      writeFixtureFile(
+        root,
+        'src/locales/de-DE.ts',
+        "export default { 'fixture.schema.required': 'Geänderter Validierungshinweis' };\n",
+      );
+      const auditedInputCheck = runAudit([
+        '--mode',
+        'report',
+        '--check',
+        '--manifest',
+        manifestPath,
+      ]);
+      expect(auditedInputCheck.status).toBe(1);
+      expect(JSON.parse(auditedInputCheck.stdout).staleManifest).toBe(true);
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
     }

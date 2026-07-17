@@ -55,7 +55,8 @@ Options:
   --refresh-decisions      replace the generated decision register (requires --write)
   --check                  fail if the checked-in manifest differs from current output
   --root <path>            repository root (default: current working directory)
-  --base-ref <ref>         commit/ref recorded as the audited baseline (default: origin/dev)
+  --base-ref <ref>         commit/ref recorded as the audited baseline (default on write: origin/dev;
+                           check reuses checked-in provenance unless this option is explicit)
   --manifest <path>        manifest path relative to root
   --decisions <path>       decision-register path relative to root
   --dynamic-registry <path>
@@ -72,6 +73,7 @@ function parseArgs(argv) {
     check: false,
     root: process.cwd(),
     baseRef: 'origin/dev',
+    baseRefExplicit: false,
     manifest: DEFAULT_MANIFEST,
     decisions: DEFAULT_DECISIONS,
     dynamicRegistry: DEFAULT_DYNAMIC_REGISTRY,
@@ -106,6 +108,7 @@ function parseArgs(argv) {
         '--dynamic-registry': 'dynamicRegistry',
       }[argument];
       options[key] = value;
+      if (key === 'baseRef') options.baseRefExplicit = true;
     } else throw new Error(`Unknown argument: ${argument}`);
   }
   if (!['report', 'enforce'].includes(options.mode))
@@ -1006,7 +1009,7 @@ function auditInputDigest(root, paths) {
   return hash.digest('hex');
 }
 
-function buildManifest(root, baseRef, dynamicRegistryPath) {
+function buildManifest(root, baseRef, dynamicRegistryPath, pinnedBaseCommit = null) {
   const scanErrors = [];
   const unsupportedSyntax = [];
   const invalidIcuMessages = [];
@@ -1275,10 +1278,12 @@ function buildManifest(root, baseRef, dynamicRegistryPath) {
     Object.entries(findings).map(([key, values]) => [key, values.length]),
   );
   const violationCount = Object.values(violationCounts).reduce((sum, value) => sum + value, 0);
-  const baseCommit = execFileSync('git', ['rev-parse', '--verify', `${baseRef}^{commit}`], {
-    cwd: root,
-    encoding: 'utf8',
-  }).trim();
+  const baseCommit =
+    pinnedBaseCommit ??
+    execFileSync('git', ['rev-parse', '--verify', `${baseRef}^{commit}`], {
+      cwd: root,
+      encoding: 'utf8',
+    }).trim();
   const auditedInputPaths = [
     dynamicRegistry.path ?? dynamicRegistryPath,
     ...runtime.sourceFiles,
@@ -1500,10 +1505,53 @@ function writeFileEnsuringDirectory(filePath, content) {
   fs.writeFileSync(filePath, content);
 }
 
+function resolveBaseProvenance(options, manifestPath) {
+  if (options.check && !options.baseRefExplicit && fs.existsSync(manifestPath)) {
+    const checkedManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const baseRef = checkedManifest?.source?.baseRef;
+    const baseCommit = checkedManifest?.source?.baseCommit;
+    if (typeof baseRef !== 'string' || !/^[0-9a-f]{40}$/u.test(baseCommit ?? '')) {
+      throw new Error('The checked-in manifest has invalid source base provenance.');
+    }
+    const resolvedCommit = execFileSync(
+      'git',
+      ['rev-parse', '--verify', `${baseCommit}^{commit}`],
+      {
+        cwd: options.root,
+        encoding: 'utf8',
+      },
+    ).trim();
+    if (resolvedCommit !== baseCommit) {
+      throw new Error('The checked-in manifest source commit does not resolve exactly.');
+    }
+    try {
+      execFileSync('git', ['merge-base', '--is-ancestor', baseCommit, 'HEAD'], {
+        cwd: options.root,
+        stdio: 'ignore',
+      });
+    } catch {
+      throw new Error('The checked-in manifest source commit must remain an ancestor of HEAD.');
+    }
+    return { baseRef, baseCommit };
+  }
+
+  const baseCommit = execFileSync('git', ['rev-parse', '--verify', `${options.baseRef}^{commit}`], {
+    cwd: options.root,
+    encoding: 'utf8',
+  }).trim();
+  return { baseRef: options.baseRef, baseCommit };
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const manifest = buildManifest(options.root, options.baseRef, options.dynamicRegistry);
   const manifestPath = path.resolve(options.root, options.manifest);
+  const baseProvenance = resolveBaseProvenance(options, manifestPath);
+  const manifest = buildManifest(
+    options.root,
+    baseProvenance.baseRef,
+    options.dynamicRegistry,
+    baseProvenance.baseCommit,
+  );
   const manifestText = await prettier.format(JSON.stringify(manifest), {
     ...(await prettier.resolveConfig(manifestPath)),
     filepath: manifestPath,

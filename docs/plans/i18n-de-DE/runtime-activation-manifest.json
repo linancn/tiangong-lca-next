@@ -242,7 +242,7 @@
       {
         "kind": "file",
         "path": "scripts/i18n/audit-locales.mjs",
-        "sha256": "71788d1b91cddbf8941dc5544cf635e89f6e1e9ef739f1f9b91385f83f9d7cd7"
+        "sha256": "79f5200ef8baeaeff2ab47ee9906d3c240752e31720ace80137a2c0c89ea5ed3"
       },
       {
         "kind": "file",
@@ -420,6 +420,6 @@
         "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
       }
     ],
-    "inputDigest": "bcd6dd8de7c11da355e9515c244a01ea1a1c5bd69c58c7017af640bf75c02b58"
+    "inputDigest": "8adf8d543b068f162be2a2de1af3ef26c375c70f2e539cdbab1713d12b878abc"
   }
 }

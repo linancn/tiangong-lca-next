@@ -212,9 +212,6 @@ jobs:
           release_base="${{ needs.release-context.outputs.release_base }}"
           npm run docpact:gate -- --base "$release_base" --head "$release_head"
 
-      - name: Run CI tests
-        run: npm run test:ci
-
       - name: Run full release gate
         run: npm run prepush:gate
 

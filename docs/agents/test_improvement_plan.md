@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-checkpoint full gate without reopening gate-infrastructure strategy.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 8ad1c1692ccf2bdac8b06762cf840185ab7a55bb
+lastReviewedNote: 'Reviewed Issue #611 clean-runner recovery without reopening the long-term testing strategy.'
 ---
 
 # Testing Strategy
@@ -38,8 +38,10 @@ lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-chec
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 - localization quality should combine deterministic topology/context/hash gates with local human language/domain confirmation; Jest validates form integrity and privacy boundaries but never claims that an automated audit proves fluency
+- clean-runner localization tests should prove tracked structure with explicitly absent private forms, while generated temporary approvals separately cover the fail-closed local human-evidence path
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
+- each production release workflow should also have one full-suite owner: coverage-enabled `prepush:gate`, without a preceding duplicate `test:ci`
 
 ## Operating Principles
 
