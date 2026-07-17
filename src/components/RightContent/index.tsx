@@ -15,14 +15,6 @@ interface SelectLangProps {
   style?: React.CSSProperties;
 }
 
-type UmiSelectLangDropdownProps = React.ComponentProps<typeof UmiSelectLang> & {
-  overlayClassName?: string;
-};
-
-const textOnlyLanguageDropdownProps: UmiSelectLangDropdownProps = {
-  overlayClassName: 'tg-language-selector-dropdown',
-};
-
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
   const intl = useIntl();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,7 +46,6 @@ export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
       }}
     >
       <UmiSelectLang
-        {...textOnlyLanguageDropdownProps}
         style={{
           padding: 4,
           ...style,
@@ -63,15 +54,13 @@ export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
           const localesByKey = new Map(locales.map((locale) => [locale.lang, locale]));
           return SUPPORTED_APP_LOCALES.map((locale) => {
             const existingLocale = localesByKey.get(locale) ?? { lang: locale };
-            const localeWithoutIcon = { ...existingLocale };
-            delete localeWithoutIcon.icon;
 
             if (locale !== 'de-DE') {
-              return localeWithoutIcon;
+              return existingLocale;
             }
 
             return {
-              ...localeWithoutIcon,
+              ...existingLocale,
               lang: 'de-DE',
               label: 'Deutsch',
               title: 'Deutsch',
