@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained Issue #606 service/read-panel and scoped-first proof while adopting the Issue #611 clean-runner recovery, without reopening the long-term testing strategy.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker recycle boundary; the full-closure strategy and quality bar remain unchanged.'
 ---
 
 # Testing Strategy
@@ -41,7 +41,7 @@ lastReviewedNote: 'Retained Issue #606 service/read-panel and scoped-first proof
 - clean-runner localization tests should prove tracked structure with explicitly absent private forms, while generated temporary approvals separately cover the fail-closed local human-evidence path
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
-- each production release workflow should also have one full-suite owner: coverage-enabled `prepush:gate`, without a preceding duplicate `test:ci`
+- each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, recycles that worker at the documented memory boundary, and retains unchanged 100% `src/**` coverage without a preceding duplicate `test:ci` or coverage run
 
 ## Operating Principles
 
