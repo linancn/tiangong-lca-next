@@ -76,6 +76,31 @@ describe('localeFormatting', () => {
     );
   });
 
+  it('uses the deterministic list fallback when Intl.ListFormat throws', () => {
+    const listFormatDescriptor = Object.getOwnPropertyDescriptor(Intl, 'ListFormat');
+    class ThrowingListFormat {
+      constructor() {
+        throw new RangeError('formatter unavailable');
+      }
+    }
+    Object.defineProperty(Intl, 'ListFormat', {
+      configurable: true,
+      value: ThrowingListFormat,
+    });
+
+    try {
+      expect(formatLocaleList(['Vue d’ensemble', 'Coordonnées'], 'fr-FR')).toBe(
+        'Vue d’ensemble et Coordonnées',
+      );
+    } finally {
+      if (listFormatDescriptor) {
+        Object.defineProperty(Intl, 'ListFormat', listFormatDescriptor);
+      } else {
+        Reflect.deleteProperty(Intl, 'ListFormat');
+      }
+    }
+  });
+
   it.each([
     ['en-US', 0, ', '],
     ['en-US', 1, ', and '],
@@ -150,5 +175,30 @@ describe('localeFormatting', () => {
         timeStyle: 'medium',
       }).format(timestamp),
     );
+  });
+
+  it('uses the stable date fallback when Intl.DateTimeFormat throws', () => {
+    const dateTimeFormatDescriptor = Object.getOwnPropertyDescriptor(Intl, 'DateTimeFormat');
+    const value = '2026-07-16T08:30:00Z';
+    const expected = new Date(Date.parse(value)).toLocaleString('en-US');
+    class ThrowingDateTimeFormat {
+      constructor() {
+        throw new RangeError('formatter unavailable');
+      }
+    }
+    Object.defineProperty(Intl, 'DateTimeFormat', {
+      configurable: true,
+      value: ThrowingDateTimeFormat,
+    });
+
+    try {
+      expect(formatLocaleDateTime(value, 'fr-FR')).toBe(expected);
+    } finally {
+      if (dateTimeFormatDescriptor) {
+        Object.defineProperty(Intl, 'DateTimeFormat', dateTimeFormatDescriptor);
+      } else {
+        Reflect.deleteProperty(Intl, 'DateTimeFormat');
+      }
+    }
   });
 });

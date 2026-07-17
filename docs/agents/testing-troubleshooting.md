@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - package.json
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Updated recovery paths for registry-driven locale artifacts and the frozen-history versus active German correction boundary.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the Issue #625 99.97% hook failure: use coverage-final.json to isolate zero-count statements/branches, then prove only those boundaries before a new checked HEAD.'
 ---
 
 # Testing Troubleshooting

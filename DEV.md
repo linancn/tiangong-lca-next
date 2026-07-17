@@ -20,9 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Added the registry-driven active-locale context, quality, correction, and activation commands; historical German confirmation tools remain snapshot-only.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the exact fallback and route-policy coverage closure after the French locale delivery; the documented bootstrap commands and safe work loop remain current.'
 ---
 
 # Development Bootstrap

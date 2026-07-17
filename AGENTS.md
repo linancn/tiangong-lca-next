@@ -26,9 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Activated the shared locale registry and automated context, quality, correction, and activation boundary; historical German confirmations now govern frozen snapshots only.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the exact fallback and route-policy coverage closure after the French locale delivery; repository ownership, bootstrap commands, and validation boundaries remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

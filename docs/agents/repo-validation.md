@@ -22,9 +22,9 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Updated active locale proof for the shared context, quality, correction, and activation gates; German private confirmations now retain frozen-history semantics only.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the Issue #625 focused 100% closure for route-pattern, unsupported-locale, and Intl-constructor fallback branches; validation order is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -1179,6 +1179,16 @@ describe('General Utility Functions', () => {
       );
     });
 
+    it('should fall back to English validation copy for an unsupported app locale', () => {
+      expect(
+        getLangValidationErrorMessage(
+          [{ path: 'baseName', code: 'missing_en', message: 'x' }],
+          5,
+          'es-ES',
+        ),
+      ).toBe('Save failed, the following fields are missing English: baseName.');
+    });
+
     it('should return empty string when there are no issues', () => {
       expect(getLangValidationErrorMessage([])).toBe('');
       expect(getLangValidationErrorMessage(undefined as any)).toBe('');

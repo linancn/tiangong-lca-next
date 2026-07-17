@@ -20,9 +20,9 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Recorded the active locale automation boundary and German correction-overlay baseline; final French delivery proof remains in progress.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the Issue #625 hook result and its focused 206-test, 100% closure; the checked-in reference baseline remains intentionally separate from per-PR evidence.'
 ---
 
 # Testing Execution State

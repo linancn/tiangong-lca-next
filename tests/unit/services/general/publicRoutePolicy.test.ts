@@ -45,6 +45,22 @@ describe('public route policy', () => {
     expect(futurePolicy('/another-missing-route')).toBe(true);
   });
 
+  it('normalizes path aliases and protects nested wildcards and optional parameters', () => {
+    const edgePatternPolicy = createPublicRoutePolicy(
+      [{ path: '/assets/*' }, { path: '/reports/:reportId?' }, { path: '*' }],
+      {
+        exactPublicPaths: ['welcome'],
+        publicUnknownFallback: true,
+      },
+    );
+
+    expect(edgePatternPolicy('welcome')).toBe(true);
+    expect(edgePatternPolicy('/assets/icons/logo.svg')).toBe(false);
+    expect(edgePatternPolicy('/reports')).toBe(false);
+    expect(edgePatternPolicy('/reports/42')).toBe(false);
+    expect(edgePatternPolicy('/outside')).toBe(true);
+  });
+
   it('does not make unknown paths public when no wildcard route exists', () => {
     const noFallbackPolicy = createPublicRoutePolicy([{ path: '/known' }], {
       exactPublicPaths: [],

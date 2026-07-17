@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Reviewed registry-driven locale context, quality, correction, route-view, and activation proof; the full-closure strategy and quality bar remain unchanged.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed the Issue #625 focused coverage closure after all 4,648 existing tests passed below the 100% threshold; the full-closure strategy remains unchanged.'
 ---
 
 # Testing Strategy

@@ -21,9 +21,9 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Updated reusable localization patterns for autonomous context-grounded review, route-view closure, and tracked existing-translation corrections.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
+lastReviewedNote: 'Reviewed Issue #625 route-pattern and Intl fallback coverage: focused tests restore mutated property descriptors and prove matchers against an enabled wildcard fallback.'
 ---
 
 # Testing Patterns Reference
