@@ -24,8 +24,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Reviewed Issue #606 merge and retry handling with the Issue #611 clean-runner Node 24 bootstrap; hook ownership, full-coverage policy, and bounded managed-push recovery are unchanged.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 focused UI proof; hook ownership, single full-gate policy, and managed-push recovery are unchanged.'
 ---
 
 # Pre-Push Gate Policy

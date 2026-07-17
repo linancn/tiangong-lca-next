@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained Issue #606 focused-suite and active-delta recovery guidance while adopting Issue #611 clean-runner provenance, private-evidence, and setup-node hook recovery.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 after browser smoke caught a dev-runtime Umi initialization hazard; troubleshooting guidance remains sufficient.'
 ---
 
 # Testing Troubleshooting

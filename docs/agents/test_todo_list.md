@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained the checked-in full-closure reference and recorded Issue #606 release proof together with Issue #611 clean-runner privacy and Node-bootstrap regression coverage.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 selector regression coverage; no new durable testing TODO or closure-state change is required.'
 ---
 
 # Testing Execution State

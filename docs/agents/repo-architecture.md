@@ -21,9 +21,9 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: 99300c319ed07e489b1c67bdecc130a5b3497e85
-lastReviewedNote: 'Activated the single de-DE product locale and added the Issue #606 persisted Calculation Bundle and public release-read paths while preserving their separate ownership and language boundaries.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 text-only language options across the shared login and application-header selector; architecture and ownership boundaries are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

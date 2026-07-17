@@ -23,8 +23,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Retained focused Calculation Bundle and Release-read proof while adapting the Issue #606 48-message German delta to the Issue #611 clean-runner and setup-node-compatible gate.'
+lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
+lastReviewedNote: 'Reviewed Issue #614 with focused selector, login, app-shell, browser, lint, and build proof; the validation matrix is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
