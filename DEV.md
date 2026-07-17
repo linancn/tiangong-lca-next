@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
-lastReviewedNote: 'Reviewed Issue #606 against the active German delta workflow and the Issue #611 clean-runner Node 24 bootstrap; the shortest managed final-push loop is unchanged.'
+lastReviewedCommit: f86df7f273c4975a66bd04d74181ca8f31224979
+lastReviewedNote: 'Reviewed the v0.0.48 version-only release checkpoint; bootstrap commands and the shortest managed final-push loop are unchanged.'
 ---
 
 # Development Bootstrap
