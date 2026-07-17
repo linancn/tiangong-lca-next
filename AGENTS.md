@@ -27,8 +27,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 shared selector/header UI and the v0.0.49 release metadata; repo ownership, branch facts, and hard boundaries are unchanged.'
+lastReviewedCommit: 2a523ea50a3aa38733e78c2294114bbd8058f68d
+lastReviewedNote: 'Registered the reusable i18n language delivery Goal and reviewed its native Umi flag-selector contract; repo ownership, branch facts, and hard boundaries are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -79,6 +79,7 @@ Additional governed source docs, not part of the default first-load surface:
 | Document | Owns | Does not own |
 | --- | --- | --- |
 | `README.md` and `README_CN.md` | repo landing context and high-level product overview | repo contract, proof bar, or branch policy truth |
+| `docs/agents/i18n-language-delivery-goal.md` | reusable end-to-end Goal for adding one context-grounded product language, including selector, validation, release, and workspace handoff | current runtime source truth, language-specific translation evidence, or active task status |
 | `docs/agents/testing-patterns.md` | reusable test-selection and test-structure patterns | minimum proof bar or current queue state |
 | `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
 | `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
@@ -104,6 +105,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit command documented in `docs/agents/repo-validation.md`
+- the reusable autonomous Goal for adding one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons and keeps country/region variants outside the single-language product contract
 - the unified-German baseline, active-runtime assembly, delta-context review, blocked-context policy, and scoped commands live in `docs/plans/i18n-de-DE/README.md`; the product exposes exactly one canonical German locale, `de-DE`, normalizes supported `de` / `de-*` aliases to it, and keeps completed human confirmation in ignored local Markdown rather than GitHub or tracked artifacts
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
