@@ -23,8 +23,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker Jest gate; the complete test inventory and 100% src coverage bar remain authoritative.'
+lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
+lastReviewedNote: 'Reviewed Issue #621 focused UI proof, browser measurements, and the v0.0.49 release checkpoint; the proof matrix and protected-branch gate remain authoritative.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

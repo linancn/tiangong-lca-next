@@ -19,9 +19,7 @@ type IconProps = {
 
 const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
-const mockSelectLangClick = jest.fn();
 let renderedLocales: Array<Record<string, unknown>> = [];
-let renderedOverlayClassName: string | undefined;
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
@@ -46,23 +44,15 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@umijs/max', () => ({
   SelectLang: ({
-    overlayClassName,
     postLocalesData,
     style,
   }: {
-    overlayClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
     style?: Record<string, unknown>;
   }) => {
-    renderedOverlayClassName = overlayClassName;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
-      <button
-        data-testid='select-lang'
-        type='button'
-        style={style ?? {}}
-        onClick={mockSelectLangClick}
-      >
+      <button data-testid='select-lang' type='button' style={style ?? {}}>
         language selector
       </button>
     );
@@ -90,9 +80,7 @@ afterEach(() => {
   mockHandleClick.mockClear();
   configProviderThemes.length = 0;
   mockLocale = 'zh-CN';
-  mockSelectLangClick.mockClear();
   renderedLocales = [];
-  renderedOverlayClassName = undefined;
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -109,6 +97,12 @@ jest.mock('antd', () => {
 
   return {
     ConfigProvider,
+    Tooltip: ({ children, title }: { children: ReactNode; title: ReactNode }) => (
+      <>
+        {children}
+        <span role='tooltip'>{title}</span>
+      </>
+    ),
     theme,
   };
 });
@@ -145,6 +139,10 @@ describe('RightContent Components', () => {
 
     const button = screen.getByRole('button', { name: 'Help' });
 
+    expect(button).toHaveClass('tg-global-header-help-action');
+    expect(button).not.toHaveAttribute('style');
+    expect(button).not.toHaveAttribute('title');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Help');
     fireEvent.click(button);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
@@ -178,7 +176,8 @@ describe('RightContent Components', () => {
     const helpButton = screen.getByRole('button', {
       name: 'Englische Hilfedokumentation öffnen',
     });
-    expect(helpButton).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    expect(helpButton).not.toHaveAttribute('title');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Englische Hilfedokumentation öffnen');
     fireEvent.click(helpButton);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
@@ -202,33 +201,20 @@ describe('RightContent Components', () => {
     });
   });
 
-  it('exposes the three product locales as text-only country-neutral options', () => {
+  it('preserves the Umi flag icons for the three product locales', () => {
     render(<SelectLang />);
 
-    expect(renderedOverlayClassName).toBe('tg-language-selector-dropdown');
     expect(renderedLocales).toEqual([
-      { lang: 'zh-CN', label: '简体中文' },
-      { lang: 'en-US', label: 'English' },
-      { lang: 'de-DE', label: 'Deutsch', title: 'Deutsch' },
+      { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳' },
+      { lang: 'en-US', label: 'English', icon: '🇺🇸' },
+      { lang: 'de-DE', label: 'Deutsch', icon: '🇩🇪', title: 'Deutsch' },
     ]);
   });
 
-  it('opens the language menu from keyboard interaction on the accessible wrapper', () => {
-    render(<SelectLang />);
+  it('renders the Umi selector directly without an extra action wrapper', () => {
+    const { container } = render(<SelectLang />);
 
-    const selectorWrapper = screen.getByRole('button', { name: 'Select a language' });
-    fireEvent.keyDown(selectorWrapper, { key: 'Enter' });
-    fireEvent.keyDown(selectorWrapper, { key: ' ' });
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(2);
-  });
-
-  it('opens the language menu from a direct wrapper click', () => {
-    render(<SelectLang />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Select a language' }));
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(1);
+    expect(container.firstElementChild).toBe(screen.getByTestId('select-lang'));
   });
 
   it('synthesizes a supported locale entry when Umi omits one', () => {

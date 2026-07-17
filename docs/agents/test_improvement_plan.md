@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker recycle boundary; the full-closure strategy and quality bar remain unchanged.'
+lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
+lastReviewedNote: 'Reviewed Issue #621 component proof and the v0.0.49 release checkpoint; the full-closure strategy and quality bar remain unchanged.'
 ---
 
 # Testing Strategy

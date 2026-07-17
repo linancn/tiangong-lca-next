@@ -24,10 +24,10 @@ jest.mock('umi', () => ({
 jest.mock('@/components/RightContent', () => ({
   __esModule: true,
   DarkMode: ({ isDarkMode }: any) => <span>{isDarkMode ? 'dark-on' : 'dark-off'}</span>,
-  SelectLang: () => (
-    <button type='button' onClick={mockSelectLangTrigger}>
+  SelectLang: ({ style }: any) => (
+    <span data-testid='select-lang-trigger' style={style} onClick={mockSelectLangTrigger}>
       select-lang-trigger
-    </button>
+    </span>
   ),
 }));
 
@@ -84,10 +84,25 @@ describe('LoginTopActions', () => {
 
     await userEvent.hover(screen.getByTestId('login-language'));
     await userEvent.unhover(screen.getByTestId('login-language'));
-    await userEvent.click(screen.getByTestId('login-language-frame'));
+    await userEvent.click(screen.getByRole('button', { name: 'Select a language' }));
 
     expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
     expect(screen.getByText('dark-on')).toBeInTheDocument();
+  });
+
+  it('keeps the login-only language action aligned to the 28px action frame', () => {
+    renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Select a language' })).toHaveStyle({
+      padding: '6px',
+      minWidth: '28px',
+      minHeight: '28px',
+    });
+    expect(screen.getByTestId('select-lang-trigger')).toHaveStyle({
+      padding: '0',
+      fontSize: '16px',
+      lineHeight: '1',
+    });
   });
 
   it('supports keyboard access for dark mode, language, and help actions', async () => {
@@ -96,14 +111,15 @@ describe('LoginTopActions', () => {
 
     screen.getByRole('button', { name: 'toggle-dark-mode' }).focus();
     await userEvent.keyboard('{Enter}');
-    screen.getByRole('button', { name: 'select-lang-trigger' }).focus();
+    screen.getByRole('button', { name: 'Select a language' }).focus();
+    await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
     screen.getByRole('button', { name: 'Open help documentation' }).focus();
     await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
 
     expect(onDarkModeToggle).toHaveBeenCalledTimes(1);
-    expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
+    expect(mockSelectLangTrigger).toHaveBeenCalledTimes(2);
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth');
     expect(window.open).toHaveBeenCalledTimes(2);
   });
@@ -111,7 +127,7 @@ describe('LoginTopActions', () => {
   it('keeps native language-trigger behavior when clicking the inner trigger directly', async () => {
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'select-lang-trigger' }));
+    await userEvent.click(screen.getByTestId('select-lang-trigger'));
 
     expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
   });
