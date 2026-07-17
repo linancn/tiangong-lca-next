@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 selector coverage and the V8-safe single-worker recycle boundary; full closure remains intact with no new queue.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 selector, compact login-frame, and header tooltip coverage; full closure remains intact with no new queue.'
 ---
 
 # Testing Execution State

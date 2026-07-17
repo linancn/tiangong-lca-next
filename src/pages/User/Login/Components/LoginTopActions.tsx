@@ -134,7 +134,7 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
             backgroundColor: hoveredAction === 'lang' ? actionHoverBg : undefined,
           }}
         >
-          <SelectLang style={{ padding: 0, color: actionColor }} />
+          <SelectLang style={{ padding: 0, color: actionColor, fontSize: 16, lineHeight: 1 }} />
         </div>
       </div>
       <div

@@ -23,8 +23,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker Jest gate; the complete test inventory and 100% src coverage bar remain authoritative.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 native locale-icon, direct-trigger, compact login-frame, ProLayout hover, and Ant Design tooltip proof; the complete test inventory and 100% src coverage bar remain authoritative.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

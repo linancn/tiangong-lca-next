@@ -27,8 +27,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 shared text-only language selector; repo ownership, branch facts, and hard boundaries are unchanged.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 shared native locale flags and header action alignment; repo ownership, branch facts, and hard boundaries are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

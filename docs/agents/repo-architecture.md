@@ -22,8 +22,8 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 text-only language options across the shared login and application-header selector; architecture and ownership boundaries are unchanged.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 native Umi language triggers, login-only compact framing, and ProLayout-owned header actions; architecture and ownership boundaries are unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 component proof and the V8-safe single-worker recycle pattern for long-running coverage.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 semantic shared-header component proof and retained the existing focused-component and single-worker coverage patterns.'
 ---
 
 # Testing Patterns Reference

@@ -24,8 +24,8 @@ jest.mock('umi', () => ({
 jest.mock('@/components/RightContent', () => ({
   __esModule: true,
   DarkMode: ({ isDarkMode }: any) => <span>{isDarkMode ? 'dark-on' : 'dark-off'}</span>,
-  SelectLang: () => (
-    <button type='button' onClick={mockSelectLangTrigger}>
+  SelectLang: ({ style }: any) => (
+    <button type='button' style={style} onClick={mockSelectLangTrigger}>
       select-lang-trigger
     </button>
   ),
@@ -88,6 +88,20 @@ describe('LoginTopActions', () => {
 
     expect(mockSelectLangTrigger).toHaveBeenCalledTimes(1);
     expect(screen.getByText('dark-on')).toBeInTheDocument();
+  });
+
+  it('keeps the login language trigger inside the same compact 28px action frame', () => {
+    renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
+
+    expect(screen.getByTestId('login-language-frame')).toHaveStyle({
+      minWidth: '28px',
+      minHeight: '28px',
+    });
+    expect(screen.getByRole('button', { name: 'select-lang-trigger' })).toHaveStyle({
+      padding: '0px',
+      fontSize: '16px',
+      lineHeight: '1',
+    });
   });
 
   it('supports keyboard access for dark mode, language, and help actions', async () => {

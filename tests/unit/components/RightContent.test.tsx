@@ -19,9 +19,8 @@ type IconProps = {
 
 const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
-const mockSelectLangClick = jest.fn();
 let renderedLocales: Array<Record<string, unknown>> = [];
-let renderedOverlayClassName: string | undefined;
+let renderedTooltipTitle: ReactNode;
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
@@ -46,23 +45,15 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@umijs/max', () => ({
   SelectLang: ({
-    overlayClassName,
     postLocalesData,
     style,
   }: {
-    overlayClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
     style?: Record<string, unknown>;
   }) => {
-    renderedOverlayClassName = overlayClassName;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
-      <button
-        data-testid='select-lang'
-        type='button'
-        style={style ?? {}}
-        onClick={mockSelectLangClick}
-      >
+      <button data-testid='select-lang' type='button' style={style ?? {}}>
         language selector
       </button>
     );
@@ -90,9 +81,8 @@ afterEach(() => {
   mockHandleClick.mockClear();
   configProviderThemes.length = 0;
   mockLocale = 'zh-CN';
-  mockSelectLangClick.mockClear();
   renderedLocales = [];
-  renderedOverlayClassName = undefined;
+  renderedTooltipTitle = undefined;
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -107,9 +97,15 @@ jest.mock('antd', () => {
     darkAlgorithm: 'dark-algorithm',
   };
 
+  const Tooltip = ({ children, title }: { children: ReactNode; title: ReactNode }) => {
+    renderedTooltipTitle = title;
+    return <>{children}</>;
+  };
+
   return {
     ConfigProvider,
     theme,
+    Tooltip,
   };
 });
 
@@ -178,7 +174,8 @@ describe('RightContent Components', () => {
     const helpButton = screen.getByRole('button', {
       name: 'Englische Hilfedokumentation öffnen',
     });
-    expect(helpButton).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    expect(helpButton).not.toHaveAttribute('title');
+    expect(renderedTooltipTitle).toBe('Englische Hilfedokumentation öffnen');
     fireEvent.click(helpButton);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
@@ -202,33 +199,20 @@ describe('RightContent Components', () => {
     });
   });
 
-  it('exposes the three product locales as text-only country-neutral options', () => {
+  it('preserves the three product locale flags and normalizes the German label', () => {
     render(<SelectLang />);
 
-    expect(renderedOverlayClassName).toBe('tg-language-selector-dropdown');
     expect(renderedLocales).toEqual([
-      { lang: 'zh-CN', label: '简体中文' },
-      { lang: 'en-US', label: 'English' },
-      { lang: 'de-DE', label: 'Deutsch', title: 'Deutsch' },
+      { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳' },
+      { lang: 'en-US', label: 'English', icon: '🇺🇸' },
+      { lang: 'de-DE', label: 'Deutsch', icon: '🇩🇪', title: 'Deutsch' },
     ]);
   });
 
-  it('opens the language menu from keyboard interaction on the accessible wrapper', () => {
-    render(<SelectLang />);
+  it('renders the native Umi language trigger as the component root', () => {
+    const { container } = render(<SelectLang />);
 
-    const selectorWrapper = screen.getByRole('button', { name: 'Select a language' });
-    fireEvent.keyDown(selectorWrapper, { key: 'Enter' });
-    fireEvent.keyDown(selectorWrapper, { key: ' ' });
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(2);
-  });
-
-  it('opens the language menu from a direct wrapper click', () => {
-    render(<SelectLang />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Select a language' }));
-
-    expect(mockSelectLangClick).toHaveBeenCalledTimes(1);
+    expect(container.firstElementChild).toBe(screen.getByTestId('select-lang'));
   });
 
   it('synthesizes a supported locale entry when Umi omits one', () => {

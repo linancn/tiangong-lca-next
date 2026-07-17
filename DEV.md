@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 focused UI proof and managed final-push flow; validation commands and gate ownership are unchanged.'
+lastReviewedCommit: c974ac7b46bacd32fbcd9b4c22913cc1a95c07d7
+lastReviewedNote: 'Reviewed Issue #621 local browser proof and managed final-push flow; bootstrap commands and gate ownership are unchanged.'
 ---
 
 # Development Bootstrap
