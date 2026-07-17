@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-16"
-lastReviewedCommit: "a9524dbb33b272e1c5526f33a0b8c758e186d170"
-lastReviewedNote: 'Added Issue #602 German runtime, classified the shared locale-formatting helper, and retained bounded failure-activated pre-push transport-retry ownership without changing repository boundaries.'
+lastReviewedAt: '2026-07-17'
+lastReviewedCommit: '8ad1c1692ccf2bdac8b06762cf840185ab7a55bb'
+lastReviewedNote: 'Reviewed Issue #611 clean-runner release recovery; test-gate and i18n script ownership remain correctly covered by the existing rule graph.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

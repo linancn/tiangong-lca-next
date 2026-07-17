@@ -27,8 +27,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: d178316406eb97ce93eb24f562922a61281e9d29
-lastReviewedNote: 'Reviewed Issue #606 Calculation Bundle and Release-read UI after merging the active German runtime; repo ownership, branch facts, and hard boundaries are unchanged.'
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Reviewed Issue #606 Calculation Bundle and Release-read UI after merging the Issue #611 clean-runner release-gate recovery; repo ownership, branch facts, and hard boundaries are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

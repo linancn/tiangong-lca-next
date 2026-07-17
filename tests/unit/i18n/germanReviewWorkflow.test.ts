@@ -83,10 +83,19 @@ function computeBodyDigest(file: string) {
 
 describe('German local human-review workflow', () => {
   it('builds a complete 90-message offline pilot scope without GitHub evidence fields', () => {
+    const missingConfirmation = `.local/i18n-de-DE/missing-pilot-${process.pid}-${Date.now()}.md`;
     const report = JSON.parse(
       execFileSync(
         process.execPath,
-        [FROZEN_REVIEW_SCRIPT, '--scope', 'pilot', '--mode', 'report'],
+        [
+          FROZEN_REVIEW_SCRIPT,
+          '--scope',
+          'pilot',
+          '--mode',
+          'report',
+          '--confirmation',
+          missingConfirmation,
+        ],
         {
           cwd: REPOSITORY_ROOT,
           encoding: 'utf8',
@@ -101,22 +110,15 @@ describe('German local human-review workflow', () => {
         schemaVersion: 'tiangong.i18n-de-frozen-review-check.v1',
         scope: 'pilot',
         snapshotMatches: true,
+        approved: false,
         counts: {
           pilotMessages: 90,
           blockedContextProposals: 9,
           blockedGlossaryTerms: 2,
         },
+        reasons: ['Local confirmation file is missing.'],
       }),
     );
-    expect([
-      { approved: true, missingConfirmation: false },
-      { approved: false, missingConfirmation: true },
-    ]).toContainEqual({
-      approved: report.approved,
-      missingConfirmation: (report.reasons ?? []).some((reason: string) =>
-        reason.includes('confirmation file is missing'),
-      ),
-    });
     expect(pack.schemaVersion).toBe('tiangong.i18n-de-pilot-review-pack.v6');
     expect(pack.messages).toHaveLength(90);
     expect(pack).not.toHaveProperty('reviewQueues');

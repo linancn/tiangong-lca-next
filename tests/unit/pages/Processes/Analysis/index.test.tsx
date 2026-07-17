@@ -654,7 +654,9 @@ describe('LcaAnalysisPage', () => {
     });
     render(<LcaAnalysisPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Load LCIA profile' }));
+    const loadProfileButton = await screen.findByRole('button', { name: 'Load LCIA profile' });
+    await waitFor(() => expect(loadProfileButton).toBeEnabled());
+    fireEvent.click(loadProfileButton);
 
     expect(await screen.findByText('snapshot-with-evidence')).toBeInTheDocument();
     expect(await screen.findByTestId('calculation-evidence-notice')).toHaveTextContent(

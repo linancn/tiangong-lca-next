@@ -21,9 +21,9 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Retained Issue #606 transport, integrity, and component behavior proof while adding the active German runtime delta pattern and managed final-push boundary.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Retained Issue #606 transport, integrity, component, and 48-message delta proof while adopting Issue #611 clean-runner evidence separation and active-Node hook coverage.'
 ---
 
 # Testing Patterns Reference
@@ -100,6 +100,11 @@ Special cases:
 10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
 11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
+13. keep clean-runner structure proof independent from ignored human evidence: inject a guaranteed-missing confirmation path, assert only the expected confirmation findings, and cover approved behavior with a generated private temporary form
+
+Gate-bootstrap pattern:
+
+- when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
 
 ## Focused Command Shapes
 

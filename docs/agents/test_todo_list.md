@@ -20,9 +20,9 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
-lastReviewedNote: 'Retained the checked-in full-closure reference and recorded Issue #602 German runtime plus Issue #606 Calculation Bundle and release-read proof.'
+lastReviewedAt: 2026-07-17
+lastReviewedCommit: f6f5cfaf79361e58dd20a01b5b3108a4e3eb4f56
+lastReviewedNote: 'Retained the checked-in full-closure reference and recorded Issue #606 release proof together with Issue #611 clean-runner privacy and Node-bootstrap regression coverage.'
 ---
 
 # Testing Execution State
@@ -47,9 +47,12 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - the active German runtime freezes merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and binds Issue #606's 48 new release messages to one ignored local delta check without recording reviewer details in Git or GitHub
-- German structural proof uses `i18n:audit`, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; focused proof stays in the edit loop and each delivery gets one post-commit full gate through `push:checked`
+- German structural proof uses `i18n:audit`, `i18n:de:runtime:manifest:check`, `i18n:de:delta:review:check`, and final `i18n:de:audit`; the historical frozen `i18n:de:pilot` check remains independently fail-closed, focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
+- clean-checkout German suites inject missing private confirmation paths and require every tracked structural finding to stay at zero; the active-runtime suite expects only the Issue #606 delta-confirmation finding, while generated temporary forms retain positive and fail-closed approval coverage without making `.local` a repository-gate input
+- pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
+- the production Release Gate delegates the complete coverage-enabled suite to one `prepush:gate` step and no longer repeats all Jest tests through an earlier standalone `test:ci`
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
-- Issue #606 adds 85-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
+- Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline
 - data workflow smoke fixtures now pair `fixtures/data/**` input JSON with `fixtures/result/**` expected-result Markdown; the current relationship map is in `tests/data-workflows/fixtures/result/README.md`
 - file-level coverage collection currently excludes a small set of UI orchestration wrappers from direct collection, including the canvas-heavy national carbon dashboard wallboard shell; if that list changes, re-check save, validation, navigation, highlighting, or visual screenshot flows before treating the baseline as settled
