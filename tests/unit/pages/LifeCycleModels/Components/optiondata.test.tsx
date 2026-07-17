@@ -3,12 +3,16 @@ import {
   licenseTypeOptions,
 } from '@/pages/LifeCycleModels/Components/optiondata';
 
-jest.mock('umi', () => ({
-  __esModule: true,
-  FormattedMessage: ({ defaultMessage, id }: any) => ({
-    props: { defaultMessage, id },
+jest.mock(
+  'umi',
+  () => ({
+    __esModule: true,
+    FormattedMessage: ({ defaultMessage, id }: any) => ({
+      props: { defaultMessage, id },
+    }),
   }),
-}));
+  { virtual: true },
+);
 
 describe('LifeCycleModels optiondata', () => {
   it('exposes the expected copyright choices', () => {
