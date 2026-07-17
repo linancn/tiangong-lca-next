@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-18'
-lastReviewedCommit: '84d9685a94fb2e6cfbb898a5346d1bb7725da779'
-lastReviewedNote: 'Reviewed the Issue #625 focused coverage closure after the hook correctly blocked a 99.97% candidate; testing and full-gate governance rules remain unchanged.'
+lastReviewedCommit: '4a07183eab1e317631fac9ff7f42ede4c2437ef1'
+lastReviewedNote: 'Reviewed the second Issue #625 full-gate result and exact async/runtime fallback closure; testing and full-gate governance rules remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

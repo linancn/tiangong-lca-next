@@ -4,7 +4,7 @@
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestDigest": "4f5dc2600ec7150246cf76b5f338a41a6bf1e2943327f639aaf3ef00a4414391",
-    "contextDigest": "b674147e6e8b1fa4a8ade226eb5e382dea7eed6618c4c37f4e1330278ffd0d8d"
+    "contextDigest": "610f1b4a2ed21a304957b043ab7e8fa7a9ca5f9d85ae81b04d184d0953e974a8"
   },
   "catalog": {
     "messageCount": 3026,
@@ -39,8 +39,8 @@
   },
   "independentReview": {
     "path": "docs/plans/i18n-fr-FR/automated-review.json",
-    "digest": "c4696db338ff413840af218c535188019b04892277f5ce91e558223df7ab09c5",
-    "reviewDigest": "f1e81786e181ca7c04428a0297cbab6b6b4b75676062eac38a49a2c3f543faec",
+    "digest": "a58bc2e1a0d329a5e7002b42399b1be3d7af5030c748215c1dc0a2be3392a5e6",
+    "reviewDigest": "d385c0b4fb1930b9b8d7ed4932c2d052a593ba28c40e1de6a04e0811fbe43628",
     "laneCount": 4,
     "reviewedMessageCount": 3026,
     "reviewedModuleCount": 31,
@@ -50,5 +50,5 @@
     "blockedItems": 0,
     "humanTranslationReviewRequired": false
   },
-  "qualityDigest": "35c318a99e3a897f96581b4de267b68a51008a22f9f74d9f5ec24cfd7a8d527d"
+  "qualityDigest": "8dcd3264d11eaf62c8fbe0fb6133baf6acecd6374108f405de94db3356943107"
 }

@@ -541,6 +541,16 @@ describe('Login page', () => {
     expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Sustainable life cycle data');
   });
 
+  it('uses the non-fallback legal labels when the runtime locale is unsupported', () => {
+    mockLocale = 'es-ES';
+
+    render(<LoginPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+
+    expect(screen.getByRole('link', { name: 'Terms of Use' })).not.toHaveAttribute('title');
+    expect(screen.getByRole('link', { name: 'Privacy Notice' })).not.toHaveAttribute('title');
+  });
+
   it('labels English-only legal documents explicitly for the German app locale', () => {
     mockLocale = 'de-DE';
 

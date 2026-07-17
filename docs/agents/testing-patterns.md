@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
-lastReviewedNote: 'Reviewed Issue #625 route-pattern and Intl fallback coverage: focused tests restore mutated property descriptors and prove matchers against an enabled wildcard fallback.'
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed Issue #625 async and locale fallback coverage: focused tests settle rejected requests, resolve deferred work after unmount, and exercise unsupported locale labels.'
 ---
 
 # Testing Patterns Reference

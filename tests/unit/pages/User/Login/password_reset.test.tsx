@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -227,6 +227,25 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
         duration: 3,
       });
       expect(mockHistory.push).toHaveBeenCalledWith('/');
+    });
+  });
+
+  it('ignores a current-user response that arrives after unmount', async () => {
+    let resolveCurrentUser: (value: { userid: string; email: string }) => void = () => undefined;
+    mockGetCurrentUser.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveCurrentUser = resolve;
+        }),
+    );
+
+    const { unmount } = render(<PasswordReset />);
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalledTimes(1));
+    unmount();
+
+    await act(async () => {
+      resolveCurrentUser({ userid: 'late-user', email: 'late@test.com' });
+      await Promise.resolve();
     });
   });
 

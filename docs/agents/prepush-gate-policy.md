@@ -24,8 +24,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
-lastReviewedNote: 'Reviewed the Issue #625 hook-owned coverage failure and test-only closure; failed gates still block transport and a changed HEAD must run a new checked push.'
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the second Issue #625 hook-owned coverage block and exact async fallback closure; failed gates still block transport and a changed HEAD must run a new checked push.'
 ---
 
 # Pre-Push Gate Policy

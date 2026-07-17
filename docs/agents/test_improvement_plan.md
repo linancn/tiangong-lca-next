@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
-lastReviewedNote: 'Reviewed the Issue #625 focused coverage closure after all 4,648 existing tests passed below the 100% threshold; the full-closure strategy remains unchanged.'
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the Issue #625 final focused closure after all 4,652 tests passed with two async statements and two locale branches still uncovered; the full-closure strategy remains unchanged.'
 ---
 
 # Testing Strategy

@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
-lastReviewedNote: 'Reviewed the Issue #625 99.97% hook failure: use coverage-final.json to isolate zero-count statements/branches, then prove only those boundaries before a new checked HEAD.'
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the Issue #625 99.99% hook failure: use coverage-final.json to isolate zero-count async statements and locale branches, then prove only those boundaries before a new checked HEAD.'
 ---
 
 # Testing Troubleshooting

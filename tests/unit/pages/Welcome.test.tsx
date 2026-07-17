@@ -164,6 +164,16 @@ describe('Welcome page', () => {
     );
   });
 
+  it('keeps the team metric at zero when the initial count request fails', async () => {
+    mockGetTeams.mockRejectedValueOnce(new Error('team count unavailable'));
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('link', { name: 'Data Teams' })).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
+  });
+
   it('switches the welcome center content to the carbon footprint database guide', async () => {
     const user = userEvent.setup();
 

@@ -23,8 +23,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 84d9685a94fb2e6cfbb898a5346d1bb7725da779
-lastReviewedNote: 'Reviewed the Issue #625 focused 100% closure for route-pattern, unsupported-locale, and Intl-constructor fallback branches; validation order is unchanged.'
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the Issue #625 focused closure for rejected team-count loading, unsupported locale legal labels, and post-unmount recovery responses; validation order is unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

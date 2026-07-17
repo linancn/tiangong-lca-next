@@ -141,7 +141,7 @@
           "route": "/welcome",
           "viewState": "overview",
           "sourceDigest": "567f02d68dd447cf91701d93b3d97cd08f8a7c9333196bedd68f22d8b356478e",
-          "focusedTestDigest": "22fd0cc5233c96c0ddb166089718a1b9165e025ebdbdb2fca7504c56126eb244",
+          "focusedTestDigest": "bb1a5c174d55690107c32a6cb981548df1ecd9f48fba2de32446b44a1d88cadf",
           "derivedMessageCount": 43,
           "derivedMessageDigest": "bcc3e3606151a0e995f3401c3980cf2cb7f614e7eae007310b68c65e1edf04a7",
           "stateSignals": ["empty", "error", "loading", "modal", "retry"],
@@ -164,7 +164,7 @@
           "route": "/welcome?view=carbon-footprint",
           "viewState": "carbon-footprint-guide",
           "sourceDigest": "567f02d68dd447cf91701d93b3d97cd08f8a7c9333196bedd68f22d8b356478e",
-          "focusedTestDigest": "22fd0cc5233c96c0ddb166089718a1b9165e025ebdbdb2fca7504c56126eb244",
+          "focusedTestDigest": "bb1a5c174d55690107c32a6cb981548df1ecd9f48fba2de32446b44a1d88cadf",
           "derivedMessageCount": 76,
           "derivedMessageDigest": "47404e25a36d94f49ff0b50d26cebeff7027b556d6bc11991bed3e839f89cb23",
           "stateSignals": ["empty", "error", "loading", "modal", "retry"],
@@ -187,7 +187,7 @@
           "route": "/user/login",
           "viewState": "login-and-register",
           "sourceDigest": "9ef47c5775e788ef5870963930e7f38a262ad3f64cfbf26e001c746b1a988241",
-          "focusedTestDigest": "99ddbad82419d77b80d5ff89d5128e64a9a1ee490be9fe3aa49d5e010b198227",
+          "focusedTestDigest": "7a4c403fc77a15074b1a8a4250948ad9eb263bc9ace2308f1b3f04f80d5be733",
           "derivedMessageCount": 70,
           "derivedMessageDigest": "5055e5693f7e02b4122461263cfd71fea9ec742137a083cc0ae5c6b28bdec1fb",
           "stateSignals": ["dark", "error", "loading", "success"],
@@ -229,7 +229,7 @@
           "route": "/user/login/password_reset",
           "viewState": "password-reset",
           "sourceDigest": "4e08ddf3f3f565f41914faca1b291cddda87a3170e5502368a3ce46aebcbd5c9",
-          "focusedTestDigest": "281b45545a6503bf7a3804fbf1b027082847887cb749df7ee434572a00d4e144",
+          "focusedTestDigest": "79b4f433b6837b061c0fbd77481c0a13a31fa9d621d964a29f6b0cb8757b4ff9",
           "derivedMessageCount": 23,
           "derivedMessageDigest": "bc806c4f9214450f89d0be8fc70dcbce4b6d4cd96493a944061761d7cea86b55",
           "stateSignals": ["dark", "error", "loading", "retry", "success", "unavailable"],
@@ -264,7 +264,7 @@
           "route": "/terms_of_use.html",
           "viewState": "static-legal-English-fallback",
           "sourceDigest": "e12732a422fcf1d836e2a44190548c87cefbde934ad055b29480d294ff206305",
-          "focusedTestDigest": "de970931876f6cf2a24f063db37e744ebee99a0cb57b7b31ee44d0d31b89e6e4",
+          "focusedTestDigest": "86508eb9ab4ca22197732d57a7cf53627c28b5069c25f533c7294b876074cd7e",
           "derivedMessageCount": 32,
           "derivedMessageDigest": "97e4953fd7f748ba2be5cd17358ffdd722877e95ab7230e1ac9026056b538321",
           "stateSignals": ["dark", "error", "loading", "success"],
@@ -282,7 +282,7 @@
           "route": "/privacy_notice.html",
           "viewState": "static-legal-English-fallback",
           "sourceDigest": "0059173ae9e040f3dea9fbe7fa33d0c5dd60a7dca502d34e337089250c12c27c",
-          "focusedTestDigest": "de970931876f6cf2a24f063db37e744ebee99a0cb57b7b31ee44d0d31b89e6e4",
+          "focusedTestDigest": "86508eb9ab4ca22197732d57a7cf53627c28b5069c25f533c7294b876074cd7e",
           "derivedMessageCount": 32,
           "derivedMessageDigest": "97e4953fd7f748ba2be5cd17358ffdd722877e95ab7230e1ac9026056b538321",
           "stateSignals": ["dark", "error", "loading", "success"],
@@ -317,7 +317,7 @@
           "unownedVisibleLiteralCount": 0
         }
       ],
-      "rowEvidenceDigest": "65ea136c8bdbd7fbacc2f65c9b77261fd6a646df43016033340c7193b078f037",
+      "rowEvidenceDigest": "48665db0f89e1ec6f60a344d8b03ba4b245c9b81bb7266cb6e183191ee5a4c7b",
       "blockedDerivedStateCount": 0,
       "unownedVisibleLiteralCount": 0
     }
@@ -332,5 +332,5 @@
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "94e88fab0602d76437be82da14b4d23bcfe9499876dd136fbde4e80805a71774"
+  "contextDigest": "6aeaf923a21ea2374f7e49f55d229d989abd526c9ff65148278ac09b5ed61f38"
 }
