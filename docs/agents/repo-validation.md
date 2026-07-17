@@ -23,8 +23,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
-lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker Jest gate; the complete test inventory and 100% src coverage bar remain authoritative.'
+lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
+lastReviewedNote: 'Reviewed Issue #621 focused UI proof, browser measurements, and the v0.0.49 release checkpoint; the proof matrix and protected-branch gate remain authoritative.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -64,7 +64,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
-| persisted Calculation Bundle or public release readback | `npm run lint`; focused `lcaReleases`, `CalculationBundlePanel`, `LcaReleaseReadPanel`, Data Processing, Process view, and locale tests; `npm run i18n:audit`; `npm run build` | `npm run prepush:gate`; paired Database RPC, Edge projection, Worker bundle, and deterministic package proof; live smoke only when a deployed environment and user credentials are available | private bundle reads use the user session; public release reads expose sanitized projections and short-lived artifact downloads only |
+| persisted Calculation Bundle or public release readback | `npm run lint`; focused `lcaReleases`, `CalculationBundlePanel`, `LcaReleaseReadPanel`, Data Processing, Process view, and locale tests; `npm run i18n:audit`; `npm run build` | `npm run prepush:gate`; paired Database RPC, Edge projection, Worker bundle, and deterministic package proof; live smoke only when a deployed environment and user credentials are available | private bundle reads use the user session; raw downloads must verify stored byte size and SHA-256 before Blob save; public release reads expose sanitized projections and short-lived artifact downloads only |
 | process review-submit gate/job UI or service contract | `npm run lint`; focused review/gate/job tests such as `npm run test:ci -- tests/unit/services/workerJobs/api.test.ts tests/unit/services/reviews/taskCenter.test.ts tests/unit/components/LcaTaskCenter.test.tsx tests/unit/services/reviews/api.test.ts tests/unit/utils/review.test.ts tests/unit/pages/Processes/Components/edit.test.tsx --runInBand --testTimeout=30000`; `npm run build` | smoke `app_worker_jobs`, `app_dataset_review_submit_jobs`, the worker, and final process submit-review against a safe dev environment when credentials and a queued job are available | Next must render backend job states and gate evidence, enqueue/read submit jobs instead of calling final submit-review from the browser, recover task-center state from service-backed worker jobs, prefer the canonical root `review_submit.submit` worker job for task identity/actions, and avoid duplicating worker blocker heuristics or browser-authoritative checksum logic. |
 | reviewed LCIA bundle under `public/lciamethods/**` or its validator | `npm run lcia-cache:verify`; `npm run lint`; focused LCIA cache/evidence tests; `npm run build` | `npm run prepush:gate` | verification must run before any web or Electron publication |
 | other static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |

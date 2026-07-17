@@ -1,12 +1,14 @@
 import {
   fetchCalculationBundleArtifactText,
   fetchCalculationBundleRecords,
+  fetchFreshCalculationBundleDownloadBlob,
   getCalculationBundle,
   type CalculationBundleArtifact,
   type CalculationBundleLciRecord,
   type CalculationBundleLciaRecord,
   type CalculationBundleProcessRecord,
   type CalculationBundleProjection,
+  type CalculationBundleSignedDownload,
 } from '@/services/lcaReleases';
 import { DownloadOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useIntl } from '@umijs/max';
@@ -63,15 +65,22 @@ export function recordsToCsv(headers: string[], rows: unknown[][]): string {
   return `${[headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n')}\n`;
 }
 
-function downloadText(filename: string, text: string, mediaType: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: mediaType }));
+export function saveBlobDownload(filename: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  try {
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+  } finally {
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+}
+
+function downloadText(filename: string, text: string, mediaType: string): void {
+  saveBlobDownload(filename, new Blob([text], { type: mediaType }));
 }
 
 function hashValue(value: unknown): string {
@@ -100,6 +109,8 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
   const [recordsLoading, setRecordsLoading] = useState(false);
   const [issue, setIssue] = useState<BundleIssue | null>(null);
   const [recordsIssue, setRecordsIssue] = useState<string | null>(null);
+  const [downloadIssue, setDownloadIssue] = useState<string | null>(null);
+  const [downloadingPath, setDownloadingPath] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [activeResultTab, setActiveResultTab] = useState('lci');
 
@@ -112,6 +123,7 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
       setProcesses([]);
       setSelectedProcessIndex(undefined);
       setCoverage(null);
+      setDownloadIssue(null);
       const result = await getCalculationBundle(packageId);
       if (cancelled) return;
       if (result.error || !result.data) {
@@ -250,6 +262,27 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
       `${JSON.stringify(rows, null, 2)}\n`,
       'application/json',
     );
+
+  const downloadVerifiedArtifact = async (
+    key: string,
+    artifactPath: string | null,
+    filename: string,
+    download: Pick<
+      CalculationBundleSignedDownload,
+      'signedDownloadUrl' | 'sha256' | 'byteSize' | 'mediaType'
+    >,
+  ) => {
+    setDownloadIssue(null);
+    setDownloadingPath(key);
+    try {
+      const blob = await fetchFreshCalculationBundleDownloadBlob(packageId, artifactPath, download);
+      saveBlobDownload(filename, blob);
+    } catch (error) {
+      setDownloadIssue(error instanceof Error ? error.message : String(error));
+    } finally {
+      setDownloadingPath(null);
+    }
+  };
 
   const lciColumns = useMemo(
     () => [
@@ -472,39 +505,69 @@ const CalculationBundlePanel = ({ packageId, initialProcessId, initialProcessVer
                 key: 'downloads',
                 label: t('pages.dataProcessing.bundle.downloads', 'Downloads'),
                 children: (
-                  <div className={styles.bundleDownloadGrid}>
-                    <section className={styles.bundleDownloadItem}>
-                      <strong>calculation-bundle.json</strong>
-                      <code>{bundleData.manifestSha256}</code>
-                      <a
-                        href={bundleData.manifestDownload.signedDownloadUrl}
-                        download='calculation-bundle.json'
-                        rel='noreferrer'
-                      >
-                        <Button size='small' icon={<DownloadOutlined />}>
+                  <Space direction='vertical' size='middle' className={styles.previewDetails}>
+                    {downloadIssue ? (
+                      <Alert
+                        type='error'
+                        message={downloadIssue}
+                        action={
+                          <Button size='small' onClick={() => setReloadToken((value) => value + 1)}>
+                            {t('pages.dataProcessing.bundle.refresh', 'Refresh secure links')}
+                          </Button>
+                        }
+                      />
+                    ) : null}
+                    <div className={styles.bundleDownloadGrid}>
+                      <section className={styles.bundleDownloadItem}>
+                        <strong>calculation-bundle.json</strong>
+                        <code>{bundleData.manifestSha256}</code>
+                        <Button
+                          size='small'
+                          icon={<DownloadOutlined />}
+                          loading={downloadingPath === 'calculation-bundle.json'}
+                          disabled={downloadingPath !== null}
+                          onClick={() =>
+                            void downloadVerifiedArtifact(
+                              'calculation-bundle.json',
+                              null,
+                              'calculation-bundle.json',
+                              bundleData.manifestDownload,
+                            )
+                          }
+                        >
                           {t('pages.dataProcessing.bundle.download', 'Download')}
                         </Button>
-                      </a>
-                    </section>
-                    {bundleData.artifacts.map((artifact) => (
-                      <section key={artifact.path} className={styles.bundleDownloadItem}>
-                        <strong>{artifact.path}</strong>
-                        <span>
-                          {artifact.kind} · {artifact.recordCount} records
-                        </span>
-                        <code>{artifact.sha256}</code>
-                        <a
-                          href={artifact.signedDownloadUrl}
-                          download={artifact.path.split('/').pop()}
-                          rel='noreferrer'
-                        >
-                          <Button size='small' icon={<DownloadOutlined />}>
-                            {t('pages.dataProcessing.bundle.download', 'Download')}
-                          </Button>
-                        </a>
                       </section>
-                    ))}
-                  </div>
+                      {bundleData.artifacts.map((artifact) => {
+                        const filename = artifact.path.split('/').pop() || artifact.path;
+                        return (
+                          <section key={artifact.path} className={styles.bundleDownloadItem}>
+                            <strong>{artifact.path}</strong>
+                            <span>
+                              {artifact.kind} · {artifact.recordCount} records
+                            </span>
+                            <code>{artifact.sha256}</code>
+                            <Button
+                              size='small'
+                              icon={<DownloadOutlined />}
+                              loading={downloadingPath === artifact.path}
+                              disabled={downloadingPath !== null}
+                              onClick={() =>
+                                void downloadVerifiedArtifact(
+                                  artifact.path,
+                                  artifact.path,
+                                  filename,
+                                  artifact,
+                                )
+                              }
+                            >
+                              {t('pages.dataProcessing.bundle.download', 'Download')}
+                            </Button>
+                          </section>
+                        );
+                      })}
+                    </div>
+                  </Space>
                 ),
               },
             ]}

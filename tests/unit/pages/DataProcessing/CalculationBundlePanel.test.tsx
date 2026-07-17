@@ -21,12 +21,14 @@ jest.mock('@umijs/max', () => ({
 const mockGetCalculationBundle = jest.fn();
 const mockFetchRecords = jest.fn();
 const mockFetchText = jest.fn();
+const mockFetchFreshDownloadBlob = jest.fn();
 
 jest.mock('@/services/lcaReleases', () => ({
   __esModule: true,
   getCalculationBundle: (...args: any[]) => mockGetCalculationBundle(...args),
   fetchCalculationBundleRecords: (...args: any[]) => mockFetchRecords(...args),
   fetchCalculationBundleArtifactText: (...args: any[]) => mockFetchText(...args),
+  fetchFreshCalculationBundleDownloadBlob: (...args: any[]) => mockFetchFreshDownloadBlob(...args),
 }));
 
 const processRows = [
@@ -123,6 +125,9 @@ describe('CalculationBundlePanel', () => {
     jest.clearAllMocks();
     mockGetCalculationBundle.mockResolvedValue({ data: bundleProjection(), error: null });
     mockFetchText.mockResolvedValue(JSON.stringify({ complete: true }));
+    mockFetchFreshDownloadBlob.mockResolvedValue(
+      new Blob(['verified artifact'], { type: 'application/octet-stream' }),
+    );
     mockFetchRecords.mockImplementation(async (item: any) => {
       if (item.kind === 'process_axis') return processRows;
       if (item.kind === 'lci') {
@@ -201,12 +206,35 @@ describe('CalculationBundlePanel', () => {
     fireEvent.click(screen.getByTestId('tab-downloads'));
     expect(screen.getByText('calculation-bundle.json')).toBeInTheDocument();
     expect(screen.getByText('lci.ndjson.gz')).toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+
+    const downloadButtons = screen.getAllByRole('button', { name: 'Download' });
+    expect(downloadButtons).toHaveLength(bundleProjection().calculationBundle.artifacts.length + 1);
+    for (const [index, button] of downloadButtons.entries()) {
+      await waitFor(() => expect(button).not.toBeDisabled());
+      fireEvent.click(button);
+      await waitFor(() => expect(mockFetchFreshDownloadBlob).toHaveBeenCalledTimes(index + 1));
+      await waitFor(() => expect(URL.createObjectURL).toHaveBeenCalledTimes(index + 1));
+    }
+    expect(mockFetchFreshDownloadBlob).toHaveBeenNthCalledWith(
+      1,
+      '33333333-3333-4333-8333-333333333333',
+      null,
+      bundleProjection().calculationBundle.manifestDownload,
+    );
+    expect(mockFetchFreshDownloadBlob).toHaveBeenNthCalledWith(
+      2,
+      '33333333-3333-4333-8333-333333333333',
+      bundleProjection().calculationBundle.artifacts[0].path,
+      bundleProjection().calculationBundle.artifacts[0],
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('tab-lci'));
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     fireEvent.click(screen.getByRole('button', { name: 'Export JSON' }));
-    expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
-    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(2);
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(downloadButtons.length + 2);
+    expect(HTMLAnchorElement.prototype.click).toHaveBeenCalledTimes(downloadButtons.length + 2);
 
     fireEvent.change(screen.getByLabelText('Process'), { target: { value: '0' } });
     await waitFor(() => expect(screen.getByText('flow-0')).toBeInTheDocument());
@@ -214,6 +242,21 @@ describe('CalculationBundlePanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Refresh secure links' }));
     await waitFor(() => expect(mockGetCalculationBundle).toHaveBeenCalledTimes(2));
+  });
+
+  it('shows verified download failures without creating a local download', async () => {
+    mockFetchFreshDownloadBlob.mockRejectedValueOnce(
+      new Error('Calculation artifact SHA-256 mismatch'),
+    );
+    render(<CalculationBundlePanel packageId='download-failure' />);
+
+    expect(await screen.findByText('Calculation Bundle')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-downloads'));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Download' })[0]);
+
+    expect(await screen.findByText('Calculation artifact SHA-256 mismatch')).toBeInTheDocument();
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+    expect(HTMLAnchorElement.prototype.click).not.toHaveBeenCalled();
   });
 
   it('renders legacy and generic load failures with a retry path', async () => {

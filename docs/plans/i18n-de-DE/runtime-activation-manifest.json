@@ -191,7 +191,7 @@
   },
   "source": {
     "canonicalManifest": "docs/plans/i18n-de-DE/manifest.json",
-    "canonicalAuditedInputDigest": "e09825c1df69ab6146397e6efb698b106faffbad198897d07e922a15df1e0d6c",
+    "canonicalAuditedInputDigest": "658298d01775306f3ad826f37ee192bf9f338afded86755444c72f5a3a9f24fd",
     "digestAlgorithm": "sha256",
     "inputs": [
       {
@@ -219,7 +219,7 @@
       {
         "kind": "file",
         "path": "docs/plans/i18n-de-DE/manifest.json",
-        "sha256": "38f297699de956b74144c7c6e1362ea29727c051840522875264174c64de2c32"
+        "sha256": "295b807f35a94d4e2ccd9da81a704b6a689212d829a71301212b50aa5bfbf36d"
       },
       {
         "kind": "file",
@@ -412,6 +412,6 @@
         "sha256": "0c414199c5f5937821c9c35edaa5f6e23c079711f102011dfa11bfeb2bf3602b"
       }
     ],
-    "inputDigest": "50fc68e13579bc81839d3fa7543c67261743566da44bf5b0f1a202fc7e176cdf"
+    "inputDigest": "5332de64230f1e8c55a1b7b5ac73e6706c3538809c2621060ff56de84b3aad26"
   }
 }

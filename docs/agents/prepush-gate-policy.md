@@ -24,8 +24,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 7e2c5267aa1ee87e5c3986ea7cdf8ffb4b5fd0ea
-lastReviewedNote: 'Reviewed Issue #614 selector proof and the V8-safe single-worker recycle boundary; single full-gate ownership and 100% src coverage remain unchanged.'
+lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
+lastReviewedNote: 'Reviewed Issue #621 and the v0.0.49 release checkpoint; single full-gate ownership and 100% src coverage remain unchanged.'
 ---
 
 # Pre-Push Gate Policy
