@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: cc66ad9a4084063b3fea7659bb4271303a88ba2e
-lastReviewedNote: 'Reviewed Issue #614 selector smoke and the confirmed macOS Node/V8 native GC crash; added the supported single-worker recycle recovery.'
+lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
+lastReviewedNote: 'Reviewed Issue #621 focused proof and the clean Docpact missing-review stop; existing recovery paths remain current.'
 ---
 
 # Testing Troubleshooting
