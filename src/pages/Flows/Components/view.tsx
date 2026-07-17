@@ -193,7 +193,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
       },
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {
@@ -271,7 +271,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.flow.view.flowInformation.mixAndLocationTypes'
-              defaultMessage='Mix and Location Types'
+              defaultMessage='Mix and location types'
             />
           </Divider>
           <LangTextItemDescription

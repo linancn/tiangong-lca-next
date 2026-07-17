@@ -310,7 +310,7 @@ const LcaImpactHotspotToolbar: FC<{
         label: intl.formatMessage(
           {
             id: 'pages.process.lca.hotspots.option.topN',
-            defaultMessage: 'Top {count}',
+            defaultMessage: '{count} per page',
           },
           { count: value },
         ),
@@ -456,23 +456,27 @@ const LcaImpactHotspotToolbar: FC<{
         const buildJobId =
           typeof error.body?.build_job_id === 'string' ? error.body.build_job_id.trim() : '';
         setAnalysisError(
-          intl.formatMessage(
-            {
-              id: 'pages.process.lca.analysis.error.snapshotBuilding',
-              defaultMessage:
-                'Snapshot build is still running{jobSuffix}. Wait for it to finish, then rerun the analysis.',
-            },
-            {
-              jobSuffix: buildJobId ? ` (job ${buildJobId})` : '',
-            },
-          ),
+          buildJobId
+            ? intl.formatMessage(
+                {
+                  id: 'pages.process.lca.analysis.error.snapshotBuildingWithJob',
+                  defaultMessage:
+                    'Snapshot build job {jobId} is still running. Wait for it to finish, then rerun the analysis.',
+                },
+                { jobId: buildJobId },
+              )
+            : intl.formatMessage({
+                id: 'pages.process.lca.analysis.error.snapshotBuilding',
+                defaultMessage:
+                  'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
+              }),
         );
       } else if (isLcaFunctionInvokeError(error) && error.code === 'process_ids_required') {
         setAnalysisError(
           intl.formatMessage({
             id: 'pages.process.lca.hotspots.error.backendNotReady',
             defaultMessage:
-              'The current lca_query_results backend is still on the old compare-only version. Deploy or restart the updated edge function before using hotspot ranking.',
+              'Hotspot analysis is unavailable. Contact an administrator for assistance.',
           }),
         );
       } else {
@@ -544,7 +548,7 @@ const LcaImpactHotspotToolbar: FC<{
       title: (
         <FormattedMessage
           id='pages.process.lca.hotspots.table.processIndex'
-          defaultMessage='Process index'
+          defaultMessage='Matrix index'
         />
       ),
       dataIndex: 'processIndex',
@@ -610,7 +614,7 @@ const LcaImpactHotspotToolbar: FC<{
         icon={<OrderedListOutlined />}
         tooltip={intl.formatMessage({
           id: 'pages.process.lca.hotspots.toolbar.tooltip',
-          defaultMessage: 'Impact hotspots',
+          defaultMessage: 'Impact hotspot ranking',
         })}
         onClick={onOpen}
       />
@@ -620,7 +624,7 @@ const LcaImpactHotspotToolbar: FC<{
         onClose={onClose}
         title={intl.formatMessage({
           id: 'pages.process.lca.hotspots.drawer.title',
-          defaultMessage: 'LCA Impact Hotspots',
+          defaultMessage: 'LCA impact hotspot ranking',
         })}
         footer={
           <Space>
@@ -635,7 +639,7 @@ const LcaImpactHotspotToolbar: FC<{
             >
               <FormattedMessage
                 id='pages.process.lca.hotspots.action.run'
-                defaultMessage='Run hotspot ranking'
+                defaultMessage='Run ranking'
               />
             </Button>
           </Space>
@@ -653,7 +657,7 @@ const LcaImpactHotspotToolbar: FC<{
               <Typography.Paragraph>
                 <FormattedMessage
                   id='pages.process.lca.hotspots.description'
-                  defaultMessage='Rank the full ready snapshot by absolute impact contribution for one impact category.'
+                  defaultMessage='Rank all processes in the available snapshot by absolute impact contribution for a selected impact category.'
                 />
               </Typography.Paragraph>
 
@@ -689,14 +693,14 @@ const LcaImpactHotspotToolbar: FC<{
               <Typography.Text strong>
                 <FormattedMessage
                   id='pages.process.lca.hotspots.field.topN'
-                  defaultMessage='Rank window'
+                  defaultMessage='Results per page'
                 />
               </Typography.Text>
               <Select
                 style={{ width: '100%' }}
                 aria-label={intl.formatMessage({
                   id: 'pages.process.lca.hotspots.field.topN',
-                  defaultMessage: 'Rank window',
+                  defaultMessage: 'Results per page',
                 })}
                 value={selectedTopN}
                 options={topNOptions}
@@ -756,7 +760,7 @@ const LcaImpactHotspotToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.taskCenter.detail.snapshotId'
-                            defaultMessage='snapshot_id'
+                            defaultMessage='Snapshot ID'
                           />
                         }
                       >
@@ -766,7 +770,7 @@ const LcaImpactHotspotToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.taskCenter.detail.resultId'
-                            defaultMessage='result_id'
+                            defaultMessage='Result ID'
                           />
                         }
                       >
@@ -776,7 +780,7 @@ const LcaImpactHotspotToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.analysis.meta.source'
-                            defaultMessage='source'
+                            defaultMessage='Result source'
                           />
                         }
                       >
@@ -786,7 +790,7 @@ const LcaImpactHotspotToolbar: FC<{
                         label={
                           <FormattedMessage
                             id='pages.process.lca.analysis.meta.computedAt'
-                            defaultMessage='computed_at'
+                            defaultMessage='Computed at'
                           />
                         }
                       >
@@ -867,7 +871,7 @@ const LcaImpactHotspotToolbar: FC<{
                       >
                         <FormattedMessage
                           id='pages.process.lca.hotspots.action.previous'
-                          defaultMessage='Previous slice'
+                          defaultMessage='Previous page'
                         />
                       </Button>
                       <Button
@@ -878,7 +882,7 @@ const LcaImpactHotspotToolbar: FC<{
                       >
                         <FormattedMessage
                           id='pages.process.lca.hotspots.action.next'
-                          defaultMessage='Next slice'
+                          defaultMessage='Next page'
                         />
                       </Button>
                     </Space>

@@ -219,8 +219,8 @@ describe('LifeCycleModelForm', () => {
       '"label":"Data set report, background info"',
     );
     expect(
-      getSourceSelectByLabel('Life cycle model diagramm(s) or screenshot(s)'),
-    ).toHaveTextContent('"label":"Life cycle model diagramm(s) or screenshot(s)"');
+      getSourceSelectByLabel('Life cycle model diagram(s) or screenshot(s)'),
+    ).toHaveTextContent('"label":"Life cycle model diagram(s) or screenshot(s)"');
 
     await userEvent.click(screen.getByTestId('level-text-form'));
     expect(baseProps.onData).toHaveBeenCalledTimes(1);

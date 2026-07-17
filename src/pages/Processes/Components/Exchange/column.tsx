@@ -47,9 +47,7 @@ export function getExchangeColumns(lang: string): ProColumns<ProcessExchangeTabl
       ],
     },
     {
-      title: (
-        <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Type of data set' />
-      ),
+      title: <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Flow type' />,
       dataIndex: 'typeOfDataSet',
       sorter: false,
       search: false,

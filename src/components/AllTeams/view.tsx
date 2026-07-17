@@ -63,21 +63,28 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
       <br />
       <Card
         size='small'
-        title={<FormattedMessage id='pages.team.info.public' defaultMessage='Public Display' />}
+        title={
+          <FormattedMessage id='pages.team.info.public' defaultMessage='Public team information' />
+        }
       >
         <Descriptions bordered size={'small'} column={1}>
           <Descriptions.Item
-            label={<FormattedMessage id='pages.team.info.public' defaultMessage='Public Display' />}
+            label={
+              <FormattedMessage
+                id='pages.team.info.public'
+                defaultMessage='Public team information'
+              />
+            }
             styles={{ label: { width: '120px' } }}
           >
-            {initData?.rank === -1 ? (
+            {initData?.is_public === true ? (
               <FormattedMessage
                 id='component.allTeams.drawer.public'
                 defaultMessage='Public Display'
               />
-            ) : initData?.rank === 0 ? (
+            ) : initData?.is_public === false ? (
               <FormattedMessage
-                id='component.allTeams.drawer.public'
+                id='component.allTeams.drawer.notPublic'
                 defaultMessage='Not Public Display'
               />
             ) : (

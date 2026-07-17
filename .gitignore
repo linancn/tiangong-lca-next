@@ -65,3 +65,9 @@ docker/.env.deploy.local
 
 # docpact local reports
 .docpact/runs/
+
+# local human-review confirmations (never commit or upload)
+/.local/i18n-de-DE/
+
+# bounded failed-transport push receipt (never commit or upload)
+/.local/prepush-gate/

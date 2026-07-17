@@ -18,8 +18,8 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-08
-lastReviewedCommit: 730e919362e2a1791863eea759cae40d137ffea3
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
 ---
 
 # Audit Status Reference

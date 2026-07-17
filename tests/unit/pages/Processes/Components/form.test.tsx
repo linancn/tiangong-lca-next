@@ -27,6 +27,7 @@ const mockJsonToList = jest.fn((value: any) =>
 );
 
 let mockRefCheckContextValue: any = { refCheckData: [] };
+let mockIntlMessageOverrides: Record<string, string> = {};
 const normalizeFieldName = (name: any) => JSON.stringify(Array.isArray(name) ? name : [name]);
 
 const createMockFormInstance = () => {
@@ -60,12 +61,14 @@ jest.mock('umi', () => ({
         'pages.validationIssues.sdkDetail.suggestedFix.exchanges_required':
           'Add at least one exchange',
         'pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid':
-          'The following data must have exactly one item designated as the reference',
+          'Select exactly one item as the quantitative reference',
+        'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
+          'Chinese text must include at least one Chinese character',
       };
-      const template = messages[id] ?? defaultMessage ?? id ?? '';
+      const template = mockIntlMessageOverrides[id] ?? messages[id] ?? defaultMessage ?? id ?? '';
 
       return Object.entries(values ?? {}).reduce((message, [key, value]) => {
-        return message.replaceAll(`{${key}}`, String(value));
+        return message.split(`{${key}}`).join(String(value));
       }, template);
     },
   }),
@@ -489,6 +492,7 @@ describe('ProcessForm component', () => {
     proTableInstances.length = 0;
     Object.keys(formListInstances).forEach((key) => delete formListInstances[key]);
     mockRefCheckContextValue = { refCheckData: [] };
+    mockIntlMessageOverrides = {};
     (globalThis as any).__TEST_PROCESS_FORM_LISTENERS__ = new Set();
     (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ = createMockFormInstance();
     defaultProps.formRef = { current: (globalThis as any).__TEST_PROCESS_FORM_INSTANCE__ };
@@ -585,7 +589,7 @@ describe('ProcessForm component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Exchanges' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Inputs and Outputs' })).toBeInTheDocument();
     });
 
     await waitFor(() => {
@@ -677,13 +681,13 @@ describe('ProcessForm component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Exchanges' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Inputs and Outputs' })).toBeInTheDocument();
     });
 
     await waitFor(() => {
       expect(
         within(screen.getByTestId('card')).getByText(
-          'The following data must have exactly one item designated as the reference',
+          'Select exactly one item as the quantitative reference',
         ),
       ).toBeInTheDocument();
     });
@@ -742,7 +746,7 @@ describe('ProcessForm component', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Exchanges' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Inputs and Outputs' })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(
@@ -754,9 +758,9 @@ describe('ProcessForm component', () => {
   it('highlights tabs that contain reference validation issues', () => {
     render(<ProcessForm {...defaultProps} validationIssueTabNames={['exchanges']} />);
 
-    expect(screen.getByRole('button', { name: 'Exchanges' }).querySelector('span')).toHaveStyle({
-      color: 'red',
-    });
+    expect(
+      screen.getByRole('button', { name: 'Inputs and Outputs' }).querySelector('span'),
+    ).toHaveStyle({ color: 'red' });
     expect(
       screen.getByRole('button', { name: 'Process information' }).querySelector('span'),
     ).not.toHaveStyle({ color: 'red' });
@@ -979,7 +983,9 @@ describe('ProcessForm component', () => {
       );
     });
 
-    expect(screen.getByRole('alert')).toHaveTextContent('请选择一条输入/输出作为基准');
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Please select one input/output as the reference',
+    );
     expect(
       screen.queryByText('Chinese text must include at least one Chinese character'),
     ).not.toBeInTheDocument();
@@ -1784,6 +1790,10 @@ describe('ProcessForm component', () => {
   });
 
   it('ignores malformed sdk details and exits field-sync effects when the form instance is missing', async () => {
+    mockIntlMessageOverrides = {
+      'pages.validationIssues.sdkDetail.suggestedFix.unknown': '',
+    };
+
     await act(async () => {
       render(
         <ProcessForm

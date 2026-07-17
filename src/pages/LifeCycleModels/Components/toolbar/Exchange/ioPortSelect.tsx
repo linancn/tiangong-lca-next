@@ -74,9 +74,7 @@ const IoPortSelect: FC<Props> = ({
       ],
     },
     {
-      title: (
-        <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Type of data set' />
-      ),
+      title: <FormattedMessage id='processExchange.typeOfDataSet' defaultMessage='Flow type' />,
       dataIndex: 'typeOfDataSet',
       sorter: false,
       search: false,
@@ -175,7 +173,7 @@ const IoPortSelect: FC<Props> = ({
       },
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

@@ -42,13 +42,16 @@ jest.mock('umi', () => ({
         'pages.validationIssues.sdkDetail.suggestedFix.required_missing': 'Fill in this field',
         'pages.validationIssues.sdkDetail.suggestedFix.string_too_long':
           'Current length is {actualLength} characters; keep this within {maximum} characters',
+        'pages.validationIssues.sdkDetail.suggestedFix.invalid_type':
+          'Enter this in the correct format',
+        'pages.validationIssues.sdkDetail.suggestedFix.empty_test': '',
         'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
           'Chinese text must include at least one Chinese character',
       };
       const template = messages[id] ?? defaultMessage ?? id ?? '';
 
       return Object.entries(values ?? {}).reduce((message, [key, value]) => {
-        return message.replaceAll(`{${key}}`, String(value));
+        return message.split(`{${key}}`).join(String(value));
       }, template);
     },
   }),
@@ -432,7 +435,7 @@ describe('ProcessExchangeEdit', () => {
 
     fireEvent.click(screen.getByRole('button'));
 
-    const dialog = screen.getByRole('dialog', { name: 'Edit exchange' });
+    const dialog = screen.getByRole('dialog', { name: 'Edit Exchange' });
     expect(dialog).toBeInTheDocument();
 
     await waitFor(() => {
@@ -648,19 +651,19 @@ describe('ProcessExchangeEdit', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close-outlined/i }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Edit Exchange' })).not.toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button'));
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Edit Exchange' })).not.toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button'));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Edit Exchange' })).not.toBeInTheDocument(),
     );
   });
 
@@ -726,7 +729,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(screen.getByText('Please input mean amount')).toBeInTheDocument();
@@ -799,7 +802,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     await waitFor(() => {
@@ -812,6 +815,31 @@ describe('ProcessExchangeEdit', () => {
     });
     expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
     expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
+  });
+
+  it('ignores localized exchange comment highlights whose resolved message is empty', async () => {
+    render(
+      <ProcessExchangeEdit
+        {...defaultProps}
+        autoOpen
+        sdkHighlights={[
+          {
+            key: 'sdk-empty-localized-comment-message',
+            fieldKey: 'generalComment',
+            fieldPath: 'exchange[#0].generalComment.0.#text',
+            formName: ['generalComment', 0, '#text'],
+            validationCode: 'empty_test',
+          },
+        ]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('Check and fix this field')).not.toBeInTheDocument();
+    expect(mockProFormApi?.getFieldError(['generalComment', 0, '#text'])).toEqual([]);
   });
 
   it('maps raw tidas localized exchange comment paths onto drawer comment rows', async () => {
@@ -855,7 +883,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(
@@ -873,13 +901,13 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: 'Edit exchange' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog', { name: 'Edit Exchange' })).not.toBeInTheDocument();
     });
   });
 
@@ -921,10 +949,10 @@ describe('ProcessExchangeEdit', () => {
     const { rerender } = render(<ProcessExchangeEdit {...props} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
-    expect(screen.getAllByText('Duplicate sdk warning')).toHaveLength(1);
+    expect(screen.getAllByText('Enter this in the correct format')).toHaveLength(1);
 
     const setFieldsSpy = jest.spyOn(mockProFormApi, 'setFields');
     setFieldsSpy.mockClear();
@@ -950,7 +978,9 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Stable sdk warning']);
+      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual([
+        'Enter this in the correct format',
+      ]);
     });
 
     const setFieldsSpy = jest.spyOn(mockProFormApi, 'setFields');
@@ -989,7 +1019,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(screen.queryByText('Fill in this field')).not.toBeInTheDocument();
@@ -1027,7 +1057,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(mockProFormApi?.getFieldError(['referenceToFlowDataSet', '@version'])).toEqual([
@@ -1059,7 +1089,7 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
@@ -1094,11 +1124,13 @@ describe('ProcessExchangeEdit', () => {
     const { rerender } = render(<ProcessExchangeEdit {...props} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     expect(mockProFormApi?.scrollToField).not.toHaveBeenCalled();
-    expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
+    expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual([
+      'Enter this in the correct format',
+    ]);
     expect(
       mockProFormApi?.getFieldError([
         'referencesToDataSource',
@@ -1106,7 +1138,7 @@ describe('ProcessExchangeEdit', () => {
         1,
         '@refObjectId',
       ]),
-    ).toEqual(['Fill in this field', 'Use a valid source reference']);
+    ).toEqual(['Fill in this field', 'Enter this in the correct format']);
 
     rerender(<ProcessExchangeEdit {...props} sdkHighlights={[]} />);
 
@@ -1133,7 +1165,7 @@ describe('ProcessExchangeEdit', () => {
     const { rerender } = render(<ProcessExchangeEdit {...props} sdkHighlights={[]} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: 'Edit exchange' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'Edit Exchange' })).toBeInTheDocument();
     });
 
     const originalGetFieldError = mockProFormApi.getFieldError;
@@ -1168,7 +1200,9 @@ describe('ProcessExchangeEdit', () => {
     );
 
     await waitFor(() => {
-      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual(['Need an amount']);
+      expect(mockProFormApi?.getFieldError(['meanAmount'])).toEqual([
+        'Enter this in the correct format',
+      ]);
     });
   });
 });

@@ -56,7 +56,19 @@ jest.mock(
     __esModule: true,
     FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     useIntl: () => ({
-      formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+      formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) => {
+        const messages: Record<string, string> = {
+          'pages.validationIssues.sdkDetail.suggestedFix.flow_properties_required':
+            'Please select flow properties',
+          'pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid':
+            'Select exactly one item as the quantitative reference.',
+        };
+        const template = messages[id] ?? defaultMessage ?? id;
+
+        return template.replace(/\{(\w+)\}/g, (_match: string, key: string) =>
+          String(values?.[key] ?? `{${key}}`),
+        );
+      },
     }),
   }),
   { virtual: true },
@@ -795,7 +807,7 @@ describe('FlowsEdit', () => {
     await waitFor(() => expect(mockUpdateFlows).toHaveBeenCalled());
     await waitFor(() => expect(mockCheckData).toHaveBeenCalled());
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
     expect(screen.getByText('flow-rules-visible')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: /edit/i })).toBeInTheDocument();
   });
@@ -824,7 +836,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('check blocked'));
     expect(mockCheckData).toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('reports flow data-check errors from refs and validation issues', async () => {
@@ -865,7 +877,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed!'),
+        expect.stringContaining('Data check failed in '),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalled();
@@ -944,7 +956,11 @@ describe('FlowsEdit', () => {
     await screen.findByTestId('flow-form');
     await userEvent.click(screen.getByRole('button', { name: /^data check$/i }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
+    );
   });
 
   it('blocks data check when no flow properties are selected', async () => {
@@ -986,7 +1002,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Flow property needs to have exactly one quantitative reference open',
+        'Select exactly one item as the quantitative reference',
       ),
     );
   });
@@ -1014,7 +1030,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'Flow property needs to have exactly one quantitative reference open',
+        'Select exactly one item as the quantitative reference',
       ),
     );
 
@@ -1281,7 +1297,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('Data check failed!'),
+        expect.stringContaining('Data check failed in '),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalledTimes(3);
@@ -1316,7 +1332,7 @@ describe('FlowsEdit', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        expect.stringContaining('flowInformation'),
+        expect.stringContaining('Flow information'),
       ),
     );
     expect(mockGetErrRefTab).toHaveBeenCalledTimes(2);

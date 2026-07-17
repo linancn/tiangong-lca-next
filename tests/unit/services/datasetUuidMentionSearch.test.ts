@@ -86,6 +86,35 @@ describe('datasetUuidMentionSearch service', () => {
     });
   });
 
+  it('preserves new backend entity kinds for the UI localized fallback', async () => {
+    supabaseMock.rpc.mockResolvedValue({
+      data: [
+        {
+          matched_by: 'json_uuid',
+          matched_entity_table: 'future_datasets',
+          rank: 1,
+          source_entity_kind: 'future_dataset_kind',
+          source_id: 'd1380000-0000-4000-8000-000000000001',
+          source_version: '01.00.000',
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      searchDatasetJsonUuidMentions({
+        dataSource: 'my',
+        sourceEntityKinds: ['process'],
+        uuid: 'd1380000-0000-4000-8000-000000000001',
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        data: [expect.objectContaining({ source_entity_kind: 'future_dataset_kind' })],
+        success: true,
+      }),
+    );
+  });
+
   it('uses the current user team for team data searches', async () => {
     getTeamIdByUserIdMock.mockResolvedValue('team-1');
 

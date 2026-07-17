@@ -26,13 +26,22 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => {
+    formatMessage: (
+      { defaultMessage, id }: any,
+      values: Record<string, string | number | undefined> = {},
+    ) => {
       const messages: Record<string, string> = {
+        'pages.validationIssues.sdkDetail.suggestedFix.custom': 'Check and fix this field',
         'pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character':
           'Chinese text must include at least one Chinese character',
+        'pages.validationIssues.sdkDetail.suggestedFix.string_too_short':
+          'Enter at least {minimum} characters',
       };
 
-      return messages[id] ?? defaultMessage ?? id;
+      return String(messages[id] ?? defaultMessage ?? id).replace(
+        /\{(\w+)\}/g,
+        (placeholder, key) => (values[key] === undefined ? placeholder : String(values[key])),
+      );
     },
   }),
 }));
@@ -447,6 +456,7 @@ describe('FlowPropertyEdit', () => {
         suggestedFix: 'Provide a longer flow property value.',
         tabName: 'flowProperties',
         validationCode: 'string_too_short',
+        validationParams: { minimum: 3 },
       },
     ];
 
@@ -481,7 +491,7 @@ describe('FlowPropertyEdit', () => {
     await waitFor(() =>
       expect(lastFormApi.setFields).toHaveBeenCalledWith([
         {
-          errors: ['Fix the flow property mean value', 'Provide a longer flow property value'],
+          errors: ['Check and fix this field', 'Enter at least 3 characters'],
           name: ['meanValue'],
         },
       ]),

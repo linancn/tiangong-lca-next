@@ -182,7 +182,7 @@ describe('Notification Component', () => {
     const icon = await screen.findByRole('img', { hidden: true });
     fireEvent.click(icon);
 
-    expect(screen.getByText('Notifications')).toBeInTheDocument();
+    expect(screen.getByText('Notification Center')).toBeInTheDocument();
   });
 
   it('should expose notification tooltip text on hover', async () => {
@@ -196,7 +196,7 @@ describe('Notification Component', () => {
     fireEvent.mouseEnter(icon);
 
     await waitFor(() => {
-      expect(screen.getByText('Notifications')).toBeInTheDocument();
+      expect(screen.getByText('Notification Center')).toBeInTheDocument();
     });
   });
 

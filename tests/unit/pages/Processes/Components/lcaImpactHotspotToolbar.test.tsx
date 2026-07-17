@@ -84,7 +84,7 @@ const selectImpact = async (impactId = 'impact-1') => {
   });
   await waitFor(() => expect(impactSelect).toHaveValue(impactId));
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Run hotspot ranking' })).not.toBeDisabled(),
+    expect(screen.getByRole('button', { name: 'Run ranking' })).not.toBeDisabled(),
   );
 };
 
@@ -404,13 +404,13 @@ describe('lcaImpactHotspotToolbar', () => {
     });
     await waitFor(() => expect(impactSelect).toHaveValue('impact-1'));
 
-    const rankWindowSelect = screen.getByRole('combobox', { name: 'Rank window' });
+    const rankWindowSelect = screen.getByRole('combobox', { name: 'Results per page' });
     fireEvent.change(rankWindowSelect, {
       target: { value: '10' },
     });
     await waitFor(() => expect(rankWindowSelect).toHaveValue('10'));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -440,7 +440,7 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(screen.getAllByText('40.0%').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Solar panel manufacturing').length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next slice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
@@ -466,7 +466,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
@@ -486,7 +486,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenCalledWith({
@@ -512,7 +512,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     await waitFor(() =>
       expect(queryPublishedLciaResults).toHaveBeenCalledWith({
@@ -539,7 +539,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('published hotspot unavailable');
   });
@@ -556,7 +556,7 @@ describe('lcaImpactHotspotToolbar', () => {
 
     fireEvent.click(screen.getByTestId('impact-hotspot-trigger'));
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Published LCIA results are unavailable.',
@@ -582,11 +582,11 @@ describe('lcaImpactHotspotToolbar', () => {
       target: { value: 'impact-1' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(
       await screen.findByText(
-        'The current lca_query_results backend is still on the old compare-only version. Deploy or restart the updated edge function before using hotspot ranking.',
+        'Hotspot analysis is unavailable. Contact an administrator for assistance.',
       ),
     ).toBeInTheDocument();
   });
@@ -633,14 +633,14 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     await waitFor(() =>
       expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'true'),
     );
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[1]);
-    expect(screen.getByRole('dialog', { name: 'LCA Impact Hotspots' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'LCA impact hotspot ranking' })).toBeInTheDocument();
 
     resolveQuery?.({
       snapshot_id: 'snapshot-loading',
@@ -763,17 +763,17 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByText('snapshot-empty')).toBeInTheDocument();
     expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByRole('button', { name: 'Previous slice' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
     expect(await screen.findByText('snapshot-page-2')).toBeInTheDocument();
     expect(screen.getAllByText('process-1').length).toBeGreaterThanOrEqual(2);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Previous slice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
     await waitFor(() =>
       expect(queryLcaResults).toHaveBeenLastCalledWith({
         scope: 'dev-v1',
@@ -842,11 +842,11 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByText('snapshot-malformed')).toBeInTheDocument();
     expect(screen.getByText('#1 - #2')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next slice' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
     expect(screen.getAllByText('process-name-fallback').length).toBeGreaterThanOrEqual(2);
     expect(screen.getAllByText('-1').length).toBeGreaterThanOrEqual(1);
   });
@@ -874,12 +874,12 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByText('snapshot-metadata-fallback')).toBeInTheDocument();
     expect(screen.getAllByText('-').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByRole('button', { name: 'Previous slice' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Next slice' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
   });
 
   it('falls back to process ids when lookup rows are not returned as an array', async () => {
@@ -924,7 +924,7 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByText('snapshot-non-array-lookup')).toBeInTheDocument();
     expect(screen.getAllByText('process-non-array').length).toBeGreaterThanOrEqual(2);
@@ -979,23 +979,23 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Unexpected hotspot payload returned from the query API.',
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Snapshot build is still running (job job-7). Wait for it to finish, then rerun the analysis.',
+      'Snapshot build job job-7 is still running. Wait for it to finish, then rerun the analysis.',
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Snapshot build is still running. Wait for it to finish, then rerun the analysis.',
     );
 
     isLcaFunctionInvokeError.mockReturnValue(false);
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Failed to run hotspot analysis.');
   });
 
@@ -1036,7 +1036,7 @@ describe('lcaImpactHotspotToolbar', () => {
     expect(await screen.findByText('Controls')).toBeInTheDocument();
 
     await selectImpact();
-    fireEvent.click(screen.getByRole('button', { name: 'Run hotspot ranking' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Run ranking' }));
 
     expect(await screen.findByText('snapshot-lookup-fallback')).toBeInTheDocument();
     expect(screen.getAllByText('process-fallback').length).toBeGreaterThanOrEqual(2);

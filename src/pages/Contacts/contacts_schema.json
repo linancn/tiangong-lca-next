@@ -76,12 +76,12 @@
             {
               "type": "url",
               "messageKey": "validator.pages.contact.WWWAddress.invalid",
-              "defaultMessage": "Please enter a valid WWWAddress!"
+              "defaultMessage": "Please enter a valid web address."
             },
             {
               "warn": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             }
           ]
         },
@@ -94,7 +94,7 @@
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in, providing additional information without affecting completeness!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 1000,
@@ -112,7 +112,7 @@
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Optional to fill in, providing additional information without affecting completeness!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 1000,
@@ -243,7 +243,7 @@
               {
                 "required": true,
                 "messageKey": "pages.contact.validator.referenceToDataSetFormat.required",
-                "defaultMessage": "Please input data set format(s)"
+                "defaultMessage": "Please select a data set format."
               }
             ]
           },

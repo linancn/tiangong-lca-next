@@ -4,6 +4,7 @@ export default {
   'component.globalHeader.search.example2': '搜索提示二',
   'component.globalHeader.search.example3': '搜索提示三',
   'component.globalHeader.help': '使用文档',
+  'component.globalHeader.help.englishFallback': '帮助文档（英文）',
   'component.globalHeader.notification': '通知',
   'component.globalHeader.notification.empty': '你已查看所有通知',
   'component.globalHeader.message': '消息',
@@ -40,7 +41,7 @@ export default {
   'pages.review.table.userName': '用户',
   'pages.review.table.type': '类型',
   'pages.review.table.status': '状态',
-  'pages.review.table.modifiedAt': '时间',
+  'pages.review.table.modifiedAt': '修改时间',
   'pages.review.table.actions': '操作',
   'pages.review.table.view': '查看',
 };

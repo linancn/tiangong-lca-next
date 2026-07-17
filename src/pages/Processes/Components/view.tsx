@@ -196,7 +196,9 @@ const ProcessView: FC<Props> = ({
     },
     {
       key: 'exchanges',
-      tab: <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Exchanges' />,
+      tab: (
+        <FormattedMessage id='pages.process.view.exchanges' defaultMessage='Inputs and Outputs' />
+      ),
     },
     {
       key: 'lciaResults',
@@ -224,7 +226,7 @@ const ProcessView: FC<Props> = ({
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     ...baseProcessExchangeColumns,
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       width: 80,
@@ -294,7 +296,7 @@ const ProcessView: FC<Props> = ({
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.process.view.processInformation.mixAndLocationTypes'
-              defaultMessage='Mix and Location Types'
+              defaultMessage='Mix and location types'
             />
           </Divider>
           <LangTextItemDescription
@@ -499,7 +501,7 @@ const ProcessView: FC<Props> = ({
             }
             label={
               <FormattedMessage
-                id='pages.process.view.processInformation.location'
+                id='pages.process.view.processInformation.subLocationOfOperationSupplyOrProduction'
                 defaultMessage='Sub-location(s)'
               />
             }
@@ -553,7 +555,7 @@ const ProcessView: FC<Props> = ({
             title={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyPictogramme'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Technology pictogram'
               />
             }
             data={initData.processInformation?.technology?.referenceToTechnologyPictogramme ?? {}}
@@ -564,7 +566,7 @@ const ProcessView: FC<Props> = ({
             title={
               <FormattedMessage
                 id='pages.process.view.processInformation.referenceToTechnologyFlowDiagrammOrPicture'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Flow diagram(s) or picture(s)'
               />
             }
             data={
@@ -697,7 +699,7 @@ const ProcessView: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.processInformation.variableParameter.relativeStandardDeviation95In'
-                  defaultMessage='Relative StdDev in %'
+                  defaultMessage='Relative standard deviation (95%) in %'
                 />
               }
               styles={{ label: { width: '180px' } }}
@@ -738,7 +740,7 @@ const ProcessView: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.modellingAndValidation.typeOfDataSet'
-                  defaultMessage='Type of data set'
+                  defaultMessage='Dataset type'
                 />
               }
               styles={{ label: { width: '220px' } }}
@@ -1337,7 +1339,7 @@ const ProcessView: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.process.view.administrativeInformation.workflowAndPublicationStatus'
-                  defaultMessage='Workflow and publication status	'
+                  defaultMessage='Workflow and publication status'
                 />
               }
               styles={{ label: { width: '240px' } }}
@@ -1680,7 +1682,7 @@ const ProcessView: FC<Props> = ({
           title={
             <FormattedMessage
               id='pages.button.model.process'
-              defaultMessage='Process infomation'
+              defaultMessage='Process information'
             ></FormattedMessage>
           }
           placement='left'
@@ -1696,7 +1698,7 @@ const ProcessView: FC<Props> = ({
         </Tooltip>
       ) : !autoOpen && buttonType === 'toolResultIcon' ? (
         <Tooltip
-          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
+          title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model Results' />}
           placement='left'
         >
           <Button

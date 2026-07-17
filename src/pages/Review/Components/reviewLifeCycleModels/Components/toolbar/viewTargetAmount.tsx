@@ -127,7 +127,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           title={
             <FormattedMessage
               id='pages.flow.model.drawer.title.refFlow'
-              defaultMessage='Ref flow'
+              defaultMessage='Reference flow'
             />
           }
         >
@@ -138,7 +138,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
                 label={
                   <FormattedMessage
                     id='pages.process.view.exchange.refObjectId'
-                    defaultMessage='Ref object id'
+                    defaultMessage='Reference flow dataset identifier'
                   />
                 }
                 styles={{ label: { width: '140px' } }}
@@ -219,7 +219,7 @@ const TargetAmount: FC<Props> = ({ refNode, drawerVisible, lang, setDrawerVisibl
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.generalComment'
-              defaultMessage='General Comment'
+              defaultMessage='General comment'
             />
           </Divider>
           <LangTextItemDescription

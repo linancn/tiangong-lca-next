@@ -249,10 +249,10 @@ describe('ToolbarViewInfo', () => {
       'en:LifeCycleModel:["class-a","class-b"]',
     );
     expect(screen.getAllByTestId('source-description')[0]).toHaveTextContent(
-      'source-doc:Reference to External Documentation',
+      'source-doc:Data set report, background info',
     );
     expect(screen.getAllByTestId('source-description')[1]).toHaveTextContent(
-      'source-diagram:Reference to Diagram',
+      'source-diagram:Life cycle model diagram(s) or screenshot(s)',
     );
   });
 
@@ -291,7 +291,7 @@ describe('ToolbarViewInfo', () => {
     expect(screen.getByText('Open License')).toBeInTheDocument();
     expect(screen.getByText('Copyrighted')).toBeInTheDocument();
     expect(screen.getAllByTestId('contact-description')[0]).toHaveTextContent(
-      'en:contact-commissioner:Reference to Commissioner',
+      'en:contact-commissioner:Commissioner of data set',
     );
 
     await userEvent.click(screen.getByRole('button', { name: /^Validation$/i }));
@@ -311,7 +311,7 @@ describe('ToolbarViewInfo', () => {
     expect(screen.getByTestId('level-text')).toHaveTextContent('en:LifeCycleModel:[]');
 
     await userEvent.click(screen.getByRole('button', { name: /modelling and validation/i }));
-    expect(screen.getByText('Use Advice For Data Set')).toBeInTheDocument();
+    expect(screen.getByText('Use advice for data set')).toBeInTheDocument();
     expect(screen.getByTestId('lang-text')).toHaveTextContent('Use advice');
     expect(screen.getByTestId('drawer-container')).toHaveTextContent('has-container');
 

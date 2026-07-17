@@ -608,7 +608,7 @@ describe('LifeCycleModelsPage', () => {
       ),
     );
 
-    await user.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    await user.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
     expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
       'placeholder',
       'pages.search.placeholder',
@@ -648,7 +648,7 @@ describe('LifeCycleModelsPage', () => {
     await waitFor(() =>
       expect(mockContributeLifeCycleModel).toHaveBeenCalledWith('model-1', '1.0.0'),
     );
-    expect(mockMessageSuccess).toHaveBeenCalledWith('Contribute successfully');
+    expect(mockMessageSuccess).toHaveBeenCalledWith('Data contributed to the team successfully.');
     expect(latestReloadMock).toHaveBeenCalled();
 
     mockContributeLifeCycleModel.mockResolvedValueOnce({ error: { message: 'failed' } });

@@ -412,7 +412,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     }
 
     message.success(
-      `${intl.formatMessage({ id: 'component.aiSuggestion.message.acceptChange' })}: ${path}`,
+      intl.formatMessage(
+        {
+          id: 'component.aiSuggestion.message.acceptChange',
+          defaultMessage: 'Accepted change at {path}.',
+        },
+        { path },
+      ),
     );
   };
 
@@ -441,7 +447,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     }
 
     message.warning(
-      `${intl.formatMessage({ id: 'component.aiSuggestion.message.rejectChange' })}: ${path}`,
+      intl.formatMessage(
+        {
+          id: 'component.aiSuggestion.message.rejectChange',
+          defaultMessage: 'Rejected change at {path}.',
+        },
+        { path },
+      ),
     );
   };
 
@@ -450,7 +462,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
       const jsonString = JSON.stringify(content, null, 2);
       await navigator.clipboard.writeText(jsonString);
       message.success(
-        `${label}${intl.formatMessage({ id: 'component.aiSuggestion.message.copySuccess' })}`,
+        intl.formatMessage(
+          {
+            id: 'component.aiSuggestion.message.copySuccess',
+            defaultMessage: '{label} copied to the clipboard.',
+          },
+          { label },
+        ),
       );
     } catch (err) {
       message.error(intl.formatMessage({ id: 'component.aiSuggestion.message.copyFailed' }));
@@ -512,7 +530,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     setAcceptedChanges(newAccepted);
     setRejectedChanges(new Set());
     message.success(
-      `${intl.formatMessage({ id: 'component.aiSuggestion.message.acceptAllSuccess' })} ${diffItems.length} ${intl.formatMessage({ id: 'component.aiSuggestion.message.changes' })}`,
+      intl.formatMessage(
+        {
+          id: 'component.aiSuggestion.message.acceptAllSuccess',
+          defaultMessage: '{count, plural, one {Accepted # change.} other {Accepted # changes.}}',
+        },
+        { count: diffItems.length },
+      ),
     );
   };
 
@@ -542,7 +566,13 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
     setRejectedChanges(newRejected);
     setAcceptedChanges(new Set());
     message.warning(
-      `${intl.formatMessage({ id: 'component.aiSuggestion.message.rejectAllSuccess' })} ${diffItems.length} ${intl.formatMessage({ id: 'component.aiSuggestion.message.changes' })}`,
+      intl.formatMessage(
+        {
+          id: 'component.aiSuggestion.message.rejectAllSuccess',
+          defaultMessage: '{count, plural, one {Rejected # change.} other {Rejected # changes.}}',
+        },
+        { count: diffItems.length },
+      ),
     );
   };
 
@@ -1136,14 +1166,22 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               onClick={handleAcceptAll}
               disabled={diffItems.length === 0}
             >
-              <FormattedMessage id='component.aiSuggestion.button.acceptAll' /> ({diffItems.length})
+              <FormattedMessage
+                id='component.aiSuggestion.button.acceptAll'
+                defaultMessage='{count, plural, one {Accept # change} other {Accept all # changes}}'
+                values={{ count: diffItems.length }}
+              />
             </Button>
             <Button
               icon={<CloseOutlined />}
               onClick={handleRejectAll}
               disabled={diffItems.length === 0}
             >
-              <FormattedMessage id='component.aiSuggestion.button.rejectAll' />
+              <FormattedMessage
+                id='component.aiSuggestion.button.rejectAll'
+                defaultMessage='{count, plural, one {Reject # change} other {Reject all # changes}}'
+                values={{ count: diffItems.length }}
+              />
             </Button>
             <Button
               icon={<UndoOutlined />}
@@ -1216,8 +1254,14 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
               }}
             >
               <Text type='secondary'>
-                <FormattedMessage id='component.aiSuggestion.panel.processed' />:{' '}
-                {acceptedChanges.size + rejectedChanges.size} / {diffItems.length}
+                <FormattedMessage
+                  id='component.aiSuggestion.panel.processed'
+                  defaultMessage='Processed {processedCount, number} of {totalCount, plural, one {# change} other {# changes}}'
+                  values={{
+                    processedCount: acceptedChanges.size + rejectedChanges.size,
+                    totalCount: diffItems.length,
+                  }}
+                />
               </Text>
             </div>
           </div>

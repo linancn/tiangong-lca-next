@@ -40,7 +40,7 @@
             {
               "warningOnly": true,
               "messageKey": "validator.recommended.empty",
-              "defaultMessage": "Recommended to fill in to enhance data detail and usability!"
+              "defaultMessage": "Recommended: complete this field to improve data detail and usability."
             },
             {
               "max": 500,
@@ -182,7 +182,7 @@
             {
               "required": true,
               "messageKey": "pages.flowproperties.validator.dataSetVersion.required",
-              "defaultMessage": "Please input dataSetVersion"
+              "defaultMessage": "Please enter the data set version."
             },
             {
               "pattern": "dataSetVersion",

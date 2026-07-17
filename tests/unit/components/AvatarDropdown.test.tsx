@@ -300,7 +300,7 @@ describe('AvatarDropdown', () => {
 
     mockHistoryPush.mockClear();
 
-    await user.click(screen.getByRole('button', { name: 'Team Management' }));
+    await user.click(screen.getByRole('button', { name: 'My Team' }));
 
     await waitFor(() => {
       expect(mockedGetUserRoles).toHaveBeenCalled();
@@ -310,7 +310,7 @@ describe('AvatarDropdown', () => {
 
     mockHistoryPush.mockClear();
 
-    await user.click(screen.getByRole('button', { name: 'System Settings' }));
+    await user.click(screen.getByRole('button', { name: 'System Management' }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/manageSystem');
 
     await user.click(screen.getByRole('button', { name: 'Logout' }));
@@ -374,7 +374,7 @@ describe('AvatarDropdown', () => {
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
 
-    const teamButton = await screen.findByRole('button', { name: 'Team Management' });
+    const teamButton = await screen.findByRole('button', { name: 'My Team' });
     await user.click(teamButton);
 
     expect(mockModalConfirm).toHaveBeenCalled();
@@ -412,7 +412,7 @@ describe('AvatarDropdown', () => {
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
 
-    await user.click(await screen.findByRole('button', { name: 'Team Management' }));
+    await user.click(await screen.findByRole('button', { name: 'My Team' }));
 
     const confirmConfig = mockModalConfirm.mock.calls[0]?.[0];
     expect(confirmConfig).toBeTruthy();
@@ -453,7 +453,7 @@ describe('AvatarDropdown', () => {
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
 
-    await user.click(await screen.findByRole('button', { name: 'Team Management' }));
+    await user.click(await screen.findByRole('button', { name: 'My Team' }));
 
     const confirmConfig = mockModalConfirm.mock.calls[mockModalConfirm.mock.calls.length - 1]?.[0];
     expect(confirmConfig).toBeTruthy();
@@ -491,7 +491,7 @@ describe('AvatarDropdown', () => {
 
     render(<AvatarDropdown>avatar</AvatarDropdown>);
 
-    await user.click(await screen.findByRole('button', { name: 'Team Management' }));
+    await user.click(await screen.findByRole('button', { name: 'My Team' }));
 
     const confirmConfig = mockModalConfirm.mock.calls[mockModalConfirm.mock.calls.length - 1]?.[0];
     expect(confirmConfig).toBeTruthy();

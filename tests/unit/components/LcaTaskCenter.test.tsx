@@ -61,6 +61,7 @@ jest.mock('@/services/reviews/taskCenter', () => ({
 jest.mock('umi', () => ({
   __esModule: true,
   useIntl: () => ({
+    locale: 'en-US',
     formatMessage: ({ defaultMessage, id }: any, values?: Record<string, any>) =>
       formatWithValues(defaultMessage ?? id, values),
   }),
@@ -278,7 +279,10 @@ describe('LcaTaskCenter', () => {
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:01:00.000Z',
         workerJobId: 'worker-lca-1',
+        rootJobId: 'root-lca-1',
+        jobKind: 'lca.solve',
         solveJobId: 'solve-1',
+        request: { processId: 'process-1' },
         error: 'Solve failed once',
         phaseTimeline: [
           {
@@ -349,7 +353,7 @@ describe('LcaTaskCenter', () => {
     fireEvent.click(viewButtons[0]);
     expect(screen.getByText('Detail information')).toBeInTheDocument();
     expect(screen.getByText('Demand type')).toBeInTheDocument();
-    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.getByText('Single-Process Calculation')).toBeInTheDocument();
     expect(screen.getByText('Data scope')).toBeInTheDocument();
     expect(screen.getByText('team')).toBeInTheDocument();
     expect(screen.queryByText('Solving LCA result')).not.toBeInTheDocument();
@@ -366,10 +370,17 @@ describe('LcaTaskCenter', () => {
     screen.getAllByRole('button', { name: 'Diagnostics' }).forEach((button) => {
       fireEvent.click(button);
     });
-    expect(screen.getAllByText('build_job_id').length).toBeGreaterThan(0);
-    expect(screen.getByText('worker_job_id')).toBeInTheDocument();
+    expect(screen.getAllByText('Build job ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Task ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Sequence').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Worker job ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Root job ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Worker job kind').length).toBeGreaterThan(0);
     expect(screen.getByText('worker-lca-1')).toBeInTheDocument();
-    expect(screen.getAllByText('result_id').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Calculation job ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Snapshot ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Result ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Request').length).toBeGreaterThan(0);
     expect(screen.queryByText('Solve failed once')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
 
@@ -451,7 +462,7 @@ describe('LcaTaskCenter', () => {
     const viewButtons = screen.getAllByRole('button', { name: 'View' });
     fireEvent.click(viewButtons[0]);
     expect(screen.getByText('Demand type')).toBeInTheDocument();
-    expect(screen.getByText('Single Demand')).toBeInTheDocument();
+    expect(screen.getByText('Single-Process Calculation')).toBeInTheDocument();
     expect(screen.queryByText('Building calculation snapshot')).not.toBeInTheDocument();
 
     fireEvent.click(viewButtons[1]);
@@ -583,9 +594,9 @@ describe('LcaTaskCenter', () => {
 
     const diagnosticsButtons = screen.getAllByRole('button', { name: 'Diagnostics' });
     fireEvent.click(diagnosticsButtons[1]);
-    expect(screen.getByText('submit_worker_job_id')).toBeInTheDocument();
+    expect(screen.getByText('Submit worker job ID')).toBeInTheDocument();
     expect(screen.getAllByText('submit-worker-blocked').length).toBeGreaterThan(0);
-    expect(screen.getByText('root_job_id')).toBeInTheDocument();
+    expect(screen.getByText('Root job ID')).toBeInTheDocument();
     expect(screen.getAllByText('root-worker-blocked').length).toBeGreaterThan(0);
     expect(screen.getByText('same input/output flow')).toBeInTheDocument();
     expect(screen.getAllByText('flow_lcia_semantic_mismatch').length).toBeGreaterThan(0);
@@ -839,9 +850,9 @@ describe('LcaTaskCenter', () => {
     expect(screen.getAllByText('[object Object]').length).toBeGreaterThan(0);
 
     fireEvent.click(reviewDiagnosticsButtons[4]);
-    expect(screen.getByText('gate_run_id')).toBeInTheDocument();
+    expect(screen.getByText('Gate run ID')).toBeInTheDocument();
     expect(screen.getByText('gate-run-submitted')).toBeInTheDocument();
-    expect(screen.getByText('revision_checksum')).toBeInTheDocument();
+    expect(screen.getByText('Revision checksum')).toBeInTheDocument();
     expect(screen.getByText('checksum-submitted')).toBeInTheDocument();
     expect(
       screen.queryByText(
@@ -1161,7 +1172,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.queryByText('Detail information')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Diagnostics' })[0]);
-    expect(screen.getByText('No diagnostics')).toBeInTheDocument();
+    expect(screen.getByText('No diagnostics available')).toBeInTheDocument();
 
     fireEvent.click(screen.getAllByRole('button', { name: 'View' })[1]);
     expect(screen.getByText('Build snapshot')).toBeInTheDocument();
@@ -1211,6 +1222,7 @@ describe('LcaTaskCenter', () => {
         createdAt: '2026-03-12T12:00:00.000Z',
         updatedAt: '2026-03-12T12:00:04.000Z',
         workerJobId: 'worker-package-1',
+        jobKind: 'tidas.export',
         filename: 'custom.zip',
         jobId: 'job-1',
         scope: 'current_user',
@@ -1438,9 +1450,12 @@ describe('LcaTaskCenter', () => {
       screen.queryByText((_, element) => element?.textContent?.includes('root_count') ?? false),
     ).not.toBeInTheDocument();
     expect(screen.queryByText('filename')).not.toBeInTheDocument();
-    expect(screen.getAllByText('job_id').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Job ID').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Task kind').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Worker job kind').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Request').length).toBeGreaterThan(0);
     expect(screen.getByText('job-1')).toBeInTheDocument();
-    expect(screen.getAllByText('worker_job_id').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Worker job ID').length).toBeGreaterThan(0);
     expect(screen.getByText('worker-package-1')).toBeInTheDocument();
     expect(
       screen.getAllByText((_, element) => element?.textContent?.includes('"id": "p-1"') ?? false)

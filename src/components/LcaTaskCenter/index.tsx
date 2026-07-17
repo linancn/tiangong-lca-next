@@ -38,6 +38,7 @@ import {
   refreshTidasPackageTasksFromWorkerJobs,
   subscribeTidasPackageTasks,
 } from '@/services/tidasPackage/taskCenter';
+import { formatLocaleDateTime } from '@/utils/localeFormatting';
 import { REVIEW_SUBMIT_GATE_REASON_GUIDANCE } from '@/utils/reviewSubmitGateGuidance';
 import {
   CheckCircleOutlined,
@@ -309,12 +310,8 @@ function formatDuration(durationMs: number): string {
   return `${minutes}m ${seconds}s`;
 }
 
-function formatDateTime(value: string): string {
-  const ts = Date.parse(value);
-  if (!Number.isFinite(ts)) {
-    return value;
-  }
-  return new Date(ts).toLocaleString();
+function formatDateTime(value: string, intl: IntlShapeLike): string {
+  return formatLocaleDateTime(value, intl.locale);
 }
 
 function getTaskElapsedMs(item: TaskCenterItem): number {
@@ -630,10 +627,10 @@ function lcaProcessSteps(task: LcaBackgroundTask, intl: IntlShapeLike): ProcessS
     const description =
       phase === 'completed'
         ? task.state === 'completed'
-          ? formatDateTime(task.updatedAt)
+          ? formatDateTime(task.updatedAt, intl)
           : undefined
         : stats?.startedAt
-          ? formatDateTime(stats.startedAt)
+          ? formatDateTime(stats.startedAt, intl)
           : undefined;
     const step: ProcessStepItem = {
       key: phase,
@@ -737,7 +734,7 @@ function packageProcessSteps(
     const state = processStepStatus(index, currentIndex, task.state);
     const description =
       index === 0
-        ? formatDateTime(task.createdAt)
+        ? formatDateTime(task.createdAt, intl)
         : index === currentIndex && task.state !== 'completed'
           ? processStateLabel(state, intl)
           : state === 'completed'
@@ -807,7 +804,7 @@ function reviewSubmitProcessSteps(
     const state = processStepStatus(index, currentIndex, task.state);
     const description =
       index === 0
-        ? formatDateTime(task.createdAt)
+        ? formatDateTime(task.createdAt, intl)
         : index === currentIndex && task.state !== 'completed'
           ? phaseLabel({ kind: 'reviewSubmit', task }, intl)
           : state === 'completed'
@@ -963,11 +960,11 @@ function lcaModeLabel(mode: LcaBackgroundTask['mode'], intl: IntlShapeLike): str
   return mode === 'all_unit'
     ? intl.formatMessage({
         id: 'pages.process.lca.mode.allUnit',
-        defaultMessage: 'All Processes (1 Reference Unit)',
+        defaultMessage: 'All Processes (Reference Flow = 1)',
       })
     : intl.formatMessage({
         id: 'pages.process.lca.mode.single',
-        defaultMessage: 'Single Demand',
+        defaultMessage: 'Single-Process Calculation',
       });
 }
 
@@ -1159,13 +1156,26 @@ function visibleDiagnosticValue(value: unknown): string | undefined {
   return diagnosticJson(value);
 }
 
-function DiagnosticRows({ fields }: { fields: DiagnosticField[] }): React.ReactElement {
+function DiagnosticRows({
+  fields,
+  intl,
+}: {
+  fields: DiagnosticField[];
+  intl: IntlShapeLike;
+}): React.ReactElement {
   const visibleFields = fields
     .map((field) => ({ ...field, value: visibleDiagnosticValue(field.value) }))
     .filter((field): field is { label: string; value: string } => Boolean(field.value));
 
   if (visibleFields.length === 0) {
-    return <Typography.Text type='secondary'>No diagnostics</Typography.Text>;
+    return (
+      <Typography.Text type='secondary'>
+        {intl.formatMessage({
+          id: 'pages.process.lca.taskCenter.diagnostics.empty',
+          defaultMessage: 'No diagnostics available',
+        })}
+      </Typography.Text>
+    );
   }
 
   return (
@@ -1194,36 +1204,143 @@ function DiagnosticRows({ fields }: { fields: DiagnosticField[] }): React.ReactE
   );
 }
 
-function lcaDiagnosticContent(task: LcaBackgroundTask): React.ReactNode {
+function lcaDiagnosticContent(task: LcaBackgroundTask, intl: IntlShapeLike): React.ReactNode {
   return (
     <DiagnosticRows
+      intl={intl}
       fields={[
-        { label: 'task_id', value: task.id },
-        { label: 'sequence', value: task.sequence },
-        { label: 'worker_job_id', value: task.workerJobId },
-        { label: 'root_job_id', value: task.rootJobId },
-        { label: 'job_kind', value: task.jobKind },
-        { label: 'build_job_id', value: task.buildJobId },
-        { label: 'solve_job_id', value: task.solveJobId },
-        { label: 'snapshot_id', value: task.snapshotId },
-        { label: 'result_id', value: task.resultId },
-        { label: 'request', value: task.request },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.taskId',
+            defaultMessage: 'Task ID',
+          }),
+          value: task.id,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.sequence',
+            defaultMessage: 'Sequence',
+          }),
+          value: task.sequence,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.workerJobId',
+            defaultMessage: 'Worker job ID',
+          }),
+          value: task.workerJobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.rootJobId',
+            defaultMessage: 'Root job ID',
+          }),
+          value: task.rootJobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.jobKind',
+            defaultMessage: 'Worker job kind',
+          }),
+          value: task.jobKind,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.buildJobId',
+            defaultMessage: 'Build job ID',
+          }),
+          value: task.buildJobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.solveJobId',
+            defaultMessage: 'Calculation job ID',
+          }),
+          value: task.solveJobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.snapshotId',
+            defaultMessage: 'Snapshot ID',
+          }),
+          value: task.snapshotId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.detail.resultId',
+            defaultMessage: 'Result ID',
+          }),
+          value: task.resultId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.request',
+            defaultMessage: 'Request',
+          }),
+          value: task.request,
+        },
       ]}
     />
   );
 }
 
-function packageDiagnosticContent(task: TidasPackageBackgroundTask): React.ReactNode {
+function packageDiagnosticContent(
+  task: TidasPackageBackgroundTask,
+  intl: IntlShapeLike,
+): React.ReactNode {
   return (
     <DiagnosticRows
+      intl={intl}
       fields={[
-        { label: 'task_id', value: task.id },
-        { label: 'sequence', value: task.sequence },
-        { label: 'kind', value: task.kind },
-        { label: 'worker_job_id', value: task.workerJobId },
-        { label: 'job_kind', value: task.jobKind },
-        { label: 'job_id', value: task.jobId },
-        { label: 'request', value: task.request },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.taskId',
+            defaultMessage: 'Task ID',
+          }),
+          value: task.id,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.sequence',
+            defaultMessage: 'Sequence',
+          }),
+          value: task.sequence,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.taskKind',
+            defaultMessage: 'Task kind',
+          }),
+          value: task.kind,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.workerJobId',
+            defaultMessage: 'Worker job ID',
+          }),
+          value: task.workerJobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.jobKind',
+            defaultMessage: 'Worker job kind',
+          }),
+          value: task.jobKind,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'component.tidasPackage.taskCenter.detail.jobId',
+            defaultMessage: 'Job ID',
+          }),
+          value: task.jobId,
+        },
+        {
+          label: intl.formatMessage({
+            id: 'pages.process.lca.taskCenter.diagnostics.request',
+            defaultMessage: 'Request',
+          }),
+          value: task.request,
+        },
       ]}
     />
   );
@@ -1592,15 +1709,64 @@ function reviewSubmitDiagnosticContent(
   return (
     <Space direction='vertical' size={8} style={{ maxWidth: 460 }}>
       <DiagnosticRows
+        intl={intl}
         fields={[
-          { label: 'task_id', value: task.id },
-          { label: 'submit_worker_job_id', value: task.submitWorkerJobId },
-          { label: 'root_job_id', value: task.rootJobId },
-          { label: 'gate_worker_job_id', value: task.gateWorkerJobId },
-          { label: 'review_submit_job_id', value: task.reviewSubmitJobId },
-          { label: 'gate_run_id', value: task.gateRunId },
-          { label: 'revision_checksum', value: task.datasetRevision?.revisionChecksum },
-          { label: 'progress', value: task.progress },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.taskId',
+              defaultMessage: 'Task ID',
+            }),
+            value: task.id,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.submitWorkerJobId',
+              defaultMessage: 'Submit worker job ID',
+            }),
+            value: task.submitWorkerJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.rootJobId',
+              defaultMessage: 'Root job ID',
+            }),
+            value: task.rootJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.gateWorkerJobId',
+              defaultMessage: 'Gate worker job ID',
+            }),
+            value: task.gateWorkerJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.reviewSubmitJobId',
+              defaultMessage: 'Review submission job ID',
+            }),
+            value: task.reviewSubmitJobId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.gateRunId',
+              defaultMessage: 'Gate run ID',
+            }),
+            value: task.gateRunId,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.revisionChecksum',
+              defaultMessage: 'Revision checksum',
+            }),
+            value: task.datasetRevision?.revisionChecksum,
+          },
+          {
+            label: intl.formatMessage({
+              id: 'pages.process.reviewSubmitTaskCenter.detail.progress',
+              defaultMessage: 'Progress',
+            }),
+            value: task.progress,
+          },
         ]}
       />
       {reviewSubmitDiagnosticsContent(task, intl)}
@@ -1610,12 +1776,12 @@ function reviewSubmitDiagnosticContent(
 
 function taskDiagnosticContent(item: TaskCenterItem, intl: IntlShapeLike): React.ReactNode {
   if (item.kind === 'lca') {
-    return lcaDiagnosticContent(item.task);
+    return lcaDiagnosticContent(item.task, intl);
   }
   if (item.kind === 'reviewSubmit') {
     return reviewSubmitDiagnosticContent(item.task, intl);
   }
-  return packageDiagnosticContent(item.task);
+  return packageDiagnosticContent(item.task, intl);
 }
 
 function reviewSubmitDetailContent(
@@ -2087,7 +2253,7 @@ const LcaTaskCenter: React.FC = () => {
                           id: 'pages.process.lca.taskCenter.updated',
                           defaultMessage: 'Updated',
                         })}{' '}
-                        {formatDateTime(item.task.updatedAt)}
+                        {formatDateTime(item.task.updatedAt, intl)}
                       </Typography.Text>
                     </Space>
                     <Typography.Text style={{ fontSize: 13 }}>

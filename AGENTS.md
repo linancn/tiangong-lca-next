@@ -26,8 +26,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Reviewed Issue #601 scoped-first validation and single final-checkpoint gate ownership; repo ownership and branch facts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -102,10 +103,12 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - minimum proof and protected-branch gate expectations live in `docs/agents/repo-validation.md`
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
+- locale topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit command documented in `docs/agents/repo-validation.md`
+- the unified-German baseline, active-runtime assembly, delta-context review, blocked-context policy, and scoped commands live in `docs/plans/i18n-de-DE/README.md`; the product exposes exactly one canonical German locale, `de-DE`, normalizes supported `de` / `de-*` aliases to it, and keeps completed human confirmation in ignored local Markdown rather than GitHub or tracked artifacts
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
-- when reproducing the local and release gates, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate Umi test artifacts
+- run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for normal delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change
 - new npm dependencies require human approval
 
 ## Minimal Execution Facts
@@ -117,6 +120,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - shared dev environment: `npm start` (`npm run start:dev` is equivalent)
 - explicit main-environment run: `npm run start:main`
 - default lint gate: `npm run lint`
+- deterministic locale audit: `npm run i18n:audit`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`

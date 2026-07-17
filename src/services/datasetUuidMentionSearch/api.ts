@@ -5,7 +5,9 @@ export type DatasetUuidMentionRow = {
   matched_by: string;
   matched_entity_table: string;
   rank: number;
-  source_entity_kind: DatasetUuidMentionEntityKind;
+  // This value crosses an RPC boundary. Keep it open so newly deployed backend
+  // kinds reach the UI's localized unknown fallback instead of being hidden by a cast.
+  source_entity_kind: string;
   source_id: string;
   source_json?: Record<string, unknown>;
   source_modified_at?: string | null;

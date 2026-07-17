@@ -15,10 +15,12 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
 } from '@/pages/Utils/validation/formSupport';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getFlowpropertyDetail, updateFlowproperties } from '@/services/flowproperties/api';
 import {
   FlowPropertyDataSetObjectKeys,
@@ -64,7 +66,7 @@ import { FlowpropertyForm } from './form';
 type Props = {
   id: string;
   version: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text';
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   disabled?: boolean;
@@ -483,29 +485,20 @@ const FlowpropertiesEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
+            defaultMessage: 'Data validation passed.',
           }),
         );
       }
     } else if (feedbackState === 'validation-error') {
       const validationHint =
         errTabNames && errTabNames.length > 0
-          ? errTabNames
-              .map((tab) =>
-                intl.formatMessage({
-                  id: `pages.FlowProperties.view.${tab}`,
-                  defaultMessage: tab,
-                }),
-              )
-              .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            })
+          ? formatDataCheckErrorWithSections(
+              intl,
+              errTabNames.map((tab) => formatDatasetTabLabel(intl, 'flow property data set', tab)),
+            )
           : intl.formatMessage({
               id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
+              defaultMessage: 'Data check failed, please check the data!',
             });
       if (!silent && validationIssues.length > 0) {
         const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
@@ -547,10 +540,7 @@ const FlowpropertiesEdit: FC<Props> = ({
             />
           ) : (
             <Button disabled={disabled} onClick={onEdit}>
-              <FormattedMessage
-                id={buttonType ? buttonType : 'pages.button.edit'}
-                defaultMessage='Edit'
-              />
+              <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
             </Button>
           )}
         </Tooltip>

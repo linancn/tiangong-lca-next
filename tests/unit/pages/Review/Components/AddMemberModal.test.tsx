@@ -291,7 +291,7 @@ describe('ReviewAddMemberModal', () => {
 
     await waitFor(() => expect(mockAddReviewMemberApi).toHaveBeenCalledWith('user-1'));
     expect(mockUpdateUserContact).toHaveBeenCalledWith('user-1', contactInfo);
-    expect(mockMessage.success).toHaveBeenCalledWith('Member added successfully!');
+    expect(mockMessage.success).toHaveBeenCalledWith('Member added successfully');
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
@@ -310,8 +310,8 @@ describe('ReviewAddMemberModal', () => {
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => expect(mockGetUserInfoByEmail).toHaveBeenCalledWith('missing@example.com'));
-    expect(mockMessage.error).toHaveBeenCalledWith('User not found');
-    expect(screen.queryByText('No contact information')).not.toBeInTheDocument();
+    expect(mockMessage.error).toHaveBeenCalledWith('User Not Found');
+    expect(screen.queryByText('No Contact Information')).not.toBeInTheDocument();
   });
 
   it('shows query failed when querying throws', async () => {
@@ -324,7 +324,7 @@ describe('ReviewAddMemberModal', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /search/i }));
 
-    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Query failed'));
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Query Failed'));
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
@@ -349,7 +349,7 @@ describe('ReviewAddMemberModal', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
 
-    await waitFor(() => expect(screen.getByText('No contact information')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('No Contact Information')).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ok' })).toBeDisabled();
   });
 
@@ -379,7 +379,7 @@ describe('ReviewAddMemberModal', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: /search/i }));
 
-    await waitFor(() => expect(screen.getByText('No contact information')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('No Contact Information')).toBeInTheDocument());
 
     await userEvent.click(screen.getByRole('button', { name: /pick-contact/i }));
 
@@ -389,7 +389,9 @@ describe('ReviewAddMemberModal', () => {
     await userEvent.click(screen.getByRole('button', { name: 'ok' }));
 
     await waitFor(() => expect(mockAddReviewMemberApi).toHaveBeenCalledWith('user-2'));
-    expect(mockMessage.error).toHaveBeenCalledWith('User already exists');
+    expect(mockMessage.error).toHaveBeenCalledWith(
+      'User is already a reviewer, please do not add again',
+    );
     expect(mockUpdateUserContact).not.toHaveBeenCalled();
   });
 
@@ -474,7 +476,7 @@ describe('ReviewAddMemberModal', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'ok' }));
 
-    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Failed to add member!'));
+    await waitFor(() => expect(mockMessage.error).toHaveBeenCalledWith('Failed to add member'));
   });
 
   it('invokes onCancel when cancel button is clicked', async () => {

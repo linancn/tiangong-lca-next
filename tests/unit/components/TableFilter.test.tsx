@@ -13,10 +13,11 @@ type TableFilterProps = {
 
 jest.mock('umi', () => {
   const messages: Record<string, string> = {
-    'pages.table.filter.all.reviewType': 'Type of review',
-    'pages.table.filter.unreviewed': 'Unreviewed',
-    'pages.table.filter.reviewing': 'Reviewing',
-    'pages.table.filter.reviewed': 'Reviewed',
+    'pages.table.filter.all.workflowStatus': 'All workflow statuses',
+    'pages.table.filter.workflowStatus.workingDraft': 'Working draft',
+    'pages.table.filter.workflowStatus.finalDraftForExternalReview':
+      'Final draft for external review',
+    'pages.table.filter.workflowStatus.dataSetFinalised': 'Data set finalised; entirely published',
   };
 
   const formatMessage = ({ id, defaultMessage }: { id?: string; defaultMessage?: string }) =>
@@ -98,16 +99,16 @@ describe('TableFilter Component', () => {
 
     const options = within(select).getAllByRole('option');
     expect(options.map((option) => option.textContent)).toEqual([
-      'Type of review',
-      'Unreviewed',
-      'Reviewing',
-      'Reviewed',
+      'All workflow statuses',
+      'Working draft',
+      'Final draft for external review',
+      'Data set finalised; entirely published',
     ]);
     expect(options.map((option) => option.getAttribute('title'))).toEqual([
-      'Type of review',
-      'Unreviewed',
-      'Reviewing',
-      'Reviewed',
+      'All workflow statuses',
+      'Working draft',
+      'Final draft for external review',
+      'Data set finalised; entirely published',
     ]);
   });
 

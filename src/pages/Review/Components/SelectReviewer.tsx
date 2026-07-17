@@ -92,7 +92,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
       render: (_, record) => (
         <span>
           {record.role === 'review-admin' ? (
-            <FormattedMessage id='pages.review.members.role.admin' defaultMessage='Admin' />
+            <FormattedMessage id='pages.review.members.role.admin' defaultMessage='Administrator' />
           ) : record.role === 'review-member' ? (
             <FormattedMessage id='pages.review.members.role.member' defaultMessage='Member' />
           ) : (
@@ -112,7 +112,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         message.success(
           intl.formatMessage({
             id: 'pages.review.temporarySaveSuccess',
-            defaultMessage: 'Temporary save success',
+            defaultMessage: 'Temporarily saved successfully.',
           }),
         );
         setDrawerVisible(false);
@@ -155,7 +155,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         message.success(
           intl.formatMessage({
             id: 'pages.review.saveSuccess',
-            defaultMessage: 'Save success',
+            defaultMessage: 'Reviewer assignments saved successfully.',
           }),
         );
         setDrawerVisible(false);
@@ -182,7 +182,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         title={
           <FormattedMessage
             id='pages.review.selectReviewer.button'
-            defaultMessage='Select Reviewer'
+            defaultMessage='Assign for review'
           />
         }
       >
@@ -198,7 +198,9 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
         destroyOnHidden
         styles={{ body: { paddingTop: 0 } }}
         getContainer={() => document.body}
-        title={<FormattedMessage id='pages.review.drawer.title' defaultMessage='Select Reviewer' />}
+        title={
+          <FormattedMessage id='pages.review.drawer.title' defaultMessage='Assign for review' />
+        }
         width='90%'
         closable={false}
         extra={
@@ -242,10 +244,7 @@ export default function SelectReviewer({ reviewIds, actionRef, tabType }: Select
               title: (
                 <Space align='center'>
                   <span style={{ fontSize: token.fontSize }}>
-                    <FormattedMessage
-                      id='pages.review.deadline'
-                      defaultMessage='Review Deadline:'
-                    />
+                    <FormattedMessage id='pages.review.deadline' defaultMessage='Review Deadline' />
                   </span>
                   <DatePicker
                     value={reviewDeadline}

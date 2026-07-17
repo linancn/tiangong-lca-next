@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "tiangong.i18n-german-source-allowlist.v1",
+  "locale": "de-DE",
+  "policy": "An exact English value or technical source token is allowed only when the German UI should preserve a proper name, identifier, acronym, code, or genuinely identical German term. A whole-message exception records messageId, reason, and decision=preserve-exact-english; the ignored local catalog confirmation approves the current scope without writing reviewer identity or date here. This file is a machine policy, not an evidence bibliography.",
+  "emptyMessageIds": ["pages.layouts.userLayout.title"],
+  "exactEnglishMessages": [
+    {
+      "messageId": "pages.process.reviewSubmitGate.evidence.version",
+      "reason": "Version is the established and orthographically identical German field term in this diagnostic context.",
+      "decision": "preserve-exact-english"
+    }
+  ],
+  "preservedTokens": [
+    { "token": "API", "reason": "Established technical acronym." },
+    { "token": "CAS", "reason": "Chemical Abstracts Service identifier name." },
+    { "token": "DOI", "reason": "Established publication identifier acronym." },
+    { "token": "EC", "reason": "European Community chemical identifier prefix." },
+    { "token": "Excel", "reason": "Microsoft product and file-format name." },
+    { "token": "ID", "reason": "Established identifier abbreviation." },
+    { "token": "ILCD", "reason": "Specification name." },
+    {
+      "token": "Impact-Ready",
+      "reason": "TianGong submit-review policy term retained in German compounds."
+    },
+    { "token": "Infinity", "reason": "IEEE floating-point diagnostic token." },
+    { "token": "ISO", "reason": "Standards organization acronym." },
+    { "token": "JSON", "reason": "Data format name." },
+    {
+      "token": "LCA",
+      "reason": "Product and workflow acronym used alongside German explanatory copy."
+    },
+    { "token": "LCI", "reason": "Domain acronym used alongside German explanatory copy." },
+    { "token": "LCIA", "reason": "Domain acronym used alongside German explanatory copy." },
+    { "token": "MFA", "reason": "Multi-factor authentication acronym." },
+    { "token": "NaN", "reason": "IEEE floating-point diagnostic token." },
+    { "token": "OK", "reason": "Conventional compact confirmation label." },
+    { "token": "PNG", "reason": "Image file-format acronym." },
+    { "token": "Sankey", "reason": "Established diagram proper name." },
+    { "token": "SHA-256", "reason": "Cryptographic hash algorithm name." },
+    { "token": "SVG", "reason": "Image file-format acronym." },
+    { "token": "TianGong", "reason": "Product proper name." },
+    { "token": "TIDAS", "reason": "Specification proper name." },
+    { "token": "URI", "reason": "Established technical acronym." },
+    { "token": "UUID", "reason": "Established technical identifier acronym." },
+    { "token": "URL", "reason": "Established technical acronym." },
+    { "token": "Worker", "reason": "TianGong runtime component name." },
+    { "token": "ZIP", "reason": "Archive file-format acronym." }
+  ],
+  "mappedTokens": [
+    {
+      "source": "AI",
+      "target": "KI",
+      "reason": "Use the established German abbreviation unless the source is a reviewed brand or immutable runtime token.",
+      "messageIdExceptions": []
+    }
+  ],
+  "sourcePatternTokens": [
+    {
+      "token": "BAT",
+      "reason": "Best Available Technique enumeration token; requires domain confirmation before German approval."
+    },
+    { "token": "XX", "reason": "Literal version-pattern metavariable." },
+    { "token": "XXX", "reason": "Literal version-pattern metavariable." },
+    { "token": "A-Z", "reason": "Literal alphabetical-range notation." }
+  ],
+  "runtimeOnlyCategories": [
+    "ICU placeholder names and control tokens",
+    "backend enum values rendered only as interpolation values",
+    "UUIDs, versions, file names, and paths",
+    "units, mathematical variables, and chemical symbols",
+    "unknown dynamic values handled by localized fallback messages"
+  ]
+}

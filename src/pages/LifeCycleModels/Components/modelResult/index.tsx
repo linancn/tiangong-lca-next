@@ -62,7 +62,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
       width: 120,
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       width: 100,
@@ -100,7 +100,7 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model result' />}
+        title={<FormattedMessage id='pages.button.model.result' defaultMessage='Model Results' />}
         placement='left'
       >
         <Button

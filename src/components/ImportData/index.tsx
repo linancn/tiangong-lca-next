@@ -144,7 +144,7 @@ const ImportData: FC<ImportDataProps> = ({ onJsonData, disabled = false }) => {
           <p className='ant-upload-hint'>
             <FormattedMessage
               id='component.importData.uploadHint'
-              defaultMessage='Only supports uploading a single JSON file'
+              defaultMessage='Upload one JSON file at a time.'
             />
           </p>
         </Upload.Dragger>

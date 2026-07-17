@@ -1,0 +1,659 @@
+{
+  "schemaVersion": "tiangong.i18n-de-pilot.v2",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
+  "locale": "de-DE",
+  "status": "candidate-awaiting-product-native-and-domain-review",
+  "targetCount": 90,
+  "selectionPolicy": {
+    "purpose": "Resolve high-risk terminology, ICU grammar, validation semantics, dynamic fallbacks, numerical diagnostics, and review workflow language before bulk translation.",
+    "sourcePairRequired": true,
+    "runtimeContextRequired": true,
+    "candidateProducer": {
+      "type": "ai-system",
+      "id": "openai-codex",
+      "displayName": "Codex research synthesis"
+    },
+    "approvalAuthority": "One ignored local Markdown confirmation covering product context, native German, and German-capable LCA/TIDAS dimensions; the same person may confirm all three",
+    "bulkTranslationBlockedUntilApproved": true
+  },
+  "hardDecisionPoints": [
+    "Startdatensatz for a TIDAS dependency-closure root record",
+    "Startprozess for a path-analysis root process",
+    "Mix- und Standorttypen terminology",
+    "Impact-Ready as the product policy term",
+    "Prüfende for the workflow role",
+    "Inputs und Outputs for the exchange-table tab"
+  ],
+  "messages": [
+    {
+      "id": "pages.lifeCycleModel.view.lifeCycleModelInformation",
+      "candidate": "Informationen zum Lebenszyklusmodell",
+      "rationale": "Preserves the life-cycle-model data-set type and avoids implying a complete Ökobilanz study.",
+      "risk": "Lebenszyklusmodell must stay distinct from the assessment concept Ökobilanz.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.flow.view.flowInformation.flowProperties",
+      "candidate": "Quantitative Flusseigenschaften",
+      "rationale": "Names the ILCD flow-property fields rather than generic properties.",
+      "risk": "Must not be shortened to Eigenschaften.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.FlowProperties.view.flowPropertiesInformation.quantitativeReference",
+      "candidate": "Quantitative Referenz",
+      "rationale": "Uses established German LCA/ILCD terminology.",
+      "risk": "Must remain distinct from Referenzfluss and funktionelle Einheit.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.flow.model.drawer.title.refFlow",
+      "candidate": "Referenzfluss",
+      "rationale": "Names the reference flow in the graphical model context.",
+      "risk": "Chinese 基准流 must not lead to Basisfluss.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.exchange.quantitativeReference",
+      "candidate": "Quantitative Referenz",
+      "rationale": "Uses the same ILCD concept consistently for a process exchange.",
+      "risk": "All occurrences of the concept must remain aligned.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.view.exchanges",
+      "candidate": "Inputs und Outputs",
+      "rationale": "Uses a recognizable compact German LCA software label for the exchange table.",
+      "risk": "This compact tab label must remain distinct from the individual Austausch entity term.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.process.view.lciaresults",
+      "candidate": "LCIA-Ergebnisse",
+      "rationale": "Retains the established acronym and identifies the results surface.",
+      "risk": "Must not be generalized to Umweltergebnisse.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.view.modellingAndValidation.lCIMethodAndAllocation",
+      "candidate": "Sachbilanzmethode und Allokation",
+      "rationale": "Expands LCI using the established German LCA phase name.",
+      "risk": "Must align with compact surfaces that may retain LCI.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.view.processInformation.functionalUnitFlowProperties",
+      "candidate": "Quantitative Produkt- oder Prozesseigenschaften",
+      "rationale": "Describes quantitative product or process properties without substituting functional unit.",
+      "risk": "Narrow ILCD field meaning requires domain confirmation.",
+      "reviewDomains": ["native-german", "lca", "ilcd"]
+    },
+    {
+      "id": "pages.flow.view.modellingAndValidation.typeOfDataSet.elementaryFlow",
+      "candidate": "Elementarfluss",
+      "rationale": "Uses the established German LCA flow type.",
+      "risk": "Must not follow Chinese 基础流 into Basisfluss.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.flow.view.modellingAndValidation.typeOfDataSet.productFlow",
+      "candidate": "Produktfluss",
+      "rationale": "Uses the established flow type.",
+      "risk": "Must remain distinct from the Product entity.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.flow.view.modellingAndValidation.typeOfDataSet.wasteFlow",
+      "candidate": "Abfallfluss",
+      "rationale": "Uses a direct flow-type compound.",
+      "risk": "Abfallstrom may imply a logistics stream and needs domain review if preferred.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.flow.view.flowProperties.relativeStandardDeviation95In",
+      "candidate": "Relative Standardabweichung (95 %) in %",
+      "rationale": "Preserves the source percentage qualifier and unit.",
+      "risk": "Must not invent a confidence-interval interpretation.",
+      "reviewDomains": ["native-german", "lca", "statistics"]
+    },
+    {
+      "id": "pages.flow.view.flowProperties.uncertaintyDistributionType.logNormal",
+      "candidate": "Lognormalverteilung",
+      "rationale": "Uses the selected noun-label style for standalone distribution options: Nicht definiert, Lognormalverteilung, Normalverteilung, Dreiecksverteilung, and Gleichverteilung.",
+      "risk": "All Flow, Process, and Life Cycle Model option families must use the same noun style during full translation.",
+      "reviewDomains": ["native-german", "statistics"]
+    },
+    {
+      "id": "pages.lifeCycleModel.information.subLocationOfOperationSupplyOrProduction",
+      "candidate": "Teilstandorte",
+      "rationale": "Represents sub-locations within operation, supply, or production geography.",
+      "risk": "Teilstandort vs. Unterstandort requires ILCD review.",
+      "reviewDomains": ["native-german", "ilcd"]
+    },
+    {
+      "id": "pages.lifeCycleModel.information.timeRepresentativenessDescription",
+      "candidate": "Beschreibung der zeitlichen Repräsentativität",
+      "rationale": "Preserves both description and the data-quality dimension.",
+      "risk": "Must not collapse to Zeitraum.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.lifeCycleModel.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness",
+      "candidate": "Datenquellen, Datenaufbereitung und Repräsentativität",
+      "rationale": "Interprets treatment as treatment of data rather than material treatment.",
+      "risk": "Datenaufbereitung vs. Datenbehandlung must be standardized.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.lifeCycleModel.information.referenceToTechnologyPictogramme",
+      "candidate": "Technologie-Piktogramm",
+      "rationale": "Keeps this image type distinct from a diagram or picture.",
+      "risk": "Must not be merged into Technologiediagramm.",
+      "reviewDomains": ["native-german", "ilcd"]
+    },
+    {
+      "id": "pages.lifeCycleModel.information.referenceToTechnologyFlowDiagrammOrPicture",
+      "candidate": "Flussdiagramme oder Abbildungen",
+      "rationale": "Names diagrams or pictures separately from the technology pictogram field.",
+      "risk": "Flussdiagramm could be confused with a flow-entity graph.",
+      "reviewDomains": ["native-german", "ilcd", "product"]
+    },
+    {
+      "id": "pages.flow.view.flowInformation.mixAndLocationTypes",
+      "candidate": "Mix- und Standorttypen",
+      "rationale": "Preserves the paired ILCD naming dimensions.",
+      "risk": "Whether Mix remains an English domain term requires review.",
+      "reviewDomains": ["native-german", "ilcd"]
+    },
+    {
+      "id": "component.tidasPackage.import.conflict.records",
+      "candidate": "{count, plural, one {# Benutzerdatensatz mit Konflikt} other {# Benutzerdatensätze mit Konflikten}}",
+      "rationale": "Uses the same Konflikt term as the import summary while preserving the ICU count branches.",
+      "risk": "Must not imply that the conflicting records were overwritten, deleted, or imported.",
+      "reviewDomains": ["native-german", "tidas"]
+    },
+    {
+      "id": "component.tidasPackage.import.filtered.records",
+      "candidate": "{count, plural, one {# Open-Data-Datensatz übersprungen} other {# Open-Data-Datensätze übersprungen}}",
+      "rationale": "States that records are skipped rather than deleted and uses the Open Data product-scope name as a compound modifier.",
+      "risk": "Open-Data-Datensatz and the standalone product label Open Data must remain consistent.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.import.summary",
+      "candidate": "Gesamt: {total}, übersprungene Open-Data-Datensätze: {filtered}, Konflikte bei Benutzerdaten: {conflicts}, importiert: {imported}",
+      "rationale": "Preserves all four import counters; the backend filtered count is specifically the Open Data records excluded from insertion and therefore skipped.",
+      "risk": "Must not imply that filtered records were deleted or imported into the user's data space.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.import.validation.issue.classificationHierarchyError",
+      "candidate": "Ungültige Klassifikationshierarchie",
+      "rationale": "Uses a compact error-type label.",
+      "risk": "Klassifikation must remain distinct from Kategorisierung.",
+      "reviewDomains": ["native-german", "tidas"]
+    },
+    {
+      "id": "component.tidasPackage.import.validation.issue.localizedTextLanguageError",
+      "candidate": "Sprachkennzeichen passt nicht zum Textinhalt",
+      "rationale": "Names the mismatch between the TIDAS localized-text language tag and the actual text content in a compact validation-issue label.",
+      "risk": "Must not be understood as a mismatch between the application UI locale and the browser locale.",
+      "reviewDomains": ["native-german", "tidas", "data-policy"]
+    },
+    {
+      "id": "component.tidasPackage.import.validation.issue.schemaError",
+      "candidate": "Daten entsprechen nicht dem Schema",
+      "rationale": "Uses a natural complete label for imported data that does not conform to the expected TIDAS schema.",
+      "risk": "Must identify structural schema non-conformance and must not imply a form-layout or network error.",
+      "reviewDomains": ["native-german", "tidas"]
+    },
+    {
+      "id": "component.tidasPackage.import.validation.summary",
+      "candidate": "Die Validierung hat den Import blockiert. Fehler: {errors}, Warnungen: {warnings}, Probleme insgesamt: {issues}.",
+      "rationale": "Preserves the blocking consequence and all counters.",
+      "risk": "The containment relationship among issues, errors, and warnings must remain accurate.",
+      "reviewDomains": ["native-german", "tidas"]
+    },
+    {
+      "id": "component.tidasPackage.import.report.hint.validation",
+      "candidate": "Laden Sie die vollständigen Details herunter, um Dateipfade, Fundstellen und den Validierungskontext zu prüfen.",
+      "rationale": "Uses formal address and explains why the report is useful.",
+      "risk": "Fundstellen must match the actual report location data.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.taskCenter.detail.rootCount",
+      "candidate": "Startdatensätze",
+      "rationale": "Names user-selected starting data sets whose dependency closures are packaged.",
+      "risk": "Must remain distinct from process-analysis Startprozess and from output semantics.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.taskCenter.detail.rootRef",
+      "candidate": "Startdatensatz",
+      "rationale": "Uses the selected singular term for one package dependency starting record.",
+      "risk": "Must share Startdatensatz with every TIDAS root-record count label.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.taskCenter.rootCountSummary",
+      "candidate": "{count, plural, one {# Startdatensatz} other {# Startdatensätze}}",
+      "rationale": "Preserves ICU number agreement for root records.",
+      "risk": "The selected Startdatensatz term remains subject to local Pilot confirmation.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "component.tidasPackage.scope.currentUserAndOpenData",
+      "candidate": "Eigene Daten + Open Data",
+      "rationale": "Provides a compact scope label; current_user is always resolved from the authenticated caller rather than an impersonated target user.",
+      "risk": "If the product later adds administrator impersonation, this context must be reviewed again.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "validator.CASNumber.empty",
+      "candidate": "Nur für (nahezu) reine Stoffe angeben, nicht für den Hauptbestandteil eines Materials oder Produkts.",
+      "rationale": "Provides complete, neutral guidance on when the CAS field applies.",
+      "risk": "The chemical applicability rule requires domain confirmation.",
+      "reviewDomains": ["native-german", "chemistry", "lca"]
+    },
+    {
+      "id": "validator.CASNumber.pattern",
+      "candidate": "Geben Sie eine gültige CAS-Nummer ein: 2–7 Ziffern, ein Bindestrich, 2 Ziffern, ein Bindestrich und 1 Prüfziffer.",
+      "rationale": "Mirrors the validated identifier structure.",
+      "risk": "Digit ranges and checksum wording must match implementation.",
+      "reviewDomains": ["native-german", "chemistry", "product"]
+    },
+    {
+      "id": "validator.dataSetVersion.pattern",
+      "candidate": "Das Versionsformat muss XX.XX.XXX sein, wobei X jeweils für eine Ziffer steht.",
+      "rationale": "Explains the fixed version pattern without localizing separators.",
+      "risk": "The displayed format must match the actual validator.",
+      "reviewDomains": ["native-german", "tidas"]
+    },
+    {
+      "id": "validator.lang.mustBeEnglish",
+      "candidate": "Englisch ist als Sprache erforderlich.",
+      "rationale": "Preserves the data-content language requirement despite a German UI.",
+      "risk": "Must never be changed to require German data content.",
+      "reviewDomains": ["native-german", "data-policy"]
+    },
+    {
+      "id": "validator.langValidation.missingEnglish",
+      "candidate": "Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}.",
+      "rationale": "Makes clear that data fields lack an English variant.",
+      "risk": "The {fields} placeholder must remain intact.",
+      "reviewDomains": ["native-german", "data-policy"]
+    },
+    {
+      "id": "validator.langValidation.missingEnglishMore",
+      "candidate": "Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}; außerdem {count, plural, one {# weiteres Feld} other {# weitere Felder}}.",
+      "rationale": "Preserves both the displayed field list and additional count with German number agreement.",
+      "risk": "Nested information and both arguments must remain intact.",
+      "reviewDomains": ["native-german", "data-policy"]
+    },
+    {
+      "id": "validator.mandatory.empty",
+      "candidate": "Pflichtfeld: Füllen Sie dieses Feld aus, um Vollständigkeit und Konformität des Datensatzes sicherzustellen.",
+      "rationale": "Distinguishes a mandatory field from recommended and optional fields and uses the approved Konformität concept.",
+      "risk": "Must keep automated Validierung, human Prüfung, and formal Konformität distinct.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "validator.recommended.empty",
+      "candidate": "Empfohlen: Füllen Sie dieses Feld aus, um Detailgrad und Nutzbarkeit der Daten zu verbessern.",
+      "rationale": "Does not imply that an empty recommended field blocks saving.",
+      "risk": "Detailgrad vs. Datenqualität must reflect the actual scoring model.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "validator.optional.empty",
+      "candidate": "Optional: Ergänzende Angaben; die Vollständigkeitsbewertung wird dadurch nicht beeinflusst.",
+      "rationale": "States the intended non-blocking effect.",
+      "risk": "The asserted scoring consequence must be verified in product behavior.",
+      "reviewDomains": ["native-german", "tidas", "product"]
+    },
+    {
+      "id": "pages.flow.validator.flowProperties.quantitativeReference.required",
+      "candidate": "Genau eine Flusseigenschaft muss als quantitative Referenz festgelegt werden.",
+      "rationale": "Names the validated object and uniqueness rule.",
+      "risk": "Quantitative Referenz must stay distinct from Referenzfluss.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.validator.exchanges.quantitativeReference.required",
+      "candidate": "Wählen Sie genau einen Austausch als quantitative Referenz aus.",
+      "rationale": "Names the exchange-list object in the callsite context.",
+      "risk": "Must confirm that each selectable row is truly an Austausch.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.unitgroups.validator.unit.quantitativeReference.required",
+      "candidate": "Genau eine Einheit muss als quantitative Referenz festgelegt werden.",
+      "rationale": "Preserves the one-unit constraint in a unit group.",
+      "risk": "Must not substitute Referenzeinheit if that is a different concept.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.validationIssues.sdkDetail.suggestedFix.quantitative_reference_count_invalid",
+      "candidate": "Wählen Sie genau einen Eintrag als quantitative Referenz aus.",
+      "rationale": "Keeps the generic SDK suggestion independent of entity type.",
+      "risk": "Eintrag vs. Element requires product review.",
+      "reviewDomains": ["native-german", "lca", "tidas"]
+    },
+    {
+      "id": "pages.validationIssues.sdkDetail.suggestedFix.localized_text_en_must_not_contain_chinese_character",
+      "candidate": "Englischer Text darf keine chinesischen Schriftzeichen enthalten.",
+      "rationale": "Preserves the data-language rule, not the UI locale.",
+      "risk": "German UI must not alter the existing English/Chinese content-language contract.",
+      "reviewDomains": ["native-german", "data-policy"]
+    },
+    {
+      "id": "pages.validationIssues.sdkDetail.suggestedFix.localized_text_zh_must_include_chinese_character",
+      "candidate": "Chinesischer Text muss mindestens ein chinesisches Schriftzeichen enthalten.",
+      "rationale": "Preserves the at-least-one-character validation constraint.",
+      "risk": "German UI must not alter the existing Chinese content-language contract.",
+      "reviewDomains": ["native-german", "data-policy"]
+    },
+    {
+      "id": "pages.process.lca.evidence.reason.calculation_evidence_missing_or_invalid",
+      "candidate": "Der Berechnungsnachweis fehlt oder ist ungültig.",
+      "rationale": "Uses Nachweis for verifiable calculation evidence.",
+      "risk": "Evidenz vs. Nachweis needs one product-domain decision.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.reason.conflicting_parallel_method_coverage_source",
+      "candidate": "Es wurden widersprüchliche Nachweise zur Methodenabdeckung bereitgestellt.",
+      "rationale": "Expresses conflicting evidence sources for method coverage.",
+      "risk": "Coverage means method coverage, not test coverage.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.reason.legacy_calculation_evidence_v1_is_not_method_complete",
+      "candidate": "Der Berechnungsnachweis im alten Format belegt keine vollständige Abdeckung auf Methodenebene.",
+      "rationale": "Explains legacy evidence without blindly exposing an internal enum.",
+      "risk": "Operations may require the v1 identifier to remain visible.",
+      "reviewDomains": ["native-german", "lca", "worker", "product"]
+    },
+    {
+      "id": "pages.process.lca.evidence.reason.method_level_coverage_missing_or_source_mismatch",
+      "candidate": "Die Abdeckung auf Methodenebene fehlt oder stimmt nicht mit der geprüften Quelle überein.",
+      "rationale": "Preserves both failure alternatives.",
+      "risk": "Reviewed source is not a human reviewer and must not be worded that way.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.reason.unknown",
+      "candidate": "Der Berechnungsnachweis wurde nicht erfolgreich validiert.",
+      "rationale": "Uses the native-reviewed passive validation phrasing for a generic evidence failure without inventing a cause.",
+      "risk": "Must remain a generic fallback and must not imply a more specific failure reason.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.source.legacy",
+      "candidate": "Veralteter oder ungeprüfter Worker-Berechnungsnachweis",
+      "rationale": "Covers both legacy and unverified source states.",
+      "risk": "Worker must be confirmed as a retained product component name.",
+      "reviewDomains": ["native-german", "lca", "worker", "product"]
+    },
+    {
+      "id": "pages.process.lca.evidence.source.static",
+      "candidate": "Geprüftes statisches Methodenpaket {version}",
+      "rationale": "Names the reviewed static method bundle and preserves its version.",
+      "risk": "The {version} placeholder is immutable.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.source.unknown",
+      "candidate": "Unbekannt",
+      "rationale": "Uses a neutral localized fallback label.",
+      "risk": "None beyond context fit.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.lca.evidence.source.worker",
+      "candidate": "Worker-Methodenpaket {version}",
+      "rationale": "Distinguishes a worker-provided method bundle from the static bundle.",
+      "risk": "Worker naming and {version} must remain stable.",
+      "reviewDomains": ["native-german", "lca", "worker", "product"]
+    },
+    {
+      "id": "pages.process.lca.evidence.status.calculation_failure",
+      "candidate": "Berechnung fehlgeschlagen",
+      "rationale": "Specifies calculation failure rather than a loading failure.",
+      "risk": "None beyond UI role.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.status.complete",
+      "candidate": "Vollständig",
+      "rationale": "Describes evidence or coverage completeness.",
+      "risk": "Must not be mistaken for task completion.",
+      "reviewDomains": ["native-german", "lca", "worker", "product"]
+    },
+    {
+      "id": "pages.process.lca.evidence.status.incomplete_coverage",
+      "candidate": "Unvollständige Methodenabdeckung",
+      "rationale": "Makes the covered object explicit.",
+      "risk": "May be too narrow if coverage also includes data-set scope.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.evidence.status.method_source_drift",
+      "candidate": "Abweichende Methodenquelle",
+      "rationale": "Uses the compact native-reviewed status-label variant because the value appears in an Alert tag and the adjacent reason explains the exact mismatch.",
+      "risk": "Must cover the fail-closed source-drift family without overclaiming one specific comparison failure.",
+      "reviewDomains": ["native-german", "lca", "worker"]
+    },
+    {
+      "id": "pages.process.lca.page.compare.selectionHint",
+      "candidate": "{selectedCount, plural, one {# Prozess ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).} other {# Prozesse ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).}}",
+      "rationale": "Preserves both nested counts while avoiding case problems around a numeric placeholder.",
+      "risk": "Both ICU plural layers and arguments must remain intact.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.process.lca.page.path.selectionHint",
+      "candidate": "{selectedCount, plural, one {# Startprozess ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).} other {# Startprozesse ausgewählt ({totalCount, plural, one {# Option verfügbar} other {# Optionen verfügbar}}).}}",
+      "rationale": "Names selected root processes as starting processes and preserves nested ICU.",
+      "risk": "Startprozess vs. Wurzelprozess requires graph/LCA product review.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.process.lca.page.compare.selectionEmpty",
+      "candidate": "Keine Prozesse entsprechen dem aktuellen Datenbereich und dem Suchbegriff.",
+      "rationale": "Preserves both data-scope and search-filter conditions.",
+      "risk": "Datenbereich vs. Datenumfang must align with the scope control.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.title",
+      "candidate": "Fluss- und LCIA-Semantik sind inkonsistent",
+      "rationale": "Names the cross-domain semantic mismatch directly.",
+      "risk": "LCIA and Fluss terminology must remain precise.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.description",
+      "candidate": "Produktflüsse, Elementarflüsse, Biosphärenaustausche oder LCIA-Charakterisierungsfaktoren sind semantisch inkonsistent zugeordnet.",
+      "rationale": "Preserves all four object types and the mapping failure.",
+      "risk": "Biosphärenaustausch and Charakterisierungsfaktor require domain approval.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.flowLciaSemanticMismatch.action",
+      "candidate": "Prüfen Sie Flusstypen, Biosphärenaustausche und die Zuordnung der LCIA-Charakterisierungsfaktoren. Korrigieren Sie die inkonsistenten Daten und versuchen Sie es erneut.",
+      "rationale": "Turns the diagnostic into two actionable recovery steps.",
+      "risk": "Zuordnung must not imply unit conversion.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.title",
+      "candidate": "Doppelte Matrixspalten erkannt",
+      "rationale": "Uses a concise numerical diagnostic title.",
+      "risk": "These are numerical columns, not only visible table columns.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.description",
+      "candidate": "Die Matrix M = I − A enthält identische dünn besetzte Spalten. Dadurch kann das Gleichungssystem unterbestimmt oder linear abhängig sein.",
+      "rationale": "Preserves sparse-matrix structure and possible mathematical consequences.",
+      "risk": "Under-determined and linear-dependence claims require numerical review.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.duplicateSparseColumns.action",
+      "candidate": "Prüfen Sie doppelte Prozesse, wiederholte Austauschstrukturen und linear abhängige Prozesse. Korrigieren Sie die Daten und versuchen Sie es erneut.",
+      "rationale": "Names the three intended investigation targets.",
+      "risk": "Austauschstruktur terminology requires LCA review.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.title",
+      "candidate": "Numerischer Test fehlgeschlagen",
+      "rationale": "Keeps the diagnostic title concise while the adjacent description identifies the matrix-factorization test.",
+      "risk": "Must not lose the numerical-probe meaning or duplicate detail already present in the description.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.description",
+      "candidate": "Der schnelle Test der Matrixfaktorisierung konnte nicht zuverlässig abgeschlossen werden. Dies weist auf eine riskante Berechnungsstruktur hin.",
+      "rationale": "Preserves uncertainty and risk without claiming proven unsolvability.",
+      "risk": "Must not overstate the numerical conclusion.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.factorizationProbeFailed.action",
+      "candidate": "Prüfen Sie den Austauschgraphen, die quantitativen Referenzen und die Schleifenstruktur um den Zielprozess. Reichen Sie anschließend erneut zur Prüfung ein.",
+      "rationale": "Preserves all investigation targets and the resubmission step.",
+      "risk": "Austauschgraph and Schleifenstruktur require LCA/solver approval.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.title",
+      "candidate": "LCIA-Charakterisierungsfaktoren fehlen",
+      "rationale": "Names the missing factors precisely.",
+      "risk": "Must not collapse to generic Wirkungsfaktoren.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.description",
+      "candidate": "Für diese Einreichung zur Prüfung sind Impact-Ready-Daten erforderlich; es sind jedoch keine LCIA-Charakterisierungsfaktoren verfügbar.",
+      "rationale": "Preserves the product policy term Impact-Ready and states that its required LCIA factors are unavailable.",
+      "risk": "The product term must remain hyphenated and distinct from the LCIA phase name Wirkungsabschätzung.",
+      "reviewDomains": ["native-german", "lca"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.lciaFactorMissingForImpactSubmit.action",
+      "candidate": "Fügen Sie die erforderlichen LCIA-Charakterisierungsfaktoren hinzu oder prüfen Sie, ob die Impact-Ready-Anforderung für diese Einreichung deaktiviert werden soll.",
+      "rationale": "Preserves both recovery options: add data or change the policy.",
+      "risk": "Must not invent the compound Wirkungsabschätzungsbereitschaft or omit the policy-disable option.",
+      "reviewDomains": ["native-german", "lca", "product"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.missingOrZeroReference.title",
+      "candidate": "Quantitative Referenz fehlt oder ist null",
+      "rationale": "Preserves missing and numeric-zero alternatives.",
+      "risk": "null means numeric zero here, not a programming null value.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.missingOrZeroReference.description",
+      "candidate": "Dem Prozess fehlt eine gültige quantitative Referenz; alternativ verweist sie auf einen nicht vorhandenen Austausch oder ihre Referenzmenge ist null.",
+      "rationale": "Preserves all three failure branches.",
+      "risk": "Referenzmenge requires terminology review.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.missingOrZeroReference.action",
+      "candidate": "Prüfen Sie die quantitative Referenz. Sie muss auf einen gültigen Austausch mit einer Menge größer als null verweisen.",
+      "rationale": "States the actual corrective condition.",
+      "risk": "Austausch and Menge must match the data model.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.title",
+      "candidate": "Matrixdiagonale ist null oder nahezu null",
+      "rationale": "Preserves exact-zero and near-zero conditions.",
+      "risk": "No threshold may be invented.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.description",
+      "candidate": "Die erzeugte Matrix M = I − A hat auf der Diagonale Werte von null oder nahezu null. Dadurch kann die Lösung instabil sein oder fehlschlagen.",
+      "rationale": "Preserves the diagonal condition without incorrectly limiting it to exactly one entry, then states the possible solver consequence.",
+      "risk": "Must not invent a numeric near-zero threshold.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.sparseMatrixZeroDiagonal.action",
+      "candidate": "Prüfen Sie Eigenschleifen, quantitative Referenzen, Referenzaustausche und die Prozessstruktur, bevor Sie erneut einreichen.",
+      "rationale": "Preserves every intended investigation target.",
+      "risk": "Eigenschleife and Referenzaustausch need LCA/solver review.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.title",
+      "candidate": "Berechnung des Zielprozesses liefert kein endliches Ergebnis",
+      "rationale": "Uses natural technical German while preserving the non-finite solve-result condition for the target process.",
+      "risk": "The full-width diagnostic title must wrap without clipping and must remain paired with the NaN/Infinity explanation.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.description",
+      "candidate": "Der Test für den Zielprozess ist während der Berechnung fehlgeschlagen oder hat NaN- bzw. Infinity-Werte erzeugt.",
+      "rationale": "Preserves solve failure, NaN, and infinity outcomes.",
+      "risk": "NaN and Infinity remain exact technical diagnostic tokens.",
+      "reviewDomains": ["native-german", "solver"]
+    },
+    {
+      "id": "pages.process.reviewSubmitGate.reason.targetProbeNonFiniteResult.action",
+      "candidate": "Prüfen Sie die zugehörigen Flüsse, Austauschmengen, LCIA-Daten und die Matrixstruktur. Korrigieren Sie anschließend die Daten, die nicht endliche Ergebnisse verursachen.",
+      "rationale": "Preserves investigation objects and corrective action.",
+      "risk": "Austauschmenge and non-finite wording need LCA/solver approval.",
+      "reviewDomains": ["native-german", "lca", "solver"]
+    },
+    {
+      "id": "pages.reviewDetail.assign_reviewers",
+      "candidate": "Prüfende wurden zugewiesen",
+      "rationale": "Uses a complete completed-event sentence because this message appears in the review log's action-details column rather than on an assignment control.",
+      "risk": "Must not be mistaken for the separate assignment button command. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    },
+    {
+      "id": "pages.reviewDetail.revoke_reviewer",
+      "candidate": "Zuweisung der Prüfenden aufgehoben",
+      "rationale": "Treats the source as a completed review-log event without assuming that the assignment contained exactly one reviewer.",
+      "risk": "Must remain distinct from a revoke button and from the separate reviewer-rejected event.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    },
+    {
+      "id": "pages.reviewDetail.approved",
+      "candidate": "Prüfung freigegeben",
+      "rationale": "Describes the completed final-review event that releases associated data while remaining distinct from the separate approval control.",
+      "risk": "Must not imply that the review record itself is public or assume exactly one associated data set.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    },
+    {
+      "id": "pages.reviewDetail.rejected",
+      "candidate": "Prüfung abgelehnt",
+      "rationale": "Forms the completed review-log event pair with Prüfung freigegeben.",
+      "risk": "Must remain distinct from the separate rejection control.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    },
+    {
+      "id": "pages.reviewDetail.submit_comments",
+      "candidate": "Prüfkommentare eingereicht",
+      "rationale": "Uses completed-event voice for the review-log action while retaining the comments concept.",
+      "risk": "Must remain aligned with the actual logged review payload. A 390px actual-component sample also places the current review-log action column outside the visible table area; #602 must resolve the responsive layout before activation.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    },
+    {
+      "id": "pages.reviewDetail.unknownAction",
+      "candidate": "Unbekannte Prüfaktion ({action})",
+      "rationale": "Localizes the fallback while retaining the unknown backend value as interpolation data.",
+      "risk": "The {action} placeholder must never become a computed message id.",
+      "reviewDomains": ["native-german", "review-domain", "review-product"]
+    }
+  ]
+}

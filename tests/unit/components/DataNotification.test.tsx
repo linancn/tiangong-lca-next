@@ -170,7 +170,7 @@ describe('DataNotification Component', () => {
       expect(screen.getByText('Name')).toBeInTheDocument();
       expect(screen.getByText('Team')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
-      expect(screen.getByText('Modified At')).toBeInTheDocument();
+      expect(screen.getByText('Modified at')).toBeInTheDocument();
       expect(screen.getByText('Actions')).toBeInTheDocument();
     });
   });

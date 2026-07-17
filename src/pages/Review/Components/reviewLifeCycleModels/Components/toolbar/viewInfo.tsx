@@ -127,7 +127,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       tab: (
         <FormattedMessage
           id='pages.lifeCycleModel.view.lifeCycleModelInformation'
-          defaultMessage='Life Cycle Model Information'
+          defaultMessage='Life cycle model information'
         />
       ),
     },
@@ -136,7 +136,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       tab: (
         <FormattedMessage
           id='pages.lifeCycleModel.view.modellingAndValidation'
-          defaultMessage='Modelling and Validation'
+          defaultMessage='Modelling and validation'
         />
       ),
     },
@@ -145,19 +145,21 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       tab: (
         <FormattedMessage
           id='pages.lifeCycleModel.view.administrativeInformation'
-          defaultMessage='Administrative Information'
+          defaultMessage='Administrative information'
         />
       ),
     },
     {
       key: 'validation',
-      tab: <FormattedMessage id='pages.process.validation' defaultMessage='Validation' />,
+      tab: (
+        <FormattedMessage id='pages.lifeCycleModel.view.validation' defaultMessage='Validation' />
+      ),
     },
     {
       key: 'complianceDeclarations',
       tab: (
         <FormattedMessage
-          id='pages.process.complianceDeclarations'
+          id='pages.lifeCycleModel.view.complianceDeclarations'
           defaultMessage='Compliance declarations'
         />
       ),
@@ -211,7 +213,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.information.mixAndLocationTypes'
-              defaultMessage='Mix and Location Types'
+              defaultMessage='Mix and location types'
             />
           </Divider>
           <LangTextItemDescription
@@ -271,7 +273,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.information.generalComment'
-            defaultMessage='General Comment'
+            defaultMessage='General comment'
           />
         </Divider>
         <LangTextItemDescription
@@ -284,7 +286,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.information.referenceToExternalDocumentation'
-              defaultMessage='Reference to External Documentation'
+              defaultMessage='Data set report, background info'
             />
           }
           data={
@@ -298,7 +300,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.information.technology.referenceToDiagram'
-              defaultMessage='Reference to Diagram'
+              defaultMessage='Life cycle model diagram(s) or screenshot(s)'
             />
           }
           data={data.lifeCycleModelInformation?.technology?.referenceToDiagram ?? {}}
@@ -412,7 +414,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             }
             label={
               <FormattedMessage
-                id='pages.lifeCycleModel.information.location'
+                id='pages.lifeCycleModel.information.subLocationOfOperationSupplyOrProduction'
                 defaultMessage='Sub-location(s)'
               />
             }
@@ -466,7 +468,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             title={
               <FormattedMessage
                 id='pages.lifeCycleModel.information.referenceToTechnologyPictogramme'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Technology pictogram'
               />
             }
             data={
@@ -479,7 +481,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             title={
               <FormattedMessage
                 id='pages.lifeCycleModel.information.referenceToTechnologyFlowDiagrammOrPicture'
-                defaultMessage='Flow diagramm(s) or picture(s)'
+                defaultMessage='Flow diagram(s) or picture(s)'
               />
             }
             data={
@@ -613,7 +615,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               label={
                 <FormattedMessage
                   id='pages.lifeCycleModel.information.variableParameter.relativeStandardDeviation95In'
-                  defaultMessage='Relative StdDev in %'
+                  defaultMessage='Relative standard deviation (95%) in %'
                 />
               }
               styles={{ label: { width: '180px' } }}
@@ -642,7 +644,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
         <Divider orientationMargin='0' orientation='left' plain>
           <FormattedMessage
             id='pages.lifeCycleModel.modellingAndValidation.useAdviceForDataSet'
-            defaultMessage='Use Advice For Data Set'
+            defaultMessage='Use advice for data set'
           />
         </Divider>
         <LangTextItemDescription
@@ -1203,7 +1205,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.commissionerAndGoal'
-              defaultMessage='Commissioner and Goal'
+              defaultMessage='Commissioner and goal'
             />
           }
         >
@@ -1211,7 +1213,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             title={
               <FormattedMessage
                 id='pages.lifeCycleModel.administrativeInformation.referenceToCommissioner'
-                defaultMessage='Reference to Commissioner'
+                defaultMessage='Commissioner of data set'
               />
             }
             lang={lang}
@@ -1237,7 +1239,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.intendedApplications'
-              defaultMessage='Intended Applications'
+              defaultMessage='Intended applications'
             />
           </Divider>
           <LangTextItemDescription
@@ -1253,7 +1255,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.referenceToPersonOrEntityGeneratingTheDataSet'
-              defaultMessage='Reference to Person Or Entity Generating the DataSet'
+              defaultMessage='Data set generator / modeller'
             />
           }
           lang={lang}
@@ -1349,7 +1351,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           title={
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.publicationAndOwnership'
-              defaultMessage='Publication and Ownership'
+              defaultMessage='Publication and ownership'
             />
           }
         >
@@ -1423,7 +1425,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
               label={
                 <FormattedMessage
                   id='pages.lifeCycleModel.administrativeInformation.workflowAndPublicationStatus'
-                  defaultMessage='Workflow and publication status	'
+                  defaultMessage='Workflow and publication status'
                 />
               }
               styles={{ label: { width: '240px' } }}
@@ -1522,7 +1524,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
             title={
               <FormattedMessage
                 id='pages.lifeCycleModel.administrativeInformation.referenceToEntitiesWithExclusiveAccess'
-                defaultMessage='Reference to Entities with Exclusive Access'
+                defaultMessage='Entities or persons with exclusive access to this data set'
               />
             }
             lang={lang}
@@ -1554,7 +1556,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
           <Divider orientationMargin='0' orientation='left' plain>
             <FormattedMessage
               id='pages.lifeCycleModel.administrativeInformation.accessRestrictions'
-              defaultMessage='Access Restrictions'
+              defaultMessage='Access and use restrictions'
             />
           </Divider>
           <LangTextItemDescription
@@ -1614,7 +1616,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
       message.success(
         intl.formatMessage({
           id: 'pages.review.temporarySaveSuccess',
-          defaultMessage: 'Temporary save successfully',
+          defaultMessage: 'Temporarily saved successfully.',
         }),
       );
       setDrawerVisible(false);
@@ -1688,7 +1690,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
   return (
     <>
       <Tooltip
-        title={<FormattedMessage id='pages.button.model.info' defaultMessage='Base infomation' />}
+        title={<FormattedMessage id='pages.button.model.info' defaultMessage='Basic information' />}
         placement='left'
       >
         <Button
@@ -1705,7 +1707,7 @@ const ToolbarViewInfo: FC<Props> = ({ lang, data, type, reviewId, tabType, actio
         title={
           <FormattedMessage
             id='pages.flow.model.drawer.title.info'
-            defaultMessage='Model base infomation'
+            defaultMessage='Model base information'
           ></FormattedMessage>
         }
         width='90%'

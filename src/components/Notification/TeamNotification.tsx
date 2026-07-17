@@ -23,22 +23,22 @@ interface TeamNotificationProps {
   onDataLoaded?: () => Promise<void>;
 }
 
-const resolveTeamTitle = (teamTitle: unknown, locale: string) => {
+const nonBlankTitle = (value: unknown) =>
+  typeof value === 'string' && value.trim() ? value.trim() : null;
+
+const resolveTeamTitle = (teamTitle: unknown, locale: string, unknownTeam: string) => {
   if (Array.isArray(teamTitle)) {
-    return locale === 'zh-CN'
-      ? (teamTitle.find((item: any) => item?.['@xml:lang'] === 'zh')?.['#text'] ??
-          teamTitle[0]?.['#text'] ??
-          'Unknown Team')
-      : (teamTitle.find((item: any) => item?.['@xml:lang'] === 'en')?.['#text'] ??
-          teamTitle[0]?.['#text'] ??
-          'Unknown Team');
+    const preferredLanguage = locale === 'zh-CN' ? 'zh' : 'en';
+    const preferred = nonBlankTitle(
+      teamTitle.find((item: any) => item?.['@xml:lang'] === preferredLanguage)?.['#text'],
+    );
+    const firstAvailable = teamTitle
+      .map((item: any) => nonBlankTitle(item?.['#text']))
+      .find((title): title is string => title !== null);
+    return preferred ?? firstAvailable ?? unknownTeam;
   }
 
-  if (typeof teamTitle === 'string' && teamTitle.trim()) {
-    return teamTitle;
-  }
-
-  return 'Unknown Team';
+  return nonBlankTitle(teamTitle) ?? unknownTeam;
 };
 
 const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataLoaded }) => {
@@ -54,13 +54,17 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
       const res = await getTeamInvitationStatusApi(timeFilter);
 
       if (res.success && res.data) {
+        const unknownTeam = intl.formatMessage({
+          id: 'teams.notifications.unknownTeam',
+          defaultMessage: 'Unknown Team',
+        });
         setData([
           {
             key: res.data.team_id,
             id: res.data.team_id,
             teamId: res.data.team_id,
             userId: res.data.user_id,
-            teamTitle: resolveTeamTitle(res.data.teamTitle, intl.locale),
+            teamTitle: resolveTeamTitle(res.data.teamTitle, intl.locale, unknownTeam),
             role: res.data.role,
             createTime: res.data.modifiedAt ?? new Date().toISOString(),
           },
@@ -119,31 +123,37 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
 
   const columns: ColumnsType<TeamNotificationItem> = [
     {
-      title: intl.formatMessage({ id: 'teams.members.memberName', defaultMessage: 'Team Name' }),
+      title: intl.formatMessage({
+        id: 'teams.notifications.teamName',
+        defaultMessage: 'Team Name',
+      }),
       dataIndex: 'teamTitle',
       key: 'teamTitle',
     },
     {
-      title: intl.formatMessage({ id: 'teams.members.role', defaultMessage: 'Status' }),
+      title: intl.formatMessage({ id: 'teams.notifications.status', defaultMessage: 'Status' }),
       dataIndex: 'role',
       key: 'role',
       render: (role: string) => {
         const statusMap = {
           empty: {
             color: 'gray',
-            text: intl.formatMessage({ id: 'teams.members.role.empty', defaultMessage: 'Empty' }),
+            text: intl.formatMessage({
+              id: 'teams.members.role.empty',
+              defaultMessage: 'No information',
+            }),
           },
           is_invited: {
             color: token.orange,
             text: intl.formatMessage({
-              id: 'teams.members.role.invited',
+              id: 'teams.notifications.status.pending',
               defaultMessage: 'Pending',
             }),
           },
           member: {
             color: token.green,
             text: intl.formatMessage({
-              id: 'teams.members.role.member',
+              id: 'teams.notifications.status.accepted',
               defaultMessage: 'Accepted',
             }),
           },

@@ -214,7 +214,7 @@ const ReviewProcessDetail: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.review.temporarySaveSuccess',
-            defaultMessage: 'Temporary save successfully',
+            defaultMessage: 'Temporarily saved successfully.',
           }),
         );
         setDrawerVisible(false);
@@ -446,12 +446,12 @@ const ReviewProcessDetail: FC<Props> = ({
           type === 'edit' ? (
             <FormattedMessage
               id={'pages.review.ReviewProcessDetail.edit.title'}
-              defaultMessage={'Review process'}
+              defaultMessage='Review Process'
             />
           ) : (
             <FormattedMessage
               id={'pages.review.ReviewProcessDetail.view.title'}
-              defaultMessage={'View review'}
+              defaultMessage='View Review'
             />
           )
         }

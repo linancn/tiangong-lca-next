@@ -1,7 +1,13 @@
+import {
+  getDocumentationUrl,
+  normalizeRuntimeLocale,
+  SUPPORTED_APP_LOCALES,
+} from '@/services/general/runtimeLocale';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import { ConfigProvider, theme } from 'antd';
 import type React from 'react';
+import { useRef } from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -10,34 +16,95 @@ interface SelectLangProps {
 }
 
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
+  const intl = useIntl();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const openLanguageMenu = () => {
+    containerRef.current
+      ?.querySelector<HTMLElement>('.ant-dropdown-trigger, button, [role="button"], a, span')
+      ?.click();
+  };
+
   return (
-    <UmiSelectLang
-      style={{
-        padding: 4,
-        ...style,
+    <div
+      ref={containerRef}
+      role='button'
+      tabIndex={0}
+      aria-label={intl.formatMessage({
+        id: 'pages.lang.select',
+        defaultMessage: 'Select a language',
+      })}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          openLanguageMenu();
+        }
       }}
-    />
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openLanguageMenu();
+        }
+      }}
+    >
+      <UmiSelectLang
+        style={{
+          padding: 4,
+          ...style,
+        }}
+        postLocalesData={(locales) => {
+          const localesByKey = new Map(locales.map((locale) => [locale.lang, locale]));
+          return SUPPORTED_APP_LOCALES.map((locale) => {
+            const existingLocale = localesByKey.get(locale) ?? { lang: locale };
+            if (locale !== 'de-DE') {
+              return existingLocale;
+            }
+
+            return {
+              ...existingLocale,
+              lang: 'de-DE',
+              label: 'Deutsch',
+              icon: '🌐',
+              title: 'Deutsch',
+            };
+          });
+        }}
+      />
+    </div>
   );
 };
 
 export const Question = () => {
   const intl = useIntl();
-  const docsBaseUrl = 'https://docs.tiangong.earth';
-  const locale = intl?.locale?.toLowerCase() || 'zh';
-  const docsUrl = locale.startsWith('en') ? `${docsBaseUrl}/en` : docsBaseUrl;
+  const locale = normalizeRuntimeLocale(intl?.locale);
+  const docsUrl = getDocumentationUrl(locale);
+  const isGermanEnglishFallback = locale === 'de-DE';
+  const helpLabel = intl.formatMessage({
+    id: isGermanEnglishFallback
+      ? 'component.globalHeader.help.englishFallback'
+      : 'component.globalHeader.help',
+    defaultMessage: isGermanEnglishFallback ? 'Open help documentation (English)' : 'Help',
+  });
 
   return (
-    <div
+    <button
+      type='button'
+      aria-label={helpLabel}
+      title={helpLabel}
       style={{
         display: 'flex',
         height: 26,
+        alignItems: 'center',
+        padding: 0,
+        color: 'inherit',
+        background: 'transparent',
+        border: 0,
+        cursor: 'pointer',
       }}
       onClick={() => {
         window.open(docsUrl);
       }}
     >
       <QuestionCircleOutlined />
-    </div>
+    </button>
   );
 };
 

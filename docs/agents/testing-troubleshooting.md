@@ -20,8 +20,9 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - package.json
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Added active German runtime/delta recovery and bounded managed-push retry guidance.'
 ---
 
 # Testing Troubleshooting
@@ -48,8 +49,17 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
-| one gate fails only while another heavy gate is running locally | shared `.umi-test` regeneration from concurrent commands | rerun `npm run test:ci` and `npm run prepush:gate` serially |
+| one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
+| `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
+| frozen German Pilot check reports context or `offlineReviewConfirmation` drift | the inherited Issue #601 snapshot, context ledger, producer evidence, or ignored approval no longer matches its frozen source | stop runtime activation work and inspect the frozen English, Chinese, German, callsites, and approval hashes; do not regenerate or silently reinterpret the approved baseline |
+| active German runtime manifest is stale | a controlled locale, runtime-family, context, policy, or activation input changed after generation | inspect the diff, then run `npm run i18n:de:runtime:manifest:write` only after the controlled change is final and rerun the manifest check |
+| Issue #602 delta review is missing, malformed, or stale | the ignored local form is incomplete, its normalized body/hash changed, or the 24 new, 2 modified, and 2 external-family item boundaries no longer match | regenerate with `npm run i18n:de:delta:review:generate`, obtain fresh human approval for the entire 28-item body, and run `npm run i18n:de:delta:review:check`; never commit or upload reviewer details |
+| local German review generation refuses to overwrite | an existing form may contain human notes or decisions | preserve the file, regenerate to another private path, or use explicit `--force` only after intentionally discarding the obsolete form |
+| local German review rejects its input/output path | the path is inside the repository but outside ignored `.local/i18n-de-DE/`, is tracked, or traverses a symlink | keep completed evidence in the private ignored directory (or an external private path); never move it under tracked docs |
+| active `i18n:de:audit` reports frozen-snapshot, delta-inventory, descriptor-family, or assembly drift | the active catalog no longer equals the frozen baseline plus the declared reviewed delta, or one closed runtime family disagrees with its formatter/callsites | fix the structural mismatch without broadening the approved delta, refresh the runtime manifest, obtain new local delta approval only when its reviewed body changed, then rerun the narrow German gates |
+| managed push transport fails after both gates pass | `push:checked` activated the ignored exact-intent receipt and the remote may or may not have accepted the commit | run argument-free `npm run push:retry`; it succeeds idempotently when the exact SHA already arrived and otherwise retries only while the remote and all bound inputs remain unchanged |
+| raw push fails after its hook passed but no receipt exists | only `push:checked` can bind the original push intent and activate bounded recovery after a failed transport | run a fresh `npm run push:checked -- <normal-git-push-args>` so its ordinary hook re-establishes evidence; never use `--no-verify` or `HUSKY=0` manually |
 
 ## Open-Handle Playbook
 
@@ -71,5 +81,5 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 - rerun the narrow failing scope
 - rerun neighboring suites if shared behavior changed
 - rerun the baseline proof from `docs/agents/repo-validation.md` when the failure affected shipped behavior or repo gates
-- rerun local or release gate reproductions serially before escalating a failure that only appears during local parallel gate runs
+- for a concurrency-only failure, wait for all Umi-generating commands to exit and rerun the narrow failed proof serially before escalating; reserve the full gate for the final controlled checkpoint
 - update the owning testing docs only if workflow or state changed

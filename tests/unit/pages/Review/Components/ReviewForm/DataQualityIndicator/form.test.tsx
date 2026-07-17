@@ -62,8 +62,8 @@ describe('ReviewFormDataQualityIndicatorForm', () => {
   it('renders labels on the first row and supports add/remove operations', async () => {
     render(<DataQualityIndicatorItemForm name={['review', 'indicator']} />);
 
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    expect(screen.getByText('Value')).toBeInTheDocument();
+    expect(screen.getByText('Name of data quality indicator')).toBeInTheDocument();
+    expect(screen.getByText('Value of data quality indicator')).toBeInTheDocument();
     expect(screen.getAllByLabelText('remove-indicator')).toHaveLength(1);
 
     await userEvent.click(screen.getByRole('button', { name: /Add Data Quality Indicator Item/i }));

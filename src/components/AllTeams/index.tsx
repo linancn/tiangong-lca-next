@@ -47,12 +47,11 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
       },
       title: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.title',
-        defaultMessage: 'Confirm Remove Team',
+        defaultMessage: 'Remove team from homepage?',
       }),
       content: intl.formatMessage({
         id: 'component.allTeams.table.remove.confirm.content',
-        defaultMessage:
-          'The removal will not be displayed on the homepage, do you want to continue?',
+        defaultMessage: 'Removing this team will hide it from the homepage. Continue?',
       }),
       okText: intl.formatMessage({
         id: 'component.allTeams.confirm.ok',
@@ -127,7 +126,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
   if (tableType === 'manageSystem') {
     // Manage teams on homepage
     teamColumns.push({
-      title: <FormattedMessage id='component.allTeams.table.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='component.allTeams.table.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, record) => (
@@ -173,7 +172,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
       message.error(
         intl.formatMessage({
           id: 'component.allTeams.table.fail.disabled',
-          defaultMessage: 'No permission to operate',
+          defaultMessage: 'You do not have permission to change the team order.',
         }),
       );
       return;
@@ -201,14 +200,14 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
         message.error(
           intl.formatMessage({
             id: 'component.allTeams.table.fail',
-            defaultMessage: 'Sorting modified failed',
+            defaultMessage: 'Failed to update the team order.',
           }),
         );
       } else {
         message.success(
           intl.formatMessage({
             id: 'component.allTeams.table.success',
-            defaultMessage: 'Sorting modified successfully',
+            defaultMessage: 'Team order updated successfully.',
           }),
         );
         setIsDragged(false);
@@ -327,7 +326,7 @@ const TableList: FC<TableListProps> = ({ systemUserRole, tableType }) => {
         <ProTable<TeamTable, ListPagination>
           rowKey='id'
           headerTitle={
-            <FormattedMessage id='component.allTeams.table.desc' defaultMessage='All Teams' />
+            <FormattedMessage id='component.allTeams.table.title' defaultMessage='All Teams' />
           }
           actionRef={actionRef}
           search={false}

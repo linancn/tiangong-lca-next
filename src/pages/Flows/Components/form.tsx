@@ -191,7 +191,28 @@ export const FlowForm: FC<Props> = ({
   );
   const focusedFlowPropertyInternalId = getFlowPropertyInternalId(sdkValidationFocus);
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.flow.view.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    flowInformation: (
+      <FormattedMessage id='pages.flow.view.flowInformation' defaultMessage='Flow information' />
+    ),
+    flowProperties: (
+      <FormattedMessage id='pages.flow.view.flowProperty' defaultMessage='Flow property' />
+    ),
+    modellingAndValidation: (
+      <FormattedMessage
+        id='pages.flow.view.modellingAndValidation'
+        defaultMessage='Modelling and validation'
+      />
+    ),
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -205,7 +226,7 @@ export const FlowForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -266,27 +287,19 @@ export const FlowForm: FC<Props> = ({
   const tabList = [
     {
       key: 'flowInformation',
-      tab: renderTabLabel('flowInformation', 'pages.flow.view.flowInformation', 'Flow information'),
+      tab: renderTabLabel('flowInformation'),
     },
     {
       key: 'modellingAndValidation',
-      tab: renderTabLabel(
-        'modellingAndValidation',
-        'pages.flow.view.modellingAndValidation',
-        'Modelling and validation',
-      ),
+      tab: renderTabLabel('modellingAndValidation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.flow.view.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
     {
       key: 'flowProperties',
-      tab: renderTabLabel('flowProperties', 'pages.flow.view.flowProperty', 'Flow property'),
+      tab: renderTabLabel('flowProperties'),
     },
   ];
 
@@ -377,7 +390,7 @@ export const FlowForm: FC<Props> = ({
       },
     },
     {
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       search: false,
       render: (_, row) => {

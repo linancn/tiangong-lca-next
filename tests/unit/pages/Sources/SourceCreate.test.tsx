@@ -459,7 +459,7 @@ describe('SourceCreate component', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
-    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
     await waitFor(() => expect(mockGetSourceDetail).toHaveBeenCalledWith('source-1', '1.0.0'));
     expect(mockGetThumbFileUrls).toHaveBeenCalledWith([]);
     expect(within(drawer).getByLabelText('Short Name')).toHaveValue('Existing Source');
@@ -501,7 +501,7 @@ describe('SourceCreate component', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
-    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    const drawer = await screen.findByRole('dialog', { name: 'Create Version' });
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
@@ -617,20 +617,20 @@ describe('SourceCreate component', () => {
 
     const initialCloseCount = onClose.mock.calls.length;
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
-    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(await screen.findByRole('dialog', { name: 'Copy Source' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'close' }));
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 1));
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
-    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(await screen.findByRole('dialog', { name: 'Copy Source' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 2));
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
-    expect(await screen.findByRole('dialog', { name: 'Create Source' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(await screen.findByRole('dialog', { name: 'Copy Source' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(initialCloseCount + 3));
@@ -697,7 +697,7 @@ describe('SourceCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
 
     await waitFor(() => expect(mockGenSourceFromData).toHaveBeenCalledWith({}));
   });
@@ -722,8 +722,8 @@ describe('SourceCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
-    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Copy Source' });
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 
     await waitFor(() =>
@@ -762,8 +762,8 @@ describe('SourceCreate component', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Create' }));
-    const drawer = await screen.findByRole('dialog', { name: 'Create Source' });
+    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    const drawer = await screen.findByRole('dialog', { name: 'Copy Source' });
     await user.click(within(drawer).getByRole('button', { name: 'clear-files' }));
     await user.click(within(drawer).getByRole('button', { name: 'Save' }));
 

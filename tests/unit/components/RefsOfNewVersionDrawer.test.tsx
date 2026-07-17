@@ -143,7 +143,7 @@ describe('RefsOfNewVersionDrawer', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveAttribute('data-container', 'true');
-    expect(screen.getByText('References Newer Versions')).toBeInTheDocument();
+    expect(screen.getByText('References with newer versions')).toBeInTheDocument();
     expect(screen.getByText('Contact v1')).toBeInTheDocument();
 
     const updateButton = screen.getByRole('button', { name: 'Update to latest versions' });

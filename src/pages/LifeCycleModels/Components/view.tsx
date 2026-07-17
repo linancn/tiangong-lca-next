@@ -74,8 +74,8 @@ const LifeCycleModelView: FC<Props> = ({
         <Tooltip
           title={
             <FormattedMessage
-              id='pages.button.model.lifecyclemodel'
-              defaultMessage='Lifecycle model infomation'
+              id='pages.lifeCycleModel.view.lifeCycleModelInformation'
+              defaultMessage='Life cycle model information'
             ></FormattedMessage>
           }
           placement='left'
@@ -100,7 +100,9 @@ const LifeCycleModelView: FC<Props> = ({
           />
         </Tooltip>
       ) : !autoOpen && buttonType === 'iconModel' ? (
-        <Tooltip title={<FormattedMessage id='pages.button.view.model' defaultMessage='View' />}>
+        <Tooltip
+          title={<FormattedMessage id='pages.button.view.model' defaultMessage='View Model' />}
+        >
           <Button
             disabled={disabled}
             shape='circle'

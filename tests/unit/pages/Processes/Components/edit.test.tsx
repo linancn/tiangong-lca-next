@@ -1,5 +1,6 @@
 // @ts-nocheck
 import ProcessEdit, {
+  formatReviewSubmitGateEvidence,
   normalizeQuantitativeReferenceSelection,
 } from '@/pages/Processes/Components/edit';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -44,7 +45,12 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+    locale: 'en-US',
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, unknown>) =>
+      Object.entries(values ?? {}).reduce(
+        (message, [key, value]) => message.split(`{${key}}`).join(String(value)),
+        defaultMessage ?? id,
+      ),
   }),
 }));
 
@@ -586,7 +592,7 @@ describe('ProcessEdit component', () => {
     });
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Save successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Saved successfully!');
   });
 
   it('handles validation-tab sync callbacks before saving', async () => {
@@ -814,7 +820,7 @@ describe('ProcessEdit component', () => {
 
     expect(mockUpdateProcess).not.toHaveBeenCalled();
     expect(mockAntdMessage.error).toHaveBeenCalledWith(
-      expect.stringContaining('Allocated fraction total of output is greater than 100%'),
+      'The total allocated fraction for outputs cannot exceed 100%. Current total: 150%.',
     );
   });
 
@@ -863,8 +869,10 @@ describe('ProcessEdit component', () => {
     expect(await screen.findByRole('dialog', { name: 'Edit process' })).toBeInTheDocument();
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
-    expect(mockAntdMessage.error).not.toHaveBeenCalledWith('Data check failed!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
+    expect(mockAntdMessage.error).not.toHaveBeenCalledWith(
+      'Data check failed, please check the data!',
+    );
   });
 
   it('auto-fills a 100% allocation for the quantitative reference output when none is provided', async () => {
@@ -1405,7 +1413,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalled());
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('does not close the drawer when the review-submit job fails', async () => {
@@ -1554,7 +1562,7 @@ describe('ProcessEdit component', () => {
       'missing_or_zero_reference: Reference missing',
     );
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'process: Existing process, version: 1.0.0, exchange: exchange-1, flow: flow-1',
+      'Process: Existing process, Version: 1.0.0, Exchange: exchange-1, and Flow: flow-1',
     );
   });
 
@@ -2029,7 +2037,7 @@ describe('ProcessEdit component', () => {
       'calculator_gate_error: failed to build review-submit gate snapshot',
     );
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'error: failed to build review-submit gate snapshot, worker_job_id: gate-worker-1',
+      'error: failed to build review-submit gate snapshot and Worker job ID: gate-worker-1',
     );
     expect(mockTrackReviewSubmitTask).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -2039,6 +2047,37 @@ describe('ProcessEdit component', () => {
         gateWorkerJobId: 'gate-worker-1',
       }),
     );
+  });
+
+  it('localizes every review-submit evidence and diagnostic label while preserving values', () => {
+    const intl = {
+      formatMessage: ({ defaultMessage }: { defaultMessage: string }) => defaultMessage,
+    } as any;
+
+    expect(
+      formatReviewSubmitGateEvidence(intl, {
+        examples: [
+          {
+            process: { process_name: 'Steel', process_version: '01.00.000' },
+            exchange_id: 'exchange-1',
+            flow_id: 'flow-1',
+            consumer_idx: 2,
+            provider_id: 'provider-1',
+            process_idx: 9,
+          },
+          {
+            error: 'snapshot failed',
+            worker_job_id: 'worker-1',
+            submit_worker_job_id: 'submit-1',
+            gate_worker_job_id: 'gate-1',
+            review_submit_job_id: 'review-1',
+          },
+        ],
+      }),
+    ).toEqual([
+      'Process: Steel, Version: 01.00.000, Exchange: exchange-1, Flow: flow-1, Consuming process: 2, Providing process: provider-1, and Target process: 9',
+      'error: snapshot failed, Worker job ID: worker-1, Submit worker job ID: submit-1, Gate worker job ID: gate-1, and Review submission job ID: review-1',
+    ]);
   });
 
   it('clears a review-submit job state after data changes', async () => {
@@ -2230,7 +2269,7 @@ describe('ProcessEdit component', () => {
       expect(mockAntdMessage.error).toHaveBeenCalledWith('save before check failed'),
     );
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('shows a validation error when data check runs without exchanges', async () => {
@@ -2376,7 +2415,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'The following data must have exactly one item designated as the reference',
+        'Select exactly one item as the quantitative reference.',
       ),
     );
 
@@ -2582,7 +2621,9 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.error).toHaveBeenCalledWith('processInformation：Data check failed!'),
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed in Process information. Please check the data!',
+      ),
     );
 
     await act(async () => {
@@ -2604,7 +2645,11 @@ describe('ProcessEdit component', () => {
     await screen.findByRole('dialog', { name: 'Edit process' });
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
-    await waitFor(() => expect(mockAntdMessage.error).toHaveBeenCalledWith('Data check failed!'));
+    await waitFor(() =>
+      expect(mockAntdMessage.error).toHaveBeenCalledWith(
+        'Data check failed, please check the data!',
+      ),
+    );
   });
 
   it('treats missing reference-path results as an empty problem-node list', async () => {
@@ -2617,7 +2662,7 @@ describe('ProcessEdit component', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Data Check' }));
 
     await waitFor(() =>
-      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data check successfully!'),
+      expect(mockAntdMessage.success).toHaveBeenCalledWith('Data validation passed.'),
     );
   });
 
@@ -2661,7 +2706,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() =>
       expect(mockAntdMessage.error).toHaveBeenCalledWith(
-        'administrativeInformation，modellingAndValidation，technology：Data check failed!',
+        'Data check failed in Administrative information, Modelling and validation, and Unknown section (technology). Please check the data!',
       ),
     );
   });
@@ -2959,7 +3004,7 @@ describe('ProcessEdit component', () => {
 
     await waitFor(() => expect(mockUpdateProcess).toHaveBeenCalledTimes(1));
     expect(mockValidateDatasetWithSdk).toHaveBeenCalled();
-    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data check successfully!');
+    expect(mockAntdMessage.success).not.toHaveBeenCalledWith('Data validation passed.');
   });
 
   it('submits through the footer save button', async () => {

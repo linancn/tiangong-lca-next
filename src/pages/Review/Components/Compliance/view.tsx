@@ -139,7 +139,7 @@ const ComplianceItemView: FC<Props> = ({ data }) => {
               title={
                 <FormattedMessage
                   id='pages.process.view.modellingAndValidation.referenceToComplianceSystem'
-                  defaultMessage='Compliance system'
+                  defaultMessage='Compliance system name'
                 />
               }
               data={item['common:referenceToComplianceSystem']}

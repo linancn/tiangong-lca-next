@@ -17,11 +17,18 @@ var mockNotification: any;
 var mockForgotPasswordSendEmail: any;
 // eslint-disable-next-line no-var
 var mockGetCurrentUser: any;
+// eslint-disable-next-line no-var
+var mockLocale: string;
+// eslint-disable-next-line no-var
+var mockGetLocalizedAppTitle: any;
+// eslint-disable-next-line no-var
+var mockGetLocalizedLoginSubtitle: any;
 
 jest.mock('umi', () => {
   const React = require('react');
   const actual = jest.requireActual('@umijs/max');
   const useIntl = jest.fn(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
   return {
@@ -58,6 +65,7 @@ jest.mock('@umijs/max', () => {
     ),
     SelectLang: () => <div data-testid='select-lang' />,
     useIntl: () => ({
+      locale: mockLocale,
       formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     }),
   };
@@ -65,9 +73,11 @@ jest.mock('@umijs/max', () => {
 
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
-  const LoginForm = ({ children, onFinish, submitter, initialValues }: any) => (
+  const LoginForm = ({ children, onFinish, submitter, initialValues, title, subTitle }: any) => (
     <div data-testid='login-form'>
       <div data-testid='initial-values'>{JSON.stringify(initialValues)}</div>
+      <div data-testid='login-title'>{title}</div>
+      <div data-testid='login-subtitle'>{subTitle}</div>
       {children}
       <button
         type='button'
@@ -152,14 +162,28 @@ jest.mock('@/components', () => ({
   Footer: () => <div data-testid='footer' />,
 }));
 
+jest.mock('../../../../../config/defaultSettings', () => {
+  mockGetLocalizedAppTitle = jest.fn();
+  mockGetLocalizedLoginSubtitle = jest.fn();
+  return {
+    __esModule: true,
+    defaultAppTitle: 'Default App Title',
+    defaultLoginSubtitle: 'Default Login Subtitle',
+    getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
+    getLocalizedLoginSubtitle: (...args: any[]) => mockGetLocalizedLoginSubtitle(...args),
+  };
+});
+
 const PasswordForgot = require('@/pages/User/Login/password_forgot').default;
 const umiModule = require('umi');
 if (umiModule.useIntl) {
   jest.spyOn(umiModule, 'useIntl').mockImplementation(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
 } else {
   umiModule.useIntl = jest.fn(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
 }
@@ -168,6 +192,9 @@ umiModule.default = { ...(umiModule.default || {}), useIntl: umiModule.useIntl }
 describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'en-US';
+    mockGetLocalizedAppTitle.mockReset();
+    mockGetLocalizedLoginSubtitle.mockReset();
     localStorage.setItem('isDarkMode', 'false');
     mockGetCurrentUser.mockResolvedValue({ email: 'init@test.com' });
     mockForgotPasswordSendEmail.mockResolvedValue({ status: 'ok' });
@@ -272,5 +299,19 @@ describe('PasswordForgot page (src/pages/User/Login/password_forgot.tsx)', () =>
       );
       expect(localStorage.getItem('isDarkMode')).toBe('false');
     });
+  });
+
+  it('passes German localized branding to the forgot-password form', async () => {
+    mockLocale = 'de-DE';
+    mockGetLocalizedAppTitle.mockReturnValue('Offene Ökobilanz-Plattform');
+    mockGetLocalizedLoginSubtitle.mockReturnValue('Deutscher Untertitel');
+
+    render(<PasswordForgot />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+    expect(screen.getByTestId('login-title')).toHaveTextContent('Offene Ökobilanz-Plattform');
+    expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Deutscher Untertitel');
+    expect(mockGetLocalizedAppTitle).toHaveBeenCalledWith('de-DE');
+    expect(mockGetLocalizedLoginSubtitle).toHaveBeenCalledWith('de-DE');
   });
 });

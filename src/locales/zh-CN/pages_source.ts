@@ -49,8 +49,6 @@ export default {
   'pages.source.edit.administrativeInformation.permanentDataSetURI': '永久数据集统一资源标识符',
   'pages.source.edit.administrativeInformation.permanentDataSetURI.default': '自动生成',
   'pages.source.edit.administrativeInformation.referenceToOwnershipOfDataSet': '数据集拥有者',
-  //source.delete 删除
-  'pages.button.deleteMessage.Are you sure you want to delete this data': '您确认要删除此数据吗？',
   //source.create 创建
   'pages.source.create.sourceInformation': '源信息',
   'pages.source.create.sourceInformation.shortName': '源的简称',
@@ -80,12 +78,12 @@ export default {
   'pages.source.view.sourceInformation.publicationType.softwareOrDatabase': '软件或数据库',
   'pages.source.view.sourceInformation.publicationType.otherUnpublishedAndGreyLiterature': '其他未发表和灰色文献',
 
-  'pages.source.validator.version.required': '请输入版本',
-  'pages.source.validator.uuid.required': '请输入UUID',
-  'pages.source.validator.shortName.required': '请输入源的简称',
-  'pages.source.validator.class.required': '请输入分类',
-  'pages.source.validator.timeStamp.required': '请输入时间戳',
-  'pages.source.validator.referenceToDataSetFormat.required': '请输入数据集格式',
-  'pages.source.validator.dataSetVersion.required': '请输入数据集版本',
-  'pages.source.validator.referenceToOwnershipOfDataSet.required': '请输入数据集拥有者',
+  'pages.source.validator.version.required': '请输入版本。',
+  'pages.source.validator.uuid.required': '请输入 UUID。',
+  'pages.source.validator.shortName.required': '请输入数据源简称。',
+  'pages.source.validator.class.required': '请选择分类。',
+  'pages.source.validator.timeStamp.required': '请输入时间戳。',
+  'pages.source.validator.referenceToDataSetFormat.required': '请选择数据集格式。',
+  'pages.source.validator.dataSetVersion.required': '请输入数据集版本。',
+  'pages.source.validator.referenceToOwnershipOfDataSet.required': '请选择数据集拥有者。',
 };

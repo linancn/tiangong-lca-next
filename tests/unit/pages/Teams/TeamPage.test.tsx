@@ -722,7 +722,7 @@ describe('Team page validations', () => {
         false,
       );
     });
-    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(message.success).toHaveBeenCalledWith('Team created successfully.');
     expect(mockHistory.replace).toHaveBeenCalledWith('/team?action=edit');
     expect(reloadSpy).toHaveBeenCalledTimes(1);
 
@@ -825,7 +825,7 @@ describe('Team page validations', () => {
         true,
       );
     });
-    expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+    expect(message.success).toHaveBeenCalledWith('Team updated successfully.');
   });
 
   it('removes stored team logos from edit payload and storage when cleared', async () => {
@@ -1117,10 +1117,10 @@ describe('Team page validations', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Team Members' }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add Member' })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Member' }));
     expect(screen.getByTestId('add-member-modal')).toHaveTextContent('team-123');
 
     fireEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
@@ -1340,7 +1340,7 @@ describe('Team page validations', () => {
     fireEvent.click(screen.getByTestId('pro-form-submit'));
 
     await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Failed to upload logo.');
+      expect(message.error).toHaveBeenCalledWith('Failed to upload team logo.');
     });
     expect(mockCreateTeamMessage).not.toHaveBeenCalled();
   });
@@ -1370,7 +1370,7 @@ describe('Team page validations', () => {
     fireEvent.click(screen.getByTestId('pro-form-submit'));
 
     await waitFor(() => {
-      expect(message.error).toHaveBeenCalledWith('Failed to upload logo.');
+      expect(message.error).toHaveBeenCalledWith('Failed to upload team logo.');
     });
     expect(mockUploadLogoApi).toHaveBeenCalledTimes(2);
     expect(mockCreateTeamMessage).not.toHaveBeenCalled();
@@ -1421,14 +1421,16 @@ describe('Team page validations', () => {
         'team-123',
       );
     });
-    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('My Team / Members Message');
+    expect(screen.getByTestId('pro-table-header')).toHaveTextContent('My Team / Team Members');
     expect(screen.getByText('member@example.com')).toBeInTheDocument();
     expect(screen.getByText('admin@example.com')).toBeInTheDocument();
     expect(screen.getByText('rejected@example.com')).toBeInTheDocument();
 
     await act(async () => {
       fireEvent.click(
-        within(screen.getByTestId('pro-table-toolbar')).getByRole('button', { name: 'Add' }),
+        within(screen.getByTestId('pro-table-toolbar')).getByRole('button', {
+          name: 'Add Member',
+        }),
       );
       await Promise.resolve();
     });
@@ -1444,7 +1446,7 @@ describe('Team page validations', () => {
 
     const memberRow = screen.getByTestId('team-row-1');
     await act(async () => {
-      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
       await Promise.resolve();
     });
 
@@ -1455,7 +1457,7 @@ describe('Team page validations', () => {
 
     const adminRow = screen.getByTestId('team-row-2');
     await act(async () => {
-      fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+      fireEvent.click(within(adminRow).getByRole('button', { name: 'Set as Member' }));
       await Promise.resolve();
     });
 
@@ -1465,7 +1467,7 @@ describe('Team page validations', () => {
 
     const rejectedRow = screen.getByTestId('team-row-3');
     await act(async () => {
-      fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+      fireEvent.click(within(rejectedRow).getByRole('button', { name: 'Re-invite' }));
       await Promise.resolve();
     });
 
@@ -1473,7 +1475,7 @@ describe('Team page validations', () => {
       expect(mockReInvitedApi).toHaveBeenCalledWith('rejected-1', 'team-123');
     });
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
 
     await waitFor(() => {
       expect(mockModalConfirm).toHaveBeenCalledTimes(1);
@@ -1596,7 +1598,7 @@ describe('Team page validations', () => {
     await waitFor(() => {
       expect(mockGetTeamMembersApi).not.toHaveBeenCalled();
     });
-    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Member' })).toBeDisabled();
     expect(mockGetTeamMessageApi).not.toHaveBeenCalled();
   });
 
@@ -1650,7 +1652,7 @@ describe('Team page validations', () => {
 
       const memberRow = screen.getByTestId('team-row-1');
       await act(async () => {
-        fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+        fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
         await Promise.resolve();
       });
       await waitFor(() => {
@@ -1659,14 +1661,14 @@ describe('Team page validations', () => {
 
       const rejectedRow = screen.getByTestId('team-row-3');
       await act(async () => {
-        fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+        fireEvent.click(within(rejectedRow).getByRole('button', { name: 'Re-invite' }));
         await Promise.resolve();
       });
       await waitFor(() => {
         expect(message.error).toHaveBeenCalledWith('Action failed!');
       });
 
-      fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
       await waitFor(() => {
         expect(mockModalConfirm).toHaveBeenCalledTimes(1);
       });
@@ -1727,7 +1729,7 @@ describe('Team page validations', () => {
 
     const memberRow = screen.getByTestId('team-row-1');
     await act(async () => {
-      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
       await Promise.resolve();
     });
 
@@ -1790,7 +1792,7 @@ describe('Team page validations', () => {
       });
 
       const memberRow = screen.getByTestId('team-row-1');
-      fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+      fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
       await waitFor(() => {
         expect(mockModalConfirm).toHaveBeenCalledTimes(1);
       });

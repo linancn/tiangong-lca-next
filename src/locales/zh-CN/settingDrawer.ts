@@ -25,6 +25,6 @@ export default {
   'app.setting.othersettings': '其他设置',
   'app.setting.weakmode': '色弱模式',
   'app.setting.copy': '拷贝设置',
-  'app.setting.copyinfo': '拷贝成功，请到 config/defaultSettings.js 中替换默认配置',
-  'app.setting.production.hint': '配置栏只在开发环境用于预览，生产环境不会展现，请拷贝后手动修改配置文件',
+  'app.setting.copyinfo': '设置已复制，请替换 config/defaultSettings.ts 中的对应值。',
+  'app.setting.production.hint': '设置面板仅在开发环境中可用。如需在生产环境中使用这些设置，请手动修改 config/defaultSettings.ts。',
 };

@@ -27,7 +27,7 @@ const FlowpropertiesSelectDescription: FC<Props> = ({ title, data, lang }) => {
             label={
               <FormattedMessage
                 id='pages.flow.view.flowProperties.refObjectId'
-                defaultMessage='Ref object id'
+                defaultMessage='Reference to flow property data set identifier'
               />
             }
             styles={{ label: { width: locale === 'zh-CN' ? '190px' : '310px' } }}

@@ -15,6 +15,7 @@ import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
+import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
 import { DashboardOutlined, DatabaseOutlined, LinkOutlined } from '@ant-design/icons';
@@ -38,6 +39,14 @@ const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['owner', 'admin'],
   ['data_product_manager', 'data_product_manager'],
 ]);
+
+/**
+ * Umi asks this runtime hook for the locale before mounting its providers, so
+ * stale German aliases are canonicalized before any visible app render.
+ */
+export const locale = {
+  getLocale: resolveBrowserRuntimeLocale,
+};
 
 async function getSystemAccess(): Promise<Auth.CurrentUser['access'] | undefined> {
   try {

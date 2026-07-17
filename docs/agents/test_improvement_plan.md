@@ -20,8 +20,9 @@ checkPaths:
   - docs/agents/repo-validation.md
   - tests/**
   - package.json
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Added risk-proportional scoped-first proof and one final-checkpoint full gate without reopening gate-infrastructure strategy.'
 ---
 
 # Testing Strategy
@@ -36,12 +37,16 @@ lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
+- localization quality should combine deterministic topology/context/hash gates with local human language/domain confirmation; Jest validates form integrity and privacy boundaries but never claims that an automated audit proves fluency
+- proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
+- gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 
 ## Operating Principles
 
 - every touched behavior ships with matching proof
 - current-state queue data belongs in `test_todo_list.md`
 - make strategy changes explicit
+- keep focused Umi-generating tests, coverage, and full gates serial; shared generated state makes parallel execution invalid evidence
 - keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
 - dead branches should be removed instead of defended by artificial tests
 

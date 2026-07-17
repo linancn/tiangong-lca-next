@@ -375,7 +375,7 @@ describe('ProcessExchangeCreate', () => {
 
     fireEvent.click(screen.getByRole('button'));
 
-    expect(screen.getByRole('dialog', { name: 'Create exchange' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Create Exchange' })).toBeInTheDocument();
     expect(proFormApi).not.toBeNull();
     expect(triggerValuesChange).not.toBeNull();
 
@@ -403,7 +403,7 @@ describe('ProcessExchangeCreate', () => {
       );
     });
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Create exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Create Exchange' })).not.toBeInTheDocument(),
     );
   });
 
@@ -519,19 +519,19 @@ describe('ProcessExchangeCreate', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close-outlined/i }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Create exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Create Exchange' })).not.toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Create/i }));
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Create exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Create Exchange' })).not.toBeInTheDocument(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Create/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: 'Create exchange' })).not.toBeInTheDocument(),
+      expect(screen.queryByRole('dialog', { name: 'Create Exchange' })).not.toBeInTheDocument(),
     );
   });
 

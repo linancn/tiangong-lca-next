@@ -167,7 +167,29 @@ export const UnitGroupForm: FC<Props> = ({
   );
   const focusedUnitInternalId = getUnitInternalId(sdkValidationFocus);
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.unitgroup.edit.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    modellingAndValidation: (
+      <FormattedMessage
+        id='pages.unitgroup.edit.modellingAndValidation'
+        defaultMessage='Modelling and validation'
+      />
+    ),
+    unitGroupInformation: (
+      <FormattedMessage
+        id='pages.unitgroup.edit.unitGroupInformation'
+        defaultMessage='Unit group information'
+      />
+    ),
+    units: <FormattedMessage id='pages.unitgroup.edit.units' defaultMessage='Units' />,
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -181,7 +203,7 @@ export const UnitGroupForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -215,31 +237,19 @@ export const UnitGroupForm: FC<Props> = ({
   const tabList = [
     {
       key: 'unitGroupInformation',
-      tab: renderTabLabel(
-        'unitGroupInformation',
-        'pages.unitgroup.edit.unitGroupInformation',
-        'Unit group information',
-      ),
+      tab: renderTabLabel('unitGroupInformation'),
     },
     {
       key: 'modellingAndValidation',
-      tab: renderTabLabel(
-        'modellingAndValidation',
-        'pages.unitgroup.edit.modellingAndValidation',
-        'Modelling and validation',
-      ),
+      tab: renderTabLabel('modellingAndValidation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.unitgroup.edit.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
     {
       key: 'units',
-      tab: renderTabLabel('units', 'pages.unitgroup.edit.units', 'Units'),
+      tab: renderTabLabel('units'),
     },
   ];
   const unitColumns: ProColumns<UnitTable>[] = [
@@ -306,7 +316,7 @@ export const UnitGroupForm: FC<Props> = ({
     },
     {
       title: (
-        <FormattedMessage id='pages.table.title.option' defaultMessage='Option'></FormattedMessage>
+        <FormattedMessage id='pages.table.title.option' defaultMessage='Actions'></FormattedMessage>
       ),
       valueType: 'option',
       search: false,

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "tiangong.i18n-de-translation-batches.v1",
+  "issue": "https://github.com/linancn/tiangong-lca-next/issues/601",
+  "locale": "de-DE",
+  "status": "full-catalog-candidate-ready",
+  "policy": {
+    "leafKeyCount": 2658,
+    "activationEntryKeyCount": 7,
+    "canonicalKeyCount": 2665,
+    "ownerRule": "Each leaf file has exactly one owner lane; lanes have no file overlap.",
+    "translationRule": "A key may enter a runtime-bound batch only when contextStatus permits translation and applicable glossary decisions are not blocked. Research candidates may exist outside runtime locale modules but never satisfy this rule.",
+    "evidenceRule": "Every translated key records its laneId as batchId, non-personal producer actor, contextHash, and translationHash in review-log.yaml; the ignored local full-catalog confirmation binds the complete current scope.",
+    "reviewSliceRule": "Large owner lanes are reviewed in 200–350 key semantic slices even when one source file cannot be split between writers.",
+    "activationRule": "The seven $entry keys remain staged for Issue #602 and never justify a top-level de-DE.ts in Issue #601."
+  },
+  "categoryTotals": {
+    "activeStatic": 1729,
+    "activeDynamic": 308,
+    "reservedLeaf": 621,
+    "leafTotal": 2658
+  },
+  "lanes": [
+    {
+      "laneId": "process-lcia",
+      "status": "candidate-produced",
+      "keyCount": 846,
+      "categoryCounts": { "activeStatic": 672, "activeDynamic": 78, "reserved": 96 },
+      "icuCount": 37,
+      "modules": [{ "name": "pages_process", "keyCount": 846 }],
+      "reviewSlices": [
+        { "selector": "pages.process.lca.*", "keyCount": 314 },
+        { "selector": "pages.process.view.*", "keyCount": 242 },
+        { "selector": "remaining pages_process keys", "keyCount": 290 }
+      ],
+      "dynamicFamilies": [
+        "reviewGateGuidance",
+        "lcaSelection",
+        "lcaEvidenceReason",
+        "lcaEvidenceSource",
+        "lcaEvidenceStatus",
+        "entityTabs"
+      ]
+    },
+    {
+      "laneId": "lca-tidas-entities",
+      "status": "candidate-produced",
+      "keyCount": 607,
+      "categoryCounts": { "activeStatic": 402, "activeDynamic": 18, "reserved": 187 },
+      "icuCount": 0,
+      "modules": [
+        { "name": "pages_model", "keyCount": 278 },
+        { "name": "pages_flow", "keyCount": 115 },
+        { "name": "pages_flowproperty", "keyCount": 54 },
+        { "name": "pages_unitgroup", "keyCount": 88 },
+        { "name": "pages_contact", "keyCount": 49 },
+        { "name": "pages_product", "keyCount": 7 },
+        { "name": "component_allVersions", "keyCount": 5 },
+        { "name": "component_connectableProcesses", "keyCount": 1 },
+        { "name": "component_refsOfNewVersionDrawer", "keyCount": 10 }
+      ],
+      "reviewSlices": [
+        { "selector": "pages_model", "keyCount": 278 },
+        { "selector": "remaining lane modules", "keyCount": 329 }
+      ],
+      "dynamicFamilies": ["entityTabs"]
+    },
+    {
+      "laneId": "shell-auth-teams",
+      "status": "candidate-produced",
+      "keyCount": 600,
+      "categoryCounts": { "activeStatic": 263, "activeDynamic": 143, "reserved": 194 },
+      "icuCount": 7,
+      "modules": [
+        { "name": "pages", "keyCount": 281 },
+        { "name": "globalHeader", "keyCount": 44 },
+        { "name": "menu", "keyCount": 99 },
+        { "name": "pwa", "keyCount": 5 },
+        { "name": "component", "keyCount": 2 },
+        { "name": "pages_home", "keyCount": 56 },
+        { "name": "pages_teams", "keyCount": 57 },
+        { "name": "component_allTeams", "keyCount": 54 },
+        { "name": "pages_manageSystem", "keyCount": 2 }
+      ],
+      "reviewSlices": [
+        { "selector": "pages", "keyCount": 281 },
+        { "selector": "remaining lane modules", "keyCount": 319 }
+      ],
+      "dynamicFamilies": ["dataProcessing", "welcomeGuide", "teamMemberErrors", "accountRoles"]
+    },
+    {
+      "laneId": "shared-review-package-ai",
+      "status": "candidate-produced",
+      "keyCount": 605,
+      "categoryCounts": { "activeStatic": 392, "activeDynamic": 69, "reserved": 144 },
+      "icuCount": 35,
+      "modules": [
+        { "name": "pages_general", "keyCount": 172 },
+        { "name": "pages_source", "keyCount": 81 },
+        { "name": "settingDrawer", "keyCount": 28 },
+        { "name": "settings", "keyCount": 53 },
+        { "name": "validator", "keyCount": 23 },
+        { "name": "component_contributeData", "keyCount": 7 },
+        { "name": "pages_review", "keyCount": 111 },
+        { "name": "component_importData", "keyCount": 11 },
+        { "name": "component_tidasPackage", "keyCount": 79 },
+        { "name": "component_rejectReview", "keyCount": 10 },
+        { "name": "component_AISuggestion", "keyCount": 30 }
+      ],
+      "reviewSlices": [
+        {
+          "selector": "pages_general + settingDrawer + settings + validator + contributeData + importData",
+          "keyCount": 294
+        },
+        {
+          "selector": "pages_source + pages_review + tidasPackage + rejectReview + AISuggestion",
+          "keyCount": 311
+        }
+      ],
+      "dynamicFamilies": [
+        "schemaValidation",
+        "sdkSuggestedFix",
+        "reviewDetail",
+        "datasetEntityKinds",
+        "tableFilter",
+        "entityTabs",
+        "reviewMembers"
+      ]
+    }
+  ]
+}

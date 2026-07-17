@@ -104,7 +104,7 @@ const ConnectableProcesses: FC<Props> = ({
       title: (
         <FormattedMessage
           id='pages.process.view.modellingAndValidation.typeOfDataSet'
-          defaultMessage='Type of data set'
+          defaultMessage='Dataset type'
         />
       ),
       dataIndex: 'typeOfDataSet',

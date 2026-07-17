@@ -61,7 +61,7 @@ const getDatasetTypeLabel = (intl: ReturnType<typeof useIntl>, type: string) => 
     case 'lifeCycleModel data set':
       return intl.formatMessage({
         id: 'pages.validationIssues.datasetType.lifecyclemodel',
-        defaultMessage: 'Lifecycle model',
+        defaultMessage: 'Life cycle model',
       });
     default:
       return type;
@@ -235,7 +235,7 @@ const IssueNotification: React.FC<IssueNotificationProps> = ({ timeFilter, onDat
     {
       title: intl.formatMessage({
         id: 'pages.review.table.modifiedAt',
-        defaultMessage: 'Modified At',
+        defaultMessage: 'Modified at',
       }),
       dataIndex: 'modifiedAt',
       key: 'modifiedAt',

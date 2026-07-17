@@ -155,16 +155,13 @@ const ContactCreate: FC<CreateProps> = ({
     <>
       <Tooltip
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Create'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+          ) : (
+            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+          )
         }
       >
         {actionType === 'copy' ? (

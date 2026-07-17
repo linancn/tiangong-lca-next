@@ -526,14 +526,14 @@ describe('FlowsPage', () => {
       ),
     );
 
-    await user.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    await user.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
     expect(screen.getByRole('textbox', { name: /search-input/i })).toHaveAttribute(
       'placeholder',
       'pages.search.placeholder',
     );
   });
 
-  it('uses the current state filter for pgroonga, name-sorted search, unknown-sorted search, and AI search', async () => {
+  it('uses the current state filter for pgroonga, name-sorted search, unknown-sorted search, and AI recommendation', async () => {
     const user = userEvent.setup();
     renderWithProviders(<FlowsPage />);
 
@@ -608,7 +608,7 @@ describe('FlowsPage', () => {
       ),
     );
 
-    await user.click(screen.getByRole('checkbox', { name: /ai search/i }));
+    await user.click(screen.getByRole('checkbox', { name: /ai recommendation/i }));
     await user.click(screen.getByRole('button', { name: 'search' }));
     await waitFor(() =>
       expect(mockFlowHybridSearch).toHaveBeenCalledWith(
@@ -685,7 +685,7 @@ describe('FlowsPage', () => {
     await waitFor(() =>
       expect(mockContributeSource).toHaveBeenCalledWith('flows', 'flow-1', '01.00.000'),
     );
-    expect(mockMessageSuccess).toHaveBeenCalledWith('Contribute successfully');
+    expect(mockMessageSuccess).toHaveBeenCalledWith('Data contributed to the team successfully.');
 
     mockContributeSource.mockResolvedValueOnce({ error: { message: 'failed' } });
     await user.click(contributeButtons[0]);

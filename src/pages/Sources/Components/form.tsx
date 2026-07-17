@@ -91,7 +91,22 @@ export const SourceForm: FC<Props> = ({
     }
   };
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.source.edit.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    sourceInformation: (
+      <FormattedMessage
+        id='pages.source.edit.sourceInformation'
+        defaultMessage='Source information'
+      />
+    ),
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -105,7 +120,7 @@ export const SourceForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -113,19 +128,11 @@ export const SourceForm: FC<Props> = ({
   const tabList = [
     {
       key: 'sourceInformation',
-      tab: renderTabLabel(
-        'sourceInformation',
-        'pages.source.edit.sourceInformation',
-        'Source information',
-      ),
+      tab: renderTabLabel('sourceInformation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.source.edit.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
   ];
   const tabContent: { [key: string]: JSX.Element } = {
@@ -335,7 +342,7 @@ export const SourceForm: FC<Props> = ({
                 label={
                   <FormattedMessage
                     id='pages.source.edit.administrativeInformation.timeStamp'
-                    defaultMessage='Time Stamp'
+                    defaultMessage='Time stamp'
                   />
                 }
               />

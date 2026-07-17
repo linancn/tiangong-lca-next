@@ -72,12 +72,12 @@ const ReviewLifeCycleModelsDetail: FC<Props> = ({
           type === 'edit' ? (
             <FormattedMessage
               id={'pages.review.ReviewLifeCycleModelsDetail.edit.title'}
-              defaultMessage={'Review model'}
+              defaultMessage='Review Model'
             />
           ) : (
             <FormattedMessage
               id={'pages.review.ReviewLifeCycleModelsDetail.view.title'}
-              defaultMessage={'View review'}
+              defaultMessage='View Review'
             />
           )
         }

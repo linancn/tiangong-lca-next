@@ -21,11 +21,18 @@ var mockGetCurrentUser: any;
 var mockHistory: any;
 // eslint-disable-next-line no-var
 var mockLatestPasswordFields: Record<string, any>;
+// eslint-disable-next-line no-var
+var mockLocale: string;
+// eslint-disable-next-line no-var
+var mockGetLocalizedAppTitle: any;
+// eslint-disable-next-line no-var
+var mockGetLocalizedLoginSubtitle: any;
 
 jest.mock('umi', () => {
   const React = require('react');
   const actual = jest.requireActual('@umijs/max');
   const useIntl = jest.fn(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
   const Helmet = ({ children }: any) => <>{children}</>;
@@ -50,6 +57,7 @@ jest.mock('@umijs/max', () => {
     Helmet: ({ children }: any) => <>{children}</>,
     SelectLang: () => <div data-testid='select-lang' />,
     useIntl: () => ({
+      locale: mockLocale,
       formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
     }),
   };
@@ -58,10 +66,12 @@ jest.mock('@umijs/max', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   mockLatestPasswordFields = {};
-  const LoginForm = ({ children, onFinish, submitter, fields, logo }: any) => (
+  const LoginForm = ({ children, onFinish, submitter, fields, logo, title, subTitle }: any) => (
     <div data-testid='login-form'>
       <div data-testid='fields'>{JSON.stringify(fields)}</div>
       <div data-testid='logo'>{String(logo ?? '')}</div>
+      <div data-testid='login-title'>{title}</div>
+      <div data-testid='login-subtitle'>{subTitle}</div>
       {children}
       <button
         type='button'
@@ -153,14 +163,28 @@ jest.mock('@/pages/User/Login/Components/LoginTopActions', () => ({
   ),
 }));
 
+jest.mock('../../../../../config/defaultSettings', () => {
+  mockGetLocalizedAppTitle = jest.fn();
+  mockGetLocalizedLoginSubtitle = jest.fn();
+  return {
+    __esModule: true,
+    defaultAppTitle: 'Default App Title',
+    defaultLoginSubtitle: 'Default Login Subtitle',
+    getLocalizedAppTitle: (...args: any[]) => mockGetLocalizedAppTitle(...args),
+    getLocalizedLoginSubtitle: (...args: any[]) => mockGetLocalizedLoginSubtitle(...args),
+  };
+});
+
 const PasswordReset = require('@/pages/User/Login/password_reset').default;
 const umiModule = require('umi');
 if (umiModule.useIntl) {
   jest.spyOn(umiModule, 'useIntl').mockImplementation(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
 } else {
   umiModule.useIntl = jest.fn(() => ({
+    locale: mockLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }));
 }
@@ -169,6 +193,9 @@ umiModule.default = { ...(umiModule.default || {}), useIntl: umiModule.useIntl }
 describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'en-US';
+    mockGetLocalizedAppTitle.mockReset();
+    mockGetLocalizedLoginSubtitle.mockReset();
     localStorage.clear();
     localStorage.setItem('isDarkMode', 'false');
     mockSetPassword.mockResolvedValue({ status: 'ok' });
@@ -294,5 +321,19 @@ describe('PasswordReset page (src/pages/User/Login/password_reset.tsx)', () => {
       expect(mockGetCurrentUser).toHaveBeenCalled();
       expect(screen.getByTestId('fields')).toHaveTextContent('"value":""');
     });
+  });
+
+  it('passes German localized branding to the reset-password form', async () => {
+    mockLocale = 'de-DE';
+    mockGetLocalizedAppTitle.mockReturnValue('Offene Ökobilanz-Plattform');
+    mockGetLocalizedLoginSubtitle.mockReturnValue('Deutscher Untertitel');
+
+    render(<PasswordReset />);
+
+    await waitFor(() => expect(mockGetCurrentUser).toHaveBeenCalled());
+    expect(screen.getByTestId('login-title')).toHaveTextContent('Offene Ökobilanz-Plattform');
+    expect(screen.getByTestId('login-subtitle')).toHaveTextContent('Deutscher Untertitel');
+    expect(mockGetLocalizedAppTitle).toHaveBeenCalledWith('de-DE');
+    expect(mockGetLocalizedLoginSubtitle).toHaveBeenCalledWith('de-DE');
   });
 });

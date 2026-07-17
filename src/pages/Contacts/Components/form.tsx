@@ -59,7 +59,22 @@ export const ContactForm: FC<Props> = ({
     [validationIssueTabNames],
   );
 
-  const renderTabLabel = (key: string, id: string, defaultMessage: string) => {
+  const tabLabels = {
+    administrativeInformation: (
+      <FormattedMessage
+        id='pages.contact.administrativeInformation'
+        defaultMessage='Administrative information'
+      />
+    ),
+    contactInformation: (
+      <FormattedMessage
+        id='pages.contact.contactInformation'
+        defaultMessage='Contact information'
+      />
+    ),
+  } as const;
+
+  const renderTabLabel = (key: keyof typeof tabLabels) => {
     const hasIssue = (sdkValidationCountsByTab[key] ?? 0) > 0 || validationIssueTabs.has(key);
 
     return (
@@ -73,7 +88,7 @@ export const ContactForm: FC<Props> = ({
             : undefined
         }
       >
-        <FormattedMessage id={id} defaultMessage={defaultMessage} />
+        {tabLabels[key]}
       </span>
     );
   };
@@ -81,19 +96,11 @@ export const ContactForm: FC<Props> = ({
   const tabList = [
     {
       key: 'contactInformation',
-      tab: renderTabLabel(
-        'contactInformation',
-        'pages.contact.contactInformation',
-        'Contact information',
-      ),
+      tab: renderTabLabel('contactInformation'),
     },
     {
       key: 'administrativeInformation',
-      tab: renderTabLabel(
-        'administrativeInformation',
-        'pages.contact.administrativeInformation',
-        'Administrative information',
-      ),
+      tab: renderTabLabel('administrativeInformation'),
     },
   ];
   const tabContent: { [key: string]: JSX.Element } = {

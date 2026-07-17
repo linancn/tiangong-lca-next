@@ -19,10 +19,12 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
 } from '@/pages/Utils/validation/formSupport';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getContactDetail, updateContact } from '@/services/contacts/api';
 import {
   ContactDataSetObjectKeys,
@@ -52,7 +54,7 @@ import { ContactForm } from './form';
 type Props = {
   id: string;
   version: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text';
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   lang: string;
   disabled?: boolean;
@@ -319,7 +321,7 @@ const ContactEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.save.success',
-            defaultMessage: 'Save successfully!',
+            defaultMessage: 'Saved successfully!',
           }),
         );
       }
@@ -557,29 +559,20 @@ const ContactEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
+            defaultMessage: 'Data validation passed.',
           }),
         );
       }
     } else if (feedbackState === 'validation-error') {
       const validationHint =
         errTabNames && errTabNames.length > 0
-          ? errTabNames
-              .map((tab) =>
-                intl.formatMessage({
-                  id: `pages.contact.${tab}`,
-                  defaultMessage: tab,
-                }),
-              )
-              .join('，') +
-            '：' +
-            intl.formatMessage({
-              id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
-            })
+          ? formatDataCheckErrorWithSections(
+              intl,
+              errTabNames.map((tab) => formatDatasetTabLabel(intl, 'contact data set', tab)),
+            )
           : intl.formatMessage({
               id: 'pages.button.check.error',
-              defaultMessage: 'Data check failed!',
+              defaultMessage: 'Data check failed, please check the data!',
             });
       if (!silent && validationIssues.length > 0) {
         const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
@@ -701,10 +694,7 @@ const ContactEdit: FC<Props> = ({
           </Tooltip>
         ) : (
           <Button disabled={disabled} onClick={onEdit}>
-            <FormattedMessage
-              id={buttonType.trim().length > 0 ? buttonType : 'pages.button.edit'}
-              defaultMessage='Edit'
-            />
+            <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
           </Button>
         ))}
 

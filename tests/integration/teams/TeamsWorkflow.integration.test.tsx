@@ -776,7 +776,7 @@ describe('Teams management workflows', () => {
       expect(isPublic).toBe(false);
 
       expect(history.replace).toHaveBeenCalledWith('/team?action=edit');
-      expect(message.success).toHaveBeenCalledWith('Edit Successfully!');
+      expect(message.success).toHaveBeenCalledWith('Team created successfully.');
       expect(window.location.reload).toHaveBeenCalled();
     } finally {
       delete (window as any).location;
@@ -838,21 +838,21 @@ describe('Teams management workflows', () => {
       expect(mockGetTeamMembersApi).toHaveBeenCalled();
     });
 
-    expect(screen.getByRole('button', { name: 'Add' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Member' })).not.toBeDisabled();
 
     const memberRow = screen.getByTestId('pro-table-row-member@example.com');
     const adminRow = screen.getByTestId('pro-table-row-admin@example.com');
     const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
     const ownerRow = screen.getByTestId('pro-table-row-owner@example.com');
 
-    expect(within(memberRow).getByRole('button', { name: 'Delete' })).not.toBeDisabled();
-    expect(within(memberRow).getByRole('button', { name: 'Set Admin' })).toBeDisabled();
-    expect(within(adminRow).getByRole('button', { name: 'Set Member' })).toBeDisabled();
-    expect(within(rejectedRow).getByRole('button', { name: 're-invite' })).not.toBeDisabled();
-    expect(within(ownerRow).getByRole('button', { name: 'Delete' })).toBeDisabled();
+    expect(within(memberRow).getByRole('button', { name: 'Remove Member' })).not.toBeDisabled();
+    expect(within(memberRow).getByRole('button', { name: 'Set as Admin' })).toBeDisabled();
+    expect(within(adminRow).getByRole('button', { name: 'Set as Member' })).toBeDisabled();
+    expect(within(rejectedRow).getByRole('button', { name: 'Re-invite' })).not.toBeDisabled();
+    expect(within(ownerRow).getByRole('button', { name: 'Remove Member' })).toBeDisabled();
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
-    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
+    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set as Member' }));
 
     expect(mockUpdateRoleApi).not.toHaveBeenCalled();
   });
@@ -905,7 +905,7 @@ describe('Teams management workflows', () => {
     const memberRow = screen.getByTestId('pro-table-row-member@example.com');
     const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
 
     await waitFor(() => {
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'admin');
@@ -915,7 +915,7 @@ describe('Teams management workflows', () => {
     expect(message.success).not.toHaveBeenCalledWith('Action success!');
     expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen);
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
     const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
     const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     await act(async () => {
@@ -931,7 +931,7 @@ describe('Teams management workflows', () => {
       expect(mockGetTeamMembersApi).toHaveBeenCalledTimes(loadCountAfterOpen + 1);
     });
 
-    fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+    fireEvent.click(within(rejectedRow).getByRole('button', { name: 'Re-invite' }));
 
     await waitFor(() => {
       expect(mockReInvitedApi).toHaveBeenCalledWith('rejected-1', 'team-123');
@@ -976,7 +976,7 @@ describe('Teams management workflows', () => {
 
       const initialLoadCount = mockGetTeamMembersApi.mock.calls.length;
 
-      fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Add Member' }));
 
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
@@ -1063,7 +1063,7 @@ describe('Teams management workflows', () => {
     });
 
     const memberRow = screen.getByTestId('pro-table-row-member@example.com');
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
 
     await waitFor(() => {
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'admin');
@@ -1071,13 +1071,13 @@ describe('Teams management workflows', () => {
     expect(message.success).toHaveBeenCalledWith('Action success!');
 
     const adminRow = screen.getByTestId('pro-table-row-admin@example.com');
-    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set as Member' }));
 
     await waitFor(() => {
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-123', 'admin-1', 'member');
     });
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
     const confirmCalls = (Modal.confirm as jest.Mock).mock.calls;
     const confirmConfig = confirmCalls[confirmCalls.length - 1]?.[0];
     await act(async () => {
@@ -1087,14 +1087,14 @@ describe('Teams management workflows', () => {
     expect(mockDelRoleApi).toHaveBeenCalledWith('team-123', 'member-1', 'member');
 
     const rejectedRow = screen.getByTestId('pro-table-row-rejected@example.com');
-    fireEvent.click(within(rejectedRow).getByRole('button', { name: 're-invite' }));
+    fireEvent.click(within(rejectedRow).getByRole('button', { name: 'Re-invite' }));
 
     await waitFor(() => {
       expect(mockReInvitedApi).toHaveBeenCalledWith('rejected-1', 'team-123');
     });
     expect(message.success).toHaveBeenCalledWith('Action success!');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Member' }));
 
     await waitFor(() => {
       expect(screen.getByTestId('modal')).toBeInTheDocument();
@@ -1112,9 +1112,9 @@ describe('Teams management workflows', () => {
     expect(message.success).toHaveBeenCalledWith('Member added successfully!');
 
     const ownerRow = screen.getByTestId('pro-table-row-owner@example.com');
-    const ownerDeleteButton = within(ownerRow).getByRole('button', { name: 'Delete' });
-    const ownerSetAdminButton = within(ownerRow).getByRole('button', { name: 'Set Admin' });
-    const ownerSetMemberButton = within(ownerRow).getByRole('button', { name: 'Set Member' });
+    const ownerDeleteButton = within(ownerRow).getByRole('button', { name: 'Remove Member' });
+    const ownerSetAdminButton = within(ownerRow).getByRole('button', { name: 'Set as Admin' });
+    const ownerSetMemberButton = within(ownerRow).getByRole('button', { name: 'Set as Member' });
 
     expect(ownerDeleteButton).toBeDisabled();
     expect(ownerSetAdminButton).toBeDisabled();

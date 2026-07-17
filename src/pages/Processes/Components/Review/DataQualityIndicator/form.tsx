@@ -23,7 +23,7 @@ const DataQualityIndicatorItemForm: FC<Props> = ({ name }) => {
                   {index === 0 && (
                     <FormattedMessage
                       id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.name'
-                      defaultMessage='Name'
+                      defaultMessage='Name of data quality indicator'
                     />
                   )}
                   <Form.Item noStyle name={[subField.name, '@name']}>
@@ -34,7 +34,7 @@ const DataQualityIndicatorItemForm: FC<Props> = ({ name }) => {
                   {index === 0 && (
                     <FormattedMessage
                       id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator.value'
-                      defaultMessage='Value'
+                      defaultMessage='Value of data quality indicator'
                     />
                   )}
                   <Form.Item noStyle name={[subField.name, '@value']}>
@@ -56,7 +56,7 @@ const DataQualityIndicatorItemForm: FC<Props> = ({ name }) => {
               + <FormattedMessage id='pages.button.item.add' defaultMessage='Add' />{' '}
               <FormattedMessage
                 id='pages.process.modellingAndValidation.validation.review.dataQualityIndicator'
-                defaultMessage='Data Quality Indicator'
+                defaultMessage='Data quality indicator'
               />{' '}
               <FormattedMessage id='pages.button.item.label' defaultMessage='Item' />
             </Button>

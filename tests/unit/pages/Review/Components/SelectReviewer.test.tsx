@@ -228,7 +228,7 @@ describe('SelectReviewer component', () => {
 
     expect(mockSaveReviewAssignmentDraftApi).toHaveBeenCalledWith(['review-1'], ['user-2']);
     expect(mockAssignReviewersApi).not.toHaveBeenCalled();
-    expect(message.success).toHaveBeenCalledWith('Temporary save success');
+    expect(message.success).toHaveBeenCalledWith('Temporarily saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
@@ -252,7 +252,7 @@ describe('SelectReviewer component', () => {
       ['user-2'],
       '2026-04-01T00:00:00.000Z',
     );
-    expect(message.success).toHaveBeenCalledWith('Save success');
+    expect(message.success).toHaveBeenCalledWith('Reviewer assignments saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
@@ -321,7 +321,7 @@ describe('SelectReviewer component', () => {
       ['user-1', 'user-3', 'user-2'],
       '2026-03-20T10:00:00.000Z',
     );
-    expect(message.success).toHaveBeenCalledWith('Save success');
+    expect(message.success).toHaveBeenCalledWith('Reviewer assignments saved successfully.');
   });
 
   it('shows an error toast when temporary save fails', async () => {
@@ -360,7 +360,7 @@ describe('SelectReviewer component', () => {
     await waitFor(() =>
       expect(screen.getByTestId('drawer')).toHaveAttribute('data-container', 'body'),
     );
-    expect(screen.getByText('Review Deadline:')).toBeInTheDocument();
+    expect(screen.getByText('Review Deadline')).toBeInTheDocument();
     expect(screen.getByTestId('date-picker')).toHaveAttribute('data-past-disabled', 'true');
     expect(screen.getByTestId('date-picker')).toHaveAttribute('data-future-disabled', 'false');
 
@@ -447,7 +447,7 @@ describe('SelectReviewer component', () => {
 
     await waitFor(() => expect(mockGetReviewerIdsByReviewId).toHaveBeenCalledWith('review-1'));
     await waitFor(() => expect(screen.getByText('admin@example.com')).toBeInTheDocument());
-    expect(screen.getByText('Admin')).toBeInTheDocument();
+    expect(screen.getByText('Administrator')).toBeInTheDocument();
     expect(screen.getByText('unknown@example.com')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
   });

@@ -280,7 +280,7 @@ const TableList: FC = () => {
       ...dataListActionColumn<FlowpropertyTable>(
         isMobileDataList ? 72 : dataSource === 'my' ? 104 : 152,
       ),
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       render: (_, row) => renderFlowpropertyActions(row),
     },

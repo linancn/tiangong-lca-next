@@ -255,12 +255,8 @@ describe('ManageSystem page', () => {
 
     expect(await screen.findByTestId('all-teams')).toHaveTextContent('manageSystem:admin');
     expect(screen.getByRole('heading', { name: 'menu.manageSystem' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'pages.manageSystem.tabs.teams' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'pages.manageSystem.tabs.members' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Homepage Display Management' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Member Management' })).toBeInTheDocument();
   });
 
   it('loads member management, opens the add-member modal, and reloads after success', async () => {
@@ -268,7 +264,7 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     await waitFor(() => {
       expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(1);
@@ -277,7 +273,7 @@ describe('ManageSystem page', () => {
       'System Management / Member Management',
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Member' }));
 
     expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
 
@@ -293,13 +289,13 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     await waitFor(() => {
       expect(mockGetSystemMembersApi).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Member' }));
     expect(screen.getByTestId('add-member-modal')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'modal-cancel' }));
@@ -315,24 +311,24 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     const memberRow = await screen.findByTestId('row-member-1');
     const adminRow = await screen.findByTestId('row-admin-2');
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
 
     await waitFor(() => {
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-1', 'member-1', 'admin');
     });
 
-    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set Member' }));
+    fireEvent.click(within(adminRow).getByRole('button', { name: 'Set as Member' }));
 
     await waitFor(() => {
       expect(mockUpdateRoleApi).toHaveBeenCalledWith('team-1', 'admin-2', 'member');
     });
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
 
     await waitFor(() => {
       expect(mockDelRoleApi).toHaveBeenCalledWith('team-1', 'member-1', 'member');
@@ -345,15 +341,15 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     const memberRow = await screen.findByTestId('row-member-1');
     const adminRow = await screen.findByTestId('row-admin-2');
 
-    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
-    expect(within(memberRow).getByRole('button', { name: 'Delete' })).toBeDisabled();
-    expect(within(memberRow).getByRole('button', { name: 'Set Admin' })).toBeDisabled();
-    expect(within(adminRow).getByRole('button', { name: 'Set Member' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Add Member' })).toBeDisabled();
+    expect(within(memberRow).getByRole('button', { name: 'Remove Member' })).toBeDisabled();
+    expect(within(memberRow).getByRole('button', { name: 'Set as Admin' })).toBeDisabled();
+    expect(within(adminRow).getByRole('button', { name: 'Set as Member' })).toBeDisabled();
   });
 
   it('shows an error message when role updates fail', async () => {
@@ -363,17 +359,17 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     const memberRow = await screen.findByTestId('row-member-1');
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
 
     await waitFor(() => {
       expect(mockGetManageSystemState().message.error).toHaveBeenCalled();
     });
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
 
     await waitFor(() => {
       expect(mockGetManageSystemState().message.error).toHaveBeenCalledTimes(2);
@@ -389,9 +385,7 @@ describe('ManageSystem page', () => {
       expect(screen.getByTestId('access-denied')).toBeInTheDocument();
     });
     expect(mockGetSystemMembersApi).not.toHaveBeenCalled();
-    expect(
-      screen.queryByRole('button', { name: 'pages.manageSystem.tabs.members' }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Member Management' })).not.toBeInTheDocument();
   });
 
   it('logs member-loading failures and falls back to an empty table', async () => {
@@ -401,7 +395,7 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -435,17 +429,17 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     const memberRow = await screen.findByTestId('row-member-1');
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set Admin' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Set as Admin' }));
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
     });
 
-    fireEvent.click(within(memberRow).getByRole('button', { name: 'Delete' }));
+    fireEvent.click(within(memberRow).getByRole('button', { name: 'Remove Member' }));
 
     await waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
@@ -472,7 +466,7 @@ describe('ManageSystem page', () => {
 
     render(<ManageSystemPage />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'pages.manageSystem.tabs.members' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Member Management' }));
 
     const mysteryRow = await screen.findByTestId('row-mystery-1');
     expect(within(mysteryRow).getByText('mystery@example.com')).toBeInTheDocument();

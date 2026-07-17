@@ -352,7 +352,7 @@ const PropertyEdit: FC<Props> = ({
         title={
           <FormattedMessage
             id='pages.flowproperty.drawer.title.edit'
-            defaultMessage='Edit Flow Property'
+            defaultMessage='Edit Flow property'
           />
         }
         width='90%'
@@ -486,7 +486,7 @@ const PropertyEdit: FC<Props> = ({
               label={
                 <FormattedMessage
                   id='pages.flow.view.flowProperties.relativeStandardDeviation95In'
-                  defaultMessage='Relative StdDev in %'
+                  defaultMessage='Relative standard deviation (95%) in %'
                 />
               }
               name={['relativeStandardDeviation95In']}
@@ -509,7 +509,7 @@ const PropertyEdit: FC<Props> = ({
               title={
                 <FormattedMessage
                   id='pages.flow.view.flowProperties.generalComment'
-                  defaultMessage='General comment on data set'
+                  defaultMessage='Comment'
                 />
               }
             >
@@ -519,7 +519,7 @@ const PropertyEdit: FC<Props> = ({
                 label={
                   <FormattedMessage
                     id='pages.flow.view.flowProperties.generalComment'
-                    defaultMessage='General comment on data set'
+                    defaultMessage='Comment'
                   />
                 }
               />

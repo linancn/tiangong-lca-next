@@ -19,11 +19,13 @@ import {
   getRefsOfNewVersion,
   updateRefsData,
 } from '@/pages/Utils/updateReference';
+import { formatDataCheckErrorWithSections } from '@/pages/Utils/validation/feedbackMessages';
 import {
   resolveDataCheckFeedbackState,
   validateVisibleFormFields,
 } from '@/pages/Utils/validation/formSupport';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
 import { getFlowpropertyDetail } from '@/services/flowproperties/api';
 import { getFlowDetail, updateFlows } from '@/services/flows/api';
 import {
@@ -57,7 +59,7 @@ import { FlowForm } from './form';
 type Props = {
   id: string;
   version: string;
-  buttonType: string;
+  buttonType: 'icon' | 'text';
   lang: string;
   actionRef?: React.MutableRefObject<ActionType | undefined>;
   disabled?: boolean;
@@ -555,14 +557,14 @@ const FlowsEdit: FC<Props> = ({
         message.success(
           intl.formatMessage({
             id: 'pages.button.check.success',
-            defaultMessage: 'Data check successfully!',
+            defaultMessage: 'Data validation passed.',
           }),
         );
       }
     } else if (feedbackState === 'validation-error') {
       let validationHint = intl.formatMessage({
         id: 'pages.button.check.error',
-        defaultMessage: 'Data check failed!',
+        defaultMessage: 'Data check failed, please check the data!',
       });
       if (
         datasetValidationMessage &&
@@ -571,20 +573,10 @@ const FlowsEdit: FC<Props> = ({
       ) {
         validationHint = datasetValidationMessage;
       } else if (errTabNames && errTabNames.length > 0) {
-        validationHint =
-          errTabNames
-            .map((tab) =>
-              intl.formatMessage({
-                id: `pages.flow.view.${tab}`,
-                defaultMessage: tab,
-              }),
-            )
-            .join('，') +
-          '：' +
-          intl.formatMessage({
-            id: 'pages.button.check.error',
-            defaultMessage: 'Data check failed!',
-          });
+        validationHint = formatDataCheckErrorWithSections(
+          intl,
+          errTabNames.map((tab) => formatDatasetTabLabel(intl, 'flow data set', tab)),
+        );
       }
       if (!silent && validationIssues.length > 0) {
         const validationIssuesWithOwner = await enrichValidationIssuesWithOwner(validationIssues);
@@ -640,10 +632,7 @@ const FlowsEdit: FC<Props> = ({
             />
           ) : (
             <Button disabled={disabled} onClick={onEdit}>
-              <FormattedMessage
-                id={buttonType ? buttonType : 'pages.button.edit'}
-                defaultMessage='Edit'
-              />
+              <FormattedMessage id='pages.button.edit' defaultMessage='Edit' />
             </Button>
           )}
         </Tooltip>

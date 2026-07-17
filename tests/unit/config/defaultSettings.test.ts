@@ -4,8 +4,10 @@ const DEFAULT_SETTINGS_ENV_KEYS = [
   'APP_LAYOUT',
   'APP_TITLE_ZH_CN',
   'APP_TITLE_EN_US',
+  'APP_TITLE_DE_DE',
   'APP_LOGIN_SUBTITLE_ZH_CN',
   'APP_LOGIN_SUBTITLE_EN_US',
+  'APP_LOGIN_SUBTITLE_DE_DE',
 ] as const;
 
 const clearDefaultSettingsEnv = () => {
@@ -56,11 +58,13 @@ describe('default settings config (config/defaultSettings.ts)', () => {
   it('resolves localized app title env values by locale', () => {
     process.env.APP_TITLE_ZH_CN = '  开源生命周期平台  ';
     process.env.APP_TITLE_EN_US = '  Open LCA Platform  ';
+    process.env.APP_TITLE_DE_DE = '  Offene Ökobilanz-Plattform  ';
 
     const { getLocalizedAppTitle } = require('../../../config/defaultSettings');
 
     expect(getLocalizedAppTitle('zh-CN')).toBe('开源生命周期平台');
     expect(getLocalizedAppTitle('en-US')).toBe('Open LCA Platform');
+    expect(getLocalizedAppTitle('de-DE')).toBe('Offene Ökobilanz-Plattform');
   });
 
   it('returns undefined for unsupported locale app title', () => {
@@ -74,10 +78,12 @@ describe('default settings config (config/defaultSettings.ts)', () => {
   it('resolves localized login subtitle env values by locale', () => {
     process.env.APP_LOGIN_SUBTITLE_ZH_CN = '  中文副标题  ';
     process.env.APP_LOGIN_SUBTITLE_EN_US = '  English subtitle  ';
+    process.env.APP_LOGIN_SUBTITLE_DE_DE = '  Deutscher Untertitel  ';
 
     const { getLocalizedLoginSubtitle } = require('../../../config/defaultSettings');
 
     expect(getLocalizedLoginSubtitle('zh-CN')).toBe('中文副标题');
     expect(getLocalizedLoginSubtitle('en-US')).toBe('English subtitle');
+    expect(getLocalizedLoginSubtitle('de-DE')).toBe('Deutscher Untertitel');
   });
 });

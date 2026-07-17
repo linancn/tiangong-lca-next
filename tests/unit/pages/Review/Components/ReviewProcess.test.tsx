@@ -293,7 +293,7 @@ describe('ReviewProcessDetail component', () => {
         validation: { review: [] },
       },
     });
-    expect(message.success).toHaveBeenCalledWith('Temporary save successfully');
+    expect(message.success).toHaveBeenCalledWith('Temporarily saved successfully.');
     expect(actionRef.current.reload).toHaveBeenCalled();
   });
 
@@ -855,7 +855,7 @@ describe('ReviewProcessDetail component', () => {
     fireEvent.click(screen.getAllByRole('button')[0]);
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
 
-    expect(screen.getByText('View review')).toBeInTheDocument();
+    expect(screen.getByText('View Review')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Temporary Save' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Reject Stub' })).not.toBeInTheDocument();

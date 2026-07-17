@@ -234,7 +234,7 @@ const Team = () => {
         message.success(
           intl.formatMessage({
             id: 'pages.team.editsuccess',
-            defaultMessage: 'Edit Successfully!',
+            defaultMessage: 'Team updated successfully.',
           }),
         );
       }
@@ -265,7 +265,7 @@ const Team = () => {
         message.success(
           intl.formatMessage({
             id: 'pages.team.createSuccess',
-            defaultMessage: 'Edit Successfully!',
+            defaultMessage: 'Team created successfully.',
           }),
         );
         history.replace(`/team?action=edit`);
@@ -299,7 +299,7 @@ const Team = () => {
               message.error(
                 intl.formatMessage({
                   id: 'teams.logo.uploadError',
-                  defaultMessage: 'Failed to upload logo.',
+                  defaultMessage: 'Failed to upload team logo.',
                 }),
               );
               return null;
@@ -318,7 +318,7 @@ const Team = () => {
             message.error(
               intl.formatMessage({
                 id: 'teams.logo.uploadError',
-                defaultMessage: 'Failed to upload logo.',
+                defaultMessage: 'Failed to upload team logo.',
               }),
             );
             return null;
@@ -513,7 +513,10 @@ const Team = () => {
                 name='is_public'
                 label={
                   <>
-                    <FormattedMessage id='pages.team.info.public' defaultMessage='Public' />
+                    <FormattedMessage
+                      id='pages.team.info.public'
+                      defaultMessage='Public team information'
+                    />
                     <Tooltip title={intl.formatMessage({ id: 'pages.team.info.public.tooltip' })}>
                       <QuestionCircleOutlined style={{ marginLeft: 4 }} />
                     </Tooltip>
@@ -785,7 +788,9 @@ const Team = () => {
           <Flex gap='small'>
             {
               <Tooltip
-                title={<FormattedMessage id='teams.members.delete' defaultMessage='Delete' />}
+                title={
+                  <FormattedMessage id='teams.members.delete' defaultMessage='Remove Member' />
+                }
               >
                 <Button
                   disabled={
@@ -839,7 +844,9 @@ const Team = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id='teams.members.setAdmin' defaultMessage='Set Admin' />}
+                title={
+                  <FormattedMessage id='teams.members.setAdmin' defaultMessage='Set as Admin' />
+                }
               >
                 <Button
                   shape='circle'
@@ -853,7 +860,7 @@ const Team = () => {
             {
               <Tooltip
                 title={
-                  <FormattedMessage id='teams.members.setMember' defaultMessage='Set Member' />
+                  <FormattedMessage id='teams.members.setMember' defaultMessage='Set as Member' />
                 }
               >
                 <Button
@@ -867,7 +874,7 @@ const Team = () => {
             }
             {
               <Tooltip
-                title={<FormattedMessage id='teams.members.reInvite' defaultMessage='re-invite' />}
+                title={<FormattedMessage id='teams.members.reInvite' defaultMessage='Re-invite' />}
               >
                 <Button
                   disabled={
@@ -909,14 +916,14 @@ const Team = () => {
           headerTitle={
             <>
               <FormattedMessage id='menu.account.team' defaultMessage='My Team' /> /{' '}
-              <FormattedMessage id='pages.team.tabs.members' defaultMessage='Members Message' />
+              <FormattedMessage id='pages.team.tabs.members' defaultMessage='Team Members' />
             </>
           }
           toolBarRender={() => {
             return [
               <Tooltip
                 key={0}
-                title={<FormattedMessage id='teams.members.add' defaultMessage='Add' />}
+                title={<FormattedMessage id='teams.members.add' defaultMessage='Add Member' />}
               >
                 <Button
                   type='text'
@@ -1000,9 +1007,7 @@ const Team = () => {
   }
 
   return (
-    <PageContainer
-      title={<FormattedMessage id='menu.account.team' defaultMessage='Team Management' />}
-    >
+    <PageContainer title={<FormattedMessage id='menu.account.team' defaultMessage='My Team' />}>
       <Tabs
         activeKey={activeTabKey}
         className='team-page-tabs'

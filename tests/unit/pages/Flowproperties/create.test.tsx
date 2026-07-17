@@ -478,7 +478,7 @@ describe('FlowpropertiesCreate', () => {
       );
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
     await waitFor(() => expect(mockGetFlowpropertyDetail).toHaveBeenCalledWith('fp-copy', '1.0.0'));
     expect(screen.getByRole('dialog')).toHaveAttribute('data-has-container', 'true');
     expect(mockGenFlowpropertyFromData).toHaveBeenCalledWith({});
@@ -498,12 +498,12 @@ describe('FlowpropertiesCreate', () => {
     await userEvent.click(headerCloseButton!);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
     await screen.findByRole('dialog');
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+    await userEvent.click(screen.getByRole('button', { name: /copy/i }));
     await screen.findByRole('dialog');
     const drawerCloseButton = screen
       .getAllByRole('button')

@@ -316,7 +316,7 @@ describe('Flows workflow', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create' }));
 
-    const drawer = await screen.findByRole('dialog', { name: 'Flows Create' });
+    const drawer = await screen.findByRole('dialog', { name: 'Create Flow' });
 
     const baseNameInput = within(drawer).getByLabelText('Base name');
     await user.clear(baseNameInput);

@@ -20,8 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Aligned the shortest work loop with the active German runtime gates and the managed, failure-activated push-retry path.'
 ---
 
 # Development Bootstrap
@@ -64,7 +65,9 @@ npm ci
 4. run focused validation
 5. run `npm run lint`
 6. run `npm run build` when the change affects shipped behavior or static assets
-7. run `npm run prepush:gate` before pushing or handing off local gate evidence
+7. commit the final controlled tracked change and run `npm run push:checked -- origin <branch>`; its ordinary hook owns the one full gate
+
+If no push will occur and a standalone handoff needs final evidence, run `npm run docpact:gate` and then `npm run prepush:gate` manually instead. Do not also push the same unchanged checkpoint merely to repeat those gates.
 
 ## Canonical Commands
 
@@ -83,8 +86,17 @@ npm ci
 | full coverage | `npm run test:coverage` |
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
+| deterministic locale audit | `npm run i18n:audit` |
+| write active German runtime manifest | `npm run i18n:de:runtime:manifest:write` |
+| check active German runtime manifest | `npm run i18n:de:runtime:manifest:check` |
+| generate local Issue #602 delta review form | `npm run i18n:de:delta:review:generate` |
+| check completed local Issue #602 delta review | `npm run i18n:de:delta:review:check` |
+| verify the frozen approved Issue #601 Pilot | `npm run i18n:de:pilot` |
+| enforce active German runtime assembly | `npm run i18n:de:audit` |
 | build | `npm run build` |
 | local full test gate | `npm run prepush:gate` |
+| final managed push | `npm run push:checked -- <normal-git-push-args>` |
+| retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 ## Command Rules
@@ -96,7 +108,14 @@ npm ci
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
 - local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
 - treat `npm run prepush:gate` as the authoritative local test gate
-- when reproducing local or release gates manually, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
+- ignored local confirmation edits and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
+- after a controlled German source or copy change, write the runtime manifest, generate the Issue #602 delta review form, keep the completed form private and ignored, and check it before enforcing `npm run i18n:de:audit`
+- `npm run i18n:de:pilot` verifies the frozen Issue #601 approval snapshot; `npm run i18n:de:audit` additionally requires the exact active runtime assembly, the fresh manifest, and the hash-bound local Issue #602 delta approval
+- completed German review forms and reviewer identity stay outside Git and GitHub; the gates read them locally without making a network call
+- a successful managed push leaves no retry receipt; only a non-zero transport result after both hook gates passed activates the ignored, one-hour, exact-intent receipt used by argument-free `npm run push:retry`
+- a raw `git push` still runs the hook but cannot create that bounded recovery receipt; never invoke `git push --no-verify` or `HUSKY=0` manually
+- run `npm run test:ci`, coverage commands, and `npm run prepush:gate` serially because they regenerate shared `.umi-test` state; do not add broad test/coverage runs around a full gate that already contains coverage
 
 ## If You Need More Than This File
 

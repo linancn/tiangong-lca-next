@@ -86,7 +86,7 @@ const ReveiwItemForm: FC<Props> = ({ name, lang, formRef, onData, showRules = fa
                       title={
                         <FormattedMessage
                           id='pages.process.modellingAndValidation.validation.review.scope'
-                          defaultMessage='Scope of review'
+                          defaultMessage='Scope'
                         />
                       }
                     >

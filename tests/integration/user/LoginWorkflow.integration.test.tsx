@@ -79,6 +79,15 @@ type LoginMock = jest.Mock<Promise<AuthResponse>, [body: LoginBody]>;
 const mockLogin = login as unknown as LoginMock;
 const mockSignUp = signUp as unknown as LoginMock;
 
+const openSignUpForm = () => {
+  fireEvent.click(screen.getByTestId('tab-register'));
+};
+
+const getSignUpSubmit = () =>
+  screen
+    .getAllByRole('button', { name: 'Sign Up' })
+    .find((button) => button.getAttribute('data-testid') !== 'tab-register')!;
+
 describe('Login workflow integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -168,7 +177,7 @@ describe('Login workflow integration', () => {
 
     renderWithProviders(<Login />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    openSignUpForm();
 
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'new@example.com' },
@@ -180,7 +189,7 @@ describe('Login workflow integration', () => {
       target: { value: 'N3wP@ssword!' },
     });
 
-    const submit = screen.getByRole('button', { name: 'Sign Up' });
+    const submit = getSignUpSubmit();
     fireEvent.click(submit);
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
@@ -196,10 +205,10 @@ describe('Login workflow integration', () => {
       expect.objectContaining({
         type: 'success',
         content:
-          'The email has been sent successfully. Please check your inbox and follow the link to complete the process.',
+          'Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.',
       }),
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled());
+    await waitFor(() => expect(getSignUpSubmit()).toBeDisabled());
   });
 
   it('shows the duplicate-registration fallback and disables further submissions', async () => {
@@ -207,7 +216,7 @@ describe('Login workflow integration', () => {
 
     renderWithProviders(<Login />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    openSignUpForm();
 
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'existing@example.com' },
@@ -219,16 +228,16 @@ describe('Login workflow integration', () => {
       target: { value: 'N3wP@ssword!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+    fireEvent.click(getSignUpSubmit());
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
     expect(mockMessageApi.open).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'error',
-        content: 'This email has already been registered. Try Login or Forgot Password?',
+        content: 'This email is already registered. Try Login, or Forgot Password?',
       }),
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Sign Up' })).toBeDisabled());
+    await waitFor(() => expect(getSignUpSubmit()).toBeDisabled());
   });
 
   it('keeps the registration form open with inline feedback when validation email delivery fails', async () => {
@@ -236,7 +245,7 @@ describe('Login workflow integration', () => {
 
     renderWithProviders(<Login />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    openSignUpForm();
 
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'new@example.com' },
@@ -248,11 +257,11 @@ describe('Login workflow integration', () => {
       target: { value: 'N3wP@ssword!' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Sign Up' }));
+    fireEvent.click(getSignUpSubmit());
 
     await waitFor(() => expect(mockSignUp).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole('alert')).toHaveTextContent('Validation email failed to send.');
-    expect(screen.getByRole('button', { name: 'Sign Up' })).not.toBeDisabled();
+    expect(getSignUpSubmit()).not.toBeDisabled();
   });
 
   it('shows inline error messaging when login credentials are rejected', async () => {

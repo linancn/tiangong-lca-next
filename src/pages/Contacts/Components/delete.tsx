@@ -79,7 +79,7 @@ const ContactDelete: FC<Props> = ({
           >
             <FormattedMessage
               id='pages.button.delete.confirm'
-              defaultMessage='Are you sure want to delete this data?'
+              defaultMessage='Are you sure you want to delete this data?'
             />
           </Modal>
         </>
@@ -96,7 +96,7 @@ const ContactDelete: FC<Props> = ({
           >
             <FormattedMessage
               id='pages.button.delete.confirm'
-              defaultMessage='Are you sure want to delete this data?'
+              defaultMessage='Are you sure you want to delete this data?'
             />
           </Modal>
         </>

@@ -1,6 +1,8 @@
 /* istanbul ignore file -- modal rendering is covered by behavioral tests; branch coverage is mostly UI-only formatting */
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
+import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
+import { formatLocaleList, getLocaleListSeparator } from '@/utils/localeFormatting';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -10,6 +12,7 @@ import { createRoot } from 'react-dom/client';
 import { getBrandTheme } from '../../../config/branding';
 
 type IntlShapeLike = {
+  locale?: string;
   formatMessage: (
     descriptor: {
       defaultMessage?: string;
@@ -27,46 +30,21 @@ const escapeHtml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const getDatasetTabMessageId = (type: string, tabName: string) => {
-  switch (type) {
-    case 'contact data set':
-      return `pages.contact.${tabName}`;
-    case 'source data set':
-      return `pages.source.view.${tabName}`;
-    case 'unit group data set':
-      return `pages.unitgroup.${tabName}`;
-    case 'flow property data set':
-      return `pages.FlowProperties.view.${tabName}`;
-    case 'flow data set':
-      return `pages.flow.view.${tabName}`;
-    case 'process data set':
-      return `pages.process.view.${tabName}`;
-    case 'lifeCycleModel data set':
-      return `pages.lifeCycleModel.view.${tabName}`;
-    default:
-      return '';
-  }
-};
-
 const getValidationIssueTabLabel = (
   intl: IntlShapeLike,
   issue: Pick<ValidationIssue, 'ref'>,
   tabName: string,
-) => {
-  const messageId = getDatasetTabMessageId(issue.ref['@type'], tabName);
-
-  return intl.formatMessage({
-    id: messageId || tabName,
-    defaultMessage: tabName,
-  });
-};
+) => formatDatasetTabLabel(intl, issue.ref['@type'], tabName);
 
 const getValidationIssueTabLabels = (intl: IntlShapeLike, issue: ValidationIssue) => {
   const tabNames = (issue.tabNames ?? []).filter(
     (tabName, index, allTabNames) => tabName && allTabNames.indexOf(tabName) === index,
   );
 
-  return tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)).join('，');
+  return formatLocaleList(
+    tabNames.map((tabName) => getValidationIssueTabLabel(intl, issue, tabName)),
+    intl.locale,
+  );
 };
 
 const getSdkInvalidIssueLabel = (intl: IntlShapeLike) =>
@@ -151,13 +129,8 @@ const getValidationIssueInteractiveDetails = (issue: ValidationIssue) => {
 const getSdkNavigationHint = (intl: IntlShapeLike) =>
   intl.formatMessage({
     id: 'pages.validationIssues.issue.sdkInvalid.navigateHint',
-    defaultMessage: '对应 tab 下的问题数据会标红，请补充后重试。',
-  });
-
-const getValidationIssueListSeparator = (intl: IntlShapeLike) =>
-  intl.formatMessage({
-    id: 'pages.validationIssues.listSeparator',
-    defaultMessage: ', ',
+    defaultMessage:
+      'The invalid data in the corresponding tab will be highlighted. Complete it and try again.',
   });
 
 const MULTIPLICATION_FACTOR_FIELD_TOKEN = '@multiplicationFactor';
@@ -205,8 +178,7 @@ const getSdkInvalidIsolatedNodeHintText = (
 ) => {
   const nodeNames = details
     .map((detail) => getSdkProcessInstanceLabel(intl, detail))
-    .filter((label, index, labels) => label && labels.indexOf(label) === index)
-    .join(getValidationIssueListSeparator(intl));
+    .filter((label, index, labels) => label && labels.indexOf(label) === index);
 
   return intl.formatMessage(
     {
@@ -214,7 +186,7 @@ const getSdkInvalidIsolatedNodeHintText = (
       defaultMessage: 'Please check whether these nodes are isolated ({nodeNames})',
     },
     {
-      nodeNames,
+      nodeNames: formatLocaleList(nodeNames, intl.locale),
     },
   );
 };
@@ -483,7 +455,7 @@ const getDatasetTypeLabel = (intl: IntlShapeLike, type: string) => {
     case 'lifeCycleModel data set':
       return intl.formatMessage({
         id: 'pages.validationIssues.datasetType.lifecyclemodel',
-        defaultMessage: 'Lifecycle model',
+        defaultMessage: 'Life cycle model',
       });
     default:
       return type;
@@ -738,7 +710,7 @@ const ValidationIssueModalContent = ({
                   {tabLabel}
                 </Button>
               </span>
-              {index < interactiveTabNames.length - 1 ? '，' : null}
+              {getLocaleListSeparator(index, interactiveTabNames.length, intl.locale)}
             </span>
           );
         })}

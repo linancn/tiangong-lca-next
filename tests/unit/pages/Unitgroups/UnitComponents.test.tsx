@@ -872,9 +872,9 @@ describe('Unitgroups unit components', () => {
         />,
       );
 
-      await user.click(screen.getByRole('button', { name: /create/i }));
+      await user.click(screen.getByRole('button', { name: /copy/i }));
 
-      const drawer = await screen.findByRole('dialog', { name: /create/i });
+      const drawer = await screen.findByRole('dialog', { name: /copy unit group/i });
       await waitFor(() =>
         expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unit-group-copy', '1.0.0'),
       );
@@ -919,9 +919,9 @@ describe('Unitgroups unit components', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /create/i }));
+    await user.click(screen.getByRole('button', { name: /copy/i }));
 
-    const drawer = await screen.findByRole('dialog', { name: /create/i });
+    const drawer = await screen.findByRole('dialog', { name: /copy unit group/i });
     await waitFor(() =>
       expect(mockGetUnitGroupDetail).toHaveBeenCalledWith('unit-group-copy', '1.0.0'),
     );
@@ -1123,7 +1123,7 @@ describe('Unitgroups unit components', () => {
 
     await user.click(screen.getByRole('button', { name: /create/i }));
 
-    const drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    const drawer = await screen.findByRole('dialog', { name: /create unit/i });
 
     await act(async () => {
       lastUnitEditFormApi.setFieldValue(['name'], 'Kilogram');
@@ -1144,7 +1144,7 @@ describe('Unitgroups unit components', () => {
       }),
     );
 
-    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /create unit/i })).not.toBeInTheDocument();
   });
 
   it('resets unit creation state when closed and reopened', async () => {
@@ -1155,16 +1155,16 @@ describe('Unitgroups unit components', () => {
 
     await user.click(screen.getByRole('button', { name: /create/i }));
 
-    let drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    let drawer = await screen.findByRole('dialog', { name: /create unit/i });
     await user.type(within(drawer).getByLabelText('Name of unit'), 'Temporary unit');
     await user.type(within(drawer).getByLabelText('Mean value (of unit)'), '99');
 
     await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
-    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /create unit/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /create/i }));
 
-    drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    drawer = await screen.findByRole('dialog', { name: /create unit/i });
     expect((within(drawer).getByLabelText('Name of unit') as HTMLInputElement).value).toBe('');
     expect((within(drawer).getByLabelText('Mean value (of unit)') as HTMLInputElement).value).toBe(
       '',
@@ -1173,13 +1173,13 @@ describe('Unitgroups unit components', () => {
     const headerCloseButton = within(drawer).getByTestId('icon-close').closest('button');
     expect(headerCloseButton).not.toBeNull();
     await user.click(headerCloseButton!);
-    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /create unit/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /create/i }));
-    drawer = await screen.findByRole('dialog', { name: /unit create/i });
+    drawer = await screen.findByRole('dialog', { name: /create unit/i });
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: /unit create/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /create unit/i })).not.toBeInTheDocument();
   });
 
   it('edits an existing unit and reloads', async () => {
@@ -1218,7 +1218,7 @@ describe('Unitgroups unit components', () => {
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
 
-    const drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    const drawer = await screen.findByRole('dialog', { name: /edit unit/i });
 
     const nameInput = within(drawer).getByLabelText('Name of unit');
     await user.clear(nameInput);
@@ -1267,22 +1267,22 @@ describe('Unitgroups unit components', () => {
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
 
-    let drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    let drawer = await screen.findByRole('dialog', { name: /edit unit/i });
     await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
-    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /edit unit/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
-    drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    drawer = await screen.findByRole('dialog', { name: /edit unit/i });
     await user.click(within(drawer).getAllByRole('button')[0]);
-    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /edit unit/i })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
-    drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    drawer = await screen.findByRole('dialog', { name: /edit unit/i });
     await user.click(within(drawer).getByRole('button', { name: 'Close' }));
 
     expect(onData).not.toHaveBeenCalled();
     expect(actionRef.current.reload).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /edit unit/i })).not.toBeInTheDocument();
   });
 
   it('falls back to an empty object when unit-edit form updates resolve to undefined', async () => {
@@ -1336,10 +1336,10 @@ describe('Unitgroups unit components', () => {
     );
 
     await user.click(screen.getByRole('button', { name: /edit/i }));
-    const drawer = await screen.findByRole('dialog', { name: /unit edit/i });
+    const drawer = await screen.findByRole('dialog', { name: /edit unit/i });
     await user.click(within(drawer).getByRole('button', { name: /cancel/i }));
 
-    expect(screen.queryByRole('dialog', { name: /unit edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: /edit unit/i })).not.toBeInTheDocument();
   });
 
   it('auto-opens unit edit, applies sdk highlights, dedupes repeated messages, and scrolls to the field', async () => {
@@ -1392,7 +1392,7 @@ describe('Unitgroups unit components', () => {
       />,
     );
 
-    await screen.findByRole('dialog', { name: /unit edit/i });
+    await screen.findByRole('dialog', { name: /edit unit/i });
     rerender(
       <UnitEdit
         id='0'
@@ -1415,7 +1415,7 @@ describe('Unitgroups unit components', () => {
     await waitFor(() =>
       expect(lastUnitEditFormApi.setFields).toHaveBeenCalledWith([
         {
-          errors: ['Fix the unit name', 'Use a longer unit name'],
+          errors: ['Check and fix this field'],
           name: ['name'],
         },
       ]),
@@ -1474,7 +1474,7 @@ describe('Unitgroups unit components', () => {
       />,
     );
 
-    await screen.findByRole('dialog', { name: /unit edit/i });
+    await screen.findByRole('dialog', { name: /edit unit/i });
 
     lastUnitEditFormApi.setFields([
       {

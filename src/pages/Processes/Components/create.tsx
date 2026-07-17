@@ -227,16 +227,13 @@ const ProcessCreate: FC<CreateProps> = ({
     <>
       <Tooltip
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Create'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+          ) : (
+            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+          )
         }
       >
         {actionType === 'copy' ? (
@@ -262,16 +259,19 @@ const ProcessCreate: FC<CreateProps> = ({
         destroyOnHidden
         getContainer={() => document.body}
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Create process'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.process.drawer.title.copy' defaultMessage='Copy process' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage
+              id='pages.process.drawer.title.createVersion'
+              defaultMessage='Create Version'
+            />
+          ) : (
+            <FormattedMessage
+              id='pages.process.drawer.title.create'
+              defaultMessage='Create process'
+            />
+          )
         }
         width='90%'
         closable={false}
@@ -363,14 +363,14 @@ const ProcessCreate: FC<CreateProps> = ({
 
               if (allocatedFractionTotal.isGreaterThan(100)) {
                 message.error(
-                  intl.formatMessage({
-                    id: 'pages.process.validator.allocatedFraction',
-                    defaultMessage:
-                      'Allocated fraction total of output is greater than 100%. It is',
-                  }) +
-                    ' ' +
-                    allocatedFractionTotal.toString() +
-                    '%.',
+                  intl.formatMessage(
+                    {
+                      id: 'pages.process.validator.allocatedFraction',
+                      defaultMessage:
+                        'The total allocated fraction for outputs cannot exceed 100%. Current total: {total}%.',
+                    },
+                    { total: allocatedFractionTotal.toString() },
+                  ),
                 );
                 setSpinning(false);
                 return;

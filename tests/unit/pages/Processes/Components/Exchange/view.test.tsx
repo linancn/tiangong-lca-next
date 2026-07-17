@@ -230,15 +230,15 @@ describe('ProcessExchangeView', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /view/i }));
 
-    expect(screen.getByRole('dialog', { name: 'View exchange' })).toBeInTheDocument();
-    expect(screen.getByRole('dialog', { name: 'View exchange' })).toHaveAttribute(
+    expect(screen.getByRole('dialog', { name: 'View Exchange' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'View Exchange' })).toHaveAttribute(
       'data-container',
       'true',
     );
     expect(screen.getAllByText('-').length).toBeGreaterThan(0);
 
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[1]);
-    expect(screen.queryByRole('dialog', { name: 'View exchange' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'View Exchange' })).not.toBeInTheDocument();
   });
 
   it('falls back to placeholders for missing uncertainty amounts and renders both collapse icon states', async () => {
@@ -277,7 +277,7 @@ describe('ProcessExchangeView', () => {
     await userEvent.click(screen.getByRole('button', { name: /view/i }));
     await userEvent.click(screen.getAllByRole('button', { name: /close/i })[0]);
 
-    expect(screen.queryByRole('dialog', { name: 'View exchange' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'View Exchange' })).not.toBeInTheDocument();
   });
 
   it('falls back to a placeholder for missing log-normal deviation values', async () => {

@@ -51,7 +51,7 @@
               {
                 "required": true,
                 "messageKey": "pages.process.validator.treatmentStandardsRoutes.required",
-                "defaultMessage": "Please input treatment standards routes"
+                "defaultMessage": "Please enter the treatment, standards, or routes."
               },
               {
                 "max": 500,
@@ -165,7 +165,7 @@
             {
               "required": true,
               "messageKey": "pages.process.validator.quantitativeReference.required",
-              "defaultMessage": "Please input quantitative reference"
+              "defaultMessage": "Please select the quantitative reference type."
             }
           ]
         },
@@ -226,7 +226,7 @@
                 "type": "string",
                 "max": 500,
                 "messageKey": "validator.NullableString.pattern",
-                "defaultMessage": "Length cannot exceed 500 characters characters and may be empty!"
+                "defaultMessage": "Must not exceed 500 characters; this field may be empty."
               }
             ]
           },
@@ -588,7 +588,7 @@
                 {
                   "required": true,
                   "messageKey": "pages.process.validator.referenceToNameOfReviewerAndInstitution.required",
-                  "defaultMessage": "Please input reviewer name and institution"
+                  "defaultMessage": "Please select a reviewer and institution."
                 }
               ]
             },
@@ -779,7 +779,7 @@
             {
               "required": true,
               "messageKey": "pages.process.validator.timeStamp.required",
-              "defaultMessage": "Please input time stamp"
+              "defaultMessage": "Please enter the time stamp."
             }
           ]
         },
@@ -823,7 +823,7 @@
               {
                 "required": true,
                 "messageKey": "pages.process.validator.referenceToPersonOrEntityEnteringTheData.required",
-                "defaultMessage": "Please input reference to Person or Entity Entering The Data"
+                "defaultMessage": "Please select the person or entity entering the data."
               }
             ]
           },

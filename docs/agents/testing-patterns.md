@@ -21,8 +21,9 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - package.json
-lastReviewedAt: 2026-07-13
-lastReviewedCommit: a8fe67fa6e2d95a0b553019ed9195bc1d500471b
+lastReviewedAt: 2026-07-16
+lastReviewedCommit: a9524dbb33b272e1c5526f33a0b8c758e186d170
+lastReviewedNote: 'Added the active German runtime delta pattern and the managed, failure-activated final-push boundary.'
 ---
 
 # Testing Patterns Reference
@@ -85,6 +86,21 @@ Special cases:
 2. keep providers minimal but sufficient
 3. assert the contract the parent relies on
 
+## Localization Pattern
+
+1. prove leaf-file topology and canonical key parity across every supported locale
+2. compare placeholder names, occurrence counts, plural/select selectors, offsets, nesting, and per-branch coverage rather than translated word order
+3. audit production literal message IDs and enumerate the exact members of each computed-ID family
+4. require either a proven closed-world producer or a localized unknown-value fallback at every runtime-open boundary
+5. keep linguistic/domain review evidence outside Jest; tests prove structure and behavior, not natural language quality
+6. default any retained key without runtime evidence to `BLOCKED_CONTEXT`; require a complete non-personal proposal with concrete evidence, UI role, concept, consequence, and current source hash before local confirmation
+7. approve a high-risk pilot before bulk translation, represent producers as canonical non-personal actors, and pin context, candidate, deterministic reviewer dossier, policy sources, pilot scope, and the exact normalized renderer body so any material change invalidates stale evidence
+8. preserve the frozen Issue #601 review boundary: its generated local form covers all 90 messages, 9 pilot context proposals, and 2 blocked terms; reject sparse self-hashed bodies, tracked/non-private paths, and any approval that attempts to hide an invalid context proposal
+9. activate German only through an exact runtime manifest that assembles the frozen 2,665-message baseline with the declared Issue #602 delta; require the separate local delta form to cover all 24 new messages, 2 modified baseline messages, and 2 external-family decisions, and never write completed human-review content into a tracked fixture
+10. keep structural and linguistic evidence distinct: `i18n:audit` proves locale topology/ICU ownership, the frozen Pilot check proves the inherited approval snapshot, and runtime-manifest/delta checks prove only the declared active assembly; human German and LCA/TIDAS judgment stays in ignored local evidence
+11. validate each edit with the narrowest proof that covers its risk; accumulate coherent German runtime work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
+12. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
+
 ## Focused Command Shapes
 
 Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo-validation.md`. Use this file only for focused command shapes that support the test pattern you already chose.
@@ -94,8 +110,12 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
+| active German runtime assembly | `npm run i18n:de:audit` |
+| local Issue #602 delta approval | `npm run i18n:de:delta:review:check` |
+| final managed push | `npm run push:checked -- <normal-git-push-args>` |
+| receipt-bound transport retry | `npm run push:retry` |
 
-- when reproducing both local test lanes, run `npm run test:ci` and `npm run prepush:gate` serially because both regenerate `.umi-test`
+- run Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
 
 ## Skip And TODO Policy
 

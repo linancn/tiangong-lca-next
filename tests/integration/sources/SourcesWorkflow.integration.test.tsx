@@ -554,7 +554,7 @@ describe('Sources workflow', () => {
     );
 
     await waitFor(() =>
-      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Saved Successfully!'),
+      expect(getMockAntdMessage().success).toHaveBeenCalledWith('Data saved successfully.'),
     );
     await waitFor(() => expect(mockGetSourceTableAll).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(screen.getByText('Updated Source')).toBeInTheDocument());

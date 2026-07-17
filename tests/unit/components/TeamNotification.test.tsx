@@ -17,8 +17,22 @@ let mockLocale = 'en';
 
 jest.mock('umi', () => ({
   useIntl: () => ({
-    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
-      defaultMessage || id,
+    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => {
+      if (id === 'teams.notifications.unknownTeam') {
+        return (
+          (
+            {
+              en: 'Unknown Team',
+              'zh-CN': '未知团队',
+              'de-DE': 'Unbekanntes Team',
+            } as Record<string, string>
+          )[mockLocale] ??
+          defaultMessage ??
+          id
+        );
+      }
+      return defaultMessage || id;
+    },
     locale: mockLocale,
   }),
 }));
@@ -137,7 +151,7 @@ describe('TeamNotification Component', () => {
     });
   });
 
-  it('falls back to the first title or Unknown Team when localized titles are missing', async () => {
+  it('falls back to the first title or the locale-owned placeholder', async () => {
     mockLocale = 'zh-CN';
     mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
       success: true,
@@ -172,7 +186,8 @@ describe('TeamNotification Component', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+      expect(screen.getByText('未知团队')).toBeInTheDocument();
+      expect(screen.queryByText('Unknown Team')).not.toBeInTheDocument();
     });
   });
 
@@ -254,6 +269,47 @@ describe('TeamNotification Component', () => {
     });
   });
 
+  it('uses the de-DE message for empty arrays and blank team titles', async () => {
+    mockLocale = 'de-DE';
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: [],
+      },
+    });
+
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unbekanntes Team')).toBeInTheDocument();
+      expect(screen.queryByText('Unknown Team')).not.toBeInTheDocument();
+    });
+
+    mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
+      success: true,
+      data: {
+        ...mockInvitationData.data,
+        teamTitle: '   ',
+      },
+    });
+
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} timeFilter={13} />
+      </ConfigProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Unbekanntes Team')).toBeInTheDocument();
+      expect(screen.queryByText('Unknown Team')).not.toBeInTheDocument();
+    });
+  });
+
   it('handles accept and reject actions', async () => {
     render(
       <ConfigProvider>
@@ -303,7 +359,7 @@ describe('TeamNotification Component', () => {
     });
   });
 
-  it('uses english array fallbacks for team titles and falls back to the empty status tag', async () => {
+  it('uses english array fallbacks for team titles and falls back to the no-information status tag', async () => {
     mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
       success: true,
       data: {
@@ -322,7 +378,7 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Fallback Array Team')).toBeInTheDocument();
-      expect(screen.getByText('Empty')).toBeInTheDocument();
+      expect(screen.getByText('No information')).toBeInTheDocument();
     });
 
     mockGetTeamInvitationStatusApi.mockResolvedValueOnce({
@@ -448,7 +504,7 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Direct Team Title')).toBeInTheDocument();
-      expect(screen.getByText('Empty')).toBeInTheDocument();
+      expect(screen.getByText('No information')).toBeInTheDocument();
     });
     expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument();
   });

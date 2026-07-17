@@ -390,7 +390,7 @@ describe('FlowpropertySelectDrawer', () => {
       screen.getByRole('button', { name: 'select-invalid-version flowproperty-tg' }),
     );
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: 'Selete Flow property' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Select Flow property' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'select-version flowproperty-tg' }));
 
@@ -405,7 +405,7 @@ describe('FlowpropertySelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button'));
 
-    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    await screen.findByRole('dialog', { name: 'Select Flow property' });
 
     await userEvent.type(screen.getByLabelText('tg'), 'beta');
     await userEvent.click(screen.getByRole('button', { name: 'search-tg' }));
@@ -435,7 +435,7 @@ describe('FlowpropertySelectDrawer', () => {
     );
     expect(screen.queryByText('edit flowproperty-co:1.0.0')).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button', { name: /TE Data/i }));
+    await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
     await userEvent.type(screen.getByLabelText('te'), 'delta');
     await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
 
@@ -451,14 +451,14 @@ describe('FlowpropertySelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'te:delta' }));
     await userEvent.click(screen.getByRole('button', { name: 'close' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow property' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    await screen.findByRole('dialog', { name: 'Select Flow property' });
     await userEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow property' })).not.toBeInTheDocument();
   });
 
   it('switches back to tg data, exposes getContainer, and closes through extra close and footer cancel', async () => {
@@ -468,7 +468,7 @@ describe('FlowpropertySelectDrawer', () => {
 
     await userEvent.click(screen.getByRole('button'));
 
-    const drawer = await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    const drawer = await screen.findByRole('dialog', { name: 'Select Flow property' });
     expect(drawer).toHaveAttribute('data-container', 'body');
 
     await userEvent.click(screen.getByRole('button', { name: /My Data/i }));
@@ -495,13 +495,13 @@ describe('FlowpropertySelectDrawer', () => {
     );
 
     await userEvent.click(screen.getByRole('button', { name: 'close-icon' }));
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow property' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button'));
-    await screen.findByRole('dialog', { name: 'Selete Flow property' });
+    await screen.findByRole('dialog', { name: 'Select Flow property' });
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
     expect(onData).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog', { name: 'Selete Flow property' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Select Flow property' })).not.toBeInTheDocument();
   });
 });

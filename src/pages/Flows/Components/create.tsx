@@ -249,16 +249,13 @@ const FlowsCreate: FC<CreateProps> = ({
     <>
       <Tooltip
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Create'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.button.copy' defaultMessage='Copy' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage id='pages.button.createVersion' defaultMessage='Create Version' />
+          ) : (
+            <FormattedMessage id='pages.button.create' defaultMessage='Create' />
+          )
         }
       >
         {actionType === 'copy' ? (
@@ -284,16 +281,16 @@ const FlowsCreate: FC<CreateProps> = ({
         destroyOnHidden
         getContainer={() => document.body}
         title={
-          <FormattedMessage
-            id={
-              actionType === 'copy'
-                ? 'pages.button.copy'
-                : actionType === 'createVersion'
-                  ? 'pages.button.createVersion'
-                  : 'pages.button.create'
-            }
-            defaultMessage='Flows Create'
-          />
+          actionType === 'copy' ? (
+            <FormattedMessage id='pages.flow.drawer.title.copy' defaultMessage='Copy Flow' />
+          ) : actionType === 'createVersion' ? (
+            <FormattedMessage
+              id='pages.flow.drawer.title.createVersion'
+              defaultMessage='Create Version'
+            />
+          ) : (
+            <FormattedMessage id='pages.flow.drawer.title.create' defaultMessage='Create Flow' />
+          )
         }
         width='90%'
         closable={false}

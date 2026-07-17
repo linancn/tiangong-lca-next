@@ -9,5 +9,5 @@ export default {
   'component.importData.import': '导入',
   'component.importData.cancel': '取消',
   'component.importData.uploadText': '点击或拖拽文件到此区域上传',
-  'component.importData.uploadHint': '只支持上传单个JSON文件',
+  'component.importData.uploadHint': '每次只能上传一个 JSON 文件。',
 };

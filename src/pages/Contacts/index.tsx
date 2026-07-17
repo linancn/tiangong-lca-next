@@ -151,7 +151,7 @@ const TableList: FC = () => {
                       message.success(
                         intl.formatMessage({
                           id: 'component.contributeData.success',
-                          defaultMessage: 'Contribute successfully',
+                          defaultMessage: 'Data contributed to the team successfully.',
                         }),
                       );
                       listActionRef.current?.reload();
@@ -304,7 +304,7 @@ const TableList: FC = () => {
       ...dataListActionColumn<ContactTable>(
         isMobileDataList ? 72 : dataSource === 'my' ? 184 : 152,
       ),
-      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Option' />,
+      title: <FormattedMessage id='pages.table.title.option' defaultMessage='Actions' />,
       dataIndex: 'option',
       render: (_, row) => renderContactActions(row),
     },

@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
+import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
 import { flushSync } from 'react-dom';
@@ -38,18 +39,6 @@ const LoginMessage: React.FC<{
 );
 
 const { Link: TypographyLink } = Typography;
-
-const termsOfServiceLink = (
-  <TypographyLink href='/terms_of_use.html' target='_blank' rel='noopener noreferrer'>
-    <FormattedMessage id='pages.login.termsOfUse' defaultMessage='Terms of Use' />
-  </TypographyLink>
-);
-
-const privacyPolicyLink = (
-  <TypographyLink href='/privacy_notice.html' target='_blank' rel='noopener noreferrer'>
-    <FormattedMessage id='pages.login.privacyNotice' defaultMessage='Privacy Notice' />
-  </TypographyLink>
-);
 
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
@@ -89,7 +78,7 @@ const Login: React.FC = () => {
           const defaultSignUpSuccessMessage = intl.formatMessage({
             id: 'pages.login.signUp.success',
             defaultMessage:
-              'The email has been sent successfully. Please check your inbox and follow the link to complete the process.',
+              'Validation email has been sent successfully. Please check your inbox and follow the link to complete the process.',
           });
           messageApi.open({
             type: 'success',
@@ -102,7 +91,7 @@ const Login: React.FC = () => {
           setSendComplete(true);
           const defaultSignUpExistedMessage = intl.formatMessage({
             id: 'pages.login.signUp.existed',
-            defaultMessage: 'This email has already been registered. Try Login or Forgot Password?',
+            defaultMessage: 'This email is already registered. Try Login, or Forgot Password?',
           });
           messageApi.open({
             type: 'error',
@@ -172,6 +161,41 @@ const Login: React.FC = () => {
   const loginSubtitle =
     getLocalizedLoginSubtitle(intl.locale) ??
     intl.formatMessage({ id: 'pages.login.subTitle', defaultMessage: defaultLoginSubtitle });
+  const usesEnglishLegalFallback = normalizeRuntimeLocale(intl.locale) === 'de-DE';
+  const termsOfServiceLabel = intl.formatMessage({
+    id: usesEnglishLegalFallback
+      ? 'pages.login.termsOfUse.englishFallbackLabel'
+      : 'pages.login.termsOfUse',
+    defaultMessage: usesEnglishLegalFallback ? 'Terms of Use (English)' : 'Terms of Use',
+  });
+  const privacyPolicyLabel = intl.formatMessage({
+    id: usesEnglishLegalFallback
+      ? 'pages.login.privacyNotice.englishFallbackLabel'
+      : 'pages.login.privacyNotice',
+    defaultMessage: usesEnglishLegalFallback ? 'Privacy Notice (English)' : 'Privacy Notice',
+  });
+  const termsOfServiceLink = (
+    <TypographyLink
+      href='/terms_of_use.html'
+      hrefLang='en'
+      target='_blank'
+      rel='noopener noreferrer'
+      title={usesEnglishLegalFallback ? termsOfServiceLabel : undefined}
+    >
+      {termsOfServiceLabel}
+    </TypographyLink>
+  );
+  const privacyPolicyLink = (
+    <TypographyLink
+      href='/privacy_notice.html'
+      hrefLang='en'
+      target='_blank'
+      rel='noopener noreferrer'
+      title={usesEnglishLegalFallback ? privacyPolicyLabel : undefined}
+    >
+      {privacyPolicyLabel}
+    </TypographyLink>
+  );
 
   return (
     <App>
@@ -197,7 +221,7 @@ const Login: React.FC = () => {
               <title>
                 {intl.formatMessage({
                   id: 'menu.login',
-                  defaultMessage: 'Login Page',
+                  defaultMessage: 'Login',
                 })}
                 - {appTitle}
               </title>
@@ -245,7 +269,7 @@ const Login: React.FC = () => {
                       key: 'register',
                       label: intl.formatMessage({
                         id: 'pages.login.register.tab',
-                        defaultMessage: 'Register',
+                        defaultMessage: 'Sign Up',
                       }),
                     },
                   ]}
@@ -340,7 +364,7 @@ const Login: React.FC = () => {
                       >
                         <FormattedMessage
                           id='pages.login.forgotPassword'
-                          defaultMessage='Forgot password'
+                          defaultMessage='Forgot password?'
                         />
                       </Link>
                     </div>
@@ -506,7 +530,7 @@ const Login: React.FC = () => {
                     >
                       <FormattedMessage
                         id='pages.login.terms'
-                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}.'
+                        defaultMessage='By signing up, you agree to our {termsOfService} and {privacyPolicy}'
                         values={{
                           termsOfService: termsOfServiceLink,
                           privacyPolicy: privacyPolicyLink,
