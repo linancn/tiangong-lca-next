@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-17'
-lastReviewedCommit: '1739b195a1d6c6039c2229643174fa411e3c6522'
-lastReviewedNote: 'Reviewed Issue #621 shared selector/header action restoration and the v0.0.49 release-only version bump; routing, ownership, testing, and gate rules remain unchanged.'
+lastReviewedCommit: '2a523ea50a3aa38733e78c2294114bbd8058f68d'
+lastReviewedNote: 'Registered the reusable i18n language delivery Goal and its native Umi flag-selector contract; existing ownership, testing, and release rules remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -72,6 +72,7 @@ coverage:
     - .docpact/**
     - docs/agents/repo-validation.md
     - docs/agents/repo-architecture.md
+    - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
     - docs/agents/test_todo_list.md
     - docs/agents/testing-patterns.md
@@ -130,6 +131,7 @@ routing:
         - src/pages/**
         - src/components/**
         - src/locales/**
+        - docs/agents/i18n-language-delivery-goal.md
         - docs/plans/i18n-de-DE/**
     service-env:
       paths:
@@ -165,6 +167,7 @@ routing:
         - .docpact/**
         - docs/agents/repo-validation.md
         - docs/agents/repo-architecture.md
+        - docs/agents/i18n-language-delivery-goal.md
         - docs/agents/supabase-branching.md
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
@@ -193,6 +196,7 @@ routing:
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - tests/**
+        - docs/agents/i18n-language-delivery-goal.md
         - docs/plans/i18n-de-DE/**
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
@@ -254,6 +258,7 @@ docInventory:
     - .docpact/config.yaml
     - docs/agents/repo-validation.md
     - docs/agents/repo-architecture.md
+    - docs/agents/i18n-language-delivery-goal.md
     - docs/agents/supabase-branching.md
     - docs/agents/test_todo_list.md
     - docs/agents/testing-patterns.md
@@ -330,6 +335,24 @@ rules:
       - path: .github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md
         mode: review_or_update
     reason: Repo handoff templates should stay aligned with the repo contract and the validation note shape.
+  - id: next-i18n-language-delivery-goal-contract
+    scope: repo
+    repo: next
+    triggers:
+      - path: docs/agents/i18n-language-delivery-goal.md
+        kind: goal-template
+      - path: src/components/RightContent/index.tsx
+        kind: locale-selector
+      - path: src/pages/User/Login/Components/LoginTopActions.tsx
+        kind: locale-selector
+      - path: src/services/general/runtimeLocale.ts
+        kind: locale-runtime
+      - path: scripts/i18n/**
+        kind: locale-governance
+    requiredDocs:
+      - path: docs/agents/i18n-language-delivery-goal.md
+        mode: review_or_update
+    reason: Shared locale selector, runtime, and audit changes must keep the reusable single-language delivery Goal aligned with shipped behavior.
   - id: next-frontend-runtime-contract
     scope: repo
     repo: next

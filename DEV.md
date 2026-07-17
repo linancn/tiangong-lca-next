@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-17
-lastReviewedCommit: 1739b195a1d6c6039c2229643174fa411e3c6522
-lastReviewedNote: 'Reviewed Issue #621 focused UI proof and the v0.0.49 managed release checkpoint; bootstrap commands and gate ownership are unchanged.'
+lastReviewedCommit: 2a523ea50a3aa38733e78c2294114bbd8058f68d
+lastReviewedNote: 'Reviewed the reusable i18n language delivery Goal registration and native Umi flag-selector contract; bootstrap commands and gate ownership are unchanged.'
 ---
 
 # Development Bootstrap
