@@ -57,18 +57,9 @@ export const Question = () => {
   return (
     <button
       type='button'
+      className='tg-global-header-help-action'
       aria-label={helpLabel}
       title={helpLabel}
-      style={{
-        display: 'flex',
-        height: 26,
-        alignItems: 'center',
-        padding: 0,
-        color: 'inherit',
-        background: 'transparent',
-        border: 0,
-        cursor: 'pointer',
-      }}
       onClick={() => {
         window.open(docsUrl);
       }}

@@ -133,6 +133,8 @@ describe('RightContent Components', () => {
 
     const button = screen.getByRole('button', { name: 'Help' });
 
+    expect(button).toHaveClass('tg-global-header-help-action');
+    expect(button).not.toHaveAttribute('style');
     fireEvent.click(button);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
