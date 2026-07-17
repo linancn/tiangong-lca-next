@@ -97,6 +97,12 @@ jest.mock('antd', () => {
 
   return {
     ConfigProvider,
+    Tooltip: ({ children, title }: { children: ReactNode; title: ReactNode }) => (
+      <>
+        {children}
+        <span role='tooltip'>{title}</span>
+      </>
+    ),
     theme,
   };
 });
@@ -135,6 +141,8 @@ describe('RightContent Components', () => {
 
     expect(button).toHaveClass('tg-global-header-help-action');
     expect(button).not.toHaveAttribute('style');
+    expect(button).not.toHaveAttribute('title');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Help');
     fireEvent.click(button);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth');
@@ -168,7 +176,8 @@ describe('RightContent Components', () => {
     const helpButton = screen.getByRole('button', {
       name: 'Englische Hilfedokumentation öffnen',
     });
-    expect(helpButton).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    expect(helpButton).not.toHaveAttribute('title');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Englische Hilfedokumentation öffnen');
     fireEvent.click(helpButton);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');

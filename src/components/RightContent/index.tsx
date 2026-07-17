@@ -5,7 +5,7 @@ import {
 } from '@/services/general/runtimeLocale';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider, theme, Tooltip } from 'antd';
 import type React from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
@@ -55,17 +55,18 @@ export const Question = () => {
   });
 
   return (
-    <button
-      type='button'
-      className='tg-global-header-help-action'
-      aria-label={helpLabel}
-      title={helpLabel}
-      onClick={() => {
-        window.open(docsUrl);
-      }}
-    >
-      <QuestionCircleOutlined />
-    </button>
+    <Tooltip title={helpLabel}>
+      <button
+        type='button'
+        className='tg-global-header-help-action'
+        aria-label={helpLabel}
+        onClick={() => {
+          window.open(docsUrl);
+        }}
+      >
+        <QuestionCircleOutlined />
+      </button>
+    </Tooltip>
   );
 };
 
