@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "tiangong.i18n-glossary.v1",
+  "locale": "en-US",
+  "purpose": "Canonical product-copy terminology input for the registry-complete locale delivery gate.",
+  "terms": [
+    { "concept": "life cycle assessment", "preferred": ["life cycle assessment", "LCA"] },
+    { "concept": "process", "preferred": ["process"] },
+    { "concept": "flow", "preferred": ["flow"] },
+    { "concept": "flow property", "preferred": ["flow property"] },
+    { "concept": "unit group", "preferred": ["unit group"] },
+    { "concept": "dataset", "preferred": ["dataset"] },
+    { "concept": "TIDAS", "preferred": ["TIDAS"] }
+  ]
+}

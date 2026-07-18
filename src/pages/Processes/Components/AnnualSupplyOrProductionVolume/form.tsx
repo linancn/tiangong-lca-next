@@ -1,5 +1,5 @@
-import { langOptions } from '@/services/general/data';
-import { getLangText, getUnitData } from '@/services/general/util';
+import { normalizeSupportedContentLanguage } from '@/services/general/contentLanguageRegistry';
+import { getExactLangText, getUnitData } from '@/services/general/util';
 import {
   ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN,
   ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN,
@@ -7,6 +7,7 @@ import {
   buildAnnualSupplyVolumeUnitLookupRows,
   deriveAnnualSupplyVolumeSuffix,
   getAnnualSupplyVolumeDisplayNumericText,
+  getAnnualSupplyVolumeLanguages,
   mergeAnnualSupplyVolumeUnitRows,
 } from '@/services/processes/annualSupplyOrProductionVolume';
 import type { ProcessExchangeData } from '@/services/processes/data';
@@ -27,8 +28,6 @@ type Props = {
   rules?: any[];
   setRuleErrorState?: (showError: boolean) => void;
 };
-
-const annualSupplyVolumeLangs = langOptions.map((option) => option.value);
 
 const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
   exchangeDataSource,
@@ -51,20 +50,29 @@ const AnnualSupplyOrProductionVolumeForm: FC<Props> = ({
     : formValues !== undefined && formValues !== null;
   const isRequired = rules?.some((rule) => rule.required);
   const requiredRule = rules?.find((rule) => rule.required);
+  const annualSupplyVolumeLangs = useMemo(
+    () => getAnnualSupplyVolumeLanguages(formValues, lang),
+    [formValues, lang],
+  );
 
   const suffixByLang = useMemo(() => {
-    return langOptions.reduce<Record<string, string>>((accumulator, option) => {
-      accumulator[option.value] = deriveAnnualSupplyVolumeSuffix({
+    return annualSupplyVolumeLangs.reduce<Record<string, string>>((accumulator, language) => {
+      accumulator[language] = deriveAnnualSupplyVolumeSuffix({
         exchangeDataSource: exchangeDataSourceWithUnits,
-        getLangText,
-        lang: option.value,
+        getLangText: getExactLangText,
+        lang: language,
       });
       return accumulator;
     }, {});
-  }, [exchangeDataSourceWithUnits]);
+  }, [annualSupplyVolumeLangs, exchangeDataSourceWithUnits]);
 
   const getSuffixForLang = useCallback(
-    (value: string) => suffixByLang[value] ?? suffixByLang.en,
+    (value: string) => {
+      const language =
+        normalizeSupportedContentLanguage(value) ??
+        value.trim().toLowerCase().replace('_', '-').split('-')[0];
+      return suffixByLang[language] ?? '';
+    },
     [suffixByLang],
   );
   const currentSuffix = getSuffixForLang(lang);

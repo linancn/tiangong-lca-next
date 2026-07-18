@@ -64,15 +64,16 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   classificationToString: (...args: any[]) => mockClassificationToString(...args),
   genClassificationZH: (...args: any[]) => mockGenClassificationZH(...args),
+  genLocalizedClassification: (...args: any[]) => mockGenClassificationZH(...args),
   getLangText: (...args: any[]) => mockGetLangText(...args),
   jsonToList: (...args: any[]) => mockJsonToList(...args),
 }));
 
-const mockGetILCDClassification = jest.fn();
+const mockGetCachedClassificationData = jest.fn();
 
-jest.mock('@/services/classifications/api', () => ({
+jest.mock('@/services/classifications/cache', () => ({
   __esModule: true,
-  getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
+  getCachedClassificationData: (...args: any[]) => mockGetCachedClassificationData(...args),
 }));
 
 const mockGetProcessDetailByIdsAndVersion = jest.fn();
@@ -279,7 +280,7 @@ beforeEach(() => {
   mockGenClassificationZH.mockReset();
   mockGetLangText.mockReset();
   mockJsonToList.mockReset();
-  mockGetILCDClassification.mockReset();
+  mockGetCachedClassificationData.mockReset();
   mockGetProcessDetailByIdsAndVersion.mockReset();
   mockGenProcessName.mockReset();
   mockGenProcessJsonOrdered.mockReset();
@@ -315,7 +316,9 @@ beforeEach(() => {
   mockJsonToList.mockImplementation((value: any) =>
     Array.isArray(value) ? value : value ? [value] : [],
   );
-  mockGetILCDClassification.mockResolvedValue({ data: { dictionary: true } });
+  mockGetCachedClassificationData.mockResolvedValue([
+    { id: 'classification-root', value: 'Classification', label: 'Classification', children: [] },
+  ]);
   mockGetProcessDetailByIdsAndVersion.mockResolvedValue({ data: [] });
   mockGenProcessName.mockReturnValue('Life Cycle Model Name');
   mockGenProcessJsonOrdered.mockImplementation((_id: string, data: any) => ({
@@ -2180,6 +2183,98 @@ describe('table/search helpers', () => {
     });
   });
 
+  it('preserves language-neutral sorting and maps missing cache and version fallbacks', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          total_count: 1,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'systems',
+      {},
+      undefined,
+      { key: 'baseName', order: 'desc' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_lifecyclemodels_latest',
+      expect.objectContaining({
+        order_by: { key: 'baseName', order: 'desc' },
+      }),
+    );
+    expect(mockGenClassificationZH).toHaveBeenCalledWith([], []);
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        version: '',
+      }),
+    ]);
+  });
+
+  it.each(['de', 'fr'] as const)(
+    'loads %s lifecycle-model classifications and resolves RPC sort language',
+    async (lang) => {
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: sampleModelId,
+            version: sampleVersion,
+            total_count: 1,
+            json: {
+              lifeCycleModelDataSet: {
+                lifeCycleModelInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '#text': 'Systems' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+
+      await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        lang,
+        'tg',
+        'systems',
+        {},
+        undefined,
+        { key: 'baseName', lang, order: 'asc' },
+      );
+
+      expect(mockGetCachedClassificationData).toHaveBeenCalledWith('LifeCycleModel', lang, ['all']);
+      expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_lifecyclemodels_latest',
+        expect.objectContaining({
+          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
+        }),
+      );
+    },
+  );
+
   it('uses default pagination values in the numeric state-code pgroonga RPC branch', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [],
@@ -2646,7 +2741,7 @@ describe('table/search helpers', () => {
         'd1380000-0000-4000-8000-000000000001',
       );
 
-      expect(mockGetILCDClassification).toHaveBeenCalledWith('LifeCycleModel', 'zh', ['all']);
+      expect(mockGetCachedClassificationData).toHaveBeenCalledWith('LifeCycleModel', 'zh', ['all']);
       expect(result.data[0]).toEqual({
         key: 'model-zh',
         id: 'model-zh',

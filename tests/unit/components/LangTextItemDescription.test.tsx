@@ -42,6 +42,7 @@ describe('LangTextItemDescription', () => {
     mockGetLangList.mockReturnValue([
       { '@xml:lang': 'en', '#text': 'Hello in English' },
       { '@xml:lang': 'zh', '#text': '你好' },
+      { '@xml:lang': 'de', '#text': 'Hallo' },
       { '@xml:lang': 'fr', '#text': 'Bonjour' },
       { '@xml:lang': 'ja' },
     ]);
@@ -53,9 +54,11 @@ describe('LangTextItemDescription', () => {
     expect(screen.getByText('Hello in English')).toBeInTheDocument();
     expect(screen.getByText('简体中文')).toBeInTheDocument();
     expect(screen.getByText('你好')).toBeInTheDocument();
-    // Non-mapped languages fall back to '-'
+    expect(screen.getByText('Deutsch')).toBeInTheDocument();
+    expect(screen.getByText('Hallo')).toBeInTheDocument();
+    expect(screen.getByText('Français')).toBeInTheDocument();
     expect(screen.getByText('Bonjour')).toBeInTheDocument();
-    expect(screen.getAllByText('-').length).toBeGreaterThan(1);
-    expect(screen.getAllByText('-').length).toBeGreaterThan(0);
+    expect(screen.getByText('Japanese')).toBeInTheDocument();
+    expect(screen.getByText('-')).toBeInTheDocument();
   });
 });

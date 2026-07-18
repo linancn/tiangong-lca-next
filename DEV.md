@@ -21,8 +21,8 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 1122df8d34b76115d56ba3320532f660d37e70b7
-lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; the documented bootstrap commands and safe work loop remain current.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633 and added the registry/Manifest, hardcoding, and all-active-locale checks to the canonical localization command surface.'
 ---
 
 # Development Bootstrap
@@ -87,11 +87,15 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
 | deterministic locale audit | `npm run i18n:audit` |
+| language registry/Manifest contract audit | `npm run i18n:platform:audit` |
+| business-language hardcoding audit | `npm run i18n:hardcoding:audit` |
 | audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
-| build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
+| execute deterministic structural validation and build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
 | check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | check tracked existing-translation corrections | `npm run i18n:corrections:check` |
 | check one locale's activation boundary | `npm run i18n:locale:activation:check -- --locale <canonical-locale>` |
+| check every active locale's activation boundary | `npm run i18n:locale:all:check` |
+| require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |

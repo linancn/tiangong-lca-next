@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-18"
-lastReviewedCommit: "1122df8d34b76115d56ba3320532f660d37e70b7"
-lastReviewedNote: 'Expanded the language-delivery Goal routing contract to cover content-language components, classification/location services and assets, cache manifests, all-active-locale validation, and anti-hardcoding work.'
+lastReviewedCommit: "16747439cd5e224194fe3e04b5fce3f9c0f502dc"
+lastReviewedNote: 'Reviewed for Issue #633 and added the implemented content-language registry, derived capability matrix, reference-resource owner, and fallback-contract routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -358,6 +358,10 @@ rules:
         kind: locale-runtime
       - path: src/services/general/localeRegistry.ts
         kind: locale-capability-registry
+      - path: src/services/general/contentLanguageRegistry.ts
+        kind: content-language-registry
+      - path: src/services/general/localeCapabilities.ts
+        kind: derived-locale-capability-matrix
       - path: src/services/general/data.ts
         kind: content-language-options
       - path: src/services/general/util.ts
@@ -368,6 +372,8 @@ rules:
         kind: localized-reference-resource
       - path: src/services/locations/**
         kind: localized-reference-resource
+      - path: src/services/referenceResources/**
+        kind: reference-resource-manifest-and-resolver
       - path: src/components/ClassificationCacheMonitor/**
         kind: localized-reference-cache
       - path: src/components/LocationCacheMonitor/**
@@ -378,6 +384,8 @@ rules:
         kind: localized-reference-asset
       - path: scripts/i18n/**
         kind: locale-governance
+      - path: docs/plans/i18n/fallback-contract.json
+        kind: locale-fallback-contract
     requiredDocs:
       - path: docs/agents/i18n-language-delivery-goal.md
         mode: review_or_update

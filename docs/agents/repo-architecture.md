@@ -22,8 +22,8 @@ checkPaths:
   - public/**
   - docker/**
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed for Issue #630 against v0.0.50: anonymous SPA access is limited to the login/recovery flow, while configured and unmatched product routes fail closed behind the session guard.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Updated for Issue #633: UI locale, content language, service-query language, and reference-resource availability now have separate typed owners and derived capability gates.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -67,13 +67,14 @@ Rules:
 - service modules own app-side data access
 - UI copy changes must update every supported locale and the deterministic canonical-message audit; one message key owns one concept and one UI role
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
-- active app locales are registered once in `src/services/general/localeRegistry.ts`; the current canonical keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`. Language, region, underscore, and POSIX-style inputs normalize to one canonical product locale, while Umi, Ant Design, Pro Components, Day.js, Intl, and report-schema names remain boundary adapters rather than additional product locales
-- app locale and TIDAS dataset language are separate boundaries: German UI continues to request English dataset text (`en`) and must not add a `de` schema/data-language value; German help, legal, and public-doc surfaces without German content visibly route to their English fallback
+- language behavior is split across typed owners: `localeRegistry.ts` owns UI locale/adapters, `contentLanguageRegistry.ts` owns TIDAS/ILCD reading and authoring plus service-query resolution, `referenceResources/manifest.ts` owns classification/location availability and provenance, and `localeCapabilities.ts` is the derived joined view. The current canonical UI keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`; consumers and tests discover them from the registries instead of repeating that snapshot
+- app locale, content language, service-query language, and reference-resource language are separate boundaries. German and French content can be authored and read as `de`/`fr` with an explicit English read fallback when the requested value is absent; backend search currently declares a diagnostic `en` query fallback; classification/location resources declare their own status and may use only a manifest-owned development base until Issue #634 supplies verified target-language assets. Documentation, legal, and public-doc surfaces keep their separately disclosed English fallbacks
 - anonymous SPA access is limited to the explicit login/recovery allowlist. Root/Welcome, every other configured application route, case variants, and unmatched paths require the session guard and redirect anonymous users to the canonical login route; authenticated unmatched paths may render the localized 404. Role gates defer missing-session decisions to that global redirect, then enforce their role only after a user exists, so they cannot replace login with an anonymous 403. Localization route/view coverage records this access context but must never broaden it. Authenticated redirects that drive localized query/hash views must preserve their URL state
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - cache monitors live near runtime setup, not inside feature pages
+- language options, labels, resolver priorities, service-query adapters, static resource files, and cache revisions are derived from their owning registry or manifest. `npm run i18n:platform:audit` verifies exact registry joins and `npm run i18n:hardcoding:audit` fails closed on unowned language literals outside a narrow, issue-owned adapter allowlist
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
 

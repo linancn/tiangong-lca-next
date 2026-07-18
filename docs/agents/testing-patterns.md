@@ -22,8 +22,8 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed Issue #625 async and locale fallback coverage: focused tests settle rejected requests, resolve deferred work after unmount, and exercise unsupported locale labels.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633 and extended the localization pattern to cover independent content/service/reference capabilities plus fail-closed language hardcoding.'
 ---
 
 # Testing Patterns Reference
@@ -100,6 +100,7 @@ Special cases:
 10. validate each edit with the narrowest proof that covers its risk; accumulate coherent locale work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
+13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding
 
 Gate-bootstrap pattern:
 
@@ -117,6 +118,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
+| language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
+| all-active-locale activation | `npm run i18n:locale:all:check` |
 | existing-translation correction overlay | `npm run i18n:corrections:check` |
 | historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |

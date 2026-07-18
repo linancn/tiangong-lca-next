@@ -24,8 +24,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the second Issue #625 hook-owned coverage block and exact async fallback closure; failed gates still block transport and a changed HEAD must run a new checked push.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633: the new focused language-platform commands are covered by the existing hook-owned lint/test/coverage gate and do not change push or retry policy.'
 ---
 
 # Pre-Push Gate Policy

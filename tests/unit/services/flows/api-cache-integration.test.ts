@@ -49,6 +49,7 @@ jest.mock('@/services/flows/util', () => ({
 jest.mock('@/services/general/util', () => ({
   classificationToString: jest.fn(),
   genClassificationZH: jest.fn(),
+  genLocalizedClassification: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
 }));
@@ -61,7 +62,7 @@ jest.mock('@/services/general/api', () => ({
 const { genFlowName: mockGenFlowName } = jest.requireMock('@/services/flows/util');
 const {
   classificationToString: mockClassificationToString,
-  genClassificationZH: mockGenClassificationZH,
+  genLocalizedClassification: mockGenClassificationZH,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
 } = jest.requireMock('@/services/general/util');
@@ -230,7 +231,7 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
       });
     });
 
-    it('should use cached location data only for English (no categorization)', async () => {
+    it('should use cached location and categorization data for English', async () => {
       // Arrange
       const mockFlowData = [
         {
@@ -268,9 +269,9 @@ describe('Flows API Cache Integration (commit cbe029ea)', () => {
         'team-1',
       );
 
-      // Assert - Location cache called for English (categorization returns null for 'en')
+      // Assert - Both caches are requested through the same language-driven path.
       expect(mockGetCachedLocationData).toHaveBeenCalledWith('en', ['US']);
-      // For English, categorizationData returns null, so it's not used in the data transformation
+      expect(mockGetCachedFlowCategorizationAll).toHaveBeenCalledWith('en');
 
       // Assert - Data includes translated location
       expect(result.data[0].locationOfSupply).toBe('United States');

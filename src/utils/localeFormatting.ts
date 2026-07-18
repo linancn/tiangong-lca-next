@@ -1,10 +1,9 @@
 import {
+  CANONICAL_SOURCE_APP_LOCALE,
   getLocaleDefinition,
   normalizeSupportedAppLocale,
   type LocaleRegistryEntry,
 } from '@/services/general/localeRegistry';
-
-const DEFAULT_FORMATTING_LOCALE = 'en-US';
 
 type ListFormatter = { format: (items: readonly string[]) => string };
 type ListFormatterConstructor = new (
@@ -16,7 +15,7 @@ const nonEmptyStrings = (items: readonly string[]) =>
   items.map((item) => item.trim()).filter((item) => item.length > 0);
 
 const getFormattingDefinition = (locale?: string): LocaleRegistryEntry => {
-  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? DEFAULT_FORMATTING_LOCALE;
+  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? CANONICAL_SOURCE_APP_LOCALE;
   return getLocaleDefinition(normalizedLocale);
 };
 
@@ -94,6 +93,6 @@ export const formatLocaleDateTime = (value: string, locale?: string): string => 
       timeStyle: 'medium',
     }).format(timestamp);
   } catch {
-    return new Date(timestamp).toLocaleString(DEFAULT_FORMATTING_LOCALE);
+    return new Date(timestamp).toLocaleString(CANONICAL_SOURCE_APP_LOCALE);
   }
 };

@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the Issue #625 second hook result and its focused 45-test async/runtime closure; the checked-in reference baseline remains intentionally separate from per-PR evidence.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633: focused language-platform coverage is part of this delivery, while the checked-in full-gate reference baseline remains intentionally separate from per-PR evidence.'
 ---
 
 # Testing Execution State
@@ -47,7 +47,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
-- active locale proof uses `i18n:audit`, registry-driven context/quality, `i18n:corrections:check`, and activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
+- active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
 - clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - the production Release Gate delegates the complete test inventory to one `prepush:gate` step: the nested-process receipt suite runs once without coverage in its own Jest process, while every remaining suite runs once through a single-worker coordinator that recycles workers above `64MB` and retains unchanged 100% `src/**` coverage; no earlier standalone `test:ci` is allowed

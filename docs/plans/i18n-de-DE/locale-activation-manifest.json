@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "tiangong.i18n-locale-activation.v1",
+  "schemaVersion": "tiangong.i18n-locale-activation.v2",
   "locale": "de-DE",
   "source": {
-    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "15c893f9336536ea933c545318c9a35fa31c74c64ae5a6a780e0da8651c38b69"
+    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
+    "sourceManifestDigest": "c6f2d2c2db00afeced4ef9727d27224f067a90f4aa360d5b24e3c0d4980bacfd"
   },
   "registry": {
     "canonicalLocale": "de-DE",
@@ -13,29 +13,88 @@
     "fallbacks": {
       "documentationLocale": "en-US",
       "documentationUrl": "https://docs.tiangong.earth/en",
-      "legalLocale": "en-US",
-      "dataLanguage": "en",
-      "serviceLocale": "de-DE"
+      "legalLocale": "en-US"
     },
     "environment": {
       "titleKey": "APP_TITLE_DE_DE",
       "loginSubtitleKey": "APP_LOGIN_SUBTITLE_DE_DE"
     },
-    "registryDigest": "b4703b214db281020397fa5714021d7cd912b66bde9c5bd2a55108259ad06bd8"
+    "registryDigest": "cde8bab8af8e558a3a414efd6d97a0d0acfe38c3a0c7ab2f69660381eb47ba6c"
+  },
+  "languagePlatform": {
+    "capability": {
+      "appLocale": "de-DE",
+      "contentLanguage": "de",
+      "uiCatalog": "native",
+      "contentReading": "native",
+      "contentAuthoring": "native",
+      "serviceQuery": {
+        "status": "declared-fallback",
+        "resolvedLanguage": "en",
+        "disclosure": "diagnostic"
+      },
+      "referenceResources": [
+        {
+          "resourceId": "cpc",
+          "status": "development-base",
+          "requestedLanguage": "de",
+          "resolvedLanguage": "en",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "status": "development-base",
+          "requestedLanguage": "de",
+          "resolvedLanguage": "en",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "status": "development-base",
+          "requestedLanguage": "de",
+          "resolvedLanguage": "en",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "status": "development-base",
+          "requestedLanguage": "de",
+          "resolvedLanguage": "en",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-locations",
+          "status": "development-base",
+          "requestedLanguage": "de",
+          "resolvedLanguage": "en",
+          "ownerIssue": "#634"
+        }
+      ]
+    },
+    "contentLanguageRegistryDigest": "c1e4985cf29014f556dabcafac077ec86e2904c8225c413571c02be324b07b6e",
+    "capabilityMatrixDigest": "fde810bfc463df167c94db510ab7596cba9eae2acc407b7c9a330b2b8d267448",
+    "referenceResourceManifestDigest": "1f4643bb477577ad61edf882ae21034a5c32aaf79cb152fe5f698b6b976f704f",
+    "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
+    "hardcodingAllowlistDigest": "1e5be914215cd2b0fd42262c0b7caf75d71bc75ba7b905ff0b7ef70f082f9e39"
   },
   "evidence": {
-    "contextDigest": "80a55cf081dd0c627084bf31c5a50785d93e9d5ee1f313a138dc70b2d3df8b7d",
-    "qualityDigest": "bd8da3ce89a3ff3c518262c16408faf830c4e1be5e2ccc0f19b67013093d72b4",
+    "contextDigest": "a901decb7811f7f16175af9b420b2fc0d4f1a4e2adfcbdfaf7a6b03110504a93",
+    "qualityDigest": "628e45e5e01a0ad46b28195724330ac0c40020f6dea2ac477b40554dd9678505",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
     "routeViewCoverageDigest": "0c9414433315acb561b29e8884dbb594b377c9e1435829510bc0f9b6979b9050",
-    "fallbackContractDigest": "d90c7df3c25816430450a197b7adf1eff7081ae3945c7a8d6932232f3c7b6a75",
-    "localeFallbackRowCount": 6
+    "fallbackContractDigest": "432cfb9a99fae6973597b12dd3bf91452d0f2bc852423c751f9d53157db19f6b",
+    "localeFallbackRowCount": 10
   },
   "ciSafeCommands": {
     "localeAudit": "npm run i18n:locale:audit -- --locale de-DE",
     "context": "npm run i18n:context:check -- --locale de-DE",
     "quality": "npm run i18n:locale:quality:check -- --locale de-DE",
     "corrections": "npm run i18n:corrections:check",
+    "languagePlatform": "npm run i18n:platform:audit",
+    "languageHardcoding": "npm run i18n:hardcoding:audit",
+    "allLocales": "npm run i18n:locale:all:check",
+    "productionLocale": "npm run i18n:locale:production:check -- --locale de-DE",
+    "productionAllLocales": "npm run i18n:locale:all:production:check",
     "activation": "npm run i18n:locale:activation:check -- --locale de-DE"
   },
   "privateConfirmationDependencies": [],
@@ -43,11 +102,97 @@
   "checks": {
     "exactTopology": true,
     "contextComplete": true,
-    "automatedQualityPassed": true,
+    "structuralQualityPassed": true,
+    "semanticRouteAndE2EReady": false,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
+    "platformContractValid": true,
+    "languageHardcodingPassed": true,
+    "referenceResourcesReady": false,
+    "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
-  "activationDigest": "1272cefb2f37797c40bbbb15b9c3cee21b71ac548070bc765e1249d655b69c3c"
+  "referenceResourceBlockers": [
+    {
+      "resourceId": "cpc",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "isic",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-classification",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-flow-categorization",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-locations",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    }
+  ],
+  "productionActivationBlockers": [
+    {
+      "blockerId": "reference-resource:cpc",
+      "kind": "reference-resource",
+      "resourceId": "cpc",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:isic",
+      "kind": "reference-resource",
+      "resourceId": "isic",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-classification",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-classification",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-flow-categorization",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-flow-categorization",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-locations",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-locations",
+      "status": "development-base",
+      "deliveryStatus": null,
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#635"
+    }
+  ],
+  "activationDigest": "a719a003777f5a486fdb73a2dbc9d0b89df51099ef15857a99e7719bbb5e5c23"
 }

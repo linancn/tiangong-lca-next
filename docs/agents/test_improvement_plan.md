@@ -21,8 +21,8 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the Issue #625 final focused closure after all 4,652 tests passed with two async statements and two locale branches still uncovered; the full-closure strategy remains unchanged.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633: registry-parameterized capability, hardcoding, and activation tests preserve the existing risk-proportional full-closure strategy.'
 ---
 
 # Testing Strategy
@@ -37,7 +37,7 @@ lastReviewedNote: 'Reviewed the Issue #625 final focused closure after all 4,652
 - validation-heavy surfaces such as process-editor SDK guidance, multilingual field checks, and review jump targets should prefer behavior-level tests over snapshot growth
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
-- localization quality should combine deterministic topology, context, terminology, route-view, fallback, correction, and activation gates with independent automated review; delivery does not create a human translation-approval state
+- localization quality should combine deterministic topology, context, terminology-token, route-view, fallback, correction, and activation gates with a separately produced semantic/route/E2E proof; the deterministic structural artifact must not present itself as independent semantic review, and delivery does not create a human translation-approval state
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead

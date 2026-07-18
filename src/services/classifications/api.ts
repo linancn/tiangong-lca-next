@@ -1,8 +1,14 @@
 import type { Classification } from '../general/data';
+import type { IlcdCanonicalDataType, ReferenceResourceId } from '../referenceResources/manifest';
 import {
-  categoryTypeOptions,
+  getReferenceDataTypeName,
+  getResolvedReferenceDataTypeName,
+  reportReferenceResourceResolution,
+  resolveReferenceResource,
+} from '../referenceResources/resolver';
+import {
   genClass,
-  genClassZH,
+  genClassWithLocalizedLabels,
   getCachedOrFetchClassificationFileData,
   type ILCDCategoryNode,
 } from './util';
@@ -25,26 +31,6 @@ type ILCDClassificationDocument = {
     categories?: ILCDClassificationGroup[] | ILCDClassificationGroup | null;
   } | null;
 };
-
-const ILCD_FLOW_CATEGORIZATION_FILES = {
-  en: 'ILCDFlowCategorization.min.json.gz',
-  zh: 'ILCDFlowCategorization_zh.min.json.gz',
-} as const;
-
-const ILCD_CLASSIFICATION_FILES = {
-  en: 'ILCDClassification.min.json.gz',
-  zh: 'ILCDClassification_zh.min.json.gz',
-} as const;
-
-const CPC_CLASSIFICATION_FILES = {
-  en: 'CPCClassification.min.json.gz',
-  zh: 'CPCClassification_zh.min.json.gz',
-} as const;
-
-const ISIC_CLASSIFICATION_FILES = {
-  en: 'ISICClassification.min.json.gz',
-  zh: 'ISICClassification_zh.min.json.gz',
-} as const;
 
 function normalizeFlowCategorizationNodes(
   category?: ILCDCategoryNode[] | ILCDCategoryNode | null,
@@ -70,45 +56,7 @@ function normalizeClassificationGroups(
   return [];
 }
 
-function filterFlowCategorizationNodes(
-  nodes: ILCDCategoryNode[],
-  getValues: string[],
-): ILCDCategoryNode[] {
-  if (getValues.includes('all')) {
-    return nodes;
-  }
-
-  const filters = new Set(getValues);
-  const filterNode = (node: ILCDCategoryNode): ILCDCategoryNode | null => {
-    const childNodes = Array.isArray(node.category) ? node.category : [];
-    const filteredChildren = childNodes
-      .map((child) => filterNode(child))
-      .filter((child): child is ILCDCategoryNode => child !== null);
-    const isMatched = filters.has(node['@id']) || filters.has(node['@name']);
-
-    if (isMatched) {
-      return node;
-    }
-
-    if (filteredChildren.length > 0) {
-      return {
-        ...node,
-        category: filteredChildren,
-      };
-    }
-
-    return null;
-  };
-
-  return nodes
-    .map((node) => filterNode(node))
-    .filter((node): node is ILCDCategoryNode => node !== null);
-}
-
-function filterClassificationNodes(
-  nodes: ILCDCategoryNode[],
-  getValues: string[],
-): ILCDCategoryNode[] {
+function filterClassificationData(nodes: Classification[], getValues: string[]): Classification[] {
   if (getValues.includes('all')) {
     return nodes;
   }
@@ -118,12 +66,11 @@ function filterClassificationNodes(
     return [];
   }
 
-  const filterNode = (node: ILCDCategoryNode): ILCDCategoryNode | null => {
-    const childNodes = Array.isArray(node.category) ? node.category : [];
-    const filteredChildren = childNodes
+  const filterNode = (node: Classification): Classification | null => {
+    const filteredChildren = node.children
       .map((child) => filterNode(child))
-      .filter((child): child is ILCDCategoryNode => child !== null);
-    const isMatched = filters.has(node['@id']) || filters.has(node['@name']);
+      .filter((child): child is Classification => child !== null);
+    const isMatched = filters.has(node.id) || filters.has(node.value) || filters.has(node.label);
 
     if (isMatched) {
       return node;
@@ -132,7 +79,7 @@ function filterClassificationNodes(
     if (filteredChildren.length > 0) {
       return {
         ...node,
-        category: filteredChildren,
+        children: filteredChildren,
       };
     }
 
@@ -141,11 +88,10 @@ function filterClassificationNodes(
 
   return nodes
     .map((node) => filterNode(node))
-    .filter((node): node is ILCDCategoryNode => node !== null);
+    .filter((node): node is Classification => node !== null);
 }
 
-async function getFlowCategorizationNodes(lang: 'en' | 'zh'): Promise<ILCDCategoryNode[]> {
-  const fileName = ILCD_FLOW_CATEGORIZATION_FILES[lang];
+async function getFlowCategorizationNodes(fileName: string): Promise<ILCDCategoryNode[]> {
   const document =
     await getCachedOrFetchClassificationFileData<ILCDFlowCategorizationDocument>(fileName);
 
@@ -176,18 +122,17 @@ async function getClassificationNodesByType(
 
 function getSpecialClassificationSource(
   categoryType: string,
-  lang: 'en' | 'zh',
-): { fileName: string; dataType: string } | null {
+): { resourceId: ReferenceResourceId; dataType: IlcdCanonicalDataType } | null {
   if (categoryType === 'Flow') {
     return {
-      fileName: CPC_CLASSIFICATION_FILES[lang],
+      resourceId: 'cpc',
       dataType: 'Flow',
     };
   }
 
   if (categoryType === 'Process' || categoryType === 'LifeCycleModel') {
     return {
-      fileName: ISIC_CLASSIFICATION_FILES[lang],
+      resourceId: 'isic',
       dataType: 'Process',
     };
   }
@@ -195,11 +140,43 @@ function getSpecialClassificationSource(
   return null;
 }
 
-async function getILCDClassificationNodesByType(
-  categoryType: string,
-  lang: 'en' | 'zh',
-): Promise<ILCDCategoryNode[]> {
-  return getClassificationNodesByType(ILCD_CLASSIFICATION_FILES[lang], categoryType);
+const normalizeCanonicalDataType = (categoryType: string): IlcdCanonicalDataType =>
+  categoryType as IlcdCanonicalDataType;
+
+async function getLocalizedClassificationNodes(
+  resourceId: ReferenceResourceId,
+  categoryType: IlcdCanonicalDataType,
+  language: string,
+) {
+  const resolution = resolveReferenceResource(resourceId, language);
+  reportReferenceResourceResolution(resolution);
+  if (resolution.status === 'missing' || !resolution.localizedAsset) {
+    throw new Error(resolution.diagnostic);
+  }
+
+  const baseDataType = getReferenceDataTypeName(resolution.baseAsset, categoryType);
+  const localizedDataType = getResolvedReferenceDataTypeName(resolution, categoryType);
+  const baseNodes = await getClassificationNodesByType(resolution.baseAsset.fileName, baseDataType);
+  const localizedNodes =
+    resolution.localizedAsset.fileName === resolution.baseAsset.fileName &&
+    localizedDataType === baseDataType
+      ? baseNodes
+      : await (async () => {
+          try {
+            return await getClassificationNodesByType(
+              resolution.localizedAsset.fileName,
+              localizedDataType,
+            );
+          } catch (error) {
+            console.warn(
+              `[i18n-reference-resource] Failed to load localized classification asset ${resolution.localizedAsset.fileName} for ${language}; falling back to ${resolution.baseAsset.fileName}.`,
+              error,
+            );
+            return baseNodes;
+          }
+        })();
+
+  return { baseNodes, localizedNodes };
 }
 
 export async function getILCDClassification(
@@ -208,37 +185,18 @@ export async function getILCDClassification(
   getValues: string[],
 ): Promise<{ data: Classification[]; success: boolean }> {
   try {
-    const specialSource = getSpecialClassificationSource(categoryType, 'en');
-    const result = {
-      data: filterClassificationNodes(
-        specialSource
-          ? await getClassificationNodesByType(specialSource.fileName, specialSource.dataType)
-          : await getILCDClassificationNodesByType(categoryType, 'en'),
-        getValues,
-      ),
-    };
-
-    let newDatas: Classification[] = [];
-    if (lang === 'zh') {
-      const getIds = getValues.includes('all')
-        ? ['all']
-        : result.data.map((item: ILCDCategoryNode) => item['@id']);
-      const specialSourceZH = getSpecialClassificationSource(categoryType, 'zh');
-      const resultZH = {
-        data: filterClassificationNodes(
-          specialSourceZH
-            ? await getClassificationNodesByType(specialSourceZH.fileName, specialSourceZH.dataType)
-            : await getILCDClassificationNodesByType(
-                categoryTypeOptions.find((item) => item.en === categoryType)?.zh ?? categoryType,
-                'zh',
-              ),
-          getIds,
-        ),
-      };
-      newDatas = genClassZH(result.data, resultZH.data);
-    } else {
-      newDatas = genClass(result.data);
-    }
+    const specialSource = getSpecialClassificationSource(categoryType);
+    const canonicalDataType = specialSource?.dataType ?? normalizeCanonicalDataType(categoryType);
+    const { baseNodes, localizedNodes } = await getLocalizedClassificationNodes(
+      specialSource?.resourceId ?? 'ilcd-classification',
+      canonicalDataType,
+      lang,
+    );
+    const localizedData: Classification[] =
+      localizedNodes === baseNodes
+        ? genClass(baseNodes)
+        : genClassWithLocalizedLabels(baseNodes, localizedNodes);
+    const newDatas = filterClassificationData(localizedData, getValues);
 
     return Promise.resolve({
       data: newDatas,
@@ -258,18 +216,31 @@ export async function getILCDFlowCategorization(
   getValues: string[],
 ): Promise<{ data: Classification[]; success: boolean }> {
   try {
-    const resultData = filterFlowCategorizationNodes(
-      await getFlowCategorizationNodes('en'),
-      getValues,
-    );
-
-    let newDatas: Classification[] = [];
-    if (lang === 'zh') {
-      const resultZH = await getFlowCategorizationNodes('zh');
-      newDatas = genClassZH(resultData, resultZH);
-    } else {
-      newDatas = genClass(resultData);
+    const resolution = resolveReferenceResource('ilcd-flow-categorization', lang);
+    reportReferenceResourceResolution(resolution);
+    if (resolution.status === 'missing' || !resolution.localizedAsset) {
+      throw new Error(resolution.diagnostic);
     }
+    const baseNodes = await getFlowCategorizationNodes(resolution.baseAsset.fileName);
+    const localizedNodes =
+      resolution.localizedAsset.fileName === resolution.baseAsset.fileName
+        ? baseNodes
+        : await (async () => {
+            try {
+              return await getFlowCategorizationNodes(resolution.localizedAsset.fileName);
+            } catch (error) {
+              console.warn(
+                `[i18n-reference-resource] Failed to load localized flow categorization asset ${resolution.localizedAsset.fileName} for ${lang}; falling back to ${resolution.baseAsset.fileName}.`,
+                error,
+              );
+              return baseNodes;
+            }
+          })();
+    const localizedData: Classification[] =
+      localizedNodes === baseNodes
+        ? genClass(baseNodes)
+        : genClassWithLocalizedLabels(baseNodes, localizedNodes);
+    const newDatas = filterClassificationData(localizedData, getValues);
 
     return Promise.resolve({
       data: newDatas,

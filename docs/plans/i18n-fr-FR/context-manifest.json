@@ -3,10 +3,10 @@
   "locale": "fr-FR",
   "source": {
     "repository": "linancn/tiangong-lca-next",
-    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "15c893f9336536ea933c545318c9a35fa31c74c64ae5a6a780e0da8651c38b69",
-    "auditedInputDigest": "d68d3fd5a9481ace421dfb740c9f328bf3daf3704691a73b0df5ee881af9fdcf"
+    "sourceManifestDigest": "c6f2d2c2db00afeced4ef9727d27224f067a90f4aa360d5b24e3c0d4980bacfd",
+    "auditedInputDigest": "ae1fd3671cbe3fd75758747393626f45f5bb2bde3d1c51e152d8dff68128938d"
   },
   "inventory": {
     "sourceMessageCount": 3026,
@@ -45,7 +45,7 @@
     "messageCount": 3026,
     "completeCount": 3026,
     "blockedCount": 0,
-    "dossierDigest": "06f02b0d5f90a0003408ebc818432ed816167596f292092e8d4dddcb17a1ed12",
+    "dossierDigest": "67ef54cabb198002508dc3d5e9561f3e82d95c45ecb8b5b2e1544eff205c17d8",
     "catalogDigest": "aca5a8d39e2d6c3bc9f2eb48d28a4b86546cb292711d05810098e79b8c862bed",
     "moduleCount": 31,
     "moduleDigest": "46fb10d2d29c762e23a92a65d644a45d9f5e3cd5f2cd7c56e5a9c57ed428cd4f",
@@ -315,14 +315,20 @@
     }
   },
   "inputs": {
-    "src/services/general/localeRegistry.ts": "b4703b214db281020397fa5714021d7cd912b66bde9c5bd2a55108259ad06bd8",
+    "src/services/general/localeRegistry.ts": "cde8bab8af8e558a3a414efd6d97a0d0acfe38c3a0c7ab2f69660381eb47ba6c",
+    "src/services/general/contentLanguageRegistry.ts": "c1e4985cf29014f556dabcafac077ec86e2904c8225c413571c02be324b07b6e",
+    "src/services/general/localeCapabilities.ts": "fde810bfc463df167c94db510ab7596cba9eae2acc407b7c9a330b2b8d267448",
+    "src/services/referenceResources/manifest.ts": "1f4643bb477577ad61edf882ae21034a5c32aaf79cb152fe5f698b6b976f704f",
+    "src/services/referenceResources/resolver.ts": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
+    "scripts/i18n/audit-language-platform.mjs": "1a1d2068c2e6f01e3b9f726a1064305206acb160de038659a8582bf26c7f879d",
+    "scripts/i18n/language-hardcoding-allowlist.json": "1e5be914215cd2b0fd42262c0b7caf75d71bc75ba7b905ff0b7ef70f082f9e39",
     "src/components/ImportTidasPackage/reportContent.ts": "48170a699ff0ea169d6977648d918f5ed32e72e4138b15189e7baf49e8c1d93b",
     "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
     "docs/plans/i18n/route-view-coverage.json": "0c9414433315acb561b29e8884dbb594b377c9e1435829510bc0f9b6979b9050",
-    "docs/plans/i18n/fallback-contract.json": "d90c7df3c25816430450a197b7adf1eff7081ae3945c7a8d6932232f3c7b6a75",
+    "docs/plans/i18n/fallback-contract.json": "432cfb9a99fae6973597b12dd3bf91452d0f2bc852423c751f9d53157db19f6b",
     "docs/plans/i18n-fr-FR/glossary.json": "057cb494f02d980106469f6a16befc102d26db5ac362b9777cd5f97c7729c91b",
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "5829760221e661a610fc474c2c38e0775e9b2d875e7e51376624e0b37b63218f"
+  "contextDigest": "91e79a5577d737ca5b1a1c9922e7291b412d73b6939f6225bcc3100b43070703"
 }

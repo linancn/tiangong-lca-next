@@ -24,13 +24,13 @@ jest.mock('@/services/general/browserResourceCache', () => ({
 
 import {
   cacheAndDecompressClassificationFile,
-  categoryTypeOptions,
   genClass,
-  genClassZH,
+  genClassWithLocalizedLabels,
   getCachedClassificationFileData,
   getCachedClassificationFileList,
   getCachedOrFetchClassificationFileData,
   getClassificationCacheManifest,
+  getLocalizedCategoryDataType,
   setClassificationCacheManifest,
 } from '@/services/classifications/util';
 
@@ -46,16 +46,10 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     global.fetch = originalFetch;
   });
 
-  it('exposes the expected category type options', () => {
-    expect(categoryTypeOptions.map((item) => item.en)).toEqual([
-      'Process',
-      'Flow',
-      'FlowProperty',
-      'UnitGroup',
-      'Contact',
-      'Source',
-      'LCIAMethod',
-    ]);
+  it('resolves category data type names through the resource manifest', () => {
+    expect(getLocalizedCategoryDataType('Process', 'en')).toBe('Process');
+    expect(getLocalizedCategoryDataType('Process', 'zh')).toBe('过程');
+    expect(getLocalizedCategoryDataType('Process', 'de')).toBe('Process');
   });
 
   it('builds classification trees recursively in genClass', () => {
@@ -77,8 +71,8 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     ]);
   });
 
-  it('uses translated labels in genClassZH and falls back to English when needed', () => {
-    const result = genClassZH(
+  it('uses scoped localized labels and falls back to the base label when needed', () => {
+    const result = genClassWithLocalizedLabels(
       [
         {
           '@id': 'root',
@@ -97,6 +91,19 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
         children: [{ id: 'leaf', value: 'Leaf', label: 'Leaf', children: [] }],
       },
     ]);
+  });
+
+  it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
+    const legacyGenClass = (
+      jest.requireActual('@/services/classifications/util') as Record<
+        string,
+        (...args: any[]) => unknown
+      >
+    )['genClassZH'];
+
+    expect(
+      legacyGenClass([{ '@id': 'root', '@name': 'Root' }], [{ '@id': 'root', '@name': '根' }]),
+    ).toEqual([{ id: 'root', value: 'Root', label: '根', children: [] }]);
   });
 
   it('gets and sets the classification cache manifest through browser cache helpers', () => {

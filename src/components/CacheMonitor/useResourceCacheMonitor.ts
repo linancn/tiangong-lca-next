@@ -30,6 +30,7 @@ interface UseResourceCacheMonitorOptions<TManifest extends ResourceCacheManifest
   manifestMetadata?: Partial<TManifest>;
   isManifestCurrent?: (cached: TManifest, current: TManifest) => boolean;
   persistManifestOnPartialSuccess?: boolean;
+  onCacheUpdated?: (updatedFiles: string[]) => void | Promise<void>;
 }
 
 export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>(
@@ -50,6 +51,7 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
     manifestMetadata,
     isManifestCurrent,
     persistManifestOnPartialSuccess = true,
+    onCacheUpdated,
   } = options;
 
   useEffect(() => {
@@ -88,6 +90,7 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
         console.log(logMessages.start);
         let successCount = 0;
         let errorCount = 0;
+        const updatedFiles: string[] = [];
 
         for (let i = 0; i < currentManifest.files.length; i += batchSize) {
           const batch = currentManifest.files.slice(i, i + batchSize);
@@ -102,9 +105,13 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
             }),
           );
 
-          for (const success of results) {
+          for (const [resultIndex, success] of results.entries()) {
             if (success) {
               successCount++;
+              const updatedFile = batch[resultIndex];
+              if (updatedFile) {
+                updatedFiles.push(updatedFile);
+              }
             } else {
               errorCount++;
             }
@@ -114,6 +121,14 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
             await new Promise<void>((resolve) => {
               setTimeout(resolve, batchDelayMs);
             });
+          }
+        }
+
+        if (updatedFiles.length > 0) {
+          try {
+            await onCacheUpdated?.(updatedFiles);
+          } catch (error) {
+            console.error('Failed to invalidate in-memory resource cache:', error);
           }
         }
 
@@ -149,6 +164,7 @@ export const useResourceCacheMonitor = <TManifest extends ResourceCacheManifest>
     logMessages,
     manifestMetadata,
     maxCacheAgeHours,
+    onCacheUpdated,
     setManifest,
     persistManifestOnPartialSuccess,
     startDelayMs,

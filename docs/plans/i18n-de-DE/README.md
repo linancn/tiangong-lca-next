@@ -66,7 +66,7 @@ The three dimensions are review questions, not three required identities. The ca
 - `translation-batches.json`: four non-overlapping leaf-file owner lanes and internal review slices.
 - `activation-entry-translations.json`: the seven frozen #601 top-level translations assembled by `src/locales/de-DE.ts`.
 - `runtime-activation-manifest.json`: frozen historical active-baseline/#606 delta contract.
-- `context-manifest.json`, `automated-review.json`, `quality-manifest.json`, and `locale-activation-manifest.json`: compact current German automated gate artifacts; the review record is digest-bound automation evidence, not human approval.
+- `context-manifest.json`, `structural-validation.json`, `quality-manifest.json`, and `locale-activation-manifest.json`: compact current German deterministic gate artifacts; `automated-review.json` remains historical semantic-review evidence and is never renewed by the structural generator. Current production semantic/route/E2E closure is a separate #635 blocker, not human approval.
 - `glossary.json`: compact shared-gate input; `glossary.yaml` remains the richer historical source.
 - `docs/plans/i18n/corrections.json`: current accepted baseline and exact post-baseline correction overlay.
 - `.local/i18n-de-DE/pilot-review-confirmation.md`: generated human-readable pilot form. It is ignored and local only.

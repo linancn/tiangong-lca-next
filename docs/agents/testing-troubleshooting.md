@@ -21,8 +21,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the Issue #625 99.99% hook failure: use coverage-final.json to isolate zero-count async statements and locale branches, then prove only those boundaries before a new checked HEAD.'
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633 and added the shortest recovery path for registry/Manifest, hardcoding, and activation-contract failures.'
 ---
 
 # Testing Troubleshooting
@@ -54,6 +54,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
+| language-platform or hardcoding audit reports a new locale/language finding | a registry/Manifest join is incomplete, an alias/adapter conflicts, or business code owns a language literal outside the typed boundary | update the owning registry/Manifest and derive the consumer; use only an exact, issue-owned adapter exception when the literal is an unavoidable external boundary |
+| activation reports `platformContractValid` but `productionActivationReady` is false | the platform structure is valid but a required reference resource is missing, development-only, or not yet official/project-reviewed | inspect `referenceResourceBlockers` and complete the owner Issue; do not relabel an English development base as localized data |
 | canonical manifest is stale only because `origin/dev` advanced | an old checker resolved the moving ambient branch instead of the manifest's recorded source commit | run the fixed default `--check`, which validates the recorded commit and audited-input digest; use explicit `--base-ref` or `--write` only when intentionally advancing provenance |
 | active locale or clean CI reports missing confirmation files | an active command accidentally depends on a historical German checker or ignored `.local` evidence | remove that dependency and rerun the registry-driven context/quality/correction/activation path; only explicit historical-checker tests may create private temporary fixtures |
 | frozen German Pilot check reports context or `offlineReviewConfirmation` drift | the inherited Issue #601 snapshot, context ledger, producer evidence, or ignored approval no longer matches its frozen source | stop runtime activation work and inspect the frozen English, Chinese, German, callsites, and approval hashes; do not regenerate or silently reinterpret the approved baseline |

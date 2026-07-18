@@ -1,3 +1,4 @@
+import { CONTENT_LANGUAGE_OPTIONS } from '@/services/general/contentLanguageRegistry';
 import type {
   Classification,
   DataTabKey,
@@ -5,13 +6,15 @@ import type {
   ListPagination,
   ReferenceItem,
 } from '@/services/general/data';
-import { initVersion, langOptions } from '@/services/general/data';
+import { initVersion } from '@/services/general/data';
 
 describe('general data constants', () => {
   it('exposes the supported language options in stable order', () => {
-    expect(langOptions).toEqual([
+    expect(CONTENT_LANGUAGE_OPTIONS).toEqual([
       { value: 'en', label: 'English' },
       { value: 'zh', label: '简体中文' },
+      { value: 'de', label: 'Deutsch' },
+      { value: 'fr', label: 'Français' },
     ]);
   });
 

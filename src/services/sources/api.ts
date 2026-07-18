@@ -1,7 +1,7 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -72,34 +72,7 @@ async function getSourceTeamFilter(dataSource: string, tid: string | []) {
 }
 
 async function mapSourceListRows(rows: SourceListRpcRow[], lang: string): Promise<any[]> {
-  if (lang === 'zh') {
-    const classificationData = await getCachedClassificationData('Source', lang, ['all']);
-    return rows.map((i) => {
-      try {
-        const dataInfo = i.json?.sourceDataSet?.sourceInformation?.dataSetInformation;
-        const classifications = jsonToList(
-          dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-        );
-        const classificationZH = genClassificationZH(classifications, classificationData);
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          shortName: getLangText(dataInfo?.['common:shortName'], lang),
-          classification: classificationToString(classificationZH),
-          sourceCitation: dataInfo?.sourceCitation ?? '-',
-          publicationType: dataInfo?.publicationType ?? '-',
-          version: i.version,
-          modifiedAt: new Date(i.modified_at ?? ''),
-          teamId: i.team_id,
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  }
+  const classificationData = await getCachedClassificationData('Source', lang, ['all']);
 
   return rows.map((i) => {
     try {
@@ -111,7 +84,9 @@ async function mapSourceListRows(rows: SourceListRpcRow[], lang: string): Promis
         key: i.id + ':' + i.version,
         id: i.id,
         shortName: getLangText(dataInfo?.['common:shortName'], lang),
-        classification: classificationToString(classifications),
+        classification: classificationToString(
+          genLocalizedClassification(classifications, classificationData),
+        ),
         sourceCitation: dataInfo?.sourceCitation ?? '-',
         publicationType: dataInfo?.publicationType ?? '-',
         version: i.version,

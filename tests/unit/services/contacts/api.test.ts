@@ -29,7 +29,7 @@ describe('Contacts API Service', () => {
     normalizeLangPayloadForSave,
   } = jest.requireMock('@/services/general/api');
   const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
-  const { getLangText, jsonToList, genClassificationZH, classificationToString } =
+  const { getLangText, jsonToList, genLocalizedClassification, classificationToString } =
     jest.requireMock('@/services/general/util');
   const { genContactJsonOrdered } = jest.requireMock('@/services/contacts/util');
 
@@ -85,7 +85,7 @@ describe('Contacts API Service', () => {
     attachLangNormalizationMetadata.mockImplementation((result: any) => result);
     getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] || '');
     jsonToList.mockImplementation((value: any) => (Array.isArray(value) ? value : [value]));
-    genClassificationZH.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
+    genLocalizedClassification.mockReturnValue([{ '@level': '0', '#text': 'Test Classification' }]);
     classificationToString.mockReturnValue('Test Classification');
   });
 
@@ -514,6 +514,8 @@ describe('Contacts API Service', () => {
         shortName: 'Contact 1',
         version: '01.00.002',
       });
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'en', ['all']);
+      expect(genLocalizedClassification).toHaveBeenCalled();
       expect(result.data[0]).not.toHaveProperty('latestVersion');
     });
 
@@ -521,19 +523,84 @@ describe('Contacts API Service', () => {
       const { getContactTableAll } = require('@/services/contacts/api');
       mockRpc.mockResolvedValue({ data: [latestContactRow()], error: null });
       getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-1' }]);
-      genClassificationZH.mockReturnValue(['联系人分类']);
+      genLocalizedClassification.mockReturnValue(['联系人分类']);
       classificationToString.mockReturnValue('联系人分类');
       getLangText.mockReturnValue('联系人');
 
       const result = await getContactTableAll({ current: 1, pageSize: 10 }, {}, 'zh', 'tg', []);
 
       expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', 'zh', ['all']);
-      expect(genClassificationZH).toHaveBeenCalled();
+      expect(genLocalizedClassification).toHaveBeenCalled();
       expect(result.data[0]).toMatchObject({
         shortName: '联系人',
         classification: '联系人分类',
       });
     });
+
+    it.each([
+      ['de', 'Kontakt', 'Kontaktkategorie'],
+      ['fr', 'Contact', 'Catégorie de contact'],
+    ])(
+      'keeps %s content text while resolving classification labels through the manifest cache',
+      async (lang, localizedName, localizedClassification) => {
+        const shortNames = [
+          { '@xml:lang': 'en', '#text': 'Contact' },
+          { '@xml:lang': lang, '#text': localizedName },
+        ];
+        const names = [
+          { '@xml:lang': 'en', '#text': 'Full contact name' },
+          { '@xml:lang': lang, '#text': `${localizedName} full` },
+        ];
+        const classifications = [{ '@level': '0', '#text': 'People' }];
+        const classificationData = [
+          { id: 'people', value: 'People', label: localizedClassification, children: [] },
+        ];
+        const localizedPath = [{ '@level': '0', '#text': localizedClassification }];
+        const { getContactTableAll } = require('@/services/contacts/api');
+
+        mockRpc.mockResolvedValue({
+          data: [
+            latestContactRow({
+              json: {
+                contactDataSet: {
+                  contactInformation: {
+                    dataSetInformation: {
+                      'common:shortName': shortNames,
+                      'common:name': names,
+                      classificationInformation: {
+                        'common:classification': { 'common:class': classifications },
+                      },
+                    },
+                  },
+                },
+              },
+            }),
+          ],
+          error: null,
+        });
+        getCachedClassificationData.mockResolvedValue(classificationData);
+        jsonToList.mockReturnValue(classifications);
+        genLocalizedClassification.mockReturnValue(localizedPath);
+        classificationToString.mockReturnValue(localizedClassification);
+        getLangText.mockImplementation((value: any, requestedLanguage: string) => {
+          const values = Array.isArray(value) ? value : [value];
+          return values.find((item: any) => item?.['@xml:lang'] === requestedLanguage)?.['#text'];
+        });
+
+        const result = await getContactTableAll({}, {}, lang, 'tg', []);
+
+        expect(getCachedClassificationData).toHaveBeenCalledWith('Contact', lang, ['all']);
+        expect(genLocalizedClassification).toHaveBeenCalledWith(
+          classifications,
+          classificationData,
+        );
+        expect(getLangText).toHaveBeenCalledWith(shortNames, lang);
+        expect(result.data[0]).toMatchObject({
+          shortName: localizedName,
+          classification: localizedClassification,
+        });
+      },
+    );
 
     it('should map sparse Chinese contact rows with default display fields', async () => {
       const { getContactTableAll } = require('@/services/contacts/api');
@@ -560,7 +627,7 @@ describe('Contacts API Service', () => {
         error: null,
       });
       getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-1' }]);
-      genClassificationZH.mockReturnValue(['联系人分类']);
+      genLocalizedClassification.mockReturnValue(['联系人分类']);
       classificationToString.mockReturnValue('联系人分类');
       getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
 
@@ -1037,7 +1104,7 @@ describe('Contacts API Service', () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
       mockRpc.mockResolvedValue({ data: [latestSearchRow({ total_count: 3 })], error: null });
       getCachedClassificationData.mockResolvedValue([{ '@id': 'cat-zh' }]);
-      genClassificationZH.mockReturnValue(['联系人分类']);
+      genLocalizedClassification.mockReturnValue(['联系人分类']);
       classificationToString.mockReturnValue('联系人分类');
       getLangText.mockReturnValue('联系人');
 
