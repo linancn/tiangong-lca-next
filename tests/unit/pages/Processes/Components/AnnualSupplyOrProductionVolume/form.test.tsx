@@ -480,6 +480,27 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
   });
 
+  it('normalizes an undeclared locale tag and leaves a missing locale suffix blank', async () => {
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={defaultExchangeDataSource}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='es-MX'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(form.setFieldValue).not.toHaveBeenCalled();
+    });
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+  });
+
   it('marks the derived context input and renders red help text when context is invalid', () => {
     const form = buildForm(undefined);
 

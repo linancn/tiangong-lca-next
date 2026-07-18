@@ -2183,6 +2183,50 @@ describe('table/search helpers', () => {
     });
   });
 
+  it('preserves language-neutral sorting and maps missing cache and version fallbacks', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: sampleModelId,
+          total_count: 1,
+          json: {
+            lifeCycleModelDataSet: {
+              lifeCycleModelInformation: {
+                dataSetInformation: {},
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+    mockGetCachedClassificationData.mockResolvedValueOnce(undefined);
+
+    const result = await lifeCycleModelsApi.getLifeCycleModelTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'systems',
+      {},
+      undefined,
+      { key: 'baseName', order: 'desc' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_lifecyclemodels_latest',
+      expect.objectContaining({
+        order_by: { key: 'baseName', order: 'desc' },
+      }),
+    );
+    expect(mockGenClassificationZH).toHaveBeenCalledWith([], []);
+    expect(result.data).toEqual([
+      expect.objectContaining({
+        id: sampleModelId,
+        version: '',
+      }),
+    ]);
+  });
+
   it.each(['de', 'fr'] as const)(
     'loads %s lifecycle-model classifications and resolves RPC sort language',
     async (lang) => {

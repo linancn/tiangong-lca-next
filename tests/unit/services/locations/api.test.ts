@@ -4,6 +4,7 @@
  */
 
 const mockGetCachedOrFetchLocationFileData = jest.fn();
+const mockResolveReferenceResource = jest.fn();
 
 jest.mock('@/services/locations/util', () => {
   const actual = jest.requireActual('@/services/locations/util');
@@ -12,6 +13,15 @@ jest.mock('@/services/locations/util', () => {
     ...actual,
     getCachedOrFetchLocationFileData: (...args: any[]) =>
       mockGetCachedOrFetchLocationFileData(...args),
+  };
+});
+
+jest.mock('@/services/referenceResources/resolver', () => {
+  const actual = jest.requireActual('@/services/referenceResources/resolver');
+  return {
+    __esModule: true,
+    ...actual,
+    resolveReferenceResource: (...args: any[]) => mockResolveReferenceResource(...args),
   };
 });
 
@@ -25,6 +35,35 @@ import {
 describe('Locations API (src/services/locations/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const actual = jest.requireActual('@/services/referenceResources/resolver');
+    mockResolveReferenceResource.mockReset();
+    mockResolveReferenceResource.mockImplementation(actual.resolveReferenceResource);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('rejects location reads when localization is explicitly missing', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockResolveReferenceResource.mockReturnValue({
+      status: 'missing',
+      resourceId: 'ilcd-locations',
+      requestedLanguage: 'en',
+      usedFallback: false,
+      ownerIssue: '#634',
+      diagnostic: 'ILCD English location labels are unavailable.',
+      baseAsset: {
+        language: 'en',
+        fileName: 'ILCDLocations.min.json.gz',
+      },
+    });
+
+    await expect(getILCDLocationEntries('en', ['all'])).rejects.toThrow(
+      'ILCD English location labels are unavailable.',
+    );
+    expect(mockGetCachedOrFetchLocationFileData).not.toHaveBeenCalled();
+    expect(consoleWarnSpy).toHaveBeenCalled();
   });
 
   it('returns all location entries when getValues includes all', async () => {
@@ -103,6 +142,7 @@ describe('Locations API (src/services/locations/api.ts)', () => {
           location: [
             { '@value': 'CN', '#text': 'China', continent: 'Asia' },
             { '@value': 'US', '#text': 'United States' },
+            { '#text': 'Base entry without code' },
           ],
         },
       })
@@ -111,6 +151,7 @@ describe('Locations API (src/services/locations/api.ts)', () => {
           location: [
             { '@value': 'CN', '#text': '中国' },
             { '@value': 'DE', '#text': '德国' },
+            { '#text': 'Localized entry without code' },
           ],
         },
       });
@@ -120,7 +161,9 @@ describe('Locations API (src/services/locations/api.ts)', () => {
     expect(result).toEqual([
       { '@value': 'CN', '#text': '中国', continent: 'Asia' },
       { '@value': 'US', '#text': 'United States' },
+      { '#text': 'Base entry without code' },
       { '@value': 'DE', '#text': '德国' },
+      { '#text': 'Localized entry without code' },
     ]);
     expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(
       1,

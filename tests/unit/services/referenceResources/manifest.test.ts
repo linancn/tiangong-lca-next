@@ -8,6 +8,7 @@ import {
 import {
   getReferenceAssetStem,
   getResolvedReferenceDataTypeName,
+  reportReferenceResourceResolution,
   resolveReferenceResource,
 } from '@/services/referenceResources/resolver';
 
@@ -41,6 +42,18 @@ describe('reference resource manifest and resolver', () => {
     expect(resolution.resolvedLanguage).toBe('zh');
     expect(resolution.localizedAsset?.fileName).toBe('ILCDClassification_zh.min.json.gz');
     expect(getResolvedReferenceDataTypeName(resolution, 'Process')).toBe('过程');
+
+    const locationResolution = resolveReferenceResource('ilcd-locations', 'zh-CN');
+    expect(getResolvedReferenceDataTypeName(locationResolution, 'Process')).toBe('Process');
+  });
+
+  it('does not report a native reference-resource resolution as fallback', () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    reportReferenceResourceResolution(resolveReferenceResource('cpc', 'en'));
+
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
+    consoleWarnSpy.mockRestore();
   });
 
   it('makes German and French development fallbacks observable and owned by #634', () => {
@@ -55,5 +68,62 @@ describe('reference resource manifest and resolver', () => {
       }),
     );
     expect(getReferenceAssetStem(german)).toBe('ILCDLocations');
+  });
+
+  it('fails closed when a declared runtime asset is absent', () => {
+    const resource = REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')!;
+    const runtimeAssets = resource.runtimeAssets as {
+      en?: (typeof resource.runtimeAssets)['en'];
+    };
+    const englishAsset = runtimeAssets.en;
+
+    try {
+      delete runtimeAssets.en;
+      expect(() => resolveReferenceResource('cpc', 'en')).toThrow(
+        'Reference resource cpc has no runtime asset for en.',
+      );
+    } finally {
+      runtimeAssets.en = englishAsset;
+    }
+  });
+
+  it('resolves a declared missing localization without inventing an asset', () => {
+    const resource = REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')!;
+    const localizations = resource.localizations as Record<
+      string,
+      (typeof resource.localizations)['de']
+    >;
+    const germanAvailability = localizations.de;
+
+    try {
+      localizations.de = {
+        status: 'missing',
+        ownerIssue: '#634',
+        diagnostic: 'German CPC labels are unavailable.',
+      };
+      const resolution = resolveReferenceResource('cpc', 'de');
+
+      expect(resolution).toEqual(
+        expect.objectContaining({
+          status: 'missing',
+          requestedLanguage: 'de',
+          usedFallback: false,
+          ownerIssue: '#634',
+        }),
+      );
+      expect('resolvedLanguage' in resolution).toBe(false);
+      expect(getReferenceAssetStem(resolution)).toBe('CPCClassification');
+
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      reportReferenceResourceResolution(resolution);
+      reportReferenceResourceResolution(resolution);
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[i18n-reference-resource] German CPC labels are unavailable.',
+      );
+      consoleWarnSpy.mockRestore();
+    } finally {
+      localizations.de = germanAvailability;
+    }
   });
 });

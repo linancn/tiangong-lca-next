@@ -4,6 +4,7 @@
  */
 
 const mockGetCachedOrFetchClassificationFileData = jest.fn();
+const mockResolveReferenceResource = jest.fn();
 
 jest.mock('@/services/classifications/util', () => {
   const actual = jest.requireActual('@/services/classifications/util');
@@ -12,6 +13,15 @@ jest.mock('@/services/classifications/util', () => {
     ...actual,
     getCachedOrFetchClassificationFileData: (...args: any[]) =>
       mockGetCachedOrFetchClassificationFileData(...args),
+  };
+});
+
+jest.mock('@/services/referenceResources/resolver', () => {
+  const actual = jest.requireActual('@/services/referenceResources/resolver');
+  return {
+    __esModule: true,
+    ...actual,
+    resolveReferenceResource: (...args: any[]) => mockResolveReferenceResource(...args),
   };
 });
 
@@ -24,6 +34,40 @@ import {
 describe('Classifications API (src/services/classifications/api.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const actual = jest.requireActual('@/services/referenceResources/resolver');
+    mockResolveReferenceResource.mockReset();
+    mockResolveReferenceResource.mockImplementation(actual.resolveReferenceResource);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('returns a failure payload when classification localization is explicitly missing', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockResolveReferenceResource.mockReturnValue({
+      status: 'missing',
+      resourceId: 'isic',
+      requestedLanguage: 'en',
+      usedFallback: false,
+      ownerIssue: '#634',
+      diagnostic: 'ISIC English labels are unavailable.',
+      baseAsset: {
+        language: 'en',
+        fileName: 'ISICClassification.min.json.gz',
+      },
+    });
+
+    await expect(getILCDClassification('Process', 'en', ['all'])).resolves.toEqual({
+      data: [],
+      success: false,
+    });
+    expect(mockGetCachedOrFetchClassificationFileData).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'ISIC English labels are unavailable.' }),
+    );
+    expect(consoleWarnSpy).toHaveBeenCalled();
   });
 
   it('uses ISIC gzip classifications for Process in English', async () => {
@@ -494,6 +538,50 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
     const result = await getILCDFlowCategorization('en', ['all']);
 
     expect(result).toEqual({ data: [], success: true });
+  });
+
+  it('returns a failure payload when the base flow categorization file cannot be loaded', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetCachedOrFetchClassificationFileData.mockResolvedValue(null);
+
+    await expect(getILCDFlowCategorization('en', ['all'])).resolves.toEqual({
+      data: [],
+      success: false,
+    });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Failed to load ILCD flow categorization from ILCDFlowCategorization.min.json.gz',
+      }),
+    );
+  });
+
+  it('returns a failure payload when flow categorization localization is explicitly missing', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockResolveReferenceResource.mockReturnValue({
+      status: 'missing',
+      resourceId: 'ilcd-flow-categorization',
+      requestedLanguage: 'en',
+      usedFallback: false,
+      ownerIssue: '#634',
+      diagnostic: 'ILCD flow categorization English labels are unavailable.',
+      baseAsset: {
+        language: 'en',
+        fileName: 'ILCDFlowCategorization.min.json.gz',
+      },
+    });
+
+    await expect(getILCDFlowCategorization('en', ['all'])).resolves.toEqual({
+      data: [],
+      success: false,
+    });
+    expect(mockGetCachedOrFetchClassificationFileData).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'ILCD flow categorization English labels are unavailable.',
+      }),
+    );
+    expect(consoleWarnSpy).toHaveBeenCalled();
   });
 
   it('loads Chinese flow categorization labels when requested', async () => {

@@ -23,6 +23,7 @@ import {
   convertToUTCISOString,
   formatDateTime,
   genClassIdList,
+  genClassificationZH,
   genClassJsonZH,
   genClassStr,
   genLocalizedClassification,
@@ -816,6 +817,11 @@ describe('General Utility Functions', () => {
           'ja-JP',
         ),
       ).toBe('こんにちは');
+    });
+
+    it('handles non-string locale input, untagged array entries, and primitive text payloads', () => {
+      expect(getExactLangText([{ '#text': 'Legacy text' }], undefined as any)).toBe('Legacy text');
+      expect(getExactLangText(null, 'en')).toBe('-');
     });
   });
 
@@ -2081,6 +2087,15 @@ describe('General Utility Functions', () => {
     it('should return empty array when classifications array is empty', () => {
       const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
       expect(genLocalizedClassification([], categoryData as any)).toEqual([]);
+    });
+
+    it('keeps the deprecated Chinese wrapper behavior aligned with the localized helper', () => {
+      const classifications = [{ '@level': '0', '#text': 'Category A' }];
+      const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
+
+      expect(genClassificationZH(classifications, categoryData)).toEqual([
+        { '@level': '0', '#text': '分类 A' },
+      ]);
     });
   });
 

@@ -26,6 +26,7 @@ import {
   cacheAndDecompressClassificationFile,
   genClass,
   genClassWithLocalizedLabels,
+  genClassZH,
   getCachedClassificationFileData,
   getCachedClassificationFileList,
   getCachedOrFetchClassificationFileData,
@@ -91,6 +92,12 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
         children: [{ id: 'leaf', value: 'Leaf', label: 'Leaf', children: [] }],
       },
     ]);
+  });
+
+  it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
+    expect(
+      genClassZH([{ '@id': 'root', '@name': 'Root' }], [{ '@id': 'root', '@name': '根' }]),
+    ).toEqual([{ id: 'root', value: 'Root', label: '根', children: [] }]);
   });
 
   it('gets and sets the classification cache manifest through browser cache helpers', () => {

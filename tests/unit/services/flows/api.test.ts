@@ -1421,6 +1421,27 @@ describe('getFlowTablePgroongaSearch', () => {
     });
   });
 
+  it('preserves a flow sort key and direction when no sort language is provided', async () => {
+    mockRpc.mockResolvedValue({ data: [], error: null });
+
+    await getFlowTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'steel',
+      {},
+      undefined,
+      { key: 'baseName', order: 'desc' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_flows_latest',
+      expect.objectContaining({
+        order_by: { key: 'baseName', order: 'desc' },
+      }),
+    );
+  });
+
   it.each(['de', 'fr'] as const)(
     'loads %s flow classifications and resolves RPC sort language',
     async (lang) => {

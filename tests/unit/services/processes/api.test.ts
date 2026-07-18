@@ -3765,6 +3765,31 @@ describe('getProcessTablePgroongaSearch', () => {
     expect(result).toBeDefined();
   });
 
+  it('preserves a process sort key and direction when no sort language is provided', async () => {
+    mockAuthGetSession.mockResolvedValue({
+      data: { session: { access_token: 'token-xyz', user: { id: 'user-1' } } },
+    });
+    mockRpc.mockResolvedValue({ data: [], error: null });
+
+    await processesApi.getProcessTablePgroongaSearch(
+      { current: 1, pageSize: 10 },
+      'en',
+      'tg',
+      'search term',
+      {},
+      undefined,
+      'all',
+      { key: 'baseName', order: 'desc' },
+    );
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      'search_processes_latest',
+      expect.objectContaining({
+        order_by: { key: 'baseName', order: 'desc' },
+      }),
+    );
+  });
+
   it('should handle empty search results', async () => {
     const mockResponse = {
       data: [],

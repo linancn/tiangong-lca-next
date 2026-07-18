@@ -46,6 +46,80 @@ describe('localeCapabilities', () => {
     ).toBe(true);
   });
 
+  it('derives unsupported authoring and completed native resources from owner registries', () => {
+    let isolatedCapabilities: typeof import('@/services/general/localeCapabilities') | undefined;
+
+    jest.doMock('@/services/general/contentLanguageRegistry', () => {
+      const actual = jest.requireActual<
+        typeof import('@/services/general/contentLanguageRegistry')
+      >('@/services/general/contentLanguageRegistry');
+      return {
+        ...actual,
+        getContentLanguageDefinition: (languageCode?: string | null) => {
+          const definition = actual.getContentLanguageDefinition(languageCode);
+          return definition?.languageCode === 'en'
+            ? {
+                ...definition,
+                authoring: { ...definition.authoring, enabled: false },
+              }
+            : definition;
+        },
+      };
+    });
+    jest.doMock('@/services/referenceResources/resolver', () => ({
+      resolveReferenceResource: (resourceId: string, requestedLanguage: string) => ({
+        status: 'native',
+        resourceId,
+        requestedLanguage,
+        resolvedLanguage: requestedLanguage,
+        usedFallback: false,
+        deliveryStatus: 'official',
+      }),
+    }));
+
+    try {
+      jest.isolateModules(() => {
+        isolatedCapabilities = require('@/services/general/localeCapabilities');
+      });
+    } finally {
+      jest.dontMock('@/services/general/contentLanguageRegistry');
+      jest.dontMock('@/services/referenceResources/resolver');
+      jest.resetModules();
+    }
+
+    const english = isolatedCapabilities?.getLocaleCapability('en-US');
+    expect(english?.contentAuthoring).toBe('unsupported');
+    expect(
+      english?.referenceResources.every(
+        ({ deliveryStatus, ownerIssue }) =>
+          deliveryStatus === 'official' && ownerIssue === undefined,
+      ),
+    ).toBe(true);
+  });
+
+  it('fails closed when an app locale has no matching content capability', () => {
+    jest.doMock('@/services/general/contentLanguageRegistry', () => {
+      const actual = jest.requireActual<
+        typeof import('@/services/general/contentLanguageRegistry')
+      >('@/services/general/contentLanguageRegistry');
+      return {
+        ...actual,
+        getContentLanguageDefinition: () => undefined,
+      };
+    });
+
+    try {
+      jest.isolateModules(() => {
+        expect(() => require('@/services/general/localeCapabilities')).toThrow(
+          'has no matching content-language capability.',
+        );
+      });
+    } finally {
+      jest.dontMock('@/services/general/contentLanguageRegistry');
+      jest.resetModules();
+    }
+  });
+
   it('does not invent a row for an unregistered locale', () => {
     expect(getLocaleCapability('es-ES')).toBeUndefined();
   });
