@@ -351,6 +351,20 @@ describe('Welcome page', () => {
     expect(screen.queryByText('Operation Demo Video')).not.toBeInTheDocument();
   });
 
+  it('uses the default locale definition when the runtime locale is unsupported', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'es-ES';
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+
+    expect(
+      await screen.findByRole('img', { name: 'TIDAS data system architecture diagram' }),
+    ).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
+  });
+
   it('loads ecosystem teams with thumbnails and reuses cached teams across reopen', async () => {
     const user = userEvent.setup();
 

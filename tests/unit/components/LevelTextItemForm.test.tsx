@@ -12,10 +12,12 @@ let latestTreeSelectProps: any = null;
 
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolver) => {
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolver, rejecter) => {
     resolve = resolver;
+    reject = rejecter;
   });
-  return { promise, resolve };
+  return { promise, reject, resolve };
 };
 
 jest.mock('@/services/classifications/api', () => ({
@@ -472,5 +474,60 @@ describe('LevelTextItemForm', () => {
 
     expect(screen.queryByRole('button', { name: 'Stale label' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Current label' })).toBeInTheDocument();
+  });
+
+  it('keeps locale refresh failures and missing data from reviving stale options', async () => {
+    const [initialLanguage, staleLanguage, failingLanguage, missingDataLanguage] =
+      SUPPORTED_CONTENT_LANGUAGES;
+    expect(missingDataLanguage).toBeDefined();
+    const staleRequest = deferred<any>();
+    mockGetILCDClassification
+      .mockResolvedValueOnce({
+        success: true,
+        data: [{ id: 'initial', label: 'Initial option', value: 'initial' }],
+      })
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockRejectedValueOnce(new Error('current locale failed'))
+      .mockResolvedValueOnce({ success: true });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    expect(await screen.findByRole('button', { name: 'Initial option' })).toBeInTheDocument();
+    rerender(renderControl(staleLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', staleLanguage, ['all']);
+    });
+
+    rerender(renderControl(failingLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', failingLanguage, ['all']);
+      expect(screen.queryByRole('button', { name: 'Initial option' })).not.toBeInTheDocument();
+    });
+
+    rerender(renderControl(missingDataLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', missingDataLanguage, [
+        'all',
+      ]);
+      expect(latestTreeSelectProps.treeData).toEqual([]);
+    });
+
+    await act(async () => {
+      staleRequest.reject(new Error('stale locale failed'));
+      await staleRequest.promise.catch(() => undefined);
+    });
+
+    expect(latestTreeSelectProps.treeData).toEqual([]);
+    expect(screen.queryByRole('button', { name: 'Initial option' })).not.toBeInTheDocument();
   });
 });

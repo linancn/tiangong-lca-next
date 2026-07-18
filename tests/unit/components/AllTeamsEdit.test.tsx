@@ -243,7 +243,7 @@ jest.mock('@/services/teams/api', () => ({
   getTeamMessageApi: jest.fn(),
 }));
 
-import TeamEdit from '@/components/AllTeams/edit';
+import TeamEdit, { hasRequiredTeamText } from '@/components/AllTeams/edit';
 import { isImage, removeLogoApi, uploadLogoApi } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import { message } from 'antd';
@@ -294,6 +294,10 @@ describe('TeamEdit component', () => {
     mockEditTeamMessage.mockResolvedValue({ data: { id: 'team-1' }, error: null });
     mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded/path.png' }, error: null });
     mockIsImage.mockReturnValue(true);
+  });
+
+  it('does not treat an unlabeled team text entry as a required locale', () => {
+    expect(hasRequiredTeamText([{ '#text': 'Unlabeled team name' }])).toBe(false);
   });
 
   it('does not open from the icon trigger when disabled', async () => {

@@ -15,7 +15,7 @@
 import DataNotification from '@/components/Notification/DataNotification';
 import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 import { getNotifyReviews } from '@/services/reviews/api';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -839,6 +839,31 @@ describe('DataNotification Component', () => {
       expect(screen.getByText('Only Chinese Name')).toBeInTheDocument();
       expect(screen.getByText('Approved')).toBeInTheDocument();
     });
+  });
+
+  it('should render a dash when the localized name and first entry are both missing', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          name: [],
+          teamName: 'Missing-name team',
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const teamCell = await screen.findByText('Missing-name team');
+    const row = teamCell.closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLTableRowElement).getAllByRole('cell')[0]).toHaveTextContent('-');
   });
 
   it('does not call onDataLoaded when only pagination changes', async () => {

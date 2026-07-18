@@ -13,10 +13,12 @@ const mockGetILCDFlowCategorization = jest.fn();
 
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolver) => {
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolver, rejecter) => {
     resolve = resolver;
+    reject = rejecter;
   });
-  return { promise, resolve };
+  return { promise, reject, resolve };
 };
 
 jest.mock('@/services/general/util', () => ({
@@ -169,5 +171,54 @@ describe('LevelTextItemDescription', () => {
 
     expect(screen.queryByText('Stale process class')).not.toBeInTheDocument();
     expect(screen.getByText('Current flow class')).toBeInTheDocument();
+  });
+
+  it('clears the previous locale and contains active and stale request failures', async () => {
+    const [initialLanguage, staleLanguage, currentLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(currentLanguage).toBeDefined();
+    const staleRequest = deferred<any>();
+    mockGetILCDClassification
+      .mockResolvedValueOnce({
+        data: [{ id: 'class-id', label: 'Initial class' }],
+        success: true,
+      })
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockRejectedValueOnce(new Error('current locale failed'));
+    mockGenClassStr.mockImplementation((_data, _index, nodes) => nodes[0].label);
+
+    const renderControl = (lang: string) => (
+      <LevelTextItemDescription
+        data={['class-id']}
+        lang={lang}
+        categoryType='Process'
+        flowType='Product flow'
+      />
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    expect(await screen.findByText('Initial class')).toBeInTheDocument();
+    rerender(renderControl(staleLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', staleLanguage, [
+        'class-id',
+      ]);
+    });
+
+    rerender(renderControl(currentLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', currentLanguage, [
+        'class-id',
+      ]);
+      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getByTestId('level-spin')).toHaveAttribute('data-spinning', 'false');
+    });
+
+    await act(async () => {
+      staleRequest.reject(new Error('stale locale failed'));
+      await staleRequest.promise.catch(() => undefined);
+    });
+
+    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.queryByText('Initial class')).not.toBeInTheDocument();
   });
 });

@@ -8,10 +8,12 @@ let latestSelectProps: any = null;
 
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolver) => {
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolver, rejecter) => {
     resolve = resolver;
+    reject = rejecter;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 };
 
 jest.mock('umi', () => ({
@@ -277,5 +279,76 @@ describe('LocationTextItemForm', () => {
 
     expect(screen.queryByRole('button', { name: 'OLD (Stale location)' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'DE (Current location)' })).toBeInTheDocument();
+  });
+
+  it('keeps options empty when the current language request rejects', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const nextRequest = deferred<any>();
+    mockGetILCDLocationAll.mockResolvedValueOnce({
+      success: true,
+      data: [{ location: [{ '@value': 'EN', '#text': 'Initial location' }] }],
+    });
+    mockGetILCDLocationAll.mockReturnValueOnce(nextRequest.promise);
+    const renderControl = (lang: string) => (
+      <Wrapper>
+        <LocationTextItemForm name='loc' label='Location' lang={lang} onData={jest.fn()} />
+      </Wrapper>
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    expect(
+      await screen.findByRole('button', { name: 'EN (Initial location)' }),
+    ).toBeInTheDocument();
+
+    rerender(renderControl(nextLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDLocationAll).toHaveBeenCalledWith(nextLanguage);
+    });
+
+    await act(async () => {
+      nextRequest.reject(new Error('location request failed'));
+      await nextRequest.promise.catch(() => undefined);
+    });
+
+    expect(screen.queryByRole('button', { name: 'EN (Initial location)' })).not.toBeInTheDocument();
+    expect(latestSelectProps.options).toEqual([]);
+  });
+
+  it('ignores rejected requests after a language switch and after unmount', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const staleRequest = deferred<any>();
+    const unmountedRequest = deferred<any>();
+    mockGetILCDLocationAll
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockReturnValueOnce(unmountedRequest.promise);
+    const renderControl = (lang: string) => (
+      <Wrapper>
+        <LocationTextItemForm name='loc' label='Location' lang={lang} onData={jest.fn()} />
+      </Wrapper>
+    );
+    const { rerender, unmount } = render(renderControl(initialLanguage));
+
+    await waitFor(() => {
+      expect(mockGetILCDLocationAll).toHaveBeenCalledWith(initialLanguage);
+    });
+    rerender(renderControl(nextLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDLocationAll).toHaveBeenCalledWith(nextLanguage);
+    });
+
+    await act(async () => {
+      staleRequest.reject(new Error('stale location request failed'));
+      await staleRequest.promise.catch(() => undefined);
+    });
+
+    unmount();
+    await act(async () => {
+      unmountedRequest.reject(new Error('unmounted location request failed'));
+      await unmountedRequest.promise.catch(() => undefined);
+    });
+
+    expect(mockGetILCDLocationAll).toHaveBeenCalledTimes(2);
   });
 });
