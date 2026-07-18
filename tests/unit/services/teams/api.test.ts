@@ -114,6 +114,19 @@ describe('teams api task-4 boundaries', () => {
     });
   });
 
+  it('reports a ranked-team query error instead of treating it as an empty success', async () => {
+    const queryBuilder = createQueryBuilder({
+      data: null,
+      error: { message: 'teams unavailable' },
+    });
+    supabase.from.mockReturnValueOnce(queryBuilder);
+
+    await expect(getTeams()).resolves.toEqual({
+      data: [],
+      success: false,
+    });
+  });
+
   it('searches teams by keyword and reports failures', async () => {
     const successBuilder = createQueryBuilder({
       data: [{ id: 'team-2' }],

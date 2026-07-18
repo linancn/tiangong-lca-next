@@ -1,10 +1,16 @@
 import deValidatorMessages from '@/locales/de-DE/validator';
 import enValidatorMessages from '@/locales/en-US/validator';
+import frValidatorMessages from '@/locales/fr-FR/validator';
 import zhValidatorMessages from '@/locales/zh-CN/validator';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import { getReferenceUnits } from '@/services/unitgroups/api';
 import { Classification } from './data';
+import {
+  getLocaleDefinition,
+  normalizeSupportedAppLocale,
+  type SupportedAppLocale,
+} from './localeRegistry';
 
 export type RefVersionItem = {
   key: string;
@@ -407,11 +413,8 @@ export function genClassJsonZH(data: any[], index: number, classification: any[]
 }
 
 export function getLang(locale: string) {
-  if (locale === 'zh-CN') {
-    return 'zh';
-  } else {
-    return 'en';
-  }
+  const normalizedLocale = normalizeSupportedAppLocale(locale);
+  return normalizedLocale ? getLocaleDefinition(normalizedLocale).fallbacks.dataLanguage : 'en';
 }
 
 export function getLangText(langTexts: any, lang: string) {
@@ -763,12 +766,13 @@ export async function normalizeLangPayloadBeforeSave(
 }
 
 const getLangValidationLocaleMessages = (locale: string) => {
-  const normalizedLocale = locale === 'zh-CN' || locale === 'de-DE' ? locale : 'en-US';
+  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? 'en-US';
   const messagesByLocale = {
     'zh-CN': zhValidatorMessages,
     'en-US': enValidatorMessages,
     'de-DE': deValidatorMessages,
-  } as const;
+    'fr-FR': frValidatorMessages,
+  } as const satisfies Record<SupportedAppLocale, Record<string, string>>;
   const fallbackMessages = {
     'zh-CN': {
       missingEnglish: '保存失败，以下字段缺少英文：{fields}.',
@@ -789,7 +793,17 @@ const getLangValidationLocaleMessages = (locale: string) => {
         'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}; außerdem {count, plural, one {# weiteres Feld} other {# weitere Felder}}.',
       root: '(Stammebene)',
     },
-  } as const;
+    'fr-FR': {
+      missingEnglish:
+        'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : {fields}.',
+      missingEnglishMore:
+        'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : {fields}, plus {count, plural, one {# champ supplémentaire} other {# champs supplémentaires}}.',
+      root: '(racine)',
+    },
+  } as const satisfies Record<
+    SupportedAppLocale,
+    { missingEnglish: string; missingEnglishMore: string; root: string }
+  >;
   const messages = messagesByLocale[normalizedLocale] as Record<string, string>;
   const fallback = fallbackMessages[normalizedLocale];
 

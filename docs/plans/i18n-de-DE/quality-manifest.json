@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "tiangong.i18n-locale-quality.v1",
+  "locale": "de-DE",
+  "source": {
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "4f5dc2600ec7150246cf76b5f338a41a6bf1e2943327f639aaf3ef00a4414391",
+    "contextDigest": "6aeaf923a21ea2374f7e49f55d229d989abd526c9ff65148278ac09b5ed61f38"
+  },
+  "catalog": {
+    "messageCount": 3026,
+    "catalogDigest": "5dfaf127dfc65ae3067761bad8693187cebd92689fabd0f92f9d09302f571d59",
+    "emptyTranslationCount": 0,
+    "acceptedSourceEmptyCount": 1,
+    "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
+    "cjkLeakCount": 0,
+    "suspiciousSourceEqualityCount": 34,
+    "suspiciousSourceEqualityDigest": "00666eac48624bb3a2fb020efe0d66dd9b4037058c3a42fd54ea733ad853a93c",
+    "acceptedTechnicalSourceEqualityCount": 1,
+    "acceptedTechnicalSourceEqualityDigest": "17357735c377540dc462f8726480aaced552158665091792d5f3393118f84430",
+    "acceptedDeclaredSourceEqualityCount": 0,
+    "acceptedDeclaredSourceEqualityDigest": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "forbiddenGlossaryMatchCount": 0,
+    "forbiddenGlossaryMatchDigest": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "suspiciousSourceEqualityRatio": 0.011235955056179775,
+    "maxSuspiciousSourceEqualityRatio": 0.02
+  },
+  "automatedChecks": {
+    "exactTopology": true,
+    "exactKeyParity": true,
+    "icuAndPlaceholderParity": true,
+    "defaultMessageParity": true,
+    "dynamicFamiliesClosed": true,
+    "routeViewCoverageComplete": true,
+    "everyMessageDossierComplete": true,
+    "typedContentTopologyComplete": true,
+    "allHighRiskMessagesIndependentlyReviewed": true,
+    "humanTranslationReviewRequired": false,
+    "blockedContextCount": 0
+  },
+  "independentReview": {
+    "path": "docs/plans/i18n-de-DE/automated-review.json",
+    "digest": "32dbe56d94d38d4a3aed8779bfbde0cc54d0ae681a63d115d1292f41c7c97b6b",
+    "reviewDigest": "acd6249c8175b0cea07b626691e725a448adbe45de972aee77b8667a4eadb814",
+    "laneCount": 3,
+    "reviewedMessageCount": 3026,
+    "reviewedModuleCount": 31,
+    "highRiskMessageCount": 1337,
+    "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
+    "lowRiskPolicy": "validated family rules with cross-module sampling; no unreviewed exceptions",
+    "blockedItems": 0,
+    "humanTranslationReviewRequired": false
+  },
+  "qualityDigest": "6d5391ec66e2af93a16986f6825fd5b625ccd1f9ec56f3e44d2c1a15665a2d92"
+}

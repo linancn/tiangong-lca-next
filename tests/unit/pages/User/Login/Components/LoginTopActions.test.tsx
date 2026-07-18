@@ -16,6 +16,12 @@ jest.mock('umi', () => ({
       if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
         return 'Englische Hilfedokumentation öffnen';
       }
+      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.englishFallback') {
+        return 'Ouvrir la documentation d’aide (en anglais)';
+      }
+      if (mockLocale === 'fr-FR' && id === 'pages.theme.toggleDarkMode') {
+        return 'Activer ou désactiver le mode sombre';
+      }
       return defaultMessage ?? id;
     },
   }),
@@ -23,7 +29,17 @@ jest.mock('umi', () => ({
 
 jest.mock('@/components/RightContent', () => ({
   __esModule: true,
-  DarkMode: ({ isDarkMode }: any) => <span>{isDarkMode ? 'dark-on' : 'dark-off'}</span>,
+  DarkMode: ({ handleClick, isDarkMode }: any) => (
+    <button
+      type='button'
+      aria-label={
+        mockLocale === 'fr-FR' ? 'Activer ou désactiver le mode sombre' : 'Toggle dark mode'
+      }
+      onClick={handleClick}
+    >
+      {isDarkMode ? 'dark-on' : 'dark-off'}
+    </button>
+  ),
   SelectLang: ({ style }: any) => (
     <span data-testid='select-lang-trigger' style={style} onClick={mockSelectLangTrigger}>
       select-lang-trigger
@@ -73,7 +89,7 @@ describe('LoginTopActions', () => {
 
     await userEvent.hover(screen.getByTestId('login-dark-mode'));
     await userEvent.unhover(screen.getByTestId('login-dark-mode'));
-    await userEvent.click(screen.getByRole('button', { name: 'toggle-dark-mode' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Toggle dark mode' }));
 
     expect(onDarkModeToggle).toHaveBeenCalledTimes(1);
     expect(screen.getByText('dark-off')).toBeInTheDocument();
@@ -109,7 +125,7 @@ describe('LoginTopActions', () => {
     const onDarkModeToggle = jest.fn();
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={onDarkModeToggle} />);
 
-    screen.getByRole('button', { name: 'toggle-dark-mode' }).focus();
+    screen.getByRole('button', { name: 'Toggle dark mode' }).focus();
     await userEvent.keyboard('{Enter}');
     screen.getByRole('button', { name: 'Select a language' }).focus();
     await userEvent.keyboard('{Enter}');
@@ -161,6 +177,23 @@ describe('LoginTopActions', () => {
       name: 'Englische Hilfedokumentation öffnen',
     });
     expect(helpAction).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    await userEvent.click(helpAction);
+
+    expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
+  });
+
+  it('opens explicitly labelled English docs for French without inventing a /fr route', async () => {
+    mockLocale = 'fr-FR';
+
+    renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
+
+    const helpAction = screen.getByRole('button', {
+      name: 'Ouvrir la documentation d’aide (en anglais)',
+    });
+    expect(
+      screen.getByRole('button', { name: 'Activer ou désactiver le mode sombre' }),
+    ).toBeInTheDocument();
+    expect(helpAction).toHaveAttribute('title', 'Ouvrir la documentation d’aide (en anglais)');
     await userEvent.click(helpAction);
 
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');

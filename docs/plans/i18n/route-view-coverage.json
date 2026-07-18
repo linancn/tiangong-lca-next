@@ -1,0 +1,409 @@
+{
+  "schemaVersion": "tiangong.i18n-route-view-coverage.v2",
+  "supportedLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+  "sourceRouteConfig": "config/routes.ts",
+  "policy": {
+    "catalogOwnership": "Every reachable static string belongs to the shared locale catalog or to an explicitly declared fallback row.",
+    "queryPersistence": "Locale switching, root redirect, and refresh preserve the route query and selected view.",
+    "publicAccess": "Configured routes are protected by default; an explicit allowlist covers public leaves and the configured wildcard renders an anonymous 404.",
+    "blockedContextAllowed": false
+  },
+  "rows": [
+    {
+      "route": "/",
+      "viewState": "redirect-to-welcome",
+      "trigger": "Open / or /?view=carbon-footprint; the route redirects to /welcome and keeps the query.",
+      "component": "config/routes.ts redirect -> src/pages/Welcome.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/app.tsx",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/pages/Welcome.tsx",
+          "src/locales/en-US/pages_home.ts"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": ["pages.welcome.overview."],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "anonymous-redirect",
+        "authenticated-redirect",
+        "query-preserving-redirect"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog after redirect",
+        "structureAudit": "exact topology, key, ICU, and route ownership",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/app.test.tsx",
+          "tests/unit/services/general/publicRoutePolicy.test.ts"
+        ],
+        "browserAssertions": ["anonymous / reaches /welcome without /user/login"]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/welcome",
+      "viewState": "overview",
+      "trigger": "Open /welcome directly or select the overview navigation action.",
+      "component": "src/pages/Welcome.tsx",
+      "copySources": {
+        "sourcePaths": ["src/app.tsx", "src/pages/Welcome.tsx", "src/locales/en-US/pages_home.ts"],
+        "localeMessageIds": ["pages.welcome", "pages.dataEcosystem"],
+        "localeMessageIdPrefixes": ["pages.welcome.overview."],
+        "declaredFallbacks": ["English TIDAS docs and media for non-Chinese locales"]
+      },
+      "visibleStates": [
+        "anonymous-direct",
+        "metrics",
+        "data-team-modal-loading",
+        "data-team-modal-ready",
+        "data-team-modal-empty",
+        "data-team-modal-error",
+        "TIDAS-modal-light",
+        "TIDAS-modal-dark",
+        "navigation-actions",
+        "locale-switch",
+        "refresh"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog; component-local en/zh maps removed",
+        "structureAudit": "exact topology, key, ICU, media alt, ARIA, and fallback coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
+        "browserAssertions": [
+          "French overview title, sections, metrics, actions, TIDAS modal, and team modal states"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/welcome?view=carbon-footprint",
+      "viewState": "carbon-footprint-guide",
+      "trigger": "Open the exact query URL, follow the carbon-footprint action, switch locale, or refresh.",
+      "component": "src/pages/Welcome.tsx",
+      "copySources": {
+        "sourcePaths": ["src/app.tsx", "src/pages/Welcome.tsx", "src/locales/en-US/pages_home.ts"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": ["pages.welcome.carbonFootprintGuide."],
+        "declaredFallbacks": ["Localized media error and retry copy"]
+      },
+      "visibleStates": [
+        "anonymous-query-direct",
+        "video-loading",
+        "video-ready",
+        "video-error",
+        "video-retry",
+        "preparation",
+        "workflow",
+        "schema",
+        "navigation-actions",
+        "locale-switch-preserves-query",
+        "refresh-preserves-query"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, key, ICU, schema, media, ARIA, and query-state coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
+        "browserAssertions": [
+          "French guide title, body, steps, schema, media states, actions, query switch, and refresh"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/user/login",
+      "viewState": "login-and-register",
+      "trigger": "Open /user/login, switch tabs, submit invalid data, or open top actions.",
+      "component": "src/pages/User/Login/index.tsx + src/pages/User/Login/Components/LoginTopActions.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "src/app.tsx",
+          "src/requestErrorConfig.ts",
+          "src/pages/User/Login/index.tsx",
+          "src/pages/User/Login/Components/LoginTopActions.tsx",
+          "src/locales/en-US/pages.ts",
+          "src/locales/en-US/pages_general.ts",
+          "src/locales/en-US/globalHeader.ts"
+        ],
+        "localeMessageIds": [
+          "pages.login.accountLogin.tab",
+          "pages.login.terms",
+          "pages.theme.toggleDarkMode",
+          "pages.lang.select"
+        ],
+        "localeMessageIdPrefixes": ["pages.login.", "component.request."],
+        "declaredFallbacks": ["English legal documents and English documentation"]
+      },
+      "visibleStates": [
+        "login",
+        "register",
+        "submission-loading",
+        "validation-error",
+        "service-success",
+        "service-error",
+        "legal-English-fallback",
+        "locale-selector",
+        "dark-mode",
+        "localized-tooltip",
+        "keyboard-actions"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog plus declared English legal/docs fallback",
+        "structureAudit": "exact topology, key, ICU, ARIA, selector, service error, and fallback coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/User/Login/index.test.tsx",
+          "tests/unit/pages/User/Login/Components/LoginTopActions.test.tsx",
+          "tests/unit/requestErrorConfig.test.ts",
+          "tests/unit/components/RightContent.test.tsx"
+        ],
+        "browserAssertions": [
+          "anonymous French selector, legal/docs disclosure, and dark-mode action"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/user/login/password_forgot",
+      "viewState": "password-forgot",
+      "trigger": "Open the forgot-password link and submit empty, invalid, successful, or failing requests.",
+      "component": "src/pages/User/Login/password_forgot.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "src/app.tsx",
+          "src/pages/User/Login/password_forgot.tsx",
+          "src/locales/en-US/pages.ts"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": ["pages.login.passwordForgot."],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "prefill-loading",
+        "prefill-unavailable-form-fallback",
+        "form",
+        "validation-error",
+        "success",
+        "service-error",
+        "locale-selector",
+        "dark-mode",
+        "keyboard-actions"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/User/Login/password_forgot.test.tsx"],
+        "browserAssertions": [
+          "anonymous French form and validation state",
+          "rejected session prefill stops loading and leaves the form usable"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/user/login/password_reset",
+      "viewState": "password-reset",
+      "trigger": "Open the reset URL and submit empty, invalid, successful, or failing requests.",
+      "component": "src/pages/User/Login/password_reset.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "src/app.tsx",
+          "src/pages/User/Login/password_reset.tsx",
+          "src/locales/en-US/pages.ts"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": ["pages.login.passwordReset."],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "session-loading",
+        "session-unavailable",
+        "request-new-link-action",
+        "form",
+        "validation-error",
+        "success",
+        "service-error",
+        "locale-selector",
+        "dark-mode",
+        "keyboard-actions"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/User/Login/password_reset.test.tsx"],
+        "browserAssertions": [
+          "anonymous French form and validation state",
+          "missing or rejected reset session exposes a localized recovery action"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/dashboard/national-carbon",
+      "viewState": "national-carbon-dashboard",
+      "trigger": "Open as an admin and traverse screen, status, map, matrix, and flow-topology controls.",
+      "component": "src/pages/NationalCarbonDashboard/index.tsx + ProcessFlowGraphPanel.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "src/pages/NationalCarbonDashboard/index.tsx",
+          "src/pages/NationalCarbonDashboard/i18n.ts",
+          "src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/ProcessFlowGraphPanel.tsx",
+          "src/locales/en-US/pages_home.ts"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": ["pages.home.nationalCarbon."],
+        "declaredFallbacks": [
+          "Unknown dataset labels remain source data; stable dashboard tokens are localized"
+        ]
+      },
+      "visibleStates": [
+        "access-denied",
+        "loading",
+        "error",
+        "graph-retry-action",
+        "empty",
+        "overview",
+        "map-status",
+        "outcome-metrics",
+        "quality-completeness-status",
+        "connectivity",
+        "flow-topology",
+        "graph-cache-modal",
+        "autoplay",
+        "South-China-Sea-map-label"
+      ],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog plus typed source-data adapters",
+        "structureAudit": "exact topology, key, ICU, token, formatting, map, loading, error, and empty coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/NationalCarbonDashboard/index.test.tsx",
+          "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
+          "tests/unit/pages/NationalCarbonDashboard/processFlowGraphPanel.test.tsx"
+        ],
+        "browserAssertions": [
+          "representative authenticated French shared-header and dashboard state"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/terms_of_use.html",
+      "viewState": "static-legal-English-fallback",
+      "trigger": "Open the terms link from registration.",
+      "component": "public/terms_of_use.html",
+      "copySources": {
+        "sourcePaths": ["public/terms_of_use.html", "src/pages/User/Login/index.tsx"],
+        "localeMessageIds": ["pages.login.termsOfUse.englishFallbackLabel"],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": ["English legal document with hrefLang=en and localized disclosure"]
+      },
+      "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "declared English legal fallback",
+        "structureAudit": "fixed URL, hrefLang, and localized disclosure",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/User/Login/index.test.tsx"],
+        "browserAssertions": ["French disclosure opens the existing English terms URL"]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "/privacy_notice.html",
+      "viewState": "static-legal-English-fallback",
+      "trigger": "Open the privacy link from registration.",
+      "component": "public/privacy_notice.html",
+      "copySources": {
+        "sourcePaths": ["public/privacy_notice.html", "src/pages/User/Login/index.tsx"],
+        "localeMessageIds": ["pages.login.privacyNotice.englishFallbackLabel"],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": ["English legal document with hrefLang=en and localized disclosure"]
+      },
+      "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "declared English legal fallback",
+        "structureAudit": "fixed URL, hrefLang, and localized disclosure",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/User/Login/index.test.tsx"],
+        "browserAssertions": ["French disclosure opens the existing English privacy URL"]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "route": "*",
+      "viewState": "not-found",
+      "trigger": "Open any pathname not matched by a configured application route.",
+      "component": "src/pages/404.tsx",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/app.tsx",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/pages/404.tsx",
+          "src/locales/en-US/pages.ts"
+        ],
+        "localeMessageIds": ["pages.404.subTitle", "pages.404.buttonText"],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": ["anonymous-unknown-path", "authenticated-unknown-path", "back-home-action"],
+      "targetCoverage": {
+        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "ownership": "shared locale catalog",
+        "structureAudit": "default-deny configured-route policy plus explicit anonymous wildcard fallback",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/app.test.tsx",
+          "tests/unit/services/general/publicRoutePolicy.test.ts",
+          "tests/unit/pages/404.test.tsx"
+        ],
+        "browserAssertions": ["anonymous unknown pathname renders French 404 and Back Home action"]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    }
+  ]
+}

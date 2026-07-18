@@ -14,7 +14,7 @@ type ConfigProviderProps = {
 };
 
 type IconProps = {
-  onClick?: () => void;
+  'aria-hidden'?: boolean;
 };
 
 const configProviderThemes: string[] = [];
@@ -24,21 +24,13 @@ const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
   { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳' },
-  { lang: 'fr-FR', label: 'Français' },
+  { lang: 'fr-FR', label: 'Français (France)', icon: '🇫🇷' },
 ];
-let mockAvailableLocales = defaultAvailableLocales();
+let mockAvailableLocales: Array<Record<string, unknown>> = defaultAvailableLocales();
 
 jest.mock('@ant-design/icons', () => ({
-  MoonOutlined: ({ onClick }: IconProps) => (
-    <button type='button' aria-label='moon-icon' onClick={onClick}>
-      Moon
-    </button>
-  ),
-  SunFilled: ({ onClick }: IconProps) => (
-    <button type='button' aria-label='sun-icon' onClick={onClick}>
-      Sun
-    </button>
-  ),
+  MoonOutlined: (props: IconProps) => <span data-testid='moon-icon' {...props} />,
+  SunFilled: (props: IconProps) => <span data-testid='sun-icon' {...props} />,
   QuestionCircleOutlined: () => <span>?</span>,
 }));
 
@@ -62,6 +54,12 @@ jest.mock('@umijs/max', () => ({
     formatMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => {
       if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
         return 'Englische Hilfedokumentation öffnen';
+      }
+      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.englishFallback') {
+        return 'Ouvrir la documentation d’aide (en anglais)';
+      }
+      if (mockLocale === 'fr-FR' && id === 'pages.theme.toggleDarkMode') {
+        return 'Activer ou désactiver le mode sombre';
       }
       return defaultMessage ?? id;
     },
@@ -111,9 +109,12 @@ describe('RightContent Components', () => {
   it('renders dark mode toggle with moon icon by default and handles click', () => {
     render(<DarkMode handleClick={mockHandleClick} />);
 
-    const toggle = screen.getByRole('button', { name: 'moon-icon' });
+    const toggle = screen.getByRole('button', { name: 'Toggle dark mode' });
 
     expect(toggle).toBeInTheDocument();
+    expect(toggle).toHaveClass('tg-global-header-help-action');
+    expect(screen.getByTestId('moon-icon')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Toggle dark mode');
     expect(configProviderThemes.pop()).toBe('default-algorithm');
 
     fireEvent.click(toggle);
@@ -124,13 +125,28 @@ describe('RightContent Components', () => {
   it('uses sun icon when dark mode is active', () => {
     render(<DarkMode handleClick={mockHandleClick} isDarkMode />);
 
-    const toggle = screen.getByRole('button', { name: 'sun-icon' });
+    const toggle = screen.getByRole('button', { name: 'Toggle dark mode' });
 
     expect(toggle).toBeInTheDocument();
+    expect(screen.getByTestId('sun-icon')).toHaveAttribute('aria-hidden', 'true');
     expect(configProviderThemes.pop()).toBe('dark-algorithm');
 
     fireEvent.click(toggle);
 
+    expect(mockHandleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('localizes the shared-header dark mode action for French', () => {
+    mockLocale = 'fr-FR';
+
+    render(<DarkMode handleClick={mockHandleClick} />);
+
+    const toggle = screen.getByRole('button', {
+      name: 'Activer ou désactiver le mode sombre',
+    });
+    fireEvent.click(toggle);
+
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Activer ou désactiver le mode sombre');
     expect(mockHandleClick).toHaveBeenCalledTimes(1);
   });
 
@@ -183,6 +199,22 @@ describe('RightContent Components', () => {
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
   });
 
+  it('opens explicitly labelled English documentation for the French app locale', () => {
+    mockLocale = 'fr-FR';
+
+    render(<Question />);
+
+    const helpButton = screen.getByRole('button', {
+      name: 'Ouvrir la documentation d’aide (en anglais)',
+    });
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      'Ouvrir la documentation d’aide (en anglais)',
+    );
+    fireEvent.click(helpButton);
+
+    expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
+  });
+
   it('renders the language selector with padding style', () => {
     render(<SelectLang />);
 
@@ -201,13 +233,14 @@ describe('RightContent Components', () => {
     });
   });
 
-  it('preserves the Umi flag icons for the three product locales', () => {
+  it('preserves the Umi flag icons for all product locales', () => {
     render(<SelectLang />);
 
     expect(renderedLocales).toEqual([
-      { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳' },
-      { lang: 'en-US', label: 'English', icon: '🇺🇸' },
+      { lang: 'zh-CN', label: '简体中文', icon: '🇨🇳', title: '简体中文' },
+      { lang: 'en-US', label: 'English', icon: '🇺🇸', title: 'English' },
       { lang: 'de-DE', label: 'Deutsch', icon: '🇩🇪', title: 'Deutsch' },
+      { lang: 'fr-FR', label: 'Français', icon: '🇫🇷', title: 'Français' },
     ]);
   });
 
@@ -225,7 +258,11 @@ describe('RightContent Components', () => {
 
     render(<SelectLang />);
 
-    expect(renderedLocales[0]).toEqual({ lang: 'zh-CN' });
+    expect(renderedLocales[0]).toEqual({
+      lang: 'zh-CN',
+      label: '简体中文',
+      title: '简体中文',
+    });
   });
 });
 afterAll(() => {

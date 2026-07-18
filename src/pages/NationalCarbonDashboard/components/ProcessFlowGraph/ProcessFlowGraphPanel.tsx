@@ -21,8 +21,18 @@ import {
   SelectOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
+import { useIntl } from '@umijs/max';
 import { Modal, message } from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  formatDashboardExchangeAmount,
+  formatDashboardNumber as formatNumber,
+  getDashboardMapPathLabel,
+  getGraphCategoryLabel,
+  getQuickSelectLabel,
+  isChineseDashboardLocale,
+  type DashboardIntl,
+} from '../../i18n';
 import ProcessFlowGraphCanvas from './ProcessFlowGraphCanvas.client';
 import {
   getProcessFlowGraphNode,
@@ -44,11 +54,6 @@ import {
   resetProcessFlowGraphCacheLoaderState,
 } from './processFlowGraphCacheLoader';
 import styles from './styles.module.less';
-
-const numberFormatter = new Intl.NumberFormat('zh-CN');
-const exchangeAmountFormatter = new Intl.NumberFormat('zh-CN', {
-  maximumFractionDigits: 8,
-});
 const geoMapCacheSoftTimeoutMs = 4500;
 const initialGeoMapPrefetchGraceMs = 900;
 const graphCacheJobPollDelayMs = 3500;
@@ -80,28 +85,25 @@ type QuickSelectTarget = {
   nodeId: string;
 };
 
-function formatNumber(value: number): string {
-  return numberFormatter.format(value);
-}
-
 function getQuickSelectTarget(
+  intl: DashboardIntl,
   layoutMode: ProcessFlowGraphLayoutName,
   mapScope: ProcessFlowGraphMapScope,
 ): QuickSelectTarget {
   if (layoutMode === 'geoMap2d') {
     return mapScope === 'china'
       ? {
-          label: '粗钢生产',
+          label: getQuickSelectLabel(intl, 'china'),
           nodeId: quickSelectChinaMapProcessNodeId,
         }
       : {
-          label: '多晶硅光伏系统',
+          label: getQuickSelectLabel(intl, 'world'),
           nodeId: quickSelectWorldMapProcessNodeId,
         };
   }
 
   return {
-    label: '石灰石',
+    label: getQuickSelectLabel(intl, 'overview'),
     nodeId: quickSelectOverviewFlowNodeId,
   };
 }
@@ -128,70 +130,61 @@ function isGraphCacheJobFailure(job?: NationalCarbonGraphCacheWorkerJobResult): 
   return Boolean(job && graphCacheJobFailureStatuses.includes(job.status));
 }
 
-function getGraphCacheJobStatusLabel(job?: NationalCarbonGraphCacheWorkerJobResult): string {
+function getGraphCacheJobStatusLabel(
+  intl: DashboardIntl,
+  job?: NationalCarbonGraphCacheWorkerJobResult,
+): string {
   if (!job) {
-    return '未提交';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.notSubmitted' });
   }
 
   if (job.status === 'queued') {
-    return '排队中';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.queued' });
   }
   if (job.status === 'running') {
-    return job.phase ? `运行中：${job.phase}` : '运行中';
+    return job.phase
+      ? intl.formatMessage(
+          { id: 'pages.home.nationalCarbon.graph.job.runningPhase' },
+          { phase: job.phase },
+        )
+      : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.running' });
   }
   if (job.status === 'waiting') {
-    return '等待中';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.waiting' });
   }
   if (job.status === 'stale') {
-    return '待恢复';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.stale' });
   }
   if (job.status === 'completed') {
-    return '已完成';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.completed' });
   }
   if (job.status === 'blocked') {
-    return '已阻塞';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.blocked' });
   }
   if (job.status === 'failed') {
-    return '失败';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.failed' });
   }
   if (job.status === 'cancelled') {
-    return '已取消';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.job.cancelled' });
   }
 
   return job.status;
 }
 
-function getFlowTypeLabel(flowType?: string) {
+function getFlowTypeLabel(intl: DashboardIntl, flowType?: string) {
   if (flowType === 'Product flow') {
-    return '产品流';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.flowType.product' });
   }
   if (flowType === 'Waste flow') {
-    return '废物流';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.flowType.waste' });
   }
   if (flowType === 'Other flow') {
-    return '其他流';
+    return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.flowType.other' });
   }
-  return '非基础流';
+  return intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.flowType.nonElementary' });
 }
 
-const categoryLabelTranslations: Record<string, string> = {
-  'Agriculture, forestry and fishing': '农业、林业和渔业',
-  'Electricity, gas, steam and air conditioning supply': '电力、燃气、蒸汽和空调供应',
-  'Manufacture of chemicals and chemical products': '化学品及化学制品制造',
-  'Manufacture of computer, electronic and optical products': '计算机、电子和光学产品制造',
-  Manufacturing: '制造业',
-  'Ores and minerals': '矿石与矿物',
-  Transport: '运输',
-  'Water supply; sewerage, waste management and remediation activities':
-    '供水、污水处理、废弃物管理和修复活动',
-};
-
-function getCategoryPartLabel(categoryPart: string) {
-  const trimmedPart = categoryPart.trim();
-  return categoryLabelTranslations[trimmedPart] ?? trimmedPart;
-}
-
-function getLegacyCategoryParts(category?: string) {
+function getLegacyCategoryParts(intl: DashboardIntl, category?: string) {
   const categoryParts =
     category
       ?.split(categoryPathDelimiter)
@@ -199,7 +192,7 @@ function getLegacyCategoryParts(category?: string) {
       .filter(Boolean) ?? [];
 
   if (!categoryParts.length) {
-    return ['未分类'];
+    return [intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.category.uncategorized' })];
   }
 
   const cappedCategoryParts =
@@ -210,39 +203,43 @@ function getLegacyCategoryParts(category?: string) {
           categoryParts.slice(maxCategoryTreeDepth - 1).join(categoryPathDelimiter),
         ];
 
-  return cappedCategoryParts.map(getCategoryPartLabel);
+  return cappedCategoryParts.map((categoryPart) => getGraphCategoryLabel(intl, categoryPart));
 }
 
-function getCategoryLabel(category?: string) {
+function getCategoryLabel(intl: DashboardIntl, category?: string) {
   if (!category) {
     return '-';
   }
 
-  return getLegacyCategoryParts(category).join(categoryPathDelimiter);
+  return getLegacyCategoryParts(intl, category).join(categoryPathDelimiter);
 }
 
-function getNodeCategoryParts(node: ProcessFlowGraphNode) {
+function getNodeCategoryParts(intl: DashboardIntl, node: ProcessFlowGraphNode) {
+  const useChineseName = isChineseDashboardLocale(intl.locale);
   const structuredParts =
-    node.categoryPath?.map((item) => (item.zhName || item.name).trim()).filter(Boolean) ?? [];
+    node.categoryPath
+      ?.map((item) => (useChineseName ? item.zhName || item.name : item.name || item.zhName).trim())
+      .filter(Boolean)
+      .map((categoryPart) => getGraphCategoryLabel(intl, categoryPart)) ?? [];
 
-  return structuredParts.length ? structuredParts : getLegacyCategoryParts(node.category);
+  return structuredParts.length ? structuredParts : getLegacyCategoryParts(intl, node.category);
 }
 
-function getNodeCategoryDisplayPath(node: ProcessFlowGraphNode) {
+function getNodeCategoryDisplayPath(intl: DashboardIntl, node: ProcessFlowGraphNode) {
   const categoryDisplayPath = node.categoryDisplayPath?.trim();
-  if (categoryDisplayPath) {
+  if (categoryDisplayPath && isChineseDashboardLocale(intl.locale)) {
     return categoryDisplayPath;
   }
 
-  return getNodeCategoryParts(node).join(categoryPathDelimiter) || '-';
+  return getNodeCategoryParts(intl, node).join(categoryPathDelimiter) || '-';
 }
 
-function getNodeCategorySearchValues(node: ProcessFlowGraphNode) {
+function getNodeCategorySearchValues(intl: DashboardIntl, node: ProcessFlowGraphNode) {
   return [
     node.category,
-    getCategoryLabel(node.category),
+    getCategoryLabel(intl, node.category),
     node.categoryDisplayPath,
-    getNodeCategoryDisplayPath(node),
+    getNodeCategoryDisplayPath(intl, node),
     node.categorySystem,
     ...(node.categoryPath?.flatMap((item) => [
       item.id,
@@ -253,12 +250,17 @@ function getNodeCategorySearchValues(node: ProcessFlowGraphNode) {
   ];
 }
 
-function getExchangeDirectionLabel(direction: ProcessFlowGraphEdge['direction']) {
-  return direction === 'input' ? '输入' : '输出';
+function getExchangeDirectionLabel(
+  intl: DashboardIntl,
+  direction: ProcessFlowGraphEdge['direction'],
+) {
+  return direction === 'input'
+    ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.input' })
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.output' });
 }
 
 function formatExchangeAmount(amount?: number) {
-  return Number.isFinite(amount) ? exchangeAmountFormatter.format(amount as number) : '-';
+  return formatDashboardExchangeAmount(amount);
 }
 
 function getNodeEdgeRows(
@@ -325,6 +327,7 @@ function createCategoryTreeNode(
   rawLabel: string,
   path: string[],
   depth: number,
+  rootLabel: string,
 ): MutableCategoryTreeNode {
   return {
     children: [],
@@ -334,7 +337,7 @@ function createCategoryTreeNode(
     exchangeCount: 0,
     items: [],
     key: getCategoryTreeNodeKey(path),
-    label: rawLabel || '全部分类',
+    label: rawLabel || rootLabel,
     path,
     rawLabel,
   };
@@ -372,20 +375,21 @@ function finalizeCategoryTreeNode(categoryNode: MutableCategoryTreeNode): Catego
   };
 }
 
-function buildCategoryTree(nodes: ProcessFlowGraphNode[]): CategoryTreeNode {
-  const rootNode = createCategoryTreeNode('', [], 0);
+function buildCategoryTree(intl: DashboardIntl, nodes: ProcessFlowGraphNode[]): CategoryTreeNode {
+  const rootLabel = intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.allCategories' });
+  const rootNode = createCategoryTreeNode('', [], 0, rootLabel);
 
   nodes.forEach((graphNode) => {
     let currentNode = rootNode;
     currentNode.count += 1;
     currentNode.exchangeCount += graphNode.degree;
 
-    getNodeCategoryParts(graphNode).forEach((categoryPart, categoryIndex) => {
+    getNodeCategoryParts(intl, graphNode).forEach((categoryPart, categoryIndex) => {
       const childPath = [...currentNode.path, categoryPart];
       let childNode = currentNode.childrenByRawLabel.get(categoryPart);
 
       if (!childNode) {
-        childNode = createCategoryTreeNode(categoryPart, childPath, categoryIndex + 1);
+        childNode = createCategoryTreeNode(categoryPart, childPath, categoryIndex + 1, rootLabel);
         currentNode.childrenByRawLabel.set(categoryPart, childNode);
       }
 
@@ -400,7 +404,11 @@ function buildCategoryTree(nodes: ProcessFlowGraphNode[]): CategoryTreeNode {
   return finalizeCategoryTreeNode(rootNode);
 }
 
-function doesCategoryTreeSearchMatch(node: ProcessFlowGraphNode, normalizedQuery: string) {
+function doesCategoryTreeSearchMatch(
+  intl: DashboardIntl,
+  node: ProcessFlowGraphNode,
+  normalizedQuery: string,
+) {
   if (!normalizedQuery) {
     return true;
   }
@@ -408,10 +416,10 @@ function doesCategoryTreeSearchMatch(node: ProcessFlowGraphNode, normalizedQuery
   return [
     node.id,
     node.name,
-    ...getNodeCategorySearchValues(node),
+    ...getNodeCategorySearchValues(intl, node),
     node.location,
     node.flowType,
-    node.flowType ? getFlowTypeLabel(node.flowType) : undefined,
+    node.flowType ? getFlowTypeLabel(intl, node.flowType) : undefined,
   ].some((searchValue) => searchValue?.toLowerCase().includes(normalizedQuery));
 }
 
@@ -446,7 +454,7 @@ function getCategoryTreeBreadcrumbs(
     {
       count: categoryTree.count,
       key: categoryTree.key,
-      label: '全部',
+      label: categoryTree.label,
     },
   ];
   let currentNode = categoryTree;
@@ -493,6 +501,7 @@ function getCategoryShareStyle(count: number, maxCount: number) {
 }
 
 function getCategorySearchResults(
+  intl: DashboardIntl,
   categoryTree: CategoryTreeNode | undefined,
   nodes: ProcessFlowGraphNode[],
   normalizedQuery: string,
@@ -526,7 +535,9 @@ function getCategorySearchResults(
     visitCategoryNode(categoryTree);
   }
 
-  const matchingNodes = nodes.filter((node) => doesCategoryTreeSearchMatch(node, normalizedQuery));
+  const matchingNodes = nodes.filter((node) =>
+    doesCategoryTreeSearchMatch(intl, node, normalizedQuery),
+  );
 
   return {
     categoryMatches,
@@ -551,6 +562,7 @@ function CategoryRadarIndex({
   onSelectNode: (nodeId: string) => void;
   selectedNodeId?: string;
 }) {
+  const intl = useIntl();
   const breadcrumbs = getCategoryTreeBreadcrumbs(categoryTree, activeNode);
   const breadcrumbLabel = getCategoryBreadcrumbLabel(breadcrumbs);
   const shouldShowBreadcrumbPath = breadcrumbs.length > 1;
@@ -585,11 +597,17 @@ function CategoryRadarIndex({
   );
 
   return (
-    <section className={sectionClassName} aria-label='分类雷达索引'>
+    <section
+      className={sectionClassName}
+      aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.categoryIndex' })}
+    >
       {shouldShowBreadcrumbPath && (
         <nav
           className={styles.categoryIndexPath}
-          aria-label={`当前分类路径：${breadcrumbLabel}`}
+          aria-label={intl.formatMessage(
+            { id: 'pages.home.nationalCarbon.graph.currentCategoryPath' },
+            { path: breadcrumbLabel },
+          )}
           title={breadcrumbLabel}
         >
           {leadingBreadcrumbs.map((breadcrumb, index) => renderBreadcrumbButton(breadcrumb, index))}
@@ -598,7 +616,9 @@ function CategoryRadarIndex({
               <button
                 aria-haspopup='menu'
                 className={styles.categoryIndexOverflowButton}
-                title='悬浮查看中间分类'
+                title={intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.graph.intermediateCategories',
+                })}
                 type='button'
               >
                 <i aria-hidden='true'>/</i>
@@ -664,7 +684,10 @@ function CategoryRadarIndex({
         </ul>
       ) : (
         <div className={styles.categoryTreeEmpty} role='status'>
-          当前分类暂无{nodeKindLabel}
+          {intl.formatMessage(
+            { id: 'pages.home.nationalCarbon.graph.noItemsInCategory' },
+            { kind: nodeKindLabel },
+          )}
         </div>
       )}
     </section>
@@ -684,6 +707,7 @@ function CategorySearchPanel({
   results: CategorySearchResults;
   selectedNodeId?: string;
 }) {
+  const intl = useIntl();
   const hasResults = results.totalCategoryMatches > 0 || results.totalNodeMatches > 0;
   const shouldShowNodeMatches = results.nodeMatches.length > 0;
   const shouldShowCategoryMatches = !shouldShowNodeMatches && results.categoryMatches.length > 0;
@@ -691,13 +715,18 @@ function CategorySearchPanel({
   const visibleSearchLimit = shouldShowNodeMatches
     ? maxNodeSearchResults
     : maxCategorySearchResults;
-  const visibleSearchType = shouldShowNodeMatches ? nodeKindLabel : '分类';
+  const visibleSearchType = shouldShowNodeMatches
+    ? nodeKindLabel
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.category' });
   const hasMoreVisibleResults = shouldShowNodeMatches
     ? results.totalNodeMatches > results.nodeMatches.length
     : results.totalCategoryMatches > results.categoryMatches.length;
 
   return (
-    <section className={styles.categorySearchPanel} aria-label='分类搜索结果'>
+    <section
+      className={styles.categorySearchPanel}
+      aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.searchResults' })}
+    >
       {hasResults ? (
         <>
           {shouldShowNodeMatches && (
@@ -713,11 +742,11 @@ function CategorySearchPanel({
                       .filter(Boolean)
                       .join(' ')}
                     onClick={() => onSelectNode(itemNode.id)}
-                    title={`${itemNode.name} / ${getNodeCategoryDisplayPath(itemNode)}`}
+                    title={`${itemNode.name} / ${getNodeCategoryDisplayPath(intl, itemNode)}`}
                     type='button'
                   >
                     <strong>{itemNode.name}</strong>
-                    <small>{getNodeCategoryDisplayPath(itemNode)}</small>
+                    <small>{getNodeCategoryDisplayPath(intl, itemNode)}</small>
                   </button>
                 </li>
               ))}
@@ -745,14 +774,19 @@ function CategorySearchPanel({
           )}
           {hasMoreVisibleResults && (
             <div className={styles.categorySearchHint}>
-              仅展示前 {visibleSearchLimit} 条匹配{visibleSearchType}
-              ，可继续输入关键词缩小范围
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.graph.searchLimit' },
+                { limit: visibleSearchLimit, type: visibleSearchType },
+              )}
             </div>
           )}
         </>
       ) : (
         <div className={styles.categoryTreeEmpty} role='status'>
-          未找到匹配的{nodeKindLabel}
+          {intl.formatMessage(
+            { id: 'pages.home.nationalCarbon.graph.noSearchMatch' },
+            { kind: nodeKindLabel },
+          )}
         </div>
       )}
     </section>
@@ -773,6 +807,7 @@ function Inspector({
   isExiting?: boolean;
   node: ProcessFlowGraphNode;
 }) {
+  const intl = useIntl();
   const edgeRows = useMemo(() => getNodeEdgeRows(data, node), [data, node]);
   const selection = useMemo(() => getProcessFlowGraphSelection(data, node.id), [data, node]);
   const summary = useMemo(() => summarizeProcessFlowSelection(data, selection), [data, selection]);
@@ -789,31 +824,41 @@ function Inspector({
       </div>
       <div className={styles.inspectorMetricGrid}>
         <div>
-          <span>关联过程</span>
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.relatedProcesses' })}
+          </span>
           <strong>{formatNumber(summary.relatedProcesses)}</strong>
         </div>
         <div>
-          <span>关联流</span>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.relatedFlows' })}</span>
           <strong>{formatNumber(summary.relatedFlows)}</strong>
         </div>
         <div>
-          <span>输入</span>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.input' })}</span>
           <strong>{formatNumber(summary.inputEdges || inputEdges.length)}</strong>
         </div>
         <div>
-          <span>输出</span>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.output' })}</span>
           <strong>{formatNumber(summary.outputEdges || outputEdges.length)}</strong>
         </div>
       </div>
       <div className={styles.edgeList}>
-        <span>输入/输出（{formatNumber(edgeRows.length)}）</span>
-        <div aria-label='输入/输出明细列表' className={styles.edgeRows}>
+        <span>
+          {intl.formatMessage(
+            { id: 'pages.home.nationalCarbon.graph.exchangeCount' },
+            { count: formatNumber(edgeRows.length) },
+          )}
+        </span>
+        <div
+          aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.exchangeList' })}
+          className={styles.edgeRows}
+        >
           {edgeRows.map((edge) => {
             const connectedNodeName = getConnectedNodeName(data, edge, node.id);
             return (
               <div key={edge.id} title={connectedNodeName}>
                 <i className={edge.direction === 'input' ? styles.inputDot : styles.outputDot} />
-                <strong>{getExchangeDirectionLabel(edge.direction)}</strong>
+                <strong>{getExchangeDirectionLabel(intl, edge.direction)}</strong>
                 <em>{connectedNodeName}</em>
                 <b>
                   {formatExchangeAmount(edge.amount)}
@@ -822,7 +867,11 @@ function Inspector({
               </div>
             );
           })}
-          {!edgeRows.length && <small>暂无高亮交换</small>}
+          {!edgeRows.length && (
+            <small>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.noHighlightedExchange' })}
+            </small>
+          )}
         </div>
       </div>
     </aside>
@@ -838,10 +887,16 @@ function GraphLoadState({
   description?: string;
   title?: string;
 }) {
+  const intl = useIntl();
   const isLoading = dataSource === 'loading';
-  const displayTitle = title ?? (isLoading ? '' : '暂无可用数据');
+  const displayTitle =
+    title ??
+    (isLoading ? '' : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.noData.title' }));
   const displayDescription =
-    description ?? (isLoading ? '' : '缓存暂不可用，等待图谱缓存生成后将恢复展示');
+    description ??
+    (isLoading
+      ? ''
+      : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.noData.description' }));
 
   return (
     <div
@@ -905,6 +960,7 @@ function GraphLoadState({
 }
 
 export default function ProcessFlowGraphPanel() {
+  const intl = useIntl();
   const [data, setData] = useState<ProcessFlowGraphData | undefined>();
   const [dataSource, setDataSource] = useState<GraphDataSource>('loading');
   const [loadError, setLoadError] = useState<string | undefined>();
@@ -959,6 +1015,19 @@ export default function ProcessFlowGraphPanel() {
     ? (displayedGeoMapView?.data ?? (isGeoMapPending ? data : undefined))
     : data;
   const activeMapBackground = isGeoMapMode ? displayedGeoMapView?.background : undefined;
+  const localizedActiveMapBackground = useMemo(() => {
+    if (!activeMapBackground) {
+      return undefined;
+    }
+
+    return {
+      ...activeMapBackground,
+      paths: activeMapBackground.paths.map((mapPath) => ({
+        ...mapPath,
+        label: getDashboardMapPathLabel(intl, mapPath.code, mapPath.label),
+      })),
+    };
+  }, [activeMapBackground, intl]);
   const activeLayoutMode: ProcessFlowGraphLayoutName = isGeoMapPending
     ? displayedGeoMapView
       ? 'geoMap2d'
@@ -988,8 +1057,8 @@ export default function ProcessFlowGraphPanel() {
       return undefined;
     }
 
-    return buildCategoryTree(categoryIndexNodes);
-  }, [categoryIndexNodes]);
+    return buildCategoryTree(intl, categoryIndexNodes);
+  }, [categoryIndexNodes, intl]);
   const activeCategoryIndexNode = useMemo(() => {
     if (!categoryTree) {
       return undefined;
@@ -1016,33 +1085,49 @@ export default function ProcessFlowGraphPanel() {
     } as CSSProperties;
   }, [activeCategoryBreadcrumbLabel, canvasToolbarWidth]);
   const categorySearchResults = useMemo(
-    () => getCategorySearchResults(categoryTree, categoryIndexNodes, normalizedCategoryTreeQuery),
-    [categoryIndexNodes, categoryTree, normalizedCategoryTreeQuery],
+    () =>
+      getCategorySearchResults(intl, categoryTree, categoryIndexNodes, normalizedCategoryTreeQuery),
+    [categoryIndexNodes, categoryTree, intl, normalizedCategoryTreeQuery],
   );
   const isCategoryTreeSearchMode = normalizedCategoryTreeQuery.length > 0;
-  const categoryTreeNodeKindLabel = shouldShowProcessSearch ? '过程' : '流';
-  const searchPlaceholder = shouldShowProcessSearch ? '搜索过程' : '搜索流';
-  const searchAriaLabel = shouldShowProcessSearch ? '搜索过程节点' : '搜索非基础流';
+  const categoryTreeNodeKindLabel = shouldShowProcessSearch
+    ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.process' })
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.flow' });
+  const searchPlaceholder = shouldShowProcessSearch
+    ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.searchProcess' })
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.searchFlow' });
+  const searchAriaLabel = shouldShowProcessSearch
+    ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.searchProcessAria' })
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.searchFlowAria' });
   const quickSelectTarget = useMemo(
-    () => getQuickSelectTarget(layoutMode, mapScope),
-    [layoutMode, mapScope],
+    () => getQuickSelectTarget(intl, layoutMode, mapScope),
+    [intl, layoutMode, mapScope],
   );
   const quickSelectNode = useMemo(
     () => (activeData ? getProcessFlowGraphNode(activeData, quickSelectTarget.nodeId) : undefined),
     [activeData, quickSelectTarget.nodeId],
   );
-  const quickSelectTitle = `快速选中：${quickSelectTarget.label}`;
-  const graphCacheJobStatusLabel = getGraphCacheJobStatusLabel(graphCacheJob);
+  const quickSelectTitle = intl.formatMessage(
+    { id: 'pages.home.nationalCarbon.graph.quickSelect' },
+    { target: quickSelectTarget.label },
+  );
+  const graphCacheJobStatusLabel = getGraphCacheJobStatusLabel(intl, graphCacheJob);
   const graphCacheJobIsActive = isGraphCacheJobActive(graphCacheJob);
   const graphCacheJobHasFailure =
     isGraphCacheJobFailure(graphCacheJob) || Boolean(graphCacheJobError);
   const graphCacheJobButtonTitle = graphCacheJobError
-    ? `图谱缓存构建异常：${formatCacheError(graphCacheJobError)}`
+    ? intl.formatMessage(
+        { id: 'pages.home.nationalCarbon.graph.cache.error' },
+        { error: formatCacheError(graphCacheJobError) },
+      )
     : graphCacheJobIsActive
-      ? `图谱缓存构建${graphCacheJobStatusLabel}`
+      ? intl.formatMessage(
+          { id: 'pages.home.nationalCarbon.graph.cache.status' },
+          { status: graphCacheJobStatusLabel },
+        )
       : graphCacheJob?.status === 'completed'
-        ? '重新运行图谱缓存构建 worker'
-        : '运行图谱缓存构建 worker';
+        ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.rerun' })
+        : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.run' });
   const graphCacheJobButtonClassName = [
     styles.cacheJobButton,
     graphCacheJobIsActive || isGraphCacheJobSubmitting ? styles.cacheJobButtonActive : '',
@@ -1319,7 +1404,9 @@ export default function ProcessFlowGraphPanel() {
         ...currentStatus,
         [mapScope]: 'miss',
       }));
-      setGeoMapLoadError(`Missing or timed out ${mapScope} map layout cache`);
+      setGeoMapLoadError(
+        intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.mapCacheMissing' }),
+      );
     }, geoMapCacheSoftTimeoutMs);
 
     loadProcessFlowGraphGeoMapViewFromCache(mapScope)
@@ -1336,7 +1423,9 @@ export default function ProcessFlowGraphPanel() {
             ...currentStatus,
             [mapScope]: 'miss',
           }));
-          setGeoMapLoadError(`Missing or timed out ${mapScope} map layout cache`);
+          setGeoMapLoadError(
+            intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.mapCacheMissing' }),
+          );
           return;
         }
 
@@ -1361,14 +1450,16 @@ export default function ProcessFlowGraphPanel() {
           ...currentStatus,
           [mapScope]: 'error',
         }));
-        setGeoMapLoadError(`Unable to load ${mapScope} map layout cache`);
+        setGeoMapLoadError(
+          intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.mapCacheLoadError' }),
+        );
       });
 
     return () => {
       cancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [cachedGeoMapView, data, isGeoMapMode, mapScope]);
+  }, [cachedGeoMapView, data, intl, isGeoMapMode, mapScope]);
 
   useEffect(() => {
     if (!isGeoMapMode) {
@@ -1442,10 +1533,10 @@ export default function ProcessFlowGraphPanel() {
 
   const handleTriggerGraphCacheJob = useCallback(() => {
     Modal.confirm({
-      title: '运行 worker',
-      content: '将提交过程-流图谱缓存构建任务；如果已有任务在运行，将复用当前任务。',
-      okText: '运行',
-      cancelText: '取消',
+      title: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.title' }),
+      content: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.content' }),
+      okText: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.run' }),
+      cancelText: intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.modal.cancel' }),
       centered: true,
       onOk: async () => {
         setIsGraphCacheJobSubmitting(true);
@@ -1461,7 +1552,12 @@ export default function ProcessFlowGraphPanel() {
               setCanManageGraphCacheJob(false);
             }
             setGraphCacheJobError(result.error.message);
-            message.error(`图谱缓存任务提交失败：${result.error.message}`);
+            message.error(
+              intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.graph.cache.submitFailed' },
+                { error: result.error.message },
+              ),
+            );
             return;
           }
 
@@ -1471,18 +1567,25 @@ export default function ProcessFlowGraphPanel() {
             graphCacheJobCompletionRefreshRef.current = undefined;
           }
           message.success(
-            isGraphCacheJobActive(nextJob) ? '图谱缓存任务已在队列中' : '图谱缓存任务已提交',
+            isGraphCacheJobActive(nextJob)
+              ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.queued' })
+              : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.submitted' }),
           );
         } catch (error: unknown) {
           const errorMessage = error instanceof Error ? error.message : String(error);
           setGraphCacheJobError(errorMessage);
-          message.error(`图谱缓存任务提交失败：${errorMessage}`);
+          message.error(
+            intl.formatMessage(
+              { id: 'pages.home.nationalCarbon.graph.cache.submitFailed' },
+              { error: errorMessage },
+            ),
+          );
         } finally {
           setIsGraphCacheJobSubmitting(false);
         }
       },
     });
-  }, []);
+  }, [intl]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1575,23 +1678,30 @@ export default function ProcessFlowGraphPanel() {
       }
 
       graphCacheJobCompletionRefreshRef.current = graphCacheJob.id;
-      message.success('图谱缓存构建完成，正在刷新视图');
+      message.success(
+        intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.cache.completed' }),
+      );
       reloadProcessFlowGraphCacheView();
       return;
     }
 
     if (isGraphCacheJobFailure(graphCacheJob)) {
       setGraphCacheJobError(
-        graphCacheJob.errorMessage || getGraphCacheJobStatusLabel(graphCacheJob),
+        graphCacheJob.errorMessage || getGraphCacheJobStatusLabel(intl, graphCacheJob),
       );
     }
-  }, [graphCacheJob, reloadProcessFlowGraphCacheView]);
+  }, [graphCacheJob, intl, reloadProcessFlowGraphCacheView]);
 
-  const mapButtonLabel = isGeoMapMode && mapScope === 'world' ? 'China Map' : 'World Map';
+  const mapButtonLabel =
+    isGeoMapMode && mapScope === 'world'
+      ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.chinaMap' })
+      : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.worldMap' });
   const mapLoadDataSource: GraphDataSource =
     isGeoMapMode && data && !geoMapView ? (geoMapLoadError ? 'error' : 'loading') : dataSource;
   const mapLoadError = isGeoMapMode && data && !geoMapView ? geoMapLoadError : loadError;
-  const leftRailToggleLabel = isLeftRailCollapsed ? '展开索引菜单' : '收起索引菜单';
+  const leftRailToggleLabel = isLeftRailCollapsed
+    ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.expandIndex' })
+    : intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.collapseIndex' });
   const panelShellClassName = [
     styles.panelShell,
     isLeftRailCollapsed ? styles.panelShellLeftCollapsed : '',
@@ -1636,7 +1746,9 @@ export default function ProcessFlowGraphPanel() {
             />
             {query && (
               <button
-                aria-label='清除搜索'
+                aria-label={intl.formatMessage({
+                  id: 'pages.home.nationalCarbon.graph.clearSearch',
+                })}
                 disabled={isLeftRailCollapsed}
                 onClick={() => setQuery('')}
                 type='button'
@@ -1668,13 +1780,20 @@ export default function ProcessFlowGraphPanel() {
             )
           ) : (
             <div className={styles.categoryTreeEmpty} role='status'>
-              未找到匹配的{categoryTreeNodeKindLabel}
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.graph.noSearchMatch' },
+                { kind: categoryTreeNodeKindLabel },
+              )}
             </div>
           )}
         </div>
       </aside>
       <main className={styles.graphStage}>
-        <div aria-label='图谱工具栏' className={styles.canvasToolbar} ref={canvasToolbarRef}>
+        <div
+          aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.toolbar' })}
+          className={styles.canvasToolbar}
+          ref={canvasToolbarRef}
+        >
           <div className={styles.railToggleTools}>
             <button
               aria-expanded={!isLeftRailCollapsed}
@@ -1692,21 +1811,21 @@ export default function ProcessFlowGraphPanel() {
           </div>
           <div className={styles.modeTabs}>
             <button
-              aria-label='Sphere'
+              aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.sphere' })}
               aria-pressed={layoutMode === 'sphere3d'}
               className={layoutMode === 'sphere3d' ? styles.activeMode : ''}
               onClick={handleSelectSphereMode}
-              title='Sphere'
+              title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.sphere' })}
               type='button'
             >
               <GlobalOutlined />
             </button>
             <button
-              aria-label='Expanded'
+              aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.expanded' })}
               aria-pressed={layoutMode === 'expanded2d'}
               className={layoutMode === 'expanded2d' ? styles.activeMode : ''}
               onClick={handleSelectExpandedMode}
-              title='Expanded'
+              title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.expanded' })}
               type='button'
             >
               <ApartmentOutlined />
@@ -1724,21 +1843,21 @@ export default function ProcessFlowGraphPanel() {
           </div>
           <div className={styles.mouseTools}>
             <button
-              aria-label='拖拽浏览'
+              aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.pan' })}
               aria-pressed={interactionMode === 'pan'}
               className={interactionMode === 'pan' ? styles.activeMode : ''}
               onClick={() => setInteractionMode('pan')}
-              title='Drag'
+              title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.pan' })}
               type='button'
             >
               <DragOutlined />
             </button>
             <button
-              aria-label='点选节点'
+              aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.pick' })}
               aria-pressed={interactionMode === 'select'}
               className={interactionMode === 'select' ? styles.activeMode : ''}
               onClick={() => setInteractionMode('select')}
-              title='Pick'
+              title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.pick' })}
               type='button'
             >
               <SelectOutlined />
@@ -1755,10 +1874,12 @@ export default function ProcessFlowGraphPanel() {
               <AimOutlined />
             </button>
             <button
-              aria-label='清除选中'
+              aria-label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.graph.clearSelection',
+              })}
               disabled={!activeData || !selectedNodeId}
               onClick={clearSelectedNodeWithInspectorExit}
-              title='清除选中'
+              title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.clearSelection' })}
               type='button'
             >
               <ClearOutlined />
@@ -1783,16 +1904,23 @@ export default function ProcessFlowGraphPanel() {
               </button>
             </div>
           )}
-          <dl aria-label='图谱规模' className={styles.graphBadges}>
-            <div title='节点'>
-              <dt className={styles.graphMetricLabel}>节点</dt>
+          <dl
+            aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.scale' })}
+            className={styles.graphBadges}
+          >
+            <div title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.nodes' })}>
+              <dt className={styles.graphMetricLabel}>
+                {intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.nodes' })}
+              </dt>
               <dd className={styles.graphMetricValue}>
                 <DotChartOutlined aria-hidden='true' />
                 <b>{formatNumber(activeData?.nodes.length ?? 0)}</b>
               </dd>
             </div>
-            <div title='连接'>
-              <dt className={styles.graphMetricLabel}>连接</dt>
+            <div title={intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.edges' })}>
+              <dt className={styles.graphMetricLabel}>
+                {intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.edges' })}
+              </dt>
               <dd className={styles.graphMetricValue}>
                 <NodeIndexOutlined aria-hidden='true' />
                 <b>{formatNumber(activeData?.edges.length ?? 0)}</b>
@@ -1804,7 +1932,7 @@ export default function ProcessFlowGraphPanel() {
           <>
             <ProcessFlowGraphCanvas
               data={activeData}
-              geoMapBackground={activeMapBackground}
+              geoMapBackground={localizedActiveMapBackground}
               interactionMode={interactionMode}
               layoutMode={activeLayoutMode}
               onNodeClick={handleNodeClick}
@@ -1812,8 +1940,14 @@ export default function ProcessFlowGraphPanel() {
             />
             {isGeoMapPending && (
               <div className={styles.mapPreparingOverlay}>
-                <strong>Loading map cache</strong>
-                <span>Waiting for worker-generated geoMap view</span>
+                <strong>
+                  {intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.mapLoading.title' })}
+                </strong>
+                <span>
+                  {intl.formatMessage({
+                    id: 'pages.home.nationalCarbon.graph.mapLoading.description',
+                  })}
+                </span>
               </div>
             )}
             {inspectorView && (
@@ -1832,10 +1966,16 @@ export default function ProcessFlowGraphPanel() {
               isGeoMapMode && data && !geoMapView
                 ? mapLoadError
                   ? formatCacheError(mapLoadError)
-                  : 'Waiting for worker-generated world and China map cache'
+                  : intl.formatMessage({
+                      id: 'pages.home.nationalCarbon.graph.mapLoading.waitingForBoth',
+                    })
                 : undefined
             }
-            title={isGeoMapMode && data && !geoMapView ? 'Loading map layout' : undefined}
+            title={
+              isGeoMapMode && data && !geoMapView
+                ? intl.formatMessage({ id: 'pages.home.nationalCarbon.graph.mapLoading.layout' })
+                : undefined
+            }
           />
         )}
       </main>

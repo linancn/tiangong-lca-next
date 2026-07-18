@@ -4,6 +4,27 @@ const mockLoadProcessFlowGraphFromCache = jest.fn();
 const mockLoadProcessFlowGraphGeoMapViewFromCache = jest.fn();
 const mockResetProcessFlowGraphCacheLoaderState = jest.fn();
 const mockRequestNationalCarbonGraphCacheJobsApi = jest.fn();
+let mockLocale = 'fr-FR';
+
+const mockFormatMessage = (
+  { defaultMessage, id }: { defaultMessage?: string; id: string },
+  values?: Record<string, unknown>,
+) => {
+  const messages = jest.requireActual('@/locales/fr-FR/pages_home').default;
+  const template = messages[id] ?? defaultMessage ?? id;
+  return Object.entries(values ?? {}).reduce(
+    (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+    template,
+  );
+};
+
+jest.mock('@umijs/max', () => ({
+  getLocale: () => mockLocale,
+  useIntl: () => ({
+    formatMessage: mockFormatMessage,
+    locale: mockLocale,
+  }),
+}));
 
 jest.mock(
   '@/pages/NationalCarbonDashboard/components/ProcessFlowGraph/processFlowGraphCacheLoader',
@@ -26,6 +47,7 @@ const ProcessFlowGraphPanel =
 describe('ProcessFlowGraphPanel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLocale = 'fr-FR';
     mockLoadProcessFlowGraphGeoMapViewFromCache.mockResolvedValue(undefined);
     mockRequestNationalCarbonGraphCacheJobsApi.mockResolvedValue({
       data: [],
@@ -40,8 +62,12 @@ describe('ProcessFlowGraphPanel', () => {
 
     render(<ProcessFlowGraphPanel />);
 
-    expect(await screen.findByText('暂无可用数据')).toBeInTheDocument();
-    expect(screen.getByText('缓存暂不可用，等待图谱缓存生成后将恢复展示')).toBeInTheDocument();
+    expect(await screen.findByText('Aucune donnée disponible')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Le cache est temporairement indisponible. Le graphe réapparaîtra une fois sa génération terminée.',
+      ),
+    ).toBeInTheDocument();
     expect(
       screen.queryByText(/failed to fetch process-flow graph object/i),
     ).not.toBeInTheDocument();

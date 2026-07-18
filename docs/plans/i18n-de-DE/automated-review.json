@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "tiangong.i18n-automated-review.v1",
+  "locale": "de-DE",
+  "reviewClosure": {
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "auditedInputDigest": "c73422fc16728aca23b72991488141347178845fef45f54fb21acd37a01465ef",
+    "reviewedMessageCount": 3026,
+    "reviewedModules": [
+      "$entry",
+      "component",
+      "component_AISuggestion",
+      "component_allTeams",
+      "component_allVersions",
+      "component_connectableProcesses",
+      "component_contributeData",
+      "component_importData",
+      "component_refsOfNewVersionDrawer",
+      "component_rejectReview",
+      "component_tidasPackage",
+      "globalHeader",
+      "menu",
+      "pages",
+      "pages_contact",
+      "pages_flow",
+      "pages_flowproperty",
+      "pages_general",
+      "pages_home",
+      "pages_manageSystem",
+      "pages_model",
+      "pages_process",
+      "pages_product",
+      "pages_review",
+      "pages_source",
+      "pages_teams",
+      "pages_unitgroup",
+      "pwa",
+      "settingDrawer",
+      "settings",
+      "validator"
+    ],
+    "highRiskMessageCount": 1337,
+    "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
+    "lowRiskPolicy": "validated family rules with cross-module sampling; no unreviewed exceptions",
+    "catalogDigest": "5dfaf127dfc65ae3067761bad8693187cebd92689fabd0f92f9d09302f571d59",
+    "dossierDigest": "f19aa1bd0b36b9723ed306115a455c8bf30255ccd604e068f7a075f721b8d26d",
+    "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
+    "routeEvidenceDigest": "48665db0f89e1ec6f60a344d8b03ba4b245c9b81bb7266cb6e183191ee5a4c7b"
+  },
+  "reviewLanes": [
+    {
+      "laneId": "active-german-runtime-regression",
+      "executionContext": "independent-automated-review",
+      "modules": [
+        "$entry",
+        "component",
+        "globalHeader",
+        "menu",
+        "pages",
+        "pages_general",
+        "pages_home",
+        "pwa",
+        "settingDrawer",
+        "settings",
+        "validator"
+      ],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "shared dossier regeneration",
+        "runtime/route/fallback regression",
+        "ICU/defaultMessage and accessibility checks"
+      ],
+      "result": "passed"
+    },
+    {
+      "laneId": "active-german-entity-regression",
+      "executionContext": "independent-automated-review",
+      "modules": [
+        "component_AISuggestion",
+        "component_allTeams",
+        "component_allVersions",
+        "component_connectableProcesses",
+        "component_contributeData",
+        "component_importData",
+        "component_refsOfNewVersionDrawer",
+        "component_rejectReview",
+        "component_tidasPackage",
+        "pages_contact",
+        "pages_flow",
+        "pages_flowproperty",
+        "pages_manageSystem",
+        "pages_source",
+        "pages_teams",
+        "pages_unitgroup"
+      ],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "entity callsite and schema comparison",
+        "dynamic-family and technical-token closure",
+        "typed import-report topology"
+      ],
+      "result": "passed"
+    },
+    {
+      "laneId": "active-german-lca-regression",
+      "executionContext": "independent-automated-review",
+      "modules": ["pages_model", "pages_process", "pages_product", "pages_review"],
+      "highRiskCoverage": "all digest-bound high-risk messages in lane modules",
+      "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
+      "method": [
+        "LCA/TIDAS glossary comparison",
+        "post-baseline correction overlay check",
+        "high-risk terminology and source-equality scan"
+      ],
+      "result": "passed"
+    }
+  ],
+  "resolvedFindings": [
+    {
+      "closure": "NationalCarbon new-source German terminology",
+      "messageCount": 5,
+      "result": "corrected before activation evidence freeze"
+    }
+  ],
+  "blockedItems": [],
+  "reviewDigest": "acd6249c8175b0cea07b626691e725a448adbe45de972aee77b8667a4eadb814"
+}

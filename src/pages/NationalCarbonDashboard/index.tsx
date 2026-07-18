@@ -1,5 +1,5 @@
 import AccessDenied from '@/components/AccessDenied';
-import { useModel } from '@umijs/max';
+import { useIntl, useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
 import {
@@ -21,7 +21,6 @@ import ProcessFlowGraphPanel from './components/ProcessFlowGraph/ProcessFlowGrap
 import rawSnapshot from './data/mockDashboardSnapshot.json';
 import {
   dashboardStatusKeys,
-  dashboardStatusLabels,
   getRegionStatusValue,
   getRegionTotal,
   parseDashboardSnapshot,
@@ -31,6 +30,25 @@ import {
   type MatrixSnapshot,
   type RegionSnapshot,
 } from './data/schema';
+import {
+  formatDashboardDate,
+  formatDashboardNumber as formatNumber,
+  getDashboardRegionLabel,
+  getDashboardScreenLabel,
+  getDashboardStatusLabel,
+  getGapCategoryLabel,
+  getGapFlowLabel,
+  getIndustryLabel,
+  getIndustryQualityLabel,
+  getMatrixGroupLabel,
+  getMatrixZoneLabel,
+  getNarrativeStageDescription,
+  getNarrativeStageTitle,
+  getOutcomeMetricLabel,
+  getOutcomeMetricUnit,
+  getRiskLabel,
+  type DashboardIntl,
+} from './i18n';
 import styles from './index.less';
 
 type ScreenKey = 'overview' | 'map_status' | 'outcome_metrics' | 'connectivity' | 'flow_topology';
@@ -61,12 +79,12 @@ type FloatingNavigatorPosition = {
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
 
-const screens: { key: ScreenKey; label: string; shortLabel: string }[] = [
-  { key: 'overview', label: '总览', shortLabel: '01' },
-  { key: 'map_status', label: '态势', shortLabel: '02' },
-  { key: 'outcome_metrics', label: '成果', shortLabel: '03' },
-  { key: 'connectivity', label: '可计算', shortLabel: '04' },
-  { key: 'flow_topology', label: '流图谱', shortLabel: '05' },
+const screens: { key: ScreenKey; shortLabel: string }[] = [
+  { key: 'overview', shortLabel: '01' },
+  { key: 'map_status', shortLabel: '02' },
+  { key: 'outcome_metrics', shortLabel: '03' },
+  { key: 'connectivity', shortLabel: '04' },
+  { key: 'flow_topology', shortLabel: '05' },
 ];
 
 const dashboardStageWidth = 1920;
@@ -159,13 +177,8 @@ const statusTonePalette: Record<StatusFilterKey, StatusTone> = {
 export const canViewNationalCarbonDashboard = (currentUser?: Auth.CurrentUser | null) =>
   currentUser?.access === 'admin';
 
-const numberFormatter = new Intl.NumberFormat('zh-CN');
 let chinaMapDataCache: ChinaMapData | null = null;
 let chinaMapDataRequest: Promise<ChinaMapData> | null = null;
-
-function formatNumber(value: number): string {
-  return numberFormatter.format(value);
-}
 
 function getHashSearchParams(): URLSearchParams {
   if (typeof window === 'undefined') {
@@ -297,24 +310,24 @@ function sumStatus(regions: RegionSnapshot[], statusKey: StatusFilterKey): numbe
   return regions.reduce((total, region) => total + getRegionStatusValue(region, statusKey), 0);
 }
 
-function getNarrativeMetric(snapshot: DashboardSnapshot, stageKey: string) {
+function getNarrativeMetric(snapshot: DashboardSnapshot, stageKey: string, intl: DashboardIntl) {
   if (stageKey === 'publish') {
     return {
-      label: '发布成果',
-      unit: '个',
+      label: intl.formatMessage({ id: 'pages.home.nationalCarbon.narrative.metric.published' }),
+      unit: intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.items' }),
       value: formatNumber(snapshot.summary.publishedDatasets),
     };
   }
   if (stageKey === 'compute') {
     return {
-      label: '连接完成度',
+      label: intl.formatMessage({ id: 'pages.home.nationalCarbon.narrative.metric.connectivity' }),
       unit: '%',
       value: snapshot.summary.connectivityRate.toFixed(1),
     };
   }
   return {
-    label: '样本库',
-    unit: '个',
+    label: intl.formatMessage({ id: 'pages.home.nationalCarbon.narrative.metric.samples' }),
+    unit: intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.items' }),
     value: formatNumber(snapshot.summary.sampleDatasets),
   };
 }
@@ -471,7 +484,9 @@ function ScreenNavigator({
   activeScreen: ScreenKey;
   onChange: (screen: ScreenKey) => void;
 }) {
+  const intl = useIntl();
   const activeScreenInfo = screens.find((screen) => screen.key === activeScreen) ?? screens[0];
+  const activeScreenLabel = getDashboardScreenLabel(intl, activeScreenInfo.key);
   const [position, setPosition] = useState<FloatingNavigatorPosition>(
     getInitialFloatingNavigatorPosition,
   );
@@ -564,7 +579,7 @@ function ScreenNavigator({
 
   return (
     <nav
-      aria-label='大屏切换'
+      aria-label={intl.formatMessage({ id: 'pages.home.nationalCarbon.navigator.label' })}
       className={navClassName}
       ref={navRef}
       style={
@@ -575,7 +590,10 @@ function ScreenNavigator({
       }
     >
       <button
-        aria-label={`当前形态：${activeScreenInfo.shortLabel} ${activeScreenInfo.label}，按住拖动`}
+        aria-label={intl.formatMessage(
+          { id: 'pages.home.nationalCarbon.navigator.current' },
+          { index: activeScreenInfo.shortLabel, screen: activeScreenLabel },
+        )}
         className={styles.screenNavOrb}
         onPointerCancel={handleOrbPointerEnd}
         onPointerDown={handleOrbPointerDown}
@@ -602,7 +620,7 @@ function ScreenNavigator({
               type='button'
             >
               <span>{screen.shortLabel}</span>
-              <strong>{screen.label}</strong>
+              <strong>{getDashboardScreenLabel(intl, screen.key)}</strong>
             </button>
           ))}
         </div>
@@ -655,6 +673,7 @@ function ChinaStatusMap({
   selectedAdcode?: number;
   onSelectRegion?: (region: RegionSnapshot) => void;
 }) {
+  const intl = useIntl();
   const [mapData, setMapData] = useState<ChinaMapData | null>(null);
   const [provinceTooltip, setProvinceTooltip] = useState<ProvinceTooltipState | null>(null);
   const regionMap = useMemo(() => buildRegionMap(regions), [regions]);
@@ -755,7 +774,11 @@ function ChinaStatusMap({
   }, [mapData, regionMap, statusKey, variant]);
 
   if (!mapData) {
-    return <div className={styles.mapLoading}>地图资产加载中</div>;
+    return (
+      <div className={styles.mapLoading} role='status'>
+        {intl.formatMessage({ id: 'pages.home.nationalCarbon.map.loading' })}
+      </div>
+    );
   }
 
   return (
@@ -793,9 +816,18 @@ function ChinaStatusMap({
               <path
                 aria-label={
                   item.region
-                    ? `${item.region.name} ${dashboardStatusLabels[statusKey]} ${formatNumber(
-                        item.value,
-                      )} 条`
+                    ? intl.formatMessage(
+                        { id: 'pages.home.nationalCarbon.map.regionAria' },
+                        {
+                          count: formatNumber(item.value),
+                          region: getDashboardRegionLabel(
+                            intl,
+                            item.region.adcode,
+                            item.region.name,
+                          ),
+                          status: getDashboardStatusLabel(intl, statusKey),
+                        },
+                      )
                     : undefined
                 }
                 className={[
@@ -882,15 +914,21 @@ function ChinaStatusMap({
             }}
           >
             <div className={styles.provinceTooltipHeader}>
-              <strong>{provinceTooltip.region.shortName}</strong>
-              <span>{dashboardStatusLabels[statusKey]}</span>
+              <strong>
+                {getDashboardRegionLabel(
+                  intl,
+                  provinceTooltip.region.adcode,
+                  provinceTooltip.region.shortName,
+                )}
+              </strong>
+              <span>{getDashboardStatusLabel(intl, statusKey)}</span>
             </div>
             <div className={styles.provinceTooltipValue}>
               <b>{formatNumber(provinceTooltip.value)}</b>
-              <em>条</em>
+              <em>{intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.records' })}</em>
             </div>
             <div className={styles.provinceTooltipMeta}>
-              <span>全部数据</span>
+              <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.allData' })}</span>
               <strong>{formatNumber(getRegionTotal(provinceTooltip.region))}</strong>
             </div>
           </div>
@@ -909,6 +947,7 @@ function OverviewScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
+  const intl = useIntl();
   const [mapData, setMapData] = useState<ChinaMapData | null>(null);
   const overviewTopRegions = useMemo(
     () => getTopRegions(snapshot.regions, 'all', 4),
@@ -979,15 +1018,15 @@ function OverviewScreen({
         <div className={styles.overviewMetricsLeft}>
           <CountMetric
             icon='database'
-            label='建设数据总量'
-            unit='条'
+            label={intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.totalData' })}
+            unit={intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.records' })}
             value={sumStatus(snapshot.regions, 'all')}
           />
           <CountMetric
             icon='location'
-            label='覆盖省份'
+            label={intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.coveredRegions' })}
             tone='blue'
-            unit='个'
+            unit={intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.provinces' })}
             value={snapshot.summary.coveredRegions}
           />
         </div>
@@ -1012,7 +1051,7 @@ function OverviewScreen({
                 >
                   <div className={styles.overviewHotspotLabel}>
                     <i />
-                    <b>{region.shortName}</b>
+                    <b>{getDashboardRegionLabel(intl, region.adcode, region.shortName)}</b>
                     <span>{formatNumber(getRegionTotal(region))}</span>
                   </div>
                 </foreignObject>
@@ -1020,29 +1059,32 @@ function OverviewScreen({
             ))}
           </svg>
           <div className={styles.overviewInsight}>
-            <b>天工数据库底座已形成，支撑全生命周期核算应用</b>
+            <b>{intl.formatMessage({ id: 'pages.home.nationalCarbon.overview.insight' })}</b>
             <span>
-              <strong>{snapshot.summary.coveredRegions}</strong>省覆盖
+              <strong>{snapshot.summary.coveredRegions}</strong>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.overview.coverageSuffix' })}
             </span>
             <span>
-              <strong>{formatNumber(sumStatus(snapshot.regions, 'all'))}</strong>条建设数据
+              <strong>{formatNumber(sumStatus(snapshot.regions, 'all'))}</strong>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.overview.dataCountSuffix' })}
             </span>
             <span>
-              <strong>{snapshot.summary.connectivityRate.toFixed(1)}%</strong>可计算连接
+              <strong>{snapshot.summary.connectivityRate.toFixed(1)}%</strong>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.overview.connectivitySuffix' })}
             </span>
           </div>
         </div>
         <div className={styles.overviewMetricsRight}>
           <CountMetric
             icon='report'
-            label='正式发布数据'
+            label={intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.publishedData' })}
             tone='gold'
-            unit='个'
+            unit={intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.items' })}
             value={snapshot.summary.publishedDatasets}
           />
           <CountMetric
             icon='network'
-            label='供应链连接完成度'
+            label={intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.connectivityRate' })}
             tone='blue'
             unit='%'
             value={snapshot.summary.connectivityRate}
@@ -1051,12 +1093,12 @@ function OverviewScreen({
       </div>
       <div className={styles.storyline}>
         {snapshot.narrativeStages.map((stage) => {
-          const metric = getNarrativeMetric(snapshot, stage.key);
+          const metric = getNarrativeMetric(snapshot, stage.key, intl);
           return (
             <div className={`${styles.storyItem} ${styles[`tone-${stage.tone}`]}`} key={stage.key}>
               <span>{stage.index}</span>
-              <strong>{stage.title}</strong>
-              <p>{stage.description}</p>
+              <strong>{getNarrativeStageTitle(intl, stage.key, stage.title)}</strong>
+              <p>{getNarrativeStageDescription(intl, stage.key, stage.description)}</p>
               <div className={styles.storyMetric}>
                 <b>
                   {metric.value}
@@ -1082,6 +1124,7 @@ function StatusSwitch({
   regions: RegionSnapshot[];
   onChange: (status: StatusFilterKey) => void;
 }) {
+  const intl = useIntl();
   return (
     <div className={styles.statusSwitch}>
       {statusFilterKeys.map((statusKey) => (
@@ -1092,7 +1135,7 @@ function StatusSwitch({
           style={getStatusToneStyle(statusKey)}
           type='button'
         >
-          <span>{dashboardStatusLabels[statusKey]}</span>
+          <span>{getDashboardStatusLabel(intl, statusKey)}</span>
           <strong>{formatNumber(sumStatus(regions, statusKey))}</strong>
         </button>
       ))}
@@ -1107,6 +1150,7 @@ function RegionDetail({
   region?: RegionSnapshot;
   activeStatus: StatusFilterKey;
 }) {
+  const intl = useIntl();
   if (!region) {
     return null;
   }
@@ -1116,18 +1160,18 @@ function RegionDetail({
   return (
     <aside className={styles.regionDetail}>
       <div className={styles.regionHero}>
-        <span>地区状态明细</span>
-        <strong>{region.shortName}</strong>
+        <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.regionDetail.title' })}</span>
+        <strong>{getDashboardRegionLabel(intl, region.adcode, region.shortName)}</strong>
         <div>
-          <p>当前状态</p>
-          <b>{dashboardStatusLabels[activeStatus]}</b>
+          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.regionDetail.status' })}</p>
+          <b>{getDashboardStatusLabel(intl, activeStatus)}</b>
         </div>
         <div>
-          <p>当前数量</p>
+          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.regionDetail.count' })}</p>
           <b>{formatNumber(activeValue)}</b>
         </div>
         <div>
-          <p>全部数据</p>
+          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.allData' })}</p>
           <b>{formatNumber(total)}</b>
         </div>
       </div>
@@ -1146,7 +1190,7 @@ function RegionDetail({
               key={statusKey}
               style={getStatusToneStyle(statusKey)}
             >
-              <span>{dashboardStatusLabels[statusKey]}</span>
+              <span>{getDashboardStatusLabel(intl, statusKey)}</span>
               <div>
                 <i style={{ width: `${Math.max(ratio, 4)}%` }} />
               </div>
@@ -1169,6 +1213,7 @@ function MapStatusScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
+  const intl = useIntl();
   const [activeStatus, setActiveStatus] = useState<StatusFilterKey>('reviewing');
   const [selectedAdcode, setSelectedAdcode] = useState(320000);
   const selectedRegion =
@@ -1205,11 +1250,21 @@ function MapStatusScreen({
             variant='detail'
           />
           <div className={styles.mapLegend}>
-            <strong>{dashboardStatusLabels[activeStatus]}数据量</strong>
+            <strong>
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.map.dataVolume' },
+                { status: getDashboardStatusLabel(intl, activeStatus) },
+              )}
+            </strong>
             <div className={styles.legendRamp} />
             <div className={styles.legendScale}>
-              <span>低</span>
-              <span>高 {formatNumber(maxStatusValue)}</span>
+              <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.map.low' })}</span>
+              <span>
+                {intl.formatMessage(
+                  { id: 'pages.home.nationalCarbon.map.high' },
+                  { value: formatNumber(maxStatusValue) },
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -1217,27 +1272,41 @@ function MapStatusScreen({
       </div>
       <div className={styles.nationalStrip}>
         <div>
-          <span>{dashboardStatusLabels[activeStatus]}全国总量</span>
+          <span>
+            {intl.formatMessage(
+              { id: 'pages.home.nationalCarbon.map.nationalTotal' },
+              { status: getDashboardStatusLabel(intl, activeStatus) },
+            )}
+          </span>
           <strong>{formatNumber(nationalTotal)}</strong>
-          <em>条</em>
+          <em>{intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.records' })}</em>
         </div>
         <div>
-          <span>覆盖省份</span>
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.metric.coveredRegions' })}
+          </span>
           <strong>
             {snapshot.summary.coveredRegions}/{snapshot.summary.totalRegions}
           </strong>
-          <em>个</em>
+          <em>{intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.provinces' })}</em>
         </div>
         <div>
-          <span>最高地区</span>
-          <strong>{topRegion?.shortName ?? '-'}</strong>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.map.topRegion' })}</span>
+          <strong>
+            {topRegion ? getDashboardRegionLabel(intl, topRegion.adcode, topRegion.shortName) : '-'}
+          </strong>
           <em>
-            {topRegion ? `${formatNumber(getRegionStatusValue(topRegion, activeStatus))} 条` : ''}
+            {topRegion
+              ? intl.formatMessage(
+                  { id: 'pages.home.nationalCarbon.map.recordCount' },
+                  { count: formatNumber(getRegionStatusValue(topRegion, activeStatus)) },
+                )
+              : ''}
           </em>
         </div>
         <div>
-          <span>数据截止</span>
-          <strong>{snapshot.dataAsOf}</strong>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.map.dataAsOf' })}</span>
+          <strong>{formatDashboardDate(snapshot.dataAsOf)}</strong>
         </div>
       </div>
       <ScreenNavigator activeScreen={activeScreen} onChange={onChangeScreen} />
@@ -1276,10 +1345,12 @@ function IndustryIcon({ item }: { item: IndustrySnapshot }) {
 }
 
 function IndustryProgressRow({ index, item }: { index: number; item: IndustrySnapshot }) {
+  const intl = useIntl();
+  const industryLabel = getIndustryLabel(intl, item.key, item.name);
   const phases = [
-    { key: 'sample', label: '样本沉淀', tone: 'blue' as const, value: item.sampleCount },
-    { key: 'aggregation', label: '聚合处理', tone: 'cyan' as const, value: item.aggregationCount },
-    { key: 'publication', label: '正式发布', tone: 'gold' as const, value: item.publicationCount },
+    { key: 'sample', tone: 'blue' as const, value: item.sampleCount },
+    { key: 'aggregation', tone: 'cyan' as const, value: item.aggregationCount },
+    { key: 'publication', tone: 'gold' as const, value: item.publicationCount },
   ];
   const phaseGridTemplate = phases
     .map((phase) => `${Math.max(Math.sqrt(phase.value), 4).toFixed(2)}fr`)
@@ -1293,16 +1364,25 @@ function IndustryProgressRow({ index, item }: { index: number; item: IndustrySna
       <div className={styles.industryName}>
         <IndustryIcon item={item} />
         <div>
-          <strong>{item.name}</strong>
-          <small>发布 {formatNumber(item.publicationCount)}</small>
+          <strong>{industryLabel}</strong>
+          <small>
+            {intl.formatMessage(
+              { id: 'pages.home.nationalCarbon.outcome.publishedCount' },
+              { count: formatNumber(item.publicationCount) },
+            )}
+          </small>
         </div>
       </div>
       <div
-        aria-label={`${item.name}发布流水线：样本 ${formatNumber(
-          item.sampleCount,
-        )}，聚合 ${formatNumber(item.aggregationCount)}，发布 ${formatNumber(
-          item.publicationCount,
-        )}`}
+        aria-label={intl.formatMessage(
+          { id: 'pages.home.nationalCarbon.outcome.pipelineAria' },
+          {
+            aggregation: formatNumber(item.aggregationCount),
+            industry: industryLabel,
+            publication: formatNumber(item.publicationCount),
+            sample: formatNumber(item.sampleCount),
+          },
+        )}
         className={styles.phaseCells}
         style={{ gridTemplateColumns: phaseGridTemplate }}
       >
@@ -1322,7 +1402,7 @@ function IndustryProgressRow({ index, item }: { index: number; item: IndustrySna
         ))}
       </div>
       <div className={styles.industryCompletion}>
-        <span>{item.qualityMark}</span>
+        <span>{getIndustryQualityLabel(intl, item.key, item.qualityMark)}</span>
         <strong>{item.completionRate}%</strong>
         <i />
       </div>
@@ -1339,6 +1419,7 @@ function OutcomeMetricsScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
+  const intl = useIntl();
   const featuredIndustries = snapshot.outcome.industries.slice(0, 4);
   const remainingIndustries = snapshot.outcome.industries.slice(4);
   const remainingOutputCount = remainingIndustries.reduce(
@@ -1357,42 +1438,76 @@ function OutcomeMetricsScreen({
     <section className={styles.screenPanel}>
       <div className={styles.outcomeTopGrid}>
         <div className={styles.metricCluster}>
-          <h2>建设成果</h2>
+          <h2>{intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.construction' })}</h2>
           {snapshot.outcome.constructionMetrics.map(({ key, ...metric }) => (
-            <MiniMetric key={key} {...metric} />
+            <MiniMetric
+              key={key}
+              {...metric}
+              label={getOutcomeMetricLabel(intl, key, metric.label)}
+              unit={getOutcomeMetricUnit(intl, key)}
+            />
           ))}
         </div>
         <div className={styles.outcomeHero}>
-          <span>累计建设成果</span>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.total' })}</span>
           <strong>{formatNumber(snapshot.outcome.totalOutputs)}</strong>
-          <p>样本库与正式发布结果合计</p>
+          <p>{intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.totalHint' })}</p>
         </div>
         <div className={`${styles.metricCluster} ${styles.publicationCluster}`}>
-          <h2>发布成果</h2>
+          <h2>{intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.publication' })}</h2>
           {snapshot.outcome.publicationMetrics.map(({ key, ...metric }) => (
-            <MiniMetric key={key} {...metric} />
+            <MiniMetric
+              key={key}
+              {...metric}
+              label={getOutcomeMetricLabel(intl, key, metric.label)}
+              unit={getOutcomeMetricUnit(intl, key)}
+            />
           ))}
         </div>
       </div>
       <div className={styles.industryBoard}>
         <div className={styles.boardHeader}>
-          <strong>重点行业成果发布流水线</strong>
+          <strong>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.pipeline' })}
+          </strong>
           <div className={styles.phaseHeaderLabels}>
-            <span>样本沉淀</span>
-            <span>聚合处理</span>
-            <span>正式发布</span>
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.phase.sample' })}
+            </span>
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.phase.aggregation' })}
+            </span>
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.phase.publication' })}
+            </span>
           </div>
-          <span>完成度</span>
+          <span>{intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.completion' })}</span>
         </div>
         {featuredIndustries.map((item, index) => (
           <IndustryProgressRow index={index} item={item} key={item.key} />
         ))}
         {remainingIndustries.length > 0 && (
           <div className={styles.industrySummaryRow}>
-            <span>其余重点行业</span>
-            <strong>{remainingIndustries.map((item) => item.name).join(' / ')}</strong>
-            <em>{formatNumber(remainingOutputCount)} 个成果</em>
-            <b>{remainingAverageCompletion}% 平均完成度</b>
+            <span>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.outcome.otherIndustries' })}
+            </span>
+            <strong>
+              {remainingIndustries
+                .map((item) => getIndustryLabel(intl, item.key, item.name))
+                .join(' / ')}
+            </strong>
+            <em>
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.outcome.outputCount' },
+                { count: formatNumber(remainingOutputCount) },
+              )}
+            </em>
+            <b>
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.outcome.averageCompletion' },
+                { rate: remainingAverageCompletion },
+              )}
+            </b>
           </div>
         )}
       </div>
@@ -1421,7 +1536,6 @@ type AggregatedMatrixTile = {
 type MatrixAxisGroup = {
   end: number;
   key: string;
-  label: string;
   start: number;
   tone: 'blue' | 'cyan' | 'gold';
 };
@@ -1449,21 +1563,21 @@ const MATRIX_LAYOUT = {
 };
 
 const matrixRowGroups: MatrixAxisGroup[] = [
-  { end: 15, key: 'steel', label: '钢铁', start: 0, tone: 'blue' },
-  { end: 31, key: 'power', label: '电力', start: 16, tone: 'cyan' },
-  { end: 47, key: 'cement', label: '水泥', start: 32, tone: 'blue' },
-  { end: 65, key: 'chemical', label: '化工', start: 48, tone: 'blue' },
-  { end: 82, key: 'transport', label: '交通', start: 66, tone: 'cyan' },
-  { end: 99, key: 'building', label: '建材', start: 83, tone: 'blue' },
+  { end: 15, key: 'steel', start: 0, tone: 'blue' },
+  { end: 31, key: 'power', start: 16, tone: 'cyan' },
+  { end: 47, key: 'cement', start: 32, tone: 'blue' },
+  { end: 65, key: 'chemical', start: 48, tone: 'blue' },
+  { end: 82, key: 'transport', start: 66, tone: 'cyan' },
+  { end: 99, key: 'building', start: 83, tone: 'blue' },
 ];
 
 const matrixColumnGroups: MatrixAxisGroup[] = [
-  { end: 13, key: 'energy', label: '能源', start: 0, tone: 'cyan' },
-  { end: 29, key: 'material', label: '原材料', start: 14, tone: 'blue' },
-  { end: 47, key: 'process', label: '制造过程', start: 30, tone: 'blue' },
-  { end: 64, key: 'logistics', label: '运输', start: 48, tone: 'cyan' },
-  { end: 81, key: 'waste', label: '废弃处理', start: 65, tone: 'blue' },
-  { end: 99, key: 'factor', label: '区域因子', start: 82, tone: 'cyan' },
+  { end: 13, key: 'energy', start: 0, tone: 'cyan' },
+  { end: 29, key: 'material', start: 14, tone: 'blue' },
+  { end: 47, key: 'process', start: 30, tone: 'blue' },
+  { end: 64, key: 'logistics', start: 48, tone: 'cyan' },
+  { end: 81, key: 'waste', start: 65, tone: 'blue' },
+  { end: 99, key: 'factor', start: 82, tone: 'cyan' },
 ];
 
 const matrixConnectionBands: AggregatedMatrixSnapshot['connectionBands'] = [
@@ -1515,10 +1629,10 @@ const matrixDensityContours = [
   { column: 77, height: 66, row: 18, tone: 'cyan', width: 136 },
 ] as const;
 const matrixZoneBadges = [
-  { key: 'closed-process', label: '闭合高地', left: '50%', top: '36%', tone: 'cyan' },
-  { key: 'closed-factor', label: '天工数据库闭合带', left: '70%', top: '58%', tone: 'cyan' },
-  { key: 'gap-provider-a', label: 'provider 缺口 A', left: '31%', top: '63%', tone: 'gold' },
-  { key: 'gap-provider-b', label: 'provider 缺口 B', left: '80%', top: '27%', tone: 'gold' },
+  { key: 'closed-process', left: '50%', top: '36%', tone: 'cyan' },
+  { key: 'closed-factor', left: '70%', top: '58%', tone: 'cyan' },
+  { key: 'gap-provider-a', left: '31%', top: '63%', tone: 'gold' },
+  { key: 'gap-provider-b', left: '80%', top: '27%', tone: 'gold' },
 ] as const;
 
 function clamp(value: number, min: number, max: number): number {
@@ -1538,8 +1652,8 @@ function interpolateColor(low: number, high: number, ratio: number): number {
   return (nextR << 16) + (nextG << 8) + nextB;
 }
 
-function getMatrixGroupLabel(groups: MatrixAxisGroup[], index: number): string {
-  return groups.find((group) => index >= group.start && index <= group.end)?.label ?? '未分组';
+function getMatrixGroupKey(groups: MatrixAxisGroup[], index: number): string {
+  return groups.find((group) => index >= group.start && index <= group.end)?.key ?? 'ungrouped';
 }
 
 function sourcePointToTile(
@@ -1644,7 +1758,7 @@ function buildAggregatedMatrixSnapshot(matrix: MatrixSnapshot): AggregatedMatrix
         column,
         connected,
         density,
-        dominantGroup: `${getMatrixGroupLabel(matrixRowGroups, row)} / ${getMatrixGroupLabel(matrixColumnGroups, column)}`,
+        dominantGroup: `${getMatrixGroupKey(matrixRowGroups, row)}|${getMatrixGroupKey(matrixColumnGroups, column)}`,
         empty: Math.max(0, total - connected - unmatched),
         pathCount,
         row,
@@ -1701,6 +1815,7 @@ function getMatrixToneColor(tone: MatrixAxisGroup['tone']): number {
 }
 
 function ConnectivityMatrix({ connectivity }: { connectivity: ConnectivitySnapshot }) {
+  const intl = useIntl();
   const { closure, matrix, quality } = connectivity;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [hoveredTile, setHoveredTile] = useState<
@@ -1952,23 +2067,29 @@ function ConnectivityMatrix({ connectivity }: { connectivity: ConnectivitySnapsh
     <div className={styles.matrixCanvas}>
       <div className={styles.matrixHeader}>
         <div>
-          <div className={styles.matrixTitle}>供应链闭合度地形图</div>
+          <div className={styles.matrixTitle}>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.title' })}
+          </div>
           <div className={styles.matrixInsight}>
-            青蓝区域代表已写入 A 矩阵的闭合连接，金色热区代表 no provider 断裂缺口
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.insight' })}
           </div>
         </div>
         <div className={styles.matrixSpotlight}>
           <span>
-            <strong>{matrixRate.toFixed(2)}%</strong> 闭合率
+            <strong>{matrixRate.toFixed(2)}%</strong>{' '}
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.closureRate' })}
           </span>
           <span>
-            <strong>{formatNumber(closure.writtenEdges)}</strong> 已闭合
+            <strong>{formatNumber(closure.writtenEdges)}</strong>{' '}
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.closed' })}
           </span>
           <span>
-            <strong>{formatNumber(closure.noProviderEdges)}</strong> 未闭合
+            <strong>{formatNumber(closure.noProviderEdges)}</strong>{' '}
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.unclosed' })}
           </span>
           <span>
-            <strong>{closure.providerPresentResolvedPct.toFixed(0)}%</strong> 规则解析
+            <strong>{closure.providerPresentResolvedPct.toFixed(0)}%</strong>{' '}
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.ruleResolution' })}
           </span>
         </div>
       </div>
@@ -1981,14 +2102,14 @@ function ConnectivityMatrix({ connectivity }: { connectivity: ConnectivitySnapsh
         <div className={styles.matrixAxisTop}>
           {aggregatedMatrix.columnGroups.map((group) => (
             <span className={styles[`tone-${group.tone}`]} key={group.key}>
-              {group.label}
+              {getMatrixGroupLabel(intl, group.key)}
             </span>
           ))}
         </div>
         <div className={styles.matrixAxisSide}>
           {aggregatedMatrix.rowGroups.map((group) => (
             <span className={styles[`tone-${group.tone}`]} key={group.key}>
-              {group.label}
+              {getMatrixGroupLabel(intl, group.key)}
             </span>
           ))}
         </div>
@@ -1999,7 +2120,7 @@ function ConnectivityMatrix({ connectivity }: { connectivity: ConnectivitySnapsh
               key={badge.key}
               style={{ left: badge.left, top: badge.top }}
             >
-              {badge.label}
+              {getMatrixZoneLabel(intl, badge.key)}
             </span>
           ))}
         </div>
@@ -2008,58 +2129,83 @@ function ConnectivityMatrix({ connectivity }: { connectivity: ConnectivitySnapsh
             className={styles.matrixHoverTooltip}
             style={{ left: hoveredTile.left, top: hoveredTile.top }}
           >
-            <strong>{hoveredTile.dominantGroup}</strong>
+            <strong>
+              {hoveredTile.dominantGroup
+                .split('|')
+                .map((group) => getMatrixGroupLabel(intl, group))
+                .join(' / ')}
+            </strong>
             <span>
-              映射区间：行 {formatNumber(hoveredTile.sourceRowStart)}-
-              {formatNumber(hoveredTile.sourceRowEnd)} / 列
-              {formatNumber(hoveredTile.sourceColumnStart)}-
-              {formatNumber(hoveredTile.sourceColumnEnd)}
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.matrix.range' },
+                {
+                  columnEnd: formatNumber(hoveredTile.sourceColumnEnd),
+                  columnStart: formatNumber(hoveredTile.sourceColumnStart),
+                  rowEnd: formatNumber(hoveredTile.sourceRowEnd),
+                  rowStart: formatNumber(hoveredTile.sourceRowStart),
+                },
+              )}
             </span>
             <div>
               <b>{Math.round(hoveredTile.density * 100)}%</b>
-              <em>闭合强度</em>
+              <em>{intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.intensity' })}</em>
               <b>{Math.round(hoveredTile.unmatchedRate * 100)}%</b>
-              <em>断裂缺口</em>
+              <em>{intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.gap' })}</em>
             </div>
             <small>
-              {formatNumber(hoveredTile.connected)} 已闭合 / {formatNumber(hoveredTile.unmatched)}{' '}
-              未闭合
+              {intl.formatMessage(
+                { id: 'pages.home.nationalCarbon.matrix.closedSummary' },
+                {
+                  closed: formatNumber(hoveredTile.connected),
+                  unclosed: formatNumber(hoveredTile.unmatched),
+                },
+              )}
             </small>
           </div>
         )}
       </div>
       <div className={styles.matrixQualityStrip}>
         <span>
-          供应量拆分 <strong>{quality.splitByProcessVolumePct.toFixed(2)}%</strong>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.quality.supplySplit' })}{' '}
+          <strong>{quality.splitByProcessVolumePct.toFixed(2)}%</strong>
         </span>
         <span>
-          数量兜底 <strong>{quality.volumeFallbackToOnePct.toFixed(0)}%</strong>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.quality.quantityFallback' })}{' '}
+          <strong>{quality.volumeFallbackToOnePct.toFixed(0)}%</strong>
         </span>
         <span>
-          本地因子 <strong>{quality.localSubnationalPct.toFixed(2)}%</strong>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.quality.localFactor' })}{' '}
+          <strong>{quality.localSubnationalPct.toFixed(2)}%</strong>
         </span>
         <span>
-          同国匹配 <strong>{quality.sameCountryPct.toFixed(2)}%</strong>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.quality.sameCountry' })}{' '}
+          <strong>{quality.sameCountryPct.toFixed(2)}%</strong>
         </span>
         <span>
-          风险 <strong>{quality.singularRiskLevel.toUpperCase()}</strong>
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.quality.risk' })}{' '}
+          <strong>{getRiskLabel(intl, quality.singularRiskLevel)}</strong>
         </span>
       </div>
       <div className={styles.matrixLegend}>
         <span>
-          <i className={styles.legendConnected} /> 已闭合连接
+          <i className={styles.legendConnected} />{' '}
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.legend.connected' })}
         </span>
         <span>
-          <i className={styles.legendUnmatched} /> 未闭合缺口
+          <i className={styles.legendUnmatched} />{' '}
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.legend.unmatched' })}
         </span>
         <span>
-          <i className={styles.legendBand} /> 闭合高地
+          <i className={styles.legendBand} />{' '}
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.legend.band' })}
         </span>
         <span>
-          <i className={styles.legendNew} /> 本轮增量
+          <i className={styles.legendNew} />{' '}
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.legend.new' })}
         </span>
         <span>
-          <i className={styles.legendEmpty} /> 低密度背景
+          <i className={styles.legendEmpty} />{' '}
+          {intl.formatMessage({ id: 'pages.home.nationalCarbon.matrix.legend.empty' })}
         </span>
       </div>
     </div>
@@ -2075,43 +2221,52 @@ function ConnectivityScreen({
   activeScreen: ScreenKey;
   onChangeScreen: (screen: ScreenKey) => void;
 }) {
+  const intl = useIntl();
   return (
     <section className={styles.screenPanel}>
       <div className={styles.connectivityGrid}>
         <aside className={styles.connectivitySummary}>
-          <span>供应链闭合率</span>
+          <span>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.connectivity.closureRate' })}
+          </span>
           <strong>
             {snapshot.connectivity.closure.writePct.toFixed(2)}
             <em>%</em>
           </strong>
-          <p>A 矩阵已写入连接 / input edge 总量</p>
+          <p>
+            {intl.formatMessage({ id: 'pages.home.nationalCarbon.connectivity.writeRateHint' })}
+          </p>
           <div>
             <MiniMetric
-              label='已闭合连接'
+              label={intl.formatMessage({ id: 'pages.home.nationalCarbon.connectivity.closed' })}
               tone='blue'
-              unit='条'
+              unit={intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.records' })}
               value={snapshot.connectivity.closure.writtenEdges}
             />
             <MiniMetric
-              label='未闭合连接'
+              label={intl.formatMessage({ id: 'pages.home.nationalCarbon.connectivity.unclosed' })}
               tone='amber'
-              unit='条'
+              unit={intl.formatMessage({ id: 'pages.home.nationalCarbon.unit.records' })}
               value={snapshot.connectivity.closure.noProviderEdges}
             />
             <MiniMetric
-              label='有 provider 解析率'
+              label={intl.formatMessage({
+                id: 'pages.home.nationalCarbon.connectivity.providerRate',
+              })}
               tone='cyan'
               unit='%'
               value={snapshot.connectivity.closure.providerPresentResolvedPct}
             />
           </div>
           <div className={styles.gapQueue}>
-            <h3>缺口优先级</h3>
+            <h3>
+              {intl.formatMessage({ id: 'pages.home.nationalCarbon.connectivity.gapPriority' })}
+            </h3>
             {snapshot.connectivity.gaps.topFlows.slice(0, 4).map((gap) => (
               <div key={gap.flow}>
-                <span>{gap.flow}</span>
+                <span>{getGapFlowLabel(intl, gap.flow)}</span>
                 <strong>{formatNumber(gap.count)}</strong>
-                <em>{gap.category}</em>
+                <em>{getGapCategoryLabel(intl, gap.category)}</em>
               </div>
             ))}
           </div>

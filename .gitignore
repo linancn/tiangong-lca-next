@@ -69,5 +69,8 @@ docker/.env.deploy.local
 # local human-review confirmations (never commit or upload)
 /.local/i18n-de-DE/
 
+# local autonomous i18n delivery checkpoints (never commit or upload)
+/.local/i18n/
+
 # bounded failed-transport push receipt (never commit or upload)
 /.local/prepush-gate/

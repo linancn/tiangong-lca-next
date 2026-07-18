@@ -1,6 +1,6 @@
 {
   "schemaVersion": "tiangong.i18n-dynamic-families.v1",
-  "sourceLocales": ["en-US", "zh-CN", "de-DE"],
+  "sourceLocales": ["en-US", "zh-CN", "de-DE", "fr-FR"],
   "policy": {
     "callsiteIdentity": ["api", "count", "file", "expression"],
     "driftRule": "Every computed production message callsite must exactly match one reviewed callsite summary; additions, removals, expression changes, and count changes fail enforcement.",

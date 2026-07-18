@@ -20,9 +20,9 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - .nvmrc
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: 2a523ea50a3aa38733e78c2294114bbd8058f68d
-lastReviewedNote: 'Reviewed the reusable i18n language delivery Goal registration and native Umi flag-selector contract; bootstrap commands and gate ownership are unchanged.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; the documented bootstrap commands and safe work loop remain current.'
 ---
 
 # Development Bootstrap
@@ -87,12 +87,14 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
 | deterministic locale audit | `npm run i18n:audit` |
-| write active German runtime manifest | `npm run i18n:de:runtime:manifest:write` |
-| check active German runtime manifest | `npm run i18n:de:runtime:manifest:check` |
-| generate local Issue #606 delta review form | `npm run i18n:de:delta:review:generate` |
-| check completed local Issue #606 delta review | `npm run i18n:de:delta:review:check` |
-| verify the frozen approved Issue #601 Pilot | `npm run i18n:de:pilot` |
+| audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
+| build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
+| check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
+| check tracked existing-translation corrections | `npm run i18n:corrections:check` |
+| check one locale's activation boundary | `npm run i18n:locale:activation:check -- --locale <canonical-locale>` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
+| validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
+| validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
 | build | `npm run build` |
 | local full test gate | `npm run prepush:gate` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
@@ -110,10 +112,10 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
-- ignored local confirmation edits and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
-- after a controlled German source or copy change, write the runtime manifest, generate the Issue #606 delta review form, keep the completed form private and ignored, and check it before enforcing `npm run i18n:de:audit`
-- `npm run i18n:de:pilot` verifies the frozen Issue #601 approval snapshot; `npm run i18n:de:audit` treats merged `dev` commit `36836f2c` as the accepted 2,689-message baseline and additionally requires the exact active runtime assembly, the fresh manifest, and the hash-bound local Issue #606 delta approval
-- completed German review forms and reviewer identity stay outside Git and GitHub; the gates read them locally without making a network call
+- ignored local evidence and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
+- after a controlled active-locale change, regenerate that locale's tracked artifacts, run the shared audit/context/quality/correction/activation checks, and keep `BLOCKED_CONTEXT`, unowned route views, topology drift, ICU drift, and undeclared corrections at zero
+- `npm run i18n:de:audit` uses the same tracked automated activation boundary as every active registry locale; `i18n:de:pilot`, review, and delta commands validate only their frozen Issue #601/#602/#606 snapshots and are never active-release or full-gate inputs
+- active locale commands and clean-runner proof must pass with `.local/**confirmation*` absent; historical reviewer forms and identity remain outside Git and GitHub
 - a successful managed push leaves no retry receipt; only a non-zero transport result after both hook gates passed activates the ignored, one-hour, exact-intent receipt used by argument-free `npm run push:retry`
 - a raw `git push` still runs the hook but cannot create that bounded recovery receipt; never invoke `git push --no-verify` or `HUSKY=0` manually
 - run `npm run test:ci`, coverage commands, and `npm run prepush:gate` serially because they regenerate shared `.umi-test` state; do not add broad test/coverage runs around a full gate that already contains coverage

@@ -33,6 +33,7 @@ jest.mock('@/services/supabase/storage', () => ({
   getThumbFileUrls: jest.fn(),
 }));
 
+import enHomeMessages from '@/locales/en-US/pages_home';
 import Welcome from '@/pages/Welcome';
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeams } from '@/services/teams/api';
@@ -40,7 +41,7 @@ import userEvent from '@testing-library/user-event';
 import { mockTeam } from '../../helpers/testData';
 import { renderWithProviders, screen, waitFor, within } from '../../helpers/testUtils';
 import { resetAntdToken, setAntdToken } from '../../mocks/antd';
-import { setUmiLocation, umiMocks } from '../../mocks/umi';
+import { setUmiIntl, setUmiLocation, umiMocks } from '../../mocks/umi';
 
 type TeamLangText = { '@xml:lang': string; '#text': string };
 type TeamJson = {
@@ -78,6 +79,7 @@ type GetThumbFileUrlsMock = jest.Mock<Promise<ThumbFileUrl[]>, [fileList: unknow
 
 const mockGetTeams = getTeams as unknown as GetTeamsMock;
 const mockGetThumbFileUrls = getThumbFileUrls as unknown as GetThumbFileUrlsMock;
+const welcomeMessages = enHomeMessages as Record<string, string>;
 
 const baseTeamJson: Partial<TeamJson> = {
   lightLogo: '../sys-files/light.svg',
@@ -129,6 +131,11 @@ describe('WelcomeWorkflow integration', () => {
     resetAntdToken();
     localStorage.clear();
     setUmiLocation({ pathname: '/welcome', search: '' });
+    setUmiIntl({
+      locale: 'en-US',
+      formatMessage: ({ defaultMessage, id }) =>
+        (id ? welcomeMessages[id] : undefined) ?? defaultMessage ?? id ?? '',
+    });
     window.location.href = 'http://localhost/';
   });
 
@@ -206,7 +213,7 @@ describe('WelcomeWorkflow integration', () => {
 
     mockGetTeams.mockResolvedValue({
       data: [],
-      success: false,
+      success: true,
     });
 
     renderWithProviders(<Welcome />);
@@ -220,6 +227,7 @@ describe('WelcomeWorkflow integration', () => {
     expect(screen.queryByText('Test Team EN')).not.toBeInTheDocument();
     expect(mockGetThumbFileUrls).not.toHaveBeenCalled();
     expect(screen.getByTestId('modal')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('No data teams are available yet.');
   });
 
   it('keeps team cards visible when thumbnail lookups fail', async () => {

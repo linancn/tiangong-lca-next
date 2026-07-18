@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "tiangong.i18n-glossary.v1",
+  "locale": "fr-FR",
+  "evidenceSources": [
+    {
+      "id": "iso-14040-life-cycle-assessment",
+      "kind": "official-standard",
+      "location": "https://www.iso.org/standard/37456.html",
+      "appliesTo": ["life cycle assessment", "allocation", "process", "flow"]
+    },
+    {
+      "id": "eu-jrc-ilcd-handbook",
+      "kind": "official-domain-guidance",
+      "location": "https://eplca.jrc.ec.europa.eu/ilcdHandbook.html",
+      "appliesTo": ["process", "flow", "flow property", "unit group", "review"]
+    },
+    {
+      "id": "tidas-runtime-schema",
+      "kind": "repository-and-sdk-contract",
+      "location": "@tiangong-lca/tidas-sdk plus audited production callsites",
+      "appliesTo": ["TIDAS", "dataset", "process", "flow", "flow property", "unit group"]
+    },
+    {
+      "id": "cross-locale-product-semantics",
+      "kind": "repository-evidence",
+      "location": "canonical English, Chinese, German, dynamic families, focused tests, and route-view behavior",
+      "appliesTo": ["all product UI copy"]
+    }
+  ],
+  "sourceEqualityPolicy": {
+    "rationale": "Independent evidence review confirmed these French cognates, interface terms, punctuation/templates, and Chinese-region proper names are intentionally identical to canonical English; every other source-equal value remains suspicious.",
+    "exactValues": [
+      ", ",
+      "Acidification",
+      "Action",
+      "Actions",
+      "Allocation",
+      "Allocation - volume",
+      "Avatar",
+      "Classification",
+      "code",
+      "Configuration",
+      "Contact",
+      "Contacts",
+      "Cyan",
+      "Description",
+      "Diagnostics",
+      "Diesel",
+      "Direction",
+      "Documentation",
+      "E-mail",
+      "Exception",
+      "Index",
+      "message",
+      "Message",
+      "Notification",
+      "provinces",
+      "Publication",
+      "Questionnaire",
+      "Releases",
+      "Source",
+      "Sources",
+      "Total {duration}",
+      "Transport",
+      "Type",
+      "Validation",
+      "Variable",
+      "Version"
+    ],
+    "messageIdPrefixes": ["pages.home.nationalCarbon.region."]
+  },
+  "terms": [
+    {
+      "concept": "life cycle assessment",
+      "preferred": ["analyse du cycle de vie", "évaluation du cycle de vie", "ACV"],
+      "forbidden": ["évaluation du cercle de vie"]
+    },
+    {
+      "concept": "process",
+      "preferred": ["processus", "processus élémentaire"],
+      "conditional": ["procédé"],
+      "note": "Use processus for the TIDAS/LCA data object and graph node; qualify with élémentaire only where the source context does. Use procédé only for a physical manufacturing or treatment operation, never merely as a synonym for the dataset object."
+    },
+    {
+      "concept": "flow",
+      "preferred": ["flux"],
+      "note": "Preserve the LCA/TIDAS object distinction from flow property and exchange."
+    },
+    {
+      "concept": "flow property",
+      "preferred": ["propriété de flux"]
+    },
+    {
+      "concept": "unit group",
+      "preferred": ["groupe d’unités", "groupe d'unités"]
+    },
+    {
+      "concept": "review",
+      "preferred": ["revue", "revue critique"],
+      "conditional": ["révision", "examen"],
+      "note": "Use revue for the product peer-review workflow and revue critique for the established ACV concept. Use révision for editing or revising content/version state, and examen only for a literal inspection action."
+    },
+    {
+      "concept": "dataset",
+      "preferred": ["jeu de données", "données"],
+      "forbidden": ["ensemble de data"]
+    },
+    {
+      "concept": "carbon footprint",
+      "preferred": ["empreinte carbone"]
+    },
+    {
+      "concept": "allocation",
+      "preferred": ["allocation"],
+      "note": "Keep the established LCA technical term; do not substitute affectation when describing allocation methods."
+    },
+    {
+      "concept": "TIDAS",
+      "preferred": ["TIDAS"],
+      "note": "Never translate product names, schema names, IDs, hashes, MIME types, or file extensions. Keep LCA/LCIA only where they are part of such a fixed name or raw token; use ACV/ÉICV in ordinary French product prose."
+    }
+  ]
+}

@@ -68,6 +68,8 @@ export default {
   'pages.login.passwordReset.title': '重置密码',
   'pages.login.passwordReset.tab': '重置密码',
   'pages.login.passwordReset.submit': '提交',
+  'pages.login.passwordReset.sessionUnavailable': '此密码重置链接无效或已过期。请申请新的链接。',
+  'pages.login.passwordReset.requestNewLink': '申请新的重置链接',
   'pages.login.newPassword.placeholder': '新密码',
   'pages.login.confirmNewPassword.placeholder': '确认新密码',
   'pages.login.password.reset.success': '密码重置成功！',

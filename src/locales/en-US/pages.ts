@@ -68,6 +68,8 @@ export default {
   'pages.login.passwordReset.title': 'Reset Password',
   'pages.login.passwordReset.tab': 'Reset Password',
   'pages.login.passwordReset.submit': 'Submit',
+  'pages.login.passwordReset.sessionUnavailable': 'This password reset link is invalid or has expired. Request a new link.',
+  'pages.login.passwordReset.requestNewLink': 'Request a new reset link',
   'pages.login.newPassword.placeholder': 'New Password',
   'pages.login.confirmNewPassword.placeholder': 'Confirm New Password',
   'pages.login.password.reset.success': 'Password reset successfully!',

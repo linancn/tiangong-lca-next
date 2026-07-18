@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-17'
-lastReviewedCommit: '2a523ea50a3aa38733e78c2294114bbd8058f68d'
-lastReviewedNote: 'Registered the reusable i18n language delivery Goal and its native Umi flag-selector contract; existing ownership, testing, and release rules remain unchanged.'
+lastReviewedAt: '2026-07-18'
+lastReviewedCommit: '4a07183eab1e317631fac9ff7f42ede4c2437ef1'
+lastReviewedNote: 'Reviewed the second Issue #625 full-gate result and exact async/runtime fallback closure; testing and full-gate governance rules remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -40,7 +40,8 @@ ownership:
           - README_CN.md
           - .docpact/**
           - docs/agents/**
-          - docs/plans/i18n-de-DE/**
+          - docs/plans/i18n/**
+          - docs/plans/i18n-*/**
           - .github/PULL_REQUEST_TEMPLATE/*.md
       ownerRepo: next
     - id: repo-testing-and-quality-gates
@@ -86,7 +87,8 @@ coverage:
     - docs/agents/lcia-calculation-evidence.md
     - docs/agents/team_management.md
     - docs/agents/data_audit_instruction.md
-    - docs/plans/i18n-de-DE/**
+    - docs/plans/i18n/**
+    - docs/plans/i18n-*/**
     - .github/PULL_REQUEST_TEMPLATE/*.md
     - config/**
     - src/**
@@ -131,13 +133,17 @@ routing:
         - src/pages/**
         - src/components/**
         - src/locales/**
+        - src/services/general/localeRegistry.ts
+        - src/services/general/publicRoutePolicy.ts
         - docs/agents/i18n-language-delivery-goal.md
-        - docs/plans/i18n-de-DE/**
+        - docs/plans/i18n/**
+        - docs/plans/i18n-*/**
     service-env:
       paths:
         - config/supabaseEnv.ts
         - src/services/auth/**
         - src/services/general/api.ts
+        - src/services/general/localeRegistry.ts
         - src/services/general/runtimeLocale.ts
         - src/services/supabase/**
         - docker/**
@@ -181,7 +187,8 @@ routing:
         - docs/agents/lcia-calculation-evidence.md
         - docs/agents/team_management.md
         - docs/agents/data_audit_instruction.md
-        - docs/plans/i18n-de-DE/**
+        - docs/plans/i18n/**
+        - docs/plans/i18n-*/**
         - .github/PULL_REQUEST_TEMPLATE/*.md
     proof:
       paths:
@@ -197,7 +204,8 @@ routing:
         - scripts/i18n/**
         - tests/**
         - docs/agents/i18n-language-delivery-goal.md
-        - docs/plans/i18n-de-DE/**
+        - docs/plans/i18n/**
+        - docs/plans/i18n-*/**
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
         - docs/agents/testing-troubleshooting.md
@@ -511,7 +519,9 @@ rules:
         kind: test-gate
       - path: scripts/i18n/**
         kind: test-gate
-      - path: docs/plans/i18n-de-DE/**
+      - path: docs/plans/i18n/**
+        kind: test-baseline
+      - path: docs/plans/i18n-*/**
         kind: test-baseline
       - path: tests/data-workflows/test-api-smoke.cjs
         kind: repo-test

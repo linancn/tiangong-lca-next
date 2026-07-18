@@ -1,4 +1,5 @@
 import { DarkMode, SelectLang } from '@/components/RightContent';
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 import { getDocumentationUrl, normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { theme } from 'antd';
@@ -22,13 +23,19 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
   const langActionRef = useRef<HTMLDivElement>(null);
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
+  const localeDefinition = locale ? getLocaleDefinition(locale) : undefined;
+  const usesEnglishFallback = Boolean(
+    localeDefinition &&
+    localeDefinition.fallbacks.documentationLocale === 'en-US' &&
+    localeDefinition.fallbacks.documentationLocale !== localeDefinition.canonicalLocale,
+  );
   const helpLabel = intl.formatMessage({
-    id:
-      locale === 'de-DE'
-        ? 'component.globalHeader.help.englishFallback'
-        : 'component.globalHeader.help',
-    defaultMessage:
-      locale === 'de-DE' ? 'Open help documentation (English)' : 'Open help documentation',
+    id: usesEnglishFallback
+      ? 'component.globalHeader.help.englishFallback'
+      : 'component.globalHeader.help',
+    defaultMessage: usesEnglishFallback
+      ? 'Open help documentation (English)'
+      : 'Open help documentation',
   });
 
   const handleOpenDocs = () => {
@@ -82,31 +89,12 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
           fontSize: 16,
           borderRadius: token.borderRadius,
           color: actionColor,
+          backgroundColor: hoveredAction === 'dark' ? actionHoverBg : undefined,
         }}
         onMouseEnter={() => setHoveredAction('dark')}
         onMouseLeave={() => setHoveredAction(null)}
       >
-        <div
-          role='button'
-          tabIndex={0}
-          aria-label='toggle-dark-mode'
-          onClick={onDarkModeToggle}
-          onKeyDown={(event) => handleActionKeyDown(event, onDarkModeToggle)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 6,
-            minWidth: 28,
-            minHeight: 28,
-            borderRadius: token.borderRadius,
-            backgroundColor: hoveredAction === 'dark' ? actionHoverBg : undefined,
-          }}
-        >
-          <div style={{ pointerEvents: 'none', lineHeight: 1 }}>
-            <DarkMode handleClick={undefined} isDarkMode={isDarkMode} />
-          </div>
-        </div>
+        <DarkMode handleClick={onDarkModeToggle} isDarkMode={isDarkMode} />
       </div>
       <div
         data-testid='login-language'
