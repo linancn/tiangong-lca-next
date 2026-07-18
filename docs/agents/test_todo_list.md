@@ -21,7 +21,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
 lastReviewedNote: 'Reviewed the Issue #625 second hook result and its focused 45-test async/runtime closure; the checked-in reference baseline remains intentionally separate from per-PR evidence.'
 ---
 

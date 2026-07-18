@@ -351,36 +351,42 @@ function collectRouteConfigEvidence(root, relativeFile) {
   };
 }
 
-function collectPublicPolicyEvidence(root) {
-  const relativeFile = 'src/app.tsx';
-  const { sourceFile } = parseTypeScriptSource(root, relativeFile);
+function collectAnonymousRoutePolicyEvidence(root) {
+  const relativeFile = 'src/services/general/publicRoutePolicy.ts';
+  const { source, sourceFile } = parseTypeScriptSource(root, relativeFile);
   const constants = collectStringConstants(sourceFile);
-  let exactPublicPaths = [];
-  let publicUnknownFallback = false;
+  let allowedPaths = [];
   function visit(node) {
     if (
       ts.isVariableDeclaration(node) &&
       ts.isIdentifier(node.name) &&
-      node.name.text === 'isPublicPath' &&
-      node.initializer &&
-      ts.isCallExpression(node.initializer)
+      node.name.text === 'ANONYMOUS_ROUTE_PATHS' &&
+      node.initializer
     ) {
-      const options = node.initializer.arguments[1];
-      if (options && ts.isObjectLiteralExpression(options)) {
-        const pathsProperty = objectProperty(options, 'exactPublicPaths');
-        if (pathsProperty?.initializer && ts.isArrayLiteralExpression(pathsProperty.initializer)) {
-          exactPublicPaths = pathsProperty.initializer.elements
-            .map((element) => expressionString(element, constants, sourceFile))
-            .filter(Boolean);
-        }
-        const fallbackProperty = objectProperty(options, 'publicUnknownFallback');
-        publicUnknownFallback = fallbackProperty?.initializer?.kind === ts.SyntaxKind.TrueKeyword;
+      const initializer = ts.isAsExpression(node.initializer)
+        ? node.initializer.expression
+        : node.initializer;
+      if (ts.isArrayLiteralExpression(initializer)) {
+        allowedPaths = initializer.elements
+          .map((element) => expressionString(element, constants, sourceFile))
+          .filter(Boolean);
       }
     }
     ts.forEachChild(node, visit);
   }
   visit(sourceFile);
-  return { exactPublicPaths, publicUnknownFallback, sourcePath: relativeFile };
+  if (allowedPaths.length === 0) {
+    throw new Error('Anonymous-route policy must expose its explicit allowlist.');
+  }
+  if (!source.includes('anonymousRoutePaths.has(pathname)')) {
+    throw new Error('Anonymous-route policy must fail closed through exact allowlist membership.');
+  }
+  return {
+    allowedPaths,
+    defaultAccess: 'authenticated-session-required',
+    unknownPathAccess: 'authenticated-session-required',
+    sourcePath: relativeFile,
+  };
 }
 
 function semanticSignalsFromText(value) {
@@ -621,7 +627,7 @@ function validateRouteCoverage(root, manifest) {
     throw new Error('Route-view coverage contains duplicate route/view-state rows.');
   }
   const routeConfig = collectRouteConfigEvidence(root, coverage.sourceRouteConfig);
-  const publicPolicy = collectPublicPolicyEvidence(root);
+  const anonymousRoutePolicy = collectAnonymousRoutePolicyEvidence(root);
   const configuredPaths = new Set(routeConfig.configuredPaths);
   const messageIds = new Set(manifest.messages.map(({ id }) => id));
   const messagesBySource = new Map();
@@ -642,14 +648,6 @@ function validateRouteCoverage(root, manifest) {
       collectSourceDerivation(root, sourcePath, messagesBySource.get(sourcePath) ?? []),
     );
   }
-  for (const publicPath of publicPolicy.exactPublicPaths) {
-    if (![...observedPaths].some((route) => route.split(/[?#]/u)[0] === publicPath)) {
-      throw new Error(`Public route ${publicPath} has no derived route-view row.`);
-    }
-  }
-  if (publicPolicy.publicUnknownFallback && !observedPaths.has('*')) {
-    throw new Error('The public unknown-route fallback has no wildcard route-view row.');
-  }
   const rootDefinition = routeConfig.definitions.find(({ path: routePath }) => routePath === '/');
   if (rootDefinition?.redirect !== '/welcome' || rootDefinition.keepQuery !== true) {
     throw new Error('The root route must derive a query-preserving redirect to /welcome.');
@@ -661,11 +659,12 @@ function validateRouteCoverage(root, manifest) {
       !row.viewState ||
       !row.trigger ||
       !row.component ||
+      !row.accessContext ||
       !Array.isArray(row.visibleStates) ||
       row.visibleStates.length === 0
     ) {
       throw new Error(
-        'Every route-view row must identify a route, view state, trigger, component, and visible states.',
+        'Every route-view row must identify a route, view state, trigger, component, access context, and visible states.',
       );
     }
     const copySources = row.copySources;
@@ -792,11 +791,11 @@ function validateRouteCoverage(root, manifest) {
     }
   }
   const derivedEvidence = {
-    schemaVersion: 'tiangong.i18n-route-view-derived-evidence.v1',
+    schemaVersion: 'tiangong.i18n-route-view-derived-evidence.v2',
     sourceRouteConfig: coverage.sourceRouteConfig,
     routeConfigDigest: routeConfig.digest,
     configuredRouteCount: routeConfig.configuredPaths.length,
-    publicPolicy,
+    anonymousRoutePolicy,
     sourceFileCount: derivationsBySource.size,
     sourceEvidenceDigest: digestJson([...derivationsBySource.values()]),
     rowEvidence,
@@ -1208,7 +1207,7 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
     routeViewCoverage: {
       path: ROUTE_VIEW_COVERAGE,
       digest: fileDigest(root, ROUTE_VIEW_COVERAGE),
-      requiredPublicViews: ['/', '/welcome', '/welcome?view=carbon-footprint'],
+      requiredRouteViews: ['/', '/welcome', '/welcome?view=carbon-footprint'],
       derivedEvidence: coverage.derivedEvidence,
     },
     inputs: Object.fromEntries(requiredInputs.map((input) => [input, fileDigest(root, input)])),

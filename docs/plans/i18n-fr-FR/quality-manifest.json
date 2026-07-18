@@ -3,8 +3,8 @@
   "locale": "fr-FR",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "4f5dc2600ec7150246cf76b5f338a41a6bf1e2943327f639aaf3ef00a4414391",
-    "contextDigest": "610f1b4a2ed21a304957b043ab7e8fa7a9ca5f9d85ae81b04d184d0953e974a8"
+    "sourceManifestDigest": "15c893f9336536ea933c545318c9a35fa31c74c64ae5a6a780e0da8651c38b69",
+    "contextDigest": "5829760221e661a610fc474c2c38e0775e9b2d875e7e51376624e0b37b63218f"
   },
   "catalog": {
     "messageCount": 3026,
@@ -39,8 +39,8 @@
   },
   "independentReview": {
     "path": "docs/plans/i18n-fr-FR/automated-review.json",
-    "digest": "a58bc2e1a0d329a5e7002b42399b1be3d7af5030c748215c1dc0a2be3392a5e6",
-    "reviewDigest": "d385c0b4fb1930b9b8d7ed4932c2d052a593ba28c40e1de6a04e0811fbe43628",
+    "digest": "6e359ee712410abdbaf89a9150dacd3914b75f8da30d7b8eda161253bac7e389",
+    "reviewDigest": "5c9c28bf52356e70f5e726bc6c104958c44f98c3c6629cf0f8af37e7b7943567",
     "laneCount": 4,
     "reviewedMessageCount": 3026,
     "reviewedModuleCount": 31,
@@ -50,5 +50,5 @@
     "blockedItems": 0,
     "humanTranslationReviewRequired": false
   },
-  "qualityDigest": "8dcd3264d11eaf62c8fbe0fb6133baf6acecd6374108f405de94db3356943107"
+  "qualityDigest": "88227af5f52c82309b73e9b6664b1cc00671e9c9f8f24a8277a6edecf2204251"
 }

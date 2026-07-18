@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "reviewClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "c73422fc16728aca23b72991488141347178845fef45f54fb21acd37a01465ef",
+    "auditedInputDigest": "d68d3fd5a9481ace421dfb740c9f328bf3daf3704691a73b0df5ee881af9fdcf",
     "reviewedMessageCount": 3026,
     "reviewedModules": [
       "$entry",
@@ -42,9 +42,9 @@
     "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
     "lowRiskPolicy": "validated family rules with cross-module sampling; no unreviewed exceptions",
     "catalogDigest": "5dfaf127dfc65ae3067761bad8693187cebd92689fabd0f92f9d09302f571d59",
-    "dossierDigest": "f19aa1bd0b36b9723ed306115a455c8bf30255ccd604e068f7a075f721b8d26d",
+    "dossierDigest": "334a2719e78b950d0e1106375dfd938dce677ea4a5d07281126f8ece8daf7e4c",
     "typedContentDossierDigest": "33c835327898db68bb60a4db80146c0205e22332eea6dce95694220373ce89d3",
-    "routeEvidenceDigest": "48665db0f89e1ec6f60a344d8b03ba4b245c9b81bb7266cb6e183191ee5a4c7b"
+    "routeEvidenceDigest": "f173d8c491d94b493ed90613630c3c9867c2601bfbdd886e65b1881495bce236"
   },
   "reviewLanes": [
     {
@@ -67,7 +67,7 @@
       "lowRiskCoverage": "validated repeated families plus representative callsite sampling",
       "method": [
         "shared dossier regeneration",
-        "runtime/route/fallback regression",
+        "runtime/route/access-context/fallback regression",
         "ICU/defaultMessage and accessibility checks"
       ],
       "result": "passed"
@@ -124,5 +124,5 @@
     }
   ],
   "blockedItems": [],
-  "reviewDigest": "acd6249c8175b0cea07b626691e725a448adbe45de972aee77b8667a4eadb814"
+  "reviewDigest": "9561579ca272c84b68c2e5e8862b69a1c529a0ce7d96140897ce1c88b39e06aa"
 }
