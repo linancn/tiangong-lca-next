@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-18'
-lastReviewedCommit: '4a07183eab1e317631fac9ff7f42ede4c2437ef1'
+lastReviewedAt: "2026-07-18"
+lastReviewedCommit: "762a287342456defb1c298f87d6922261e398284"
 lastReviewedNote: 'Reviewed the second Issue #625 full-gate result and exact async/runtime fallback closure; testing and full-gate governance rules remain unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
@@ -132,6 +132,7 @@ routing:
         - src/app.tsx
         - src/pages/**
         - src/components/**
+        - src/wrappers/**
         - src/locales/**
         - src/services/general/localeRegistry.ts
         - src/services/general/publicRoutePolicy.ts
@@ -391,6 +392,8 @@ rules:
         kind: page-ui
       - path: src/components/**
         kind: shared-ui
+      - path: src/wrappers/**
+        kind: app-runtime
       - path: src/locales/**
         kind: ui-locale
       - path: public/tutorials/**

@@ -22,7 +22,7 @@ checkPaths:
   - tests/data-workflows/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
 lastReviewedNote: 'Reviewed Issue #625 async and locale fallback coverage: focused tests settle rejected requests, resolve deferred work after unmount, and exercise unsupported locale labels.'
 ---
 

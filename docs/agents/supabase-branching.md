@@ -19,8 +19,8 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
 lastReviewedNote: 'Reviewed Issue #625 team-loading behavior: preserving a service failure as a localized frontend error/retry state does not change Supabase environment, schema, or Edge ownership.'
 ---
 

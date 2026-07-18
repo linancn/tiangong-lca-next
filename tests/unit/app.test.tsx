@@ -245,7 +245,7 @@ describe('app runtime config', () => {
   });
 
   it.each(['/', '/welcome', '/welcome/'])(
-    'getInitialState silently hydrates an existing session on public landing route %s',
+    'getInitialState hydrates an existing session on protected landing route %s',
     async (pathname) => {
       const { getInitialState } = require('@/app');
       mockHistory.location.pathname = pathname;
@@ -259,37 +259,38 @@ describe('app runtime config', () => {
     },
   );
 
-  it('keeps an anonymous public landing session anonymous without redirecting', async () => {
-    const { getInitialState } = require('@/app');
-    mockHistory.location.pathname = '/welcome';
-    mockQueryCurrentUser.mockResolvedValueOnce(null);
+  it.each(['/user/login', '/user/login/password_forgot', '/user/login/password_reset'])(
+    'getInitialState skips user loading on anonymous login-flow route %s',
+    async (pathname) => {
+      const { getInitialState } = require('@/app');
+      mockHistory.location.pathname = pathname;
 
-    const state = await getInitialState();
+      const state = await getInitialState();
 
-    expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
-    expect(mockGetSystemUserRoleApi).not.toHaveBeenCalled();
-    expect(mockHistory.push).not.toHaveBeenCalled();
-    expect(state.currentUser).toBeNull();
-  });
+      expect(mockQueryCurrentUser).not.toHaveBeenCalled();
+      expect(state.currentUser).toBeUndefined();
+      expect(typeof state.fetchUserInfo).toBe('function');
+    },
+  );
 
-  it.each([
-    '/missing-public-page',
-    '/user/login',
-    '/user/login/password_forgot',
-    '/user/login/password_reset',
-  ])('getInitialState skips user loading on non-layout public route %s', async (pathname) => {
-    const { getInitialState } = require('@/app');
-    mockHistory.location.pathname = pathname;
+  it.each(['/', '/welcome', '/missing-page', '/Review', '/Tgdata/processes'])(
+    'getInitialState redirects anonymous protected entry %s to login',
+    async (pathname) => {
+      const { getInitialState } = require('@/app');
+      mockHistory.location.pathname = pathname;
+      mockQueryCurrentUser.mockResolvedValueOnce(null);
 
-    const state = await getInitialState();
+      const state = await getInitialState();
 
-    expect(mockQueryCurrentUser).not.toHaveBeenCalled();
-    expect(state.currentUser).toBeUndefined();
-    expect(typeof state.fetchUserInfo).toBe('function');
-  });
+      expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
+      expect(mockGetSystemUserRoleApi).not.toHaveBeenCalled();
+      expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+      expect(state.currentUser).toBeNull();
+    },
+  );
 
-  it.each(['/', '/welcome'])(
-    'layout renders anonymous landing route %s without redirecting',
+  it.each(['/', '/welcome', '/missing-page', '/Review'])(
+    'layout blocks anonymous protected route %s before rendering children',
     (pathname) => {
       const { layout } = require('@/app');
       const setInitialState = jest.fn();
@@ -305,15 +306,17 @@ describe('app runtime config', () => {
       });
 
       runtimeLayout.onPageChange?.();
-      const children = runtimeLayout.childrenRender?.(<div data-testid='public-child'>child</div>);
-      render(children);
+      const children = runtimeLayout.childrenRender?.(
+        <div data-testid='protected-child'>child</div>,
+      );
 
-      expect(mockHistory.push).not.toHaveBeenCalled();
-      expect(screen.getByTestId('public-child')).toHaveTextContent('child');
+      expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
+      expect(children).toBeNull();
+      expect(screen.queryByTestId('protected-child')).not.toBeInTheDocument();
     },
   );
 
-  it('preserves the anonymous welcome query state through runtime guards', async () => {
+  it('blocks an anonymous welcome query view without rendering protected content', async () => {
     const { getInitialState, layout } = require('@/app');
     const setInitialState = jest.fn();
     mockHistory.location.pathname = '/welcome';
@@ -324,12 +327,12 @@ describe('app runtime config', () => {
     const runtimeLayout = layout({ initialState: state, setInitialState });
     runtimeLayout.onPageChange?.();
     const children = runtimeLayout.childrenRender?.(<div data-testid='guide-child'>guide</div>);
-    render(children);
 
     expect(mockQueryCurrentUser).toHaveBeenCalledTimes(1);
-    expect(mockHistory.push).not.toHaveBeenCalled();
+    expect(mockHistory.push).toHaveBeenCalledWith('/user/login');
     expect(mockHistory.location.search).toBe('?view=carbon-footprint');
-    expect(screen.getByTestId('guide-child')).toHaveTextContent('guide');
+    expect(children).toBeNull();
+    expect(screen.queryByTestId('guide-child')).not.toBeInTheDocument();
   });
 
   it('layout redirects on page change, transforms menu data, and wraps menu items with links', () => {
@@ -434,8 +437,9 @@ describe('app runtime config', () => {
     ).toBe('fallback');
   });
 
-  it('limits anonymous public header actions and hides the private avatar and menu', () => {
+  it('limits anonymous login header actions and hides the private avatar and menu', () => {
     const { layout } = require('@/app');
+    mockHistory.location.pathname = '/user/login';
     const runtimeLayout = layout({
       initialState: {
         currentUser: null,

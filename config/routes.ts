@@ -16,6 +16,7 @@ export default [
     access: 'canAdmin',
     layout: false,
     menu: false,
+    wrappers: ['@/wrappers/AuthGuard'],
     component: './NationalCarbonDashboard',
   },
   {
@@ -277,18 +278,25 @@ export default [
     layout: false,
     routes: [
       {
+        path: '/user',
+        redirect: '/user/login',
+      },
+      {
         name: 'login',
         path: '/user/login',
+        wrappers: ['@/wrappers/LoginFlowGuard'],
         component: './User/Login',
       },
       {
         name: 'passwordForget',
         path: '/user/login/password_forgot',
+        wrappers: ['@/wrappers/LoginFlowGuard'],
         component: './User/Login/password_forgot',
       },
       {
         name: 'passwordReset',
         path: '/user/login/password_reset',
+        wrappers: ['@/wrappers/LoginFlowGuard'],
         component: './User/Login/password_reset',
       },
     ],
@@ -307,6 +315,7 @@ export default [
   {
     path: '*',
     layout: false,
+    wrappers: ['@/wrappers/AuthGuard'],
     component: './404',
   },
 ];
