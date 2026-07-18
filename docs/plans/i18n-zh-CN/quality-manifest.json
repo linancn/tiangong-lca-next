@@ -2,9 +2,9 @@
   "schemaVersion": "tiangong.i18n-locale-quality.v1",
   "locale": "zh-CN",
   "source": {
-    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "d30b5fc195c1520f440eab0694f603be84b32e9c2937f09f2b16e1df230c1d5f",
-    "contextDigest": "3da76f50456b69565067cfa2bc0cd60195324050e9bfc37dea3a9b5a305312f0"
+    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
+    "sourceManifestDigest": "1d8f06f693687334b1ddf19af62ccb3c1bf8bb5b1f66b5fff180a3934401aa8c",
+    "contextDigest": "5d520320b8283b6d790faabdec83abe63f351274c21eef5d4b6dc4bd7abcee6f"
   },
   "catalog": {
     "messageCount": 3026,
@@ -41,8 +41,8 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-zh-CN/structural-validation.json",
-    "digest": "ae83c1047fe01914a904c1aacf75d8cbab24940d630133f3d34d082acc4d0f0d",
-    "validationDigest": "bc56367d29a8c964d7d125b043fb996ff5a10c9fac8132eb77e8304c13311ce7",
+    "digest": "a081a9b70ef007a3e1b66fd91010118aea9080ed03c7e5d39bc41beb53439983",
+    "validationDigest": "3a6917865460a3eec1368bcfa641ed8647ec9b81a8e1f57c861b02fed2dd945b",
     "laneCount": 1,
     "validatedMessageCount": 3026,
     "validatedModuleCount": 31,
@@ -52,5 +52,5 @@
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "c065a0d506c1b5323e40bfe3a31e8168ca434b5535b0f0cc4b80120a0eae90ad"
+  "qualityDigest": "b3dfade6ff343cac4b24a938bc6664a4fbf68fcbdd15ca74047ae09c7b582425"
 }

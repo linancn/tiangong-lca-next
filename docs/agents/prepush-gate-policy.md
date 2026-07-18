@@ -22,10 +22,11 @@ checkPaths:
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
+  - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-18
 lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Reviewed for Issue #633: the new focused language-platform commands are covered by the existing hook-owned lint/test/coverage gate and do not change push or retry policy.'
+lastReviewedNote: 'Reviewed for Issue #634: the full gate now verifies deterministic governed reference data before lint/test/coverage; push and retry policy is unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -47,6 +48,10 @@ npm run docpact:gate
 ```bash
 npm run prepush:gate
 ```
+
+The full gate runs LCIA verification, `npm run reference-data:check`, lint/type checks, complete coverage, and the unchanged 100% coverage assertion in that order. Reference-data verification fails before the expensive suite when the source manifest, evidence, content-addressed filenames, generated registry, or gzip outputs drift.
+
+Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
 
 ## Scope
 

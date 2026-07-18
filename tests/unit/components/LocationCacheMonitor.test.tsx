@@ -1,5 +1,8 @@
 import LocationCacheMonitor from '@/components/LocationCacheMonitor';
-import { getReferenceResourceCacheVersion } from '@/services/referenceResources/manifest';
+import {
+  getReferenceResourceCacheFiles,
+  getReferenceResourceCacheVersion,
+} from '@/services/referenceResources/manifest';
 import { render } from '@testing-library/react';
 
 const mockUseResourceCacheMonitor = jest.fn();
@@ -40,7 +43,7 @@ describe('LocationCacheMonitor', () => {
     expect(container.firstChild).toBeNull();
     expect(mockUseResourceCacheMonitor).toHaveBeenCalledWith({
       version: getReferenceResourceCacheVersion('location'),
-      files: ['ILCDLocations.min.json.gz', 'ILCDLocations_zh.min.json.gz'],
+      files: [...getReferenceResourceCacheFiles('location')],
       batchSize: 2,
       getManifest: expect.any(Function),
       setManifest: expect.any(Function),

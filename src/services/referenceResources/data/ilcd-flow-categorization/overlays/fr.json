@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-flow-categorization",
+  "locale": "fr",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Procédé",
+    "Flow": "Flux",
+    "FlowProperty": "Propriété de flux",
+    "UnitGroup": "Groupe d'unités",
+    "Contact": "Contact",
+    "Source": "Source",
+    "LCIAMethod": "Méthode d'ACVI",
+    "LifeCycleModel": "Modèle de cycle de vie"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Émissions"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "Émissions vers l'eau"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1.1"
+      },
+      "label": "Émissions vers l'eau douce"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.1.2"
+      },
+      "label": "Émissions vers l'eau de mer"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.1.3"
+      },
+      "label": "Émissions vers l'eau, non spécifiées"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.1.4"
+      },
+      "label": "Émissions vers l'eau, non spécifiées à long terme"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "Émissions vers le sol"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "label": "Émissions vers les sols agricoles"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "label": "Émissions vers les sols non agricoles"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "label": "Émissions vers le sol, non spécifiées"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "label": "Émissions vers le sol, non spécifiées à long terme"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "Émissions dans l'air"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "label": "Émissions dans l'air urbain proche du sol"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "label": "Émissions dans l'air non urbain ou provenant de hautes cheminées"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "label": "Émissions dans la basse stratosphère et la haute troposphère"
+    },
+    {
+      "key": "category[0]/category[2]/category[3]",
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "label": "Émissions dans l'air, non spécifiées"
+    },
+    {
+      "key": "category[0]/category[2]/category[4]",
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "label": "Émissions dans l'air, non spécifiées à long terme"
+    },
+    {
+      "key": "category[0]/category[2]/category[5]",
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "label": "Émissions dans l'air intérieur"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Ressources"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "Ressources du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "2.1.1"
+      },
+      "label": "Ressources matérielles non renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "2.1.2"
+      },
+      "label": "Ressources en éléments non renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "2.1.3"
+      },
+      "label": "Ressources énergétiques non renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "2.1.4"
+      },
+      "label": "Ressources en éléments renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "2.1.5"
+      },
+      "label": "Ressources énergétiques renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[5]",
+      "assertion": {
+        "id": "2.1.6"
+      },
+      "label": "Ressources matérielles renouvelables du sol"
+    },
+    {
+      "key": "category[1]/category[0]/category[6]",
+      "assertion": {
+        "id": "2.1.7"
+      },
+      "label": "Ressources renouvelables du sol, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[0]/category[7]",
+      "assertion": {
+        "id": "2.1.8"
+      },
+      "label": "Ressources non renouvelables du sol, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "Ressources de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.2.1"
+      },
+      "label": "Ressources matérielles non renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2.2"
+      },
+      "label": "Ressources en éléments non renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.2.3"
+      },
+      "label": "Ressources énergétiques non renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.2.4"
+      },
+      "label": "Ressources en éléments renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.2.5"
+      },
+      "label": "Ressources énergétiques renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.2.6"
+      },
+      "label": "Ressources matérielles renouvelables de l'eau"
+    },
+    {
+      "key": "category[1]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.2.7"
+      },
+      "label": "Ressources renouvelables de l'eau, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.2.8"
+      },
+      "label": "Ressources non renouvelables de l'eau, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "Ressources de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "2.3.1"
+      },
+      "label": "Ressources matérielles non renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "2.3.2"
+      },
+      "label": "Ressources en éléments non renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[2]",
+      "assertion": {
+        "id": "2.3.3"
+      },
+      "label": "Ressources énergétiques non renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[3]",
+      "assertion": {
+        "id": "2.3.4"
+      },
+      "label": "Ressources en éléments renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[4]",
+      "assertion": {
+        "id": "2.3.5"
+      },
+      "label": "Ressources énergétiques renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[5]",
+      "assertion": {
+        "id": "2.3.6"
+      },
+      "label": "Ressources matérielles renouvelables de l'air"
+    },
+    {
+      "key": "category[1]/category[2]/category[6]",
+      "assertion": {
+        "id": "2.3.7"
+      },
+      "label": "Ressources renouvelables de l'air, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[2]/category[7]",
+      "assertion": {
+        "id": "2.3.8"
+      },
+      "label": "Ressources non renouvelables de l'air, non spécifiées"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "Ressources de la biosphère"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "2.4.1"
+      },
+      "label": "Ressources en éléments renouvelables de la biosphère"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "2.4.2"
+      },
+      "label": "Ressources énergétiques renouvelables de la biosphère"
+    },
+    {
+      "key": "category[1]/category[3]/category[2]",
+      "assertion": {
+        "id": "2.4.3"
+      },
+      "label": "Ressources matérielles renouvelables de la biosphère"
+    },
+    {
+      "key": "category[1]/category[3]/category[3]",
+      "assertion": {
+        "id": "2.4.4"
+      },
+      "label": "Ressources génétiques renouvelables de la biosphère"
+    },
+    {
+      "key": "category[1]/category[3]/category[4]",
+      "assertion": {
+        "id": "2.4.5"
+      },
+      "label": "Ressources renouvelables de la biosphère, non spécifiées"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Utilisation des terres"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "3.1"
+      },
+      "label": "Occupation des terres"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "3.2"
+      },
+      "label": "Transformation des terres"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Autres flux élémentaires"
+    }
+  ]
+}

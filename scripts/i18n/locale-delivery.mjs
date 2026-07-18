@@ -31,6 +31,11 @@ const IMPORT_REPORT_CONTENT_SOURCE = 'src/components/ImportTidasPackage/reportCo
 const CONTENT_LANGUAGE_REGISTRY = 'src/services/general/contentLanguageRegistry.ts';
 const LOCALE_CAPABILITY_MATRIX = 'src/services/general/localeCapabilities.ts';
 const REFERENCE_RESOURCE_MANIFEST = 'src/services/referenceResources/manifest.ts';
+const REFERENCE_RESOURCE_SOURCE_MANIFEST =
+  'src/services/referenceResources/reference-resource-manifest.json';
+const REFERENCE_RESOURCE_GENERATED_MANIFEST =
+  'src/services/referenceResources/generatedManifest.ts';
+const REFERENCE_RESOURCE_PIPELINE = 'scripts/reference-data/reference-resource-pipeline.mjs';
 const REFERENCE_RESOURCE_RESOLVER = 'src/services/referenceResources/resolver.ts';
 const LANGUAGE_PLATFORM_AUDIT = 'scripts/i18n/audit-language-platform.mjs';
 const LANGUAGE_HARDCODING_ALLOWLIST = 'scripts/i18n/language-hardcoding-allowlist.json';
@@ -1269,6 +1274,9 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
     CONTENT_LANGUAGE_REGISTRY,
     LOCALE_CAPABILITY_MATRIX,
     REFERENCE_RESOURCE_MANIFEST,
+    REFERENCE_RESOURCE_SOURCE_MANIFEST,
+    REFERENCE_RESOURCE_GENERATED_MANIFEST,
+    REFERENCE_RESOURCE_PIPELINE,
     REFERENCE_RESOURCE_RESOLVER,
     LANGUAGE_PLATFORM_AUDIT,
     LANGUAGE_HARDCODING_ALLOWLIST,
@@ -2064,18 +2072,49 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
   const localeFallbacks = REQUIRED_FALLBACK_SURFACES.map((surface) =>
     fallbackContract.rowsByKey.get(`${locale}\0${surface}`),
   );
-  const referenceResourceBlockers = capability.referenceResources
-    .filter(
-      ({ status, deliveryStatus }) =>
+  const referenceResourceBlockers = capability.referenceResources.flatMap(
+    ({ resourceId, status, deliveryStatus, ownerIssue }) => {
+      const resource = REFERENCE_RESOURCES.find((candidate) => candidate.resourceId === resourceId);
+      const deliveryBlocked =
         status !== 'native' ||
-        (deliveryStatus !== 'official' && deliveryStatus !== 'project-reviewed'),
-    )
-    .map(({ resourceId, status, deliveryStatus, ownerIssue }) => ({
-      resourceId,
-      status,
-      deliveryStatus: deliveryStatus ?? null,
-      ownerIssue: ownerIssue ?? null,
-    }));
+        (deliveryStatus !== 'official' && deliveryStatus !== 'project-reviewed');
+      const usageTerms = resource?.structureSource?.usageTerms;
+      const usageTermsBlocked =
+        resource?.required === true && usageTerms?.productionStatus !== 'ready';
+      if (!deliveryBlocked && !usageTermsBlocked) {
+        return [];
+      }
+      const reasons = [
+        ...(deliveryBlocked
+          ? [
+              status !== 'native'
+                ? `localization status is ${status}`
+                : `delivery status is ${deliveryStatus ?? 'missing'}`,
+            ]
+          : []),
+        ...(usageTermsBlocked
+          ? [
+              `usage terms are ${usageTerms?.status ?? 'missing or unverified'}: ${
+                usageTerms?.blockerReason ??
+                usageTerms?.note ??
+                'production clearance evidence is missing'
+              }`,
+            ]
+          : []),
+      ];
+      return [
+        {
+          resourceId,
+          status,
+          deliveryStatus: deliveryStatus ?? null,
+          usageTermsStatus: usageTerms?.status ?? null,
+          usageTermsProductionStatus: usageTerms?.productionStatus ?? 'blocked',
+          ownerIssue: ownerIssue ?? usageTerms?.ownerIssue ?? '#634',
+          reason: reasons.join('; '),
+        },
+      ];
+    },
+  );
   const referenceResourcesReady = referenceResourceBlockers.length === 0;
   const contextComplete = context.inventory.blockedContextCount === 0;
   const structuralQualityPassed = quality.automatedChecks.blockedContextCount === 0;
@@ -2106,6 +2145,7 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
     quality: `npm run i18n:locale:quality:check -- --locale ${locale}`,
     corrections: 'npm run i18n:corrections:check',
     languagePlatform: 'npm run i18n:platform:audit',
+    referenceData: 'npm run reference-data:check',
     languageHardcoding: 'npm run i18n:hardcoding:audit',
     allLocales: 'npm run i18n:locale:all:check',
     productionLocale: `npm run i18n:locale:production:check -- --locale ${locale}`,
@@ -2117,6 +2157,7 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
     'scripts/i18n/locale-delivery.mjs',
     'scripts/i18n/audit-locales.mjs',
     LANGUAGE_PLATFORM_AUDIT,
+    REFERENCE_RESOURCE_PIPELINE,
   ];
   const privateConfirmationDependencies = commandSources.filter((relativeFile) => {
     const source = readText(root, relativeFile);
@@ -2150,7 +2191,12 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
       capability,
       contentLanguageRegistryDigest: fileDigest(root, CONTENT_LANGUAGE_REGISTRY),
       capabilityMatrixDigest: fileDigest(root, LOCALE_CAPABILITY_MATRIX),
-      referenceResourceManifestDigest: fileDigest(root, REFERENCE_RESOURCE_MANIFEST),
+      referenceResourceManifestDigest: digestJson({
+        runtime: fileDigest(root, REFERENCE_RESOURCE_MANIFEST),
+        source: fileDigest(root, REFERENCE_RESOURCE_SOURCE_MANIFEST),
+        generated: fileDigest(root, REFERENCE_RESOURCE_GENERATED_MANIFEST),
+        pipeline: fileDigest(root, REFERENCE_RESOURCE_PIPELINE),
+      }),
       referenceResourceResolverDigest: fileDigest(root, REFERENCE_RESOURCE_RESOLVER),
       hardcodingAllowlistDigest: fileDigest(root, LANGUAGE_HARDCODING_ALLOWLIST),
     },
@@ -2194,7 +2240,10 @@ function assertProductionActivationReady(activation) {
     return;
   }
   const blockers = activation.productionActivationBlockers
-    .map(({ blockerId, ownerIssue }) => `${blockerId} (${ownerIssue ?? 'unowned'})`)
+    .map(
+      ({ blockerId, ownerIssue, reason }) =>
+        `${blockerId} (${ownerIssue ?? 'unowned'})${reason ? `: ${reason}` : ''}`,
+    )
     .join(', ');
   throw new Error(
     `${activation.locale} is not production-ready; unresolved activation blockers: ${blockers || 'non-reference checks'}.`,

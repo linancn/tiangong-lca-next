@@ -62,7 +62,13 @@ export function genClassWithLocalizedLabels(
   localizedData?: ILCDCategoryNode[] | null,
 ): Classification[] {
   if (!data) {
+    if (localizedData && localizedData.length > 0) {
+      throw new Error('Localized classification contains nodes outside the base structure.');
+    }
     return [];
+  }
+  if (!localizedData || localizedData.length !== data.length) {
+    throw new Error('Localized classification does not exactly cover the base structure.');
   }
   return data.map((item, itemIndex) => {
     const occurrence = data
@@ -70,11 +76,14 @@ export function genClassWithLocalizedLabels(
       .filter((candidate) => candidate['@id'] === item['@id']).length;
     const localizedMatches = localizedData?.filter((candidate) => candidate['@id'] === item['@id']);
     const localized = localizedMatches?.[occurrence];
+    if (!localized || typeof localized['@name'] !== 'string' || localized['@name'].trim() === '') {
+      throw new Error(`Localized classification is missing a label for ${item['@id']}.`);
+    }
     return {
       id: item['@id'],
       value: item['@name'],
-      label: localized?.['@name'] ?? item['@name'],
-      children: genClassWithLocalizedLabels(item.category, localized?.category),
+      label: localized['@name'],
+      children: genClassWithLocalizedLabels(item.category, localized.category),
     };
   });
 }

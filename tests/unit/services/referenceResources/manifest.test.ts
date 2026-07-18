@@ -2,8 +2,10 @@ import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageR
 import {
   getReferenceResourceCacheFiles,
   getReferenceResourceCacheVersion,
+  getReferenceResourceDefinition,
   REFERENCE_RESOURCE_MANIFEST,
   REQUIRED_REFERENCE_RESOURCE_IDS,
+  type ReferenceLocaleAvailability,
 } from '@/services/referenceResources/manifest';
 import {
   getReferenceAssetStem,
@@ -21,30 +23,49 @@ describe('reference resource manifest and resolver', () => {
       expect(Object.keys(resource.localizations).sort()).toEqual(
         [...SUPPORTED_CONTENT_LANGUAGES].sort(),
       );
-      expect(resource.provenance.status).toBe('pending-verification');
+      expect(['pending-verification', 'verified']).toContain(resource.provenance.status);
       expect(resource.provenance.ownerIssue).toBe('#634');
+      expect(resource.structureDigest.identityCount).toBeGreaterThan(0);
+      expect(resource.structureSource.sourceDigest.value).toMatch(/^[a-f0-9]{64}$/u);
+      for (const overlay of Object.values(resource.overlays)) {
+        expect(overlay.coverage.expected).toBe(resource.structureDigest.identityCount);
+        expect(overlay.coverage.blank).toBe(0);
+        expect(overlay.coverage.extra).toBe(0);
+        expect(overlay.coverage.duplicate).toBe(0);
+      }
     }
   });
 
   it('derives cache files and versions from the manifest', () => {
-    expect(getReferenceResourceCacheFiles('location')).toEqual([
-      'ILCDLocations.min.json.gz',
-      'ILCDLocations_zh.min.json.gz',
-    ]);
-    expect(getReferenceResourceCacheFiles('classification')).toHaveLength(8);
-    expect(getReferenceResourceCacheVersion('classification')).toContain('cpc@legacy-1');
-    expect(getReferenceResourceCacheVersion('location')).toBe('1:ilcd-locations@legacy-1');
+    expect(getReferenceResourceCacheFiles('location')).toEqual(
+      REFERENCE_RESOURCE_MANIFEST.filter(({ scope }) => scope === 'location').flatMap(
+        ({ runtimeAssets }) => Object.values(runtimeAssets).map(({ fileName }) => fileName),
+      ),
+    );
+    expect(getReferenceResourceCacheFiles('classification')).toEqual(
+      REFERENCE_RESOURCE_MANIFEST.filter(({ scope }) => scope === 'classification').flatMap(
+        ({ runtimeAssets }) => Object.values(runtimeAssets).map(({ fileName }) => fileName),
+      ),
+    );
+    expect(getReferenceResourceCacheVersion('classification')).toContain(
+      `cpc@${REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')?.cacheRevision}`,
+    );
+    expect(getReferenceResourceCacheVersion('location')).toMatch(
+      /^2:ilcd-locations@[a-f0-9]{16}$/u,
+    );
   });
 
   it('resolves bundled Chinese assets and their localized ILCD data type', () => {
     const resolution = resolveReferenceResource('ilcd-classification', 'zh-CN');
     expect(resolution.status).toBe('native');
     expect(resolution.resolvedLanguage).toBe('zh');
-    expect(resolution.localizedAsset?.fileName).toBe('ILCDClassification_zh.min.json.gz');
+    expect(resolution.localizedAsset?.fileName).toBe(
+      getReferenceResourceDefinition('ilcd-classification').runtimeAssets.zh?.fileName,
+    );
     expect(getResolvedReferenceDataTypeName(resolution, 'Process')).toBe('过程');
 
     const locationResolution = resolveReferenceResource('ilcd-locations', 'zh-CN');
-    expect(getResolvedReferenceDataTypeName(locationResolution, 'Process')).toBe('Process');
+    expect(getResolvedReferenceDataTypeName(locationResolution, 'Process')).toBe('过程');
   });
 
   it('does not report a native reference-resource resolution as fallback', () => {
@@ -56,18 +77,20 @@ describe('reference resource manifest and resolver', () => {
     consoleWarnSpy.mockRestore();
   });
 
-  it('makes German and French development fallbacks observable and owned by #634', () => {
-    const german = resolveReferenceResource('ilcd-locations', 'de-DE');
-    expect(german).toEqual(
-      expect.objectContaining({
-        status: 'development-base',
-        requestedLanguage: 'de',
-        resolvedLanguage: 'en',
-        usedFallback: true,
-        ownerIssue: '#634',
-      }),
-    );
-    expect(getReferenceAssetStem(german)).toBe('ILCDLocations');
+  it('resolves every registry locale from its manifest-declared status', () => {
+    for (const resource of REFERENCE_RESOURCE_MANIFEST) {
+      for (const language of SUPPORTED_CONTENT_LANGUAGES) {
+        const resolution = resolveReferenceResource(resource.resourceId, language);
+        expect(resolution.status).toBe(resource.localizations[language].status);
+        expect(resolution.requestedLanguage).toBe(language);
+        expect(getReferenceAssetStem(resolution)).toBe(
+          (resolution.localizedAsset ?? resolution.baseAsset).fileName.replace(
+            /\.min\.json\.gz$/u,
+            '',
+          ),
+        );
+      }
+    }
   });
 
   it('fails closed when a declared runtime asset is absent', () => {
@@ -89,9 +112,9 @@ describe('reference resource manifest and resolver', () => {
 
   it('resolves a declared missing localization without inventing an asset', () => {
     const resource = REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')!;
-    const localizations = resource.localizations as Record<
+    const localizations = resource.localizations as unknown as Record<
       string,
-      (typeof resource.localizations)['de']
+      ReferenceLocaleAvailability
     >;
     const germanAvailability = localizations.de;
 
@@ -112,7 +135,9 @@ describe('reference resource manifest and resolver', () => {
         }),
       );
       expect('resolvedLanguage' in resolution).toBe(false);
-      expect(getReferenceAssetStem(resolution)).toBe('CPCClassification');
+      expect(getReferenceAssetStem(resolution)).toBe(
+        resource.runtimeAssets.en!.fileName.replace(/\.min\.json\.gz$/u, ''),
+      );
 
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
       reportReferenceResourceResolution(resolution);
@@ -122,6 +147,36 @@ describe('reference resource manifest and resolver', () => {
         '[i18n-reference-resource] German CPC labels are unavailable.',
       );
       consoleWarnSpy.mockRestore();
+    } finally {
+      localizations.de = germanAvailability;
+    }
+  });
+
+  it('resolves an explicitly declared development-base asset without hiding the fallback', () => {
+    const resource = REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')!;
+    const localizations = resource.localizations as unknown as Record<
+      string,
+      ReferenceLocaleAvailability
+    >;
+    const germanAvailability = localizations.de;
+
+    try {
+      localizations.de = {
+        status: 'development-base',
+        resolvedLanguage: 'en',
+        ownerIssue: '#634',
+        diagnostic: 'German CPC labels temporarily use the development base.',
+      };
+
+      expect(resolveReferenceResource('cpc', 'de')).toEqual(
+        expect.objectContaining({
+          status: 'development-base',
+          requestedLanguage: 'de',
+          resolvedLanguage: 'en',
+          usedFallback: true,
+          localizedAsset: resource.runtimeAssets.en,
+        }),
+      );
     } finally {
       localizations.de = germanAvailability;
     }

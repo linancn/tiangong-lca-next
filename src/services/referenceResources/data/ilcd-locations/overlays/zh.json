@@ -1,0 +1,4547 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-locations",
+  "locale": "zh",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "过程",
+    "Flow": "流",
+    "FlowProperty": "流属性",
+    "UnitGroup": "单位组",
+    "Contact": "联系信息",
+    "Source": "来源",
+    "LCIAMethod": "生命周期影响评估方法",
+    "LifeCycleModel": "生命周期模型"
+  },
+  "labels": [
+    {
+      "key": "location:NULL",
+      "assertion": {
+        "code": "NULL"
+      },
+      "label": "无"
+    },
+    {
+      "key": "location:GLO",
+      "assertion": {
+        "code": "GLO"
+      },
+      "label": "全球"
+    },
+    {
+      "key": "location:RAF",
+      "assertion": {
+        "code": "RAF"
+      },
+      "label": "非洲"
+    },
+    {
+      "key": "location:RAM",
+      "assertion": {
+        "code": "RAM"
+      },
+      "label": "美洲"
+    },
+    {
+      "key": "location:RAS",
+      "assertion": {
+        "code": "RAS"
+      },
+      "label": "亚洲和太平洋地区"
+    },
+    {
+      "key": "location:RER",
+      "assertion": {
+        "code": "RER"
+      },
+      "label": "欧洲"
+    },
+    {
+      "key": "location:OCE",
+      "assertion": {
+        "code": "OCE"
+      },
+      "label": "大洋洲"
+    },
+    {
+      "key": "location:MEA",
+      "assertion": {
+        "code": "MEA"
+      },
+      "label": "中东和北非"
+    },
+    {
+      "key": "location:AFR",
+      "assertion": {
+        "code": "AFR"
+      },
+      "label": "撒哈拉以南非洲"
+    },
+    {
+      "key": "location:RLA",
+      "assertion": {
+        "code": "RLA"
+      },
+      "label": "拉丁美洲和加勒比地区"
+    },
+    {
+      "key": "location:RNA",
+      "assertion": {
+        "code": "RNA"
+      },
+      "label": "北美"
+    },
+    {
+      "key": "location:CPA",
+      "assertion": {
+        "code": "CPA"
+      },
+      "label": "中央计划亚洲和中国"
+    },
+    {
+      "key": "location:EAS",
+      "assertion": {
+        "code": "EAS"
+      },
+      "label": "东亚"
+    },
+    {
+      "key": "location:PAS",
+      "assertion": {
+        "code": "PAS"
+      },
+      "label": "其他太平洋亚洲地区"
+    },
+    {
+      "key": "location:SAS",
+      "assertion": {
+        "code": "SAS"
+      },
+      "label": "南亚"
+    },
+    {
+      "key": "location:EEU",
+      "assertion": {
+        "code": "EEU"
+      },
+      "label": "中欧和东欧"
+    },
+    {
+      "key": "location:WEU",
+      "assertion": {
+        "code": "WEU"
+      },
+      "label": "西欧"
+    },
+    {
+      "key": "location:RNE",
+      "assertion": {
+        "code": "RNE"
+      },
+      "label": "近东"
+    },
+    {
+      "key": "location:RME",
+      "assertion": {
+        "code": "RME"
+      },
+      "label": "中东"
+    },
+    {
+      "key": "location:EU-15",
+      "assertion": {
+        "code": "EU-15"
+      },
+      "label": "欧盟15国"
+    },
+    {
+      "key": "location:EU-NMC",
+      "assertion": {
+        "code": "EU-NMC"
+      },
+      "label": "2004年欧盟新成员国"
+    },
+    {
+      "key": "location:EU-25",
+      "assertion": {
+        "code": "EU-25"
+      },
+      "label": "欧盟25国"
+    },
+    {
+      "key": "location:EC-CC",
+      "assertion": {
+        "code": "EC-CC"
+      },
+      "label": "2005年欧盟候选国"
+    },
+    {
+      "key": "location:EU-25&CC",
+      "assertion": {
+        "code": "EU-25&CC"
+      },
+      "label": "欧盟25国加2005年候选国"
+    },
+    {
+      "key": "location:EU-AC",
+      "assertion": {
+        "code": "EU-AC"
+      },
+      "label": "2005年欧盟联系国"
+    },
+    {
+      "key": "location:EU-25&CC&AC",
+      "assertion": {
+        "code": "EU-25&CC&AC"
+      },
+      "label": "欧盟25国加2005年候选国及联系国"
+    },
+    {
+      "key": "location:EU-27",
+      "assertion": {
+        "code": "EU-27"
+      },
+      "label": "欧盟27国"
+    },
+    {
+      "key": "location:PAO",
+      "assertion": {
+        "code": "PAO"
+      },
+      "label": "太平洋经合组织（日本、澳大利亚、新西兰）"
+    },
+    {
+      "key": "location:FSU",
+      "assertion": {
+        "code": "FSU"
+      },
+      "label": "前苏联独立国家"
+    },
+    {
+      "key": "location:UCTE",
+      "assertion": {
+        "code": "UCTE"
+      },
+      "label": "输电协调联盟"
+    },
+    {
+      "key": "location:CENTREL",
+      "assertion": {
+        "code": "CENTREL"
+      },
+      "label": "中欧电力协会"
+    },
+    {
+      "key": "location:NORDEL",
+      "assertion": {
+        "code": "NORDEL"
+      },
+      "label": "北欧国家电力协会"
+    },
+    {
+      "key": "location:EU+EFTA+UK",
+      "assertion": {
+        "code": "EU+EFTA+UK"
+      },
+      "label": "完整欧盟"
+    },
+    {
+      "key": "location:AD",
+      "assertion": {
+        "code": "AD"
+      },
+      "label": "安道尔"
+    },
+    {
+      "key": "location:AE",
+      "assertion": {
+        "code": "AE"
+      },
+      "label": "阿拉伯联合酋长国"
+    },
+    {
+      "key": "location:AF",
+      "assertion": {
+        "code": "AF"
+      },
+      "label": "阿富汗"
+    },
+    {
+      "key": "location:AG",
+      "assertion": {
+        "code": "AG"
+      },
+      "label": "安提瓜和巴布达"
+    },
+    {
+      "key": "location:AI",
+      "assertion": {
+        "code": "AI"
+      },
+      "label": "安圭拉"
+    },
+    {
+      "key": "location:AL",
+      "assertion": {
+        "code": "AL"
+      },
+      "label": "阿尔巴尼亚"
+    },
+    {
+      "key": "location:AM",
+      "assertion": {
+        "code": "AM"
+      },
+      "label": "亚美尼亚"
+    },
+    {
+      "key": "location:AO",
+      "assertion": {
+        "code": "AO"
+      },
+      "label": "安哥拉"
+    },
+    {
+      "key": "location:AQ",
+      "assertion": {
+        "code": "AQ"
+      },
+      "label": "南极洲"
+    },
+    {
+      "key": "location:AR",
+      "assertion": {
+        "code": "AR"
+      },
+      "label": "阿根廷"
+    },
+    {
+      "key": "location:AS",
+      "assertion": {
+        "code": "AS"
+      },
+      "label": "美属萨摩亚"
+    },
+    {
+      "key": "location:AT",
+      "assertion": {
+        "code": "AT"
+      },
+      "label": "奥地利"
+    },
+    {
+      "key": "location:AU",
+      "assertion": {
+        "code": "AU"
+      },
+      "label": "澳大利亚"
+    },
+    {
+      "key": "location:AW",
+      "assertion": {
+        "code": "AW"
+      },
+      "label": "阿鲁巴"
+    },
+    {
+      "key": "location:AX",
+      "assertion": {
+        "code": "AX"
+      },
+      "label": "奥兰群岛"
+    },
+    {
+      "key": "location:AZ",
+      "assertion": {
+        "code": "AZ"
+      },
+      "label": "阿塞拜疆"
+    },
+    {
+      "key": "location:BA",
+      "assertion": {
+        "code": "BA"
+      },
+      "label": "波斯尼亚和黑塞哥维那"
+    },
+    {
+      "key": "location:BB",
+      "assertion": {
+        "code": "BB"
+      },
+      "label": "巴巴多斯"
+    },
+    {
+      "key": "location:BD",
+      "assertion": {
+        "code": "BD"
+      },
+      "label": "孟加拉国"
+    },
+    {
+      "key": "location:BE",
+      "assertion": {
+        "code": "BE"
+      },
+      "label": "比利时"
+    },
+    {
+      "key": "location:BF",
+      "assertion": {
+        "code": "BF"
+      },
+      "label": "布基纳法索"
+    },
+    {
+      "key": "location:BG",
+      "assertion": {
+        "code": "BG"
+      },
+      "label": "保加利亚"
+    },
+    {
+      "key": "location:BH",
+      "assertion": {
+        "code": "BH"
+      },
+      "label": "巴林"
+    },
+    {
+      "key": "location:BI",
+      "assertion": {
+        "code": "BI"
+      },
+      "label": "布隆迪"
+    },
+    {
+      "key": "location:BJ",
+      "assertion": {
+        "code": "BJ"
+      },
+      "label": "贝宁"
+    },
+    {
+      "key": "location:BL",
+      "assertion": {
+        "code": "BL"
+      },
+      "label": "圣巴泰勒米"
+    },
+    {
+      "key": "location:BM",
+      "assertion": {
+        "code": "BM"
+      },
+      "label": "百慕大"
+    },
+    {
+      "key": "location:BN",
+      "assertion": {
+        "code": "BN"
+      },
+      "label": "文莱"
+    },
+    {
+      "key": "location:BO",
+      "assertion": {
+        "code": "BO"
+      },
+      "label": "玻利维亚"
+    },
+    {
+      "key": "location:BQ",
+      "assertion": {
+        "code": "BQ"
+      },
+      "label": "博内尔岛、圣尤斯特歇斯岛和萨巴岛"
+    },
+    {
+      "key": "location:BR",
+      "assertion": {
+        "code": "BR"
+      },
+      "label": "巴西"
+    },
+    {
+      "key": "location:BS",
+      "assertion": {
+        "code": "BS"
+      },
+      "label": "巴哈马"
+    },
+    {
+      "key": "location:BT",
+      "assertion": {
+        "code": "BT"
+      },
+      "label": "不丹"
+    },
+    {
+      "key": "location:BV",
+      "assertion": {
+        "code": "BV"
+      },
+      "label": "布维岛"
+    },
+    {
+      "key": "location:BW",
+      "assertion": {
+        "code": "BW"
+      },
+      "label": "博茨瓦纳"
+    },
+    {
+      "key": "location:BY",
+      "assertion": {
+        "code": "BY"
+      },
+      "label": "白俄罗斯"
+    },
+    {
+      "key": "location:BZ",
+      "assertion": {
+        "code": "BZ"
+      },
+      "label": "伯利兹"
+    },
+    {
+      "key": "location:CA",
+      "assertion": {
+        "code": "CA"
+      },
+      "label": "加拿大"
+    },
+    {
+      "key": "location:CC",
+      "assertion": {
+        "code": "CC"
+      },
+      "label": "科科斯（基林）群岛"
+    },
+    {
+      "key": "location:CD",
+      "assertion": {
+        "code": "CD"
+      },
+      "label": "刚果民主共和国"
+    },
+    {
+      "key": "location:CF",
+      "assertion": {
+        "code": "CF"
+      },
+      "label": "中非共和国"
+    },
+    {
+      "key": "location:CG",
+      "assertion": {
+        "code": "CG"
+      },
+      "label": "刚果"
+    },
+    {
+      "key": "location:CH",
+      "assertion": {
+        "code": "CH"
+      },
+      "label": "瑞士"
+    },
+    {
+      "key": "location:CI",
+      "assertion": {
+        "code": "CI"
+      },
+      "label": "科特迪瓦"
+    },
+    {
+      "key": "location:CK",
+      "assertion": {
+        "code": "CK"
+      },
+      "label": "库克群岛"
+    },
+    {
+      "key": "location:CL",
+      "assertion": {
+        "code": "CL"
+      },
+      "label": "智利"
+    },
+    {
+      "key": "location:CM",
+      "assertion": {
+        "code": "CM"
+      },
+      "label": "喀麦隆"
+    },
+    {
+      "key": "location:CO",
+      "assertion": {
+        "code": "CO"
+      },
+      "label": "哥伦比亚"
+    },
+    {
+      "key": "location:CR",
+      "assertion": {
+        "code": "CR"
+      },
+      "label": "哥斯达黎加"
+    },
+    {
+      "key": "location:CU",
+      "assertion": {
+        "code": "CU"
+      },
+      "label": "古巴"
+    },
+    {
+      "key": "location:CV",
+      "assertion": {
+        "code": "CV"
+      },
+      "label": "佛得角"
+    },
+    {
+      "key": "location:CW",
+      "assertion": {
+        "code": "CW"
+      },
+      "label": "库拉索"
+    },
+    {
+      "key": "location:CX",
+      "assertion": {
+        "code": "CX"
+      },
+      "label": "圣诞岛"
+    },
+    {
+      "key": "location:CY",
+      "assertion": {
+        "code": "CY"
+      },
+      "label": "塞浦路斯"
+    },
+    {
+      "key": "location:CZ",
+      "assertion": {
+        "code": "CZ"
+      },
+      "label": "捷克"
+    },
+    {
+      "key": "location:DE",
+      "assertion": {
+        "code": "DE"
+      },
+      "label": "德国"
+    },
+    {
+      "key": "location:DJ",
+      "assertion": {
+        "code": "DJ"
+      },
+      "label": "吉布提"
+    },
+    {
+      "key": "location:DK",
+      "assertion": {
+        "code": "DK"
+      },
+      "label": "丹麦"
+    },
+    {
+      "key": "location:DM",
+      "assertion": {
+        "code": "DM"
+      },
+      "label": "多米尼克"
+    },
+    {
+      "key": "location:DO",
+      "assertion": {
+        "code": "DO"
+      },
+      "label": "多明尼加共和国"
+    },
+    {
+      "key": "location:DZ",
+      "assertion": {
+        "code": "DZ"
+      },
+      "label": "阿尔及利亚"
+    },
+    {
+      "key": "location:EC",
+      "assertion": {
+        "code": "EC"
+      },
+      "label": "厄瓜多尔"
+    },
+    {
+      "key": "location:EE",
+      "assertion": {
+        "code": "EE"
+      },
+      "label": "爱沙尼亚"
+    },
+    {
+      "key": "location:EG",
+      "assertion": {
+        "code": "EG"
+      },
+      "label": "埃及"
+    },
+    {
+      "key": "location:EH",
+      "assertion": {
+        "code": "EH"
+      },
+      "label": "西撒哈拉"
+    },
+    {
+      "key": "location:ER",
+      "assertion": {
+        "code": "ER"
+      },
+      "label": "厄立特里亚"
+    },
+    {
+      "key": "location:ES",
+      "assertion": {
+        "code": "ES"
+      },
+      "label": "西班牙"
+    },
+    {
+      "key": "location:ET",
+      "assertion": {
+        "code": "ET"
+      },
+      "label": "埃塞俄比亚"
+    },
+    {
+      "key": "location:FI",
+      "assertion": {
+        "code": "FI"
+      },
+      "label": "芬兰"
+    },
+    {
+      "key": "location:FJ",
+      "assertion": {
+        "code": "FJ"
+      },
+      "label": "斐济"
+    },
+    {
+      "key": "location:FK",
+      "assertion": {
+        "code": "FK"
+      },
+      "label": "福克兰群岛"
+    },
+    {
+      "key": "location:FM",
+      "assertion": {
+        "code": "FM"
+      },
+      "label": "密克罗尼西亚"
+    },
+    {
+      "key": "location:FO",
+      "assertion": {
+        "code": "FO"
+      },
+      "label": "法罗群岛"
+    },
+    {
+      "key": "location:FR",
+      "assertion": {
+        "code": "FR"
+      },
+      "label": "法国"
+    },
+    {
+      "key": "location:GA",
+      "assertion": {
+        "code": "GA"
+      },
+      "label": "加蓬"
+    },
+    {
+      "key": "location:GB",
+      "assertion": {
+        "code": "GB"
+      },
+      "label": "英国"
+    },
+    {
+      "key": "location:GD",
+      "assertion": {
+        "code": "GD"
+      },
+      "label": "格林纳达"
+    },
+    {
+      "key": "location:GE",
+      "assertion": {
+        "code": "GE"
+      },
+      "label": "格鲁吉亚"
+    },
+    {
+      "key": "location:GF",
+      "assertion": {
+        "code": "GF"
+      },
+      "label": "法属圭亚那"
+    },
+    {
+      "key": "location:GG",
+      "assertion": {
+        "code": "GG"
+      },
+      "label": "根西岛"
+    },
+    {
+      "key": "location:GH",
+      "assertion": {
+        "code": "GH"
+      },
+      "label": "加纳"
+    },
+    {
+      "key": "location:GI",
+      "assertion": {
+        "code": "GI"
+      },
+      "label": "直布罗陀"
+    },
+    {
+      "key": "location:GL",
+      "assertion": {
+        "code": "GL"
+      },
+      "label": "格陵兰"
+    },
+    {
+      "key": "location:GM",
+      "assertion": {
+        "code": "GM"
+      },
+      "label": "冈比亚"
+    },
+    {
+      "key": "location:GN",
+      "assertion": {
+        "code": "GN"
+      },
+      "label": "几内亚"
+    },
+    {
+      "key": "location:GP",
+      "assertion": {
+        "code": "GP"
+      },
+      "label": "瓜德罗普"
+    },
+    {
+      "key": "location:GQ",
+      "assertion": {
+        "code": "GQ"
+      },
+      "label": "赤道几内亚"
+    },
+    {
+      "key": "location:GR",
+      "assertion": {
+        "code": "GR"
+      },
+      "label": "希腊"
+    },
+    {
+      "key": "location:GS",
+      "assertion": {
+        "code": "GS"
+      },
+      "label": "南乔治亚岛和南桑德韦奇岛"
+    },
+    {
+      "key": "location:GT",
+      "assertion": {
+        "code": "GT"
+      },
+      "label": "危地马拉"
+    },
+    {
+      "key": "location:GU",
+      "assertion": {
+        "code": "GU"
+      },
+      "label": "关岛"
+    },
+    {
+      "key": "location:GW",
+      "assertion": {
+        "code": "GW"
+      },
+      "label": "几内亚比绍"
+    },
+    {
+      "key": "location:GY",
+      "assertion": {
+        "code": "GY"
+      },
+      "label": "圭亚那"
+    },
+    {
+      "key": "location:HM",
+      "assertion": {
+        "code": "HM"
+      },
+      "label": "赫德岛和麦克唐纳群岛"
+    },
+    {
+      "key": "location:HN",
+      "assertion": {
+        "code": "HN"
+      },
+      "label": "洪都拉斯"
+    },
+    {
+      "key": "location:HR",
+      "assertion": {
+        "code": "HR"
+      },
+      "label": "克罗地亚"
+    },
+    {
+      "key": "location:HT",
+      "assertion": {
+        "code": "HT"
+      },
+      "label": "海地"
+    },
+    {
+      "key": "location:HU",
+      "assertion": {
+        "code": "HU"
+      },
+      "label": "匈牙利"
+    },
+    {
+      "key": "location:ID",
+      "assertion": {
+        "code": "ID"
+      },
+      "label": "印度尼西亚"
+    },
+    {
+      "key": "location:IE",
+      "assertion": {
+        "code": "IE"
+      },
+      "label": "爱尔兰"
+    },
+    {
+      "key": "location:IL",
+      "assertion": {
+        "code": "IL"
+      },
+      "label": "以色列"
+    },
+    {
+      "key": "location:IM",
+      "assertion": {
+        "code": "IM"
+      },
+      "label": "马恩岛"
+    },
+    {
+      "key": "location:IN",
+      "assertion": {
+        "code": "IN"
+      },
+      "label": "印度"
+    },
+    {
+      "key": "location:IO",
+      "assertion": {
+        "code": "IO"
+      },
+      "label": "英属印度洋领地"
+    },
+    {
+      "key": "location:IQ",
+      "assertion": {
+        "code": "IQ"
+      },
+      "label": "伊拉克"
+    },
+    {
+      "key": "location:IR",
+      "assertion": {
+        "code": "IR"
+      },
+      "label": "伊朗"
+    },
+    {
+      "key": "location:IS",
+      "assertion": {
+        "code": "IS"
+      },
+      "label": "冰岛"
+    },
+    {
+      "key": "location:IT",
+      "assertion": {
+        "code": "IT"
+      },
+      "label": "意大利"
+    },
+    {
+      "key": "location:JE",
+      "assertion": {
+        "code": "JE"
+      },
+      "label": "泽西岛"
+    },
+    {
+      "key": "location:JM",
+      "assertion": {
+        "code": "JM"
+      },
+      "label": "牙买加"
+    },
+    {
+      "key": "location:JO",
+      "assertion": {
+        "code": "JO"
+      },
+      "label": "约旦"
+    },
+    {
+      "key": "location:JP",
+      "assertion": {
+        "code": "JP"
+      },
+      "label": "日本"
+    },
+    {
+      "key": "location:KE",
+      "assertion": {
+        "code": "KE"
+      },
+      "label": "肯尼亚"
+    },
+    {
+      "key": "location:KG",
+      "assertion": {
+        "code": "KG"
+      },
+      "label": "吉尔吉斯斯坦"
+    },
+    {
+      "key": "location:KH",
+      "assertion": {
+        "code": "KH"
+      },
+      "label": "柬埔寨"
+    },
+    {
+      "key": "location:KI",
+      "assertion": {
+        "code": "KI"
+      },
+      "label": "基里巴斯"
+    },
+    {
+      "key": "location:KM",
+      "assertion": {
+        "code": "KM"
+      },
+      "label": "科摩罗"
+    },
+    {
+      "key": "location:KN",
+      "assertion": {
+        "code": "KN"
+      },
+      "label": "圣基茨和尼维斯"
+    },
+    {
+      "key": "location:KP",
+      "assertion": {
+        "code": "KP"
+      },
+      "label": "朝鲜"
+    },
+    {
+      "key": "location:KR",
+      "assertion": {
+        "code": "KR"
+      },
+      "label": "韩国"
+    },
+    {
+      "key": "location:KW",
+      "assertion": {
+        "code": "KW"
+      },
+      "label": "科威特"
+    },
+    {
+      "key": "location:KY",
+      "assertion": {
+        "code": "KY"
+      },
+      "label": "开曼群岛"
+    },
+    {
+      "key": "location:KZ",
+      "assertion": {
+        "code": "KZ"
+      },
+      "label": "哈萨克斯坦"
+    },
+    {
+      "key": "location:LA",
+      "assertion": {
+        "code": "LA"
+      },
+      "label": "老挝"
+    },
+    {
+      "key": "location:LB",
+      "assertion": {
+        "code": "LB"
+      },
+      "label": "黎巴嫩"
+    },
+    {
+      "key": "location:LC",
+      "assertion": {
+        "code": "LC"
+      },
+      "label": "圣卢西亚"
+    },
+    {
+      "key": "location:LI",
+      "assertion": {
+        "code": "LI"
+      },
+      "label": "列支敦士登"
+    },
+    {
+      "key": "location:LK",
+      "assertion": {
+        "code": "LK"
+      },
+      "label": "斯里兰卡"
+    },
+    {
+      "key": "location:LR",
+      "assertion": {
+        "code": "LR"
+      },
+      "label": "利比里亚"
+    },
+    {
+      "key": "location:LS",
+      "assertion": {
+        "code": "LS"
+      },
+      "label": "莱索托"
+    },
+    {
+      "key": "location:LT",
+      "assertion": {
+        "code": "LT"
+      },
+      "label": "立陶宛"
+    },
+    {
+      "key": "location:LU",
+      "assertion": {
+        "code": "LU"
+      },
+      "label": "卢森堡"
+    },
+    {
+      "key": "location:LV",
+      "assertion": {
+        "code": "LV"
+      },
+      "label": "拉脱维亚"
+    },
+    {
+      "key": "location:LY",
+      "assertion": {
+        "code": "LY"
+      },
+      "label": "利比亚"
+    },
+    {
+      "key": "location:MA",
+      "assertion": {
+        "code": "MA"
+      },
+      "label": "摩洛哥"
+    },
+    {
+      "key": "location:MC",
+      "assertion": {
+        "code": "MC"
+      },
+      "label": "摩纳哥"
+    },
+    {
+      "key": "location:MD",
+      "assertion": {
+        "code": "MD"
+      },
+      "label": "摩尔多瓦"
+    },
+    {
+      "key": "location:ME",
+      "assertion": {
+        "code": "ME"
+      },
+      "label": "黑山"
+    },
+    {
+      "key": "location:MF",
+      "assertion": {
+        "code": "MF"
+      },
+      "label": "圣马丁"
+    },
+    {
+      "key": "location:MG",
+      "assertion": {
+        "code": "MG"
+      },
+      "label": "马达加斯加"
+    },
+    {
+      "key": "location:MH",
+      "assertion": {
+        "code": "MH"
+      },
+      "label": "马绍尔群岛"
+    },
+    {
+      "key": "location:MK",
+      "assertion": {
+        "code": "MK"
+      },
+      "label": "北马其顿"
+    },
+    {
+      "key": "location:ML",
+      "assertion": {
+        "code": "ML"
+      },
+      "label": "马里"
+    },
+    {
+      "key": "location:MM",
+      "assertion": {
+        "code": "MM"
+      },
+      "label": "缅甸"
+    },
+    {
+      "key": "location:MN",
+      "assertion": {
+        "code": "MN"
+      },
+      "label": "蒙古"
+    },
+    {
+      "key": "location:MP",
+      "assertion": {
+        "code": "MP"
+      },
+      "label": "北马里亚纳群岛"
+    },
+    {
+      "key": "location:MQ",
+      "assertion": {
+        "code": "MQ"
+      },
+      "label": "马提尼克"
+    },
+    {
+      "key": "location:MR",
+      "assertion": {
+        "code": "MR"
+      },
+      "label": "毛里塔尼亚"
+    },
+    {
+      "key": "location:MS",
+      "assertion": {
+        "code": "MS"
+      },
+      "label": "蒙特塞拉特"
+    },
+    {
+      "key": "location:MT",
+      "assertion": {
+        "code": "MT"
+      },
+      "label": "马耳他"
+    },
+    {
+      "key": "location:MU",
+      "assertion": {
+        "code": "MU"
+      },
+      "label": "毛里求斯"
+    },
+    {
+      "key": "location:MV",
+      "assertion": {
+        "code": "MV"
+      },
+      "label": "马尔代夫"
+    },
+    {
+      "key": "location:MW",
+      "assertion": {
+        "code": "MW"
+      },
+      "label": "马拉维"
+    },
+    {
+      "key": "location:MX",
+      "assertion": {
+        "code": "MX"
+      },
+      "label": "墨西哥"
+    },
+    {
+      "key": "location:MY",
+      "assertion": {
+        "code": "MY"
+      },
+      "label": "马来西亚"
+    },
+    {
+      "key": "location:MZ",
+      "assertion": {
+        "code": "MZ"
+      },
+      "label": "莫桑比克"
+    },
+    {
+      "key": "location:NA",
+      "assertion": {
+        "code": "NA"
+      },
+      "label": "纳米比亚"
+    },
+    {
+      "key": "location:NC",
+      "assertion": {
+        "code": "NC"
+      },
+      "label": "新喀里多尼亚"
+    },
+    {
+      "key": "location:NE",
+      "assertion": {
+        "code": "NE"
+      },
+      "label": "尼日尔"
+    },
+    {
+      "key": "location:NF",
+      "assertion": {
+        "code": "NF"
+      },
+      "label": "诺福克岛"
+    },
+    {
+      "key": "location:NG",
+      "assertion": {
+        "code": "NG"
+      },
+      "label": "尼日利亚"
+    },
+    {
+      "key": "location:NI",
+      "assertion": {
+        "code": "NI"
+      },
+      "label": "尼加拉瓜"
+    },
+    {
+      "key": "location:NL",
+      "assertion": {
+        "code": "NL"
+      },
+      "label": "荷兰"
+    },
+    {
+      "key": "location:NO",
+      "assertion": {
+        "code": "NO"
+      },
+      "label": "挪威"
+    },
+    {
+      "key": "location:NP",
+      "assertion": {
+        "code": "NP"
+      },
+      "label": "尼泊尔"
+    },
+    {
+      "key": "location:NR",
+      "assertion": {
+        "code": "NR"
+      },
+      "label": "瑙鲁"
+    },
+    {
+      "key": "location:NU",
+      "assertion": {
+        "code": "NU"
+      },
+      "label": "纽埃"
+    },
+    {
+      "key": "location:NZ",
+      "assertion": {
+        "code": "NZ"
+      },
+      "label": "新西兰"
+    },
+    {
+      "key": "location:OM",
+      "assertion": {
+        "code": "OM"
+      },
+      "label": "阿曼"
+    },
+    {
+      "key": "location:PA",
+      "assertion": {
+        "code": "PA"
+      },
+      "label": "巴拿马"
+    },
+    {
+      "key": "location:PE",
+      "assertion": {
+        "code": "PE"
+      },
+      "label": "秘鲁"
+    },
+    {
+      "key": "location:PF",
+      "assertion": {
+        "code": "PF"
+      },
+      "label": "法属波利尼西亚"
+    },
+    {
+      "key": "location:PG",
+      "assertion": {
+        "code": "PG"
+      },
+      "label": "巴布亚新几内亚"
+    },
+    {
+      "key": "location:PH",
+      "assertion": {
+        "code": "PH"
+      },
+      "label": "菲律宾"
+    },
+    {
+      "key": "location:PK",
+      "assertion": {
+        "code": "PK"
+      },
+      "label": "巴基斯坦"
+    },
+    {
+      "key": "location:PL",
+      "assertion": {
+        "code": "PL"
+      },
+      "label": "波兰"
+    },
+    {
+      "key": "location:PM",
+      "assertion": {
+        "code": "PM"
+      },
+      "label": "圣皮埃尔和密克隆"
+    },
+    {
+      "key": "location:PN",
+      "assertion": {
+        "code": "PN"
+      },
+      "label": "皮特凯恩群岛"
+    },
+    {
+      "key": "location:PR",
+      "assertion": {
+        "code": "PR"
+      },
+      "label": "波多黎各"
+    },
+    {
+      "key": "location:PS",
+      "assertion": {
+        "code": "PS"
+      },
+      "label": "巴勒斯坦*"
+    },
+    {
+      "key": "location:PT",
+      "assertion": {
+        "code": "PT"
+      },
+      "label": "葡萄牙"
+    },
+    {
+      "key": "location:PW",
+      "assertion": {
+        "code": "PW"
+      },
+      "label": "帕劳"
+    },
+    {
+      "key": "location:PY",
+      "assertion": {
+        "code": "PY"
+      },
+      "label": "巴拉圭"
+    },
+    {
+      "key": "location:QA",
+      "assertion": {
+        "code": "QA"
+      },
+      "label": "卡塔尔"
+    },
+    {
+      "key": "location:RE",
+      "assertion": {
+        "code": "RE"
+      },
+      "label": "留尼汪"
+    },
+    {
+      "key": "location:RO",
+      "assertion": {
+        "code": "RO"
+      },
+      "label": "罗马尼亚"
+    },
+    {
+      "key": "location:RS",
+      "assertion": {
+        "code": "RS"
+      },
+      "label": "塞尔维亚"
+    },
+    {
+      "key": "location:RU",
+      "assertion": {
+        "code": "RU"
+      },
+      "label": "俄罗斯"
+    },
+    {
+      "key": "location:RW",
+      "assertion": {
+        "code": "RW"
+      },
+      "label": "卢旺达"
+    },
+    {
+      "key": "location:SA",
+      "assertion": {
+        "code": "SA"
+      },
+      "label": "沙特阿拉伯"
+    },
+    {
+      "key": "location:SB",
+      "assertion": {
+        "code": "SB"
+      },
+      "label": "所罗门群岛"
+    },
+    {
+      "key": "location:SC",
+      "assertion": {
+        "code": "SC"
+      },
+      "label": "塞舌尔"
+    },
+    {
+      "key": "location:SD",
+      "assertion": {
+        "code": "SD"
+      },
+      "label": "苏丹"
+    },
+    {
+      "key": "location:SE",
+      "assertion": {
+        "code": "SE"
+      },
+      "label": "瑞典"
+    },
+    {
+      "key": "location:SG",
+      "assertion": {
+        "code": "SG"
+      },
+      "label": "新加坡"
+    },
+    {
+      "key": "location:SH",
+      "assertion": {
+        "code": "SH"
+      },
+      "label": "圣赫勒拿、阿森松和特里斯坦达库尼亚"
+    },
+    {
+      "key": "location:SI",
+      "assertion": {
+        "code": "SI"
+      },
+      "label": "斯洛文尼亚"
+    },
+    {
+      "key": "location:SJ",
+      "assertion": {
+        "code": "SJ"
+      },
+      "label": "斯瓦尔巴岛和扬马延岛"
+    },
+    {
+      "key": "location:SK",
+      "assertion": {
+        "code": "SK"
+      },
+      "label": "斯洛伐克"
+    },
+    {
+      "key": "location:SL",
+      "assertion": {
+        "code": "SL"
+      },
+      "label": "塞拉利昂"
+    },
+    {
+      "key": "location:SM",
+      "assertion": {
+        "code": "SM"
+      },
+      "label": "圣马力诺"
+    },
+    {
+      "key": "location:SN",
+      "assertion": {
+        "code": "SN"
+      },
+      "label": "塞内加尔"
+    },
+    {
+      "key": "location:SO",
+      "assertion": {
+        "code": "SO"
+      },
+      "label": "索马里"
+    },
+    {
+      "key": "location:SR",
+      "assertion": {
+        "code": "SR"
+      },
+      "label": "苏里南"
+    },
+    {
+      "key": "location:SS",
+      "assertion": {
+        "code": "SS"
+      },
+      "label": "南苏丹"
+    },
+    {
+      "key": "location:ST",
+      "assertion": {
+        "code": "ST"
+      },
+      "label": "圣多美和普林西比"
+    },
+    {
+      "key": "location:SV",
+      "assertion": {
+        "code": "SV"
+      },
+      "label": "萨尔瓦多"
+    },
+    {
+      "key": "location:SX",
+      "assertion": {
+        "code": "SX"
+      },
+      "label": "圣马丁"
+    },
+    {
+      "key": "location:SY",
+      "assertion": {
+        "code": "SY"
+      },
+      "label": "叙利亚"
+    },
+    {
+      "key": "location:SZ",
+      "assertion": {
+        "code": "SZ"
+      },
+      "label": "斯威士兰"
+    },
+    {
+      "key": "location:TC",
+      "assertion": {
+        "code": "TC"
+      },
+      "label": "特克斯和凯科斯群岛"
+    },
+    {
+      "key": "location:TD",
+      "assertion": {
+        "code": "TD"
+      },
+      "label": "乍得"
+    },
+    {
+      "key": "location:TF",
+      "assertion": {
+        "code": "TF"
+      },
+      "label": "法属南部和南极土地"
+    },
+    {
+      "key": "location:TG",
+      "assertion": {
+        "code": "TG"
+      },
+      "label": "多哥"
+    },
+    {
+      "key": "location:TH",
+      "assertion": {
+        "code": "TH"
+      },
+      "label": "泰国"
+    },
+    {
+      "key": "location:TJ",
+      "assertion": {
+        "code": "TJ"
+      },
+      "label": "塔吉克斯坦"
+    },
+    {
+      "key": "location:TK",
+      "assertion": {
+        "code": "TK"
+      },
+      "label": "托克劳"
+    },
+    {
+      "key": "location:TL",
+      "assertion": {
+        "code": "TL"
+      },
+      "label": "东帝汶"
+    },
+    {
+      "key": "location:TM",
+      "assertion": {
+        "code": "TM"
+      },
+      "label": "土库曼斯坦"
+    },
+    {
+      "key": "location:TN",
+      "assertion": {
+        "code": "TN"
+      },
+      "label": "突尼斯"
+    },
+    {
+      "key": "location:TO",
+      "assertion": {
+        "code": "TO"
+      },
+      "label": "汤加"
+    },
+    {
+      "key": "location:TR",
+      "assertion": {
+        "code": "TR"
+      },
+      "label": "土耳其"
+    },
+    {
+      "key": "location:TT",
+      "assertion": {
+        "code": "TT"
+      },
+      "label": "特立尼达和多巴哥"
+    },
+    {
+      "key": "location:TV",
+      "assertion": {
+        "code": "TV"
+      },
+      "label": "图瓦卢"
+    },
+    {
+      "key": "location:TZ",
+      "assertion": {
+        "code": "TZ"
+      },
+      "label": "坦桑尼亚"
+    },
+    {
+      "key": "location:UA",
+      "assertion": {
+        "code": "UA"
+      },
+      "label": "乌克兰"
+    },
+    {
+      "key": "location:UG",
+      "assertion": {
+        "code": "UG"
+      },
+      "label": "乌干达"
+    },
+    {
+      "key": "location:UM",
+      "assertion": {
+        "code": "UM"
+      },
+      "label": "美国本土外小岛屿"
+    },
+    {
+      "key": "location:US",
+      "assertion": {
+        "code": "US"
+      },
+      "label": "美国"
+    },
+    {
+      "key": "location:UY",
+      "assertion": {
+        "code": "UY"
+      },
+      "label": "乌拉圭"
+    },
+    {
+      "key": "location:UZ",
+      "assertion": {
+        "code": "UZ"
+      },
+      "label": "乌兹别克斯坦"
+    },
+    {
+      "key": "location:VA",
+      "assertion": {
+        "code": "VA"
+      },
+      "label": "聖座"
+    },
+    {
+      "key": "location:VC",
+      "assertion": {
+        "code": "VC"
+      },
+      "label": "圣文森特和格林纳丁斯"
+    },
+    {
+      "key": "location:VE",
+      "assertion": {
+        "code": "VE"
+      },
+      "label": "委内瑞拉"
+    },
+    {
+      "key": "location:VG",
+      "assertion": {
+        "code": "VG"
+      },
+      "label": "英属维尔京群岛"
+    },
+    {
+      "key": "location:VI",
+      "assertion": {
+        "code": "VI"
+      },
+      "label": "美属维尔京群岛"
+    },
+    {
+      "key": "location:VN",
+      "assertion": {
+        "code": "VN"
+      },
+      "label": "越南"
+    },
+    {
+      "key": "location:VU",
+      "assertion": {
+        "code": "VU"
+      },
+      "label": "瓦努阿图"
+    },
+    {
+      "key": "location:WF",
+      "assertion": {
+        "code": "WF"
+      },
+      "label": "瓦利斯和富图纳"
+    },
+    {
+      "key": "location:WS",
+      "assertion": {
+        "code": "WS"
+      },
+      "label": "萨摩亚"
+    },
+    {
+      "key": "location:YE",
+      "assertion": {
+        "code": "YE"
+      },
+      "label": "也门"
+    },
+    {
+      "key": "location:YT",
+      "assertion": {
+        "code": "YT"
+      },
+      "label": "马约特"
+    },
+    {
+      "key": "location:ZA",
+      "assertion": {
+        "code": "ZA"
+      },
+      "label": "南非"
+    },
+    {
+      "key": "location:ZM",
+      "assertion": {
+        "code": "ZM"
+      },
+      "label": "赞比亚"
+    },
+    {
+      "key": "location:ZW",
+      "assertion": {
+        "code": "ZW"
+      },
+      "label": "津巴布韦"
+    },
+    {
+      "key": "location:CIS",
+      "assertion": {
+        "code": "CIS"
+      },
+      "label": "独立国家联合体"
+    },
+    {
+      "key": "location:CN",
+      "assertion": {
+        "code": "CN"
+      },
+      "label": "中国"
+    },
+    {
+      "key": "location:CN-BJ",
+      "assertion": {
+        "code": "CN-BJ"
+      },
+      "label": "中国,北京市"
+    },
+    {
+      "key": "location:CN-TJ",
+      "assertion": {
+        "code": "CN-TJ"
+      },
+      "label": "中国,天津市"
+    },
+    {
+      "key": "location:CN-HE",
+      "assertion": {
+        "code": "CN-HE"
+      },
+      "label": "中国,河北省"
+    },
+    {
+      "key": "location:CN-HE-SJW",
+      "assertion": {
+        "code": "CN-HE-SJW"
+      },
+      "label": "中国,河北省,石家庄市"
+    },
+    {
+      "key": "location:CN-HE-TGS",
+      "assertion": {
+        "code": "CN-HE-TGS"
+      },
+      "label": "中国,河北省,唐山市"
+    },
+    {
+      "key": "location:CN-HE-SHP",
+      "assertion": {
+        "code": "CN-HE-SHP"
+      },
+      "label": "中国,河北省,秦皇岛市"
+    },
+    {
+      "key": "location:CN-HE-HDS",
+      "assertion": {
+        "code": "CN-HE-HDS"
+      },
+      "label": "中国,河北省,邯郸市"
+    },
+    {
+      "key": "location:CN-HE-XTS",
+      "assertion": {
+        "code": "CN-HE-XTS"
+      },
+      "label": "中国,河北省,邢台市"
+    },
+    {
+      "key": "location:CN-HE-BDS",
+      "assertion": {
+        "code": "CN-HE-BDS"
+      },
+      "label": "中国,河北省,保定市"
+    },
+    {
+      "key": "location:CN-HE-ZJK",
+      "assertion": {
+        "code": "CN-HE-ZJK"
+      },
+      "label": "中国,河北省,张家口市"
+    },
+    {
+      "key": "location:CN-HE-CDS",
+      "assertion": {
+        "code": "CN-HE-CDS"
+      },
+      "label": "中国,河北省,承德市"
+    },
+    {
+      "key": "location:CN-HE-CGZ",
+      "assertion": {
+        "code": "CN-HE-CGZ"
+      },
+      "label": "中国,河北省,沧州市"
+    },
+    {
+      "key": "location:CN-HE-LFS",
+      "assertion": {
+        "code": "CN-HE-LFS"
+      },
+      "label": "中国,河北省,廊坊市"
+    },
+    {
+      "key": "location:CN-HE-HGS",
+      "assertion": {
+        "code": "CN-HE-HGS"
+      },
+      "label": "中国,河北省,衡水市"
+    },
+    {
+      "key": "location:CN-SX",
+      "assertion": {
+        "code": "CN-SX"
+      },
+      "label": "中国,山西省"
+    },
+    {
+      "key": "location:CN-SX-TYN",
+      "assertion": {
+        "code": "CN-SX-TYN"
+      },
+      "label": "中国,山西省,太原市"
+    },
+    {
+      "key": "location:CN-SX-DTG",
+      "assertion": {
+        "code": "CN-SX-DTG"
+      },
+      "label": "中国,山西省,大同市"
+    },
+    {
+      "key": "location:CN-SX-YQS",
+      "assertion": {
+        "code": "CN-SX-YQS"
+      },
+      "label": "中国,山西省,阳泉市"
+    },
+    {
+      "key": "location:CN-SX-CZS",
+      "assertion": {
+        "code": "CN-SX-CZS"
+      },
+      "label": "中国,山西省,长治市"
+    },
+    {
+      "key": "location:CN-SX-JCG",
+      "assertion": {
+        "code": "CN-SX-JCG"
+      },
+      "label": "中国,山西省,晋城市"
+    },
+    {
+      "key": "location:CN-SX-SZJ",
+      "assertion": {
+        "code": "CN-SX-SZJ"
+      },
+      "label": "中国,山西省,朔州市"
+    },
+    {
+      "key": "location:CN-SX-JZN",
+      "assertion": {
+        "code": "CN-SX-JZN"
+      },
+      "label": "中国,山西省,晋中市"
+    },
+    {
+      "key": "location:CN-SX-YCE",
+      "assertion": {
+        "code": "CN-SX-YCE"
+      },
+      "label": "中国,山西省,运城市"
+    },
+    {
+      "key": "location:CN-SX-XZS",
+      "assertion": {
+        "code": "CN-SX-XZS"
+      },
+      "label": "中国,山西省,忻州市"
+    },
+    {
+      "key": "location:CN-SX-LFN",
+      "assertion": {
+        "code": "CN-SX-LFN"
+      },
+      "label": "中国,山西省,临汾市"
+    },
+    {
+      "key": "location:CN-SX-LLH",
+      "assertion": {
+        "code": "CN-SX-LLH"
+      },
+      "label": "中国,山西省,吕梁市"
+    },
+    {
+      "key": "location:CN-NM",
+      "assertion": {
+        "code": "CN-NM"
+      },
+      "label": "中国,内蒙古自治区"
+    },
+    {
+      "key": "location:CN-NM-HET",
+      "assertion": {
+        "code": "CN-NM-HET"
+      },
+      "label": "中国,内蒙古自治区,呼和浩特市"
+    },
+    {
+      "key": "location:CN-NM-BTS",
+      "assertion": {
+        "code": "CN-NM-BTS"
+      },
+      "label": "中国,内蒙古自治区,包头市"
+    },
+    {
+      "key": "location:CN-NM-WHM",
+      "assertion": {
+        "code": "CN-NM-WHM"
+      },
+      "label": "中国,内蒙古自治区,乌海市"
+    },
+    {
+      "key": "location:CN-NM-CFS",
+      "assertion": {
+        "code": "CN-NM-CFS"
+      },
+      "label": "中国,内蒙古自治区,赤峰（乌兰哈达）市"
+    },
+    {
+      "key": "location:CN-NM-TLO",
+      "assertion": {
+        "code": "CN-NM-TLO"
+      },
+      "label": "中国,内蒙古自治区,通辽市"
+    },
+    {
+      "key": "location:CN-NM-ODS",
+      "assertion": {
+        "code": "CN-NM-ODS"
+      },
+      "label": "中国,内蒙古自治区,鄂尔多斯市"
+    },
+    {
+      "key": "location:CN-NM-HBR",
+      "assertion": {
+        "code": "CN-NM-HBR"
+      },
+      "label": "中国,内蒙古自治区,呼伦贝尔市"
+    },
+    {
+      "key": "location:CN-NM-BYR",
+      "assertion": {
+        "code": "CN-NM-BYR"
+      },
+      "label": "中国,内蒙古自治区,巴彦淖尔市"
+    },
+    {
+      "key": "location:CN-NM-ULS",
+      "assertion": {
+        "code": "CN-NM-ULS"
+      },
+      "label": "中国,内蒙古自治区,乌兰察布市"
+    },
+    {
+      "key": "location:CN-NM-HIN",
+      "assertion": {
+        "code": "CN-NM-HIN"
+      },
+      "label": "中国,内蒙古自治区,兴安盟"
+    },
+    {
+      "key": "location:CN-NM-XGO",
+      "assertion": {
+        "code": "CN-NM-XGO"
+      },
+      "label": "中国,内蒙古自治区,锡林郭勒盟"
+    },
+    {
+      "key": "location:CN-NM-ALM",
+      "assertion": {
+        "code": "CN-NM-ALM"
+      },
+      "label": "中国,内蒙古自治区,阿拉善盟"
+    },
+    {
+      "key": "location:CN-LN",
+      "assertion": {
+        "code": "CN-LN"
+      },
+      "label": "中国,辽宁省"
+    },
+    {
+      "key": "location:CN-LN-SHE",
+      "assertion": {
+        "code": "CN-LN-SHE"
+      },
+      "label": "中国,辽宁省,沈阳市"
+    },
+    {
+      "key": "location:CN-LN-DLC",
+      "assertion": {
+        "code": "CN-LN-DLC"
+      },
+      "label": "中国,辽宁省,大连市"
+    },
+    {
+      "key": "location:CN-LN-ASN",
+      "assertion": {
+        "code": "CN-LN-ASN"
+      },
+      "label": "中国,辽宁省,鞍山市"
+    },
+    {
+      "key": "location:CN-LN-FSN",
+      "assertion": {
+        "code": "CN-LN-FSN"
+      },
+      "label": "中国,辽宁省,抚顺市"
+    },
+    {
+      "key": "location:CN-LN-BXS",
+      "assertion": {
+        "code": "CN-LN-BXS"
+      },
+      "label": "中国,辽宁省,本溪市"
+    },
+    {
+      "key": "location:CN-LN-DDG",
+      "assertion": {
+        "code": "CN-LN-DDG"
+      },
+      "label": "中国,辽宁省,丹东市"
+    },
+    {
+      "key": "location:CN-LN-JNZ",
+      "assertion": {
+        "code": "CN-LN-JNZ"
+      },
+      "label": "中国,辽宁省,锦州市"
+    },
+    {
+      "key": "location:CN-LN-YIK",
+      "assertion": {
+        "code": "CN-LN-YIK"
+      },
+      "label": "中国,辽宁省,营口市"
+    },
+    {
+      "key": "location:CN-LN-FXS",
+      "assertion": {
+        "code": "CN-LN-FXS"
+      },
+      "label": "中国,辽宁省,阜新市"
+    },
+    {
+      "key": "location:CN-LN-LYL",
+      "assertion": {
+        "code": "CN-LN-LYL"
+      },
+      "label": "中国,辽宁省,辽阳市"
+    },
+    {
+      "key": "location:CN-LN-PJS",
+      "assertion": {
+        "code": "CN-LN-PJS"
+      },
+      "label": "中国,辽宁省,盘锦市"
+    },
+    {
+      "key": "location:CN-LN-TLS",
+      "assertion": {
+        "code": "CN-LN-TLS"
+      },
+      "label": "中国,辽宁省,铁岭市"
+    },
+    {
+      "key": "location:CN-LN-CYS",
+      "assertion": {
+        "code": "CN-LN-CYS"
+      },
+      "label": "中国,辽宁省,朝阳市"
+    },
+    {
+      "key": "location:CN-LN-HLD",
+      "assertion": {
+        "code": "CN-LN-HLD"
+      },
+      "label": "中国,辽宁省,葫芦岛市"
+    },
+    {
+      "key": "location:CN-JL",
+      "assertion": {
+        "code": "CN-JL"
+      },
+      "label": "中国,吉林省"
+    },
+    {
+      "key": "location:CN-JL-CGQ",
+      "assertion": {
+        "code": "CN-JL-CGQ"
+      },
+      "label": "中国,吉林省,长春市"
+    },
+    {
+      "key": "location:CN-JL-JLS",
+      "assertion": {
+        "code": "CN-JL-JLS"
+      },
+      "label": "中国,吉林省,吉林市"
+    },
+    {
+      "key": "location:CN-JL-SPS",
+      "assertion": {
+        "code": "CN-JL-SPS"
+      },
+      "label": "中国,吉林省,四平市"
+    },
+    {
+      "key": "location:CN-JL-LYH",
+      "assertion": {
+        "code": "CN-JL-LYH"
+      },
+      "label": "中国,吉林省,辽源市"
+    },
+    {
+      "key": "location:CN-JL-THS",
+      "assertion": {
+        "code": "CN-JL-THS"
+      },
+      "label": "中国,吉林省,通化市"
+    },
+    {
+      "key": "location:CN-JL-BSN",
+      "assertion": {
+        "code": "CN-JL-BSN"
+      },
+      "label": "中国,吉林省,白山市"
+    },
+    {
+      "key": "location:CN-JL-SYU",
+      "assertion": {
+        "code": "CN-JL-SYU"
+      },
+      "label": "中国,吉林省,松原市"
+    },
+    {
+      "key": "location:CN-JL-BCS",
+      "assertion": {
+        "code": "CN-JL-BCS"
+      },
+      "label": "中国,吉林省,白城市"
+    },
+    {
+      "key": "location:CN-JL-YBZ",
+      "assertion": {
+        "code": "CN-JL-YBZ"
+      },
+      "label": "中国,吉林省,延边朝鲜族自治州"
+    },
+    {
+      "key": "location:CN-HL",
+      "assertion": {
+        "code": "CN-HL"
+      },
+      "label": "中国,黑龙江省"
+    },
+    {
+      "key": "location:CN-HL-HRB",
+      "assertion": {
+        "code": "CN-HL-HRB"
+      },
+      "label": "中国,黑龙江省,哈尔滨市"
+    },
+    {
+      "key": "location:CN-HL-NDG",
+      "assertion": {
+        "code": "CN-HL-NDG"
+      },
+      "label": "中国,黑龙江省,齐齐哈尔市"
+    },
+    {
+      "key": "location:CN-HL-JXI",
+      "assertion": {
+        "code": "CN-HL-JXI"
+      },
+      "label": "中国,黑龙江省,鸡西市"
+    },
+    {
+      "key": "location:CN-HL-HEG",
+      "assertion": {
+        "code": "CN-HL-HEG"
+      },
+      "label": "中国,黑龙江省,鹤岗市"
+    },
+    {
+      "key": "location:CN-HL-SYS",
+      "assertion": {
+        "code": "CN-HL-SYS"
+      },
+      "label": "中国,黑龙江省,双鸭山市"
+    },
+    {
+      "key": "location:CN-HL-DQG",
+      "assertion": {
+        "code": "CN-HL-DQG"
+      },
+      "label": "中国,黑龙江省,大庆市"
+    },
+    {
+      "key": "location:CN-HL-YCH",
+      "assertion": {
+        "code": "CN-HL-YCH"
+      },
+      "label": "中国,黑龙江省,伊春市"
+    },
+    {
+      "key": "location:CN-HL-JMU",
+      "assertion": {
+        "code": "CN-HL-JMU"
+      },
+      "label": "中国,黑龙江省,佳木斯市"
+    },
+    {
+      "key": "location:CN-HL-QTH",
+      "assertion": {
+        "code": "CN-HL-QTH"
+      },
+      "label": "中国,黑龙江省,七台河市"
+    },
+    {
+      "key": "location:CN-HL-MDG",
+      "assertion": {
+        "code": "CN-HL-MDG"
+      },
+      "label": "中国,黑龙江省,牡丹江市"
+    },
+    {
+      "key": "location:CN-HL-HEK",
+      "assertion": {
+        "code": "CN-HL-HEK"
+      },
+      "label": "中国,黑龙江省,黑河市"
+    },
+    {
+      "key": "location:CN-HL-SUH",
+      "assertion": {
+        "code": "CN-HL-SUH"
+      },
+      "label": "中国,黑龙江省,绥化市"
+    },
+    {
+      "key": "location:CN-HL-DHL",
+      "assertion": {
+        "code": "CN-HL-DHL"
+      },
+      "label": "中国,黑龙江省,大兴安岭地区"
+    },
+    {
+      "key": "location:CN-SH",
+      "assertion": {
+        "code": "CN-SH"
+      },
+      "label": "中国,上海市"
+    },
+    {
+      "key": "location:CN-JS",
+      "assertion": {
+        "code": "CN-JS"
+      },
+      "label": "中国,江苏省"
+    },
+    {
+      "key": "location:CN-JS-NKG",
+      "assertion": {
+        "code": "CN-JS-NKG"
+      },
+      "label": "中国,江苏省,南京市"
+    },
+    {
+      "key": "location:CN-JS-WUX",
+      "assertion": {
+        "code": "CN-JS-WUX"
+      },
+      "label": "中国,江苏省,无锡市"
+    },
+    {
+      "key": "location:CN-JS-XUZ",
+      "assertion": {
+        "code": "CN-JS-XUZ"
+      },
+      "label": "中国,江苏省,徐州市"
+    },
+    {
+      "key": "location:CN-JS-CZX",
+      "assertion": {
+        "code": "CN-JS-CZX"
+      },
+      "label": "中国,江苏省,常州市"
+    },
+    {
+      "key": "location:CN-JS-SZH",
+      "assertion": {
+        "code": "CN-JS-SZH"
+      },
+      "label": "中国,江苏省,苏州市"
+    },
+    {
+      "key": "location:CN-JS-NTG",
+      "assertion": {
+        "code": "CN-JS-NTG"
+      },
+      "label": "中国,江苏省,南通市"
+    },
+    {
+      "key": "location:CN-JS-LYG",
+      "assertion": {
+        "code": "CN-JS-LYG"
+      },
+      "label": "中国,江苏省,连云港市"
+    },
+    {
+      "key": "location:CN-JS-HAS",
+      "assertion": {
+        "code": "CN-JS-HAS"
+      },
+      "label": "中国,江苏省,淮安市"
+    },
+    {
+      "key": "location:CN-JS-YCK",
+      "assertion": {
+        "code": "CN-JS-YCK"
+      },
+      "label": "中国,江苏省,盐城市"
+    },
+    {
+      "key": "location:CN-JS-YZH",
+      "assertion": {
+        "code": "CN-JS-YZH"
+      },
+      "label": "中国,江苏省,扬州市"
+    },
+    {
+      "key": "location:CN-JS-ZHE",
+      "assertion": {
+        "code": "CN-JS-ZHE"
+      },
+      "label": "中国,江苏省,镇江市"
+    },
+    {
+      "key": "location:CN-JS-TZS",
+      "assertion": {
+        "code": "CN-JS-TZS"
+      },
+      "label": "中国,江苏省,泰州市"
+    },
+    {
+      "key": "location:CN-JS-SUQ",
+      "assertion": {
+        "code": "CN-JS-SUQ"
+      },
+      "label": "中国,江苏省,宿迁市"
+    },
+    {
+      "key": "location:CN-ZJ",
+      "assertion": {
+        "code": "CN-ZJ"
+      },
+      "label": "中国,浙江省"
+    },
+    {
+      "key": "location:CN-ZJ-HGH",
+      "assertion": {
+        "code": "CN-ZJ-HGH"
+      },
+      "label": "中国,浙江省,杭州市"
+    },
+    {
+      "key": "location:CN-ZJ-NGB",
+      "assertion": {
+        "code": "CN-ZJ-NGB"
+      },
+      "label": "中国,浙江省,宁波市"
+    },
+    {
+      "key": "location:CN-ZJ-WNZ",
+      "assertion": {
+        "code": "CN-ZJ-WNZ"
+      },
+      "label": "中国,浙江省,温州市"
+    },
+    {
+      "key": "location:CN-ZJ-JIX",
+      "assertion": {
+        "code": "CN-ZJ-JIX"
+      },
+      "label": "中国,浙江省,嘉兴市"
+    },
+    {
+      "key": "location:CN-ZJ-HZH",
+      "assertion": {
+        "code": "CN-ZJ-HZH"
+      },
+      "label": "中国,浙江省,湖州市"
+    },
+    {
+      "key": "location:CN-ZJ-SXG",
+      "assertion": {
+        "code": "CN-ZJ-SXG"
+      },
+      "label": "中国,浙江省,绍兴市"
+    },
+    {
+      "key": "location:CN-ZJ-JHA",
+      "assertion": {
+        "code": "CN-ZJ-JHA"
+      },
+      "label": "中国,浙江省,金华市"
+    },
+    {
+      "key": "location:CN-ZJ-QUZ",
+      "assertion": {
+        "code": "CN-ZJ-QUZ"
+      },
+      "label": "中国,浙江省,衢州市"
+    },
+    {
+      "key": "location:CN-ZJ-ZOS",
+      "assertion": {
+        "code": "CN-ZJ-ZOS"
+      },
+      "label": "中国,浙江省,舟山市"
+    },
+    {
+      "key": "location:CN-ZJ-TZZ",
+      "assertion": {
+        "code": "CN-ZJ-TZZ"
+      },
+      "label": "中国,浙江省,台州市"
+    },
+    {
+      "key": "location:CN-ZJ-LSS",
+      "assertion": {
+        "code": "CN-ZJ-LSS"
+      },
+      "label": "中国,浙江省,丽水市"
+    },
+    {
+      "key": "location:CN-AH",
+      "assertion": {
+        "code": "CN-AH"
+      },
+      "label": "中国,安徽省"
+    },
+    {
+      "key": "location:CN-AH-HFE",
+      "assertion": {
+        "code": "CN-AH-HFE"
+      },
+      "label": "中国,安徽省,合肥市"
+    },
+    {
+      "key": "location:CN-AH-WHI",
+      "assertion": {
+        "code": "CN-AH-WHI"
+      },
+      "label": "中国,安徽省,芜湖市"
+    },
+    {
+      "key": "location:CN-AH-BBU",
+      "assertion": {
+        "code": "CN-AH-BBU"
+      },
+      "label": "中国,安徽省,蚌埠市"
+    },
+    {
+      "key": "location:CN-AH-HNS",
+      "assertion": {
+        "code": "CN-AH-HNS"
+      },
+      "label": "中国,安徽省,淮南市"
+    },
+    {
+      "key": "location:CN-AH-MAA",
+      "assertion": {
+        "code": "CN-AH-MAA"
+      },
+      "label": "中国,安徽省,马鞍山市"
+    },
+    {
+      "key": "location:CN-AH-HBE",
+      "assertion": {
+        "code": "CN-AH-HBE"
+      },
+      "label": "中国,安徽省,淮北市"
+    },
+    {
+      "key": "location:CN-AH-TOL",
+      "assertion": {
+        "code": "CN-AH-TOL"
+      },
+      "label": "中国,安徽省,铜陵市"
+    },
+    {
+      "key": "location:CN-AH-AQG",
+      "assertion": {
+        "code": "CN-AH-AQG"
+      },
+      "label": "中国,安徽省,安庆市"
+    },
+    {
+      "key": "location:CN-AH-HSN",
+      "assertion": {
+        "code": "CN-AH-HSN"
+      },
+      "label": "中国,安徽省,黄山市"
+    },
+    {
+      "key": "location:CN-AH-CUZ",
+      "assertion": {
+        "code": "CN-AH-CUZ"
+      },
+      "label": "中国,安徽省,滁州市"
+    },
+    {
+      "key": "location:CN-AH-FYS",
+      "assertion": {
+        "code": "CN-AH-FYS"
+      },
+      "label": "中国,安徽省,阜阳市"
+    },
+    {
+      "key": "location:CN-AH-SUZ",
+      "assertion": {
+        "code": "CN-AH-SUZ"
+      },
+      "label": "中国,安徽省,宿州市"
+    },
+    {
+      "key": "location:CN-AH-CAH",
+      "assertion": {
+        "code": "CN-AH-CAH"
+      },
+      "label": "中国,安徽省,巢湖市"
+    },
+    {
+      "key": "location:CN-AH-LAW",
+      "assertion": {
+        "code": "CN-AH-LAW"
+      },
+      "label": "中国,安徽省,六安市"
+    },
+    {
+      "key": "location:CN-AH-BOZ",
+      "assertion": {
+        "code": "CN-AH-BOZ"
+      },
+      "label": "中国,安徽省,亳州市"
+    },
+    {
+      "key": "location:CN-AH-CIZ",
+      "assertion": {
+        "code": "CN-AH-CIZ"
+      },
+      "label": "中国,安徽省,池州市"
+    },
+    {
+      "key": "location:CN-AH-XCI",
+      "assertion": {
+        "code": "CN-AH-XCI"
+      },
+      "label": "中国,安徽省,宣城市"
+    },
+    {
+      "key": "location:CN-FJ",
+      "assertion": {
+        "code": "CN-FJ"
+      },
+      "label": "中国,福建省"
+    },
+    {
+      "key": "location:CN-FJ-FOC",
+      "assertion": {
+        "code": "CN-FJ-FOC"
+      },
+      "label": "中国,福建省,福州市"
+    },
+    {
+      "key": "location:CN-FJ-XMN",
+      "assertion": {
+        "code": "CN-FJ-XMN"
+      },
+      "label": "中国,福建省,厦门市"
+    },
+    {
+      "key": "location:CN-FJ-PUT",
+      "assertion": {
+        "code": "CN-FJ-PUT"
+      },
+      "label": "中国,福建省,莆田市"
+    },
+    {
+      "key": "location:CN-FJ-SMS",
+      "assertion": {
+        "code": "CN-FJ-SMS"
+      },
+      "label": "中国,福建省,三明市"
+    },
+    {
+      "key": "location:CN-FJ-QZJ",
+      "assertion": {
+        "code": "CN-FJ-QZJ"
+      },
+      "label": "中国,福建省,泉州市"
+    },
+    {
+      "key": "location:CN-FJ-ZZU",
+      "assertion": {
+        "code": "CN-FJ-ZZU"
+      },
+      "label": "中国,福建省,漳州市"
+    },
+    {
+      "key": "location:CN-FJ-NPS",
+      "assertion": {
+        "code": "CN-FJ-NPS"
+      },
+      "label": "中国,福建省,南平市"
+    },
+    {
+      "key": "location:CN-FJ-LYF",
+      "assertion": {
+        "code": "CN-FJ-LYF"
+      },
+      "label": "中国,福建省,龙岩市"
+    },
+    {
+      "key": "location:CN-FJ-NDS",
+      "assertion": {
+        "code": "CN-FJ-NDS"
+      },
+      "label": "中国,福建省,宁德市"
+    },
+    {
+      "key": "location:CN-JX",
+      "assertion": {
+        "code": "CN-JX"
+      },
+      "label": "中国,江西省"
+    },
+    {
+      "key": "location:CN-JX-KHN",
+      "assertion": {
+        "code": "CN-JX-KHN"
+      },
+      "label": "中国,江西省,南昌市"
+    },
+    {
+      "key": "location:CN-JX-JDZ",
+      "assertion": {
+        "code": "CN-JX-JDZ"
+      },
+      "label": "中国,江西省,景德镇市"
+    },
+    {
+      "key": "location:CN-JX-PXS",
+      "assertion": {
+        "code": "CN-JX-PXS"
+      },
+      "label": "中国,江西省,萍乡市"
+    },
+    {
+      "key": "location:CN-JX-JIU",
+      "assertion": {
+        "code": "CN-JX-JIU"
+      },
+      "label": "中国,江西省,九江市"
+    },
+    {
+      "key": "location:CN-JX-XYU",
+      "assertion": {
+        "code": "CN-JX-XYU"
+      },
+      "label": "中国,江西省,新余市"
+    },
+    {
+      "key": "location:CN-JX-YTS",
+      "assertion": {
+        "code": "CN-JX-YTS"
+      },
+      "label": "中国,江西省,鹰潭市"
+    },
+    {
+      "key": "location:CN-JX-GZH",
+      "assertion": {
+        "code": "CN-JX-GZH"
+      },
+      "label": "中国,江西省,赣州市"
+    },
+    {
+      "key": "location:CN-JX-JAS",
+      "assertion": {
+        "code": "CN-JX-JAS"
+      },
+      "label": "中国,江西省,吉安市"
+    },
+    {
+      "key": "location:CN-JX-YCN",
+      "assertion": {
+        "code": "CN-JX-YCN"
+      },
+      "label": "中国,江西省,宜春市"
+    },
+    {
+      "key": "location:CN-JX-FUZ",
+      "assertion": {
+        "code": "CN-JX-FUZ"
+      },
+      "label": "中国,江西省,抚州市"
+    },
+    {
+      "key": "location:CN-JX-SRS",
+      "assertion": {
+        "code": "CN-JX-SRS"
+      },
+      "label": "中国,江西省,上饶市"
+    },
+    {
+      "key": "location:CN-SD",
+      "assertion": {
+        "code": "CN-SD"
+      },
+      "label": "中国,山东省"
+    },
+    {
+      "key": "location:CN-SD-TNA",
+      "assertion": {
+        "code": "CN-SD-TNA"
+      },
+      "label": "中国,山东省,济南市"
+    },
+    {
+      "key": "location:CN-SD-TAO",
+      "assertion": {
+        "code": "CN-SD-TAO"
+      },
+      "label": "中国,山东省,青岛市"
+    },
+    {
+      "key": "location:CN-SD-ZBO",
+      "assertion": {
+        "code": "CN-SD-ZBO"
+      },
+      "label": "中国,山东省,淄博市"
+    },
+    {
+      "key": "location:CN-SD-ZZG",
+      "assertion": {
+        "code": "CN-SD-ZZG"
+      },
+      "label": "中国,山东省,枣庄市"
+    },
+    {
+      "key": "location:CN-SD-DYG",
+      "assertion": {
+        "code": "CN-SD-DYG"
+      },
+      "label": "中国,山东省,东营市"
+    },
+    {
+      "key": "location:CN-SD-YNT",
+      "assertion": {
+        "code": "CN-SD-YNT"
+      },
+      "label": "中国,山东省,烟台市"
+    },
+    {
+      "key": "location:CN-SD-WEF",
+      "assertion": {
+        "code": "CN-SD-WEF"
+      },
+      "label": "中国,山东省,潍坊市"
+    },
+    {
+      "key": "location:CN-SD-JNG",
+      "assertion": {
+        "code": "CN-SD-JNG"
+      },
+      "label": "中国,山东省,济宁市"
+    },
+    {
+      "key": "location:CN-SD-TAI",
+      "assertion": {
+        "code": "CN-SD-TAI"
+      },
+      "label": "中国,山东省,泰安市"
+    },
+    {
+      "key": "location:CN-SD-WEH",
+      "assertion": {
+        "code": "CN-SD-WEH"
+      },
+      "label": "中国,山东省,威海市"
+    },
+    {
+      "key": "location:CN-SD-RZH",
+      "assertion": {
+        "code": "CN-SD-RZH"
+      },
+      "label": "中国,山东省,日照市"
+    },
+    {
+      "key": "location:CN-SD-LWS",
+      "assertion": {
+        "code": "CN-SD-LWS"
+      },
+      "label": "中国,山东省,莱芜市"
+    },
+    {
+      "key": "location:CN-SD-LYI",
+      "assertion": {
+        "code": "CN-SD-LYI"
+      },
+      "label": "中国,山东省,临沂市"
+    },
+    {
+      "key": "location:CN-SD-DZS",
+      "assertion": {
+        "code": "CN-SD-DZS"
+      },
+      "label": "中国,山东省,德州市"
+    },
+    {
+      "key": "location:CN-SD-LCH",
+      "assertion": {
+        "code": "CN-SD-LCH"
+      },
+      "label": "中国,山东省,聊城市"
+    },
+    {
+      "key": "location:CN-SD-BZH",
+      "assertion": {
+        "code": "CN-SD-BZH"
+      },
+      "label": "中国,山东省,滨州市"
+    },
+    {
+      "key": "location:CN-SD-HZS",
+      "assertion": {
+        "code": "CN-SD-HZS"
+      },
+      "label": "中国,山东省,菏泽市"
+    },
+    {
+      "key": "location:CN-HA",
+      "assertion": {
+        "code": "CN-HA"
+      },
+      "label": "中国,河南省"
+    },
+    {
+      "key": "location:CN-HA-CGO",
+      "assertion": {
+        "code": "CN-HA-CGO"
+      },
+      "label": "中国,河南省,郑州市"
+    },
+    {
+      "key": "location:CN-HA-KFS",
+      "assertion": {
+        "code": "CN-HA-KFS"
+      },
+      "label": "中国,河南省,开封市"
+    },
+    {
+      "key": "location:CN-HA-LYA",
+      "assertion": {
+        "code": "CN-HA-LYA"
+      },
+      "label": "中国,河南省,洛阳市"
+    },
+    {
+      "key": "location:CN-HA-PDS",
+      "assertion": {
+        "code": "CN-HA-PDS"
+      },
+      "label": "中国,河南省,平顶山市"
+    },
+    {
+      "key": "location:CN-HA-AYS",
+      "assertion": {
+        "code": "CN-HA-AYS"
+      },
+      "label": "中国,河南省,安阳市"
+    },
+    {
+      "key": "location:CN-HA-HBS",
+      "assertion": {
+        "code": "CN-HA-HBS"
+      },
+      "label": "中国,河南省,鹤壁市"
+    },
+    {
+      "key": "location:CN-HA-XXS",
+      "assertion": {
+        "code": "CN-HA-XXS"
+      },
+      "label": "中国,河南省,新乡市"
+    },
+    {
+      "key": "location:CN-HA-JZY",
+      "assertion": {
+        "code": "CN-HA-JZY"
+      },
+      "label": "中国,河南省,焦作市"
+    },
+    {
+      "key": "location:CN-HA-PYS",
+      "assertion": {
+        "code": "CN-HA-PYS"
+      },
+      "label": "中国,河南省,濮阳市"
+    },
+    {
+      "key": "location:CN-HA-XCS",
+      "assertion": {
+        "code": "CN-HA-XCS"
+      },
+      "label": "中国,河南省,许昌市"
+    },
+    {
+      "key": "location:CN-HA-LHS",
+      "assertion": {
+        "code": "CN-HA-LHS"
+      },
+      "label": "中国,河南省,漯河市"
+    },
+    {
+      "key": "location:CN-HA-SMX",
+      "assertion": {
+        "code": "CN-HA-SMX"
+      },
+      "label": "中国,河南省,三门峡市"
+    },
+    {
+      "key": "location:CN-HA-NYS",
+      "assertion": {
+        "code": "CN-HA-NYS"
+      },
+      "label": "中国,河南省,南阳市"
+    },
+    {
+      "key": "location:CN-HA-SQS",
+      "assertion": {
+        "code": "CN-HA-SQS"
+      },
+      "label": "中国,河南省,商丘市"
+    },
+    {
+      "key": "location:CN-HA-XYG",
+      "assertion": {
+        "code": "CN-HA-XYG"
+      },
+      "label": "中国,河南省,信阳市"
+    },
+    {
+      "key": "location:CN-HA-ZKS",
+      "assertion": {
+        "code": "CN-HA-ZKS"
+      },
+      "label": "中国,河南省,周口市"
+    },
+    {
+      "key": "location:CN-HA-ZMD",
+      "assertion": {
+        "code": "CN-HA-ZMD"
+      },
+      "label": "中国,河南省,驻马店市"
+    },
+    {
+      "key": "location:CN-HB",
+      "assertion": {
+        "code": "CN-HB"
+      },
+      "label": "中国,湖北省"
+    },
+    {
+      "key": "location:CN-HB-WUH",
+      "assertion": {
+        "code": "CN-HB-WUH"
+      },
+      "label": "中国,湖北省,武汉市"
+    },
+    {
+      "key": "location:CN-HB-HSI",
+      "assertion": {
+        "code": "CN-HB-HSI"
+      },
+      "label": "中国,湖北省,黄石市"
+    },
+    {
+      "key": "location:CN-HB-SYE",
+      "assertion": {
+        "code": "CN-HB-SYE"
+      },
+      "label": "中国,湖北省,十堰市"
+    },
+    {
+      "key": "location:CN-HB-YCO",
+      "assertion": {
+        "code": "CN-HB-YCO"
+      },
+      "label": "中国,湖北省,宜昌市"
+    },
+    {
+      "key": "location:CN-HB-XFN",
+      "assertion": {
+        "code": "CN-HB-XFN"
+      },
+      "label": "中国,湖北省,襄樊市"
+    },
+    {
+      "key": "location:CN-HB-EZS",
+      "assertion": {
+        "code": "CN-HB-EZS"
+      },
+      "label": "中国,湖北省,鄂州市"
+    },
+    {
+      "key": "location:CN-HB-JMS",
+      "assertion": {
+        "code": "CN-HB-JMS"
+      },
+      "label": "中国,湖北省,荆门市"
+    },
+    {
+      "key": "location:CN-HB-XGE",
+      "assertion": {
+        "code": "CN-HB-XGE"
+      },
+      "label": "中国,湖北省,孝感市"
+    },
+    {
+      "key": "location:CN-HB-JGZ",
+      "assertion": {
+        "code": "CN-HB-JGZ"
+      },
+      "label": "中国,湖北省,荆州市"
+    },
+    {
+      "key": "location:CN-HB-HGE",
+      "assertion": {
+        "code": "CN-HB-HGE"
+      },
+      "label": "中国,湖北省,黄冈市"
+    },
+    {
+      "key": "location:CN-HB-XNS",
+      "assertion": {
+        "code": "CN-HB-XNS"
+      },
+      "label": "中国,湖北省,咸宁市"
+    },
+    {
+      "key": "location:CN-HB-SZR",
+      "assertion": {
+        "code": "CN-HB-SZR"
+      },
+      "label": "中国,湖北省,随州市"
+    },
+    {
+      "key": "location:CN-HB-ESH",
+      "assertion": {
+        "code": "CN-HB-ESH"
+      },
+      "label": "中国,湖北省,恩施土家族苗族自治州"
+    },
+    {
+      "key": "location:CN-HN",
+      "assertion": {
+        "code": "CN-HN"
+      },
+      "label": "中国,湖南省"
+    },
+    {
+      "key": "location:CN-HN-CSX",
+      "assertion": {
+        "code": "CN-HN-CSX"
+      },
+      "label": "中国,湖南省,长沙市"
+    },
+    {
+      "key": "location:CN-HN-ZZS",
+      "assertion": {
+        "code": "CN-HN-ZZS"
+      },
+      "label": "中国,湖南省,株洲市"
+    },
+    {
+      "key": "location:CN-HN-XGT",
+      "assertion": {
+        "code": "CN-HN-XGT"
+      },
+      "label": "中国,湖南省,湘潭市"
+    },
+    {
+      "key": "location:CN-HN-HNY",
+      "assertion": {
+        "code": "CN-HN-HNY"
+      },
+      "label": "中国,湖南省,衡阳市"
+    },
+    {
+      "key": "location:CN-HN-SYR",
+      "assertion": {
+        "code": "CN-HN-SYR"
+      },
+      "label": "中国,湖南省,邵阳市"
+    },
+    {
+      "key": "location:CN-HN-YYG",
+      "assertion": {
+        "code": "CN-HN-YYG"
+      },
+      "label": "中国,湖南省,岳阳市"
+    },
+    {
+      "key": "location:CN-HN-CDE",
+      "assertion": {
+        "code": "CN-HN-CDE"
+      },
+      "label": "中国,湖南省,常德市"
+    },
+    {
+      "key": "location:CN-HN-ZJJ",
+      "assertion": {
+        "code": "CN-HN-ZJJ"
+      },
+      "label": "中国,湖南省,张家界市"
+    },
+    {
+      "key": "location:CN-HN-YYS",
+      "assertion": {
+        "code": "CN-HN-YYS"
+      },
+      "label": "中国,湖南省,益阳市"
+    },
+    {
+      "key": "location:CN-HN-CNZ",
+      "assertion": {
+        "code": "CN-HN-CNZ"
+      },
+      "label": "中国,湖南省,郴州市"
+    },
+    {
+      "key": "location:CN-HN-YZS",
+      "assertion": {
+        "code": "CN-HN-YZS"
+      },
+      "label": "中国,湖南省,永州市"
+    },
+    {
+      "key": "location:CN-HN-HHS",
+      "assertion": {
+        "code": "CN-HN-HHS"
+      },
+      "label": "中国,湖南省,怀化市"
+    },
+    {
+      "key": "location:CN-HN-LDI",
+      "assertion": {
+        "code": "CN-HN-LDI"
+      },
+      "label": "中国,湖南省,娄底市"
+    },
+    {
+      "key": "location:CN-HN-XXZ",
+      "assertion": {
+        "code": "CN-HN-XXZ"
+      },
+      "label": "中国,湖南省,湘西土家族苗族自治州"
+    },
+    {
+      "key": "location:CN-GD",
+      "assertion": {
+        "code": "CN-GD"
+      },
+      "label": "中国,广东省"
+    },
+    {
+      "key": "location:CN-GD-CAN",
+      "assertion": {
+        "code": "CN-GD-CAN"
+      },
+      "label": "中国,广东省,广州市"
+    },
+    {
+      "key": "location:CN-GD-HSC",
+      "assertion": {
+        "code": "CN-GD-HSC"
+      },
+      "label": "中国,广东省,韶关市"
+    },
+    {
+      "key": "location:CN-GD-SZX",
+      "assertion": {
+        "code": "CN-GD-SZX"
+      },
+      "label": "中国,广东省,深圳市"
+    },
+    {
+      "key": "location:CN-GD-ZUH",
+      "assertion": {
+        "code": "CN-GD-ZUH"
+      },
+      "label": "中国,广东省,珠海市"
+    },
+    {
+      "key": "location:CN-GD-SWA",
+      "assertion": {
+        "code": "CN-GD-SWA"
+      },
+      "label": "中国,广东省,汕头市"
+    },
+    {
+      "key": "location:CN-GD-FOS",
+      "assertion": {
+        "code": "CN-GD-FOS"
+      },
+      "label": "中国,广东省,佛山市"
+    },
+    {
+      "key": "location:CN-GD-JMN",
+      "assertion": {
+        "code": "CN-GD-JMN"
+      },
+      "label": "中国,广东省,江门市"
+    },
+    {
+      "key": "location:CN-GD-ZHA",
+      "assertion": {
+        "code": "CN-GD-ZHA"
+      },
+      "label": "中国,广东省,湛江市"
+    },
+    {
+      "key": "location:CN-GD-MMI",
+      "assertion": {
+        "code": "CN-GD-MMI"
+      },
+      "label": "中国,广东省,茂名市"
+    },
+    {
+      "key": "location:CN-GD-ZQG",
+      "assertion": {
+        "code": "CN-GD-ZQG"
+      },
+      "label": "中国,广东省,肇庆市"
+    },
+    {
+      "key": "location:CN-GD-HUI",
+      "assertion": {
+        "code": "CN-GD-HUI"
+      },
+      "label": "中国,广东省,惠州市"
+    },
+    {
+      "key": "location:CN-GD-MXZ",
+      "assertion": {
+        "code": "CN-GD-MXZ"
+      },
+      "label": "中国,广东省,梅州市"
+    },
+    {
+      "key": "location:CN-GD-SWE",
+      "assertion": {
+        "code": "CN-GD-SWE"
+      },
+      "label": "中国,广东省,汕尾市"
+    },
+    {
+      "key": "location:CN-GD-HEY",
+      "assertion": {
+        "code": "CN-GD-HEY"
+      },
+      "label": "中国,广东省,河源市"
+    },
+    {
+      "key": "location:CN-GD-YJI",
+      "assertion": {
+        "code": "CN-GD-YJI"
+      },
+      "label": "中国,广东省,阳江市"
+    },
+    {
+      "key": "location:CN-GD-QYN",
+      "assertion": {
+        "code": "CN-GD-QYN"
+      },
+      "label": "中国,广东省,清远市"
+    },
+    {
+      "key": "location:CN-GD-DGG",
+      "assertion": {
+        "code": "CN-GD-DGG"
+      },
+      "label": "中国,广东省,东莞市"
+    },
+    {
+      "key": "location:CN-GD-ZSN",
+      "assertion": {
+        "code": "CN-GD-ZSN"
+      },
+      "label": "中国,广东省,中山市"
+    },
+    {
+      "key": "location:CN-GD-CZY",
+      "assertion": {
+        "code": "CN-GD-CZY"
+      },
+      "label": "中国,广东省,潮州市"
+    },
+    {
+      "key": "location:CN-GD-JIY",
+      "assertion": {
+        "code": "CN-GD-JIY"
+      },
+      "label": "中国,广东省,揭阳市"
+    },
+    {
+      "key": "location:CN-GD-YFS",
+      "assertion": {
+        "code": "CN-GD-YFS"
+      },
+      "label": "中国,广东省,云浮市"
+    },
+    {
+      "key": "location:CN-GX",
+      "assertion": {
+        "code": "CN-GX"
+      },
+      "label": "中国,广西壮族自治区"
+    },
+    {
+      "key": "location:CN-GX-NNG",
+      "assertion": {
+        "code": "CN-GX-NNG"
+      },
+      "label": "中国,广西壮族自治区,南宁市"
+    },
+    {
+      "key": "location:CN-GX-LZH",
+      "assertion": {
+        "code": "CN-GX-LZH"
+      },
+      "label": "中国,广西壮族自治区,柳州市"
+    },
+    {
+      "key": "location:CN-GX-KWL",
+      "assertion": {
+        "code": "CN-GX-KWL"
+      },
+      "label": "中国,广西壮族自治区,桂林市"
+    },
+    {
+      "key": "location:CN-GX-WUZ",
+      "assertion": {
+        "code": "CN-GX-WUZ"
+      },
+      "label": "中国,广西壮族自治区,梧州市"
+    },
+    {
+      "key": "location:CN-GX-BHY",
+      "assertion": {
+        "code": "CN-GX-BHY"
+      },
+      "label": "中国,广西壮族自治区,北海市"
+    },
+    {
+      "key": "location:CN-GX-FAN",
+      "assertion": {
+        "code": "CN-GX-FAN"
+      },
+      "label": "中国,广西壮族自治区,防城港市"
+    },
+    {
+      "key": "location:CN-GX-QZH",
+      "assertion": {
+        "code": "CN-GX-QZH"
+      },
+      "label": "中国,广西壮族自治区,钦州市"
+    },
+    {
+      "key": "location:CN-GX-GUG",
+      "assertion": {
+        "code": "CN-GX-GUG"
+      },
+      "label": "中国,广西壮族自治区,贵港市"
+    },
+    {
+      "key": "location:CN-GX-YUL",
+      "assertion": {
+        "code": "CN-GX-YUL"
+      },
+      "label": "中国,广西壮族自治区,玉林市"
+    },
+    {
+      "key": "location:CN-GX-BSS",
+      "assertion": {
+        "code": "CN-GX-BSS"
+      },
+      "label": "中国,广西壮族自治区,百色市"
+    },
+    {
+      "key": "location:CN-GX-HZO",
+      "assertion": {
+        "code": "CN-GX-HZO"
+      },
+      "label": "中国,广西壮族自治区,贺州市"
+    },
+    {
+      "key": "location:CN-GX-HCS",
+      "assertion": {
+        "code": "CN-GX-HCS"
+      },
+      "label": "中国,广西壮族自治区,河池市"
+    },
+    {
+      "key": "location:CN-GX-LIB",
+      "assertion": {
+        "code": "CN-GX-LIB"
+      },
+      "label": "中国,广西壮族自治区,来宾市"
+    },
+    {
+      "key": "location:CN-GX-COZ",
+      "assertion": {
+        "code": "CN-GX-COZ"
+      },
+      "label": "中国,广西壮族自治区,崇左市"
+    },
+    {
+      "key": "location:CN-HI",
+      "assertion": {
+        "code": "CN-HI"
+      },
+      "label": "中国,海南省"
+    },
+    {
+      "key": "location:CN-HI-HAK",
+      "assertion": {
+        "code": "CN-HI-HAK"
+      },
+      "label": "中国,海南省,海口市"
+    },
+    {
+      "key": "location:CN-HI-SYX",
+      "assertion": {
+        "code": "CN-HI-SYX"
+      },
+      "label": "中国,海南省,三亚市"
+    },
+    {
+      "key": "location:CN-CQ",
+      "assertion": {
+        "code": "CN-CQ"
+      },
+      "label": "中国,重庆市"
+    },
+    {
+      "key": "location:CN-SC",
+      "assertion": {
+        "code": "CN-SC"
+      },
+      "label": "中国,四川省"
+    },
+    {
+      "key": "location:CN-SC-CTU",
+      "assertion": {
+        "code": "CN-SC-CTU"
+      },
+      "label": "中国,四川省,成都市"
+    },
+    {
+      "key": "location:CN-SC-ZGS",
+      "assertion": {
+        "code": "CN-SC-ZGS"
+      },
+      "label": "中国,四川省,自贡市"
+    },
+    {
+      "key": "location:CN-SC-PZH",
+      "assertion": {
+        "code": "CN-SC-PZH"
+      },
+      "label": "中国,四川省,攀枝花市"
+    },
+    {
+      "key": "location:CN-SC-LUZ",
+      "assertion": {
+        "code": "CN-SC-LUZ"
+      },
+      "label": "中国,四川省,泸州市"
+    },
+    {
+      "key": "location:CN-SC-DEY",
+      "assertion": {
+        "code": "CN-SC-DEY"
+      },
+      "label": "中国,四川省,德阳市"
+    },
+    {
+      "key": "location:CN-SC-MYG",
+      "assertion": {
+        "code": "CN-SC-MYG"
+      },
+      "label": "中国,四川省,绵阳市"
+    },
+    {
+      "key": "location:CN-SC-GYC",
+      "assertion": {
+        "code": "CN-SC-GYC"
+      },
+      "label": "中国,四川省,广元市"
+    },
+    {
+      "key": "location:CN-SC-SNS",
+      "assertion": {
+        "code": "CN-SC-SNS"
+      },
+      "label": "中国,四川省,遂宁市"
+    },
+    {
+      "key": "location:CN-SC-NJS",
+      "assertion": {
+        "code": "CN-SC-NJS"
+      },
+      "label": "中国,四川省,内江市"
+    },
+    {
+      "key": "location:CN-SC-LES",
+      "assertion": {
+        "code": "CN-SC-LES"
+      },
+      "label": "中国,四川省,乐山市"
+    },
+    {
+      "key": "location:CN-SC-NCO",
+      "assertion": {
+        "code": "CN-SC-NCO"
+      },
+      "label": "中国,四川省,南充市"
+    },
+    {
+      "key": "location:CN-SC-MSS",
+      "assertion": {
+        "code": "CN-SC-MSS"
+      },
+      "label": "中国,四川省,眉山市"
+    },
+    {
+      "key": "location:CN-SC-YBS",
+      "assertion": {
+        "code": "CN-SC-YBS"
+      },
+      "label": "中国,四川省,宜宾市"
+    },
+    {
+      "key": "location:CN-SC-GAC",
+      "assertion": {
+        "code": "CN-SC-GAC"
+      },
+      "label": "中国,四川省,广安市"
+    },
+    {
+      "key": "location:CN-SC-DAZ",
+      "assertion": {
+        "code": "CN-SC-DAZ"
+      },
+      "label": "中国,四川省,达州市"
+    },
+    {
+      "key": "location:CN-SC-YAS",
+      "assertion": {
+        "code": "CN-SC-YAS"
+      },
+      "label": "中国,四川省,雅安市"
+    },
+    {
+      "key": "location:CN-SC-BZS",
+      "assertion": {
+        "code": "CN-SC-BZS"
+      },
+      "label": "中国,四川省,巴中市"
+    },
+    {
+      "key": "location:CN-SC-ZYS",
+      "assertion": {
+        "code": "CN-SC-ZYS"
+      },
+      "label": "中国,四川省,资阳市"
+    },
+    {
+      "key": "location:CN-SC-ABA",
+      "assertion": {
+        "code": "CN-SC-ABA"
+      },
+      "label": "中国,四川省,阿坝藏族羌族自治州"
+    },
+    {
+      "key": "location:CN-SC-GAZ",
+      "assertion": {
+        "code": "CN-SC-GAZ"
+      },
+      "label": "中国,四川省,甘孜藏族自治州"
+    },
+    {
+      "key": "location:CN-SC-LSY",
+      "assertion": {
+        "code": "CN-SC-LSY"
+      },
+      "label": "中国,四川省,凉山彝族自治州"
+    },
+    {
+      "key": "location:CN-GZ",
+      "assertion": {
+        "code": "CN-GZ"
+      },
+      "label": "中国,贵州省"
+    },
+    {
+      "key": "location:CN-GZ-KWE",
+      "assertion": {
+        "code": "CN-GZ-KWE"
+      },
+      "label": "中国,贵州省,贵阳市"
+    },
+    {
+      "key": "location:CN-GZ-LPS",
+      "assertion": {
+        "code": "CN-GZ-LPS"
+      },
+      "label": "中国,贵州省,六盘水市"
+    },
+    {
+      "key": "location:CN-GZ-ZNY",
+      "assertion": {
+        "code": "CN-GZ-ZNY"
+      },
+      "label": "中国,贵州省,遵义市"
+    },
+    {
+      "key": "location:CN-GZ-ASS",
+      "assertion": {
+        "code": "CN-GZ-ASS"
+      },
+      "label": "中国,贵州省,安顺市"
+    },
+    {
+      "key": "location:CN-GZ-TRD",
+      "assertion": {
+        "code": "CN-GZ-TRD"
+      },
+      "label": "中国,贵州省,铜仁地区"
+    },
+    {
+      "key": "location:CN-GZ-QXZ",
+      "assertion": {
+        "code": "CN-GZ-QXZ"
+      },
+      "label": "中国,贵州省,黔西南布依族苗族自治州"
+    },
+    {
+      "key": "location:CN-GZ-BJD",
+      "assertion": {
+        "code": "CN-GZ-BJD"
+      },
+      "label": "中国,贵州省,毕节地区"
+    },
+    {
+      "key": "location:CN-GZ-QND",
+      "assertion": {
+        "code": "CN-GZ-QND"
+      },
+      "label": "中国,贵州省,黔东南苗族侗族自治州"
+    },
+    {
+      "key": "location:CN-GZ-QNZ",
+      "assertion": {
+        "code": "CN-GZ-QNZ"
+      },
+      "label": "中国,贵州省,黔南布依族苗族自治州"
+    },
+    {
+      "key": "location:CN-YN",
+      "assertion": {
+        "code": "CN-YN"
+      },
+      "label": "中国,云南省"
+    },
+    {
+      "key": "location:CN-YN-KMG",
+      "assertion": {
+        "code": "CN-YN-KMG"
+      },
+      "label": "中国,云南省,昆明市"
+    },
+    {
+      "key": "location:CN-YN-QJS",
+      "assertion": {
+        "code": "CN-YN-QJS"
+      },
+      "label": "中国,云南省,曲靖市"
+    },
+    {
+      "key": "location:CN-YN-YXS",
+      "assertion": {
+        "code": "CN-YN-YXS"
+      },
+      "label": "中国,云南省,玉溪市"
+    },
+    {
+      "key": "location:CN-YN-BOS",
+      "assertion": {
+        "code": "CN-YN-BOS"
+      },
+      "label": "中国,云南省,保山市"
+    },
+    {
+      "key": "location:CN-YN-ZTS",
+      "assertion": {
+        "code": "CN-YN-ZTS"
+      },
+      "label": "中国,云南省,昭通市"
+    },
+    {
+      "key": "location:CN-YN-LJH",
+      "assertion": {
+        "code": "CN-YN-LJH"
+      },
+      "label": "中国,云南省,丽江市"
+    },
+    {
+      "key": "location:CN-YN-PRS",
+      "assertion": {
+        "code": "CN-YN-PRS"
+      },
+      "label": "中国,云南省,普洱市"
+    },
+    {
+      "key": "location:CN-YN-LIH",
+      "assertion": {
+        "code": "CN-YN-LIH"
+      },
+      "label": "中国,云南省,临沧市"
+    },
+    {
+      "key": "location:CN-YN-CXD",
+      "assertion": {
+        "code": "CN-YN-CXD"
+      },
+      "label": "中国,云南省,楚雄彝族自治州"
+    },
+    {
+      "key": "location:CN-YN-HHZ",
+      "assertion": {
+        "code": "CN-YN-HHZ"
+      },
+      "label": "中国,云南省,红河哈尼族彝族自治州"
+    },
+    {
+      "key": "location:CN-YN-WSZ",
+      "assertion": {
+        "code": "CN-YN-WSZ"
+      },
+      "label": "中国,云南省,文山壮族苗族自治州"
+    },
+    {
+      "key": "location:CN-YN-XSB",
+      "assertion": {
+        "code": "CN-YN-XSB"
+      },
+      "label": "中国,云南省,西双版纳傣族自治州"
+    },
+    {
+      "key": "location:CN-YN-DLZ",
+      "assertion": {
+        "code": "CN-YN-DLZ"
+      },
+      "label": "中国,云南省,大理白族自治州"
+    },
+    {
+      "key": "location:CN-YN-DHG",
+      "assertion": {
+        "code": "CN-YN-DHG"
+      },
+      "label": "中国,云南省,德宏傣族景颇族自治州"
+    },
+    {
+      "key": "location:CN-YN-NUJ",
+      "assertion": {
+        "code": "CN-YN-NUJ"
+      },
+      "label": "中国,云南省,怒江傈僳族自治州"
+    },
+    {
+      "key": "location:CN-YN-DEZ",
+      "assertion": {
+        "code": "CN-YN-DEZ"
+      },
+      "label": "中国,云南省,迪庆藏族自治州"
+    },
+    {
+      "key": "location:CN-XZ",
+      "assertion": {
+        "code": "CN-XZ"
+      },
+      "label": "中国,西藏自治区"
+    },
+    {
+      "key": "location:CN-XZ-LXA",
+      "assertion": {
+        "code": "CN-XZ-LXA"
+      },
+      "label": "中国,西藏自治区,拉萨市"
+    },
+    {
+      "key": "location:CN-XZ-QAD",
+      "assertion": {
+        "code": "CN-XZ-QAD"
+      },
+      "label": "中国,西藏自治区,昌都地区"
+    },
+    {
+      "key": "location:CN-XZ-SND",
+      "assertion": {
+        "code": "CN-XZ-SND"
+      },
+      "label": "中国,西藏自治区,山南地区"
+    },
+    {
+      "key": "location:CN-XZ-XID",
+      "assertion": {
+        "code": "CN-XZ-XID"
+      },
+      "label": "中国,西藏自治区,日喀则地区"
+    },
+    {
+      "key": "location:CN-XZ-NAD",
+      "assertion": {
+        "code": "CN-XZ-NAD"
+      },
+      "label": "中国,西藏自治区,那曲地区"
+    },
+    {
+      "key": "location:CN-XZ-NGD",
+      "assertion": {
+        "code": "CN-XZ-NGD"
+      },
+      "label": "中国,西藏自治区,阿里地区"
+    },
+    {
+      "key": "location:CN-XZ-NYD",
+      "assertion": {
+        "code": "CN-XZ-NYD"
+      },
+      "label": "中国,西藏自治区,林芝地区"
+    },
+    {
+      "key": "location:CN-SN",
+      "assertion": {
+        "code": "CN-SN"
+      },
+      "label": "中国,陕西省"
+    },
+    {
+      "key": "location:CN-SN-SIA",
+      "assertion": {
+        "code": "CN-SN-SIA"
+      },
+      "label": "中国,陕西省,西安市"
+    },
+    {
+      "key": "location:CN-SN-TCN",
+      "assertion": {
+        "code": "CN-SN-TCN"
+      },
+      "label": "中国,陕西省,铜川市"
+    },
+    {
+      "key": "location:CN-SN-BJI",
+      "assertion": {
+        "code": "CN-SN-BJI"
+      },
+      "label": "中国,陕西省,宝鸡市"
+    },
+    {
+      "key": "location:CN-SN-XYS",
+      "assertion": {
+        "code": "CN-SN-XYS"
+      },
+      "label": "中国,陕西省,咸阳市"
+    },
+    {
+      "key": "location:CN-SN-WNA",
+      "assertion": {
+        "code": "CN-SN-WNA"
+      },
+      "label": "中国,陕西省,渭南市"
+    },
+    {
+      "key": "location:CN-SN-YNA",
+      "assertion": {
+        "code": "CN-SN-YNA"
+      },
+      "label": "中国,陕西省,延安市"
+    },
+    {
+      "key": "location:CN-SN-HZJ",
+      "assertion": {
+        "code": "CN-SN-HZJ"
+      },
+      "label": "中国,陕西省,汉中市"
+    },
+    {
+      "key": "location:CN-SN-YLN",
+      "assertion": {
+        "code": "CN-SN-YLN"
+      },
+      "label": "中国,陕西省,榆林市"
+    },
+    {
+      "key": "location:CN-SN-ANK",
+      "assertion": {
+        "code": "CN-SN-ANK"
+      },
+      "label": "中国,陕西省,安康市"
+    },
+    {
+      "key": "location:CN-SN-SLH",
+      "assertion": {
+        "code": "CN-SN-SLH"
+      },
+      "label": "中国,陕西省,商洛市"
+    },
+    {
+      "key": "location:CN-GS",
+      "assertion": {
+        "code": "CN-GS"
+      },
+      "label": "中国,甘肃省"
+    },
+    {
+      "key": "location:CN-GS-LHW",
+      "assertion": {
+        "code": "CN-GS-LHW"
+      },
+      "label": "中国,甘肃省,兰州市"
+    },
+    {
+      "key": "location:CN-GS-JYG",
+      "assertion": {
+        "code": "CN-GS-JYG"
+      },
+      "label": "中国,甘肃省,嘉峪关市"
+    },
+    {
+      "key": "location:CN-GS-JCS",
+      "assertion": {
+        "code": "CN-GS-JCS"
+      },
+      "label": "中国,甘肃省,金昌市"
+    },
+    {
+      "key": "location:CN-GS-BYS",
+      "assertion": {
+        "code": "CN-GS-BYS"
+      },
+      "label": "中国,甘肃省,白银市"
+    },
+    {
+      "key": "location:CN-GS-TSU",
+      "assertion": {
+        "code": "CN-GS-TSU"
+      },
+      "label": "中国,甘肃省,天水市"
+    },
+    {
+      "key": "location:CN-GS-WWS",
+      "assertion": {
+        "code": "CN-GS-WWS"
+      },
+      "label": "中国,甘肃省,武威市"
+    },
+    {
+      "key": "location:CN-GS-ZYE",
+      "assertion": {
+        "code": "CN-GS-ZYE"
+      },
+      "label": "中国,甘肃省,张掖市"
+    },
+    {
+      "key": "location:CN-GS-PLS",
+      "assertion": {
+        "code": "CN-GS-PLS"
+      },
+      "label": "中国,甘肃省,平凉市"
+    },
+    {
+      "key": "location:CN-GS-JQG",
+      "assertion": {
+        "code": "CN-GS-JQG"
+      },
+      "label": "中国,甘肃省,酒泉市"
+    },
+    {
+      "key": "location:CN-GS-QYI",
+      "assertion": {
+        "code": "CN-GS-QYI"
+      },
+      "label": "中国,甘肃省,庆阳市"
+    },
+    {
+      "key": "location:CN-GS-DNX",
+      "assertion": {
+        "code": "CN-GS-DNX"
+      },
+      "label": "中国,甘肃省,定西市"
+    },
+    {
+      "key": "location:CN-GS-LGN",
+      "assertion": {
+        "code": "CN-GS-LGN"
+      },
+      "label": "中国,甘肃省,陇南市"
+    },
+    {
+      "key": "location:CN-GS-LXH",
+      "assertion": {
+        "code": "CN-GS-LXH"
+      },
+      "label": "中国,甘肃省,临夏回族自治州"
+    },
+    {
+      "key": "location:CN-GS-GNZ",
+      "assertion": {
+        "code": "CN-GS-GNZ"
+      },
+      "label": "中国,甘肃省,甘南藏族自治州"
+    },
+    {
+      "key": "location:CN-QH",
+      "assertion": {
+        "code": "CN-QH"
+      },
+      "label": "中国,青海省"
+    },
+    {
+      "key": "location:CN-QH-XNN",
+      "assertion": {
+        "code": "CN-QH-XNN"
+      },
+      "label": "中国,青海省,西宁市"
+    },
+    {
+      "key": "location:CN-QH-HDD",
+      "assertion": {
+        "code": "CN-QH-HDD"
+      },
+      "label": "中国,青海省,海东地区"
+    },
+    {
+      "key": "location:CN-QH-HBZ",
+      "assertion": {
+        "code": "CN-QH-HBZ"
+      },
+      "label": "中国,青海省,海北藏族自治州"
+    },
+    {
+      "key": "location:CN-QH-HN7",
+      "assertion": {
+        "code": "CN-QH-HN7"
+      },
+      "label": "中国,青海省,黄南藏族自治州"
+    },
+    {
+      "key": "location:CN-QH-HNN",
+      "assertion": {
+        "code": "CN-QH-HNN"
+      },
+      "label": "中国,青海省,海南藏族自治州"
+    },
+    {
+      "key": "location:CN-QH-GOL",
+      "assertion": {
+        "code": "CN-QH-GOL"
+      },
+      "label": "中国,青海省,果洛藏族自治州"
+    },
+    {
+      "key": "location:CN-QH-YSZ",
+      "assertion": {
+        "code": "CN-QH-YSZ"
+      },
+      "label": "中国,青海省,玉树藏族自治州"
+    },
+    {
+      "key": "location:CN-QH-HXZ",
+      "assertion": {
+        "code": "CN-QH-HXZ"
+      },
+      "label": "中国,青海省,海西蒙古族藏族自治州"
+    },
+    {
+      "key": "location:CN-NX",
+      "assertion": {
+        "code": "CN-NX"
+      },
+      "label": "中国,宁夏回族自治区"
+    },
+    {
+      "key": "location:CN-NX-INC",
+      "assertion": {
+        "code": "CN-NX-INC"
+      },
+      "label": "中国,宁夏回族自治区,银川市"
+    },
+    {
+      "key": "location:CN-NX-SZS",
+      "assertion": {
+        "code": "CN-NX-SZS"
+      },
+      "label": "中国,宁夏回族自治区,石嘴山市"
+    },
+    {
+      "key": "location:CN-NX-WZS",
+      "assertion": {
+        "code": "CN-NX-WZS"
+      },
+      "label": "中国,宁夏回族自治区,吴忠市"
+    },
+    {
+      "key": "location:CN-NX-GYN",
+      "assertion": {
+        "code": "CN-NX-GYN"
+      },
+      "label": "中国,宁夏回族自治区,固原市"
+    },
+    {
+      "key": "location:CN-NX-ZWS",
+      "assertion": {
+        "code": "CN-NX-ZWS"
+      },
+      "label": "中国,宁夏回族自治区,中卫市"
+    },
+    {
+      "key": "location:CN-XJ",
+      "assertion": {
+        "code": "CN-XJ"
+      },
+      "label": "中国,新疆维吾尔自治区"
+    },
+    {
+      "key": "location:CN-XJ-URC",
+      "assertion": {
+        "code": "CN-XJ-URC"
+      },
+      "label": "中国,新疆维吾尔自治区,乌鲁木齐市"
+    },
+    {
+      "key": "location:CN-XJ-KAR",
+      "assertion": {
+        "code": "CN-XJ-KAR"
+      },
+      "label": "中国,新疆维吾尔自治区,克拉玛依市"
+    },
+    {
+      "key": "location:CN-XJ-TUD",
+      "assertion": {
+        "code": "CN-XJ-TUD"
+      },
+      "label": "中国,新疆维吾尔自治区,吐鲁番地区"
+    },
+    {
+      "key": "location:CN-XJ-HMD",
+      "assertion": {
+        "code": "CN-XJ-HMD"
+      },
+      "label": "中国,新疆维吾尔自治区,哈密（库木勒）地区"
+    },
+    {
+      "key": "location:CN-XJ-CJZ",
+      "assertion": {
+        "code": "CN-XJ-CJZ"
+      },
+      "label": "中国,新疆维吾尔自治区,昌吉回族自治州"
+    },
+    {
+      "key": "location:CN-XJ-BOR",
+      "assertion": {
+        "code": "CN-XJ-BOR"
+      },
+      "label": "中国,新疆维吾尔自治区,博尔塔拉蒙古自治州"
+    },
+    {
+      "key": "location:CN-XJ-BAG",
+      "assertion": {
+        "code": "CN-XJ-BAG"
+      },
+      "label": "中国,新疆维吾尔自治区,巴音郭楞蒙古自治州"
+    },
+    {
+      "key": "location:CN-XJ-AKD",
+      "assertion": {
+        "code": "CN-XJ-AKD"
+      },
+      "label": "中国,新疆维吾尔自治区,阿克苏地区"
+    },
+    {
+      "key": "location:CN-XJ-KIZ",
+      "assertion": {
+        "code": "CN-XJ-KIZ"
+      },
+      "label": "中国,新疆维吾尔自治区,克孜勒苏柯尔克孜自治州"
+    },
+    {
+      "key": "location:CN-XJ-KSI",
+      "assertion": {
+        "code": "CN-XJ-KSI"
+      },
+      "label": "中国,新疆维吾尔自治区,喀什（喀什噶尔）地区"
+    },
+    {
+      "key": "location:CN-XJ-HOD",
+      "assertion": {
+        "code": "CN-XJ-HOD"
+      },
+      "label": "中国,新疆维吾尔自治区,和田地区"
+    },
+    {
+      "key": "location:CN-XJ-ILD",
+      "assertion": {
+        "code": "CN-XJ-ILD"
+      },
+      "label": "中国,新疆维吾尔自治区,伊犁哈萨克自治州"
+    },
+    {
+      "key": "location:CN-XJ-TCD",
+      "assertion": {
+        "code": "CN-XJ-TCD"
+      },
+      "label": "中国,新疆维吾尔自治区,塔城（绰乔克）地区"
+    },
+    {
+      "key": "location:CN-XJ-ALD",
+      "assertion": {
+        "code": "CN-XJ-ALD"
+      },
+      "label": "中国,新疆维吾尔自治区,阿勒泰地区"
+    },
+    {
+      "key": "location:TW",
+      "assertion": {
+        "code": "TW"
+      },
+      "label": "台湾"
+    },
+    {
+      "key": "location:HK",
+      "assertion": {
+        "code": "HK"
+      },
+      "label": "香港"
+    },
+    {
+      "key": "location:MO",
+      "assertion": {
+        "code": "MO"
+      },
+      "label": "澳门"
+    }
+  ]
+}

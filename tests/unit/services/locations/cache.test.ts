@@ -78,17 +78,16 @@ describe('Locations Cache (src/services/locations/cache.ts)', () => {
     expect(mockGetILCDLocationEntries).toHaveBeenCalledWith('en', ['CN', 'US']);
   });
 
-  it('shares cache entries when requested languages resolve to the same location asset', async () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  it('keeps cache entries separate when languages resolve to different location assets', async () => {
     mockGetILCDLocationEntries.mockResolvedValue([{ '@value': 'CN', '#text': 'China' }]);
 
-    const german = await locationCache.getILCDLocationByValues('de', ['CN']);
-    const french = await locationCache.getILCDLocationByValues('fr', ['CN']);
+    const english = await locationCache.getILCDLocationByValues('en', ['CN']);
+    const chinese = await locationCache.getILCDLocationByValues('zh', ['CN']);
 
-    expect(french).toEqual(german);
-    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(1);
-    expect(mockGetILCDLocationEntries).toHaveBeenCalledWith('de', ['CN']);
-    consoleWarnSpy.mockRestore();
+    expect(chinese).toEqual(english);
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(2);
+    expect(mockGetILCDLocationEntries).toHaveBeenNthCalledWith(1, 'en', ['CN']);
+    expect(mockGetILCDLocationEntries).toHaveBeenNthCalledWith(2, 'zh', ['CN']);
   });
 
   it('uses the base location asset in the cache identity when localization is missing', async () => {

@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-flow-categorization",
+  "locale": "zh",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "过程",
+    "Flow": "流",
+    "FlowProperty": "流属性",
+    "UnitGroup": "单位组",
+    "Contact": "联系信息",
+    "Source": "来源",
+    "LCIAMethod": "生命周期影响评估方法",
+    "LifeCycleModel": "生命周期模型"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "排放"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "排放到水体"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1.1"
+      },
+      "label": "排放到淡水"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.1.2"
+      },
+      "label": "排放到海水"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.1.3"
+      },
+      "label": "排放到水体，未指定"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.1.4"
+      },
+      "label": "排放到水体，未指定（长期）"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "排放到土壤"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "label": "排放到农业土壤"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "label": "排放到非农业土壤"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "label": "排放到土壤，未指定"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "label": "排放到土壤，未指定（长期）"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "排放到大气"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "label": "排放到城市近地层大气"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "label": "排放到非城市大气或从高烟囱排放"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "label": "排放到低平流层和高对流层"
+    },
+    {
+      "key": "category[0]/category[2]/category[3]",
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "label": "排放到大气，未指定"
+    },
+    {
+      "key": "category[0]/category[2]/category[4]",
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "label": "排放到大气，未指定（长期）"
+    },
+    {
+      "key": "category[0]/category[2]/category[5]",
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "label": "排放到室内空气"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "资源"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "地下资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "2.1.1"
+      },
+      "label": "地下非可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "2.1.2"
+      },
+      "label": "地下非可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "2.1.3"
+      },
+      "label": "地下非可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "2.1.4"
+      },
+      "label": "地下可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "2.1.5"
+      },
+      "label": "地下可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[5]",
+      "assertion": {
+        "id": "2.1.6"
+      },
+      "label": "地下可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[0]/category[6]",
+      "assertion": {
+        "id": "2.1.7"
+      },
+      "label": "地下可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[0]/category[7]",
+      "assertion": {
+        "id": "2.1.8"
+      },
+      "label": "地下非可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "水体资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.2.1"
+      },
+      "label": "水体非可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2.2"
+      },
+      "label": "水体非可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.2.3"
+      },
+      "label": "水体非可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.2.4"
+      },
+      "label": "水体可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.2.5"
+      },
+      "label": "水体可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.2.6"
+      },
+      "label": "水体可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.2.7"
+      },
+      "label": "水体可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.2.8"
+      },
+      "label": "水体非可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "大气资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "2.3.1"
+      },
+      "label": "大气非可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "2.3.2"
+      },
+      "label": "大气非可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[2]",
+      "assertion": {
+        "id": "2.3.3"
+      },
+      "label": "大气非可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[3]",
+      "assertion": {
+        "id": "2.3.4"
+      },
+      "label": "大气可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[4]",
+      "assertion": {
+        "id": "2.3.5"
+      },
+      "label": "大气可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[5]",
+      "assertion": {
+        "id": "2.3.6"
+      },
+      "label": "大气可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[2]/category[6]",
+      "assertion": {
+        "id": "2.3.7"
+      },
+      "label": "大气可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[2]/category[7]",
+      "assertion": {
+        "id": "2.3.8"
+      },
+      "label": "大气非可再生资源，未指定"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "生物圈资源"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "2.4.1"
+      },
+      "label": "生物圈可再生元素资源"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "2.4.2"
+      },
+      "label": "生物圈可再生能源资源"
+    },
+    {
+      "key": "category[1]/category[3]/category[2]",
+      "assertion": {
+        "id": "2.4.3"
+      },
+      "label": "生物圈可再生物质资源"
+    },
+    {
+      "key": "category[1]/category[3]/category[3]",
+      "assertion": {
+        "id": "2.4.4"
+      },
+      "label": "生物圈可再生遗传资源"
+    },
+    {
+      "key": "category[1]/category[3]/category[4]",
+      "assertion": {
+        "id": "2.4.5"
+      },
+      "label": "生物圈可再生资源，未指定"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "土地利用"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "3.1"
+      },
+      "label": "土地占用"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "3.2"
+      },
+      "label": "土地转化"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "其他基本流"
+    }
+  ]
+}

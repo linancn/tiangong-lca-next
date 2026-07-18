@@ -1,0 +1,2003 @@
+{
+  "locale": "fr",
+  "policyVersion": "reference-project-review-v1",
+  "records": [
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Vecteurs et technologies énergétiques",
+      "key": "categories[0:Process#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Matières premières énergétiques",
+      "key": "categories[0:Process#0]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Électricité",
+      "key": "categories[0:Process#0]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chaleur et vapeur",
+      "key": "categories[0:Process#0]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Énergie mécanique",
+      "key": "categories[0:Process#0]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de houille",
+      "key": "categories[0:Process#0]/category[0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de lignite",
+      "key": "categories[0:Process#0]/category[0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "1.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de pétrole brut",
+      "key": "categories[0:Process#0]/category[0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "1.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de gaz naturel",
+      "key": "categories[0:Process#0]/category[0]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "1.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles nucléaires",
+      "key": "categories[0:Process#0]/category[0]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "1.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres combustibles non renouvelables",
+      "key": "categories[0:Process#0]/category[0]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "1.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles renouvelables",
+      "key": "categories[0:Process#0]/category[0]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Production de matériaux",
+      "key": "categories[0:Process#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Matières premières non énergétiques",
+      "key": "categories[0:Process#0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Métaux et semi-métaux",
+      "key": "categories[0:Process#0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Produits chimiques organiques",
+      "key": "categories[0:Process#0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Produits chimiques inorganiques",
+      "key": "categories[0:Process#0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Verre et céramiques",
+      "key": "categories[0:Process#0]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres matériaux minéraux",
+      "key": "categories[0:Process#0]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Plastiques",
+      "key": "categories[0:Process#0]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Papier et carton",
+      "key": "categories[0:Process#0]/category[1]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Eau",
+      "key": "categories[0:Process#0]/category[1]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "2.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Moyens de production agricole",
+      "key": "categories[0:Process#0]/category[1]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "2.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Aliments et matières premières renouvelables",
+      "key": "categories[0:Process#0]/category[1]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "2.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bois",
+      "key": "categories[0:Process#0]/category[1]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "2.13"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres matériaux",
+      "key": "categories[0:Process#0]/category[1]/category[12]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Systèmes",
+      "key": "categories[0:Process#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emballages",
+      "key": "categories[0:Process#0]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "3.2"
+      },
+      "candidateLabel": "Électrique et électronique",
+      "decision": "corrected",
+      "finalLabel": "Équipements électriques et électroniques",
+      "key": "categories[0:Process#0]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "3.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Véhicules",
+      "key": "categories[0:Process#0]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "3.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres machines",
+      "key": "categories[0:Process#0]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "3.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Construction",
+      "key": "categories[0:Process#0]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "3.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Appareils électroménagers",
+      "key": "categories[0:Process#0]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "3.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Textiles, meubles et autres éléments d'intérieur",
+      "key": "categories[0:Process#0]/category[2]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "3.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pièces non spécifiques",
+      "key": "categories[0:Process#0]/category[2]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "3.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Peintures et préparations chimiques",
+      "key": "categories[0:Process#0]/category[2]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "3.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres systèmes",
+      "key": "categories[0:Process#0]/category[2]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement en fin de vie",
+      "key": "categories[0:Process#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "4.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Réemploi ou utilisation ultérieure",
+      "key": "categories[0:Process#0]/category[3]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "4.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recyclage des matériaux",
+      "key": "categories[0:Process#0]/category[3]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "4.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recyclage des matières premières",
+      "key": "categories[0:Process#0]/category[3]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "4.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Valorisation énergétique",
+      "key": "categories[0:Process#0]/category[3]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "4.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mise en décharge",
+      "key": "categories[0:Process#0]/category[3]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "4.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Collecte des déchets",
+      "key": "categories[0:Process#0]/category[3]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "4.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement des eaux usées",
+      "key": "categories[0:Process#0]/category[3]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "4.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement des gaz bruts",
+      "key": "categories[0:Process#0]/category[3]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "4.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services de fin de vie",
+      "key": "categories[0:Process#0]/category[3]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Services de transport",
+      "key": "categories[0:Process#0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "5.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Route",
+      "key": "categories[0:Process#0]/category[4]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "5.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Rail",
+      "key": "categories[0:Process#0]/category[4]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "5.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Voie d'eau",
+      "key": "categories[0:Process#0]/category[4]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "5.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Air",
+      "key": "categories[0:Process#0]/category[4]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "5.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres transports",
+      "key": "categories[0:Process#0]/category[4]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services",
+      "key": "categories[0:Process#0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "6.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nettoyage",
+      "key": "categories[0:Process#0]/category[5]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "6.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Stockage",
+      "key": "categories[0:Process#0]/category[5]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "6.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé, services sociaux, beauté et bien-être",
+      "key": "categories[0:Process#0]/category[5]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "6.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Réparation et maintenance",
+      "key": "categories[0:Process#0]/category[5]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "6.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Vente et commerce de gros",
+      "key": "categories[0:Process#0]/category[5]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "6.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Services de communication et d'information",
+      "key": "categories[0:Process#0]/category[5]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "6.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Finance, droit et assurance",
+      "key": "categories[0:Process#0]/category[5]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "6.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Administration et gouvernement",
+      "key": "categories[0:Process#0]/category[5]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "6.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Défense",
+      "key": "categories[0:Process#0]/category[5]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "6.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hébergement et restauration",
+      "key": "categories[0:Process#0]/category[5]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "6.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Éducation",
+      "key": "categories[0:Process#0]/category[5]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "6.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recherche et développement",
+      "key": "categories[0:Process#0]/category[5]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "6.13"
+      },
+      "decision": "accepted",
+      "finalLabel": "Divertissement",
+      "key": "categories[0:Process#0]/category[5]/category[12]"
+    },
+    {
+      "assertion": {
+        "id": "6.14"
+      },
+      "decision": "accepted",
+      "finalLabel": "Location",
+      "key": "categories[0:Process#0]/category[5]/category[13]"
+    },
+    {
+      "assertion": {
+        "id": "6.15"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ingénierie et conseil",
+      "key": "categories[0:Process#0]/category[5]/category[14]"
+    },
+    {
+      "assertion": {
+        "id": "6.16"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services",
+      "key": "categories[0:Process#0]/category[5]/category[15]"
+    },
+    {
+      "assertion": {
+        "id": "7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Utilisation et consommation",
+      "key": "categories[0:Process#0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "7.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Consommation de biens",
+      "key": "categories[0:Process#0]/category[6]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "7.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Utilisation de produits consommateurs d'énergie",
+      "key": "categories[0:Process#0]/category[6]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "7.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres utilisations et consommations",
+      "key": "categories[0:Process#0]/category[6]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "candidateLabel": "Méthodes ACV de niveau dommage",
+      "decision": "corrected",
+      "finalLabel": "Méthodes d'ACVI au niveau des dommages",
+      "key": "categories[1:LCIAMethod#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "candidateLabel": "Impact total sur les aires de protection",
+      "decision": "corrected",
+      "finalLabel": "Impact total sur les domaines de protection",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine totale, combinée",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, toxicité",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, changement climatique",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, rayonnements ionisants",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, appauvrissement de la couche d'ozone",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, formation de photo-oxydants",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé humaine, autres",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel total, combiné",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, changement climatique",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, appauvrissement de la couche d'ozone",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, utilisation des terres",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, écotoxicité aquatique en eau douce",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, écotoxicité marine",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, écotoxicité terrestre",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, acidification",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, eutrophisation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, formation de photo-oxydants",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, rayonnements ionisants",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement naturel, autres",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.4.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé total, combiné",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.4.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé, acidification",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.4.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé, changement climatique",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.4.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé, eutrophisation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.4.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Environnement anthropisé, autres",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Disponibilité des ressources",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement total des ressources, combiné",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, minéraux et métaux",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, ressources énergétiques non renouvelables",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, utilisation des sols",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, ressources énergétiques renouvelables",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, ressources renouvelables non énergétiques",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources, autres",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "corrected",
+      "finalLabel": "Méthodes d'ACVI au niveau intermédiaire",
+      "key": "categories[1:LCIAMethod#0]/category[1]",
+      "candidateLabel": "Méthodes d'ACV au niveau intermédiaire"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Méthodes combinées",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changement climatique",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Appauvrissement de la couche d'ozone",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Utilisation des sols",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Écotoxicité",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Acidification",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Eutrophisation",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Formation de photo-oxydants",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Rayonnements nucléaires",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "2.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Toxicité humaine",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "2.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Effets respiratoires",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "2.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bruit",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "2.13"
+      },
+      "decision": "accepted",
+      "finalLabel": "Épuisement des ressources",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[12]"
+    },
+    {
+      "assertion": {
+        "id": "2.14"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres catégories intermédiaires",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[13]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Émissions",
+      "key": "categories[2:Flow#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Substances radioactives",
+      "key": "categories[2:Flow#0]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pesticides",
+      "key": "categories[2:Flow#0]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Particules",
+      "key": "categories[2:Flow#0]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Éléments et ions métalliques et semi-métalliques",
+      "key": "categories[2:Flow#0]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "candidateLabel": "Ions non métalliques ou non semi-métalliques",
+      "decision": "corrected",
+      "finalLabel": "Ions non métalliques ou semi-métalliques",
+      "key": "categories[2:Flow#0]/category[0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Composés covalents inorganiques",
+      "key": "categories[2:Flow#0]/category[0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "1.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Composés organiques cycliques",
+      "key": "categories[2:Flow#0]/category[0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "1.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Composés organiques acycliques",
+      "key": "categories[2:Flow#0]/category[0]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "1.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres types de substances",
+      "key": "categories[2:Flow#0]/category[0]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Vecteurs énergétiques et technologies",
+      "key": "categories[2:Flow#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "5.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Matières premières énergétiques",
+      "key": "categories[2:Flow#0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "5.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Électricité",
+      "key": "categories[2:Flow#0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "5.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chaleur et vapeur",
+      "key": "categories[2:Flow#0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "5.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Énergie mécanique",
+      "key": "categories[2:Flow#0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "5.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de houille",
+      "key": "categories[2:Flow#0]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "5.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de lignite",
+      "key": "categories[2:Flow#0]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "5.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de pétrole brut",
+      "key": "categories[2:Flow#0]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "5.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles à base de gaz naturel",
+      "key": "categories[2:Flow#0]/category[1]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "5.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles nucléaires",
+      "key": "categories[2:Flow#0]/category[1]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "5.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres combustibles non renouvelables",
+      "key": "categories[2:Flow#0]/category[1]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "5.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Combustibles renouvelables",
+      "key": "categories[2:Flow#0]/category[1]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Production de matériaux",
+      "key": "categories[2:Flow#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "6.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Matières premières",
+      "key": "categories[2:Flow#0]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "6.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Métaux et semi-métaux",
+      "key": "categories[2:Flow#0]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "6.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Produits chimiques organiques",
+      "key": "categories[2:Flow#0]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "6.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Produits chimiques inorganiques",
+      "key": "categories[2:Flow#0]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "6.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Verre et céramiques",
+      "key": "categories[2:Flow#0]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "6.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres matériaux minéraux",
+      "key": "categories[2:Flow#0]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "6.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Plastiques",
+      "key": "categories[2:Flow#0]/category[2]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "6.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Papier et carton",
+      "key": "categories[2:Flow#0]/category[2]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "6.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Eau",
+      "key": "categories[2:Flow#0]/category[2]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "6.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Moyens de production agricole",
+      "key": "categories[2:Flow#0]/category[2]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "6.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Aliments et matières premières renouvelables",
+      "key": "categories[2:Flow#0]/category[2]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "6.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bois",
+      "key": "categories[2:Flow#0]/category[2]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "6.13"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres matériaux",
+      "key": "categories[2:Flow#0]/category[2]/category[12]"
+    },
+    {
+      "assertion": {
+        "id": "7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Systèmes",
+      "key": "categories[2:Flow#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "7.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emballages",
+      "key": "categories[2:Flow#0]/category[3]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "7.2"
+      },
+      "candidateLabel": "Électricité et électronique",
+      "decision": "corrected",
+      "finalLabel": "Équipements électriques et électroniques",
+      "key": "categories[2:Flow#0]/category[3]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "7.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Véhicules",
+      "key": "categories[2:Flow#0]/category[3]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "7.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres machines",
+      "key": "categories[2:Flow#0]/category[3]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "7.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Construction",
+      "key": "categories[2:Flow#0]/category[3]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "7.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Appareils électroménagers",
+      "key": "categories[2:Flow#0]/category[3]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "7.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Textiles, meubles et autres aménagements intérieurs",
+      "key": "categories[2:Flow#0]/category[3]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "7.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pièces non spécifiques",
+      "key": "categories[2:Flow#0]/category[3]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "7.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Peintures et préparations chimiques",
+      "key": "categories[2:Flow#0]/category[3]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "7.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres systèmes",
+      "key": "categories[2:Flow#0]/category[3]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement en fin de vie",
+      "key": "categories[2:Flow#0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "8.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Réutilisation ou utilisation ultérieure",
+      "key": "categories[2:Flow#0]/category[4]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "8.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recyclage des matériaux",
+      "key": "categories[2:Flow#0]/category[4]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "8.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recyclage des matières premières",
+      "key": "categories[2:Flow#0]/category[4]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "8.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Valorisation énergétique",
+      "key": "categories[2:Flow#0]/category[4]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "8.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mise en décharge",
+      "key": "categories[2:Flow#0]/category[4]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "8.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Collecte des déchets",
+      "key": "categories[2:Flow#0]/category[4]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "8.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement des eaux usées",
+      "key": "categories[2:Flow#0]/category[4]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "8.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Traitement des gaz bruts",
+      "key": "categories[2:Flow#0]/category[4]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "8.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services de fin de vie",
+      "key": "categories[2:Flow#0]/category[4]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Services de transport",
+      "key": "categories[2:Flow#0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "9.1"
+      },
+      "candidateLabel": "Route",
+      "decision": "corrected",
+      "finalLabel": "Transport routier",
+      "key": "categories[2:Flow#0]/category[5]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "9.2"
+      },
+      "candidateLabel": "Rail",
+      "decision": "corrected",
+      "finalLabel": "Transport ferroviaire",
+      "key": "categories[2:Flow#0]/category[5]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "9.3"
+      },
+      "candidateLabel": "Eau",
+      "decision": "corrected",
+      "finalLabel": "Transport par voie d'eau",
+      "key": "categories[2:Flow#0]/category[5]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "9.4"
+      },
+      "candidateLabel": "Air",
+      "decision": "corrected",
+      "finalLabel": "Transport aérien",
+      "key": "categories[2:Flow#0]/category[5]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "9.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres transports",
+      "key": "categories[2:Flow#0]/category[5]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services",
+      "key": "categories[2:Flow#0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "10.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nettoyage",
+      "key": "categories[2:Flow#0]/category[6]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "10.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Stockage",
+      "key": "categories[2:Flow#0]/category[6]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "10.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Santé, services sociaux, beauté et bien-être",
+      "key": "categories[2:Flow#0]/category[6]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "10.4"
+      },
+      "candidateLabel": "Réparation et maintenance",
+      "decision": "corrected",
+      "finalLabel": "Réparation et entretien",
+      "key": "categories[2:Flow#0]/category[6]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "10.5"
+      },
+      "decision": "corrected",
+      "finalLabel": "Vente et commerce de gros",
+      "key": "categories[2:Flow#0]/category[6]/category[4]",
+      "candidateLabel": "Vente et vente en gros"
+    },
+    {
+      "assertion": {
+        "id": "10.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Services de communication et d'information",
+      "key": "categories[2:Flow#0]/category[6]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "10.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Services financiers, juridiques et d'assurance",
+      "key": "categories[2:Flow#0]/category[6]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "10.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Administration et gouvernement",
+      "key": "categories[2:Flow#0]/category[6]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "10.9"
+      },
+      "decision": "accepted",
+      "finalLabel": "Défense",
+      "key": "categories[2:Flow#0]/category[6]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "10.10"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hébergement et gastronomie",
+      "key": "categories[2:Flow#0]/category[6]/category[9]"
+    },
+    {
+      "assertion": {
+        "id": "10.11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Éducation",
+      "key": "categories[2:Flow#0]/category[6]/category[10]"
+    },
+    {
+      "assertion": {
+        "id": "10.12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Recherche et développement",
+      "key": "categories[2:Flow#0]/category[6]/category[11]"
+    },
+    {
+      "assertion": {
+        "id": "10.13"
+      },
+      "decision": "accepted",
+      "finalLabel": "Divertissement",
+      "key": "categories[2:Flow#0]/category[6]/category[12]"
+    },
+    {
+      "assertion": {
+        "id": "10.14"
+      },
+      "decision": "accepted",
+      "finalLabel": "Location",
+      "key": "categories[2:Flow#0]/category[6]/category[13]"
+    },
+    {
+      "assertion": {
+        "id": "10.15"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ingénierie et conseil",
+      "key": "categories[2:Flow#0]/category[6]/category[14]"
+    },
+    {
+      "assertion": {
+        "id": "10.16"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres services",
+      "key": "categories[2:Flow#0]/category[6]/category[15]"
+    },
+    {
+      "assertion": {
+        "id": "11"
+      },
+      "decision": "accepted",
+      "finalLabel": "Utilisation et consommation",
+      "key": "categories[2:Flow#0]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "11.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Consommation de biens",
+      "key": "categories[2:Flow#0]/category[7]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "11.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Utilisation de produits consommateurs d'énergie",
+      "key": "categories[2:Flow#0]/category[7]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "11.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres utilisations et consommations",
+      "key": "categories[2:Flow#0]/category[7]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "12"
+      },
+      "decision": "accepted",
+      "finalLabel": "Déchets",
+      "key": "categories[2:Flow#0]/category[8]"
+    },
+    {
+      "assertion": {
+        "id": "12.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Déchets miniers",
+      "key": "categories[2:Flow#0]/category[8]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "12.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Déchets de construction",
+      "key": "categories[2:Flow#0]/category[8]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "12.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Résidus de production",
+      "key": "categories[2:Flow#0]/category[8]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "12.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Déchets post-consommation",
+      "key": "categories[2:Flow#0]/category[8]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "12.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Déchets radioactifs",
+      "key": "categories[2:Flow#0]/category[8]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "12.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Gaz brut",
+      "key": "categories[2:Flow#0]/category[8]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "12.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Eaux usées",
+      "key": "categories[2:Flow#0]/category[8]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "12.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres déchets",
+      "key": "categories[2:Flow#0]/category[8]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Propriétés techniques des flux",
+      "key": "categories[3:FlowProperty#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Composition chimique des flux",
+      "key": "categories[3:FlowProperty#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Propriétés économiques des flux",
+      "key": "categories[3:FlowProperty#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres propriétés des flux",
+      "key": "categories[3:FlowProperty#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groupes d'unités techniques",
+      "key": "categories[4:UnitGroup#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groupes d'unités de composition chimique",
+      "key": "categories[4:UnitGroup#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groupes d'unités économiques",
+      "key": "categories[4:UnitGroup#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres groupes d'unités",
+      "key": "categories[4:UnitGroup#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groupe d'organisations, projet",
+      "key": "categories[5:Contact#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Organisations",
+      "key": "categories[5:Contact#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Entreprises privées",
+      "key": "categories[5:Contact#0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Organisations gouvernementales",
+      "key": "categories[5:Contact#0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Organisations non gouvernementales",
+      "key": "categories[5:Contact#0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres organisations",
+      "key": "categories[5:Contact#0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groupes de travail au sein d'une organisation",
+      "key": "categories[5:Contact#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Personnes",
+      "key": "categories[5:Contact#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autre",
+      "key": "categories[5:Contact#0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "0"
+      },
+      "decision": "accepted",
+      "finalLabel": "Images",
+      "key": "categories[6:Source#0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Formats de jeux de données",
+      "key": "categories[6:Source#0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bases de données",
+      "key": "categories[6:Source#0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Systèmes de conformité",
+      "key": "categories[6:Source#0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Classifications statistiques",
+      "key": "categories[6:Source#0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Publications et communications",
+      "key": "categories[6:Source#0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autres types de sources",
+      "key": "categories[6:Source#0]/category[6]"
+    }
+  ],
+  "resourceId": "ilcd-classification",
+  "reviewKind": "project-translation",
+  "reviewRun": {
+    "correctionsDigest": {
+      "algorithm": "sha256",
+      "value": "df50e0bb574de32dd628f233a938bae1067a533b7e88073aaac377f5ad1a62eb",
+      "scope": "ordered-independent-review-corrections",
+      "identityCount": 12
+    },
+    "finalDigest": {
+      "algorithm": "sha256",
+      "value": "d38da0a03959043dc40a52115ff2a3fc3478b1cb4e2253dba1a58d9a30ba22af",
+      "scope": "ordered-project-reviewed-final-labels",
+      "identityCount": 243
+    },
+    "findingsDigest": {
+      "algorithm": "sha256",
+      "value": "e39bcfdc7814003cdd8aa6d9ab6d5294b69747ee9b0c4e033a6e2e54415b95af",
+      "scope": "ordered-independent-review-findings",
+      "identityCount": 243
+    },
+    "inputCandidateDigest": {
+      "algorithm": "sha256",
+      "value": "57e6f7039a44e062797297c34af9e3371e9f2ca17f98021dee294046b2a879fe",
+      "scope": "ordered-translation-candidate-labels",
+      "identityCount": 243
+    },
+    "model": "gpt-5.6-sol",
+    "runId": "reference-review/ilcd-classification/fr/ed36d7b176d311765a3d60a7c18059343e392854415908eb19a7c8dde2589d58"
+  },
+  "schemaVersion": 2,
+  "translationRun": {
+    "model": "gpt-5.6-terra",
+    "outputCandidateDigest": {
+      "algorithm": "sha256",
+      "identityCount": 243,
+      "scope": "ordered-translation-candidate-labels",
+      "value": "57e6f7039a44e062797297c34af9e3371e9f2ca17f98021dee294046b2a879fe"
+    },
+    "runId": "reference-translation/ilcd-classification/fr/a52c3af99108c09c70693153fe3d8edee9ac8b8d83c580ac26e69ff593c4e013"
+  }
+}
