@@ -25,10 +25,10 @@ describe('access (src/access.ts)', () => {
     expect(result.canAdmin).toBe(false);
   });
 
-  it('returns false when user is missing', () => {
+  it('defers missing-user decisions to the global login redirect', () => {
     const result = access(undefined);
 
-    expect(result.canAdmin).toBe(false);
-    expect(result.canDataProductManager).toBe(false);
+    expect(result.canAdmin).toBe(true);
+    expect(result.canDataProductManager).toBe(true);
   });
 });

@@ -16,7 +16,9 @@ checkPaths:
   - src/services/general/localeRegistry.ts
   - docs/plans/i18n-fr-FR/**
   - docs/plans/i18n/**
-lastReviewedAt: 2026-07-17
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 762a287342456def99249554b2c2b3592bb445b1
+lastReviewedNote: 'Reviewed for Issue #630 against v0.0.50: removed anonymous Welcome/404 assumptions from the generated route-view evidence.'
 related:
   - docs/agents/i18n-language-delivery-goal.md
   - docs/agents/repo-validation.md
@@ -49,7 +51,7 @@ The final independent lane covers all 31 owner scopes (the 30 leaf modules plus 
 
 All 158 values equal to canonical English were classified rather than ignored: 29 are technical tokens or fixed names, 128 are glossary-declared French cognates/interface terms or region proper names, and one is the canonical empty reserved value. Suspicious equality, Han leakage, forbidden glossary matches, missing content, and ICU/token drift are all zero in `quality-manifest.json`.
 
-The route/view matrix owns anonymous `/`, `/welcome`, `/welcome?view=carbon-footprint`, account recovery, legal fallbacks, the role-gated dashboard, and the anonymous wildcard 404. Its generated evidence parses `config/routes.ts`, the public-route allowlist, navigation targets, query/hash parameters, component state signals, focused tests, and visible JSX/assistive literals. Configured application routes remain protected by default; the explicit wildcard fallback does not make a future configured route public. The root redirect preserves query state.
+The route/view matrix covers the anonymous login and account-recovery flow, legal fallbacks, protected `/`, `/welcome`, `/welcome?view=carbon-footprint`, the role-gated dashboard, and the authenticated wildcard 404. It records access context but does not grant anonymous access. Generated evidence parses `config/routes.ts`, the anonymous login-flow allowlist, navigation targets, query/hash parameters, component state signals, focused tests, and visible JSX/assistive literals. Anonymous requests for configured or unmatched product routes fail closed to the canonical login route; authenticated root redirects preserve query state.
 
 After controlled catalog and route-view changes are final, refresh in dependency order:
 

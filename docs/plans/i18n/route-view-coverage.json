@@ -1,11 +1,11 @@
 {
-  "schemaVersion": "tiangong.i18n-route-view-coverage.v2",
+  "schemaVersion": "tiangong.i18n-route-view-coverage.v3",
   "supportedLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
   "sourceRouteConfig": "config/routes.ts",
   "policy": {
     "catalogOwnership": "Every reachable static string belongs to the shared locale catalog or to an explicitly declared fallback row.",
     "queryPersistence": "Locale switching, root redirect, and refresh preserve the route query and selected view.",
-    "publicAccess": "Configured routes are protected by default; an explicit allowlist covers public leaves and the configured wildcard renders an anonymous 404.",
+    "authenticationBoundary": "This localization artifact records the existing access context but never grants or expands anonymous access. Anonymous SPA access is limited by the runtime policy to the login and account-recovery flow; all other configured and unmatched routes require an authenticated session.",
     "blockedContextAllowed": false
   },
   "rows": [
@@ -14,6 +14,7 @@
       "viewState": "redirect-to-welcome",
       "trigger": "Open / or /?view=carbon-footprint; the route redirects to /welcome and keeps the query.",
       "component": "config/routes.ts redirect -> src/pages/Welcome.tsx",
+      "accessContext": "authenticated-session-required; anonymous access redirects to /user/login before protected content renders",
       "copySources": {
         "sourcePaths": [
           "config/routes.ts",
@@ -27,7 +28,7 @@
         "declaredFallbacks": []
       },
       "visibleStates": [
-        "anonymous-redirect",
+        "anonymous-login-redirect",
         "authenticated-redirect",
         "query-preserving-redirect"
       ],
@@ -42,7 +43,10 @@
           "tests/unit/app.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": ["anonymous / reaches /welcome without /user/login"]
+        "browserAssertions": [
+          "anonymous / reaches /user/login without rendering Welcome",
+          "authenticated / reaches /welcome while preserving the query"
+        ]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0
@@ -52,6 +56,7 @@
       "viewState": "overview",
       "trigger": "Open /welcome directly or select the overview navigation action.",
       "component": "src/pages/Welcome.tsx",
+      "accessContext": "authenticated-session-required; localization proof for protected content runs with a valid session",
       "copySources": {
         "sourcePaths": ["src/app.tsx", "src/pages/Welcome.tsx", "src/locales/en-US/pages_home.ts"],
         "localeMessageIds": ["pages.welcome", "pages.dataEcosystem"],
@@ -59,7 +64,7 @@
         "declaredFallbacks": ["English TIDAS docs and media for non-Chinese locales"]
       },
       "visibleStates": [
-        "anonymous-direct",
+        "authenticated-direct",
         "metrics",
         "data-team-modal-loading",
         "data-team-modal-ready",
@@ -91,6 +96,7 @@
       "viewState": "carbon-footprint-guide",
       "trigger": "Open the exact query URL, follow the carbon-footprint action, switch locale, or refresh.",
       "component": "src/pages/Welcome.tsx",
+      "accessContext": "authenticated-session-required; anonymous direct access redirects to /user/login while authenticated access preserves the query view",
       "copySources": {
         "sourcePaths": ["src/app.tsx", "src/pages/Welcome.tsx", "src/locales/en-US/pages_home.ts"],
         "localeMessageIds": [],
@@ -98,7 +104,7 @@
         "declaredFallbacks": ["Localized media error and retry copy"]
       },
       "visibleStates": [
-        "anonymous-query-direct",
+        "authenticated-query-direct",
         "video-loading",
         "video-ready",
         "video-error",
@@ -130,10 +136,14 @@
       "viewState": "login-and-register",
       "trigger": "Open /user/login, switch tabs, submit invalid data, or open top actions.",
       "component": "src/pages/User/Login/index.tsx + src/pages/User/Login/Components/LoginTopActions.tsx",
+      "accessContext": "anonymous-login-flow",
       "copySources": {
         "sourcePaths": [
+          "config/routes.ts",
           "src/app.tsx",
           "src/requestErrorConfig.ts",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/wrappers/LoginFlowGuard.tsx",
           "src/pages/User/Login/index.tsx",
           "src/pages/User/Login/Components/LoginTopActions.tsx",
           "src/locales/en-US/pages.ts",
@@ -173,7 +183,8 @@
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/pages/User/Login/Components/LoginTopActions.test.tsx",
           "tests/unit/requestErrorConfig.test.ts",
-          "tests/unit/components/RightContent.test.tsx"
+          "tests/unit/components/RightContent.test.tsx",
+          "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
         "browserAssertions": [
           "anonymous French selector, legal/docs disclosure, and dark-mode action"
@@ -187,9 +198,13 @@
       "viewState": "password-forgot",
       "trigger": "Open the forgot-password link and submit empty, invalid, successful, or failing requests.",
       "component": "src/pages/User/Login/password_forgot.tsx",
+      "accessContext": "anonymous-login-flow",
       "copySources": {
         "sourcePaths": [
+          "config/routes.ts",
           "src/app.tsx",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/wrappers/LoginFlowGuard.tsx",
           "src/pages/User/Login/password_forgot.tsx",
           "src/locales/en-US/pages.ts"
         ],
@@ -215,7 +230,10 @@
         "missingContent": 0
       },
       "proof": {
-        "focusedTests": ["tests/unit/pages/User/Login/password_forgot.test.tsx"],
+        "focusedTests": [
+          "tests/unit/pages/User/Login/password_forgot.test.tsx",
+          "tests/unit/wrappers/LoginFlowGuard.test.tsx"
+        ],
         "browserAssertions": [
           "anonymous French form and validation state",
           "rejected session prefill stops loading and leaves the form usable"
@@ -229,9 +247,13 @@
       "viewState": "password-reset",
       "trigger": "Open the reset URL and submit empty, invalid, successful, or failing requests.",
       "component": "src/pages/User/Login/password_reset.tsx",
+      "accessContext": "anonymous-login-flow",
       "copySources": {
         "sourcePaths": [
+          "config/routes.ts",
           "src/app.tsx",
+          "src/services/general/publicRoutePolicy.ts",
+          "src/wrappers/LoginFlowGuard.tsx",
           "src/pages/User/Login/password_reset.tsx",
           "src/locales/en-US/pages.ts"
         ],
@@ -258,7 +280,10 @@
         "missingContent": 0
       },
       "proof": {
-        "focusedTests": ["tests/unit/pages/User/Login/password_reset.test.tsx"],
+        "focusedTests": [
+          "tests/unit/pages/User/Login/password_reset.test.tsx",
+          "tests/unit/wrappers/LoginFlowGuard.test.tsx"
+        ],
         "browserAssertions": [
           "anonymous French form and validation state",
           "missing or rejected reset session exposes a localized recovery action"
@@ -272,8 +297,11 @@
       "viewState": "national-carbon-dashboard",
       "trigger": "Open as an admin and traverse screen, status, map, matrix, and flow-topology controls.",
       "component": "src/pages/NationalCarbonDashboard/index.tsx + ProcessFlowGraphPanel.tsx",
+      "accessContext": "authenticated-session-and-role-required",
       "copySources": {
         "sourcePaths": [
+          "config/routes.ts",
+          "src/wrappers/AuthGuard.tsx",
           "src/pages/NationalCarbonDashboard/index.tsx",
           "src/pages/NationalCarbonDashboard/i18n.ts",
           "src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/ProcessFlowGraphPanel.tsx",
@@ -309,6 +337,8 @@
       },
       "proof": {
         "focusedTests": [
+          "tests/unit/config/routes.test.ts",
+          "tests/unit/wrappers/AuthGuard.test.tsx",
           "tests/unit/pages/NationalCarbonDashboard/index.test.tsx",
           "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
           "tests/unit/pages/NationalCarbonDashboard/processFlowGraphPanel.test.tsx"
@@ -325,6 +355,7 @@
       "viewState": "static-legal-English-fallback",
       "trigger": "Open the terms link from registration.",
       "component": "public/terms_of_use.html",
+      "accessContext": "anonymous-static-login-flow-dependency; outside the SPA route policy",
       "copySources": {
         "sourcePaths": ["public/terms_of_use.html", "src/pages/User/Login/index.tsx"],
         "localeMessageIds": ["pages.login.termsOfUse.englishFallbackLabel"],
@@ -339,7 +370,10 @@
         "missingContent": 0
       },
       "proof": {
-        "focusedTests": ["tests/unit/pages/User/Login/index.test.tsx"],
+        "focusedTests": [
+          "tests/unit/pages/User/Login/index.test.tsx",
+          "tests/unit/services/general/publicRoutePolicy.test.ts"
+        ],
         "browserAssertions": ["French disclosure opens the existing English terms URL"]
       },
       "unownedStaticContent": 0,
@@ -350,6 +384,7 @@
       "viewState": "static-legal-English-fallback",
       "trigger": "Open the privacy link from registration.",
       "component": "public/privacy_notice.html",
+      "accessContext": "anonymous-static-login-flow-dependency; outside the SPA route policy",
       "copySources": {
         "sourcePaths": ["public/privacy_notice.html", "src/pages/User/Login/index.tsx"],
         "localeMessageIds": ["pages.login.privacyNotice.englishFallbackLabel"],
@@ -364,7 +399,10 @@
         "missingContent": 0
       },
       "proof": {
-        "focusedTests": ["tests/unit/pages/User/Login/index.test.tsx"],
+        "focusedTests": [
+          "tests/unit/pages/User/Login/index.test.tsx",
+          "tests/unit/services/general/publicRoutePolicy.test.ts"
+        ],
         "browserAssertions": ["French disclosure opens the existing English privacy URL"]
       },
       "unownedStaticContent": 0,
@@ -375,11 +413,13 @@
       "viewState": "not-found",
       "trigger": "Open any pathname not matched by a configured application route.",
       "component": "src/pages/404.tsx",
+      "accessContext": "authenticated-session-required; anonymous unknown paths redirect to /user/login before the localized 404 can render",
       "copySources": {
         "sourcePaths": [
           "config/routes.ts",
           "src/app.tsx",
           "src/services/general/publicRoutePolicy.ts",
+          "src/wrappers/AuthGuard.tsx",
           "src/pages/404.tsx",
           "src/locales/en-US/pages.ts"
         ],
@@ -387,20 +427,29 @@
         "localeMessageIdPrefixes": [],
         "declaredFallbacks": []
       },
-      "visibleStates": ["anonymous-unknown-path", "authenticated-unknown-path", "back-home-action"],
+      "visibleStates": [
+        "anonymous-login-redirect",
+        "authenticated-unknown-path",
+        "back-home-action"
+      ],
       "targetCoverage": {
         "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
         "ownership": "shared locale catalog",
-        "structureAudit": "default-deny configured-route policy plus explicit anonymous wildcard fallback",
+        "structureAudit": "fail-closed anonymous-route policy plus authenticated localized wildcard rendering",
         "missingContent": 0
       },
       "proof": {
         "focusedTests": [
           "tests/unit/app.test.tsx",
+          "tests/unit/config/routes.test.ts",
           "tests/unit/services/general/publicRoutePolicy.test.ts",
+          "tests/unit/wrappers/AuthGuard.test.tsx",
           "tests/unit/pages/404.test.tsx"
         ],
-        "browserAssertions": ["anonymous unknown pathname renders French 404 and Back Home action"]
+        "browserAssertions": [
+          "anonymous unknown pathname reaches /user/login without rendering the 404",
+          "authenticated unknown pathname renders the localized 404 and Back Home action"
+        ]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0

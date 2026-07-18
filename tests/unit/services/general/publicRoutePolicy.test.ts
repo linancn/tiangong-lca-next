@@ -1,78 +1,95 @@
-import { createPublicRoutePolicy } from '@/services/general/publicRoutePolicy';
+import {
+  ANONYMOUS_ROUTE_PATHS,
+  isAnonymousAllowedPath,
+  LOGIN_PATH,
+} from '@/services/general/publicRoutePolicy';
+import fs from 'node:fs';
+import path from 'node:path';
 import appRoutes from '../../../../config/routes';
 
-const exactPublicPaths = [
-  '/',
-  '/welcome',
-  '/user/login',
-  '/user/login/password_forgot',
-  '/user/login/password_reset',
-];
+type RouteNode = {
+  path?: string;
+  redirect?: string;
+  routes?: readonly RouteNode[];
+};
 
-describe('public route policy', () => {
-  const isPublicPath = createPublicRoutePolicy(appRoutes, {
-    exactPublicPaths,
-    publicUnknownFallback: true,
+const collectConfiguredPaths = (routes: readonly RouteNode[]): readonly string[] =>
+  routes.flatMap((route) => [
+    ...(route.path ? [route.path] : []),
+    ...collectConfiguredPaths(route.routes ?? []),
+  ]);
+
+const anonymousRoutePathSet = new Set<string>(ANONYMOUS_ROUTE_PATHS);
+const configuredProtectedPaths = [...new Set(collectConfiguredPaths(appRoutes as RouteNode[]))]
+  .filter((path) => path !== '*')
+  .filter((path) => !anonymousRoutePathSet.has(path));
+const caseVariantProtectedPaths = configuredProtectedPaths
+  .map((path) => path.replace(/[a-z]/u, (character) => character.toUpperCase()))
+  .filter((path, index) => path !== configuredProtectedPaths[index]);
+
+const publicRoot = path.resolve(process.cwd(), 'public');
+const collectPublicHtmlPaths = (directory: string): readonly string[] =>
+  fs
+    .readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const absolutePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return collectPublicHtmlPaths(absolutePath);
+      }
+      return entry.name.endsWith('.html')
+        ? [`/${path.relative(publicRoot, absolutePath).split(path.sep).join('/')}`]
+        : [];
+    })
+    .sort();
+
+describe('anonymous route policy', () => {
+  it('keeps the anonymous allowlist limited to the login flow', () => {
+    expect(ANONYMOUS_ROUTE_PATHS).toEqual([
+      LOGIN_PATH,
+      '/user/login/password_forgot',
+      '/user/login/password_reset',
+    ]);
   });
 
-  it.each([...exactPublicPaths, '/welcome/'])('allows the explicit public route %s', (pathname) => {
-    expect(isPublicPath(pathname)).toBe(true);
+  it.each(ANONYMOUS_ROUTE_PATHS)('allows the explicit login-flow route %s', (pathname) => {
+    expect(isAnonymousAllowedPath(pathname)).toBe(true);
   });
 
-  it.each(['/tgdata', '/review', '/dashboard/national-carbon', '/data-processing'])(
-    'protects the configured route %s',
+  it.each(configuredProtectedPaths)('protects the configured application route %s', (pathname) => {
+    expect(isAnonymousAllowedPath(pathname)).toBe(false);
+  });
+
+  it.each(caseVariantProtectedPaths)(
+    'protects the case-variant configured application route %s',
     (pathname) => {
-      expect(isPublicPath(pathname)).toBe(false);
+      expect(isAnonymousAllowedPath(pathname)).toBe(false);
     },
   );
 
-  it('allows the explicit wildcard to render a public not-found page', () => {
-    expect(isPublicPath('/this-route-does-not-exist')).toBe(true);
+  it.each([
+    '/missing-page',
+    '/umi/plugin/openapi',
+    '/Review',
+    '/Tgdata/processes',
+    '/User/Login',
+    '/user/login/',
+    '/user/login///',
+  ])('fails closed for unmatched or case-variant route %s', (pathname) => {
+    expect(isAnonymousAllowedPath(pathname)).toBe(false);
   });
 
-  it('keeps future static and dynamic routes protected by default', () => {
-    const futurePolicy = createPublicRoutePolicy(
-      [
-        ...appRoutes,
-        { path: '/future-protected', component: './FutureProtected' } as any,
-        { path: '/projects/:projectId', component: './Project' } as any,
-      ],
-      { exactPublicPaths, publicUnknownFallback: true },
-    );
-
-    expect(futurePolicy('/future-protected')).toBe(false);
-    expect(futurePolicy('/projects/42')).toBe(false);
-    expect(futurePolicy('/another-missing-route')).toBe(true);
-  });
-
-  it('normalizes path aliases and protects nested wildcards and optional parameters', () => {
-    const edgePatternPolicy = createPublicRoutePolicy(
-      [{ path: '/assets/*' }, { path: '/reports/:reportId?' }, { path: '*' }],
-      {
-        exactPublicPaths: ['welcome'],
-        publicUnknownFallback: true,
-      },
-    );
-
-    expect(edgePatternPolicy('welcome')).toBe(true);
-    expect(edgePatternPolicy('/assets/icons/logo.svg')).toBe(false);
-    expect(edgePatternPolicy('/reports')).toBe(false);
-    expect(edgePatternPolicy('/reports/42')).toBe(false);
-    expect(edgePatternPolicy('/outside')).toBe(true);
-  });
-
-  it('does not make unknown paths public when no wildcard route exists', () => {
-    const noFallbackPolicy = createPublicRoutePolicy([{ path: '/known' }], {
-      exactPublicPaths: [],
-      publicUnknownFallback: true,
-    });
-
-    expect(noFallbackPolicy('/missing')).toBe(false);
-  });
-
-  it('keeps the root redirect query contract explicit', () => {
+  it('keeps the root redirect query contract explicit without making root anonymous', () => {
     expect(appRoutes.find(({ path }) => path === '/')).toEqual(
       expect.objectContaining({ redirect: '/welcome', keepQuery: true }),
     );
+    expect(isAnonymousAllowedPath('/')).toBe(false);
+    expect(isAnonymousAllowedPath('/welcome')).toBe(false);
+  });
+
+  it('keeps SPA-external anonymous HTML limited to the two legal login dependencies', () => {
+    expect(collectPublicHtmlPaths(publicRoot)).toEqual([
+      '/privacy_notice.html',
+      '/terms_of_use.html',
+    ]);
   });
 });

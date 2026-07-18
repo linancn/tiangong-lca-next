@@ -10,11 +10,11 @@ const readJson = (relativePath: string) =>
   JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), 'utf8'));
 
 describe('shared locale delivery contracts', () => {
-  it('covers every registry locale and mandatory public/static route view', () => {
+  it('covers every registry locale and mandatory route view without granting anonymous access', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);
 
-    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v2');
+    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v3');
     const routeViews = coverage.rows.map(({ route, viewState }: any) => `${route}::${viewState}`);
     expect(routeViews).toEqual(
       expect.arrayContaining([
@@ -36,6 +36,7 @@ describe('shared locale delivery contracts', () => {
           blockedContext,
           component,
           copySources,
+          accessContext,
           proof,
           targetCoverage,
           trigger,
@@ -46,6 +47,7 @@ describe('shared locale delivery contracts', () => {
           unownedStaticContent === 0 &&
           Boolean(component) &&
           Boolean(trigger) &&
+          Boolean(accessContext) &&
           copySources.sourcePaths.length > 0 &&
           visibleStates.length > 0 &&
           Boolean(targetCoverage) &&
@@ -97,13 +99,22 @@ describe('shared locale delivery contracts', () => {
           unownedVisibleLiteralCount: 0,
         }),
       );
-      expect(context.routeViewCoverage.derivedEvidence.publicPolicy.exactPublicPaths).toEqual([
+      expect(context.routeViewCoverage.requiredRouteViews).toEqual([
         '/',
         '/welcome',
-        '/user/login',
-        '/user/login/password_forgot',
-        '/user/login/password_reset',
+        '/welcome?view=carbon-footprint',
       ]);
+      expect(context.routeViewCoverage.derivedEvidence.anonymousRoutePolicy).toEqual(
+        expect.objectContaining({
+          allowedPaths: [
+            '/user/login',
+            '/user/login/password_forgot',
+            '/user/login/password_reset',
+          ],
+          defaultAccess: 'authenticated-session-required',
+          unknownPathAccess: 'authenticated-session-required',
+        }),
+      );
       expect(quality.automatedChecks).toEqual(
         expect.objectContaining({
           everyMessageDossierComplete: true,

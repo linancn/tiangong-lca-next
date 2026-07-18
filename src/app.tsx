@@ -15,7 +15,7 @@ import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
 import { getCurrentUser as queryCurrentUser } from '@/services/auth';
-import { createPublicRoutePolicy } from '@/services/general/publicRoutePolicy';
+import { LOGIN_PATH, isAnonymousAllowedPath } from '@/services/general/publicRoutePolicy';
 import { resolveBrowserRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import styles from '@/style/custom.less';
@@ -26,29 +26,13 @@ import type { RunTimeLayoutConfig } from '@umijs/max';
 import { ConfigProvider, theme as antdTheme } from 'antd';
 import { getBrandTheme } from '../config/branding';
 import defaultSettings, { defaultAppTitle, getLocalizedAppTitle } from '../config/defaultSettings';
-import appRoutes from '../config/routes';
 import ClassificationCacheMonitor from './components/ClassificationCacheMonitor';
 import LocationCacheMonitor from './components/LocationCacheMonitor';
 import { errorConfig } from './requestErrorConfig';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/user/login';
 const dashboardPath = '/dashboard/national-carbon';
 const dataProcessingPath = '/data-processing';
-const isPublicPath = createPublicRoutePolicy(appRoutes, {
-  exactPublicPaths: [
-    '/',
-    '/welcome',
-    loginPath,
-    '/user/login/password_forgot',
-    '/user/login/password_reset',
-  ],
-  publicUnknownFallback: true,
-});
-const isSessionAwarePublicPath = createPublicRoutePolicy(appRoutes, {
-  exactPublicPaths: ['/', '/welcome'],
-  publicUnknownFallback: false,
-});
 const systemAccessByRole = new Map<string, Auth.CurrentUser['access']>([
   ['admin', 'admin'],
   ['owner', 'admin'],
@@ -82,13 +66,11 @@ export async function getInitialState(): Promise<{
   isDarkMode?: boolean;
   fetchUserInfo?: () => Promise<Auth.CurrentUser | null>;
 }> {
-  const loadUserInfo = async (redirectOnFailure: boolean): Promise<Auth.CurrentUser | null> => {
+  const fetchUserInfo = async (): Promise<Auth.CurrentUser | null> => {
     try {
       const msg = await queryCurrentUser();
       if (!msg) {
-        if (redirectOnFailure) {
-          history.push(loginPath);
-        }
+        history.push(LOGIN_PATH);
         return null;
       }
       return {
@@ -96,13 +78,10 @@ export async function getInitialState(): Promise<{
         access: await getSystemAccess(),
       };
     } catch (error) {
-      if (redirectOnFailure) {
-        history.push(loginPath);
-      }
+      history.push(LOGIN_PATH);
     }
     return null;
   };
-  const fetchUserInfo = () => loadUserInfo(true);
 
   const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
   const brandTheme = getBrandTheme(isDarkMode);
@@ -112,7 +91,7 @@ export async function getInitialState(): Promise<{
   };
 
   const { location } = history;
-  if (!isPublicPath(location.pathname)) {
+  if (!isAnonymousAllowedPath(location.pathname)) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -121,12 +100,8 @@ export async function getInitialState(): Promise<{
       isDarkMode,
     };
   }
-  const currentUser = isSessionAwarePublicPath(location.pathname)
-    ? await loadUserInfo(false)
-    : undefined;
   return {
     fetchUserInfo,
-    currentUser,
     settings: updatedSettings as Partial<LayoutSettings>,
     isDarkMode,
   };
@@ -236,9 +211,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
-      // Public landing and account-recovery routes render without an authenticated session.
-      if (!initialState?.currentUser && !isPublicPath(location.pathname)) {
-        history.push(loginPath);
+      // Only the login and account-recovery flow can render anonymously.
+      if (!initialState?.currentUser && !isAnonymousAllowedPath(location.pathname)) {
+        history.push(LOGIN_PATH);
       }
     },
     links: isDev
@@ -260,8 +235,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次
-      if (!initialState?.currentUser && !isPublicPath(history.location.pathname)) {
-        history.push(loginPath);
+      if (!initialState?.currentUser && !isAnonymousAllowedPath(history.location.pathname)) {
+        history.push(LOGIN_PATH);
         return null;
       }
       // if (initialState?.loading) return <PageLoading />;

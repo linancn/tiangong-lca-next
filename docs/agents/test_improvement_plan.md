@@ -21,7 +21,7 @@ checkPaths:
   - tests/**
   - package.json
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 4a07183eab1e317631fac9ff7f42ede4c2437ef1
+lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
 lastReviewedNote: 'Reviewed the Issue #625 final focused closure after all 4,652 tests passed with two async statements and two locale branches still uncovered; the full-closure strategy remains unchanged.'
 ---
 

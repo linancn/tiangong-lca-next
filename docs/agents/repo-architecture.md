@@ -21,9 +21,9 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-07-17
-lastReviewedCommit: c26f306e82ac66f50a56aafe8f89ea96c0b0c67d
-lastReviewedNote: 'Reviewed Issue #625 French delivery: documented the typed locale registry, explicit public-route policy, localized route-state ownership, and typed import-report content boundary.'
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
+lastReviewedNote: 'Reviewed for Issue #630 against v0.0.50: anonymous SPA access is limited to the login/recovery flow, while configured and unmatched product routes fail closed behind the session guard.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -47,7 +47,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/**` | route-level product pages |
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
-| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit public-route policy, and service logic |
+| `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | static resource bundles consumed by the app |
@@ -69,7 +69,7 @@ Rules:
 - a new locale may land reviewed leaf modules before activation, but it must not gain a top-level `src/locales/<locale>.ts` entry until manifest parity and the locale-specific review gate are complete
 - active app locales are registered once in `src/services/general/localeRegistry.ts`; the current canonical keys are `zh-CN`, `en-US`, `de-DE`, and `fr-FR`. Language, region, underscore, and POSIX-style inputs normalize to one canonical product locale, while Umi, Ant Design, Pro Components, Day.js, Intl, and report-schema names remain boundary adapters rather than additional product locales
 - app locale and TIDAS dataset language are separate boundaries: German UI continues to request English dataset text (`en`) and must not add a `de` schema/data-language value; German help, legal, and public-doc surfaces without German content visibly route to their English fallback
-- public access is an explicit route-policy decision: login/recovery and approved public roots are anonymous, configured application routes are protected by default, and unmatched anonymous paths resolve to the localized public 404 without being converted into login redirects. Redirects that drive localized query/hash views must preserve their URL state
+- anonymous SPA access is limited to the explicit login/recovery allowlist. Root/Welcome, every other configured application route, case variants, and unmatched paths require the session guard and redirect anonymous users to the canonical login route; authenticated unmatched paths may render the localized 404. Role gates defer missing-session decisions to that global redirect, then enforce their role only after a user exists, so they cannot replace login with an anonymous 403. Localization route/view coverage records this access context but must never broaden it. Authenticated redirects that drive localized query/hash views must preserve their URL state
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
