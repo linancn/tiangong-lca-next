@@ -27,8 +27,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; repository ownership, bootstrap commands, and validation boundaries remain unchanged.'
+lastReviewedCommit: 1122df8d34b76115d56ba3320532f660d37e70b7
+lastReviewedNote: 'Aligned the reusable language Goal ownership with content-language capabilities, official-first classification/location localization, all-active-locale backfill, and anti-hardcoding gates; runtime truth remains in the owning source modules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -79,7 +79,7 @@ Additional governed source docs, not part of the default first-load surface:
 | Document | Owns | Does not own |
 | --- | --- | --- |
 | `README.md` and `README_CN.md` | repo landing context and high-level product overview | repo contract, proof bar, or branch policy truth |
-| `docs/agents/i18n-language-delivery-goal.md` | reusable end-to-end Goal for adding one context-grounded product language, including selector, validation, release, and workspace handoff | current runtime source truth, language-specific translation evidence, or active task status |
+| `docs/agents/i18n-language-delivery-goal.md` | reusable end-to-end Goal for adding or backfilling one context-grounded product language while converging all active locales across UI, content, reference resources, selector, validation, release, and workspace handoff | current runtime source truth, language-specific translation payloads/evidence, reference-resource source files, or active task status |
 | `docs/agents/testing-patterns.md` | reusable test-selection and test-structure patterns | minimum proof bar or current queue state |
 | `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
 | `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
@@ -105,7 +105,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - path-level ownership, routing intents, governed-doc inventory, and lint rules live in `.docpact/config.yaml`
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
-- the reusable autonomous Goal for adding one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons and keeps country/region variants outside the single-language product contract
+- the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
