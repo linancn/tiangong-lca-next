@@ -4,11 +4,20 @@
  */
 
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
-import { render, screen, waitFor } from '@testing-library/react';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 const mockGenClassStr = jest.fn();
 const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorization = jest.fn();
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+};
 
 jest.mock('@/services/general/util', () => ({
   genClassStr: (...args: any[]) => mockGenClassStr(...args),
@@ -117,5 +126,48 @@ describe('LevelTextItemDescription', () => {
     await waitFor(() => {
       expect(screen.getByText('Process Class > Leaf')).toBeInTheDocument();
     });
+  });
+
+  it('refreshes on parent language/category changes and ignores the stale response', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const initialRequest = deferred<any>();
+    mockGetILCDClassification.mockReturnValueOnce(initialRequest.promise);
+    mockGetILCDFlowCategorization.mockResolvedValueOnce({
+      data: [{ id: 'flow-class', label: 'Current flow class' }],
+      success: true,
+    });
+    mockGenClassStr.mockImplementation((_data, _index, nodes) => nodes[0].label);
+
+    const { rerender } = render(
+      <LevelTextItemDescription
+        data={['class-id']}
+        lang={initialLanguage}
+        categoryType='Process'
+        flowType='Product flow'
+      />,
+    );
+    rerender(
+      <LevelTextItemDescription
+        data={['class-id']}
+        lang={nextLanguage}
+        categoryType='Flow'
+        flowType='Elementary flow'
+      />,
+    );
+
+    expect(await screen.findByText('Current flow class')).toBeInTheDocument();
+    expect(mockGetILCDFlowCategorization).toHaveBeenCalledWith(nextLanguage, ['class-id']);
+
+    await act(async () => {
+      initialRequest.resolve({
+        data: [{ id: 'class-id', label: 'Stale process class' }],
+        success: true,
+      });
+      await initialRequest.promise;
+    });
+
+    expect(screen.queryByText('Stale process class')).not.toBeInTheDocument();
+    expect(screen.getByText('Current flow class')).toBeInTheDocument();
   });
 });

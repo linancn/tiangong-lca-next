@@ -8,6 +8,7 @@ import {
   unpublishLciaResultPublication,
   type LciaResultPublication,
 } from '@/services/dataProducts';
+import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { requestWorkerJobsApi, type WorkerJobResult } from '@/services/workerJobs/api';
 import {
@@ -577,29 +578,29 @@ export function mergeSubmittedBuildJobs(
 }
 
 export function resolveLocalizedText(value: unknown, locale: string): string {
-  const targetLang = locale.toLowerCase().startsWith('zh') ? 'zh' : 'en';
-
   if (typeof value === 'string') {
     return value;
   }
 
   if (Array.isArray(value)) {
-    const exact = value.find(
-      (item) =>
-        item &&
-        typeof item === 'object' &&
-        String((item as Record<string, unknown>)['@xml:lang'] ?? '').toLowerCase() === targetLang,
+    const entries = value.filter(
+      (item): item is Record<string, unknown> => item !== null && typeof item === 'object',
     );
-    const english = value.find(
-      (item) =>
-        item &&
-        typeof item === 'object' &&
-        String((item as Record<string, unknown>)['@xml:lang'] ?? '').toLowerCase() === 'en',
-    );
-    const fallback = exact ?? english ?? value[0];
-    return fallback && typeof fallback === 'object'
-      ? String((fallback as Record<string, unknown>)['#text'] ?? '')
-      : '';
+    const hasText = (item: Record<string, unknown>) =>
+      String(item['#text'] ?? '').trim().length > 0;
+    const fallback =
+      resolveContentLanguages(locale)
+        .map((languageCode) =>
+          entries.find(
+            (item) =>
+              String(item['@xml:lang'] ?? '')
+                .trim()
+                .toLowerCase() === languageCode && hasText(item),
+          ),
+        )
+        .find((item): item is Record<string, unknown> => item !== undefined) ??
+      entries.find(hasText);
+    return fallback ? String(fallback['#text']) : '';
   }
 
   if (value && typeof value === 'object') {

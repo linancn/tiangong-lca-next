@@ -1,9 +1,18 @@
 import LocationTextItemForm from '@/components/LocationTextItem/form';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { getILCDLocationAll } from '@/services/locations/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider, Form } from 'antd';
 
 let latestSelectProps: any = null;
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+};
 
 jest.mock('umi', () => ({
   useIntl: () => ({
@@ -220,5 +229,53 @@ describe('LocationTextItemForm', () => {
 
     expect(screen.getByRole('button', { name: 'undefined (undefined)' })).toBeInTheDocument();
     expect(latestSelectProps.filterOption('cn', undefined)).toBe(false);
+  });
+
+  it('refreshes for every registry content language selected by its parent', async () => {
+    const renderControl = (lang: string) => (
+      <Wrapper>
+        <LocationTextItemForm name='loc' label='Location' lang={lang} onData={jest.fn()} />
+      </Wrapper>
+    );
+    const { rerender } = render(renderControl(SUPPORTED_CONTENT_LANGUAGES[0]));
+
+    for (const languageCode of SUPPORTED_CONTENT_LANGUAGES) {
+      rerender(renderControl(languageCode));
+      await waitFor(() => {
+        expect(mockGetILCDLocationAll).toHaveBeenCalledWith(languageCode);
+      });
+    }
+  });
+
+  it('ignores a stale location response after the parent switches language', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const initialRequest = deferred<any>();
+    mockGetILCDLocationAll.mockReturnValueOnce(initialRequest.promise).mockResolvedValueOnce({
+      success: true,
+      data: [{ location: [{ '@value': 'DE', '#text': 'Current location' }] }],
+    });
+    const renderControl = (lang: string) => (
+      <Wrapper>
+        <LocationTextItemForm name='loc' label='Location' lang={lang} onData={jest.fn()} />
+      </Wrapper>
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    rerender(renderControl(nextLanguage));
+    expect(
+      await screen.findByRole('button', { name: 'DE (Current location)' }),
+    ).toBeInTheDocument();
+
+    await act(async () => {
+      initialRequest.resolve({
+        success: true,
+        data: [{ location: [{ '@value': 'OLD', '#text': 'Stale location' }] }],
+      });
+      await initialRequest.promise;
+    });
+
+    expect(screen.queryByRole('button', { name: 'OLD (Stale location)' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'DE (Current location)' })).toBeInTheDocument();
   });
 });

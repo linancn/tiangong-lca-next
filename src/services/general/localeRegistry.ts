@@ -19,6 +19,12 @@ export type LocaleDefinition = {
     twoItemConjunction: string;
     manyItemConjunction: string;
   };
+  assets: {
+    welcomeTidas: {
+      light: string;
+      dark: string;
+    };
+  };
   fallbacks: {
     documentationLocale: string;
     documentationUrl: string;
@@ -57,6 +63,12 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: '和',
       manyItemConjunction: '和',
     },
+    assets: {
+      welcomeTidas: {
+        light: '/images/tidas/TIDAS-zh-CN.svg',
+        dark: '/images/tidas/TIDAS-zh-CN-dark.svg',
+      },
+    },
     fallbacks: {
       documentationLocale: 'zh-CN',
       documentationUrl: DOCUMENTATION_BASE_URL,
@@ -85,6 +97,12 @@ export const LOCALE_REGISTRY = [
       listSeparator: ', ',
       twoItemConjunction: ' and ',
       manyItemConjunction: ', and ',
+    },
+    assets: {
+      welcomeTidas: {
+        light: '/images/tidas/TIDAS-en.svg',
+        dark: '/images/tidas/TIDAS-en-dark.svg',
+      },
     },
     fallbacks: {
       documentationLocale: 'en-US',
@@ -115,6 +133,12 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: ' und ',
       manyItemConjunction: ' und ',
     },
+    assets: {
+      welcomeTidas: {
+        light: '/images/tidas/TIDAS-en.svg',
+        dark: '/images/tidas/TIDAS-en-dark.svg',
+      },
+    },
     fallbacks: {
       documentationLocale: 'en-US',
       documentationUrl: `${DOCUMENTATION_BASE_URL}/en`,
@@ -143,6 +167,12 @@ export const LOCALE_REGISTRY = [
       listSeparator: ', ',
       twoItemConjunction: ' et ',
       manyItemConjunction: ' et ',
+    },
+    assets: {
+      welcomeTidas: {
+        light: '/images/tidas/TIDAS-en.svg',
+        dark: '/images/tidas/TIDAS-en-dark.svg',
+      },
     },
     fallbacks: {
       documentationLocale: 'en-US',
@@ -246,5 +276,32 @@ export function hasEnglishFallback(locale?: string | null): boolean {
       definition.fallbacks.documentationLocale !== definition.canonicalLocale) ||
       (definition.fallbacks.legalLocale === 'en-US' &&
         definition.fallbacks.legalLocale !== definition.canonicalLocale)),
+  );
+}
+
+export type LocaleFallbackKind = 'documentationLocale' | 'legalLocale';
+
+export function getLocaleFallbackDefinition(
+  locale: string | null | undefined,
+  kind: LocaleFallbackKind,
+): LocaleRegistryEntry | undefined {
+  const normalizedLocale = normalizeSupportedAppLocale(locale);
+  const definition = normalizedLocale ? getLocaleDefinition(normalizedLocale) : undefined;
+  return definition ? getLocaleDefinition(definition.fallbacks[kind]) : undefined;
+}
+
+export function hasLocaleFallback(
+  locale: string | null | undefined,
+  kind: LocaleFallbackKind,
+): boolean {
+  const normalizedLocale = normalizeSupportedAppLocale(locale);
+  const definition = normalizedLocale ? getLocaleDefinition(normalizedLocale) : undefined;
+  const fallbackDefinition = definition
+    ? getLocaleDefinition(definition.fallbacks[kind])
+    : undefined;
+  return Boolean(
+    definition &&
+    fallbackDefinition &&
+    fallbackDefinition.canonicalLocale !== definition.canonicalLocale,
   );
 }

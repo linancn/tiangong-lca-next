@@ -18,6 +18,7 @@ import DataProcessing, {
   statusToneFromValue,
   stringifyCommandData,
 } from '@/pages/DataProcessing';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
@@ -235,6 +236,33 @@ describe('DataProcessing page', () => {
     expect(resolveLocalizedText(['raw fallback'], 'en-US')).toBe('');
     expect(resolveLocalizedText({}, 'en-US')).toBe('');
     expect(resolveLocalizedText(undefined, 'en-US')).toBe('');
+
+    const registryLocalizedValue = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+      '@xml:lang': languageCode,
+      '#text': `label-${languageCode}`,
+    }));
+    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
+      expect(resolveLocalizedText(registryLocalizedValue, appLocale)).toBe(`label-${languageCode}`);
+    }
+    expect(
+      resolveLocalizedText(
+        [
+          { '@xml:lang': 'fr', '#text': '   ' },
+          { '@xml:lang': 'en', '#text': 'English fallback after blank French' },
+          { '@xml:lang': 'zh', '#text': '中文备选' },
+        ],
+        'fr-FR',
+      ),
+    ).toBe('English fallback after blank French');
+    expect(
+      resolveLocalizedText(
+        [
+          { '@xml:lang': 'fr', '#text': '' },
+          { '@xml:lang': 'ja', '#text': 'First non-blank legacy fallback' },
+        ],
+        'fr-FR',
+      ),
+    ).toBe('First non-blank legacy fallback');
 
     expect(buildImpactCategoryOptions({}, 'en-US')).toEqual([]);
     expect(

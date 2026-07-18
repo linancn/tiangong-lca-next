@@ -141,26 +141,41 @@ const LevelTextItemForm: FC<Props> = ({
   };
 
   useEffect(() => {
+    let active = true;
+
     const fetchClassification = async (dt: string, ft: string | undefined) => {
-      let result: any = {};
       if (dt === 'Flow' && !ft) {
+        setSelectOptions([]);
         return;
       }
-      if (dt === 'Flow' && ft === 'Elementary flow') {
-        result = await getILCDFlowCategorization(lang, ['all']);
-      } else {
-        result = await getILCDClassification(dt, lang, ['all']);
+
+      setSelectOptions([]);
+      try {
+        const result =
+          dt === 'Flow' && ft === 'Elementary flow'
+            ? await getILCDFlowCategorization(lang, ['all'])
+            : await getILCDClassification(dt, lang, ['all']);
+        if (active) {
+          setSelectOptions(processTreeData(result?.data ?? []));
+        }
+      } catch {
+        if (active) {
+          setSelectOptions([]);
+        }
       }
-      setSelectOptions(processTreeData(result?.data));
     };
 
     fetchClassification(dataType, flowType);
-  }, [dataType, flowType]);
+    return () => {
+      active = false;
+    };
+  }, [dataType, flowType, lang]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setShowValue();
+    const timer = window.setTimeout(() => {
+      void setShowValue();
     });
+    return () => window.clearTimeout(timer);
   });
 
   const handleValueChange = async (item: any) => {

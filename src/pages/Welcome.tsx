@@ -1,3 +1,5 @@
+import { DEFAULT_BROWSER_APP_LOCALE, getLocaleDefinition } from '@/services/general/localeRegistry';
+import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
@@ -103,6 +105,9 @@ const Welcome: React.FC = () => {
 
   const { formatMessage, locale } = useIntl();
   const lang = getLang(locale);
+  const localeDefinition = getLocaleDefinition(
+    normalizeRuntimeLocale(locale) ?? DEFAULT_BROWSER_APP_LOCALE,
+  );
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
   const activeViewFromLocation: WelcomeView = useMemo(() => {
     const searchParams = new URLSearchParams(location.search ?? '');
@@ -412,14 +417,9 @@ const Welcome: React.FC = () => {
   const tidasDescription = formatMessage({ id: 'pages.welcome.overview.tidas.description' });
   const tidasDocUrl = formatMessage({ id: 'pages.welcome.overview.tidas.docsUrl' });
   const tidasReadMoreLabel = formatMessage({ id: 'pages.welcome.overview.tidas.readMore' });
-  const tidasImageSrc =
-    lang === 'zh'
-      ? isDarkMode
-        ? '/images/tidas/TIDAS-zh-CN-dark.svg'
-        : '/images/tidas/TIDAS-zh-CN.svg'
-      : isDarkMode
-        ? '/images/tidas/TIDAS-en-dark.svg'
-        : '/images/tidas/TIDAS-en.svg';
+  const tidasImageSrc = isDarkMode
+    ? localeDefinition.assets.welcomeTidas.dark
+    : localeDefinition.assets.welcomeTidas.light;
   const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
   const WELCOME_RADIUS = 8;

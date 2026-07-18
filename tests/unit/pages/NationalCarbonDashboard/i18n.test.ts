@@ -21,6 +21,8 @@ import {
   getRiskLabel,
   isChineseDashboardLocale,
 } from '@/pages/NationalCarbonDashboard/i18n';
+import { isTranslationSourceContentLanguage } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_REGISTRY } from '@/services/general/localeRegistry';
 
 let mockLocale = 'fr-FR';
 
@@ -59,9 +61,13 @@ describe('NationalCarbonDashboard i18n token adapters', () => {
     expect(formatDashboardNumber(12)).toBe('12');
   });
 
-  it('recognizes Chinese locale aliases', () => {
+  it('recognizes the registry-owned translation-source locale aliases', () => {
     expect(isChineseDashboardLocale('zh_CN')).toBe(true);
-    expect(isChineseDashboardLocale('fr-FR')).toBe(false);
+    LOCALE_REGISTRY.forEach(({ canonicalLocale }) => {
+      expect(isChineseDashboardLocale(canonicalLocale)).toBe(
+        isTranslationSourceContentLanguage(canonicalLocale),
+      );
+    });
   });
 
   it('covers every screen and status token plus safe fallbacks', () => {

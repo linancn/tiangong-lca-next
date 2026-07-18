@@ -1,5 +1,6 @@
 import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk/core';
 import { v4 } from 'uuid';
+import { getContentGraphTextWidthDivisor } from '../general/contentLanguageRegistry';
 import {
   classificationToJsonList,
   classificationToStringList,
@@ -18,18 +19,12 @@ import { FormLifeCycleModel } from './data';
 import { toReferenceProcessKey, toReferenceProcessNumber } from './referenceProcess';
 
 export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
-  let labelSub = label?.substring(0, nodeWidth / 7 - 4);
-  if (lang === 'zh') {
-    labelSub = label?.substring(0, nodeWidth / 12 - 4);
-  }
+  const labelSub = label?.substring(0, nodeWidth / getContentGraphTextWidthDivisor(lang) - 4);
   return label !== labelSub ? labelSub + '...' : label;
 }
 
 export function genPortLabel(label: string, lang: string, nodeWidth: number) {
-  let labelSub = label?.substring(0, nodeWidth / 7 - 10);
-  if (lang === 'zh') {
-    labelSub = label?.substring(0, nodeWidth / 12 - 10);
-  }
+  const labelSub = label?.substring(0, nodeWidth / getContentGraphTextWidthDivisor(lang) - 10);
   return label !== labelSub ? labelSub + '...' : label;
 }
 

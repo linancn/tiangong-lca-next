@@ -1434,7 +1434,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should keep French fallback copy when validator locale messages are missing', () => {
+    it('should keep the reviewed French catalog copy when validator messages are missing', () => {
       const mutableFrMessages = frValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableFrMessages['validator.langValidation.missingEnglish'],
@@ -1453,9 +1453,7 @@ describe('General Utility Functions', () => {
             5,
             'fr-FR',
           ),
-        ).toBe(
-          'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : (racine).',
-        );
+        ).toBe(originalMessages.missingEnglish?.replace('{fields}', originalMessages.root ?? ''));
       } finally {
         mutableFrMessages['validator.langValidation.missingEnglish'] =
           originalMessages.missingEnglish;

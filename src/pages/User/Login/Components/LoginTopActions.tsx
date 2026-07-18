@@ -1,5 +1,5 @@
 import { DarkMode, SelectLang } from '@/components/RightContent';
-import { getLocaleDefinition } from '@/services/general/localeRegistry';
+import { hasLocaleFallback } from '@/services/general/localeRegistry';
 import { getDocumentationUrl, normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { theme } from 'antd';
@@ -23,12 +23,7 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
   const langActionRef = useRef<HTMLDivElement>(null);
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const localeDefinition = locale ? getLocaleDefinition(locale) : undefined;
-  const usesEnglishFallback = Boolean(
-    localeDefinition &&
-    localeDefinition.fallbacks.documentationLocale === 'en-US' &&
-    localeDefinition.fallbacks.documentationLocale !== localeDefinition.canonicalLocale,
-  );
+  const usesEnglishFallback = hasLocaleFallback(locale, 'documentationLocale');
   const helpLabel = intl.formatMessage({
     id: usesEnglishFallback
       ? 'component.globalHeader.help.englishFallback'

@@ -2,8 +2,8 @@
   "schemaVersion": "tiangong.i18n-locale-activation.v2",
   "locale": "de-DE",
   "source": {
-    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
-    "sourceManifestDigest": "c6f2d2c2db00afeced4ef9727d27224f067a90f4aa360d5b24e3c0d4980bacfd"
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "d30b5fc195c1520f440eab0694f603be84b32e9c2937f09f2b16e1df230c1d5f"
   },
   "registry": {
     "canonicalLocale": "de-DE",
@@ -19,7 +19,7 @@
       "titleKey": "APP_TITLE_DE_DE",
       "loginSubtitleKey": "APP_LOGIN_SUBTITLE_DE_DE"
     },
-    "registryDigest": "cde8bab8af8e558a3a414efd6d97a0d0acfe38c3a0c7ab2f69660381eb47ba6c"
+    "registryDigest": "17d798510961eaf81ec7a8ec079e15f9936ec144e6a86bc0528222b327913fd4"
   },
   "languagePlatform": {
     "capability": {
@@ -71,17 +71,17 @@
         }
       ]
     },
-    "contentLanguageRegistryDigest": "c1e4985cf29014f556dabcafac077ec86e2904c8225c413571c02be324b07b6e",
+    "contentLanguageRegistryDigest": "fbb2460d342e55fb2ec57b6002ac3a0a82c678900999a5b9e57c607da998fae6",
     "capabilityMatrixDigest": "fde810bfc463df167c94db510ab7596cba9eae2acc407b7c9a330b2b8d267448",
     "referenceResourceManifestDigest": "1f4643bb477577ad61edf882ae21034a5c32aaf79cb152fe5f698b6b976f704f",
     "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
-    "hardcodingAllowlistDigest": "1e5be914215cd2b0fd42262c0b7caf75d71bc75ba7b905ff0b7ef70f082f9e39"
+    "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "a901decb7811f7f16175af9b420b2fc0d4f1a4e2adfcbdfaf7a6b03110504a93",
-    "qualityDigest": "628e45e5e01a0ad46b28195724330ac0c40020f6dea2ac477b40554dd9678505",
+    "contextDigest": "bd3b7c7ec07bc14dbf7ee0e6b1d07dada8af583af2bc1a3026c64873209c7428",
+    "qualityDigest": "4a06268331640070da935c24ef851d6d33ad14b1987aabe813d73348899134fd",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
-    "routeViewCoverageDigest": "0c9414433315acb561b29e8884dbb594b377c9e1435829510bc0f9b6979b9050",
+    "routeViewCoverageDigest": "bc22c6dc88131dbd995b6f21db5e560cf5493441e959ffc508e425eb7eaf6cd4",
     "fallbackContractDigest": "432cfb9a99fae6973597b12dd3bf91452d0f2bc852423c751f9d53157db19f6b",
     "localeFallbackRowCount": 10
   },
@@ -194,5 +194,5 @@
       "ownerIssue": "#635"
     }
   ],
-  "activationDigest": "a719a003777f5a486fdb73a2dbc9d0b89df51099ef15857a99e7719bbb5e5c23"
+  "activationDigest": "bead029fdacf4957310701d9a8254109081c31f19b55e473b854e16e267afd4c"
 }

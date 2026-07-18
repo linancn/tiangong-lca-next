@@ -1,3 +1,4 @@
+import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
@@ -5,7 +6,7 @@ import {
 } from '@/services/roles/api';
 import { Button, message, Space, Table, Tag, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
 
 interface TeamNotificationItem {
@@ -28,10 +29,13 @@ const nonBlankTitle = (value: unknown) =>
 
 const resolveTeamTitle = (teamTitle: unknown, locale: string, unknownTeam: string) => {
   if (Array.isArray(teamTitle)) {
-    const preferredLanguage = locale === 'zh-CN' ? 'zh' : 'en';
-    const preferred = nonBlankTitle(
-      teamTitle.find((item: any) => item?.['@xml:lang'] === preferredLanguage)?.['#text'],
-    );
+    const preferred = resolveContentLanguages(locale)
+      .map((languageCode) =>
+        nonBlankTitle(
+          teamTitle.find((item: any) => item?.['@xml:lang'] === languageCode)?.['#text'],
+        ),
+      )
+      .find((title): title is string => title !== null);
     const firstAvailable = teamTitle
       .map((item: any) => nonBlankTitle(item?.['#text']))
       .find((title): title is string => title !== null);
@@ -45,13 +49,20 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [data, setData] = useState<TeamNotificationItem[]>([]);
+  const activeRef = useRef(false);
+  const requestEpochRef = useRef(0);
   const intl = useIntl();
   const { token } = theme.useToken();
 
   const fetchTeamNotifications = async () => {
+    const requestEpoch = ++requestEpochRef.current;
+    const isCurrentRequest = () => activeRef.current && requestEpoch === requestEpochRef.current;
     setLoading(true);
     try {
       const res = await getTeamInvitationStatusApi(timeFilter);
+      if (!isCurrentRequest()) {
+        return;
+      }
 
       if (res.success && res.data) {
         const unknownTeam = intl.formatMessage({
@@ -77,15 +88,27 @@ const TeamNotification: React.FC<TeamNotificationProps> = ({ timeFilter, onDataL
         await onDataLoaded();
       }
     } catch (error) {
-      console.error(error);
+      if (isCurrentRequest()) {
+        console.error(error);
+      }
     } finally {
-      setLoading(false);
+      if (isCurrentRequest()) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+      requestEpochRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
     fetchTeamNotifications();
-  }, [timeFilter]);
+  }, [intl.locale, timeFilter]);
 
   const handleAccept = async (record: TeamNotificationItem) => {
     setActionLoading(`accept-${record.teamId}`);

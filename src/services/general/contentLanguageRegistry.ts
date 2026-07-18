@@ -21,6 +21,9 @@ export type ContentLanguageDefinition = {
     enabled: boolean;
     priority: readonly Languages[];
   };
+  formatting: {
+    graphTextWidthDivisor: number;
+  };
   serviceQuery: {
     status: ContentCapabilityStatus;
     resolvedLanguage?: Languages;
@@ -50,6 +53,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
       enabled: true,
       priority: ['en'],
     },
+    formatting: {
+      graphTextWidthDivisor: 7,
+    },
     serviceQuery: {
       status: 'native',
       resolvedLanguage: 'en',
@@ -68,6 +74,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     reading: {
       enabled: true,
       priority: ['zh', 'en'],
+    },
+    formatting: {
+      graphTextWidthDivisor: 12,
     },
     serviceQuery: {
       status: 'native',
@@ -88,6 +97,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
       enabled: true,
       priority: ['de', 'en'],
     },
+    formatting: {
+      graphTextWidthDivisor: 7,
+    },
     serviceQuery: {
       status: 'declared-fallback',
       resolvedLanguage: 'en',
@@ -106,6 +118,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     reading: {
       enabled: true,
       priority: ['fr', 'en'],
+    },
+    formatting: {
+      graphTextWidthDivisor: 7,
     },
     serviceQuery: {
       status: 'declared-fallback',
@@ -189,6 +204,15 @@ export function normalizeSupportedContentLanguage(
 
 export function resolveContentLanguage(value?: string | null): SupportedContentLanguage {
   return normalizeSupportedContentLanguage(value) ?? CANONICAL_CONTENT_LANGUAGE;
+}
+
+export function getContentGraphTextWidthDivisor(value?: string | null): number {
+  return getContentLanguageDefinition(resolveContentLanguage(value)).formatting
+    .graphTextWidthDivisor;
+}
+
+export function isTranslationSourceContentLanguage(value?: string | null): boolean {
+  return resolveContentLanguage(value) === TRANSLATION_SOURCE_CONTENT_LANGUAGE;
 }
 
 export function resolveContentLanguages(

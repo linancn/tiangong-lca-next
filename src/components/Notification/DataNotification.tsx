@@ -1,8 +1,9 @@
+import { getLang, getLangText } from '@/services/general/util';
 import { getNotifyReviews } from '@/services/reviews/api';
 import type { ReviewsTable } from '@/services/reviews/data';
 import { Button, Modal, Space, Table, Tag, Typography, theme } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useIntl } from 'umi';
 
 interface DataNotificationItem {
@@ -34,6 +35,8 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
     pageSize: 10,
     total: 0,
   });
+  const activeRef = useRef(false);
+  const requestEpochRef = useRef(0);
   const intl = useIntl();
   const { token } = theme.useToken();
 
@@ -65,6 +68,8 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
   };
 
   const fetchDataNotifications = async (page = 1, pageSize = 10) => {
+    const requestEpoch = ++requestEpochRef.current;
+    const isCurrentRequest = () => activeRef.current && requestEpoch === requestEpochRef.current;
     setLoading(true);
     try {
       const reviewsRes = await getNotifyReviews(
@@ -72,6 +77,9 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
         intl.locale,
         timeFilter,
       );
+      if (!isCurrentRequest()) {
+        return;
+      }
       if (!reviewsRes.success) {
         return;
       }
@@ -100,15 +108,27 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
         await onDataLoaded();
       }
     } catch (error) {
-      console.error('获取数据通知失败:', error);
+      if (isCurrentRequest()) {
+        console.error('获取数据通知失败:', error);
+      }
     } finally {
-      setLoading(false);
+      if (isCurrentRequest()) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+      requestEpochRef.current += 1;
+    };
+  }, []);
+
+  useEffect(() => {
     fetchDataNotifications();
-  }, [timeFilter]);
+  }, [intl.locale, timeFilter]);
 
   const handleTableChange = (page: number, pageSize: number) => {
     fetchDataNotifications(page, pageSize);
@@ -189,11 +209,8 @@ const DataNotification: React.FC<DataNotificationProps> = ({ timeFilter, onDataL
       key: 'name',
       render: (name: any) => {
         if (typeof name === 'object' && name !== null) {
-          return intl.locale === 'zh-CN'
-            ? (name.find((item: any) => item['@xml:lang'] === 'zh')?.['#text'] ??
-                name[0]?.['#text'])
-            : (name.find((item: any) => item['@xml:lang'] === 'en')?.['#text'] ??
-                name[0]?.['#text']);
+          const localizedName = getLangText(name, getLang(intl.locale));
+          return localizedName === '-' ? (name[0]?.['#text'] ?? '-') : localizedName;
         }
         return name;
       },

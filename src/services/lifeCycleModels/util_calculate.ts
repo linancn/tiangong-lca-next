@@ -1,6 +1,10 @@
 import { v4 } from 'uuid';
 import { toBigNumberOrZero } from '../general/bignumber';
 import {
+  CANONICAL_CONTENT_LANGUAGE,
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+} from '../general/contentLanguageRegistry';
+import {
   // comparePercentDesc,
   jsonToList,
   listToJson,
@@ -1634,16 +1638,16 @@ export async function genLifeCycleModelProcesses(
       const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
 
       const subproductPrefix = [
-        { '@xml:lang': 'zh', '#text': '子产品: ' },
-        { '@xml:lang': 'en', '#text': 'Subproduct: ' },
+        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '子产品: ' },
+        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': 'Subproduct: ' },
       ];
       const subproductLeftBracket = [
-        { '@xml:lang': 'zh', '#text': '[' },
-        { '@xml:lang': 'en', '#text': '[' },
+        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '[' },
+        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': '[' },
       ];
       const subproductRightBracket = [
-        { '@xml:lang': 'zh', '#text': '] ' },
-        { '@xml:lang': 'en', '#text': '] ' },
+        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '] ' },
+        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': '] ' },
       ];
 
       const baseName =

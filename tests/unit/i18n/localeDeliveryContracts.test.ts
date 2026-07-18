@@ -16,8 +16,21 @@ describe('shared locale delivery contracts', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);
 
-    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v3');
-    const routeViews = coverage.rows.map(({ route, viewState }: any) => `${route}::${viewState}`);
+    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v4');
+    const familyRows = coverage.routeFamilies.flatMap((family: any) =>
+      family.routes.map((route: string) => ({ ...family, route })),
+    );
+    const coverageRows = [...coverage.rows, ...familyRows];
+    expect(coverage.proofPolicy).toEqual({
+      status: 'inventory-only',
+      assertionSemantics: expect.stringContaining('not execution evidence'),
+      browserProof: {
+        status: 'planned',
+        ownerIssue: '#635',
+        executedEvidence: [],
+      },
+    });
+    const routeViews = coverageRows.map(({ route, viewState }: any) => `${route}::${viewState}`);
     expect(routeViews).toEqual(
       expect.arrayContaining([
         '/::redirect-to-welcome',
@@ -33,7 +46,7 @@ describe('shared locale delivery contracts', () => {
       ]),
     );
     expect(
-      coverage.rows.every(
+      coverageRows.every(
         ({
           blockedContext,
           component,
@@ -56,6 +69,40 @@ describe('shared locale delivery contracts', () => {
           Boolean(proof),
       ),
     ).toBe(true);
+    expect(
+      coverageRows.every(
+        ({ proof }: any) =>
+          Array.isArray(proof.plannedBrowserAssertions) &&
+          proof.plannedBrowserAssertions.length > 0 &&
+          proof.browserAssertions === undefined,
+      ),
+    ).toBe(true);
+    expect(
+      coverageRows.every(
+        ({ targetCoverage }: any) =>
+          targetCoverage.localeScope === 'all-registry-locales' &&
+          targetCoverage.missingContent === 0,
+      ),
+    ).toBe(true);
+
+    const routeSource = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, coverage.sourceRouteConfig),
+      'utf8',
+    );
+    const configuredPaths = [
+      ...new Set(
+        [...routeSource.matchAll(/\bpath:\s*['"]([^'"]+)['"]/gu)].map((match) => match[1]),
+      ),
+    ].sort();
+    const coveredConfiguredPaths = [
+      ...new Set(
+        coverageRows
+          .map(({ route }: any) => route.split(/[?#]/u)[0])
+          .filter((route: string) => configuredPaths.includes(route)),
+      ),
+    ].sort();
+    expect(configuredPaths).toHaveLength(46);
+    expect(coveredConfiguredPaths).toEqual(configuredPaths);
 
     const forgotPassword = coverage.rows.find(
       ({ route }: any) => route === '/user/login/password_forgot',
@@ -98,9 +145,24 @@ describe('shared locale delivery contracts', () => {
       );
       expect(context.routeViewCoverage.derivedEvidence).toEqual(
         expect.objectContaining({
-          configuredRouteCount: expect.any(Number),
+          configuredRouteCount: 46,
+          coveredConfiguredRouteCount: 46,
+          browserProof: {
+            status: 'planned',
+            ownerIssue: '#635',
+            inventoryOnly: true,
+            executedEvidenceCount: 0,
+            ready: false,
+          },
           blockedDerivedStateCount: 0,
           unownedVisibleLiteralCount: 0,
+        }),
+      );
+      expect(context.inventory).toEqual(
+        expect.objectContaining({
+          routeViewRowCount: context.routeViewCoverage.derivedEvidence.rowEvidence.length,
+          configuredRouteCount: 46,
+          coveredConfiguredRouteCount: 46,
         }),
       );
       expect(context.routeViewCoverage.requiredRouteViews).toEqual([
@@ -129,6 +191,7 @@ describe('shared locale delivery contracts', () => {
           humanTranslationReviewRequired: false,
         }),
       );
+      expect(quality.automatedChecks.semanticRouteAndE2EReady).toBe(false);
       expect(structuralValidation.schemaVersion).toBe('tiangong.i18n-structural-validation.v1');
       expect(structuralValidation.validationLanes).toHaveLength(1);
       expect(
@@ -385,10 +448,11 @@ describe('shared locale delivery contracts', () => {
     expect(result.stderr).toContain('#635');
   });
 
-  it('wires the production-readiness command into every production-effective workflow', () => {
+  it('wires the non-production all-locale contract into every production-effective workflow', () => {
     for (const workflow of ['.github/workflows/build.yml', '.github/workflows/ci.yml']) {
       const source = fs.readFileSync(path.join(REPOSITORY_ROOT, workflow), 'utf8');
-      expect(source).toContain('npm run i18n:locale:all:production:check');
+      expect(source).toContain('npm run i18n:locale:all:check');
+      expect(source).not.toContain('npm run i18n:locale:all:production:check');
     }
   });
 });

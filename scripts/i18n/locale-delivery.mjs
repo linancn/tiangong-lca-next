@@ -670,20 +670,77 @@ function validateRouteCoverage(root, manifest) {
     throw new Error('Route-view coverage must identify config/routes.ts as its route source.');
   }
   const requiredPaths = new Set(['/', '/welcome', '/welcome?view=carbon-footprint']);
-  const observedPaths = new Set(coverage.rows.map(({ route }) => route));
+  if (!Array.isArray(coverage.routeFamilies)) {
+    throw new Error('Route-view coverage must declare its config-derived route families.');
+  }
+  const familyRows = coverage.routeFamilies.flatMap((family) => {
+    if (!family.id || !Array.isArray(family.routes) || family.routes.length === 0) {
+      throw new Error('Every route-view family must have an id and at least one route.');
+    }
+    return family.routes.map((route) => ({ ...family, route }));
+  });
+  const routeRows = [...coverage.rows, ...familyRows];
+  const observedPaths = new Set(routeRows.map(({ route }) => route));
   for (const route of requiredPaths) {
     if (!observedPaths.has(route)) throw new Error(`Route-view coverage is missing ${route}.`);
   }
   if (JSON.stringify(coverage.supportedLocales) !== JSON.stringify(SUPPORTED_APP_LOCALES)) {
     throw new Error('Route-view coverage locale order differs from the typed registry.');
   }
-  const routeKeys = coverage.rows.map(({ route, viewState }) => `${route}\0${viewState}`);
+  const browserProof = coverage.proofPolicy?.browserProof;
+  const plannedBrowserInventory =
+    coverage.proofPolicy?.status === 'inventory-only' &&
+    browserProof?.status === 'planned' &&
+    Array.isArray(browserProof?.executedEvidence) &&
+    browserProof.executedEvidence.length === 0;
+  const verifiedBrowserEvidence =
+    coverage.proofPolicy?.status === 'execution-evidence' &&
+    browserProof?.status === 'verified' &&
+    Array.isArray(browserProof?.executedEvidence) &&
+    browserProof.executedEvidence.length > 0;
+  if (
+    browserProof?.ownerIssue !== '#635' ||
+    (!plannedBrowserInventory && !verifiedBrowserEvidence)
+  ) {
+    throw new Error(
+      'Route-view coverage must keep planned browser assertions inventory-only until executable semantic E2E evidence is recorded.',
+    );
+  }
+  if (verifiedBrowserEvidence) {
+    for (const evidence of browserProof.executedEvidence) {
+      if (
+        !evidence?.path ||
+        !/^[0-9a-f]{64}$/u.test(evidence.sha256 ?? '') ||
+        !fs.existsSync(path.resolve(root, evidence.path)) ||
+        fileDigest(root, evidence.path) !== evidence.sha256
+      ) {
+        throw new Error('Semantic browser proof contains missing or digest-mismatched evidence.');
+      }
+    }
+  }
+  const routeKeys = routeRows.map(({ route, viewState }) => `${route}\0${viewState}`);
   if (new Set(routeKeys).size !== routeKeys.length) {
     throw new Error('Route-view coverage contains duplicate route/view-state rows.');
   }
   const routeConfig = collectRouteConfigEvidence(root, coverage.sourceRouteConfig);
   const anonymousRoutePolicy = collectAnonymousRoutePolicyEvidence(root);
   const configuredPaths = new Set(routeConfig.configuredPaths);
+  const coveredConfiguredPaths = new Set(
+    routeRows
+      .map(({ route }) => route.split(/[?#]/u)[0])
+      .filter((routePath) => configuredPaths.has(routePath)),
+  );
+  const missingConfiguredPaths = [...configuredPaths].filter(
+    (routePath) => !coveredConfiguredPaths.has(routePath),
+  );
+  const unknownFamilyPaths = familyRows
+    .map(({ route }) => route.split(/[?#]/u)[0])
+    .filter((routePath) => !configuredPaths.has(routePath));
+  if (missingConfiguredPaths.length > 0 || unknownFamilyPaths.length > 0) {
+    throw new Error(
+      `Route-view coverage differs from config/routes.ts (missing: ${missingConfiguredPaths.join(', ') || 'none'}; unknown family routes: ${unknownFamilyPaths.join(', ') || 'none'}).`,
+    );
+  }
   const messageIds = new Set(manifest.messages.map(({ id }) => id));
   const messagesBySource = new Map();
   for (const message of manifest.messages) {
@@ -694,7 +751,7 @@ function validateRouteCoverage(root, manifest) {
     }
   }
   const derivationsBySource = new Map();
-  for (const sourcePath of new Set(coverage.rows.flatMap((row) => row.copySources.sourcePaths))) {
+  for (const sourcePath of new Set(routeRows.flatMap((row) => row.copySources.sourcePaths))) {
     if (!fs.existsSync(path.resolve(root, sourcePath))) {
       throw new Error(`Route-view coverage references missing source ${sourcePath}.`);
     }
@@ -708,7 +765,7 @@ function validateRouteCoverage(root, manifest) {
     throw new Error('The root route must derive a query-preserving redirect to /welcome.');
   }
   const rowEvidence = [];
-  for (const row of coverage.rows) {
+  for (const row of routeRows) {
     if (
       !row.route ||
       !row.viewState ||
@@ -734,12 +791,13 @@ function validateRouteCoverage(root, manifest) {
       throw new Error(`${row.route}/${row.viewState} has no target coverage or proof contract.`);
     }
     if (
-      JSON.stringify(row.targetCoverage.locales) !== JSON.stringify(SUPPORTED_APP_LOCALES) ||
+      row.targetCoverage.localeScope !== 'all-registry-locales' ||
       row.targetCoverage.missingContent !== 0 ||
       !Array.isArray(row.proof.focusedTests) ||
       row.proof.focusedTests.length === 0 ||
-      !Array.isArray(row.proof.browserAssertions) ||
-      row.proof.browserAssertions.length === 0
+      !Array.isArray(row.proof.plannedBrowserAssertions) ||
+      row.proof.plannedBrowserAssertions.length === 0 ||
+      Object.hasOwn(row.proof, 'browserAssertions')
     ) {
       throw new Error(`${row.route}/${row.viewState} has incomplete target or proof coverage.`);
     }
@@ -794,6 +852,8 @@ function validateRouteCoverage(root, manifest) {
       focusedTestDigest: digestJson(
         row.proof.focusedTests.map((testPath) => [testPath, fileDigest(root, testPath)]),
       ),
+      plannedBrowserAssertionCount: row.proof.plannedBrowserAssertions.length,
+      plannedBrowserAssertionDigest: digestJson(row.proof.plannedBrowserAssertions),
       derivedMessageCount: derivedMessages.length,
       derivedMessageDigest: digestJson(derivedMessages.map(({ id }) => id)),
       stateSignals: [
@@ -816,9 +876,7 @@ function validateRouteCoverage(root, manifest) {
     });
   }
   for (const [sourcePath, derivation] of derivationsBySource) {
-    const relatedRows = coverage.rows.filter((row) =>
-      row.copySources.sourcePaths.includes(sourcePath),
-    );
+    const relatedRows = routeRows.filter((row) => row.copySources.sourcePaths.includes(sourcePath));
     const visibleStates = relatedRows.flatMap((row) => row.visibleStates);
     for (const signal of derivation.stateSignals) {
       if (!stateSignalCovered(signal, visibleStates)) {
@@ -850,6 +908,14 @@ function validateRouteCoverage(root, manifest) {
     sourceRouteConfig: coverage.sourceRouteConfig,
     routeConfigDigest: routeConfig.digest,
     configuredRouteCount: routeConfig.configuredPaths.length,
+    coveredConfiguredRouteCount: coveredConfiguredPaths.size,
+    browserProof: {
+      status: browserProof.status,
+      ownerIssue: browserProof.ownerIssue,
+      inventoryOnly: coverage.proofPolicy.status === 'inventory-only',
+      executedEvidenceCount: browserProof.executedEvidence.length,
+      ready: verifiedBrowserEvidence,
+    },
     anonymousRoutePolicy,
     sourceFileCount: derivationsBySource.size,
     sourceEvidenceDigest: digestJson([...derivationsBySource.values()]),
@@ -1239,7 +1305,9 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
       leafModuleCount: manifest.localeTopology[locale].leafModules.length,
       dynamicFamilyCount: manifest.summary.dynamicFamilyCount,
       dynamicCallsiteCount: manifest.summary.dynamicCallsiteCount,
-      routeViewRowCount: coverage.rows.length,
+      routeViewRowCount: coverage.derivedEvidence.rowEvidence.length,
+      configuredRouteCount: coverage.derivedEvidence.configuredRouteCount,
+      coveredConfiguredRouteCount: coverage.derivedEvidence.coveredConfiguredRouteCount,
       typedContentUnitCount: typedContent.targetContentUnitCount,
       blockedContextCount,
       unownedStaticContentCount:
@@ -1667,7 +1735,7 @@ function buildQualityManifest(root, locale, manifest, context) {
       typedContentTopologyComplete: context.typedContentDossiers.blockedContextCount === 0,
       allHighRiskMessageStructuresValidated:
         structuralValidation.highRiskMessageCount === context.messageDossiers.highRiskMessageCount,
-      semanticRouteAndE2EReady: false,
+      semanticRouteAndE2EReady: context.routeViewCoverage.derivedEvidence.browserProof.ready,
       semanticRouteAndE2EOwnerIssue: '#635',
       humanTranslationReviewRequired: false,
       blockedContextCount: context.inventory.blockedContextCount,

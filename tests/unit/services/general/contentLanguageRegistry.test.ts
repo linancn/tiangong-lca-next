@@ -4,8 +4,10 @@ import {
   CONTENT_LANGUAGE_OPTIONS,
   CONTENT_LANGUAGE_REGISTRY,
   getAuthoringLanguageOptions,
+  getContentGraphTextWidthDivisor,
   getLanguageDisplayName,
   getServiceQueryLanguage,
+  isTranslationSourceContentLanguage,
   normalizeSupportedContentLanguage,
   PRIMARY_REQUIRED_CONTENT_LANGUAGE,
   reportServiceQueryLanguageResolution,
@@ -15,6 +17,7 @@ import {
   resolveContentLanguages,
   resolveServiceQueryLanguage,
   SUPPORTED_CONTENT_LANGUAGES,
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from '@/services/general/contentLanguageRegistry';
 
 describe('contentLanguageRegistry', () => {
@@ -102,6 +105,19 @@ describe('contentLanguageRegistry', () => {
     expect(resolveContentLanguages('zh-CN')).toEqual(['zh', 'en']);
     expect(resolveContentLanguages('en-US')).toEqual(['en']);
   });
+
+  it.each(CONTENT_LANGUAGE_REGISTRY)(
+    'derives graph formatting for $languageCode from the registry',
+    (definition) => {
+      expect(getContentGraphTextWidthDivisor(definition.appLocale)).toBe(
+        definition.formatting.graphTextWidthDivisor,
+      );
+      expect(definition.formatting.graphTextWidthDivisor).toBeGreaterThan(0);
+      expect(isTranslationSourceContentLanguage(definition.appLocale)).toBe(
+        definition.languageCode === TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+      );
+    },
+  );
 
   it('declares backend query fallback independently from content reading', () => {
     expect(resolveServiceQueryLanguage('de-DE')).toEqual({

@@ -1,10 +1,11 @@
 import TeamNotification from '@/components/Notification/TeamNotification';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
   rejectTeamInvitationApi,
 } from '@/services/roles/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider, message } from 'antd';
 
 jest.mock('@/services/roles/api', () => ({
@@ -148,6 +149,84 @@ describe('TeamNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('测试团队')).toBeInTheDocument();
+    });
+  });
+
+  it('resolves team titles for every registry locale and refreshes after a locale switch', async () => {
+    const localizedTitles = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+      '@xml:lang': languageCode,
+      '#text': `team-${languageCode}`,
+    }));
+    mockGetTeamInvitationStatusApi.mockResolvedValue({
+      success: true,
+      data: { ...mockInvitationData.data, teamTitle: localizedTitles },
+    });
+    mockLocale = CONTENT_LANGUAGE_REGISTRY[0].appLocale;
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
+      mockLocale = appLocale;
+      rerender(
+        <ConfigProvider>
+          <TeamNotification {...defaultProps} />
+        </ConfigProvider>,
+      );
+      await waitFor(() => {
+        expect(screen.getByText(`team-${languageCode}`)).toBeInTheDocument();
+      });
+    }
+  });
+
+  it('ignores an older locale request that resolves after the latest locale response', async () => {
+    let resolveEnglish: (value: any) => void = () => undefined;
+    let resolveFrench: (value: any) => void = () => undefined;
+    const englishRequest = new Promise((resolve) => {
+      resolveEnglish = resolve;
+    });
+    const frenchRequest = new Promise((resolve) => {
+      resolveFrench = resolve;
+    });
+    mockGetTeamInvitationStatusApi
+      .mockImplementationOnce(() => englishRequest)
+      .mockImplementationOnce(() => frenchRequest);
+
+    mockLocale = 'en-US';
+    const { rerender } = render(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetTeamInvitationStatusApi).toHaveBeenCalledTimes(1));
+
+    mockLocale = 'fr-FR';
+    rerender(
+      <ConfigProvider>
+        <TeamNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetTeamInvitationStatusApi).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveFrench({
+        success: true,
+        data: { ...mockInvitationData.data, teamTitle: 'Latest French team' },
+      });
+    });
+    expect(await screen.findByText('Latest French team')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveEnglish({
+        success: true,
+        data: { ...mockInvitationData.data, teamTitle: 'Stale English team' },
+      });
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Latest French team')).toBeInTheDocument();
+      expect(screen.queryByText('Stale English team')).not.toBeInTheDocument();
     });
   });
 

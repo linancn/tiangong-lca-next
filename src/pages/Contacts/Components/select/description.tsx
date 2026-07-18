@@ -1,8 +1,9 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import { ContactReference } from '@/services/contacts/data';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage, getLocale } from 'umi';
+import { FormattedMessage } from 'umi';
 import ContactView from '../view';
 
 type Props = {
@@ -12,7 +13,6 @@ type Props = {
 };
 
 const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
-  const locale = getLocale();
   const refItem = Array.isArray(data) ? data[0] : data;
   const refId = refItem?.['@refObjectId'];
   const refVersion = refItem?.['@version'];
@@ -30,7 +30,7 @@ const ContactSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage='Reference contact data set identifier'
               />
             }
-            styles={{ label: { width: locale === 'zh-CN' ? '190px' : '260px' } }}
+            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
           >
             {refItem?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>

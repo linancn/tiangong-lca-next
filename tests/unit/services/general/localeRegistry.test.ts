@@ -2,7 +2,9 @@ import {
   CANONICAL_SOURCE_APP_LOCALE,
   getLocaleDefinition,
   getLocaleDefinitionByLanguage,
+  getLocaleFallbackDefinition,
   hasEnglishFallback,
+  hasLocaleFallback,
   LOCALE_REGISTRY,
   normalizeSupportedAppLocale,
   SUPPORTED_APP_LOCALES,
@@ -79,4 +81,26 @@ describe('localeRegistry', () => {
     expect(hasEnglishFallback('en-US')).toBe(false);
     expect(hasEnglishFallback('es-ES')).toBe(false);
   });
+
+  it.each(LOCALE_REGISTRY)(
+    'derives fallback and welcome-asset behavior for $canonicalLocale from the registry',
+    (definition) => {
+      const documentationFallback = getLocaleFallbackDefinition(
+        definition.canonicalLocale,
+        'documentationLocale',
+      );
+      const legalFallback = getLocaleFallbackDefinition(definition.canonicalLocale, 'legalLocale');
+
+      expect(documentationFallback?.canonicalLocale).toBe(definition.fallbacks.documentationLocale);
+      expect(legalFallback?.canonicalLocale).toBe(definition.fallbacks.legalLocale);
+      expect(hasLocaleFallback(definition.canonicalLocale, 'documentationLocale')).toBe(
+        definition.fallbacks.documentationLocale !== definition.canonicalLocale,
+      );
+      expect(hasLocaleFallback(definition.canonicalLocale, 'legalLocale')).toBe(
+        definition.fallbacks.legalLocale !== definition.canonicalLocale,
+      );
+      expect(definition.assets.welcomeTidas.light).toMatch(/[.]svg$/u);
+      expect(definition.assets.welcomeTidas.dark).toMatch(/-dark[.]svg$/u);
+    },
+  );
 });

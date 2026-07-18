@@ -1,8 +1,6 @@
 // @ts-nocheck
 import { renderWithProviders, screen } from '../../../../../helpers/testUtils';
 
-const mockGetLocale = jest.fn();
-
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
@@ -17,7 +15,6 @@ const toText = (node: any): string => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => mockGetLocale(),
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -41,7 +38,11 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
   Descriptions.Item = ({ children, label, styles }: any) => (
-    <div data-testid='desc-item' data-label-width={styles?.label?.width ?? ''}>
+    <div
+      data-testid='desc-item'
+      data-label-width={styles?.label?.width ?? ''}
+      data-label-max-width={styles?.label?.maxWidth ?? ''}
+    >
       <span>{toText(label)}</span>
       <span>{children}</span>
     </div>
@@ -59,10 +60,6 @@ jest.mock('antd', () => {
 
 describe('SourceSelectDescription', () => {
   const SourceSelectDescription = require('@/pages/Sources/Components/select/description').default;
-
-  beforeEach(() => {
-    mockGetLocale.mockReturnValue('en-US');
-  });
 
   it('renders a placeholder card when there are no source references', () => {
     renderWithProviders(<SourceSelectDescription title='Source' lang='en' />);
@@ -95,18 +92,18 @@ describe('SourceSelectDescription', () => {
     expect(screen.getByText('Source two')).toBeInTheDocument();
   });
 
-  it('uses the zh-CN label width for placeholder cards', () => {
-    mockGetLocale.mockReturnValue('zh-CN');
-
+  it('uses content-driven responsive label sizing for placeholder cards', () => {
     renderWithProviders(<SourceSelectDescription title='Source' lang='zh' />);
 
-    expect(screen.getByTestId('desc-item')).toHaveAttribute('data-label-width', '150px');
+    expect(screen.getByTestId('desc-item')).toHaveAttribute('data-label-width', 'auto');
+    expect(screen.getByTestId('desc-item')).toHaveAttribute(
+      'data-label-max-width',
+      'min(42vw, 22rem)',
+    );
     expect(screen.getByText('-')).toBeInTheDocument();
   });
 
   it('renders a single sparse source reference without a linked view', () => {
-    mockGetLocale.mockReturnValue('zh-CN');
-
     renderWithProviders(
       <SourceSelectDescription
         title='Source'
@@ -119,7 +116,7 @@ describe('SourceSelectDescription', () => {
 
     expect(screen.queryByTestId('source-view')).not.toBeInTheDocument();
     expect(screen.getByText('Source1')).toBeInTheDocument();
-    expect(screen.getAllByTestId('desc-item')[0]).toHaveAttribute('data-label-width', '150px');
+    expect(screen.getAllByTestId('desc-item')[0]).toHaveAttribute('data-label-width', 'auto');
     expect(screen.getAllByText('-')).not.toHaveLength(0);
     expect(screen.getByText('Sparse source')).toBeInTheDocument();
   });

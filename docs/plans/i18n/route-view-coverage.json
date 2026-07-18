@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "tiangong.i18n-route-view-coverage.v3",
+  "schemaVersion": "tiangong.i18n-route-view-coverage.v4",
   "supportedLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
   "sourceRouteConfig": "config/routes.ts",
   "policy": {
@@ -8,6 +8,634 @@
     "authenticationBoundary": "This localization artifact records the existing access context but never grants or expands anonymous access. Anonymous SPA access is limited by the runtime policy to the login and account-recovery flow; all other configured and unmatched routes require an authenticated session.",
     "blockedContextAllowed": false
   },
+  "proofPolicy": {
+    "status": "inventory-only",
+    "assertionSemantics": "Planned browser assertions describe the semantic E2E work that remains; their text is not execution evidence and cannot activate a locale.",
+    "browserProof": {
+      "status": "planned",
+      "ownerIssue": "#635",
+      "executedEvidence": []
+    }
+  },
+  "routeFamilies": [
+    {
+      "id": "section-redirects",
+      "routes": ["/tgdata", "/codata", "/mydata", "/tedata", "/user"],
+      "viewState": "configured-redirect",
+      "trigger": "Open the configured section root and preserve the existing authentication boundary while routing to its default child.",
+      "component": "config/routes.ts redirect",
+      "accessContext": "authenticated-session-required except the /user redirect into the existing anonymous login flow",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": ["authenticated-redirect", "anonymous-login-flow-redirect"],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "route configuration and destination-page locale catalog",
+        "structureAudit": "exact configured-path closure and redirect ownership",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/i18n/localeDeliveryContracts.test.ts"],
+        "plannedBrowserAssertions": [
+          "each section root resolves to its configured child without expanding anonymous access"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "manage-system",
+      "routes": ["/manageSystem"],
+      "viewState": "team-management",
+      "trigger": "Open the management page and traverse team, member, drawer, loading, empty, error, and action states.",
+      "component": "src/pages/ManageSystem/index.tsx",
+      "accessContext": "authenticated-session-and-admin-role-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/ManageSystem/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content-language labels",
+        "structureAudit": "exact topology, language-switch, modal, drawer, status, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/ManageSystem/index.test.tsx",
+          "tests/unit/components/AllTeamsEdit.test.tsx",
+          "tests/unit/components/AllTeamsView.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "team-management copy and content-language labels switch for every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "review",
+      "routes": ["/review"],
+      "viewState": "review-workbench",
+      "trigger": "Open the review workbench and traverse assignment, expansion, detail, reject, loading, empty, error, and action states.",
+      "component": "src/pages/Review/index.tsx",
+      "accessContext": "authenticated-session-and-review-role-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Review/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer",
+        "expanded-row"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content language",
+        "structureAudit": "exact topology, status, detail, modal, drawer, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Review/index.test.tsx",
+          "tests/unit/pages/Review/Components/AssignmentReview.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "review list and detail content resolve the active registry locale without a zh/en branch"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "lifecycle-model-lists",
+      "routes": ["/tgdata/models", "/codata/models", "/mydata/models", "/tedata/models"],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the model list directly or with tid/id/version/required/mode URL state and traverse list, empty, loading, view, edit, and validation drawers.",
+      "component": "src/pages/LifeCycleModels/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/LifeCycleModels/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required",
+        "query-mode"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, URL-state, table, empty, validation, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/LifeCycleModels/index.test.tsx"],
+        "plannedBrowserAssertions": [
+          "every configured model scope preserves URL state while locale copy changes"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "process-analysis",
+      "routes": ["/mydata/processes/analysis"],
+      "viewState": "process-analysis",
+      "trigger": "Open process analysis and traverse selection, calculation, loading, empty, error, result, chart, table, and control states.",
+      "component": "src/pages/Processes/Analysis/index.tsx",
+      "accessContext": "authenticated-session-required with existing process permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Processes/Analysis/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "chart",
+        "table"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, calculation, result, chart, table, modal, and error coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/Processes/Analysis/index.test.tsx"],
+        "plannedBrowserAssertions": [
+          "analysis controls, progress, failures, and results render in every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "process-lists",
+      "routes": [
+        "/tgdata/processes",
+        "/codata/processes",
+        "/mydata/processes",
+        "/tedata/processes"
+      ],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the process list directly or with tid/id/version/required/mode URL state and traverse list, exchange, view, edit, validation, and review states.",
+      "component": "src/pages/Processes/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Processes/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required",
+        "query-mode"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and localized exchange enumerations",
+        "structureAudit": "exact topology, URL-state, exchange, validation, modal, drawer, and review coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Processes/index.test.tsx",
+          "tests/unit/pages/Processes/Components/Exchange/create.test.tsx",
+          "tests/unit/pages/Processes/Components/Exchange/edit.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "every configured process scope localizes exchange and uncertainty labels for every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "flow-lists",
+      "routes": ["/tgdata/flows", "/codata/flows", "/mydata/flows", "/tedata/flows"],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the flow list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Flows/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Flows/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification/location labels",
+        "structureAudit": "exact topology, URL-state, table, classification, location, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Flows/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx",
+          "tests/unit/components/LocationTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "flow classification and location controls refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "flow-property-lists",
+      "routes": [
+        "/tgdata/flowproperties",
+        "/codata/flowproperties",
+        "/mydata/flowproperties",
+        "/tedata/flowproperties"
+      ],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the flow-property list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Flowproperties/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Flowproperties/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Flowproperties/index.test.tsx",
+          "tests/unit/components/LevelTextItemDescription.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "flow-property classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "unit-group-lists",
+      "routes": [
+        "/tgdata/unitgroups",
+        "/codata/unitgroups",
+        "/mydata/unitgroups",
+        "/tedata/unitgroups"
+      ],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the unit-group list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Unitgroups/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Unitgroups/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Unitgroups/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "unit-group classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "source-lists",
+      "routes": ["/tgdata/sources", "/codata/sources", "/mydata/sources", "/tedata/sources"],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the source list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Sources/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Sources/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Sources/index.test.tsx",
+          "tests/unit/components/LevelTextItemDescription.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "source classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "contact-lists",
+      "routes": ["/tgdata/contacts", "/codata/contacts", "/mydata/contacts", "/tedata/contacts"],
+      "viewState": "dataset-list-and-drawers",
+      "trigger": "Open the contact list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Contacts/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Contacts/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Contacts/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "contact classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "data-processing",
+      "routes": ["/data-processing"],
+      "viewState": "build-preview-publication-tabs",
+      "trigger": "Open Data Processing directly or with tab/packageId/processId/processVersion state and traverse build, preview, publication, loading, empty, success, failure, retry, and modal states.",
+      "component": "src/pages/DataProcessing/index.tsx",
+      "accessContext": "authenticated-session-and-data-product-manager-role-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/DataProcessing/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "query-tab",
+        "query-packageId",
+        "query-processId",
+        "query-processVersion"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived localized payload resolution",
+        "structureAudit": "exact topology, URL-state, tab, job, preview, publication, status, and modal coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/DataProcessing/index.test.tsx"],
+        "plannedBrowserAssertions": [
+          "reference labels follow every registry locale and its declared fallback chain"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "account",
+      "routes": ["/account"],
+      "viewState": "account-profile",
+      "trigger": "Open the account page and traverse profile, loading, validation, success, and error states.",
+      "component": "src/pages/Account/index.tsx",
+      "accessContext": "authenticated-session-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Account/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, profile, validation, status, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": ["tests/unit/pages/Account/ProfilePage.test.tsx"],
+        "plannedBrowserAssertions": [
+          "profile labels, validation, and status copy switch for every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "team",
+      "routes": ["/team"],
+      "viewState": "team-membership",
+      "trigger": "Open the team page or its action URL state and traverse members, invitations, role, loading, empty, success, error, modal, and drawer states.",
+      "component": "src/pages/Teams/index.tsx",
+      "accessContext": "authenticated-session-required with existing team membership permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Teams/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-action"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content-language labels",
+        "structureAudit": "exact topology, URL-state, members, invitation, role, modal, drawer, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "focusedTests": [
+          "tests/unit/pages/Teams/TeamPage.test.tsx",
+          "tests/unit/components/TeamNotification.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "team names and actions follow every registry locale and its declared fallback chain"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    }
+  ],
   "rows": [
     {
       "route": "/",
@@ -33,7 +661,7 @@
         "query-preserving-redirect"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog after redirect",
         "structureAudit": "exact topology, key, ICU, and route ownership",
         "missingContent": 0
@@ -43,7 +671,7 @@
           "tests/unit/app.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous / reaches /user/login without rendering Welcome",
           "authenticated / reaches /welcome while preserving the query"
         ]
@@ -77,14 +705,14 @@
         "refresh"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog; component-local en/zh maps removed",
         "structureAudit": "exact topology, key, ICU, media alt, ARIA, and fallback coverage",
         "missingContent": 0
       },
       "proof": {
         "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "French overview title, sections, metrics, actions, TIDAS modal, and team modal states"
         ]
       },
@@ -117,14 +745,14 @@
         "refresh-preserves-query"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, schema, media, ARIA, and query-state coverage",
         "missingContent": 0
       },
       "proof": {
         "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "French guide title, body, steps, schema, media states, actions, query switch, and refresh"
         ]
       },
@@ -173,7 +801,7 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog plus declared English legal/docs fallback",
         "structureAudit": "exact topology, key, ICU, ARIA, selector, service error, and fallback coverage",
         "missingContent": 0
@@ -186,7 +814,7 @@
           "tests/unit/components/RightContent.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French selector, legal/docs disclosure, and dark-mode action"
         ]
       },
@@ -224,7 +852,7 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
         "missingContent": 0
@@ -234,7 +862,7 @@
           "tests/unit/pages/User/Login/password_forgot.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French form and validation state",
           "rejected session prefill stops loading and leaves the form usable"
         ]
@@ -274,7 +902,7 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
         "missingContent": 0
@@ -284,7 +912,7 @@
           "tests/unit/pages/User/Login/password_reset.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French form and validation state",
           "missing or rejected reset session exposes a localized recovery action"
         ]
@@ -330,7 +958,7 @@
         "South-China-Sea-map-label"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog plus typed source-data adapters",
         "structureAudit": "exact topology, key, ICU, token, formatting, map, loading, error, and empty coverage",
         "missingContent": 0
@@ -343,7 +971,7 @@
           "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
           "tests/unit/pages/NationalCarbonDashboard/processFlowGraphPanel.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "representative authenticated French shared-header and dashboard state"
         ]
       },
@@ -364,7 +992,7 @@
       },
       "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "declared English legal fallback",
         "structureAudit": "fixed URL, hrefLang, and localized disclosure",
         "missingContent": 0
@@ -374,7 +1002,7 @@
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": ["French disclosure opens the existing English terms URL"]
+        "plannedBrowserAssertions": ["French disclosure opens the existing English terms URL"]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0
@@ -393,7 +1021,7 @@
       },
       "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "declared English legal fallback",
         "structureAudit": "fixed URL, hrefLang, and localized disclosure",
         "missingContent": 0
@@ -403,7 +1031,7 @@
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": ["French disclosure opens the existing English privacy URL"]
+        "plannedBrowserAssertions": ["French disclosure opens the existing English privacy URL"]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0
@@ -433,7 +1061,7 @@
         "back-home-action"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "fail-closed anonymous-route policy plus authenticated localized wildcard rendering",
         "missingContent": 0
@@ -446,7 +1074,7 @@
           "tests/unit/wrappers/AuthGuard.test.tsx",
           "tests/unit/pages/404.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous unknown pathname reaches /user/login without rendering the 404",
           "authenticated unknown pathname renders the localized 404 and Back Home action"
         ]

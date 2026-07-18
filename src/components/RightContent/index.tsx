@@ -1,4 +1,4 @@
-import { getLocaleDefinition } from '@/services/general/localeRegistry';
+import { getLocaleDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import {
   getDocumentationUrl,
   normalizeRuntimeLocale,
@@ -44,12 +44,7 @@ export const Question = () => {
   const intl = useIntl();
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const localeDefinition = locale ? getLocaleDefinition(locale) : undefined;
-  const usesEnglishFallback = Boolean(
-    localeDefinition &&
-    localeDefinition.fallbacks.documentationLocale === 'en-US' &&
-    localeDefinition.fallbacks.documentationLocale !== localeDefinition.canonicalLocale,
-  );
+  const usesEnglishFallback = hasLocaleFallback(locale, 'documentationLocale');
   const helpLabel = intl.formatMessage({
     id: usesEnglishFallback
       ? 'component.globalHeader.help.englishFallback'

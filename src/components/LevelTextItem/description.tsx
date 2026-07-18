@@ -15,23 +15,41 @@ const LevelTextItemDescription: FC<Props> = ({ data, lang, categoryType, flowTyp
   const [calssStr, setClassStr] = useState<any>(undefined);
 
   useEffect(() => {
-    if (data && Array.isArray(data) && data.length > 0) {
-      if (data[0] !== undefined) {
-        setSpinning(true);
-        if (categoryType === 'Flow' && flowType === 'Elementary flow') {
-          getILCDFlowCategorization(lang, [data[0]]).then((res) => {
-            setClassStr(genClassStr(data, 0, res.data));
-            setSpinning(false);
-          });
-        } else {
-          getILCDClassification(categoryType, lang, [data[0]]).then((res) => {
-            setClassStr(genClassStr(data, 0, res.data));
-            setSpinning(false);
-          });
+    let active = true;
+
+    const fetchClassification = async () => {
+      if (!Array.isArray(data) || data.length === 0 || data[0] === undefined) {
+        setClassStr(undefined);
+        setSpinning(false);
+        return;
+      }
+
+      setClassStr(undefined);
+      setSpinning(true);
+      try {
+        const response =
+          categoryType === 'Flow' && flowType === 'Elementary flow'
+            ? await getILCDFlowCategorization(lang, [data[0]])
+            : await getILCDClassification(categoryType, lang, [data[0]]);
+        if (active) {
+          setClassStr(genClassStr(data, 0, response.data));
+        }
+      } catch {
+        if (active) {
+          setClassStr(undefined);
+        }
+      } finally {
+        if (active) {
+          setSpinning(false);
         }
       }
-    }
-  }, [data]);
+    };
+
+    fetchClassification();
+    return () => {
+      active = false;
+    };
+  }, [categoryType, data, flowType, lang]);
 
   return (
     <Spin spinning={spinning}>

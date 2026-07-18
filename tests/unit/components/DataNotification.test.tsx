@@ -13,8 +13,9 @@
  */
 
 import DataNotification from '@/components/Notification/DataNotification';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 import { getNotifyReviews } from '@/services/reviews/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -695,6 +696,87 @@ describe('DataNotification Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Test Process')).toBeInTheDocument();
+    });
+  });
+
+  it('resolves names for every registry locale and refreshes after a locale switch', async () => {
+    const localizedNames = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+      '@xml:lang': languageCode,
+      '#text': `process-${languageCode}`,
+    }));
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [{ ...mockReviewData.data[0], name: localizedNames }],
+      total: 1,
+    });
+    mockIntlLocale = CONTENT_LANGUAGE_REGISTRY[0].appLocale;
+    const { rerender } = render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
+      mockIntlLocale = appLocale;
+      rerender(
+        <ConfigProvider>
+          <DataNotification {...defaultProps} />
+        </ConfigProvider>,
+      );
+      await waitFor(() => {
+        expect(screen.getByText(`process-${languageCode}`)).toBeInTheDocument();
+      });
+    }
+  });
+
+  it('ignores an older locale request that resolves after the latest locale response', async () => {
+    let resolveEnglish: (value: any) => void = () => undefined;
+    let resolveFrench: (value: any) => void = () => undefined;
+    const englishRequest = new Promise((resolve) => {
+      resolveEnglish = resolve;
+    });
+    const frenchRequest = new Promise((resolve) => {
+      resolveFrench = resolve;
+    });
+    mockGetNotifyReviews
+      .mockImplementationOnce(() => englishRequest)
+      .mockImplementationOnce(() => frenchRequest);
+
+    mockIntlLocale = 'en-US';
+    const { rerender } = render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetNotifyReviews).toHaveBeenCalledTimes(1));
+
+    mockIntlLocale = 'fr-FR';
+    rerender(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetNotifyReviews).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveFrench({
+        success: true,
+        data: [{ ...mockReviewData.data[0], name: 'Latest French result' }],
+        total: 1,
+      });
+    });
+    expect(await screen.findByText('Latest French result')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveEnglish({
+        success: true,
+        data: [{ ...mockReviewData.data[0], name: 'Stale English result' }],
+        total: 1,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Latest French result')).toBeInTheDocument();
+      expect(screen.queryByText('Stale English result')).not.toBeInTheDocument();
     });
   });
 

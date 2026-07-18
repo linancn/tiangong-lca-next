@@ -1,4 +1,5 @@
 import { darkLogoPreviewStyle } from '@/components/AllTeams/logoPreviewStyle';
+import { getLanguageDisplayName } from '@/services/general/contentLanguageRegistry';
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeamMessageApi } from '@/services/teams/api';
 import { CloseOutlined, ProfileOutlined } from '@ant-design/icons';
@@ -6,7 +7,7 @@ import { Button, Card, Descriptions, Drawer, Image, Space, Spin, Tooltip } from 
 import type { ButtonType } from 'antd/es/button';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 
 type Props = {
   id: string;
@@ -18,6 +19,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<any>({});
+  const intl = useIntl();
 
   const teamContent: React.ReactNode = (
     <>
@@ -30,7 +32,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
             (item: { '#text': string; '@xml:lang': string }, index: number) => (
               <Descriptions.Item
                 key={index}
-                label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
+                label={getLanguageDisplayName(item['@xml:lang'], intl.locale)}
                 styles={{ label: { width: '120px' } }}
               >
                 {item['#text'] || '-'}
@@ -51,7 +53,7 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
             (item: { '#text': string; '@xml:lang': string }, index: number) => (
               <Descriptions.Item
                 key={index}
-                label={item['@xml:lang'] === 'zh' ? '简体中文' : 'English'}
+                label={getLanguageDisplayName(item['@xml:lang'], intl.locale)}
                 styles={{ label: { width: '120px' } }}
               >
                 {item['#text'] || '-'}
@@ -107,7 +109,14 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
               styles={{ label: { width: '120px' } }}
             >
               {initData?.json?.lightLogoPreviewUrl ? (
-                <Image width={100} src={initData?.json?.lightLogoPreviewUrl} alt='Light Logo' />
+                <Image
+                  width={100}
+                  src={initData?.json?.lightLogoPreviewUrl}
+                  alt={intl.formatMessage({
+                    id: 'pages.team.info.lightLogo',
+                    defaultMessage: 'Light Logo',
+                  })}
+                />
               ) : (
                 '-'
               )}
@@ -123,7 +132,10 @@ const TeamView: FC<Props> = ({ id, buttonType, buttonTypeProp = 'default' }) => 
                   style={darkLogoPreviewStyle}
                   width={100}
                   src={initData?.json?.darkLogoPreviewUrl}
-                  alt='Dark Logo'
+                  alt={intl.formatMessage({
+                    id: 'pages.team.info.darkLogo',
+                    defaultMessage: 'Dark Logo',
+                  })}
                 />
               ) : (
                 '-'

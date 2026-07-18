@@ -4,10 +4,19 @@
  */
 
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorization = jest.fn();
 let latestTreeSelectProps: any = null;
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolver) => {
+    resolve = resolver;
+  });
+  return { promise, resolve };
+};
 
 jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
@@ -404,5 +413,64 @@ describe('LevelTextItemForm', () => {
     });
 
     expect(screen.getByText('Please input classification')).toBeInTheDocument();
+  });
+
+  it('refreshes for every registry content language selected by its parent', async () => {
+    mockGetILCDClassification.mockResolvedValue({ data: [], success: true });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(SUPPORTED_CONTENT_LANGUAGES[0]));
+
+    for (const languageCode of SUPPORTED_CONTENT_LANGUAGES) {
+      rerender(renderControl(languageCode));
+      await waitFor(() => {
+        expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', languageCode, ['all']);
+      });
+    }
+  });
+
+  it('ignores a stale classification response after the parent switches language', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const initialRequest = deferred<any>();
+    mockGetILCDClassification.mockReturnValueOnce(initialRequest.promise).mockResolvedValueOnce({
+      success: true,
+      data: [{ id: 'next', label: 'Current label', value: 'current' }],
+    });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    rerender(renderControl(nextLanguage));
+    expect(await screen.findByRole('button', { name: 'Current label' })).toBeInTheDocument();
+
+    await act(async () => {
+      initialRequest.resolve({
+        success: true,
+        data: [{ id: 'stale', label: 'Stale label', value: 'stale' }],
+      });
+      await initialRequest.promise;
+    });
+
+    expect(screen.queryByRole('button', { name: 'Stale label' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Current label' })).toBeInTheDocument();
   });
 });

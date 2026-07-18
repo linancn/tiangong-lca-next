@@ -3,6 +3,7 @@ import {
   normalizeLifeCycleModelProcessInstanceSdkValidationDetails,
   normalizeLifeCycleModelSdkValidationDetails,
 } from '@/pages/LifeCycleModels/sdkValidation';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 
 describe('LifeCycleModels sdkValidation', () => {
   const {
@@ -14,7 +15,9 @@ describe('LifeCycleModels sdkValidation', () => {
 
   it('covers locale and process-instance helper fallbacks', () => {
     expect(toLocaleLang()).toBe('en');
-    expect(toLocaleLang('zh-CN')).toBe('zh');
+    CONTENT_LANGUAGE_REGISTRY.forEach(({ appLocale, languageCode }) => {
+      expect(toLocaleLang(appLocale)).toBe(languageCode);
+    });
     expect(toProcessInstanceList(null)).toEqual([]);
     expect(toProcessInstanceList({ '@dataSetInternalID': 'node-1' })).toEqual([
       { '@dataSetInternalID': 'node-1' },

@@ -1,3 +1,4 @@
+import { getContentGraphTextWidthDivisor } from '@/services/general/contentLanguageRegistry';
 import { getLangText } from '@/services/general/util';
 import type {
   LifeCycleModelEditorFormState,
@@ -47,7 +48,7 @@ const getNodeWidth = (
 ) => node?.size?.width ?? node?.width ?? fallbackWidth;
 
 const getPortTextLimit = (lang: string, nodeWidth: number) =>
-  lang === 'zh' ? nodeWidth / 12 - 4 : nodeWidth / 7 - 4;
+  nodeWidth / getContentGraphTextWidthDivisor(lang) - 4;
 
 const getDisplayPortText = (labelWithAllocation: string, lang: string, nodeWidth: number) => {
   const limit = getPortTextLimit(lang, nodeWidth);
