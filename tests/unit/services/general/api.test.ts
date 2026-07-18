@@ -69,6 +69,7 @@ jest.mock('@/services/general/util', () => {
   return {
     __esModule: true,
     ...actual,
+    genLocalizedClassification: (...args: any[]) => mockGenClassificationZH.apply(null, args),
     genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
     classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
     getLangText: (...args: any[]) => mockGetLangText.apply(null, args),

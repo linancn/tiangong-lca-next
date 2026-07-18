@@ -38,6 +38,9 @@ jobs:
       - name: Verify reviewed LCIA cache bundle
         run: npm run lcia-cache:verify
 
+      - name: Require locale production readiness
+        run: npm run i18n:locale:all:production:check
+
       - name: Build project
         run: npm run build
 

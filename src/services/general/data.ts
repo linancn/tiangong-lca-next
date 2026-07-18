@@ -1,5 +1,7 @@
 import type { Key } from 'react';
 
+import { CONTENT_LANGUAGE_OPTIONS } from './contentLanguageRegistry';
+
 export type ListPagination = {
   total: number;
   pageSize: number;
@@ -39,15 +41,7 @@ export type Classification = {
   children: Classification[];
 };
 
-export const langOptions = [
-  {
-    value: 'en',
-    label: 'English',
-  },
-  {
-    value: 'zh',
-    label: '简体中文',
-  },
-];
+/** @deprecated Prefer getAuthoringLanguageOptions for new consumers. */
+export const langOptions = CONTENT_LANGUAGE_OPTIONS;
 
 export const initVersion = '01.01.000';

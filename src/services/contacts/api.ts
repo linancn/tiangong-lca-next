@@ -1,7 +1,7 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -72,35 +72,7 @@ async function getContactTeamFilter(dataSource: string, tid: string | []) {
 }
 
 async function mapContactListRows(rows: ContactListRpcRow[], lang: string): Promise<any[]> {
-  if (lang === 'zh') {
-    const classificationData = await getCachedClassificationData('Contact', lang, ['all']);
-    return rows.map((i) => {
-      try {
-        const dataInfo = i.json?.contactDataSet?.contactInformation?.dataSetInformation;
-        const classifications = jsonToList(
-          dataInfo?.classificationInformation?.['common:classification']?.['common:class'],
-        );
-        const classificationZH = genClassificationZH(classifications, classificationData);
-
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          shortName: getLangText(dataInfo?.['common:shortName'], lang),
-          name: getLangText(dataInfo?.['common:name'], lang),
-          classification: classificationToString(classificationZH),
-          email: dataInfo?.email ?? '-',
-          version: i.version,
-          modifiedAt: new Date(i.modified_at ?? ''),
-          teamId: i.team_id,
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  }
+  const classificationData = await getCachedClassificationData('Contact', lang, ['all']);
 
   return rows.map((i) => {
     try {
@@ -114,7 +86,9 @@ async function mapContactListRows(rows: ContactListRpcRow[], lang: string): Prom
         id: i.id,
         shortName: getLangText(dataInfo?.['common:shortName'], lang),
         name: getLangText(dataInfo?.['common:name'], lang),
-        classification: classificationToString(classifications),
+        classification: classificationToString(
+          genLocalizedClassification(classifications, classificationData),
+        ),
         email: dataInfo?.email ?? '-',
         version: i.version,
         modifiedAt: new Date(i.modified_at ?? ''),

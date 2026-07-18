@@ -2,7 +2,10 @@ import { favicon } from './branding';
 import defaultSettings from './defaultSettings';
 // https://umijs.org/config/
 import { defineConfig } from '@umijs/max';
-import { LOCALE_REGISTRY } from '../src/services/general/localeRegistry';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  LOCALE_REGISTRY,
+} from '../src/services/general/localeRegistry';
 import proxy from './proxy';
 import routes from './routes';
 import { applySupabaseFrontendEnv } from './supabaseEnv';
@@ -107,8 +110,7 @@ export default defineConfig({
    * @doc https://umijs.org/docs/max/i18n
    */
   locale: {
-    // default zh-CN
-    default: 'zh-CN',
+    default: DEFAULT_BROWSER_APP_LOCALE,
     antd: true,
     title: true,
     useLocalStorage: true,

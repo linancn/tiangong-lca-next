@@ -1,7 +1,7 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -72,42 +72,7 @@ async function getUnitGroupTeamFilter(dataSource: string, tid: string | []) {
 }
 
 async function mapUnitGroupListRows(rows: UnitGroupListRpcRow[], lang: string): Promise<any[]> {
-  if (lang === 'zh') {
-    const classificationData = await getCachedClassificationData('UnitGroup', lang, ['all']);
-    return rows.map((i) => {
-      try {
-        const dataSet = i.json?.unitGroupDataSet;
-        const dataInfo = dataSet?.unitGroupInformation;
-        const refUnitId = dataInfo?.quantitativeReference?.referenceToReferenceUnit ?? '-';
-        const unitList = jsonToList(dataSet?.units?.unit);
-        const refUnit = unitList.find((item) => item?.['@dataSetInternalID'] === refUnitId);
-        const classifications = jsonToList(
-          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
-          ],
-        );
-        const classificationZH = genClassificationZH(classifications, classificationData);
-
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          name: getLangText(dataInfo?.dataSetInformation?.['common:name'], lang),
-          classification: classificationToString(classificationZH),
-          refUnitId,
-          refUnitName: refUnit?.name ?? '-',
-          refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-          version: i.version,
-          modifiedAt: new Date(i.modified_at ?? ''),
-          teamId: i.team_id,
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  }
+  const classificationData = await getCachedClassificationData('UnitGroup', lang, ['all']);
 
   return rows.map((i) => {
     try {
@@ -126,7 +91,9 @@ async function mapUnitGroupListRows(rows: UnitGroupListRpcRow[], lang: string): 
         key: i.id + ':' + i.version,
         id: i.id,
         name: getLangText(dataInfo?.dataSetInformation?.['common:name'], lang),
-        classification: classificationToString(classifications),
+        classification: classificationToString(
+          genLocalizedClassification(classifications, classificationData),
+        ),
         refUnitId,
         refUnitName: refUnit?.name ?? '-',
         refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),

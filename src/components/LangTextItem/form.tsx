@@ -1,10 +1,15 @@
-import { langOptions } from '@/services/general/data';
+import {
+  getAuthoringLanguageOptions,
+  getLanguageDisplayName,
+  REQUIRED_CONTENT_LANGUAGES,
+} from '@/services/general/contentLanguageRegistry';
 import { CloseOutlined } from '@ant-design/icons';
-import { Button, Col, Form, Input, Row, Select, message } from 'antd';
+import { Button, Col, Form, Input, message, Row, Select } from 'antd';
 import { FC, ReactNode, useRef } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const { TextArea } = Input;
+const authoringLanguageOptions = getAuthoringLanguageOptions();
 
 type Props = {
   name: any;
@@ -78,8 +83,10 @@ const LangTextItemForm: FC<Props> = ({
                       (item: any) => item && item.hasOwnProperty('@xml:lang'),
                     );
                     const langs = lists.map((item: any) => item['@xml:lang']);
-                    const enIndex = langs.indexOf('en');
-                    if (langs && langs.length && enIndex === -1) {
+                    const hasAllRequiredLanguages = REQUIRED_CONTENT_LANGUAGES.every(
+                      (requiredLanguage) => langs.includes(requiredLanguage),
+                    );
+                    if (langs && langs.length && !hasAllRequiredLanguages) {
                       if (setRuleErrorState) {
                         setRuleErrorState(true);
                       } else {
@@ -135,11 +142,22 @@ const LangTextItemForm: FC<Props> = ({
                     ]
                   : rules;
 
-                const optionsWithDisabled = langOptions.map((option) => ({
+                const declaredOptions = authoringLanguageOptions.map((option) => ({
                   ...option,
                   disabled:
                     selectedLangValues.includes(option.value) && option.value !== currentLang,
                 }));
+                const optionsWithDisabled =
+                  currentLang && !declaredOptions.some((option) => option.value === currentLang)
+                    ? [
+                        ...declaredOptions,
+                        {
+                          value: currentLang,
+                          label: getLanguageDisplayName(currentLang, intl.locale),
+                          disabled: true,
+                        },
+                      ]
+                    : declaredOptions;
 
                 return (
                   <Row key={subField.key} gutter={[10, 0]} align='top'>
@@ -162,7 +180,10 @@ const LangTextItemForm: FC<Props> = ({
                                       );
                                     }
 
-                                    if (value === 'en' && setRuleErrorState) {
+                                    if (
+                                      REQUIRED_CONTENT_LANGUAGES.includes(value) &&
+                                      setRuleErrorState
+                                    ) {
                                       setRuleErrorState(false);
                                     }
                                     return Promise.resolve();
@@ -180,7 +201,7 @@ const LangTextItemForm: FC<Props> = ({
                               defaultMessage='Select a language'
                             />
                           }
-                          optionFilterProp='lang'
+                          optionFilterProp='label'
                           options={optionsWithDisabled}
                         />
                       </Form.Item>

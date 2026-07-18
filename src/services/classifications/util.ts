@@ -9,6 +9,11 @@ import {
 } from '@/services/general/browserResourceCache';
 
 import type { Classification } from '../general/data';
+import type { IlcdCanonicalDataType } from '../referenceResources/manifest';
+import {
+  getResolvedReferenceDataTypeName,
+  resolveReferenceResource,
+} from '../referenceResources/resolver';
 
 const CACHE_KEY = 'classification_cache_manifest';
 const CACHE_DB_NAME = 'classification_cache_db';
@@ -22,36 +27,14 @@ export interface ClassificationCacheManifest {
   decompressed: boolean;
 }
 
-export const categoryTypeOptions = [
-  {
-    en: 'Process',
-    zh: '过程',
-  },
-  {
-    en: 'Flow',
-    zh: '流',
-  },
-  {
-    en: 'FlowProperty',
-    zh: '流属性',
-  },
-  {
-    en: 'UnitGroup',
-    zh: '单位组',
-  },
-  {
-    en: 'Contact',
-    zh: '联系信息',
-  },
-  {
-    en: 'Source',
-    zh: '来源',
-  },
-  {
-    en: 'LCIAMethod',
-    zh: '生命周期影响评估方法',
-  },
-];
+export const getLocalizedCategoryDataType = (
+  categoryType: IlcdCanonicalDataType,
+  language: string,
+): string =>
+  getResolvedReferenceDataTypeName(
+    resolveReferenceResource('ilcd-classification', language),
+    categoryType,
+  );
 
 export type ILCDCategoryNode = {
   '@id': string;
@@ -74,22 +57,34 @@ export function genClass(data?: ILCDCategoryNode[] | null): Classification[] {
   });
 }
 
-export function genClassZH(
+export function genClassWithLocalizedLabels(
   data?: ILCDCategoryNode[] | null,
-  dataZH?: ILCDCategoryNode[] | null,
+  localizedData?: ILCDCategoryNode[] | null,
 ): Classification[] {
   if (!data) {
     return [];
   }
-  return data.map((item) => {
-    const zh = dataZH ? dataZH.find((candidate) => candidate['@id'] === item['@id']) : null;
+  return data.map((item, itemIndex) => {
+    const occurrence = data
+      .slice(0, itemIndex)
+      .filter((candidate) => candidate['@id'] === item['@id']).length;
+    const localizedMatches = localizedData?.filter((candidate) => candidate['@id'] === item['@id']);
+    const localized = localizedMatches?.[occurrence];
     return {
       id: item['@id'],
       value: item['@name'],
-      label: zh?.['@name'] ?? item['@name'],
-      children: genClassZH(item.category, zh?.category),
+      label: localized?.['@name'] ?? item['@name'],
+      children: genClassWithLocalizedLabels(item.category, localized?.category),
     };
   });
+}
+
+/** @deprecated Use genClassWithLocalizedLabels. */
+export function genClassZH(
+  data?: ILCDCategoryNode[] | null,
+  localizedData?: ILCDCategoryNode[] | null,
+) {
+  return genClassWithLocalizedLabels(data, localizedData);
 }
 
 const initDB = (): Promise<IDBDatabase> => {

@@ -61,6 +61,34 @@ describe('Locations Cache (src/services/locations/cache.ts)', () => {
     expect(mockGetILCDLocationEntries).toHaveBeenCalledWith('en', ['CN', 'US']);
   });
 
+  it('shares cache entries when requested languages resolve to the same location asset', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGetILCDLocationEntries.mockResolvedValue([{ '@value': 'CN', '#text': 'China' }]);
+
+    const german = await locationCache.getILCDLocationByValues('de', ['CN']);
+    const french = await locationCache.getILCDLocationByValues('fr', ['CN']);
+
+    expect(french).toEqual(german);
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(1);
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledWith('de', ['CN']);
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('returns an empty label set on lookup errors without caching the transient failure', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetILCDLocationEntries.mockRejectedValue(new Error('location unavailable'));
+
+    await expect(locationCache.getILCDLocationByValues('en', ['CN'])).resolves.toEqual([]);
+    await expect(locationCache.getILCDLocationByValues('en', ['CN'])).resolves.toEqual([]);
+
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(2);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('preserving raw location codes'),
+      expect.any(Error),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
   it('normalizes null API responses to an empty cached array', async () => {
     mockGetILCDLocationEntries.mockResolvedValue(null);
 

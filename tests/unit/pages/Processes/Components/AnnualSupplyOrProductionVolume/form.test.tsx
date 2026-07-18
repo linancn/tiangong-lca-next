@@ -24,6 +24,24 @@ jest.mock('umi', () => ({
 jest.mock('@/services/general/util', () => ({
   __esModule: true,
   getUnitData: (...args: any[]) => mockGetUnitData(...args),
+  getExactLangText: (value: any, lang: string) => {
+    if (typeof value === 'string') return value;
+    const normalizedLanguage =
+      ({ 'de-DE': 'de', 'fr-FR': 'fr', 'en-US': 'en', 'zh-CN': 'zh' } as any)[lang] ?? lang;
+    if (Array.isArray(value)) {
+      return (
+        value.find(
+          (item) =>
+            item?.['@xml:lang'] === normalizedLanguage &&
+            typeof item?.['#text'] === 'string' &&
+            item['#text'].trim() &&
+            item['#text'].trim() !== '-',
+        )?.['#text'] ?? '-'
+      );
+    }
+    if (value?.['@xml:lang'] && value['@xml:lang'] !== normalizedLanguage) return '-';
+    return value?.['#text'] ?? '-';
+  },
   getLangText: (value: any, lang: string) => {
     if (typeof value === 'string') return value;
     if (Array.isArray(value)) {
@@ -203,10 +221,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     await waitFor(() => {
       expect(form.setFieldValue).toHaveBeenLastCalledWith(
         ['annualSupply'],
-        [
-          { '@xml:lang': 'en', '#text': '100 Steel' },
-          { '@xml:lang': 'zh', '#text': '100 Steel' },
-        ],
+        [{ '@xml:lang': 'en', '#text': '100 Steel' }],
       );
     });
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('Steel');
@@ -239,10 +254,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     await waitFor(() => {
       expect(form.setFieldValue).toHaveBeenCalledWith(
         ['modelling', 'annualSupply'],
-        [
-          { '@xml:lang': 'en', '#text': '100 kg Steel' },
-          { '@xml:lang': 'zh', '#text': '100 kg 钢材' },
-        ],
+        [{ '@xml:lang': 'en', '#text': '100 kg Steel' }],
       );
     });
     expect(onData).toHaveBeenCalled();
@@ -253,16 +265,10 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
       value: '123',
     });
     expect(formItem.getValueProps([{ '@xml:lang': 'zh', '#text': '456 kg 钢材' }])).toEqual({
-      value: '456',
+      value: '',
     });
-    expect(formItem.normalize('789')).toEqual([
-      { '@xml:lang': 'en', '#text': '789 kg Steel' },
-      { '@xml:lang': 'zh', '#text': '789 kg 钢材' },
-    ]);
-    expect(formItem.normalize('abc789')).toEqual([
-      { '@xml:lang': 'en', '#text': '789 kg Steel' },
-      { '@xml:lang': 'zh', '#text': '789 kg 钢材' },
-    ]);
+    expect(formItem.normalize('789')).toEqual([{ '@xml:lang': 'en', '#text': '789 kg Steel' }]);
+    expect(formItem.normalize('abc789')).toEqual([{ '@xml:lang': 'en', '#text': '789 kg Steel' }]);
 
     await expect(formItem.rules[0].validator(null, '')).rejects.toThrow(
       'Annual volume is required',
@@ -278,6 +284,93 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     fireEvent.change(screen.getByLabelText('annual-volume'), { target: { value: '300' } });
     expect(onData).toHaveBeenCalled();
   });
+
+  it('persists the current German content language without fabricating unrelated languages', async () => {
+    const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+    render(
+      <AnnualSupplyOrProductionVolumeForm
+        exchangeDataSource={[
+          {
+            '@dataSetInternalID': '1',
+            exchangeDirection: 'Output',
+            quantitativeReference: true,
+            referenceToFlowDataSet: {
+              '@refObjectId': 'flow-1',
+              '@version': '01.00.000',
+              'common:shortDescription': [
+                { '@xml:lang': 'en', '#text': 'Steel' },
+                { '@xml:lang': 'de', '#text': 'Stahl' },
+              ],
+            },
+            refUnitRes: { refUnitName: 'kg' },
+          },
+        ]}
+        formRef={{ current: form }}
+        label='Annual volume'
+        lang='de'
+        name={['annualSupply']}
+        onData={jest.fn()}
+        rules={[{ required: true }]}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(form.setFieldValue).toHaveBeenLastCalledWith(
+        ['annualSupply'],
+        [
+          { '@xml:lang': 'en', '#text': '100 kg Steel' },
+          { '@xml:lang': 'de', '#text': '100 kg Stahl' },
+        ],
+      );
+    });
+    expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('kg Stahl');
+  });
+
+  it.each([
+    ['de-DE', 'de'],
+    ['fr-FR', 'fr'],
+  ])(
+    'keeps %s numeric-only when its unit and flow context are missing instead of persisting English fallback text',
+    async (appLocale, contentLanguage) => {
+      const form = buildForm([{ '@xml:lang': 'en', '#text': '100 old suffix' }]);
+
+      render(
+        <AnnualSupplyOrProductionVolumeForm
+          exchangeDataSource={[
+            {
+              '@dataSetInternalID': '1',
+              exchangeDirection: 'Output',
+              quantitativeReference: true,
+              referenceToFlowDataSet: {
+                'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+              },
+              refUnitRes: {
+                name: [{ '@xml:lang': 'en', '#text': 'kilogram' }],
+              },
+            },
+          ]}
+          formRef={{ current: form }}
+          label='Annual volume'
+          lang={appLocale}
+          name={['annualSupply']}
+          onData={jest.fn()}
+          rules={[{ required: true }]}
+        />,
+      );
+
+      await waitFor(() => {
+        expect(form.setFieldValue).toHaveBeenLastCalledWith(
+          ['annualSupply'],
+          [
+            { '@xml:lang': 'en', '#text': '100 kilogram Steel' },
+            { '@xml:lang': contentLanguage, '#text': '100' },
+          ],
+        );
+      });
+      expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
+    },
+  );
 
   it('skips required rules for optional fields and tolerates empty or missing form state', () => {
     const form = buildForm(undefined);
@@ -333,19 +426,13 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     await waitFor(() => {
       expect(form.setFieldValue).toHaveBeenLastCalledWith(
         ['annualSupply'],
-        [
-          { '@xml:lang': 'en', '#text': '100' },
-          { '@xml:lang': 'zh', '#text': '100' },
-        ],
+        [{ '@xml:lang': 'en', '#text': '100' }],
       );
     });
     expect(screen.getByLabelText('annual-supply-volume-context')).toHaveValue('');
 
     const formItem = findFormItem(['annualSupply']);
-    expect(formItem.normalize('789')).toEqual([
-      { '@xml:lang': 'en', '#text': '789' },
-      { '@xml:lang': 'zh', '#text': '789' },
-    ]);
+    expect(formItem.normalize('789')).toEqual([{ '@xml:lang': 'en', '#text': '789' }]);
     await expect(formItem.rules[0].validator(null, '123')).resolves.toBeUndefined();
   });
 
@@ -436,10 +523,7 @@ describe('AnnualSupplyOrProductionVolumeForm', () => {
     await waitFor(() => {
       expect(form.setFieldValue).toHaveBeenCalledWith(
         ['annualSupply'],
-        [
-          { '@xml:lang': 'en', '#text': '321 kg Steel' },
-          { '@xml:lang': 'zh', '#text': '321 kg 钢材' },
-        ],
+        [{ '@xml:lang': 'en', '#text': '321 kg Steel' }],
       );
     });
 

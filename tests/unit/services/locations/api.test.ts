@@ -96,6 +96,62 @@ describe('Locations API (src/services/locations/api.ts)', () => {
     });
   });
 
+  it('merges base and localized locations by code with localized fields taking precedence', async () => {
+    mockGetCachedOrFetchLocationFileData
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [
+            { '@value': 'CN', '#text': 'China', continent: 'Asia' },
+            { '@value': 'US', '#text': 'United States' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [
+            { '@value': 'CN', '#text': '中国' },
+            { '@value': 'DE', '#text': '德国' },
+          ],
+        },
+      });
+
+    const result = await getILCDLocationEntries('zh', ['all']);
+
+    expect(result).toEqual([
+      { '@value': 'CN', '#text': '中国', continent: 'Asia' },
+      { '@value': 'US', '#text': 'United States' },
+      { '@value': 'DE', '#text': '德国' },
+    ]);
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(
+      1,
+      'ILCDLocations.min.json.gz',
+    );
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(
+      2,
+      'ILCDLocations_zh.min.json.gz',
+    );
+  });
+
+  it('falls back to base locations when the localized location asset cannot be loaded', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGetCachedOrFetchLocationFileData
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [{ '@value': 'CN', '#text': 'China' }],
+        },
+      })
+      .mockRejectedValueOnce(new Error('localized asset unavailable'));
+
+    const result = await getILCDLocationEntries('zh', ['CN']);
+
+    expect(result).toEqual([{ '@value': 'CN', '#text': 'China' }]);
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('falling back to ILCDLocations.min.json.gz'),
+      expect.any(Error),
+    );
+    consoleWarnSpy.mockRestore();
+  });
+
   it('returns a failure payload when loading all locations throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetCachedOrFetchLocationFileData.mockResolvedValue(null);

@@ -438,6 +438,31 @@ describe('LangTextItemForm', () => {
     });
   });
 
+  it('offers every registry authoring language and preserves unknown stored language codes', async () => {
+    const { unmount } = renderLangTextItemForm({
+      initialValues: {
+        translations: [{ '@xml:lang': 'de', '#text': 'Deutsch' }],
+      },
+    });
+
+    const declaredSelect = screen.getByRole('combobox');
+    expect(
+      Array.from(declaredSelect.querySelectorAll('option')).map((option) => option.value),
+    ).toEqual(['', 'en', 'zh', 'de', 'fr']);
+    expect(declaredSelect).toHaveValue('de');
+
+    unmount();
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [{ '@xml:lang': 'ja', '#text': '日本語' }],
+      },
+    });
+
+    const legacySelect = screen.getByRole('combobox');
+    expect(legacySelect).toHaveValue('ja');
+    expect(screen.getByRole('option', { name: 'Japanese' })).toBeDisabled();
+  });
+
   it('disables selecting duplicate languages across entries', async () => {
     renderLangTextItemForm({ rules: [] });
 

@@ -1,10 +1,54 @@
 {
-  "schemaVersion": "tiangong.i18n-fallback-contract.v1",
+  "schemaVersion": "tiangong.i18n-fallback-contract.v3",
   "policy": {
     "unknownLocale": "Normalize supported aliases through the typed registry; otherwise use the explicit browser or service default.",
-    "forbiddenBehavior": "Never invent a documentation URL, pretend an English dataset is localized, or omit the language disclosure for English-only legal content."
+    "forbiddenBehavior": "Never collapse UI locale, content language, service-query language, or reference-resource capability into one data-language fallback; never invent a documentation URL, pretend an English resource is localized, or omit a required fallback disclosure."
   },
   "rows": [
+    {
+      "surface": "ui-locale",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh-CN",
+      "capabilityStatus": "native",
+      "urlOrPayload": "native zh-CN message catalog and locale adapters",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not infer content or service-query capability from the UI locale.",
+      "test": "locale capability matrix UI catalog"
+    },
+    {
+      "surface": "ui-locale",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en-US",
+      "capabilityStatus": "native",
+      "urlOrPayload": "native en-US message catalog and locale adapters",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not infer content or service-query capability from the UI locale.",
+      "test": "locale capability matrix UI catalog"
+    },
+    {
+      "surface": "ui-locale",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "de-DE",
+      "capabilityStatus": "native",
+      "urlOrPayload": "native de-DE message catalog and locale adapters",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not infer content or service-query capability from the UI locale.",
+      "test": "locale capability matrix UI catalog"
+    },
+    {
+      "surface": "ui-locale",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "fr-FR",
+      "capabilityStatus": "native",
+      "urlOrPayload": "native fr-FR message catalog and locale adapters",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not infer content or service-query capability from the UI locale.",
+      "test": "locale capability matrix UI catalog"
+    },
     {
       "surface": "documentation",
       "requestedLocale": "zh-CN",
@@ -78,40 +122,356 @@
       "test": "Login legal fallback labels"
     },
     {
-      "surface": "dataset-language-parameter",
+      "surface": "content-language",
       "requestedLocale": "zh-CN",
       "resolvedLocale": "zh",
-      "urlOrPayload": "getLang(locale) -> zh",
+      "capabilityStatus": "native",
+      "urlOrPayload": "getLang(locale) -> zh; read priority zh -> en; authoring enabled",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not request an unsupported dataset language.",
-      "test": "general util getLang"
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not replace the requested content language with a service-query fallback.",
+      "test": "content-language registry and general util getLang"
     },
     {
-      "surface": "dataset-language-parameter",
+      "surface": "content-language",
       "requestedLocale": "en-US",
       "resolvedLocale": "en",
-      "urlOrPayload": "getLang(locale) -> en",
+      "capabilityStatus": "native",
+      "urlOrPayload": "getLang(locale) -> en; read priority en; authoring enabled",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not request an unsupported dataset language.",
-      "test": "general util getLang"
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not replace the requested content language with a service-query fallback.",
+      "test": "content-language registry and general util getLang"
     },
     {
-      "surface": "dataset-language-parameter",
+      "surface": "content-language",
+      "requestedLocale": "de-DE",
+      "resolvedLocale": "de",
+      "capabilityStatus": "native",
+      "urlOrPayload": "getLang(locale) -> de; read priority de -> en; authoring enabled",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not downgrade German content reads or writes to English because a service query falls back.",
+      "test": "content-language registry and general util getLang"
+    },
+    {
+      "surface": "content-language",
+      "requestedLocale": "fr-FR",
+      "resolvedLocale": "fr",
+      "capabilityStatus": "native",
+      "urlOrPayload": "getLang(locale) -> fr; read priority fr -> en; authoring enabled",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not downgrade French content reads or writes to English because a service query falls back.",
+      "test": "content-language registry and general util getLang"
+    },
+    {
+      "surface": "service-query-language",
+      "requestedLocale": "zh-CN",
+      "resolvedLocale": "zh",
+      "capabilityStatus": "native",
+      "usedFallback": false,
+      "urlOrPayload": "resolveServiceQueryLanguage(zh) -> zh",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not reuse the service-query result as the content language.",
+      "test": "content-language registry service-query resolver"
+    },
+    {
+      "surface": "service-query-language",
+      "requestedLocale": "en-US",
+      "resolvedLocale": "en",
+      "capabilityStatus": "native",
+      "usedFallback": false,
+      "urlOrPayload": "resolveServiceQueryLanguage(en) -> en",
+      "userDisclosure": false,
+      "disclosure": "none",
+      "forbiddenBehavior": "Do not reuse the service-query result as the content language.",
+      "test": "content-language registry service-query resolver"
+    },
+    {
+      "surface": "service-query-language",
       "requestedLocale": "de-DE",
       "resolvedLocale": "en",
-      "urlOrPayload": "getLang(locale) -> en",
+      "capabilityStatus": "declared-fallback",
+      "usedFallback": true,
+      "urlOrPayload": "resolveServiceQueryLanguage(de) -> en",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not send de when the service supports only en/zh.",
-      "test": "general util getLang"
+      "disclosure": "diagnostic",
+      "forbiddenBehavior": "Do not silently send de to an en/zh-only service or mutate German content-language state.",
+      "test": "content-language registry service-query resolver and diagnostic"
     },
     {
-      "surface": "dataset-language-parameter",
+      "surface": "service-query-language",
       "requestedLocale": "fr-FR",
       "resolvedLocale": "en",
-      "urlOrPayload": "getLang(locale) -> en",
+      "capabilityStatus": "declared-fallback",
+      "usedFallback": true,
+      "urlOrPayload": "resolveServiceQueryLanguage(fr) -> en",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not send fr when the service supports only en/zh.",
-      "test": "general util getLang"
+      "disclosure": "diagnostic",
+      "forbiddenBehavior": "Do not silently send fr to an en/zh-only service or mutate French content-language state.",
+      "test": "content-language registry service-query resolver and diagnostic"
+    },
+    {
+      "surface": "classification-reference-data",
+      "requestedLocale": "zh-CN",
+      "resources": [
+        {
+          "resourceId": "cpc",
+          "resolvedLocale": "zh",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "resolvedLocale": "zh",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "resolvedLocale": "zh",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "resolvedLocale": "zh",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "CPC, ISIC, ILCD classification, and ILCD flow categorization zh assets",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not describe legacy-unverified assets as official or project-reviewed.",
+      "test": "reference-resource manifest and resolver"
+    },
+    {
+      "surface": "classification-reference-data",
+      "requestedLocale": "en-US",
+      "resources": [
+        {
+          "resourceId": "cpc",
+          "resolvedLocale": "en",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "resolvedLocale": "en",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "resolvedLocale": "en",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "resolvedLocale": "en",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "CPC, ISIC, ILCD classification, and ILCD flow categorization en assets",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not describe legacy-unverified assets as official or project-reviewed.",
+      "test": "reference-resource manifest and resolver"
+    },
+    {
+      "surface": "classification-reference-data",
+      "requestedLocale": "de-DE",
+      "resources": [
+        {
+          "resourceId": "cpc",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "development-only English base for CPC, ISIC, ILCD classification, and ILCD flow categorization",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not treat the development base as German localization or an activation-complete state.",
+      "test": "reference-resource resolver fallback diagnostic"
+    },
+    {
+      "surface": "classification-reference-data",
+      "requestedLocale": "fr-FR",
+      "resources": [
+        {
+          "resourceId": "cpc",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "development-only English base for CPC, ISIC, ILCD classification, and ILCD flow categorization",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not treat the development base as French localization or an activation-complete state.",
+      "test": "reference-resource resolver fallback diagnostic"
+    },
+    {
+      "surface": "location-reference-data",
+      "requestedLocale": "zh-CN",
+      "resources": [
+        {
+          "resourceId": "ilcd-locations",
+          "resolvedLocale": "zh",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "ILCD locations zh asset",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not describe a legacy-unverified asset as official or project-reviewed.",
+      "test": "reference-resource manifest and resolver"
+    },
+    {
+      "surface": "location-reference-data",
+      "requestedLocale": "en-US",
+      "resources": [
+        {
+          "resourceId": "ilcd-locations",
+          "resolvedLocale": "en",
+          "capabilityStatus": "native",
+          "deliveryStatus": "legacy-unverified",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "ILCD locations en asset",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not describe a legacy-unverified asset as official or project-reviewed.",
+      "test": "reference-resource manifest and resolver"
+    },
+    {
+      "surface": "location-reference-data",
+      "requestedLocale": "de-DE",
+      "resources": [
+        {
+          "resourceId": "ilcd-locations",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "development-only English base for ILCD locations",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not treat the development base as German localization or an activation-complete state.",
+      "test": "reference-resource resolver fallback diagnostic"
+    },
+    {
+      "surface": "location-reference-data",
+      "requestedLocale": "fr-FR",
+      "resources": [
+        {
+          "resourceId": "ilcd-locations",
+          "resolvedLocale": "en",
+          "capabilityStatus": "development-base",
+          "deliveryStatus": null,
+          "usedFallback": true,
+          "disclosure": "diagnostic",
+          "ownerIssue": "#634"
+        }
+      ],
+      "urlOrPayload": "development-only English base for ILCD locations",
+      "userDisclosure": false,
+      "forbiddenBehavior": "Do not treat the development base as French localization or an activation-complete state.",
+      "test": "reference-resource resolver fallback diagnostic"
     },
     {
       "surface": "service-errors",
@@ -143,10 +503,10 @@
     {
       "surface": "service-errors",
       "requestedLocale": "fr-FR",
-      "resolvedLocale": "en-US",
-      "urlOrPayload": "English service payload with French catalog boundary messages",
+      "resolvedLocale": "fr-FR",
+      "urlOrPayload": "localized French catalog boundary message; service-query payload is governed separately",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not invent a French service payload contract.",
+      "forbiddenBehavior": "Do not expose a raw service token or confuse payload language with the UI error message.",
       "test": "general api and validator messages"
     },
     {

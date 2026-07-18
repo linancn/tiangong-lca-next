@@ -2,9 +2,9 @@
   "schemaVersion": "tiangong.i18n-locale-quality.v1",
   "locale": "fr-FR",
   "source": {
-    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "15c893f9336536ea933c545318c9a35fa31c74c64ae5a6a780e0da8651c38b69",
-    "contextDigest": "5829760221e661a610fc474c2c38e0775e9b2d875e7e51376624e0b37b63218f"
+    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
+    "sourceManifestDigest": "c6f2d2c2db00afeced4ef9727d27224f067a90f4aa360d5b24e3c0d4980bacfd",
+    "contextDigest": "91e79a5577d737ca5b1a1c9922e7291b412d73b6939f6225bcc3100b43070703"
   },
   "catalog": {
     "messageCount": 3026,
@@ -33,22 +33,24 @@
     "routeViewCoverageComplete": true,
     "everyMessageDossierComplete": true,
     "typedContentTopologyComplete": true,
-    "allHighRiskMessagesIndependentlyReviewed": true,
+    "allHighRiskMessageStructuresValidated": true,
+    "semanticRouteAndE2EReady": false,
+    "semanticRouteAndE2EOwnerIssue": "#635",
     "humanTranslationReviewRequired": false,
     "blockedContextCount": 0
   },
-  "independentReview": {
-    "path": "docs/plans/i18n-fr-FR/automated-review.json",
-    "digest": "6e359ee712410abdbaf89a9150dacd3914b75f8da30d7b8eda161253bac7e389",
-    "reviewDigest": "5c9c28bf52356e70f5e726bc6c104958c44f98c3c6629cf0f8af37e7b7943567",
-    "laneCount": 4,
-    "reviewedMessageCount": 3026,
-    "reviewedModuleCount": 31,
+  "structuralValidation": {
+    "path": "docs/plans/i18n-fr-FR/structural-validation.json",
+    "digest": "8b58ef1b43155a7f1fa05d34bca66a36938d892de7cb26963bc3680a3aafcb57",
+    "validationDigest": "58fc8cdc273fe18dc1257addf1c795e7de899a3b982d18037dce423d3e76171a",
+    "laneCount": 1,
+    "validatedMessageCount": 3026,
+    "validatedModuleCount": 31,
     "highRiskMessageCount": 1337,
     "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
-    "lowRiskPolicy": "validated family rules with cross-module sampling; no unreviewed exceptions",
+    "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635",
     "blockedItems": 0,
-    "humanTranslationReviewRequired": false
+    "semanticReviewPerformed": false
   },
-  "qualityDigest": "88227af5f52c82309b73e9b6664b1cc00671e9c9f8f24a8277a6edecf2204251"
+  "qualityDigest": "e031c0a61982de03bb3141933f07d91ce554b53aa46a6d1d54206ad3ae90f17a"
 }

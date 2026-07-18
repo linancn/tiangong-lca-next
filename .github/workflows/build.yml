@@ -212,6 +212,9 @@ jobs:
           release_base="${{ needs.release-context.outputs.release_base }}"
           npm run docpact:gate -- --base "$release_base" --head "$release_head"
 
+      - name: Require locale production readiness
+        run: npm run i18n:locale:all:production:check
+
       - name: Run full release gate
         run: npm run prepush:gate
 

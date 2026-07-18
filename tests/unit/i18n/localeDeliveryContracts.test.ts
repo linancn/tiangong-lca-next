@@ -1,4 +1,6 @@
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
+import { REFERENCE_RESOURCE_MANIFEST } from '@/services/referenceResources/manifest';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -69,11 +71,13 @@ describe('shared locale delivery contracts', () => {
     );
   });
 
-  it.each(['de-DE', 'fr-FR'])(
-    '%s has complete generated dossiers, derived route evidence, and digest-bound review',
+  it.each(SUPPORTED_APP_LOCALES)(
+    '%s has complete generated dossiers, derived route evidence, and digest-bound structural validation',
     (locale) => {
       const context = readJson(`docs/plans/i18n-${locale}/context-manifest.json`);
+      const structuralValidation = readJson(`docs/plans/i18n-${locale}/structural-validation.json`);
       const quality = readJson(`docs/plans/i18n-${locale}/quality-manifest.json`);
+      const activation = readJson(`docs/plans/i18n-${locale}/locale-activation-manifest.json`);
 
       expect(context.schemaVersion).toBe('tiangong.i18n-locale-context.v2');
       expect(context.messageDossiers).toEqual(
@@ -119,22 +123,69 @@ describe('shared locale delivery contracts', () => {
         expect.objectContaining({
           everyMessageDossierComplete: true,
           typedContentTopologyComplete: true,
-          allHighRiskMessagesIndependentlyReviewed: true,
+          allHighRiskMessageStructuresValidated: true,
+          semanticRouteAndE2EReady: false,
+          semanticRouteAndE2EOwnerIssue: '#635',
           humanTranslationReviewRequired: false,
         }),
       );
-      expect(quality.independentReview).toEqual(
+      expect(structuralValidation.schemaVersion).toBe('tiangong.i18n-structural-validation.v1');
+      expect(structuralValidation.validationLanes).toHaveLength(1);
+      expect(
+        structuralValidation.validationLanes.every(
+          ({ executionEvidence, findings, result }: any) =>
+            result === 'passed' &&
+            findings.length === 0 &&
+            executionEvidence.findingCount === 0 &&
+            executionEvidence.executor ===
+              'scripts/i18n/locale-delivery.mjs#executeStructuralValidationLane' &&
+            Object.values(executionEvidence.checks).every(Boolean),
+        ),
+      ).toBe(true);
+      expect(quality.structuralValidation).toEqual(
         expect.objectContaining({
-          reviewedMessageCount: 3026,
-          reviewedModuleCount: 31,
+          validatedMessageCount: 3026,
+          validatedModuleCount: 31,
           blockedItems: 0,
-          humanTranslationReviewRequired: false,
+          semanticReviewPerformed: false,
         }),
+      );
+      expect(activation).toEqual(
+        expect.objectContaining({
+          schemaVersion: 'tiangong.i18n-locale-activation.v2',
+          locale,
+          checks: expect.objectContaining({
+            platformContractValid: true,
+            languageHardcodingPassed: true,
+            fallbackContractPassed: true,
+            referenceResourcesReady: false,
+            semanticRouteAndE2EReady: false,
+            productionActivationReady: false,
+          }),
+          referenceResourceBlockers: expect.any(Array),
+        }),
+      );
+      expect(activation.referenceResourceBlockers).toHaveLength(
+        REFERENCE_RESOURCE_MANIFEST.filter(({ required }) => required).length,
+      );
+      expect(
+        activation.referenceResourceBlockers.every(({ ownerIssue }: any) => ownerIssue === '#634'),
+      ).toBe(true);
+      expect(activation.productionActivationBlockers).toHaveLength(
+        activation.referenceResourceBlockers.length + 1,
+      );
+      expect(activation.productionActivationBlockers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            blockerId: 'semantic-route-and-e2e-proof',
+            ownerIssue: '#635',
+          }),
+        ]),
       );
     },
   );
 
-  it('reconstructs an individual French dossier on demand', () => {
+  it.each(SUPPORTED_APP_LOCALES)('%s reconstructs an individual dossier on demand', (locale) => {
     const result = spawnSync(
       process.execPath,
       [
@@ -143,7 +194,7 @@ describe('shared locale delivery contracts', () => {
         DELIVERY_SCRIPT,
         'dossier',
         '--locale',
-        'fr-FR',
+        locale,
         '--message',
         'pages.login.passwordReset.sessionUnavailable',
         '--check',
@@ -167,47 +218,121 @@ describe('shared locale delivery contracts', () => {
       }),
     );
     expect(output.dossier.translations).toEqual(
-      expect.objectContaining({
-        'zh-CN': expect.any(String),
-        'en-US': expect.any(String),
-        'de-DE': expect.any(String),
-        'fr-FR': expect.any(String),
-      }),
+      expect.objectContaining(
+        Object.fromEntries(
+          SUPPORTED_APP_LOCALES.map((supportedLocale) => [supportedLocale, expect.any(String)]),
+        ),
+      ),
     );
   });
 
-  it('declares docs, legal, data, service, report, and environment fallbacks for every locale', () => {
+  it('declares independent UI, content, service-query, reference-data, and boundary fallbacks for every registry locale', () => {
     const contract = readJson('docs/plans/i18n/fallback-contract.json');
     const mandatorySurfaces = [
+      'ui-locale',
       'documentation',
       'legal',
-      'dataset-language-parameter',
+      'content-language',
+      'service-query-language',
+      'classification-reference-data',
+      'location-reference-data',
       'service-errors',
       'TIDAS-import-report',
       'environment-branding',
     ];
 
-    SUPPORTED_APP_LOCALES.forEach((locale) => {
-      expect(
-        contract.rows
-          .filter(({ requestedLocale }: any) => requestedLocale === locale)
-          .map(({ surface }: any) => surface),
-      ).toEqual(mandatorySurfaces);
-    });
+    expect(contract.schemaVersion).toBe('tiangong.i18n-fallback-contract.v3');
+    expect(contract.rows).toHaveLength(SUPPORTED_APP_LOCALES.length * mandatorySurfaces.length);
 
-    const frenchReport = contract.rows.find(
-      ({ requestedLocale, surface }: any) =>
-        requestedLocale === 'fr-FR' && surface === 'TIDAS-import-report',
-    );
-    expect(frenchReport).toEqual(
-      expect.objectContaining({
-        resolvedLocale: 'fr_FR',
-        urlOrPayload: 'human_summary.fr_FR and readme_markdown.fr_FR',
-      }),
-    );
+    SUPPORTED_APP_LOCALES.forEach((locale) => {
+      const localeRows = contract.rows.filter(
+        ({ requestedLocale }: any) => requestedLocale === locale,
+      );
+      expect(localeRows.map(({ surface }: any) => surface)).toEqual(mandatorySurfaces);
+
+      const capability = LOCALE_CAPABILITY_MATRIX.find(({ appLocale }) => appLocale === locale);
+      expect(capability).toBeDefined();
+
+      const uiLocale = localeRows.find(({ surface }: any) => surface === 'ui-locale');
+      expect(uiLocale).toEqual(
+        expect.objectContaining({
+          resolvedLocale: locale,
+          capabilityStatus: 'native',
+          disclosure: 'none',
+        }),
+      );
+
+      const contentLanguage = localeRows.find(({ surface }: any) => surface === 'content-language');
+      expect(contentLanguage).toEqual(
+        expect.objectContaining({
+          resolvedLocale: capability?.contentLanguage,
+          capabilityStatus: capability?.contentReading,
+          disclosure: 'none',
+        }),
+      );
+
+      const serviceQuery = localeRows.find(
+        ({ surface }: any) => surface === 'service-query-language',
+      );
+      const serviceUsesFallback = capability?.serviceQuery.status === 'declared-fallback';
+      expect(serviceQuery).toEqual(
+        expect.objectContaining({
+          resolvedLocale: capability?.serviceQuery.resolvedLanguage,
+          capabilityStatus: capability?.serviceQuery.status,
+          usedFallback: serviceUsesFallback,
+          disclosure: capability?.serviceQuery.disclosure,
+          userDisclosure: capability?.serviceQuery.disclosure === 'user-visible',
+        }),
+      );
+
+      const assertReferenceSurface = (
+        surface: 'classification-reference-data' | 'location-reference-data',
+        scope: 'classification' | 'location',
+      ) => {
+        const referenceRow = localeRows.find(
+          ({ surface: rowSurface }: any) => rowSurface === surface,
+        );
+        const resourceIds = REFERENCE_RESOURCE_MANIFEST.filter(
+          ({ scope: resourceScope }) => resourceScope === scope,
+        ).map(({ resourceId }) => resourceId);
+        const resourceCapabilities = capability?.referenceResources.filter(({ resourceId }) =>
+          resourceIds.includes(resourceId),
+        );
+
+        expect(resourceCapabilities).not.toHaveLength(0);
+        expect(referenceRow).toEqual(
+          expect.objectContaining({
+            userDisclosure: false,
+            resources: resourceCapabilities?.map((resourceCapability) => ({
+              resourceId: resourceCapability.resourceId,
+              resolvedLocale: resourceCapability.resolvedLanguage ?? null,
+              capabilityStatus: resourceCapability.status,
+              deliveryStatus: resourceCapability.deliveryStatus ?? null,
+              usedFallback: resourceCapability.status === 'development-base',
+              disclosure: resourceCapability.status === 'development-base' ? 'diagnostic' : 'none',
+              ownerIssue: resourceCapability.ownerIssue ?? null,
+            })),
+          }),
+        );
+        expect(referenceRow).not.toHaveProperty('capabilityStatus');
+        expect(referenceRow).not.toHaveProperty('deliveryStatus');
+      };
+
+      assertReferenceSurface('classification-reference-data', 'classification');
+      assertReferenceSurface('location-reference-data', 'location');
+
+      const reportLocale = locale.replace('-', '_');
+      const report = localeRows.find(({ surface }: any) => surface === 'TIDAS-import-report');
+      expect(report).toEqual(
+        expect.objectContaining({
+          resolvedLocale: reportLocale,
+          urlOrPayload: `human_summary.${reportLocale} and readme_markdown.${reportLocale}`,
+        }),
+      );
+    });
   });
 
-  it.each(['de-DE', 'fr-FR'])(
+  it.each(SUPPORTED_APP_LOCALES)(
     '%s active activation check is CI-safe and confirmation-free',
     (locale) => {
       const result = spawnSync(
@@ -232,4 +357,38 @@ describe('shared locale delivery contracts', () => {
       expect(`${result.stdout}\n${result.stderr}`).not.toContain('.local/');
     },
   );
+
+  it('fails the explicit production-readiness gate while #634 and #635 blockers remain', () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--import',
+        'tsx',
+        DELIVERY_SCRIPT,
+        'activation',
+        '--locale',
+        'en-US',
+        '--check',
+        '--require-production-ready',
+      ],
+      {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+        env: { ...process.env, NODE_NO_WARNINGS: '1' },
+        maxBuffer: 20 * 1024 * 1024,
+      },
+    );
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('is not production-ready');
+    expect(result.stderr).toContain('#634');
+    expect(result.stderr).toContain('#635');
+  });
+
+  it('wires the production-readiness command into every production-effective workflow', () => {
+    for (const workflow of ['.github/workflows/build.yml', '.github/workflows/ci.yml']) {
+      const source = fs.readFileSync(path.join(REPOSITORY_ROOT, workflow), 'utf8');
+      expect(source).toContain('npm run i18n:locale:all:production:check');
+    }
+  });
 });

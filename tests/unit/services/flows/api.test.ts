@@ -37,13 +37,14 @@ const { genFlowJsonOrdered: mockGenFlowJsonOrdered, genFlowName: mockGenFlowName
 jest.mock('@/services/general/util', () => ({
   classificationToString: jest.fn(),
   genClassificationZH: jest.fn(),
+  genLocalizedClassification: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
 }));
 
 const {
   classificationToString: mockClassificationToString,
-  genClassificationZH: mockGenClassificationZH,
+  genLocalizedClassification: mockGenClassificationZH,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
 } = jest.requireMock('@/services/general/util');
@@ -1419,6 +1420,57 @@ describe('getFlowTablePgroongaSearch', () => {
       order_by: { key: 'baseName', lang: 'zh', order: 'asc' },
     });
   });
+
+  it.each(['de', 'fr'] as const)(
+    'loads %s flow classifications and resolves RPC sort language',
+    async (lang) => {
+      mockRpc.mockResolvedValue({
+        data: [
+          {
+            id: `flow-${lang}`,
+            version: '01.00.000',
+            total_count: 1,
+            json: {
+              flowDataSet: {
+                flowInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '#text': 'Products' }],
+                      },
+                    },
+                  },
+                },
+                modellingAndValidation: {
+                  LCIMethod: { typeOfDataSet: 'Product flow' },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+
+      await getFlowTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        lang,
+        'tg',
+        'products',
+        {},
+        undefined,
+        { key: 'baseName', lang, order: 'asc' },
+      );
+
+      expect(mockGetCachedFlowCategorizationAll).toHaveBeenCalledWith(lang);
+      expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_flows_latest',
+        expect.objectContaining({
+          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
+        }),
+      );
+    },
+  );
 
   it('localizes chinese PGroonga results', async () => {
     mockRpc.mockResolvedValue({
@@ -3145,6 +3197,7 @@ describe('getFlowStateCodeByIdsAndVersions', () => {
           version: '01.00.000',
           stateCode: 100,
           classification: 'Air / Water',
+          locationOfSupply: 'China',
         },
       ],
     });
@@ -3251,6 +3304,7 @@ describe('getFlowStateCodeByIdsAndVersions', () => {
           version: '01.00.000',
           stateCode: 200,
           classification: 'Air',
+          locationOfSupply: '-',
         },
       ],
     });

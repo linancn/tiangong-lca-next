@@ -1,7 +1,7 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -75,42 +75,7 @@ async function mapFlowpropertyListRows(
   rows: FlowpropertyListRpcRow[],
   lang: string,
 ): Promise<any[]> {
-  if (lang === 'zh') {
-    const classificationData = await getCachedClassificationData('FlowProperty', lang, ['all']);
-    return rows.map((i) => {
-      try {
-        const dataInfo = i.json?.flowPropertyDataSet?.flowPropertiesInformation;
-        const classifications = jsonToList(
-          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
-          ],
-        );
-        const classificationZH = genClassificationZH(classifications, classificationData);
-        const referenceUnitGroup = dataInfo?.quantitativeReference?.referenceToReferenceUnitGroup;
-
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-          classification: classificationToString(classificationZH),
-          generalComment: getLangText(
-            dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-            lang,
-          ),
-          refUnitGroupId: referenceUnitGroup?.['@refObjectId'] ?? '-',
-          refUnitGroup: getLangText(referenceUnitGroup?.['common:shortDescription'] ?? {}, lang),
-          version: i.version,
-          modifiedAt: new Date(i.modified_at ?? ''),
-          teamId: i.team_id,
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  }
+  const classificationData = await getCachedClassificationData('FlowProperty', lang, ['all']);
 
   return rows.map((i) => {
     try {
@@ -125,7 +90,9 @@ async function mapFlowpropertyListRows(
         key: i.id + ':' + i.version,
         id: i.id,
         name: getLangText(dataInfo?.dataSetInformation?.['common:name'] ?? {}, lang),
-        classification: classificationToString(classifications),
+        classification: classificationToString(
+          genLocalizedClassification(classifications, classificationData),
+        ),
         generalComment: getLangText(
           dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
           lang,

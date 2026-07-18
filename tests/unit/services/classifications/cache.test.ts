@@ -58,6 +58,40 @@ describe('Classifications Cache (src/services/classifications/cache.ts)', () => 
     expect(mockGetILCDClassification).toHaveBeenCalledTimes(1);
   });
 
+  it('does not cache a transient failed classification lookup', async () => {
+    mockGetILCDClassification
+      .mockResolvedValueOnce({ data: [], success: false })
+      .mockResolvedValueOnce({
+        data: [{ id: 'flow-1', label: 'Flow 1' }],
+        success: true,
+      });
+
+    await expect(classificationCache.getILCDClassification('Flow', 'en', ['all'])).resolves.toEqual(
+      [],
+    );
+    await expect(classificationCache.getILCDClassification('Flow', 'en', ['all'])).resolves.toEqual(
+      [{ id: 'flow-1', label: 'Flow 1' }],
+    );
+
+    expect(mockGetILCDClassification).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares cache entries when requested languages resolve to the same runtime asset', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGetILCDClassification.mockResolvedValue({
+      data: [{ id: 'flow-1', label: 'Flow 1' }],
+      success: true,
+    });
+
+    const german = await classificationCache.getILCDClassification('Flow', 'de', ['all']);
+    const french = await classificationCache.getILCDClassification('Flow', 'fr', ['all']);
+
+    expect(french).toEqual(german);
+    expect(mockGetILCDClassification).toHaveBeenCalledTimes(1);
+    expect(mockGetILCDClassification).toHaveBeenCalledWith('Flow', 'de', ['all']);
+    consoleWarnSpy.mockRestore();
+  });
+
   it('returns flow categorization data directly from the API result payload', async () => {
     mockGetILCDFlowCategorization.mockResolvedValue({
       data: [{ id: 'elem-1', label: 'Elementary 1' }],
@@ -90,6 +124,33 @@ describe('Classifications Cache (src/services/classifications/cache.ts)', () => 
     expect(second).toEqual(first);
     expect(mockGetILCDClassification).toHaveBeenCalledTimes(1);
     expect(mockGetILCDFlowCategorization).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not cache combined flow reference data when either source fails transiently', async () => {
+    mockGetILCDClassification
+      .mockResolvedValueOnce({ data: [], success: false })
+      .mockResolvedValueOnce({
+        data: [{ id: 'flow-root', label: 'Flow Root' }],
+        success: true,
+      });
+    mockGetILCDFlowCategorization
+      .mockResolvedValueOnce({ data: [], success: false })
+      .mockResolvedValueOnce({
+        data: [{ id: 'elem-root', label: 'Elementary Root' }],
+        success: true,
+      });
+
+    await expect(classificationCache.getFlowReferenceDataAll('en')).resolves.toEqual({
+      category: [],
+      categoryElementaryFlow: [],
+    });
+    await expect(classificationCache.getFlowReferenceDataAll('en')).resolves.toEqual({
+      category: [{ id: 'flow-root', label: 'Flow Root' }],
+      categoryElementaryFlow: [{ id: 'elem-root', label: 'Elementary Root' }],
+    });
+
+    expect(mockGetILCDClassification).toHaveBeenCalledTimes(2);
+    expect(mockGetILCDFlowCategorization).toHaveBeenCalledTimes(2);
   });
 
   it('exposes convenience wrappers for combined and direct classification cache access', async () => {

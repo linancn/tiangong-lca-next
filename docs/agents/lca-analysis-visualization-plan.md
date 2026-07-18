@@ -20,8 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: bb7c8da76e2bd0581f7f32e1bc00c4a166fa4581
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633: registry-driven lifecycle-model labels do not change the proposed analysis views, chart rules, or traceability contract.'
 ---
 
 # LCA Analysis And Visualization Plan

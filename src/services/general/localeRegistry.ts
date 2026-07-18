@@ -23,8 +23,6 @@ export type LocaleDefinition = {
     documentationLocale: string;
     documentationUrl: string;
     legalLocale: string;
-    dataLanguage: string;
-    serviceLocale: string;
   };
   environment: {
     titleKey: string;
@@ -63,8 +61,6 @@ export const LOCALE_REGISTRY = [
       documentationLocale: 'zh-CN',
       documentationUrl: DOCUMENTATION_BASE_URL,
       legalLocale: 'en-US',
-      dataLanguage: 'zh',
-      serviceLocale: 'zh-CN',
     },
     environment: {
       titleKey: 'APP_TITLE_ZH_CN',
@@ -94,8 +90,6 @@ export const LOCALE_REGISTRY = [
       documentationLocale: 'en-US',
       documentationUrl: `${DOCUMENTATION_BASE_URL}/en`,
       legalLocale: 'en-US',
-      dataLanguage: 'en',
-      serviceLocale: 'en-US',
     },
     environment: {
       titleKey: 'APP_TITLE_EN_US',
@@ -125,8 +119,6 @@ export const LOCALE_REGISTRY = [
       documentationLocale: 'en-US',
       documentationUrl: `${DOCUMENTATION_BASE_URL}/en`,
       legalLocale: 'en-US',
-      dataLanguage: 'en',
-      serviceLocale: 'de-DE',
     },
     environment: {
       titleKey: 'APP_TITLE_DE_DE',
@@ -156,8 +148,6 @@ export const LOCALE_REGISTRY = [
       documentationLocale: 'en-US',
       documentationUrl: `${DOCUMENTATION_BASE_URL}/en`,
       legalLocale: 'en-US',
-      dataLanguage: 'en',
-      serviceLocale: 'en-US',
     },
     environment: {
       titleKey: 'APP_TITLE_FR_FR',
@@ -170,6 +160,8 @@ export type SupportedAppLocale = (typeof LOCALE_REGISTRY)[number]['canonicalLoca
 export type LocaleRegistryEntry = (typeof LOCALE_REGISTRY)[number];
 
 export const CANONICAL_SOURCE_APP_LOCALE: SupportedAppLocale = 'en-US';
+export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = 'zh-CN';
+export const DEFAULT_SERVICE_APP_LOCALE: SupportedAppLocale = CANONICAL_SOURCE_APP_LOCALE;
 
 export const SUPPORTED_APP_LOCALES: readonly SupportedAppLocale[] = LOCALE_REGISTRY.map(
   ({ canonicalLocale }) => canonicalLocale,

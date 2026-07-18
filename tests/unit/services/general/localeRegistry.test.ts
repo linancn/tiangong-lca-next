@@ -43,8 +43,6 @@ describe('localeRegistry', () => {
           documentationLocale: 'en-US',
           documentationUrl: 'https://docs.tiangong.earth/en',
           legalLocale: 'en-US',
-          dataLanguage: 'en',
-          serviceLocale: 'en-US',
         },
         environment: {
           titleKey: 'APP_TITLE_FR_FR',

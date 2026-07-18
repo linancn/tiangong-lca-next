@@ -59,7 +59,7 @@ jest.mock('@/services/supabase', () => ({
 
 jest.mock('@/services/general/util', () => ({
   classificationToString: jest.fn(),
-  genClassificationZH: jest.fn(),
+  genLocalizedClassification: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
 }));
@@ -88,7 +88,7 @@ jest.mock('@/services/sources/util', () => ({
 }));
 
 const { supabase } = jest.requireMock('@/services/supabase');
-const { classificationToString, genClassificationZH, getLangText, jsonToList } =
+const { classificationToString, genLocalizedClassification, getLangText, jsonToList } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
 const {
@@ -547,6 +547,8 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       expect(result.success).toBe(true);
       expect(result.data[0].id).toBe('source-123');
       expect(result.data[0].classification).toBe('Publication');
+      expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'en', ['all']);
+      expect(genLocalizedClassification).toHaveBeenCalled();
       expect(result.data[0]).not.toHaveProperty('latestVersion');
       expect('total' in result && result.total).toBe(1);
     });
@@ -559,15 +561,77 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
           .classificationInformation['common:classification']['common:class'],
       );
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
-      genClassificationZH.mockReturnValue(['出版物']);
+      genLocalizedClassification.mockReturnValue(['出版物']);
       classificationToString.mockReturnValue('出版物');
 
       const result = await getSourceTableAll(mockPaginationParams, mockSortOrder, 'zh', 'tg', []);
 
       expect(getCachedClassificationData).toHaveBeenCalledWith('Source', 'zh', ['all']);
-      expect(genClassificationZH).toHaveBeenCalled();
+      expect(genLocalizedClassification).toHaveBeenCalled();
       expect(result.data[0].classification).toBe('出版物');
     });
+
+    it.each([
+      ['de', 'Deutsche Quelle', 'Veröffentlichung'],
+      ['fr', 'Source française', 'Publication française'],
+    ])(
+      'keeps %s source text while resolving classification labels through the manifest cache',
+      async (lang, localizedName, localizedClassification) => {
+        const shortNames = [
+          { '@xml:lang': 'en', '#text': 'Source' },
+          { '@xml:lang': lang, '#text': localizedName },
+        ];
+        const classifications = [{ '@level': '0', '#text': 'Publication' }];
+        const classificationData = [
+          {
+            id: 'publication',
+            value: 'Publication',
+            label: localizedClassification,
+            children: [],
+          },
+        ];
+        const localizedPath = [{ '@level': '0', '#text': localizedClassification }];
+        supabase.rpc.mockResolvedValue(
+          createMockRpcResponse([
+            latestSourceRow({
+              json: {
+                sourceDataSet: {
+                  sourceInformation: {
+                    dataSetInformation: {
+                      'common:shortName': shortNames,
+                      classificationInformation: {
+                        'common:classification': { 'common:class': classifications },
+                      },
+                    },
+                  },
+                },
+              },
+            }),
+          ]),
+        );
+        getCachedClassificationData.mockResolvedValue(classificationData);
+        jsonToList.mockReturnValue(classifications);
+        genLocalizedClassification.mockReturnValue(localizedPath);
+        classificationToString.mockReturnValue(localizedClassification);
+        getLangText.mockImplementation((value: any, requestedLanguage: string) => {
+          const values = Array.isArray(value) ? value : [value];
+          return values.find((item: any) => item?.['@xml:lang'] === requestedLanguage)?.['#text'];
+        });
+
+        const result = await getSourceTableAll({}, {}, lang, 'tg', []);
+
+        expect(getCachedClassificationData).toHaveBeenCalledWith('Source', lang, ['all']);
+        expect(genLocalizedClassification).toHaveBeenCalledWith(
+          classifications,
+          classificationData,
+        );
+        expect(getLangText).toHaveBeenCalledWith(shortNames, lang);
+        expect(result.data[0]).toMatchObject({
+          shortName: localizedName,
+          classification: localizedClassification,
+        });
+      },
+    );
 
     it('should normalize camel-case sort fields for latest source versions', async () => {
       supabase.rpc.mockResolvedValue(createMockRpcResponse([latestSourceRow()]));
@@ -923,7 +987,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
-      genClassificationZH.mockReturnValue(['出版物']);
+      genLocalizedClassification.mockReturnValue(['出版物']);
       classificationToString.mockReturnValue('出版物');
       jsonToList.mockReturnValue(
         mockSource.json.sourceDataSet.sourceInformation.dataSetInformation
@@ -1101,7 +1165,7 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
 
       supabase.rpc.mockResolvedValue(createMockRpcResponse(rpcRows));
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
-      genClassificationZH.mockReturnValue(['分类']);
+      genLocalizedClassification.mockReturnValue(['分类']);
       classificationToString.mockReturnValue('分类');
       jsonToList.mockReturnValue([]);
       getLangText.mockReturnValue('稀疏来源');

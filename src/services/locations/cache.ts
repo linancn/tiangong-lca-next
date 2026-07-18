@@ -1,5 +1,23 @@
 import { ExpiringMemoryCache } from '../general/expiringMemoryCache';
+import { getReferenceResourceDefinition } from '../referenceResources/manifest';
+import {
+  reportReferenceResourceResolution,
+  resolveReferenceResource,
+} from '../referenceResources/resolver';
 import { getILCDLocationEntries } from './api';
+
+const getResolvedLocationResourceIdentity = (lang: string): string => {
+  const definition = getReferenceResourceDefinition('ilcd-locations');
+  const resolution = resolveReferenceResource('ilcd-locations', lang);
+  reportReferenceResourceResolution(resolution);
+  const localizedAsset = resolution.localizedAsset ?? resolution.baseAsset;
+
+  return [
+    `ilcd-locations@${definition.cacheRevision}`,
+    resolution.baseAsset.fileName,
+    localizedAsset.fileName,
+  ].join(':');
+};
 
 class LocationCache {
   private cache = new ExpiringMemoryCache();
@@ -33,7 +51,12 @@ class LocationCache {
       return [];
     }
 
-    const cacheKey = this.cache.createKey('ilcd_location', lang, validValues.sort().join(','));
+    const normalizedValues = [...validValues].sort();
+    const cacheKey = this.cache.createKey(
+      'ilcd_location',
+      getResolvedLocationResourceIdentity(lang),
+      normalizedValues.join(','),
+    );
     const cached = this.get<Array<Record<string, unknown>>>(cacheKey);
 
     if (cached) {
@@ -43,10 +66,19 @@ class LocationCache {
 
     console.log('[Cache Miss] ILCD Location:', validValues.length, 'values');
 
-    const data =
-      ((await getILCDLocationEntries(lang, validValues)) as Array<
-        Record<string, unknown>
-      > | null) ?? [];
+    let data: Array<Record<string, unknown>>;
+    try {
+      data =
+        ((await getILCDLocationEntries(lang, normalizedValues)) as Array<
+          Record<string, unknown>
+        > | null) ?? [];
+    } catch (error) {
+      console.error(
+        `[i18n-reference-resource] Failed to resolve location labels for ${lang}; preserving raw location codes.`,
+        error,
+      );
+      return [];
+    }
 
     this.set(cacheKey, data);
 

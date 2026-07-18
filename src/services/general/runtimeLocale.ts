@@ -1,14 +1,18 @@
 import * as umiRuntime from 'umi';
 import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  DEFAULT_SERVICE_APP_LOCALE,
   getLocaleDefinition,
   normalizeSupportedAppLocale,
   type SupportedAppLocale,
 } from './localeRegistry';
 
-export { SUPPORTED_APP_LOCALES, type SupportedAppLocale } from './localeRegistry';
-
-export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = 'zh-CN';
-export const DEFAULT_SERVICE_APP_LOCALE: SupportedAppLocale = 'en-US';
+export {
+  DEFAULT_BROWSER_APP_LOCALE,
+  DEFAULT_SERVICE_APP_LOCALE,
+  SUPPORTED_APP_LOCALES,
+  type SupportedAppLocale,
+} from './localeRegistry';
 export const UMI_LOCALE_STORAGE_KEY = 'umi_locale';
 
 const RUNTIME_LOCALE_ENV_KEYS = ['LC_ALL', 'LC_MESSAGES', 'LANGUAGE', 'LANG'] as const;

@@ -127,6 +127,78 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
     });
   });
 
+  it('maps duplicate-id occurrences before filtering so the selected node keeps its matching localized label', async () => {
+    mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [
+                { '@id': 'duplicate', '@name': 'First occurrence' },
+                { '@id': 'duplicate', '@name': 'Second occurrence' },
+              ],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [
+                { '@id': 'duplicate', '@name': '第一个条目' },
+                { '@id': 'duplicate', '@name': '第二个条目' },
+              ],
+            },
+          ],
+        },
+      });
+
+    const result = await getILCDClassification('Flow', 'zh', ['Second occurrence']);
+
+    expect(result).toEqual({
+      data: [
+        {
+          id: 'duplicate',
+          value: 'Second occurrence',
+          label: '第二个条目',
+          children: [],
+        },
+      ],
+      success: true,
+    });
+  });
+
+  it('falls back to the base classification asset when the localized asset cannot be loaded', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: [
+            {
+              '@dataType': 'Flow',
+              category: [{ '@id': 'flow-1', '@name': 'Flow Root' }],
+            },
+          ],
+        },
+      })
+      .mockResolvedValueOnce(null);
+
+    const result = await getILCDClassification('Flow', 'zh', ['all']);
+
+    expect(result).toEqual({
+      data: [{ id: 'flow-1', value: 'Flow Root', label: 'Flow Root', children: [] }],
+      success: true,
+    });
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('falling back to CPCClassification.min.json.gz'),
+      expect.any(Error),
+    );
+    consoleWarnSpy.mockRestore();
+  });
+
   it('loads non-special classifications from the cached English file and filters nested matches', async () => {
     mockGetCachedOrFetchClassificationFileData.mockResolvedValue({
       CategorySystem: {
@@ -447,6 +519,31 @@ describe('Classifications API (src/services/classifications/api.ts)', () => {
       data: [{ id: 'elem-root', value: 'Emissions', label: '排放', children: [] }],
       success: true,
     });
+  });
+
+  it('falls back to the base flow categorization asset when localized loading fails', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockGetCachedOrFetchClassificationFileData
+      .mockResolvedValueOnce({
+        CategorySystem: {
+          categories: {
+            category: [{ '@id': 'elem-root', '@name': 'Emissions' }],
+          },
+        },
+      })
+      .mockRejectedValueOnce(new Error('localized asset unavailable'));
+
+    const result = await getILCDFlowCategorization('zh', ['all']);
+
+    expect(result).toEqual({
+      data: [{ id: 'elem-root', value: 'Emissions', label: 'Emissions', children: [] }],
+      success: true,
+    });
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('falling back to ILCDFlowCategorization.min.json.gz'),
+      expect.any(Error),
+    );
+    consoleWarnSpy.mockRestore();
   });
 
   it('combines flow classification and elementary-flow categorization in getILCDFlowCategorizationAll', async () => {

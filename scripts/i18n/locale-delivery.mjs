@@ -7,11 +7,15 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { getImportReportContentAuditDescriptor } from '../../src/components/ImportTidasPackage/reportContent.ts';
+import { TRANSLATION_SOURCE_CONTENT_LANGUAGE } from '../../src/services/general/contentLanguageRegistry.ts';
+import { getLocaleCapability } from '../../src/services/general/localeCapabilities.ts';
 import {
   CANONICAL_SOURCE_APP_LOCALE,
   getLocaleDefinition,
+  getLocaleDefinitionByLanguage,
   SUPPORTED_APP_LOCALES,
 } from '../../src/services/general/localeRegistry.ts';
+import { REFERENCE_RESOURCE_MANIFEST as REFERENCE_RESOURCES } from '../../src/services/referenceResources/manifest.ts';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
@@ -24,7 +28,31 @@ const DYNAMIC_FAMILIES = 'docs/plans/i18n-de-DE/dynamic-families.json';
 const ROUTE_VIEW_COVERAGE = 'docs/plans/i18n/route-view-coverage.json';
 const FALLBACK_CONTRACT = 'docs/plans/i18n/fallback-contract.json';
 const IMPORT_REPORT_CONTENT_SOURCE = 'src/components/ImportTidasPackage/reportContent.ts';
+const CONTENT_LANGUAGE_REGISTRY = 'src/services/general/contentLanguageRegistry.ts';
+const LOCALE_CAPABILITY_MATRIX = 'src/services/general/localeCapabilities.ts';
+const REFERENCE_RESOURCE_MANIFEST = 'src/services/referenceResources/manifest.ts';
+const REFERENCE_RESOURCE_RESOLVER = 'src/services/referenceResources/resolver.ts';
+const LANGUAGE_PLATFORM_AUDIT = 'scripts/i18n/audit-language-platform.mjs';
+const LANGUAGE_HARDCODING_ALLOWLIST = 'scripts/i18n/language-hardcoding-allowlist.json';
 const PRIVATE_CONFIRMATION_PATTERN = /\.local\/.+confirmation/iu;
+const TRANSLATION_SOURCE_APP_LOCALE = getLocaleDefinitionByLanguage(
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+)?.canonicalLocale;
+if (!TRANSLATION_SOURCE_APP_LOCALE) {
+  throw new Error('Translation source content language has no registered app locale.');
+}
+const REQUIRED_FALLBACK_SURFACES = [
+  'ui-locale',
+  'documentation',
+  'legal',
+  'content-language',
+  'service-query-language',
+  'classification-reference-data',
+  'location-reference-data',
+  'service-errors',
+  'TIDAS-import-report',
+  'environment-branding',
+];
 
 const ACTIONS = new Set([
   'audit',
@@ -34,6 +62,7 @@ const ACTIONS = new Set([
   'corrections',
   'activation',
   'artifacts',
+  'all',
   'dossier',
 ]);
 
@@ -48,6 +77,7 @@ Actions:
   corrections   check the tracked existing-translation correction overlay
   activation    write or check the compact runtime activation manifest
   artifacts     write context, quality, and activation manifests in dependency order
+  all           check context, quality, and activation for every registry locale
   dossier       print one reproducible full message dossier without writing it
 
 Options:
@@ -56,6 +86,8 @@ Options:
   --root <path>      repository root (default: current working directory)
   --write            write the selected deterministic artifact
   --check            check the selected deterministic artifact (default)
+  --require-production-ready
+                     fail when the checked activation manifest has unresolved blockers
   --help             show this help
 `;
 }
@@ -75,11 +107,13 @@ function parseArgs(argv) {
     message: undefined,
     write: false,
     check: false,
+    requireProductionReady: false,
   };
   for (let index = 1; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--write') options.write = true;
     else if (argument === '--check') options.check = true;
+    else if (argument === '--require-production-ready') options.requireProductionReady = true;
     else if (argument === '--locale' || argument === '--root' || argument === '--message') {
       const value = argv[index + 1];
       if (!value) throw new Error(`Missing value for ${argument}`);
@@ -92,7 +126,7 @@ function parseArgs(argv) {
   if (!options.write && !options.check) options.check = true;
   options.root = path.resolve(options.root);
 
-  if (action !== 'corrections') {
+  if (action !== 'corrections' && action !== 'all') {
     if (!options.locale) throw new Error('--locale is required for this action');
     const definition = getLocaleDefinition(options.locale);
     if (!definition || definition.canonicalLocale !== options.locale) {
@@ -102,6 +136,10 @@ function parseArgs(argv) {
     }
   }
   if (action === 'audit' && options.write) throw new Error('audit does not support --write');
+  if (action === 'all' && options.write) throw new Error('all does not support --write');
+  if (options.requireProductionReady && !['activation', 'all'].includes(action)) {
+    throw new Error('--require-production-ready is supported only for activation and all');
+  }
   if (action === 'dossier' && !options.message)
     throw new Error('--message is required for dossier');
   if (action === 'dossier' && options.write) throw new Error('dossier does not support --write');
@@ -190,7 +228,7 @@ function localePaths(locale) {
     context: `${directory}/context-manifest.json`,
     quality: `${directory}/quality-manifest.json`,
     activation: `${directory}/locale-activation-manifest.json`,
-    automatedReview: `${directory}/automated-review.json`,
+    structuralValidation: `${directory}/structural-validation.json`,
   };
 }
 
@@ -256,6 +294,23 @@ function runSharedAudit(root, mode) {
     throw new Error(`Shared locale audit failed with status ${result.status}.`);
   }
   return JSON.parse(result.stdout);
+}
+
+function runLanguagePlatformAudit(root) {
+  const result = spawnSync(
+    process.execPath,
+    ['--import', 'tsx', LANGUAGE_PLATFORM_AUDIT, '--scope', 'all', '--check'],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    },
+  );
+  if (result.status !== 0) {
+    process.stderr.write(result.stderr);
+    process.stdout.write(result.stdout);
+    throw new Error(`Language-platform audit failed with status ${result.status}.`);
+  }
 }
 
 function parseTypeScriptSource(root, relativeFile) {
@@ -973,7 +1028,7 @@ function buildMessageDossiers(locale, manifest, coverage, glossary, styleGuideDi
         ]),
       ),
       canonicalEnglish: sourceValue,
-      existingChinese: message.translations['zh-CN']?.value ?? '',
+      existingChinese: message.translations[TRANSLATION_SOURCE_APP_LOCALE]?.value ?? '',
       usageEvidence,
       surface: {
         pages:
@@ -1145,6 +1200,12 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
   const { coverage, messageDossiers, typedContent } = evidence;
   const requiredInputs = [
     'src/services/general/localeRegistry.ts',
+    CONTENT_LANGUAGE_REGISTRY,
+    LOCALE_CAPABILITY_MATRIX,
+    REFERENCE_RESOURCE_MANIFEST,
+    REFERENCE_RESOURCE_RESOLVER,
+    LANGUAGE_PLATFORM_AUDIT,
+    LANGUAGE_HARDCODING_ALLOWLIST,
     IMPORT_REPORT_CONTENT_SOURCE,
     DYNAMIC_FAMILIES,
     ROUTE_VIEW_COVERAGE,
@@ -1238,23 +1299,171 @@ function isTechnicalOrProperName(value) {
   );
 }
 
-function validateAutomatedReview(root, locale, manifest, context) {
-  const relativeFile = localePaths(locale).automatedReview;
-  if (!fs.existsSync(path.resolve(root, relativeFile))) {
-    throw new Error(`${locale} is missing digest-bound independent automated review evidence.`);
-  }
-  const review = readJson(root, relativeFile);
-  if (review.schemaVersion !== 'tiangong.i18n-automated-review.v1' || review.locale !== locale) {
-    throw new Error(`${relativeFile} has an unsupported schema or locale.`);
-  }
-  const expectedModules = [
+function getExpectedStructuralValidationModules(manifest) {
+  return [
     ...new Set(
       manifest.messages.map(
         (message) => message.moduleOwnership?.[CANONICAL_SOURCE_APP_LOCALE]?.[0] ?? '$entry',
       ),
     ),
   ].sort();
-  const closure = review.reviewClosure;
+}
+
+function executeStructuralValidationLane(locale, lane, dossiers, glossary) {
+  const moduleSet = new Set(lane.modules);
+  const laneDossiers = dossiers.filter(({ ownerModule }) => moduleSet.has(ownerModule));
+  const findings = [];
+  const forbiddenTerms = (glossary.terms ?? []).flatMap((term) =>
+    (term.forbidden ?? []).map((forbidden) => ({ concept: term.concept, forbidden })),
+  );
+
+  for (const dossier of laneDossiers) {
+    const target = dossier.candidateDecision.candidate;
+    if (dossier.canonicalEnglish.trim() && !target.trim()) {
+      findings.push({
+        severity: 'blocking',
+        check: 'non-empty-target',
+        messageId: dossier.messageId,
+      });
+    }
+    if (
+      JSON.stringify(dossier.syntax.sourceArgumentSignature) !==
+      JSON.stringify(dossier.syntax.targetArgumentSignature)
+    ) {
+      findings.push({
+        severity: 'blocking',
+        check: 'icu-argument-signature-parity',
+        messageId: dossier.messageId,
+      });
+    }
+    if (locale !== TRANSLATION_SOURCE_APP_LOCALE && hasCjk(target)) {
+      findings.push({
+        severity: 'blocking',
+        check: 'target-script-leak',
+        messageId: dossier.messageId,
+      });
+    }
+    for (const { concept, forbidden } of forbiddenTerms) {
+      if (target.toLocaleLowerCase(locale).includes(forbidden.toLocaleLowerCase(locale))) {
+        findings.push({
+          severity: 'blocking',
+          check: 'forbidden-glossary-term',
+          messageId: dossier.messageId,
+          concept,
+          forbidden,
+        });
+      }
+    }
+  }
+
+  const highRiskMessageIds = laneDossiers
+    .filter(({ candidateDecision }) => candidateDecision.risk === 'high')
+    .map(({ messageId }) => messageId);
+  const messageIds = laneDossiers.map(({ messageId }) => messageId);
+  const executionEvidence = {
+    executor: 'scripts/i18n/locale-delivery.mjs#executeStructuralValidationLane',
+    messageCount: laneDossiers.length,
+    messageDigest: digestJson(messageIds),
+    highRiskMessageCount: highRiskMessageIds.length,
+    highRiskMessageDigest: digestJson(highRiskMessageIds),
+    dossierDigest: digestJson(laneDossiers),
+    checks: {
+      nonEmptyTargets: findings.every(({ check }) => check !== 'non-empty-target'),
+      icuArgumentSignatureParity: findings.every(
+        ({ check }) => check !== 'icu-argument-signature-parity',
+      ),
+      targetScriptClean: findings.every(({ check }) => check !== 'target-script-leak'),
+      forbiddenGlossaryTermsAbsent: findings.every(
+        ({ check }) => check !== 'forbidden-glossary-term',
+      ),
+    },
+    findingCount: findings.length,
+    findingsDigest: digestJson(findings),
+  };
+
+  return {
+    laneId: lane.laneId,
+    executionContext: lane.executionContext,
+    modules: lane.modules,
+    highRiskCoverage: lane.highRiskCoverage,
+    lowRiskCoverage: lane.lowRiskCoverage,
+    method: lane.method,
+    executionEvidence,
+    findings,
+    result: findings.length === 0 ? 'passed' : 'failed',
+  };
+}
+
+function buildStructuralValidation(root, locale, manifest, context) {
+  const relativeFile = localePaths(locale).structuralValidation;
+  const expectedModules = getExpectedStructuralValidationModules(manifest);
+  const evidence = buildContextEvidence(root, locale, manifest);
+  if (
+    evidence.messageDossiers.summary.dossierDigest !== context.messageDossiers.dossierDigest ||
+    evidence.messageDossiers.summary.catalogDigest !== context.messageDossiers.catalogDigest
+  ) {
+    throw new Error(`${relativeFile} cannot execute against a stale context closure.`);
+  }
+  const validationLanes = [
+    executeStructuralValidationLane(
+      locale,
+      {
+        laneId: 'registry-derived-full-catalog-structural-validation',
+        executionContext: 'deterministic-structural-validation',
+        modules: expectedModules,
+        highRiskCoverage: 'all digest-bound high-risk message structures in current modules',
+        lowRiskCoverage: 'all message structures; semantic judgment is outside this validator',
+        method: [
+          'non-empty target and exact dossier closure',
+          'ICU argument-signature parity and target-script leak scan',
+          'forbidden glossary-token structural scan',
+        ],
+      },
+      evidence.messageDossiers.dossiers,
+      evidence.glossary,
+    ),
+  ];
+  const blockedItems = validationLanes.flatMap((lane) =>
+    lane.findings.map((finding) => ({ laneId: lane.laneId, ...finding })),
+  );
+
+  const validationBody = {
+    schemaVersion: 'tiangong.i18n-structural-validation.v1',
+    locale,
+    validationClosure: {
+      baselineSha: manifest.source.baseCommit,
+      auditedInputDigest: manifest.source.auditedInputDigest,
+      validatedMessageCount: context.messageDossiers.messageCount,
+      validatedModules: expectedModules,
+      highRiskMessageCount: context.messageDossiers.highRiskMessageCount,
+      highRiskMessageDigest: context.messageDossiers.highRiskMessageDigest,
+      catalogDigest: context.messageDossiers.catalogDigest,
+      dossierDigest: context.messageDossiers.dossierDigest,
+      typedContentDossierDigest: context.typedContentDossiers.dossierDigest,
+      routeEvidenceDigest: context.routeViewCoverage.derivedEvidence.rowEvidenceDigest,
+      scope:
+        'deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635',
+    },
+    validationLanes,
+    blockedItems,
+  };
+  return { ...validationBody, validationDigest: digestJson(validationBody) };
+}
+
+function validateStructuralValidation(root, locale, manifest, context) {
+  const relativeFile = localePaths(locale).structuralValidation;
+  if (!fs.existsSync(path.resolve(root, relativeFile))) {
+    throw new Error(`${locale} is missing digest-bound structural validation evidence.`);
+  }
+  const validation = readJson(root, relativeFile);
+  if (
+    validation.schemaVersion !== 'tiangong.i18n-structural-validation.v1' ||
+    validation.locale !== locale
+  ) {
+    throw new Error(`${relativeFile} has an unsupported schema or locale.`);
+  }
+  const expectedModules = getExpectedStructuralValidationModules(manifest);
+  const closure = validation.validationClosure;
   if (
     closure?.baselineSha !== manifest.source.baseCommit ||
     closure?.auditedInputDigest !== manifest.source.auditedInputDigest ||
@@ -1264,40 +1473,49 @@ function validateAutomatedReview(root, locale, manifest, context) {
     closure?.highRiskMessageDigest !== context.messageDossiers.highRiskMessageDigest ||
     closure?.typedContentDossierDigest !== context.typedContentDossiers.dossierDigest ||
     closure?.routeEvidenceDigest !== context.routeViewCoverage.derivedEvidence.rowEvidenceDigest ||
-    closure?.reviewedMessageCount !== context.messageDossiers.messageCount ||
-    JSON.stringify(closure?.reviewedModules) !== JSON.stringify(expectedModules)
+    closure?.validatedMessageCount !== context.messageDossiers.messageCount ||
+    JSON.stringify(closure?.validatedModules) !== JSON.stringify(expectedModules)
   ) {
     throw new Error(`${relativeFile} does not match the exact current dossier closure.`);
   }
-  if (!Array.isArray(review.reviewLanes) || review.reviewLanes.length === 0) {
-    throw new Error(`${relativeFile} has no independent automated review lanes.`);
+  if (!Array.isArray(validation.validationLanes) || validation.validationLanes.length !== 1) {
+    throw new Error(`${relativeFile} must contain one registry-derived structural lane.`);
   }
-  const reviewedModules = new Set();
-  for (const lane of review.reviewLanes) {
+  const validatedModules = new Set();
+  for (const lane of validation.validationLanes) {
     if (
       !lane.laneId ||
-      lane.executionContext !== 'independent-automated-review' ||
+      lane.executionContext !== 'deterministic-structural-validation' ||
       !Array.isArray(lane.modules) ||
       lane.modules.length === 0 ||
       !Array.isArray(lane.method) ||
       lane.method.length === 0 ||
-      lane.highRiskCoverage !== 'all digest-bound high-risk messages in lane modules' ||
+      lane.highRiskCoverage !==
+        'all digest-bound high-risk message structures in current modules' ||
+      !lane.executionEvidence ||
+      lane.executionEvidence.executor !==
+        'scripts/i18n/locale-delivery.mjs#executeStructuralValidationLane' ||
+      lane.executionEvidence.messageCount <= 0 ||
+      lane.executionEvidence.findingCount !== 0 ||
+      !Object.values(lane.executionEvidence.checks ?? {}).every(Boolean) ||
+      !Array.isArray(lane.findings) ||
+      lane.findings.length !== 0 ||
       lane.result !== 'passed'
     ) {
-      throw new Error(`${relativeFile} contains an incomplete automated review lane.`);
+      throw new Error(`${relativeFile} contains an incomplete structural validation lane.`);
     }
     for (const module of lane.modules) {
       if (!expectedModules.includes(module)) {
         throw new Error(`${relativeFile} reviews unknown module ${module}.`);
       }
-      reviewedModules.add(module);
+      validatedModules.add(module);
     }
   }
-  if (JSON.stringify([...reviewedModules].sort()) !== JSON.stringify(expectedModules)) {
-    throw new Error(`${relativeFile} does not close every owner module.`);
+  if (JSON.stringify([...validatedModules].sort()) !== JSON.stringify(expectedModules)) {
+    throw new Error(`${relativeFile} does not structurally validate every owner module.`);
   }
-  if (!Array.isArray(review.blockedItems) || review.blockedItems.length !== 0) {
-    throw new Error(`${relativeFile} still contains blocked automated review items.`);
+  if (!Array.isArray(validation.blockedItems) || validation.blockedItems.length !== 0) {
+    throw new Error(`${relativeFile} still contains blocked structural validation items.`);
   }
   const forbiddenApprovalFields = [
     'approvedBy',
@@ -1305,31 +1523,35 @@ function validateAutomatedReview(root, locale, manifest, context) {
     'humanApproval',
     'responseDigest',
   ];
-  if (forbiddenApprovalFields.some((field) => Object.hasOwn(review, field))) {
+  if (forbiddenApprovalFields.some((field) => Object.hasOwn(validation, field))) {
     throw new Error(`${relativeFile} must not encode human translation approval.`);
   }
-  const { reviewDigest, ...reviewBody } = review;
-  if (reviewDigest !== digestJson(reviewBody)) {
+  const { validationDigest, ...validationBody } = validation;
+  if (validationDigest !== digestJson(validationBody)) {
     throw new Error(`${relativeFile} digest drifted.`);
+  }
+  const executedValidation = buildStructuralValidation(root, locale, manifest, context);
+  if (digestJson(executedValidation) !== digestJson(validation)) {
+    throw new Error(`${relativeFile} does not match a fresh structural validation execution.`);
   }
   return {
     path: relativeFile,
     digest: fileDigest(root, relativeFile),
-    reviewDigest,
-    laneCount: review.reviewLanes.length,
-    reviewedMessageCount: closure.reviewedMessageCount,
-    reviewedModuleCount: closure.reviewedModules.length,
+    validationDigest,
+    laneCount: validation.validationLanes.length,
+    validatedMessageCount: closure.validatedMessageCount,
+    validatedModuleCount: closure.validatedModules.length,
     highRiskMessageCount: closure.highRiskMessageCount,
     highRiskMessageDigest: closure.highRiskMessageDigest,
-    lowRiskPolicy: closure.lowRiskPolicy,
+    scope: closure.scope,
     blockedItems: 0,
-    humanTranslationReviewRequired: false,
+    semanticReviewPerformed: false,
   };
 }
 
 function buildQualityManifest(root, locale, manifest, context) {
   assertSharedManifest(manifest, locale);
-  const independentReview = validateAutomatedReview(root, locale, manifest, context);
+  const structuralValidation = validateStructuralValidation(root, locale, manifest, context);
   const glossary = readJson(root, localePaths(locale).glossary);
   const targetMessages = manifest.messages.map((message) => ({
     id: message.id,
@@ -1344,7 +1566,9 @@ function buildQualityManifest(root, locale, manifest, context) {
     ({ source, target }) => !source?.trim() && typeof target === 'string' && !target.trim(),
   );
   const cjkLeaks =
-    locale === 'zh-CN' ? [] : targetMessages.filter(({ target }) => hasCjk(target ?? ''));
+    locale === TRANSLATION_SOURCE_APP_LOCALE
+      ? []
+      : targetMessages.filter(({ target }) => hasCjk(target ?? ''));
   const equalityPolicy = glossary.sourceEqualityPolicy ?? {
     exactValues: [],
     messageIdPrefixes: [],
@@ -1441,12 +1665,14 @@ function buildQualityManifest(root, locale, manifest, context) {
       everyMessageDossierComplete:
         context.messageDossiers.completeCount === context.messageDossiers.messageCount,
       typedContentTopologyComplete: context.typedContentDossiers.blockedContextCount === 0,
-      allHighRiskMessagesIndependentlyReviewed:
-        independentReview.highRiskMessageCount === context.messageDossiers.highRiskMessageCount,
+      allHighRiskMessageStructuresValidated:
+        structuralValidation.highRiskMessageCount === context.messageDossiers.highRiskMessageCount,
+      semanticRouteAndE2EReady: false,
+      semanticRouteAndE2EOwnerIssue: '#635',
       humanTranslationReviewRequired: false,
       blockedContextCount: context.inventory.blockedContextCount,
     },
-    independentReview,
+    structuralValidation,
   };
   return { ...quality, qualityDigest: digestJson(quality) };
 }
@@ -1574,24 +1800,255 @@ function validateCorrectionLedger(root, currentManifest) {
   };
 }
 
+function assertFallbackContractValue(row, key, expected, locale) {
+  if (row[key] !== expected) {
+    throw new Error(
+      `Fallback contract ${locale}/${row.surface} has ${key}=${JSON.stringify(row[key])}; expected ${JSON.stringify(expected)}.`,
+    );
+  }
+}
+
+function validateFallbackContract(root) {
+  const contract = readJson(root, FALLBACK_CONTRACT);
+  if (contract.schemaVersion !== 'tiangong.i18n-fallback-contract.v3') {
+    throw new Error('Unsupported fallback-contract schema.');
+  }
+  if (!contract.policy || typeof contract.policy !== 'object' || !Array.isArray(contract.rows)) {
+    throw new Error('Fallback contract must contain policy and rows.');
+  }
+
+  const expectedKeys = new Set(
+    SUPPORTED_APP_LOCALES.flatMap((locale) =>
+      REQUIRED_FALLBACK_SURFACES.map((surface) => `${locale}\0${surface}`),
+    ),
+  );
+  const rowsByKey = new Map();
+  for (const row of contract.rows) {
+    const key = `${row.requestedLocale}\0${row.surface}`;
+    const referenceResourceRow =
+      row.surface === 'classification-reference-data' || row.surface === 'location-reference-data';
+    if (!expectedKeys.has(key)) {
+      throw new Error(`Fallback contract contains unsupported row ${key.replace('\0', '/')}.`);
+    }
+    if (rowsByKey.has(key)) {
+      throw new Error(`Fallback contract contains duplicate row ${key.replace('\0', '/')}.`);
+    }
+    if (
+      (!referenceResourceRow && (typeof row.resolvedLocale !== 'string' || !row.resolvedLocale)) ||
+      (referenceResourceRow && (!Array.isArray(row.resources) || row.resources.length === 0)) ||
+      typeof row.urlOrPayload !== 'string' ||
+      !row.urlOrPayload ||
+      typeof row.forbiddenBehavior !== 'string' ||
+      !row.forbiddenBehavior ||
+      typeof row.test !== 'string' ||
+      !row.test ||
+      typeof row.userDisclosure !== 'boolean'
+    ) {
+      throw new Error(`Fallback contract row ${key.replace('\0', '/')} is incomplete.`);
+    }
+    rowsByKey.set(key, row);
+  }
+  if (rowsByKey.size !== expectedKeys.size) {
+    const missing = [...expectedKeys].filter((key) => !rowsByKey.has(key));
+    throw new Error(
+      `Fallback contract is missing required rows: ${missing.map((key) => key.replace('\0', '/')).join(', ')}.`,
+    );
+  }
+
+  for (const locale of SUPPORTED_APP_LOCALES) {
+    const definition = getLocaleDefinition(locale);
+    const capability = getLocaleCapability(locale);
+    if (!capability) throw new Error(`${locale} has no language-platform capability row.`);
+    const row = (surface) => rowsByKey.get(`${locale}\0${surface}`);
+
+    const ui = row('ui-locale');
+    assertFallbackContractValue(ui, 'resolvedLocale', locale, locale);
+    assertFallbackContractValue(ui, 'capabilityStatus', capability.uiCatalog, locale);
+    assertFallbackContractValue(ui, 'disclosure', 'none', locale);
+
+    const documentation = row('documentation');
+    assertFallbackContractValue(
+      documentation,
+      'resolvedLocale',
+      definition.fallbacks.documentationLocale,
+      locale,
+    );
+    assertFallbackContractValue(
+      documentation,
+      'urlOrPayload',
+      definition.fallbacks.documentationUrl,
+      locale,
+    );
+
+    const legal = row('legal');
+    assertFallbackContractValue(legal, 'resolvedLocale', definition.fallbacks.legalLocale, locale);
+
+    const content = row('content-language');
+    assertFallbackContractValue(content, 'resolvedLocale', capability.contentLanguage, locale);
+    assertFallbackContractValue(content, 'capabilityStatus', capability.contentReading, locale);
+    assertFallbackContractValue(content, 'disclosure', 'none', locale);
+
+    const serviceQuery = row('service-query-language');
+    assertFallbackContractValue(
+      serviceQuery,
+      'resolvedLocale',
+      capability.serviceQuery.resolvedLanguage,
+      locale,
+    );
+    assertFallbackContractValue(
+      serviceQuery,
+      'capabilityStatus',
+      capability.serviceQuery.status,
+      locale,
+    );
+    assertFallbackContractValue(
+      serviceQuery,
+      'usedFallback',
+      capability.serviceQuery.status === 'declared-fallback',
+      locale,
+    );
+    assertFallbackContractValue(
+      serviceQuery,
+      'disclosure',
+      capability.serviceQuery.disclosure,
+      locale,
+    );
+
+    for (const [surface, scope] of [
+      ['classification-reference-data', 'classification'],
+      ['location-reference-data', 'location'],
+    ]) {
+      const resourceIds = REFERENCE_RESOURCES.filter(
+        (resource) => resource.required && resource.scope === scope,
+      ).map(({ resourceId }) => resourceId);
+      const resourceCapabilities = capability.referenceResources.filter(({ resourceId }) =>
+        resourceIds.includes(resourceId),
+      );
+      if (resourceCapabilities.length === 0) {
+        throw new Error(`${locale}/${surface} has no required resource capability.`);
+      }
+      const resourceRow = row(surface);
+      const expectedResources = resourceCapabilities.map((resource) => ({
+        resourceId: resource.resourceId,
+        resolvedLocale: resource.resolvedLanguage ?? null,
+        capabilityStatus: resource.status,
+        deliveryStatus: resource.deliveryStatus ?? null,
+        usedFallback: resource.status === 'development-base',
+        disclosure: resource.status === 'native' ? 'none' : 'diagnostic',
+        ownerIssue: resource.ownerIssue ?? null,
+      }));
+      if (JSON.stringify(resourceRow.resources) !== JSON.stringify(expectedResources)) {
+        throw new Error(
+          `Fallback contract ${locale}/${surface} resource capabilities do not match the Manifest-derived matrix.`,
+        );
+      }
+      for (const aggregateKey of [
+        'resolvedLocale',
+        'capabilityStatus',
+        'deliveryStatus',
+        'usedFallback',
+        'disclosure',
+        'ownerIssue',
+      ]) {
+        if (aggregateKey in resourceRow) {
+          throw new Error(
+            `Fallback contract ${locale}/${surface} must express ${aggregateKey} per resource.`,
+          );
+        }
+      }
+    }
+
+    const serviceErrors = row('service-errors');
+    assertFallbackContractValue(serviceErrors, 'resolvedLocale', locale, locale);
+
+    const report = row('TIDAS-import-report');
+    assertFallbackContractValue(report, 'resolvedLocale', definition.adapters.report, locale);
+    assertFallbackContractValue(
+      report,
+      'urlOrPayload',
+      `human_summary.${definition.adapters.report} and readme_markdown.${definition.adapters.report}`,
+      locale,
+    );
+
+    const environment = row('environment-branding');
+    assertFallbackContractValue(environment, 'resolvedLocale', locale, locale);
+    assertFallbackContractValue(
+      environment,
+      'urlOrPayload',
+      `${definition.environment.titleKey} and ${definition.environment.loginSubtitleKey}`,
+      locale,
+    );
+  }
+
+  return {
+    schemaVersion: contract.schemaVersion,
+    rowCount: rowsByKey.size,
+    digest: fileDigest(root, FALLBACK_CONTRACT),
+    rowsByKey,
+  };
+}
+
 function buildActivationManifest(root, locale, manifest, context, quality, correctionSummary) {
   const definition = getLocaleDefinition(locale);
-  const fallbackContract = readJson(root, FALLBACK_CONTRACT);
-  const localeFallbacks = fallbackContract.rows.filter(
-    ({ requestedLocale }) => requestedLocale === locale,
+  const capability = getLocaleCapability(locale);
+  if (!capability) throw new Error(`${locale} has no derived language-platform capability row.`);
+  const fallbackContract = validateFallbackContract(root);
+  const localeFallbacks = REQUIRED_FALLBACK_SURFACES.map((surface) =>
+    fallbackContract.rowsByKey.get(`${locale}\0${surface}`),
   );
-  if (localeFallbacks.length === 0) throw new Error(`${locale} has no fallback-contract rows.`);
+  const referenceResourceBlockers = capability.referenceResources
+    .filter(
+      ({ status, deliveryStatus }) =>
+        status !== 'native' ||
+        (deliveryStatus !== 'official' && deliveryStatus !== 'project-reviewed'),
+    )
+    .map(({ resourceId, status, deliveryStatus, ownerIssue }) => ({
+      resourceId,
+      status,
+      deliveryStatus: deliveryStatus ?? null,
+      ownerIssue: ownerIssue ?? null,
+    }));
+  const referenceResourcesReady = referenceResourceBlockers.length === 0;
+  const contextComplete = context.inventory.blockedContextCount === 0;
+  const structuralQualityPassed = quality.automatedChecks.blockedContextCount === 0;
+  const semanticRouteAndE2EReady = quality.automatedChecks.semanticRouteAndE2EReady === true;
+  const productionActivationBlockers = [
+    ...referenceResourceBlockers.map((blocker) => ({
+      blockerId: `reference-resource:${blocker.resourceId}`,
+      kind: 'reference-resource',
+      ...blocker,
+    })),
+    ...(semanticRouteAndE2EReady
+      ? []
+      : [
+          {
+            blockerId: 'semantic-route-and-e2e-proof',
+            kind: 'semantic-route-and-e2e',
+            status: 'pending',
+            deliveryStatus: null,
+            ownerIssue: quality.automatedChecks.semanticRouteAndE2EOwnerIssue ?? '#635',
+          },
+        ]),
+  ];
+  const productionActivationReady =
+    contextComplete && structuralQualityPassed && productionActivationBlockers.length === 0;
   const activeCommands = {
     localeAudit: `npm run i18n:locale:audit -- --locale ${locale}`,
     context: `npm run i18n:context:check -- --locale ${locale}`,
     quality: `npm run i18n:locale:quality:check -- --locale ${locale}`,
     corrections: 'npm run i18n:corrections:check',
+    languagePlatform: 'npm run i18n:platform:audit',
+    languageHardcoding: 'npm run i18n:hardcoding:audit',
+    allLocales: 'npm run i18n:locale:all:check',
+    productionLocale: `npm run i18n:locale:production:check -- --locale ${locale}`,
+    productionAllLocales: 'npm run i18n:locale:all:production:check',
     activation: `npm run i18n:locale:activation:check -- --locale ${locale}`,
   };
   const commandSources = [
     'package.json',
     'scripts/i18n/locale-delivery.mjs',
     'scripts/i18n/audit-locales.mjs',
+    LANGUAGE_PLATFORM_AUDIT,
   ];
   const privateConfirmationDependencies = commandSources.filter((relativeFile) => {
     const source = readText(root, relativeFile);
@@ -1606,7 +2063,7 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
     );
   }
   const activation = {
-    schemaVersion: 'tiangong.i18n-locale-activation.v1',
+    schemaVersion: 'tiangong.i18n-locale-activation.v2',
     locale,
     source: {
       baselineSha: manifest.source.baseCommit,
@@ -1620,6 +2077,14 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
       fallbacks: definition.fallbacks,
       environment: definition.environment,
       registryDigest: fileDigest(root, 'src/services/general/localeRegistry.ts'),
+    },
+    languagePlatform: {
+      capability,
+      contentLanguageRegistryDigest: fileDigest(root, CONTENT_LANGUAGE_REGISTRY),
+      capabilityMatrixDigest: fileDigest(root, LOCALE_CAPABILITY_MATRIX),
+      referenceResourceManifestDigest: fileDigest(root, REFERENCE_RESOURCE_MANIFEST),
+      referenceResourceResolverDigest: fileDigest(root, REFERENCE_RESOURCE_RESOLVER),
+      hardcodingAllowlistDigest: fileDigest(root, LANGUAGE_HARDCODING_ALLOWLIST),
     },
     evidence: {
       contextDigest: context.contextDigest,
@@ -1637,16 +2102,35 @@ function buildActivationManifest(root, locale, manifest, context, quality, corre
         : 'Not applicable; this locale has never used translation confirmation files.',
     checks: {
       exactTopology: true,
-      contextComplete: context.inventory.blockedContextCount === 0,
-      automatedQualityPassed: quality.automatedChecks.blockedContextCount === 0,
+      contextComplete,
+      structuralQualityPassed,
+      semanticRouteAndE2EReady,
       correctionOverlayPassed: true,
       fallbackContractPassed: true,
+      platformContractValid: true,
+      languageHardcodingPassed: true,
+      referenceResourcesReady,
+      productionActivationReady,
       ltrCondition:
         definition.direction === 'ltr' ? 'single-standard; RTL work not applicable' : null,
       humanTranslationReviewRequired: false,
     },
+    referenceResourceBlockers,
+    productionActivationBlockers,
   };
   return { ...activation, activationDigest: digestJson(activation) };
+}
+
+function assertProductionActivationReady(activation) {
+  if (activation.checks.productionActivationReady) {
+    return;
+  }
+  const blockers = activation.productionActivationBlockers
+    .map(({ blockerId, ownerIssue }) => `${blockerId} (${ownerIssue ?? 'unowned'})`)
+    .join(', ');
+  throw new Error(
+    `${activation.locale} is not production-ready; unresolved activation blockers: ${blockers || 'non-reference checks'}.`,
+  );
 }
 
 async function loadCheckedArtifact(root, relativeFile, builder, options) {
@@ -1687,9 +2171,68 @@ async function main() {
   }
 
   const manifest = readJson(root, CANONICAL_MANIFEST);
+  if (['activation', 'artifacts', 'all'].includes(action)) {
+    runSharedAudit(root, 'check');
+    runLanguagePlatformAudit(root);
+  }
   const correctionSummary = validateCorrectionLedger(root, manifest);
   if (action === 'corrections') {
     process.stdout.write(`${JSON.stringify({ action, ...correctionSummary }, null, 2)}\n`);
+    return;
+  }
+
+  if (action === 'all') {
+    const locales = [];
+    for (const activeLocale of SUPPORTED_APP_LOCALES) {
+      const activePaths = localePaths(activeLocale);
+      const context = await loadCheckedArtifact(
+        root,
+        activePaths.context,
+        () => buildContextManifest(root, activeLocale, manifest),
+        { ...options, write: false, check: true },
+      );
+      const quality = await loadCheckedArtifact(
+        root,
+        activePaths.quality,
+        () => buildQualityManifest(root, activeLocale, manifest, context.value),
+        { ...options, write: false, check: true },
+      );
+      const activation = await loadCheckedArtifact(
+        root,
+        activePaths.activation,
+        () =>
+          buildActivationManifest(
+            root,
+            activeLocale,
+            manifest,
+            context.value,
+            quality.value,
+            correctionSummary,
+          ),
+        { ...options, write: false, check: true },
+      );
+      if (options.requireProductionReady) {
+        assertProductionActivationReady(activation.value);
+      }
+      locales.push({
+        locale: activeLocale,
+        context: context.status,
+        quality: quality.status,
+        activation: activation.status,
+      });
+    }
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          action,
+          registryLocaleCount: SUPPORTED_APP_LOCALES.length,
+          locales,
+          privateConfirmationDependencies: [],
+        },
+        null,
+        2,
+      )}\n`,
+    );
     return;
   }
 
@@ -1730,6 +2273,16 @@ async function main() {
     return;
   }
 
+  const structuralValidationResult =
+    action === 'artifacts'
+      ? await loadCheckedArtifact(
+          root,
+          paths.structuralValidation,
+          () => buildStructuralValidation(root, locale, manifest, contextResult.value),
+          options,
+        )
+      : null;
+
   const qualityResult = await loadCheckedArtifact(
     root,
     paths.quality,
@@ -1761,12 +2314,18 @@ async function main() {
       ? options
       : { ...options, write: false, check: true },
   );
+  if (options.requireProductionReady) {
+    assertProductionActivationReady(activationResult.value);
+  }
   process.stdout.write(
     `${JSON.stringify(
       {
         action,
         locale,
         context: contextResult.status,
+        ...(structuralValidationResult
+          ? { structuralValidation: structuralValidationResult.status }
+          : {}),
         quality: qualityResult.status,
         activation: activationResult.status,
         privateConfirmationDependencies: [],

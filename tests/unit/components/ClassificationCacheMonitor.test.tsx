@@ -1,4 +1,5 @@
 import ClassificationCacheMonitor from '@/components/ClassificationCacheMonitor';
+import { getReferenceResourceCacheVersion } from '@/services/referenceResources/manifest';
 import { render } from '@testing-library/react';
 
 const mockUseResourceCacheMonitor = jest.fn();
@@ -6,6 +7,7 @@ const mockCacheAndDecompressClassificationFile = jest.fn();
 const mockGetCachedClassificationFileList = jest.fn();
 const mockGetClassificationCacheManifest = jest.fn();
 const mockSetClassificationCacheManifest = jest.fn();
+const mockClearClassificationCache = jest.fn();
 
 jest.mock('@/components/CacheMonitor/useResourceCacheMonitor', () => ({
   __esModule: true,
@@ -21,17 +23,24 @@ jest.mock('@/services/classifications/util', () => ({
   setClassificationCacheManifest: (...args: any[]) => mockSetClassificationCacheManifest(...args),
 }));
 
+jest.mock('@/services/classifications/cache', () => ({
+  __esModule: true,
+  classificationCache: {
+    clear: () => mockClearClassificationCache(),
+  },
+}));
+
 describe('ClassificationCacheMonitor', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('wires the shared cache monitor hook with classification resources', () => {
-    const { container } = render(<ClassificationCacheMonitor />);
+    const { container, rerender } = render(<ClassificationCacheMonitor />);
 
     expect(container.firstChild).toBeNull();
     expect(mockUseResourceCacheMonitor).toHaveBeenCalledWith({
-      version: '1.3.0',
+      version: getReferenceResourceCacheVersion('classification'),
       files: [
         'CPCClassification.min.json.gz',
         'CPCClassification_zh.min.json.gz',
@@ -47,6 +56,8 @@ describe('ClassificationCacheMonitor', () => {
       setManifest: expect.any(Function),
       getCachedFileList: expect.any(Function),
       cacheFile: expect.any(Function),
+      persistManifestOnPartialSuccess: false,
+      onCacheUpdated: expect.any(Function),
       logMessages: {
         upToDate: '✅ Classification cache is up to date.',
         start: '🎯 Starting classification files caching...',
@@ -62,5 +73,11 @@ describe('ClassificationCacheMonitor', () => {
     expect(monitorConfig.logMessages.success(3)).toBe(
       '🎉 Classification caching completed! 3 files cached successfully.',
     );
+    monitorConfig.onCacheUpdated(['CPCClassification.min.json.gz']);
+    expect(mockClearClassificationCache).toHaveBeenCalledTimes(1);
+
+    const initialFiles = monitorConfig.files;
+    rerender(<ClassificationCacheMonitor />);
+    expect(mockUseResourceCacheMonitor.mock.calls[1][0].files).toBe(initialFiles);
   });
 });

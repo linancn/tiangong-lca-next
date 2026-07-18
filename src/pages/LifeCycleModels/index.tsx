@@ -22,6 +22,10 @@ import {
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { attachStateCodesToRows } from '@/services/general/api';
+import {
+  getServiceQueryLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
 import { ListPagination } from '@/services/general/data';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import {
@@ -480,7 +484,11 @@ const TableList: FC = () => {
           }
           if (currentKeyWord.length > 0) {
             let orderBy:
-              | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
+              | {
+                  key: 'common:class' | 'baseName';
+                  lang?: SupportedServiceQueryLanguage;
+                  order: 'asc' | 'desc';
+                }
               | undefined;
             if (sort && Object.keys(sort).length > 0) {
               const field = Object.keys(sort)[0];
@@ -488,7 +496,7 @@ const TableList: FC = () => {
               if (field === 'name') {
                 orderBy = {
                   key: 'baseName',
-                  lang: lang,
+                  lang: getServiceQueryLanguage(lang),
                   order: order === 'ascend' ? 'asc' : 'desc',
                 };
               } else if (field === 'classification') {

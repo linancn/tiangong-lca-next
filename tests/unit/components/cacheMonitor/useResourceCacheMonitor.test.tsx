@@ -31,6 +31,7 @@ describe('useResourceCacheMonitor', () => {
     const setManifest = jest.fn();
     const getCachedFileList = jest.fn().mockResolvedValue([]);
     const cacheFile = jest.fn().mockResolvedValue(true);
+    const onCacheUpdated = jest.fn();
 
     const TestComponent = () => {
       useResourceCacheMonitor({
@@ -41,6 +42,7 @@ describe('useResourceCacheMonitor', () => {
         setManifest,
         getCachedFileList,
         cacheFile,
+        onCacheUpdated,
         logMessages: {
           upToDate: 'up to date',
           start: 'starting cache',
@@ -72,6 +74,7 @@ describe('useResourceCacheMonitor', () => {
     });
     expect(consoleLogSpy).toHaveBeenCalledWith('starting cache');
     expect(consoleLogSpy).toHaveBeenCalledWith('success 3/3');
+    expect(onCacheUpdated).toHaveBeenCalledWith(['file-a', 'file-b', 'file-c']);
     expect(getCachedFileList).not.toHaveBeenCalled();
   });
 });

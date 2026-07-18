@@ -1,3 +1,8 @@
+import {
+  getReferenceAssetStem,
+  reportReferenceResourceResolution,
+  resolveReferenceResource,
+} from '../referenceResources/resolver';
 import { getCachedOrFetchLocationFileData } from './util';
 
 type ILCDLocationNode = Record<string, unknown> & {
@@ -11,15 +16,6 @@ type ILCDLocationDocument = {
   } | null;
 };
 
-const ILCD_LOCATION_FILES = {
-  en: 'ILCDLocations.min.json.gz',
-  zh: 'ILCDLocations_zh.min.json.gz',
-} as const;
-
-function normalizeIlcdLang(lang: string): 'en' | 'zh' {
-  return lang === 'zh' ? 'zh' : 'en';
-}
-
 function normalizeLocationNodes(
   location?: ILCDLocationNode[] | ILCDLocationNode | null,
 ): ILCDLocationNode[] {
@@ -32,8 +28,7 @@ function normalizeLocationNodes(
   return [];
 }
 
-async function getLocationNodes(lang: 'en' | 'zh'): Promise<ILCDLocationNode[]> {
-  const fileName = ILCD_LOCATION_FILES[lang];
+async function getLocationNodes(fileName: string): Promise<ILCDLocationNode[]> {
   const document = await getCachedOrFetchLocationFileData<ILCDLocationDocument>(fileName);
 
   if (!document) {
@@ -43,12 +38,79 @@ async function getLocationNodes(lang: 'en' | 'zh'): Promise<ILCDLocationNode[]> 
   return normalizeLocationNodes(document.ILCDLocations?.location);
 }
 
+function mergeLocationNodes(
+  baseNodes: ILCDLocationNode[],
+  localizedNodes: ILCDLocationNode[],
+): ILCDLocationNode[] {
+  const localizedByValue = new Map<string, ILCDLocationNode>();
+  const localizedWithoutValue: ILCDLocationNode[] = [];
+
+  for (const node of localizedNodes) {
+    const value = node['@value'];
+    if (typeof value === 'string') {
+      localizedByValue.set(value, node);
+    } else {
+      localizedWithoutValue.push(node);
+    }
+  }
+
+  const baseValues = new Set<string>();
+  const mergedNodes = baseNodes.map((baseNode) => {
+    const value = baseNode['@value'];
+    if (typeof value !== 'string') {
+      return baseNode;
+    }
+
+    baseValues.add(value);
+    const localizedNode = localizedByValue.get(value);
+    return localizedNode ? { ...baseNode, ...localizedNode, '@value': value } : baseNode;
+  });
+
+  const appendedLocalizedValues = new Set<string>();
+  for (const localizedNode of localizedNodes) {
+    const value = localizedNode['@value'];
+    if (
+      typeof value === 'string' &&
+      !baseValues.has(value) &&
+      !appendedLocalizedValues.has(value)
+    ) {
+      const mergedNode = localizedByValue.get(value);
+      if (mergedNode) {
+        mergedNodes.push(mergedNode);
+        appendedLocalizedValues.add(value);
+      }
+    }
+  }
+
+  return [...mergedNodes, ...localizedWithoutValue];
+}
+
 export async function getILCDLocationEntries(
   lang: string,
   getValues: string[],
 ): Promise<ILCDLocationNode[]> {
-  const normalizedLang = normalizeIlcdLang(lang);
-  const nodes = await getLocationNodes(normalizedLang);
+  const resolution = resolveReferenceResource('ilcd-locations', lang);
+  reportReferenceResourceResolution(resolution);
+  if (resolution.status === 'missing' || !resolution.localizedAsset) {
+    throw new Error(resolution.diagnostic);
+  }
+  const baseNodes = await getLocationNodes(resolution.baseAsset.fileName);
+  const localizedNodes =
+    resolution.localizedAsset.fileName === resolution.baseAsset.fileName
+      ? baseNodes
+      : await (async () => {
+          try {
+            return await getLocationNodes(resolution.localizedAsset.fileName);
+          } catch (error) {
+            console.warn(
+              `[i18n-reference-resource] Failed to load localized location asset ${resolution.localizedAsset.fileName} for ${lang}; falling back to ${resolution.baseAsset.fileName}.`,
+              error,
+            );
+            return baseNodes;
+          }
+        })();
+  const nodes =
+    localizedNodes === baseNodes ? baseNodes : mergeLocationNodes(baseNodes, localizedNodes);
 
   if (getValues.includes('all')) {
     return nodes;
@@ -66,11 +128,12 @@ export async function getILCDLocationEntries(
 }
 
 export async function getILCDLocationAll(lang: string) {
-  const normalizedLang = normalizeIlcdLang(lang);
-  const fileName = normalizedLang === 'zh' ? 'ILCDLocations_zh' : 'ILCDLocations';
+  const resolution = resolveReferenceResource('ilcd-locations', lang);
+  reportReferenceResourceResolution(resolution);
+  const fileName = getReferenceAssetStem(resolution);
 
   try {
-    const location = await getILCDLocationEntries(normalizedLang, ['all']);
+    const location = await getILCDLocationEntries(lang, ['all']);
 
     return Promise.resolve({
       data: [{ file_name: fileName, location }],

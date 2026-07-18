@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "tiangong.i18n-locale-activation.v2",
+  "locale": "zh-CN",
+  "source": {
+    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
+    "sourceManifestDigest": "c6f2d2c2db00afeced4ef9727d27224f067a90f4aa360d5b24e3c0d4980bacfd"
+  },
+  "registry": {
+    "canonicalLocale": "zh-CN",
+    "aliases": ["zh", "zh-*", "zh_*", "zh_*.UTF-8", "zh_*.UTF-8@*"],
+    "direction": "ltr",
+    "adapters": { "antDesign": "zh_CN", "dayjs": "zh-cn", "intl": "zh-CN", "report": "zh_CN" },
+    "fallbacks": {
+      "documentationLocale": "zh-CN",
+      "documentationUrl": "https://docs.tiangong.earth",
+      "legalLocale": "en-US"
+    },
+    "environment": {
+      "titleKey": "APP_TITLE_ZH_CN",
+      "loginSubtitleKey": "APP_LOGIN_SUBTITLE_ZH_CN"
+    },
+    "registryDigest": "cde8bab8af8e558a3a414efd6d97a0d0acfe38c3a0c7ab2f69660381eb47ba6c"
+  },
+  "languagePlatform": {
+    "capability": {
+      "appLocale": "zh-CN",
+      "contentLanguage": "zh",
+      "uiCatalog": "native",
+      "contentReading": "native",
+      "contentAuthoring": "native",
+      "serviceQuery": { "status": "native", "resolvedLanguage": "zh", "disclosure": "none" },
+      "referenceResources": [
+        {
+          "resourceId": "cpc",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "legacy-unverified",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "isic",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "legacy-unverified",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "legacy-unverified",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "legacy-unverified",
+          "ownerIssue": "#634"
+        },
+        {
+          "resourceId": "ilcd-locations",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "legacy-unverified",
+          "ownerIssue": "#634"
+        }
+      ]
+    },
+    "contentLanguageRegistryDigest": "c1e4985cf29014f556dabcafac077ec86e2904c8225c413571c02be324b07b6e",
+    "capabilityMatrixDigest": "fde810bfc463df167c94db510ab7596cba9eae2acc407b7c9a330b2b8d267448",
+    "referenceResourceManifestDigest": "1f4643bb477577ad61edf882ae21034a5c32aaf79cb152fe5f698b6b976f704f",
+    "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
+    "hardcodingAllowlistDigest": "1e5be914215cd2b0fd42262c0b7caf75d71bc75ba7b905ff0b7ef70f082f9e39"
+  },
+  "evidence": {
+    "contextDigest": "548bd48e87aae4c774cc7470c6d5973eff0f7a5ba3059837d623174886be22c9",
+    "qualityDigest": "228d6c4ad9fd1c4cec5d031d184a2d0e8a9b65a50d80b70cd51720dc32b9621f",
+    "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
+    "routeViewCoverageDigest": "0c9414433315acb561b29e8884dbb594b377c9e1435829510bc0f9b6979b9050",
+    "fallbackContractDigest": "432cfb9a99fae6973597b12dd3bf91452d0f2bc852423c751f9d53157db19f6b",
+    "localeFallbackRowCount": 10
+  },
+  "ciSafeCommands": {
+    "localeAudit": "npm run i18n:locale:audit -- --locale zh-CN",
+    "context": "npm run i18n:context:check -- --locale zh-CN",
+    "quality": "npm run i18n:locale:quality:check -- --locale zh-CN",
+    "corrections": "npm run i18n:corrections:check",
+    "languagePlatform": "npm run i18n:platform:audit",
+    "languageHardcoding": "npm run i18n:hardcoding:audit",
+    "allLocales": "npm run i18n:locale:all:check",
+    "productionLocale": "npm run i18n:locale:production:check -- --locale zh-CN",
+    "productionAllLocales": "npm run i18n:locale:all:production:check",
+    "activation": "npm run i18n:locale:activation:check -- --locale zh-CN"
+  },
+  "privateConfirmationDependencies": [],
+  "historicalGermanBoundary": "Not applicable; this locale has never used translation confirmation files.",
+  "checks": {
+    "exactTopology": true,
+    "contextComplete": true,
+    "structuralQualityPassed": true,
+    "semanticRouteAndE2EReady": false,
+    "correctionOverlayPassed": true,
+    "fallbackContractPassed": true,
+    "platformContractValid": true,
+    "languageHardcodingPassed": true,
+    "referenceResourcesReady": false,
+    "productionActivationReady": false,
+    "ltrCondition": "single-standard; RTL work not applicable",
+    "humanTranslationReviewRequired": false
+  },
+  "referenceResourceBlockers": [
+    {
+      "resourceId": "cpc",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "isic",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-classification",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-flow-categorization",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "resourceId": "ilcd-locations",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    }
+  ],
+  "productionActivationBlockers": [
+    {
+      "blockerId": "reference-resource:cpc",
+      "kind": "reference-resource",
+      "resourceId": "cpc",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:isic",
+      "kind": "reference-resource",
+      "resourceId": "isic",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-classification",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-classification",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-flow-categorization",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-flow-categorization",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "reference-resource:ilcd-locations",
+      "kind": "reference-resource",
+      "resourceId": "ilcd-locations",
+      "status": "native",
+      "deliveryStatus": "legacy-unverified",
+      "ownerIssue": "#634"
+    },
+    {
+      "blockerId": "semantic-route-and-e2e-proof",
+      "kind": "semantic-route-and-e2e",
+      "status": "pending",
+      "deliveryStatus": null,
+      "ownerIssue": "#635"
+    }
+  ],
+  "activationDigest": "02713ab03139ec67e3f323f4adb111846227d2c272cdff13b12dfd9f058f9fb5"
+}

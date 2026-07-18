@@ -20,8 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: bb7c8da76e2bd0581f7f32e1bc00c4a166fa4581
+lastReviewedAt: 2026-07-18
+lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
+lastReviewedNote: 'Reviewed for Issue #633: lifecycle-model list localization and classification cache resolution do not alter calculation, allocation, scaling, or LCIA helper semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

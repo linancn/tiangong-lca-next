@@ -105,6 +105,7 @@ jest.mock('@/services/general/util', () => ({
   __esModule: true,
   classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
   genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
+  genLocalizedClassification: (...args: any[]) => mockGenClassificationZH.apply(null, args),
   getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
   jsonToList: (...args: any[]) => mockJsonToList.apply(null, args),
 }));
@@ -1238,7 +1239,7 @@ describe('getProcessTableAll', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId }],
+      data: [{ id: sampleId, lang: 'en' }],
       page: 1,
       success: true,
       total: 1,
@@ -2384,6 +2385,7 @@ describe('process_hybrid_search', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'en',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -2393,6 +2395,7 @@ describe('process_hybrid_search', () => {
           typeOfDataSet: 'type-h',
           modifiedAt: new Date('2024-04-01T00:00:00Z'),
           teamId: 'team-456',
+          modelId: undefined,
         },
       ],
       page: 3,
@@ -2502,6 +2505,7 @@ describe('process_hybrid_search', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'zh',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -2576,6 +2580,7 @@ describe('process_hybrid_search', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'zh',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -2650,6 +2655,7 @@ describe('process_hybrid_search', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'en',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -2721,6 +2727,7 @@ describe('process_hybrid_search', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'en',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -2784,7 +2791,7 @@ describe('process_hybrid_search', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId }],
+      data: [{ id: sampleId, lang: 'zh' }],
       page: 1,
       success: true,
       total: 1,
@@ -2837,7 +2844,7 @@ describe('process_hybrid_search', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId }],
+      data: [{ id: sampleId, lang: 'en' }],
       page: 1,
       success: true,
       total: 1,
@@ -3810,6 +3817,58 @@ describe('getProcessTablePgroongaSearch', () => {
     });
   });
 
+  it.each(['de', 'fr'] as const)(
+    'loads %s process classifications and resolves RPC sort language',
+    async (lang) => {
+      mockAuthGetSession.mockResolvedValueOnce({
+        data: { session: { access_token: 'token-xyz', user: { id: 'user-1' } } },
+      });
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          {
+            id: sampleId,
+            version: sampleVersion,
+            total_count: 1,
+            json: {
+              processDataSet: {
+                processInformation: {
+                  dataSetInformation: {
+                    classificationInformation: {
+                      'common:classification': {
+                        'common:class': [{ '#text': 'Manufacturing' }],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      });
+
+      await processesApi.getProcessTablePgroongaSearch(
+        { current: 1, pageSize: 10 },
+        lang,
+        'tg',
+        'manufacturing',
+        {},
+        undefined,
+        'all',
+        { key: 'baseName', lang, order: 'asc' },
+      );
+
+      expect(mockGetCachedClassificationData).toHaveBeenCalledWith('Process', lang, ['all']);
+      expect(mockGetLangText).toHaveBeenCalledWith({}, lang);
+      expect(mockRpc).toHaveBeenCalledWith(
+        'search_processes_latest',
+        expect.objectContaining({
+          order_by: { key: 'baseName', lang: 'en', order: 'asc' },
+        }),
+      );
+    },
+  );
+
   it('logs pgroonga rpc error and returns undefined when no data payload', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => undefined);
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: { access_token: 'token-xyz' } } });
@@ -3901,6 +3960,7 @@ describe('getProcessTablePgroongaSearch', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'zh',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -3969,6 +4029,7 @@ describe('getProcessTablePgroongaSearch', () => {
         {
           key: `${sampleId}:${sampleVersion}`,
           id: sampleId,
+          lang: 'zh',
           name: 'Process Name',
           generalComment: 'General comment',
           classification: 'classification-string',
@@ -4028,7 +4089,7 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId }],
+      data: [{ id: sampleId, lang: 'zh' }],
       page: 1,
       success: true,
       total: 1,
@@ -4077,7 +4138,7 @@ describe('getProcessTablePgroongaSearch', () => {
     );
 
     expect(result).toEqual({
-      data: [{ id: sampleId }],
+      data: [{ id: sampleId, lang: 'en' }],
       page: 1,
       success: true,
       total: 1,

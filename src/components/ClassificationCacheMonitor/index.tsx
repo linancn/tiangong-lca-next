@@ -1,4 +1,5 @@
 import { useResourceCacheMonitor } from '@/components/CacheMonitor/useResourceCacheMonitor';
+import { classificationCache } from '@/services/classifications/cache';
 import {
   cacheAndDecompressClassificationFile,
   getCachedClassificationFileList,
@@ -6,18 +7,14 @@ import {
   setClassificationCacheManifest,
   type ClassificationCacheManifest,
 } from '@/services/classifications/util';
+import {
+  getReferenceResourceCacheFiles,
+  getReferenceResourceCacheVersion,
+} from '@/services/referenceResources/manifest';
 
-const CLASSIFICATION_CACHE_VERSION = '1.3.0';
-const CLASSIFICATION_GZ_FILES = [
-  'CPCClassification.min.json.gz',
-  'CPCClassification_zh.min.json.gz',
-  'ISICClassification.min.json.gz',
-  'ISICClassification_zh.min.json.gz',
-  'ILCDClassification.min.json.gz',
-  'ILCDClassification_zh.min.json.gz',
-  'ILCDFlowCategorization.min.json.gz',
-  'ILCDFlowCategorization_zh.min.json.gz',
-];
+const CLASSIFICATION_CACHE_VERSION = getReferenceResourceCacheVersion('classification');
+const CLASSIFICATION_GZ_FILES = [...getReferenceResourceCacheFiles('classification')];
+const clearClassificationMemoryCache = () => classificationCache.clear();
 
 const CLASSIFICATION_CACHE_LOG_MESSAGES = {
   upToDate: '✅ Classification cache is up to date.',
@@ -38,6 +35,8 @@ const ClassificationCacheMonitor = () => {
     setManifest: setClassificationCacheManifest,
     getCachedFileList: getCachedClassificationFileList,
     cacheFile: cacheAndDecompressClassificationFile,
+    persistManifestOnPartialSuccess: false,
+    onCacheUpdated: clearClassificationMemoryCache,
     logMessages: CLASSIFICATION_CACHE_LOG_MESSAGES,
   });
 
