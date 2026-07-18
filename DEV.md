@@ -89,6 +89,9 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | deterministic locale audit | `npm run i18n:audit` |
 | language registry/Manifest contract audit | `npm run i18n:platform:audit` |
 | business-language hardcoding audit | `npm run i18n:hardcoding:audit` |
+| verify generated reference-resource assets and manifest | `npm run reference-data:check` |
+| require every governed reference resource to have native reviewed assets and explicit production clearance | `npm run reference-data:production:check` (fails while rights or delivery blockers remain) |
+| regenerate reference-resource assets and manifest from reviewed sources | `npm run reference-data:write` |
 | audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
 | execute deterministic structural validation and build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
 | check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
@@ -118,6 +121,9 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local evidence and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
 - after a controlled active-locale change, regenerate that locale's tracked artifacts, run the shared audit/context/quality/correction/activation checks, and keep `BLOCKED_CONTEXT`, unowned route views, topology drift, ICU drift, and undeclared corrections at zero
+- treat `src/services/referenceResources/reference-resource-manifest.json` plus `src/services/referenceResources/data/**` as the editable source of truth for classification and location reference data; run `npm run reference-data:write` after an approved source, overlay, or review change and commit the resulting content-addressed assets and generated manifest together
+- use `npm run reference-data:check` for read-only reproducibility proof; the command is also part of `npm run prepush:gate`
+- production-effective workflows additionally run `npm run reference-data:production:check`; the normal development/pre-push gate intentionally reports but does not waive unresolved rights-clearance blockers
 - `npm run i18n:de:audit` uses the same tracked automated activation boundary as every active registry locale; `i18n:de:pilot`, review, and delta commands validate only their frozen Issue #601/#602/#606 snapshots and are never active-release or full-gate inputs
 - active locale commands and clean-runner proof must pass with `.local/**confirmation*` absent; historical reviewer forms and identity remain outside Git and GitHub
 - a successful managed push leaves no retry receipt; only a non-zero transport result after both hook gates passed activates the ignored, one-hour, exact-intent receipt used by argument-free `npm run push:retry`

@@ -1,0 +1,7862 @@
+{
+  "auditId": "ef3.1-ilcd-locations-reference",
+  "canonicalBaseDigest": {
+    "algorithm": "sha256",
+    "identityCount": 647,
+    "scope": "canonical-base-json",
+    "value": "b65e8d45de515726c86deffd794d719e6c4f7e16af4864bff80a6b20168a3417"
+  },
+  "counts": {
+    "exact": 225,
+    "projectExtension": 377,
+    "projectModified": 45,
+    "total": 647
+  },
+  "edition": "composite project-held ILCD-compatible location catalog",
+  "identityStrategy": "location-code",
+  "projectionDigest": {
+    "algorithm": "sha256",
+    "identityCount": 647,
+    "scope": "ordered-scoped-official-source-projection",
+    "value": "cadd1712bdf92ba3b32677dec3d0e3077f3b68421c8cdc04411fd3a6123760c1"
+  },
+  "records": [
+    {
+      "assertion": {
+        "code": "NULL"
+      },
+      "baseLabel": "None",
+      "key": "location:NULL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "GLO"
+      },
+      "baseLabel": "Global",
+      "key": "location:GLO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GLO"
+        },
+        "key": "location:GLO"
+      },
+      "sourceLabel": "Global"
+    },
+    {
+      "assertion": {
+        "code": "RAF"
+      },
+      "baseLabel": "Africa",
+      "key": "location:RAF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RAF"
+        },
+        "key": "location:RAF"
+      },
+      "sourceLabel": "Africa"
+    },
+    {
+      "assertion": {
+        "code": "RAM"
+      },
+      "baseLabel": "Americas",
+      "key": "location:RAM",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "RAS"
+      },
+      "baseLabel": "Asia and Pacific",
+      "key": "location:RAS",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RAS"
+        },
+        "key": "location:RAS"
+      },
+      "sourceLabel": "Asia and the Pacific"
+    },
+    {
+      "assertion": {
+        "code": "RER"
+      },
+      "baseLabel": "Europe",
+      "key": "location:RER",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RER"
+        },
+        "key": "location:RER"
+      },
+      "sourceLabel": "Europe"
+    },
+    {
+      "assertion": {
+        "code": "OCE"
+      },
+      "baseLabel": "Oceania",
+      "key": "location:OCE",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "OCE"
+        },
+        "key": "location:OCE"
+      },
+      "sourceLabel": "Oceanic"
+    },
+    {
+      "assertion": {
+        "code": "MEA"
+      },
+      "baseLabel": "Middle East and North Africa",
+      "key": "location:MEA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MEA"
+        },
+        "key": "location:MEA"
+      },
+      "sourceLabel": "Middle East and North Africa"
+    },
+    {
+      "assertion": {
+        "code": "AFR"
+      },
+      "baseLabel": "Sub-Saharan Africa",
+      "key": "location:AFR",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AFR"
+        },
+        "key": "location:AFR"
+      },
+      "sourceLabel": "Sub-Sahara Africa"
+    },
+    {
+      "assertion": {
+        "code": "RLA"
+      },
+      "baseLabel": "Latin America & the Caribbean",
+      "key": "location:RLA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RLA"
+        },
+        "key": "location:RLA"
+      },
+      "sourceLabel": "Latin America & the Caribbean"
+    },
+    {
+      "assertion": {
+        "code": "RNA"
+      },
+      "baseLabel": "Northern America",
+      "key": "location:RNA",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RNA"
+        },
+        "key": "location:RNA"
+      },
+      "sourceLabel": "North America"
+    },
+    {
+      "assertion": {
+        "code": "CPA"
+      },
+      "baseLabel": "Centrally Planned Asia and China",
+      "key": "location:CPA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CPA"
+        },
+        "key": "location:CPA"
+      },
+      "sourceLabel": "Centrally Planned Asia and China"
+    },
+    {
+      "assertion": {
+        "code": "EAS"
+      },
+      "baseLabel": "Eastern Asia",
+      "key": "location:EAS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "PAS"
+      },
+      "baseLabel": "Other Pacific Asia",
+      "key": "location:PAS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PAS"
+        },
+        "key": "location:PAS"
+      },
+      "sourceLabel": "Other Pacific Asia"
+    },
+    {
+      "assertion": {
+        "code": "SAS"
+      },
+      "baseLabel": "South Asia",
+      "key": "location:SAS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SAS"
+        },
+        "key": "location:SAS"
+      },
+      "sourceLabel": "South Asia"
+    },
+    {
+      "assertion": {
+        "code": "EEU"
+      },
+      "baseLabel": "Central and Eastern Europe",
+      "key": "location:EEU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EEU"
+        },
+        "key": "location:EEU"
+      },
+      "sourceLabel": "Central and Eastern Europe"
+    },
+    {
+      "assertion": {
+        "code": "WEU"
+      },
+      "baseLabel": "Western Europe",
+      "key": "location:WEU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "WEU"
+        },
+        "key": "location:WEU"
+      },
+      "sourceLabel": "Western Europe"
+    },
+    {
+      "assertion": {
+        "code": "RNE"
+      },
+      "baseLabel": "Near East",
+      "key": "location:RNE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RNE"
+        },
+        "key": "location:RNE"
+      },
+      "sourceLabel": "Near East"
+    },
+    {
+      "assertion": {
+        "code": "RME"
+      },
+      "baseLabel": "Middle East",
+      "key": "location:RME",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RME"
+        },
+        "key": "location:RME"
+      },
+      "sourceLabel": "Middle East"
+    },
+    {
+      "assertion": {
+        "code": "EU-15"
+      },
+      "baseLabel": "EU 15",
+      "key": "location:EU-15",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-15"
+        },
+        "key": "location:EU-15"
+      },
+      "sourceLabel": "EU 15"
+    },
+    {
+      "assertion": {
+        "code": "EU-NMC"
+      },
+      "baseLabel": "EU New Member Countries 2004",
+      "key": "location:EU-NMC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-NMC"
+        },
+        "key": "location:EU-NMC"
+      },
+      "sourceLabel": "EU new member countries 2004"
+    },
+    {
+      "assertion": {
+        "code": "EU-25"
+      },
+      "baseLabel": "EU 25",
+      "key": "location:EU-25",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-25"
+        },
+        "key": "location:EU-25"
+      },
+      "sourceLabel": "EU 25"
+    },
+    {
+      "assertion": {
+        "code": "EC-CC"
+      },
+      "baseLabel": "EU Candidate Countries 2005",
+      "key": "location:EC-CC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EC-CC"
+        },
+        "key": "location:EC-CC"
+      },
+      "sourceLabel": "EU candidate countries 2005"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC"
+      },
+      "baseLabel": "EU 25 Plus Candidate Countries 2005",
+      "key": "location:EU-25&CC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-25&CC"
+        },
+        "key": "location:EU-25&CC"
+      },
+      "sourceLabel": "EU 25 plus candidate countries 2005"
+    },
+    {
+      "assertion": {
+        "code": "EU-AC"
+      },
+      "baseLabel": "EU Associated Countries 2005",
+      "key": "location:EU-AC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-AC"
+        },
+        "key": "location:EU-AC"
+      },
+      "sourceLabel": "EU associated countries 2005"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC&AC"
+      },
+      "baseLabel": "EU 25 Plus Candidate Countries and Associated Countries 2005",
+      "key": "location:EU-25&CC&AC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-25&CC&AC"
+        },
+        "key": "location:EU-25&CC&AC"
+      },
+      "sourceLabel": "EU 25 plus candidate countries 2005 plus associated countries 2005"
+    },
+    {
+      "assertion": {
+        "code": "EU-27"
+      },
+      "baseLabel": "EU 27",
+      "key": "location:EU-27",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EU-27"
+        },
+        "key": "location:EU-27"
+      },
+      "sourceLabel": "EU-27 Member States"
+    },
+    {
+      "assertion": {
+        "code": "PAO"
+      },
+      "baseLabel": "Pacific OECD (Japan, Australia, New Zealand)",
+      "key": "location:PAO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PAO"
+        },
+        "key": "location:PAO"
+      },
+      "sourceLabel": "Pacific OECD (Japan, Australia, New Zealand)"
+    },
+    {
+      "assertion": {
+        "code": "FSU"
+      },
+      "baseLabel": "Independent States of the Former Soviet Union",
+      "key": "location:FSU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FSU"
+        },
+        "key": "location:FSU"
+      },
+      "sourceLabel": "Independent States of the Former Soviet Union"
+    },
+    {
+      "assertion": {
+        "code": "UCTE"
+      },
+      "baseLabel": "Union for the Co-ordination of Transmission of Electricity",
+      "key": "location:UCTE",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UCTE"
+        },
+        "key": "location:UCTE"
+      },
+      "sourceLabel": "Union for the Co-ordination of Transmission of Electricity "
+    },
+    {
+      "assertion": {
+        "code": "CENTREL"
+      },
+      "baseLabel": "Central european power association",
+      "key": "location:CENTREL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CENTREL"
+        },
+        "key": "location:CENTREL"
+      },
+      "sourceLabel": "Central european power association"
+    },
+    {
+      "assertion": {
+        "code": "NORDEL"
+      },
+      "baseLabel": "Nordic countries power association",
+      "key": "location:NORDEL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NORDEL"
+        },
+        "key": "location:NORDEL"
+      },
+      "sourceLabel": "Nordic countries power association"
+    },
+    {
+      "assertion": {
+        "code": "EU+EFTA+UK"
+      },
+      "baseLabel": "complete EU",
+      "key": "location:EU+EFTA+UK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "AD"
+      },
+      "baseLabel": "Andorra",
+      "key": "location:AD",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AD"
+        },
+        "key": "location:AD"
+      },
+      "sourceLabel": "Andorra"
+    },
+    {
+      "assertion": {
+        "code": "AE"
+      },
+      "baseLabel": "United Arab Emirates",
+      "key": "location:AE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AE"
+        },
+        "key": "location:AE"
+      },
+      "sourceLabel": "United Arab Emirates"
+    },
+    {
+      "assertion": {
+        "code": "AF"
+      },
+      "baseLabel": "Afghanistan",
+      "key": "location:AF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AF"
+        },
+        "key": "location:AF"
+      },
+      "sourceLabel": "Afghanistan"
+    },
+    {
+      "assertion": {
+        "code": "AG"
+      },
+      "baseLabel": "Antigua and Barbuda",
+      "key": "location:AG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AG"
+        },
+        "key": "location:AG"
+      },
+      "sourceLabel": "Antigua and Barbuda"
+    },
+    {
+      "assertion": {
+        "code": "AI"
+      },
+      "baseLabel": "Anguilla",
+      "key": "location:AI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AI"
+        },
+        "key": "location:AI"
+      },
+      "sourceLabel": "Anguilla"
+    },
+    {
+      "assertion": {
+        "code": "AL"
+      },
+      "baseLabel": "Albania",
+      "key": "location:AL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AL"
+        },
+        "key": "location:AL"
+      },
+      "sourceLabel": "Albania"
+    },
+    {
+      "assertion": {
+        "code": "AM"
+      },
+      "baseLabel": "Armenia",
+      "key": "location:AM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AM"
+        },
+        "key": "location:AM"
+      },
+      "sourceLabel": "Armenia"
+    },
+    {
+      "assertion": {
+        "code": "AO"
+      },
+      "baseLabel": "Angola",
+      "key": "location:AO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AO"
+        },
+        "key": "location:AO"
+      },
+      "sourceLabel": "Angola"
+    },
+    {
+      "assertion": {
+        "code": "AQ"
+      },
+      "baseLabel": "Antarctica",
+      "key": "location:AQ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AQ"
+        },
+        "key": "location:AQ"
+      },
+      "sourceLabel": "Antarctica"
+    },
+    {
+      "assertion": {
+        "code": "AR"
+      },
+      "baseLabel": "Argentina",
+      "key": "location:AR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AR"
+        },
+        "key": "location:AR"
+      },
+      "sourceLabel": "Argentina"
+    },
+    {
+      "assertion": {
+        "code": "AS"
+      },
+      "baseLabel": "American Samoa",
+      "key": "location:AS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AS"
+        },
+        "key": "location:AS"
+      },
+      "sourceLabel": "American Samoa"
+    },
+    {
+      "assertion": {
+        "code": "AT"
+      },
+      "baseLabel": "Austria",
+      "key": "location:AT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AT"
+        },
+        "key": "location:AT"
+      },
+      "sourceLabel": "Austria"
+    },
+    {
+      "assertion": {
+        "code": "AU"
+      },
+      "baseLabel": "Australia",
+      "key": "location:AU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AU"
+        },
+        "key": "location:AU"
+      },
+      "sourceLabel": "Australia"
+    },
+    {
+      "assertion": {
+        "code": "AW"
+      },
+      "baseLabel": "Aruba",
+      "key": "location:AW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AW"
+        },
+        "key": "location:AW"
+      },
+      "sourceLabel": "Aruba"
+    },
+    {
+      "assertion": {
+        "code": "AX"
+      },
+      "baseLabel": "Åland Islands",
+      "key": "location:AX",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AX"
+        },
+        "key": "location:AX"
+      },
+      "sourceLabel": "Åland Islands"
+    },
+    {
+      "assertion": {
+        "code": "AZ"
+      },
+      "baseLabel": "Azerbaijan",
+      "key": "location:AZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "AZ"
+        },
+        "key": "location:AZ"
+      },
+      "sourceLabel": "Azerbaijan"
+    },
+    {
+      "assertion": {
+        "code": "BA"
+      },
+      "baseLabel": "Bosnia and Herzegovina",
+      "key": "location:BA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BA"
+        },
+        "key": "location:BA"
+      },
+      "sourceLabel": "Bosnia and Herzegovina"
+    },
+    {
+      "assertion": {
+        "code": "BB"
+      },
+      "baseLabel": "Barbados",
+      "key": "location:BB",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BB"
+        },
+        "key": "location:BB"
+      },
+      "sourceLabel": "Barbados"
+    },
+    {
+      "assertion": {
+        "code": "BD"
+      },
+      "baseLabel": "Bangladesh",
+      "key": "location:BD",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BD"
+        },
+        "key": "location:BD"
+      },
+      "sourceLabel": "Bangladesh"
+    },
+    {
+      "assertion": {
+        "code": "BE"
+      },
+      "baseLabel": "Belgium",
+      "key": "location:BE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BE"
+        },
+        "key": "location:BE"
+      },
+      "sourceLabel": "Belgium"
+    },
+    {
+      "assertion": {
+        "code": "BF"
+      },
+      "baseLabel": "Burkina Faso",
+      "key": "location:BF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BF"
+        },
+        "key": "location:BF"
+      },
+      "sourceLabel": "Burkina Faso"
+    },
+    {
+      "assertion": {
+        "code": "BG"
+      },
+      "baseLabel": "Bulgaria",
+      "key": "location:BG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BG"
+        },
+        "key": "location:BG"
+      },
+      "sourceLabel": "Bulgaria"
+    },
+    {
+      "assertion": {
+        "code": "BH"
+      },
+      "baseLabel": "Bahrain",
+      "key": "location:BH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BH"
+        },
+        "key": "location:BH"
+      },
+      "sourceLabel": "Bahrain"
+    },
+    {
+      "assertion": {
+        "code": "BI"
+      },
+      "baseLabel": "Burundi",
+      "key": "location:BI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BI"
+        },
+        "key": "location:BI"
+      },
+      "sourceLabel": "Burundi"
+    },
+    {
+      "assertion": {
+        "code": "BJ"
+      },
+      "baseLabel": "Benin",
+      "key": "location:BJ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BJ"
+        },
+        "key": "location:BJ"
+      },
+      "sourceLabel": "Benin"
+    },
+    {
+      "assertion": {
+        "code": "BL"
+      },
+      "baseLabel": "Saint Barthélemy",
+      "key": "location:BL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "BM"
+      },
+      "baseLabel": "Bermuda",
+      "key": "location:BM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BM"
+        },
+        "key": "location:BM"
+      },
+      "sourceLabel": "Bermuda"
+    },
+    {
+      "assertion": {
+        "code": "BN"
+      },
+      "baseLabel": "Brunei Darussalam",
+      "key": "location:BN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BN"
+        },
+        "key": "location:BN"
+      },
+      "sourceLabel": "Brunei Darussalam"
+    },
+    {
+      "assertion": {
+        "code": "BO"
+      },
+      "baseLabel": "Bolivia (Plurinational State of)",
+      "key": "location:BO",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BO"
+        },
+        "key": "location:BO"
+      },
+      "sourceLabel": "Bolivia"
+    },
+    {
+      "assertion": {
+        "code": "BQ"
+      },
+      "baseLabel": "Bonaire, Sint Eustatius and Saba",
+      "key": "location:BQ",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BQ"
+        },
+        "key": "location:BQ"
+      },
+      "sourceLabel": "Bonaire"
+    },
+    {
+      "assertion": {
+        "code": "BR"
+      },
+      "baseLabel": "Brazil",
+      "key": "location:BR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BR"
+        },
+        "key": "location:BR"
+      },
+      "sourceLabel": "Brazil"
+    },
+    {
+      "assertion": {
+        "code": "BS"
+      },
+      "baseLabel": "Bahamas",
+      "key": "location:BS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BS"
+        },
+        "key": "location:BS"
+      },
+      "sourceLabel": "Bahamas"
+    },
+    {
+      "assertion": {
+        "code": "BT"
+      },
+      "baseLabel": "Bhutan",
+      "key": "location:BT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BT"
+        },
+        "key": "location:BT"
+      },
+      "sourceLabel": "Bhutan"
+    },
+    {
+      "assertion": {
+        "code": "BV"
+      },
+      "baseLabel": "Bouvet Island",
+      "key": "location:BV",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BV"
+        },
+        "key": "location:BV"
+      },
+      "sourceLabel": "Bouvet Island"
+    },
+    {
+      "assertion": {
+        "code": "BW"
+      },
+      "baseLabel": "Botswana",
+      "key": "location:BW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BW"
+        },
+        "key": "location:BW"
+      },
+      "sourceLabel": "Botswana"
+    },
+    {
+      "assertion": {
+        "code": "BY"
+      },
+      "baseLabel": "Belarus",
+      "key": "location:BY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BY"
+        },
+        "key": "location:BY"
+      },
+      "sourceLabel": "Belarus"
+    },
+    {
+      "assertion": {
+        "code": "BZ"
+      },
+      "baseLabel": "Belize",
+      "key": "location:BZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "BZ"
+        },
+        "key": "location:BZ"
+      },
+      "sourceLabel": "Belize"
+    },
+    {
+      "assertion": {
+        "code": "CA"
+      },
+      "baseLabel": "Canada",
+      "key": "location:CA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CA"
+        },
+        "key": "location:CA"
+      },
+      "sourceLabel": "Canada"
+    },
+    {
+      "assertion": {
+        "code": "CC"
+      },
+      "baseLabel": "Cocos (Keeling) Islands",
+      "key": "location:CC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CC"
+        },
+        "key": "location:CC"
+      },
+      "sourceLabel": "Cocos (Keeling) Islands"
+    },
+    {
+      "assertion": {
+        "code": "CD"
+      },
+      "baseLabel": "Democratic Republic of the Congo",
+      "key": "location:CD",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CD"
+        },
+        "key": "location:CD"
+      },
+      "sourceLabel": "Congo, The Democratic Republic Of The"
+    },
+    {
+      "assertion": {
+        "code": "CF"
+      },
+      "baseLabel": "Central African Republic",
+      "key": "location:CF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CF"
+        },
+        "key": "location:CF"
+      },
+      "sourceLabel": "Central African Republic"
+    },
+    {
+      "assertion": {
+        "code": "CG"
+      },
+      "baseLabel": "Congo",
+      "key": "location:CG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CG"
+        },
+        "key": "location:CG"
+      },
+      "sourceLabel": "Congo"
+    },
+    {
+      "assertion": {
+        "code": "CH"
+      },
+      "baseLabel": "Switzerland",
+      "key": "location:CH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CH"
+        },
+        "key": "location:CH"
+      },
+      "sourceLabel": "Switzerland"
+    },
+    {
+      "assertion": {
+        "code": "CI"
+      },
+      "baseLabel": "Côte d'Ivoire",
+      "key": "location:CI",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CI"
+        },
+        "key": "location:CI"
+      },
+      "sourceLabel": "Cote D'ivoire"
+    },
+    {
+      "assertion": {
+        "code": "CK"
+      },
+      "baseLabel": "Cook Islands",
+      "key": "location:CK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CK"
+        },
+        "key": "location:CK"
+      },
+      "sourceLabel": "Cook Islands"
+    },
+    {
+      "assertion": {
+        "code": "CL"
+      },
+      "baseLabel": "Chile",
+      "key": "location:CL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CL"
+        },
+        "key": "location:CL"
+      },
+      "sourceLabel": "Chile"
+    },
+    {
+      "assertion": {
+        "code": "CM"
+      },
+      "baseLabel": "Cameroon",
+      "key": "location:CM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CM"
+        },
+        "key": "location:CM"
+      },
+      "sourceLabel": "Cameroon"
+    },
+    {
+      "assertion": {
+        "code": "CO"
+      },
+      "baseLabel": "Colombia",
+      "key": "location:CO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CO"
+        },
+        "key": "location:CO"
+      },
+      "sourceLabel": "Colombia"
+    },
+    {
+      "assertion": {
+        "code": "CR"
+      },
+      "baseLabel": "Costa Rica",
+      "key": "location:CR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CR"
+        },
+        "key": "location:CR"
+      },
+      "sourceLabel": "Costa Rica"
+    },
+    {
+      "assertion": {
+        "code": "CU"
+      },
+      "baseLabel": "Cuba",
+      "key": "location:CU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CU"
+        },
+        "key": "location:CU"
+      },
+      "sourceLabel": "Cuba"
+    },
+    {
+      "assertion": {
+        "code": "CV"
+      },
+      "baseLabel": "Cabo Verde",
+      "key": "location:CV",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CV"
+        },
+        "key": "location:CV"
+      },
+      "sourceLabel": "Cape Verde"
+    },
+    {
+      "assertion": {
+        "code": "CW"
+      },
+      "baseLabel": "Curaçao",
+      "key": "location:CW",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CX"
+      },
+      "baseLabel": "Christmas Island",
+      "key": "location:CX",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CX"
+        },
+        "key": "location:CX"
+      },
+      "sourceLabel": "Christmas Island"
+    },
+    {
+      "assertion": {
+        "code": "CY"
+      },
+      "baseLabel": "Cyprus",
+      "key": "location:CY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CY"
+        },
+        "key": "location:CY"
+      },
+      "sourceLabel": "Cyprus"
+    },
+    {
+      "assertion": {
+        "code": "CZ"
+      },
+      "baseLabel": "Czechia",
+      "key": "location:CZ",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CZ"
+        },
+        "key": "location:CZ"
+      },
+      "sourceLabel": "Czech Republic"
+    },
+    {
+      "assertion": {
+        "code": "DE"
+      },
+      "baseLabel": "Germany",
+      "key": "location:DE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DE"
+        },
+        "key": "location:DE"
+      },
+      "sourceLabel": "Germany"
+    },
+    {
+      "assertion": {
+        "code": "DJ"
+      },
+      "baseLabel": "Djibouti",
+      "key": "location:DJ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DJ"
+        },
+        "key": "location:DJ"
+      },
+      "sourceLabel": "Djibouti"
+    },
+    {
+      "assertion": {
+        "code": "DK"
+      },
+      "baseLabel": "Denmark",
+      "key": "location:DK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DK"
+        },
+        "key": "location:DK"
+      },
+      "sourceLabel": "Denmark"
+    },
+    {
+      "assertion": {
+        "code": "DM"
+      },
+      "baseLabel": "Dominica",
+      "key": "location:DM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DM"
+        },
+        "key": "location:DM"
+      },
+      "sourceLabel": "Dominica"
+    },
+    {
+      "assertion": {
+        "code": "DO"
+      },
+      "baseLabel": "Dominican Republic",
+      "key": "location:DO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DO"
+        },
+        "key": "location:DO"
+      },
+      "sourceLabel": "Dominican Republic"
+    },
+    {
+      "assertion": {
+        "code": "DZ"
+      },
+      "baseLabel": "Algeria",
+      "key": "location:DZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "DZ"
+        },
+        "key": "location:DZ"
+      },
+      "sourceLabel": "Algeria"
+    },
+    {
+      "assertion": {
+        "code": "EC"
+      },
+      "baseLabel": "Ecuador",
+      "key": "location:EC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EC"
+        },
+        "key": "location:EC"
+      },
+      "sourceLabel": "Ecuador"
+    },
+    {
+      "assertion": {
+        "code": "EE"
+      },
+      "baseLabel": "Estonia",
+      "key": "location:EE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EE"
+        },
+        "key": "location:EE"
+      },
+      "sourceLabel": "Estonia"
+    },
+    {
+      "assertion": {
+        "code": "EG"
+      },
+      "baseLabel": "Egypt",
+      "key": "location:EG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EG"
+        },
+        "key": "location:EG"
+      },
+      "sourceLabel": "Egypt"
+    },
+    {
+      "assertion": {
+        "code": "EH"
+      },
+      "baseLabel": "Western Sahara",
+      "key": "location:EH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "EH"
+        },
+        "key": "location:EH"
+      },
+      "sourceLabel": "Western Sahara"
+    },
+    {
+      "assertion": {
+        "code": "ER"
+      },
+      "baseLabel": "Eritrea",
+      "key": "location:ER",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ER"
+        },
+        "key": "location:ER"
+      },
+      "sourceLabel": "Eritrea"
+    },
+    {
+      "assertion": {
+        "code": "ES"
+      },
+      "baseLabel": "Spain",
+      "key": "location:ES",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ES"
+        },
+        "key": "location:ES"
+      },
+      "sourceLabel": "Spain"
+    },
+    {
+      "assertion": {
+        "code": "ET"
+      },
+      "baseLabel": "Ethiopia",
+      "key": "location:ET",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ET"
+        },
+        "key": "location:ET"
+      },
+      "sourceLabel": "Ethiopia"
+    },
+    {
+      "assertion": {
+        "code": "FI"
+      },
+      "baseLabel": "Finland",
+      "key": "location:FI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FI"
+        },
+        "key": "location:FI"
+      },
+      "sourceLabel": "Finland"
+    },
+    {
+      "assertion": {
+        "code": "FJ"
+      },
+      "baseLabel": "Fiji",
+      "key": "location:FJ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FJ"
+        },
+        "key": "location:FJ"
+      },
+      "sourceLabel": "Fiji"
+    },
+    {
+      "assertion": {
+        "code": "FK"
+      },
+      "baseLabel": "Falkland Islands (Malvinas)",
+      "key": "location:FK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FK"
+        },
+        "key": "location:FK"
+      },
+      "sourceLabel": "Falkland Islands (Malvinas)"
+    },
+    {
+      "assertion": {
+        "code": "FM"
+      },
+      "baseLabel": "Micronesia (Federated States of)",
+      "key": "location:FM",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FM"
+        },
+        "key": "location:FM"
+      },
+      "sourceLabel": "Micronesia, Federated States Of"
+    },
+    {
+      "assertion": {
+        "code": "FO"
+      },
+      "baseLabel": "Faroe Islands",
+      "key": "location:FO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FO"
+        },
+        "key": "location:FO"
+      },
+      "sourceLabel": "Faroe Islands"
+    },
+    {
+      "assertion": {
+        "code": "FR"
+      },
+      "baseLabel": "France",
+      "key": "location:FR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "FR"
+        },
+        "key": "location:FR"
+      },
+      "sourceLabel": "France"
+    },
+    {
+      "assertion": {
+        "code": "GA"
+      },
+      "baseLabel": "Gabon",
+      "key": "location:GA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GA"
+        },
+        "key": "location:GA"
+      },
+      "sourceLabel": "Gabon"
+    },
+    {
+      "assertion": {
+        "code": "GB"
+      },
+      "baseLabel": "United Kingdom of Great Britain and Northern Ireland",
+      "key": "location:GB",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GB"
+        },
+        "key": "location:GB"
+      },
+      "sourceLabel": "United Kingdom"
+    },
+    {
+      "assertion": {
+        "code": "GD"
+      },
+      "baseLabel": "Grenada",
+      "key": "location:GD",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GD"
+        },
+        "key": "location:GD"
+      },
+      "sourceLabel": "Grenada"
+    },
+    {
+      "assertion": {
+        "code": "GE"
+      },
+      "baseLabel": "Georgia",
+      "key": "location:GE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GE"
+        },
+        "key": "location:GE"
+      },
+      "sourceLabel": "Georgia"
+    },
+    {
+      "assertion": {
+        "code": "GF"
+      },
+      "baseLabel": "French Guiana",
+      "key": "location:GF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GF"
+        },
+        "key": "location:GF"
+      },
+      "sourceLabel": "French Guiana"
+    },
+    {
+      "assertion": {
+        "code": "GG"
+      },
+      "baseLabel": "Guernsey",
+      "key": "location:GG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "GH"
+      },
+      "baseLabel": "Ghana",
+      "key": "location:GH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GH"
+        },
+        "key": "location:GH"
+      },
+      "sourceLabel": "Ghana"
+    },
+    {
+      "assertion": {
+        "code": "GI"
+      },
+      "baseLabel": "Gibraltar",
+      "key": "location:GI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GI"
+        },
+        "key": "location:GI"
+      },
+      "sourceLabel": "Gibraltar"
+    },
+    {
+      "assertion": {
+        "code": "GL"
+      },
+      "baseLabel": "Greenland",
+      "key": "location:GL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GL"
+        },
+        "key": "location:GL"
+      },
+      "sourceLabel": "Greenland"
+    },
+    {
+      "assertion": {
+        "code": "GM"
+      },
+      "baseLabel": "Gambia",
+      "key": "location:GM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GM"
+        },
+        "key": "location:GM"
+      },
+      "sourceLabel": "Gambia"
+    },
+    {
+      "assertion": {
+        "code": "GN"
+      },
+      "baseLabel": "Guinea",
+      "key": "location:GN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GN"
+        },
+        "key": "location:GN"
+      },
+      "sourceLabel": "Guinea"
+    },
+    {
+      "assertion": {
+        "code": "GP"
+      },
+      "baseLabel": "Guadeloupe",
+      "key": "location:GP",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GP"
+        },
+        "key": "location:GP"
+      },
+      "sourceLabel": "Guadeloupe"
+    },
+    {
+      "assertion": {
+        "code": "GQ"
+      },
+      "baseLabel": "Equatorial Guinea",
+      "key": "location:GQ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GQ"
+        },
+        "key": "location:GQ"
+      },
+      "sourceLabel": "Equatorial Guinea"
+    },
+    {
+      "assertion": {
+        "code": "GR"
+      },
+      "baseLabel": "Greece",
+      "key": "location:GR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GR"
+        },
+        "key": "location:GR"
+      },
+      "sourceLabel": "Greece"
+    },
+    {
+      "assertion": {
+        "code": "GS"
+      },
+      "baseLabel": "South Georgia and the South Sandwich Islands",
+      "key": "location:GS",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GS"
+        },
+        "key": "location:GS"
+      },
+      "sourceLabel": "South Georgia and The South Sandwich Islands"
+    },
+    {
+      "assertion": {
+        "code": "GT"
+      },
+      "baseLabel": "Guatemala",
+      "key": "location:GT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GT"
+        },
+        "key": "location:GT"
+      },
+      "sourceLabel": "Guatemala"
+    },
+    {
+      "assertion": {
+        "code": "GU"
+      },
+      "baseLabel": "Guam",
+      "key": "location:GU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GU"
+        },
+        "key": "location:GU"
+      },
+      "sourceLabel": "Guam"
+    },
+    {
+      "assertion": {
+        "code": "GW"
+      },
+      "baseLabel": "Guinea-Bissau",
+      "key": "location:GW",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GW"
+        },
+        "key": "location:GW"
+      },
+      "sourceLabel": "Guinea-bissau"
+    },
+    {
+      "assertion": {
+        "code": "GY"
+      },
+      "baseLabel": "Guyana",
+      "key": "location:GY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "GY"
+        },
+        "key": "location:GY"
+      },
+      "sourceLabel": "Guyana"
+    },
+    {
+      "assertion": {
+        "code": "HM"
+      },
+      "baseLabel": "Heard Island and McDonald Islands",
+      "key": "location:HM",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HM"
+        },
+        "key": "location:HM"
+      },
+      "sourceLabel": "Heard Island and Mcdonald Islands"
+    },
+    {
+      "assertion": {
+        "code": "HN"
+      },
+      "baseLabel": "Honduras",
+      "key": "location:HN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HN"
+        },
+        "key": "location:HN"
+      },
+      "sourceLabel": "Honduras"
+    },
+    {
+      "assertion": {
+        "code": "HR"
+      },
+      "baseLabel": "Croatia",
+      "key": "location:HR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HR"
+        },
+        "key": "location:HR"
+      },
+      "sourceLabel": "Croatia"
+    },
+    {
+      "assertion": {
+        "code": "HT"
+      },
+      "baseLabel": "Haiti",
+      "key": "location:HT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HT"
+        },
+        "key": "location:HT"
+      },
+      "sourceLabel": "Haiti"
+    },
+    {
+      "assertion": {
+        "code": "HU"
+      },
+      "baseLabel": "Hungary",
+      "key": "location:HU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HU"
+        },
+        "key": "location:HU"
+      },
+      "sourceLabel": "Hungary"
+    },
+    {
+      "assertion": {
+        "code": "ID"
+      },
+      "baseLabel": "Indonesia",
+      "key": "location:ID",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ID"
+        },
+        "key": "location:ID"
+      },
+      "sourceLabel": "Indonesia"
+    },
+    {
+      "assertion": {
+        "code": "IE"
+      },
+      "baseLabel": "Ireland",
+      "key": "location:IE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IE"
+        },
+        "key": "location:IE"
+      },
+      "sourceLabel": "Ireland"
+    },
+    {
+      "assertion": {
+        "code": "IL"
+      },
+      "baseLabel": "Israel",
+      "key": "location:IL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IL"
+        },
+        "key": "location:IL"
+      },
+      "sourceLabel": "Israel"
+    },
+    {
+      "assertion": {
+        "code": "IM"
+      },
+      "baseLabel": "Isle of Man",
+      "key": "location:IM",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "IN"
+      },
+      "baseLabel": "India",
+      "key": "location:IN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IN"
+        },
+        "key": "location:IN"
+      },
+      "sourceLabel": "India"
+    },
+    {
+      "assertion": {
+        "code": "IO"
+      },
+      "baseLabel": "British Indian Ocean Territory",
+      "key": "location:IO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IO"
+        },
+        "key": "location:IO"
+      },
+      "sourceLabel": "British Indian Ocean Territory"
+    },
+    {
+      "assertion": {
+        "code": "IQ"
+      },
+      "baseLabel": "Iraq",
+      "key": "location:IQ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IQ"
+        },
+        "key": "location:IQ"
+      },
+      "sourceLabel": "Iraq"
+    },
+    {
+      "assertion": {
+        "code": "IR"
+      },
+      "baseLabel": "Iran (Islamic Republic of)",
+      "key": "location:IR",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IR"
+        },
+        "key": "location:IR"
+      },
+      "sourceLabel": "Iran, Islamic Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "IS"
+      },
+      "baseLabel": "Iceland",
+      "key": "location:IS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IS"
+        },
+        "key": "location:IS"
+      },
+      "sourceLabel": "Iceland"
+    },
+    {
+      "assertion": {
+        "code": "IT"
+      },
+      "baseLabel": "Italy",
+      "key": "location:IT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "IT"
+        },
+        "key": "location:IT"
+      },
+      "sourceLabel": "Italy"
+    },
+    {
+      "assertion": {
+        "code": "JE"
+      },
+      "baseLabel": "Jersey",
+      "key": "location:JE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "JM"
+      },
+      "baseLabel": "Jamaica",
+      "key": "location:JM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "JM"
+        },
+        "key": "location:JM"
+      },
+      "sourceLabel": "Jamaica"
+    },
+    {
+      "assertion": {
+        "code": "JO"
+      },
+      "baseLabel": "Jordan",
+      "key": "location:JO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "JO"
+        },
+        "key": "location:JO"
+      },
+      "sourceLabel": "Jordan"
+    },
+    {
+      "assertion": {
+        "code": "JP"
+      },
+      "baseLabel": "Japan",
+      "key": "location:JP",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "JP"
+        },
+        "key": "location:JP"
+      },
+      "sourceLabel": "Japan"
+    },
+    {
+      "assertion": {
+        "code": "KE"
+      },
+      "baseLabel": "Kenya",
+      "key": "location:KE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KE"
+        },
+        "key": "location:KE"
+      },
+      "sourceLabel": "Kenya"
+    },
+    {
+      "assertion": {
+        "code": "KG"
+      },
+      "baseLabel": "Kyrgyzstan",
+      "key": "location:KG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KG"
+        },
+        "key": "location:KG"
+      },
+      "sourceLabel": "Kyrgyzstan"
+    },
+    {
+      "assertion": {
+        "code": "KH"
+      },
+      "baseLabel": "Cambodia",
+      "key": "location:KH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KH"
+        },
+        "key": "location:KH"
+      },
+      "sourceLabel": "Cambodia"
+    },
+    {
+      "assertion": {
+        "code": "KI"
+      },
+      "baseLabel": "Kiribati",
+      "key": "location:KI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KI"
+        },
+        "key": "location:KI"
+      },
+      "sourceLabel": "Kiribati"
+    },
+    {
+      "assertion": {
+        "code": "KM"
+      },
+      "baseLabel": "Comoros",
+      "key": "location:KM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KM"
+        },
+        "key": "location:KM"
+      },
+      "sourceLabel": "Comoros"
+    },
+    {
+      "assertion": {
+        "code": "KN"
+      },
+      "baseLabel": "Saint Kitts and Nevis",
+      "key": "location:KN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KN"
+        },
+        "key": "location:KN"
+      },
+      "sourceLabel": "Saint Kitts and Nevis"
+    },
+    {
+      "assertion": {
+        "code": "KP"
+      },
+      "baseLabel": "Democratic People's Republic of Korea",
+      "key": "location:KP",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KP"
+        },
+        "key": "location:KP"
+      },
+      "sourceLabel": "Korea, Democratic People's Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "KR"
+      },
+      "baseLabel": "Republic of Korea",
+      "key": "location:KR",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KR"
+        },
+        "key": "location:KR"
+      },
+      "sourceLabel": "Korea, Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "KW"
+      },
+      "baseLabel": "Kuwait",
+      "key": "location:KW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KW"
+        },
+        "key": "location:KW"
+      },
+      "sourceLabel": "Kuwait"
+    },
+    {
+      "assertion": {
+        "code": "KY"
+      },
+      "baseLabel": "Cayman Islands",
+      "key": "location:KY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KY"
+        },
+        "key": "location:KY"
+      },
+      "sourceLabel": "Cayman Islands"
+    },
+    {
+      "assertion": {
+        "code": "KZ"
+      },
+      "baseLabel": "Kazakhstan",
+      "key": "location:KZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "KZ"
+        },
+        "key": "location:KZ"
+      },
+      "sourceLabel": "Kazakhstan"
+    },
+    {
+      "assertion": {
+        "code": "LA"
+      },
+      "baseLabel": "Lao People's Democratic Republic",
+      "key": "location:LA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LA"
+        },
+        "key": "location:LA"
+      },
+      "sourceLabel": "Lao People's Democratic Republic"
+    },
+    {
+      "assertion": {
+        "code": "LB"
+      },
+      "baseLabel": "Lebanon",
+      "key": "location:LB",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LB"
+        },
+        "key": "location:LB"
+      },
+      "sourceLabel": "Lebanon"
+    },
+    {
+      "assertion": {
+        "code": "LC"
+      },
+      "baseLabel": "Saint Lucia",
+      "key": "location:LC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LC"
+        },
+        "key": "location:LC"
+      },
+      "sourceLabel": "Saint Lucia"
+    },
+    {
+      "assertion": {
+        "code": "LI"
+      },
+      "baseLabel": "Liechtenstein",
+      "key": "location:LI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LI"
+        },
+        "key": "location:LI"
+      },
+      "sourceLabel": "Liechtenstein"
+    },
+    {
+      "assertion": {
+        "code": "LK"
+      },
+      "baseLabel": "Sri Lanka",
+      "key": "location:LK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LK"
+        },
+        "key": "location:LK"
+      },
+      "sourceLabel": "Sri Lanka"
+    },
+    {
+      "assertion": {
+        "code": "LR"
+      },
+      "baseLabel": "Liberia",
+      "key": "location:LR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LR"
+        },
+        "key": "location:LR"
+      },
+      "sourceLabel": "Liberia"
+    },
+    {
+      "assertion": {
+        "code": "LS"
+      },
+      "baseLabel": "Lesotho",
+      "key": "location:LS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LS"
+        },
+        "key": "location:LS"
+      },
+      "sourceLabel": "Lesotho"
+    },
+    {
+      "assertion": {
+        "code": "LT"
+      },
+      "baseLabel": "Lithuania",
+      "key": "location:LT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LT"
+        },
+        "key": "location:LT"
+      },
+      "sourceLabel": "Lithuania"
+    },
+    {
+      "assertion": {
+        "code": "LU"
+      },
+      "baseLabel": "Luxembourg",
+      "key": "location:LU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LU"
+        },
+        "key": "location:LU"
+      },
+      "sourceLabel": "Luxembourg"
+    },
+    {
+      "assertion": {
+        "code": "LV"
+      },
+      "baseLabel": "Latvia",
+      "key": "location:LV",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LV"
+        },
+        "key": "location:LV"
+      },
+      "sourceLabel": "Latvia"
+    },
+    {
+      "assertion": {
+        "code": "LY"
+      },
+      "baseLabel": "Libya",
+      "key": "location:LY",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "LY"
+        },
+        "key": "location:LY"
+      },
+      "sourceLabel": "Libyan Arab Jamahiriya"
+    },
+    {
+      "assertion": {
+        "code": "MA"
+      },
+      "baseLabel": "Morocco",
+      "key": "location:MA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MA"
+        },
+        "key": "location:MA"
+      },
+      "sourceLabel": "Morocco"
+    },
+    {
+      "assertion": {
+        "code": "MC"
+      },
+      "baseLabel": "Monaco",
+      "key": "location:MC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MC"
+        },
+        "key": "location:MC"
+      },
+      "sourceLabel": "Monaco"
+    },
+    {
+      "assertion": {
+        "code": "MD"
+      },
+      "baseLabel": "Republic of Moldova",
+      "key": "location:MD",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MD"
+        },
+        "key": "location:MD"
+      },
+      "sourceLabel": "Moldova, Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "ME"
+      },
+      "baseLabel": "Montenegro",
+      "key": "location:ME",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ME"
+        },
+        "key": "location:ME"
+      },
+      "sourceLabel": "Montenegro"
+    },
+    {
+      "assertion": {
+        "code": "MF"
+      },
+      "baseLabel": "Saint Martin (French part)",
+      "key": "location:MF",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "MG"
+      },
+      "baseLabel": "Madagascar",
+      "key": "location:MG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MG"
+        },
+        "key": "location:MG"
+      },
+      "sourceLabel": "Madagascar"
+    },
+    {
+      "assertion": {
+        "code": "MH"
+      },
+      "baseLabel": "Marshall Islands",
+      "key": "location:MH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MH"
+        },
+        "key": "location:MH"
+      },
+      "sourceLabel": "Marshall Islands"
+    },
+    {
+      "assertion": {
+        "code": "MK"
+      },
+      "baseLabel": "North Macedonia",
+      "key": "location:MK",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MK"
+        },
+        "key": "location:MK"
+      },
+      "sourceLabel": "Macedonia, The Former Yugoslav Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "ML"
+      },
+      "baseLabel": "Mali",
+      "key": "location:ML",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ML"
+        },
+        "key": "location:ML"
+      },
+      "sourceLabel": "Mali"
+    },
+    {
+      "assertion": {
+        "code": "MM"
+      },
+      "baseLabel": "Myanmar",
+      "key": "location:MM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MM"
+        },
+        "key": "location:MM"
+      },
+      "sourceLabel": "Myanmar"
+    },
+    {
+      "assertion": {
+        "code": "MN"
+      },
+      "baseLabel": "Mongolia",
+      "key": "location:MN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MN"
+        },
+        "key": "location:MN"
+      },
+      "sourceLabel": "Mongolia"
+    },
+    {
+      "assertion": {
+        "code": "MP"
+      },
+      "baseLabel": "Northern Mariana Islands",
+      "key": "location:MP",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MP"
+        },
+        "key": "location:MP"
+      },
+      "sourceLabel": "Northern Mariana Islands"
+    },
+    {
+      "assertion": {
+        "code": "MQ"
+      },
+      "baseLabel": "Martinique",
+      "key": "location:MQ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MQ"
+        },
+        "key": "location:MQ"
+      },
+      "sourceLabel": "Martinique"
+    },
+    {
+      "assertion": {
+        "code": "MR"
+      },
+      "baseLabel": "Mauritania",
+      "key": "location:MR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MR"
+        },
+        "key": "location:MR"
+      },
+      "sourceLabel": "Mauritania"
+    },
+    {
+      "assertion": {
+        "code": "MS"
+      },
+      "baseLabel": "Montserrat",
+      "key": "location:MS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MS"
+        },
+        "key": "location:MS"
+      },
+      "sourceLabel": "Montserrat"
+    },
+    {
+      "assertion": {
+        "code": "MT"
+      },
+      "baseLabel": "Malta",
+      "key": "location:MT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MT"
+        },
+        "key": "location:MT"
+      },
+      "sourceLabel": "Malta"
+    },
+    {
+      "assertion": {
+        "code": "MU"
+      },
+      "baseLabel": "Mauritius",
+      "key": "location:MU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MU"
+        },
+        "key": "location:MU"
+      },
+      "sourceLabel": "Mauritius"
+    },
+    {
+      "assertion": {
+        "code": "MV"
+      },
+      "baseLabel": "Maldives",
+      "key": "location:MV",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MV"
+        },
+        "key": "location:MV"
+      },
+      "sourceLabel": "Maldives"
+    },
+    {
+      "assertion": {
+        "code": "MW"
+      },
+      "baseLabel": "Malawi",
+      "key": "location:MW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MW"
+        },
+        "key": "location:MW"
+      },
+      "sourceLabel": "Malawi"
+    },
+    {
+      "assertion": {
+        "code": "MX"
+      },
+      "baseLabel": "Mexico",
+      "key": "location:MX",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MX"
+        },
+        "key": "location:MX"
+      },
+      "sourceLabel": "Mexico"
+    },
+    {
+      "assertion": {
+        "code": "MY"
+      },
+      "baseLabel": "Malaysia",
+      "key": "location:MY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MY"
+        },
+        "key": "location:MY"
+      },
+      "sourceLabel": "Malaysia"
+    },
+    {
+      "assertion": {
+        "code": "MZ"
+      },
+      "baseLabel": "Mozambique",
+      "key": "location:MZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MZ"
+        },
+        "key": "location:MZ"
+      },
+      "sourceLabel": "Mozambique"
+    },
+    {
+      "assertion": {
+        "code": "NA"
+      },
+      "baseLabel": "Namibia",
+      "key": "location:NA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NA"
+        },
+        "key": "location:NA"
+      },
+      "sourceLabel": "Namibia"
+    },
+    {
+      "assertion": {
+        "code": "NC"
+      },
+      "baseLabel": "New Caledonia",
+      "key": "location:NC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NC"
+        },
+        "key": "location:NC"
+      },
+      "sourceLabel": "New Caledonia"
+    },
+    {
+      "assertion": {
+        "code": "NE"
+      },
+      "baseLabel": "Niger",
+      "key": "location:NE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NE"
+        },
+        "key": "location:NE"
+      },
+      "sourceLabel": "Niger"
+    },
+    {
+      "assertion": {
+        "code": "NF"
+      },
+      "baseLabel": "Norfolk Island",
+      "key": "location:NF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NF"
+        },
+        "key": "location:NF"
+      },
+      "sourceLabel": "Norfolk Island"
+    },
+    {
+      "assertion": {
+        "code": "NG"
+      },
+      "baseLabel": "Nigeria",
+      "key": "location:NG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NG"
+        },
+        "key": "location:NG"
+      },
+      "sourceLabel": "Nigeria"
+    },
+    {
+      "assertion": {
+        "code": "NI"
+      },
+      "baseLabel": "Nicaragua",
+      "key": "location:NI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NI"
+        },
+        "key": "location:NI"
+      },
+      "sourceLabel": "Nicaragua"
+    },
+    {
+      "assertion": {
+        "code": "NL"
+      },
+      "baseLabel": "Netherlands",
+      "key": "location:NL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NL"
+        },
+        "key": "location:NL"
+      },
+      "sourceLabel": "Netherlands"
+    },
+    {
+      "assertion": {
+        "code": "NO"
+      },
+      "baseLabel": "Norway",
+      "key": "location:NO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NO"
+        },
+        "key": "location:NO"
+      },
+      "sourceLabel": "Norway"
+    },
+    {
+      "assertion": {
+        "code": "NP"
+      },
+      "baseLabel": "Nepal",
+      "key": "location:NP",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NP"
+        },
+        "key": "location:NP"
+      },
+      "sourceLabel": "Nepal"
+    },
+    {
+      "assertion": {
+        "code": "NR"
+      },
+      "baseLabel": "Nauru",
+      "key": "location:NR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NR"
+        },
+        "key": "location:NR"
+      },
+      "sourceLabel": "Nauru"
+    },
+    {
+      "assertion": {
+        "code": "NU"
+      },
+      "baseLabel": "Niue",
+      "key": "location:NU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NU"
+        },
+        "key": "location:NU"
+      },
+      "sourceLabel": "Niue"
+    },
+    {
+      "assertion": {
+        "code": "NZ"
+      },
+      "baseLabel": "New Zealand",
+      "key": "location:NZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "NZ"
+        },
+        "key": "location:NZ"
+      },
+      "sourceLabel": "New Zealand"
+    },
+    {
+      "assertion": {
+        "code": "OM"
+      },
+      "baseLabel": "Oman",
+      "key": "location:OM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "OM"
+        },
+        "key": "location:OM"
+      },
+      "sourceLabel": "Oman"
+    },
+    {
+      "assertion": {
+        "code": "PA"
+      },
+      "baseLabel": "Panama",
+      "key": "location:PA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PA"
+        },
+        "key": "location:PA"
+      },
+      "sourceLabel": "Panama"
+    },
+    {
+      "assertion": {
+        "code": "PE"
+      },
+      "baseLabel": "Peru",
+      "key": "location:PE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PE"
+        },
+        "key": "location:PE"
+      },
+      "sourceLabel": "Peru"
+    },
+    {
+      "assertion": {
+        "code": "PF"
+      },
+      "baseLabel": "French Polynesia",
+      "key": "location:PF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PF"
+        },
+        "key": "location:PF"
+      },
+      "sourceLabel": "French Polynesia"
+    },
+    {
+      "assertion": {
+        "code": "PG"
+      },
+      "baseLabel": "Papua New Guinea",
+      "key": "location:PG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PG"
+        },
+        "key": "location:PG"
+      },
+      "sourceLabel": "Papua New Guinea"
+    },
+    {
+      "assertion": {
+        "code": "PH"
+      },
+      "baseLabel": "Philippines",
+      "key": "location:PH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PH"
+        },
+        "key": "location:PH"
+      },
+      "sourceLabel": "Philippines"
+    },
+    {
+      "assertion": {
+        "code": "PK"
+      },
+      "baseLabel": "Pakistan",
+      "key": "location:PK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PK"
+        },
+        "key": "location:PK"
+      },
+      "sourceLabel": "Pakistan"
+    },
+    {
+      "assertion": {
+        "code": "PL"
+      },
+      "baseLabel": "Poland",
+      "key": "location:PL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PL"
+        },
+        "key": "location:PL"
+      },
+      "sourceLabel": "Poland"
+    },
+    {
+      "assertion": {
+        "code": "PM"
+      },
+      "baseLabel": "Saint Pierre and Miquelon",
+      "key": "location:PM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PM"
+        },
+        "key": "location:PM"
+      },
+      "sourceLabel": "Saint Pierre and Miquelon"
+    },
+    {
+      "assertion": {
+        "code": "PN"
+      },
+      "baseLabel": "Pitcairn",
+      "key": "location:PN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PN"
+        },
+        "key": "location:PN"
+      },
+      "sourceLabel": "Pitcairn"
+    },
+    {
+      "assertion": {
+        "code": "PR"
+      },
+      "baseLabel": "Puerto Rico",
+      "key": "location:PR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PR"
+        },
+        "key": "location:PR"
+      },
+      "sourceLabel": "Puerto Rico"
+    },
+    {
+      "assertion": {
+        "code": "PS"
+      },
+      "baseLabel": "Palestine, State of",
+      "key": "location:PS",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PS"
+        },
+        "key": "location:PS"
+      },
+      "sourceLabel": "Palestinian Territory, Occupied"
+    },
+    {
+      "assertion": {
+        "code": "PT"
+      },
+      "baseLabel": "Portugal",
+      "key": "location:PT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PT"
+        },
+        "key": "location:PT"
+      },
+      "sourceLabel": "Portugal"
+    },
+    {
+      "assertion": {
+        "code": "PW"
+      },
+      "baseLabel": "Palau",
+      "key": "location:PW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PW"
+        },
+        "key": "location:PW"
+      },
+      "sourceLabel": "Palau"
+    },
+    {
+      "assertion": {
+        "code": "PY"
+      },
+      "baseLabel": "Paraguay",
+      "key": "location:PY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "PY"
+        },
+        "key": "location:PY"
+      },
+      "sourceLabel": "Paraguay"
+    },
+    {
+      "assertion": {
+        "code": "QA"
+      },
+      "baseLabel": "Qatar",
+      "key": "location:QA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "QA"
+        },
+        "key": "location:QA"
+      },
+      "sourceLabel": "Qatar"
+    },
+    {
+      "assertion": {
+        "code": "RE"
+      },
+      "baseLabel": "Réunion",
+      "key": "location:RE",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RE"
+        },
+        "key": "location:RE"
+      },
+      "sourceLabel": "Reunion"
+    },
+    {
+      "assertion": {
+        "code": "RO"
+      },
+      "baseLabel": "Romania",
+      "key": "location:RO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RO"
+        },
+        "key": "location:RO"
+      },
+      "sourceLabel": "Romania"
+    },
+    {
+      "assertion": {
+        "code": "RS"
+      },
+      "baseLabel": "Serbia",
+      "key": "location:RS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RS"
+        },
+        "key": "location:RS"
+      },
+      "sourceLabel": "Serbia"
+    },
+    {
+      "assertion": {
+        "code": "RU"
+      },
+      "baseLabel": "Russian Federation",
+      "key": "location:RU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RU"
+        },
+        "key": "location:RU"
+      },
+      "sourceLabel": "Russian Federation"
+    },
+    {
+      "assertion": {
+        "code": "RW"
+      },
+      "baseLabel": "Rwanda",
+      "key": "location:RW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "RW"
+        },
+        "key": "location:RW"
+      },
+      "sourceLabel": "Rwanda"
+    },
+    {
+      "assertion": {
+        "code": "SA"
+      },
+      "baseLabel": "Saudi Arabia",
+      "key": "location:SA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SA"
+        },
+        "key": "location:SA"
+      },
+      "sourceLabel": "Saudi Arabia"
+    },
+    {
+      "assertion": {
+        "code": "SB"
+      },
+      "baseLabel": "Solomon Islands",
+      "key": "location:SB",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SB"
+        },
+        "key": "location:SB"
+      },
+      "sourceLabel": "Solomon Islands"
+    },
+    {
+      "assertion": {
+        "code": "SC"
+      },
+      "baseLabel": "Seychelles",
+      "key": "location:SC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SC"
+        },
+        "key": "location:SC"
+      },
+      "sourceLabel": "Seychelles"
+    },
+    {
+      "assertion": {
+        "code": "SD"
+      },
+      "baseLabel": "Sudan",
+      "key": "location:SD",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SD"
+        },
+        "key": "location:SD"
+      },
+      "sourceLabel": "Sudan"
+    },
+    {
+      "assertion": {
+        "code": "SE"
+      },
+      "baseLabel": "Sweden",
+      "key": "location:SE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SE"
+        },
+        "key": "location:SE"
+      },
+      "sourceLabel": "Sweden"
+    },
+    {
+      "assertion": {
+        "code": "SG"
+      },
+      "baseLabel": "Singapore",
+      "key": "location:SG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SG"
+        },
+        "key": "location:SG"
+      },
+      "sourceLabel": "Singapore"
+    },
+    {
+      "assertion": {
+        "code": "SH"
+      },
+      "baseLabel": "Saint Helena, Ascension and Tristan da Cunha",
+      "key": "location:SH",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SH"
+        },
+        "key": "location:SH"
+      },
+      "sourceLabel": "Saint Helena"
+    },
+    {
+      "assertion": {
+        "code": "SI"
+      },
+      "baseLabel": "Slovenia",
+      "key": "location:SI",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SI"
+        },
+        "key": "location:SI"
+      },
+      "sourceLabel": "Slovenia"
+    },
+    {
+      "assertion": {
+        "code": "SJ"
+      },
+      "baseLabel": "Svalbard and Jan Mayen",
+      "key": "location:SJ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SJ"
+        },
+        "key": "location:SJ"
+      },
+      "sourceLabel": "Svalbard and Jan Mayen"
+    },
+    {
+      "assertion": {
+        "code": "SK"
+      },
+      "baseLabel": "Slovakia",
+      "key": "location:SK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SK"
+        },
+        "key": "location:SK"
+      },
+      "sourceLabel": "Slovakia"
+    },
+    {
+      "assertion": {
+        "code": "SL"
+      },
+      "baseLabel": "Sierra Leone",
+      "key": "location:SL",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SL"
+        },
+        "key": "location:SL"
+      },
+      "sourceLabel": "Sierra Leone"
+    },
+    {
+      "assertion": {
+        "code": "SM"
+      },
+      "baseLabel": "San Marino",
+      "key": "location:SM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SM"
+        },
+        "key": "location:SM"
+      },
+      "sourceLabel": "San Marino"
+    },
+    {
+      "assertion": {
+        "code": "SN"
+      },
+      "baseLabel": "Senegal",
+      "key": "location:SN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SN"
+        },
+        "key": "location:SN"
+      },
+      "sourceLabel": "Senegal"
+    },
+    {
+      "assertion": {
+        "code": "SO"
+      },
+      "baseLabel": "Somalia",
+      "key": "location:SO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SO"
+        },
+        "key": "location:SO"
+      },
+      "sourceLabel": "Somalia"
+    },
+    {
+      "assertion": {
+        "code": "SR"
+      },
+      "baseLabel": "Suriname",
+      "key": "location:SR",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SR"
+        },
+        "key": "location:SR"
+      },
+      "sourceLabel": "Suriname"
+    },
+    {
+      "assertion": {
+        "code": "SS"
+      },
+      "baseLabel": "South Sudan",
+      "key": "location:SS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "ST"
+      },
+      "baseLabel": "Sao Tome and Principe",
+      "key": "location:ST",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ST"
+        },
+        "key": "location:ST"
+      },
+      "sourceLabel": "Sao Tome and Principe"
+    },
+    {
+      "assertion": {
+        "code": "SV"
+      },
+      "baseLabel": "El Salvador",
+      "key": "location:SV",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SV"
+        },
+        "key": "location:SV"
+      },
+      "sourceLabel": "El Salvador"
+    },
+    {
+      "assertion": {
+        "code": "SX"
+      },
+      "baseLabel": "Sint Maarten (Dutch part)",
+      "key": "location:SX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "SY"
+      },
+      "baseLabel": "Syrian Arab Republic",
+      "key": "location:SY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SY"
+        },
+        "key": "location:SY"
+      },
+      "sourceLabel": "Syrian Arab Republic"
+    },
+    {
+      "assertion": {
+        "code": "SZ"
+      },
+      "baseLabel": "Eswatini",
+      "key": "location:SZ",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "SZ"
+        },
+        "key": "location:SZ"
+      },
+      "sourceLabel": "Swaziland"
+    },
+    {
+      "assertion": {
+        "code": "TC"
+      },
+      "baseLabel": "Turks and Caicos Islands",
+      "key": "location:TC",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TC"
+        },
+        "key": "location:TC"
+      },
+      "sourceLabel": "Turks and Caicos Islands"
+    },
+    {
+      "assertion": {
+        "code": "TD"
+      },
+      "baseLabel": "Chad",
+      "key": "location:TD",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TD"
+        },
+        "key": "location:TD"
+      },
+      "sourceLabel": "Chad"
+    },
+    {
+      "assertion": {
+        "code": "TF"
+      },
+      "baseLabel": "French Southern Territories",
+      "key": "location:TF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TF"
+        },
+        "key": "location:TF"
+      },
+      "sourceLabel": "French Southern Territories"
+    },
+    {
+      "assertion": {
+        "code": "TG"
+      },
+      "baseLabel": "Togo",
+      "key": "location:TG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TG"
+        },
+        "key": "location:TG"
+      },
+      "sourceLabel": "Togo"
+    },
+    {
+      "assertion": {
+        "code": "TH"
+      },
+      "baseLabel": "Thailand",
+      "key": "location:TH",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TH"
+        },
+        "key": "location:TH"
+      },
+      "sourceLabel": "Thailand"
+    },
+    {
+      "assertion": {
+        "code": "TJ"
+      },
+      "baseLabel": "Tajikistan",
+      "key": "location:TJ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TJ"
+        },
+        "key": "location:TJ"
+      },
+      "sourceLabel": "Tajikistan"
+    },
+    {
+      "assertion": {
+        "code": "TK"
+      },
+      "baseLabel": "Tokelau",
+      "key": "location:TK",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TK"
+        },
+        "key": "location:TK"
+      },
+      "sourceLabel": "Tokelau"
+    },
+    {
+      "assertion": {
+        "code": "TL"
+      },
+      "baseLabel": "Timor-Leste",
+      "key": "location:TL",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TL"
+        },
+        "key": "location:TL"
+      },
+      "sourceLabel": "Timor-leste"
+    },
+    {
+      "assertion": {
+        "code": "TM"
+      },
+      "baseLabel": "Turkmenistan",
+      "key": "location:TM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TM"
+        },
+        "key": "location:TM"
+      },
+      "sourceLabel": "Turkmenistan"
+    },
+    {
+      "assertion": {
+        "code": "TN"
+      },
+      "baseLabel": "Tunisia",
+      "key": "location:TN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TN"
+        },
+        "key": "location:TN"
+      },
+      "sourceLabel": "Tunisia"
+    },
+    {
+      "assertion": {
+        "code": "TO"
+      },
+      "baseLabel": "Tonga",
+      "key": "location:TO",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TO"
+        },
+        "key": "location:TO"
+      },
+      "sourceLabel": "Tonga"
+    },
+    {
+      "assertion": {
+        "code": "TR"
+      },
+      "baseLabel": "Türkiye",
+      "key": "location:TR",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TR"
+        },
+        "key": "location:TR"
+      },
+      "sourceLabel": "Turkey"
+    },
+    {
+      "assertion": {
+        "code": "TT"
+      },
+      "baseLabel": "Trinidad and Tobago",
+      "key": "location:TT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TT"
+        },
+        "key": "location:TT"
+      },
+      "sourceLabel": "Trinidad and Tobago"
+    },
+    {
+      "assertion": {
+        "code": "TV"
+      },
+      "baseLabel": "Tuvalu",
+      "key": "location:TV",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TV"
+        },
+        "key": "location:TV"
+      },
+      "sourceLabel": "Tuvalu"
+    },
+    {
+      "assertion": {
+        "code": "TZ"
+      },
+      "baseLabel": "United Republic of Tanzania",
+      "key": "location:TZ",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TZ"
+        },
+        "key": "location:TZ"
+      },
+      "sourceLabel": "Tanzania, United Republic Of"
+    },
+    {
+      "assertion": {
+        "code": "UA"
+      },
+      "baseLabel": "Ukraine",
+      "key": "location:UA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UA"
+        },
+        "key": "location:UA"
+      },
+      "sourceLabel": "Ukraine"
+    },
+    {
+      "assertion": {
+        "code": "UG"
+      },
+      "baseLabel": "Uganda",
+      "key": "location:UG",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UG"
+        },
+        "key": "location:UG"
+      },
+      "sourceLabel": "Uganda"
+    },
+    {
+      "assertion": {
+        "code": "UM"
+      },
+      "baseLabel": "United States Minor Outlying Islands",
+      "key": "location:UM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UM"
+        },
+        "key": "location:UM"
+      },
+      "sourceLabel": "United States Minor Outlying Islands"
+    },
+    {
+      "assertion": {
+        "code": "US"
+      },
+      "baseLabel": "United States of America",
+      "key": "location:US",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "US"
+        },
+        "key": "location:US"
+      },
+      "sourceLabel": "United States"
+    },
+    {
+      "assertion": {
+        "code": "UY"
+      },
+      "baseLabel": "Uruguay",
+      "key": "location:UY",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UY"
+        },
+        "key": "location:UY"
+      },
+      "sourceLabel": "Uruguay"
+    },
+    {
+      "assertion": {
+        "code": "UZ"
+      },
+      "baseLabel": "Uzbekistan",
+      "key": "location:UZ",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "UZ"
+        },
+        "key": "location:UZ"
+      },
+      "sourceLabel": "Uzbekistan"
+    },
+    {
+      "assertion": {
+        "code": "VA"
+      },
+      "baseLabel": "Holy See",
+      "key": "location:VA",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VA"
+        },
+        "key": "location:VA"
+      },
+      "sourceLabel": "Holy See (Vatican City State)"
+    },
+    {
+      "assertion": {
+        "code": "VC"
+      },
+      "baseLabel": "Saint Vincent and the Grenadines",
+      "key": "location:VC",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VC"
+        },
+        "key": "location:VC"
+      },
+      "sourceLabel": "Saint Vincent and The Grenadines"
+    },
+    {
+      "assertion": {
+        "code": "VE"
+      },
+      "baseLabel": "Venezuela (Bolivarian Republic of)",
+      "key": "location:VE",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VE"
+        },
+        "key": "location:VE"
+      },
+      "sourceLabel": "Venezuela"
+    },
+    {
+      "assertion": {
+        "code": "VG"
+      },
+      "baseLabel": "Virgin Islands (British)",
+      "key": "location:VG",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VG"
+        },
+        "key": "location:VG"
+      },
+      "sourceLabel": "Virgin Islands, British"
+    },
+    {
+      "assertion": {
+        "code": "VI"
+      },
+      "baseLabel": "Virgin Islands (U.S.)",
+      "key": "location:VI",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VI"
+        },
+        "key": "location:VI"
+      },
+      "sourceLabel": "Virgin Islands, U.S."
+    },
+    {
+      "assertion": {
+        "code": "VN"
+      },
+      "baseLabel": "Viet Nam",
+      "key": "location:VN",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VN"
+        },
+        "key": "location:VN"
+      },
+      "sourceLabel": "Vietnam"
+    },
+    {
+      "assertion": {
+        "code": "VU"
+      },
+      "baseLabel": "Vanuatu",
+      "key": "location:VU",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "VU"
+        },
+        "key": "location:VU"
+      },
+      "sourceLabel": "Vanuatu"
+    },
+    {
+      "assertion": {
+        "code": "WF"
+      },
+      "baseLabel": "Wallis and Futuna",
+      "key": "location:WF",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "WF"
+        },
+        "key": "location:WF"
+      },
+      "sourceLabel": "Wallis and Futuna"
+    },
+    {
+      "assertion": {
+        "code": "WS"
+      },
+      "baseLabel": "Samoa",
+      "key": "location:WS",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "WS"
+        },
+        "key": "location:WS"
+      },
+      "sourceLabel": "Samoa"
+    },
+    {
+      "assertion": {
+        "code": "YE"
+      },
+      "baseLabel": "Yemen",
+      "key": "location:YE",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "YE"
+        },
+        "key": "location:YE"
+      },
+      "sourceLabel": "Yemen"
+    },
+    {
+      "assertion": {
+        "code": "YT"
+      },
+      "baseLabel": "Mayotte",
+      "key": "location:YT",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "YT"
+        },
+        "key": "location:YT"
+      },
+      "sourceLabel": "Mayotte"
+    },
+    {
+      "assertion": {
+        "code": "ZA"
+      },
+      "baseLabel": "South Africa",
+      "key": "location:ZA",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ZA"
+        },
+        "key": "location:ZA"
+      },
+      "sourceLabel": "South Africa"
+    },
+    {
+      "assertion": {
+        "code": "ZM"
+      },
+      "baseLabel": "Zambia",
+      "key": "location:ZM",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ZM"
+        },
+        "key": "location:ZM"
+      },
+      "sourceLabel": "Zambia"
+    },
+    {
+      "assertion": {
+        "code": "ZW"
+      },
+      "baseLabel": "Zimbabwe",
+      "key": "location:ZW",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "ZW"
+        },
+        "key": "location:ZW"
+      },
+      "sourceLabel": "Zimbabwe"
+    },
+    {
+      "assertion": {
+        "code": "CIS"
+      },
+      "baseLabel": "Commonwealth of Independent States",
+      "key": "location:CIS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN"
+      },
+      "baseLabel": "China",
+      "key": "location:CN",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "CN"
+        },
+        "key": "location:CN"
+      },
+      "sourceLabel": "China"
+    },
+    {
+      "assertion": {
+        "code": "CN-BJ"
+      },
+      "baseLabel": "Beijing Shi,China",
+      "key": "location:CN-BJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-TJ"
+      },
+      "baseLabel": "Tianjin Shi,China",
+      "key": "location:CN-TJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE"
+      },
+      "baseLabel": "Hebei Sheng,China",
+      "key": "location:CN-HE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SJW"
+      },
+      "baseLabel": "Shijiazhuang Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-SJW",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-TGS"
+      },
+      "baseLabel": "Tangshan Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-TGS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SHP"
+      },
+      "baseLabel": "Qinhuangdao Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-SHP",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HDS"
+      },
+      "baseLabel": "Handan Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-HDS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-XTS"
+      },
+      "baseLabel": "Xingtai Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-XTS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-BDS"
+      },
+      "baseLabel": "Baoding Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-BDS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-ZJK"
+      },
+      "baseLabel": "Zhangjiakou Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-ZJK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CDS"
+      },
+      "baseLabel": "Chengde Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-CDS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CGZ"
+      },
+      "baseLabel": "Cangzhou Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-CGZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-LFS"
+      },
+      "baseLabel": "Langfang Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-LFS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HGS"
+      },
+      "baseLabel": "Hengshui Shi,Hebei Sheng,China",
+      "key": "location:CN-HE-HGS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX"
+      },
+      "baseLabel": "Shanxi Sheng,China",
+      "key": "location:CN-SX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-TYN"
+      },
+      "baseLabel": "Taiyuan Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-TYN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-DTG"
+      },
+      "baseLabel": "Datong Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-DTG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YQS"
+      },
+      "baseLabel": "Yangquan Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-YQS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-CZS"
+      },
+      "baseLabel": "Changzhi Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-CZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JCG"
+      },
+      "baseLabel": "Jincheng Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-JCG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-SZJ"
+      },
+      "baseLabel": "Shuozhou Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-SZJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JZN"
+      },
+      "baseLabel": "Jinzhong Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-JZN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YCE"
+      },
+      "baseLabel": "Yuncheng Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-YCE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-XZS"
+      },
+      "baseLabel": "Xinzhou Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-XZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LFN"
+      },
+      "baseLabel": "Linfen Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-LFN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LLH"
+      },
+      "baseLabel": "Lüliang Shi,Shanxi Sheng,China",
+      "key": "location:CN-SX-LLH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM"
+      },
+      "baseLabel": "Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HET"
+      },
+      "baseLabel": "Hohhot Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-HET",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BTS"
+      },
+      "baseLabel": "Baotou Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-BTS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-WHM"
+      },
+      "baseLabel": "Wuhai Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-WHM",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-CFS"
+      },
+      "baseLabel": "Chifeng(Ulanhad)Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-CFS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-TLO"
+      },
+      "baseLabel": "Tongliao Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-TLO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ODS"
+      },
+      "baseLabel": "Ordos Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-ODS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HBR"
+      },
+      "baseLabel": "Hulun Buir Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-HBR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BYR"
+      },
+      "baseLabel": "Bayannur Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-BYR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ULS"
+      },
+      "baseLabel": "Ulanqab Shi,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-ULS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HIN"
+      },
+      "baseLabel": "Hinggan Meng,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-HIN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-XGO"
+      },
+      "baseLabel": "Xilin Gol Meng,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-XGO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ALM"
+      },
+      "baseLabel": "Alxa Meng,Nei Mongol Zizhiqu,China",
+      "key": "location:CN-NM-ALM",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN"
+      },
+      "baseLabel": "Liaoning Sheng,China",
+      "key": "location:CN-LN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-SHE"
+      },
+      "baseLabel": "Shenyang Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-SHE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DLC"
+      },
+      "baseLabel": "Dalian Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-DLC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-ASN"
+      },
+      "baseLabel": "Anshan Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-ASN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FSN"
+      },
+      "baseLabel": "Fushun Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-FSN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-BXS"
+      },
+      "baseLabel": "Benxi Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-BXS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DDG"
+      },
+      "baseLabel": "Dandong Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-DDG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-JNZ"
+      },
+      "baseLabel": "Jinzhou Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-JNZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-YIK"
+      },
+      "baseLabel": "Yingkou Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-YIK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FXS"
+      },
+      "baseLabel": "Fuxin Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-FXS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-LYL"
+      },
+      "baseLabel": "Liaoyang Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-LYL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-PJS"
+      },
+      "baseLabel": "Panjin Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-PJS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-TLS"
+      },
+      "baseLabel": "Tieling Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-TLS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-CYS"
+      },
+      "baseLabel": "Chaoyang Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-CYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-HLD"
+      },
+      "baseLabel": "Huludao Shi,Liaoning Sheng,China",
+      "key": "location:CN-LN-HLD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL"
+      },
+      "baseLabel": "Jilin Sheng,China",
+      "key": "location:CN-JL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-CGQ"
+      },
+      "baseLabel": "Changchun Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-CGQ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-JLS"
+      },
+      "baseLabel": "Jilin Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-JLS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SPS"
+      },
+      "baseLabel": "Siping Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-SPS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-LYH"
+      },
+      "baseLabel": "Liaoyuan Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-LYH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-THS"
+      },
+      "baseLabel": "Tonghua Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-THS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BSN"
+      },
+      "baseLabel": "Baishan Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-BSN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SYU"
+      },
+      "baseLabel": "Songyuan Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-SYU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BCS"
+      },
+      "baseLabel": "Baicheng Shi,Jilin Sheng,China",
+      "key": "location:CN-JL-BCS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-YBZ"
+      },
+      "baseLabel": "Yanbian Chosenzu Zizhizhou,Jilin Sheng,China",
+      "key": "location:CN-JL-YBZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL"
+      },
+      "baseLabel": "Heilongjiang Sheng,China",
+      "key": "location:CN-HL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HRB"
+      },
+      "baseLabel": "Harbin Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-HRB",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-NDG"
+      },
+      "baseLabel": "Qiqihar Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-NDG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JXI"
+      },
+      "baseLabel": "Jixi Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-JXI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEG"
+      },
+      "baseLabel": "Hegang Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-HEG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SYS"
+      },
+      "baseLabel": "Shuangyashan Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-SYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DQG"
+      },
+      "baseLabel": "Daqing Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-DQG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-YCH"
+      },
+      "baseLabel": "Yichun Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-YCH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JMU"
+      },
+      "baseLabel": "Jiamusi Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-JMU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-QTH"
+      },
+      "baseLabel": "Qitaihe Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-QTH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-MDG"
+      },
+      "baseLabel": "Mudanjiang Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-MDG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEK"
+      },
+      "baseLabel": "Heihe Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-HEK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SUH"
+      },
+      "baseLabel": "Suihua Shi,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-SUH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DHL"
+      },
+      "baseLabel": "Da Hinggan Ling Diqu,Heilongjiang Sheng,China",
+      "key": "location:CN-HL-DHL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SH"
+      },
+      "baseLabel": "Shanghai Shi,China",
+      "key": "location:CN-SH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS"
+      },
+      "baseLabel": "Jiangsu Sheng,China",
+      "key": "location:CN-JS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NKG"
+      },
+      "baseLabel": "Nanjing Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-NKG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-WUX"
+      },
+      "baseLabel": "Wuxi Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-WUX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-XUZ"
+      },
+      "baseLabel": "Xuzhou Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-XUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-CZX"
+      },
+      "baseLabel": "Changzhou Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-CZX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SZH"
+      },
+      "baseLabel": "Suzhou Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-SZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NTG"
+      },
+      "baseLabel": "Nantong Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-NTG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-LYG"
+      },
+      "baseLabel": "Lianyungang Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-LYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-HAS"
+      },
+      "baseLabel": "Huai'an Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-HAS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YCK"
+      },
+      "baseLabel": "Yancheng Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-YCK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YZH"
+      },
+      "baseLabel": "Yangzhou Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-YZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-ZHE"
+      },
+      "baseLabel": "Zhenjiang Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-ZHE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-TZS"
+      },
+      "baseLabel": "Taizhou Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-TZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SUQ"
+      },
+      "baseLabel": "Suqian Shi,Jiangsu Sheng,China",
+      "key": "location:CN-JS-SUQ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ"
+      },
+      "baseLabel": "Zhejiang Sheng,China",
+      "key": "location:CN-ZJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HGH"
+      },
+      "baseLabel": "Hangzhou Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-HGH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-NGB"
+      },
+      "baseLabel": "Ningbo Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-NGB",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-WNZ"
+      },
+      "baseLabel": "Wenzhou Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-WNZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JIX"
+      },
+      "baseLabel": "Jiaxing Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-JIX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HZH"
+      },
+      "baseLabel": "Huzhou Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-HZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-SXG"
+      },
+      "baseLabel": "Shaoxing Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-SXG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JHA"
+      },
+      "baseLabel": "Jinhua Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-JHA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-QUZ"
+      },
+      "baseLabel": "Quzhou Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-QUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-ZOS"
+      },
+      "baseLabel": "Zhoushan Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-ZOS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-TZZ"
+      },
+      "baseLabel": "Taizhou Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-TZZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-LSS"
+      },
+      "baseLabel": "Lishui Shi,Zhejiang Sheng,China",
+      "key": "location:CN-ZJ-LSS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH"
+      },
+      "baseLabel": "Anhui Sheng,China",
+      "key": "location:CN-AH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HFE"
+      },
+      "baseLabel": "Hefei Sh,Anhui Sheng,China",
+      "key": "location:CN-AH-HFE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-WHI"
+      },
+      "baseLabel": "Wuhu Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-WHI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BBU"
+      },
+      "baseLabel": "Bengbu Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-BBU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HNS"
+      },
+      "baseLabel": "Huainan Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-HNS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-MAA"
+      },
+      "baseLabel": "Ma'anshan Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-MAA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HBE"
+      },
+      "baseLabel": "Huaibei Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-HBE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-TOL"
+      },
+      "baseLabel": "Tongling Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-TOL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-AQG"
+      },
+      "baseLabel": "Anqing Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-AQG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HSN"
+      },
+      "baseLabel": "Huangshan Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-HSN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CUZ"
+      },
+      "baseLabel": "Chuzhou Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-CUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-FYS"
+      },
+      "baseLabel": "Fuyang Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-FYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-SUZ"
+      },
+      "baseLabel": "Suzhou Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-SUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CAH"
+      },
+      "baseLabel": "Chaohu Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-CAH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-LAW"
+      },
+      "baseLabel": "Lu'an Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-LAW",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BOZ"
+      },
+      "baseLabel": "Bozhou Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-BOZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CIZ"
+      },
+      "baseLabel": "Chizhou Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-CIZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-XCI"
+      },
+      "baseLabel": "Xuancheng Shi,Anhui Sheng,China",
+      "key": "location:CN-AH-XCI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ"
+      },
+      "baseLabel": "Fujian Sheng,China",
+      "key": "location:CN-FJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-FOC"
+      },
+      "baseLabel": "Fuzhou Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-FOC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-XMN"
+      },
+      "baseLabel": "Xiamen Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-XMN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-PUT"
+      },
+      "baseLabel": "Putian Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-PUT",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-SMS"
+      },
+      "baseLabel": "Sanming Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-SMS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-QZJ"
+      },
+      "baseLabel": "Quanzhou Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-QZJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-ZZU"
+      },
+      "baseLabel": "Zhangzhou Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-ZZU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NPS"
+      },
+      "baseLabel": "Nanping Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-NPS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-LYF"
+      },
+      "baseLabel": "Longyan Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-LYF",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NDS"
+      },
+      "baseLabel": "Ningde Shi,Fujian Sheng,China",
+      "key": "location:CN-FJ-NDS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX"
+      },
+      "baseLabel": "Jiangxi Sheng,China",
+      "key": "location:CN-JX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-KHN"
+      },
+      "baseLabel": "Nanchang Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-KHN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JDZ"
+      },
+      "baseLabel": "Jingdezhen Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-JDZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-PXS"
+      },
+      "baseLabel": "Pingxiang Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-PXS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JIU"
+      },
+      "baseLabel": "Jiujiang Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-JIU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-XYU"
+      },
+      "baseLabel": "Xinyu Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-XYU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YTS"
+      },
+      "baseLabel": "Yingtan Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-YTS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-GZH"
+      },
+      "baseLabel": "Ganzhou Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-GZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JAS"
+      },
+      "baseLabel": "Ji'an Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-JAS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YCN"
+      },
+      "baseLabel": "Yichun Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-YCN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-FUZ"
+      },
+      "baseLabel": "Fuzhou Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-FUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-SRS"
+      },
+      "baseLabel": "Shangrao Shi,Jiangxi Sheng,China",
+      "key": "location:CN-JX-SRS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD"
+      },
+      "baseLabel": "Shandong Sheng,China",
+      "key": "location:CN-SD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TNA"
+      },
+      "baseLabel": "Jinan Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-TNA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAO"
+      },
+      "baseLabel": "Qingdao Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-TAO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZBO"
+      },
+      "baseLabel": "Zibo Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-ZBO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZZG"
+      },
+      "baseLabel": "Zaozhuang Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-ZZG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DYG"
+      },
+      "baseLabel": "Dongying Sh,Shandong Sheng,China",
+      "key": "location:CN-SD-DYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-YNT"
+      },
+      "baseLabel": "Yantai Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-YNT",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEF"
+      },
+      "baseLabel": "Weifang Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-WEF",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-JNG"
+      },
+      "baseLabel": "Jining Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-JNG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAI"
+      },
+      "baseLabel": "Tai'an Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-TAI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEH"
+      },
+      "baseLabel": "Weihai Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-WEH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-RZH"
+      },
+      "baseLabel": "Rizhao Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-RZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LWS"
+      },
+      "baseLabel": "Laiwu Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-LWS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LYI"
+      },
+      "baseLabel": "Linyi Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-LYI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DZS"
+      },
+      "baseLabel": "Dezhou Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-DZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LCH"
+      },
+      "baseLabel": "Liaocheng Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-LCH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-BZH"
+      },
+      "baseLabel": "Binzhou Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-BZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-HZS"
+      },
+      "baseLabel": "Heze Shi,Shandong Sheng,China",
+      "key": "location:CN-SD-HZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA"
+      },
+      "baseLabel": "Henan Sheng,China",
+      "key": "location:CN-HA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-CGO"
+      },
+      "baseLabel": "Zhengzhou Shi,Henan Sheng,China",
+      "key": "location:CN-HA-CGO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-KFS"
+      },
+      "baseLabel": "Kaifeng Shi,Henan Sheng,China",
+      "key": "location:CN-HA-KFS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LYA"
+      },
+      "baseLabel": "Luoyang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-LYA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PDS"
+      },
+      "baseLabel": "Pingdingshan Shi,Henan Sheng,China",
+      "key": "location:CN-HA-PDS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-AYS"
+      },
+      "baseLabel": "Anyang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-AYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-HBS"
+      },
+      "baseLabel": "Hebi Shi,Henan Sheng,China",
+      "key": "location:CN-HA-HBS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XXS"
+      },
+      "baseLabel": "Xinxiang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-XXS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-JZY"
+      },
+      "baseLabel": "Jiaozuo Shi,Henan Sheng,China",
+      "key": "location:CN-HA-JZY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PYS"
+      },
+      "baseLabel": "Puyang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-PYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XCS"
+      },
+      "baseLabel": "Xuchang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-XCS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LHS"
+      },
+      "baseLabel": "Luohe Shi,Henan Sheng,China",
+      "key": "location:CN-HA-LHS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SMX"
+      },
+      "baseLabel": "Sanmenxia Shi,Henan Sheng,China",
+      "key": "location:CN-HA-SMX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-NYS"
+      },
+      "baseLabel": "Nanyang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-NYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SQS"
+      },
+      "baseLabel": "Shangqiu Shi,Henan Sheng,China",
+      "key": "location:CN-HA-SQS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XYG"
+      },
+      "baseLabel": "Xinyang Shi,Henan Sheng,China",
+      "key": "location:CN-HA-XYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZKS"
+      },
+      "baseLabel": "Zhoukou Shi,Henan Sheng,China",
+      "key": "location:CN-HA-ZKS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZMD"
+      },
+      "baseLabel": "Zhumadian Shi,Henan Sheng,China",
+      "key": "location:CN-HA-ZMD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB"
+      },
+      "baseLabel": "Hubei Sheng,China",
+      "key": "location:CN-HB",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-WUH"
+      },
+      "baseLabel": "Wuhan Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-WUH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HSI"
+      },
+      "baseLabel": "Huangshi Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-HSI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SYE"
+      },
+      "baseLabel": "Shiyan Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-SYE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-YCO"
+      },
+      "baseLabel": "Yichang Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-YCO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XFN"
+      },
+      "baseLabel": "Xiangfan Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-XFN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-EZS"
+      },
+      "baseLabel": "Ezhou Sli,Hubei Sheng,China",
+      "key": "location:CN-HB-EZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JMS"
+      },
+      "baseLabel": "Jingmen Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-JMS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XGE"
+      },
+      "baseLabel": "Xiaogan Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-XGE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JGZ"
+      },
+      "baseLabel": "Jingzhou Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-JGZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HGE"
+      },
+      "baseLabel": "Huanggang Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-HGE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XNS"
+      },
+      "baseLabel": "Xianning Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-XNS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SZR"
+      },
+      "baseLabel": "Suizhou Shi,Hubei Sheng,China",
+      "key": "location:CN-HB-SZR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-ESH"
+      },
+      "baseLabel": "Enshi Tujiazu Miaozu Zizhizhou,Hubei Sheng,China",
+      "key": "location:CN-HB-ESH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN"
+      },
+      "baseLabel": "Hunan Sheng,China",
+      "key": "location:CN-HN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CSX"
+      },
+      "baseLabel": "Changsha Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-CSX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZZS"
+      },
+      "baseLabel": "Zhuzhou Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-ZZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XGT"
+      },
+      "baseLabel": "Xiangtan Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-XGT",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HNY"
+      },
+      "baseLabel": "Hengyang Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-HNY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-SYR"
+      },
+      "baseLabel": "Shaoyang Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-SYR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYG"
+      },
+      "baseLabel": "Yueyang Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-YYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CDE"
+      },
+      "baseLabel": "Changde Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-CDE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZJJ"
+      },
+      "baseLabel": "Zhangjiajie Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-ZJJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYS"
+      },
+      "baseLabel": "Yiyang Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-YYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CNZ"
+      },
+      "baseLabel": "Chenzhou Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-CNZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YZS"
+      },
+      "baseLabel": "Yongzhou Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-YZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HHS"
+      },
+      "baseLabel": "Huaihua Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-HHS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-LDI"
+      },
+      "baseLabel": "Loudi Shi,Hunan Sheng,China",
+      "key": "location:CN-HN-LDI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XXZ"
+      },
+      "baseLabel": "Xiangxi Tujiazu Miaozu Zizhizhou,Hunan Sheng,China",
+      "key": "location:CN-HN-XXZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD"
+      },
+      "baseLabel": "Guangdong Sheng,China",
+      "key": "location:CN-GD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CAN"
+      },
+      "baseLabel": "Guangzhou Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-CAN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HSC"
+      },
+      "baseLabel": "Shaoguan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-HSC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SZX"
+      },
+      "baseLabel": "Shenzhen Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-SZX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZUH"
+      },
+      "baseLabel": "Zhuhai Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-ZUH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWA"
+      },
+      "baseLabel": "Shantou Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-SWA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-FOS"
+      },
+      "baseLabel": "Foshan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-FOS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JMN"
+      },
+      "baseLabel": "Jiangmen Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-JMN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZHA"
+      },
+      "baseLabel": "Zhanjiang Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-ZHA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MMI"
+      },
+      "baseLabel": "Maoming Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-MMI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZQG"
+      },
+      "baseLabel": "Zhaoqing Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-ZQG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HUI"
+      },
+      "baseLabel": "Huizhou Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-HUI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MXZ"
+      },
+      "baseLabel": "Meizhou Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-MXZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWE"
+      },
+      "baseLabel": "Shanwei Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-SWE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HEY"
+      },
+      "baseLabel": "Heyuan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-HEY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YJI"
+      },
+      "baseLabel": "Yangjiang Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-YJI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-QYN"
+      },
+      "baseLabel": "Qingyuan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-QYN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-DGG"
+      },
+      "baseLabel": "Dongguan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-DGG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZSN"
+      },
+      "baseLabel": "Zhongshan Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-ZSN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CZY"
+      },
+      "baseLabel": "Chaozhou Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-CZY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JIY"
+      },
+      "baseLabel": "Jieyang Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-JIY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YFS"
+      },
+      "baseLabel": "Yunfu Shi,Guangdong Sheng,China",
+      "key": "location:CN-GD-YFS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX"
+      },
+      "baseLabel": "Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-NNG"
+      },
+      "baseLabel": "Nanning Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-NNG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LZH"
+      },
+      "baseLabel": "Liuzhou Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-LZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-KWL"
+      },
+      "baseLabel": "Guilin Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-KWL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-WUZ"
+      },
+      "baseLabel": "Wuzhou Sh,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-WUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BHY"
+      },
+      "baseLabel": "Beihai Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-BHY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-FAN"
+      },
+      "baseLabel": "Fangchenggang Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-FAN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-QZH"
+      },
+      "baseLabel": "Qinzhou Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-QZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-GUG"
+      },
+      "baseLabel": "Guigang Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-GUG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-YUL"
+      },
+      "baseLabel": "Yulin Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-YUL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BSS"
+      },
+      "baseLabel": "Bose Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-BSS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HZO"
+      },
+      "baseLabel": "Hezhou Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-HZO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HCS"
+      },
+      "baseLabel": "Hechi Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-HCS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LIB"
+      },
+      "baseLabel": "Laibin Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-LIB",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-COZ"
+      },
+      "baseLabel": "Chongzuo Shi,Guangxi Zhuangzu Zizhiqu,China",
+      "key": "location:CN-GX-COZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HI"
+      },
+      "baseLabel": "Hainan Sheng,China",
+      "key": "location:CN-HI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-HAK"
+      },
+      "baseLabel": "Haikou Shi,Hainan Sheng,China",
+      "key": "location:CN-HI-HAK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-SYX"
+      },
+      "baseLabel": "Sanva Shi,Hainan Sheng,China",
+      "key": "location:CN-HI-SYX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-CQ"
+      },
+      "baseLabel": "Chongqing Shi,China",
+      "key": "location:CN-CQ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC"
+      },
+      "baseLabel": "Sichuan Sheng,China",
+      "key": "location:CN-SC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-CTU"
+      },
+      "baseLabel": "Chengdu Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-CTU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZGS"
+      },
+      "baseLabel": "Zigong Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-ZGS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-PZH"
+      },
+      "baseLabel": "Panzhihua Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-PZH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LUZ"
+      },
+      "baseLabel": "Luzhou Sh,Sichuan Sheng,China",
+      "key": "location:CN-SC-LUZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DEY"
+      },
+      "baseLabel": "Deyang Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-DEY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MYG"
+      },
+      "baseLabel": "Mianyang Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-MYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GYC"
+      },
+      "baseLabel": "Guangyuan Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-GYC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-SNS"
+      },
+      "baseLabel": "Suining Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-SNS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NJS"
+      },
+      "baseLabel": "Neijiang Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-NJS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LES"
+      },
+      "baseLabel": "Leshan Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-LES",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NCO"
+      },
+      "baseLabel": "Nanchong Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-NCO",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MSS"
+      },
+      "baseLabel": "Meishan Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-MSS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YBS"
+      },
+      "baseLabel": "Yibin Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-YBS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAC"
+      },
+      "baseLabel": "Guang'an Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-GAC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DAZ"
+      },
+      "baseLabel": "Dazhou Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-DAZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YAS"
+      },
+      "baseLabel": "Ya'an Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-YAS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-BZS"
+      },
+      "baseLabel": "Bazhong Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-BZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZYS"
+      },
+      "baseLabel": "Ziyang Shi,Sichuan Sheng,China",
+      "key": "location:CN-SC-ZYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ABA"
+      },
+      "baseLabel": "Aba(Ngawa)Zangzu Qiangzu Zizhizhou,Sichuan Sheng,China",
+      "key": "location:CN-SC-ABA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAZ"
+      },
+      "baseLabel": "Garzê Zangzu Zizhizhou,Sichuan Sheng,China",
+      "key": "location:CN-SC-GAZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LSY"
+      },
+      "baseLabel": "Liangshan Yizu Zizhizhou,Sichuan Sheng,China",
+      "key": "location:CN-SC-LSY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ"
+      },
+      "baseLabel": "Guizhou Sheng,China",
+      "key": "location:CN-GZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-KWE"
+      },
+      "baseLabel": "Guiyang Shi,Guizhou Sheng,China",
+      "key": "location:CN-GZ-KWE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-LPS"
+      },
+      "baseLabel": "Lupanshui Shi,Guizhou Sheng,China",
+      "key": "location:CN-GZ-LPS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ZNY"
+      },
+      "baseLabel": "Zunyi Shi,Guizhou Sheng,China",
+      "key": "location:CN-GZ-ZNY",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ASS"
+      },
+      "baseLabel": "Anshun Shi,Guizhou Sheng,China",
+      "key": "location:CN-GZ-ASS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-TRD"
+      },
+      "baseLabel": "Tongren Diqu,Guizhou Sheng,China",
+      "key": "location:CN-GZ-TRD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QXZ"
+      },
+      "baseLabel": "Qianxinan Buycizu Miaozu Zizhizhou,Guizhou Sheng,China",
+      "key": "location:CN-GZ-QXZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-BJD"
+      },
+      "baseLabel": "Bijie Diqu,Guizhou Sheng,China",
+      "key": "location:CN-GZ-BJD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QND"
+      },
+      "baseLabel": "Qiandongnan Miaozu Dongzu Zizhizhou,Guizhou Sheng,China",
+      "key": "location:CN-GZ-QND",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QNZ"
+      },
+      "baseLabel": "Qiannan Buyeizu Miaozu Zizhizhou,Guizhou Sheng,China",
+      "key": "location:CN-GZ-QNZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN"
+      },
+      "baseLabel": "Yunnan Sheng,China",
+      "key": "location:CN-YN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-KMG"
+      },
+      "baseLabel": "Kunming Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-KMG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-QJS"
+      },
+      "baseLabel": "Qujing Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-QJS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-YXS"
+      },
+      "baseLabel": "Yuxi Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-YXS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-BOS"
+      },
+      "baseLabel": "Baoshan Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-BOS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-ZTS"
+      },
+      "baseLabel": "Zhaotong Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-ZTS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LJH"
+      },
+      "baseLabel": "Lijiang Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-LJH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-PRS"
+      },
+      "baseLabel": "Pu'er Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-PRS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LIH"
+      },
+      "baseLabel": "Lincang Shi,Yunnan Sheng,China",
+      "key": "location:CN-YN-LIH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-CXD"
+      },
+      "baseLabel": "Chuxiong Yizu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-CXD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-HHZ"
+      },
+      "baseLabel": "Honghe Hanizu Yizu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-HHZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-WSZ"
+      },
+      "baseLabel": "Wenshan Zhuangzu Miaozu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-WSZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-XSB"
+      },
+      "baseLabel": "Xishuangbanna Daizu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-XSB",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DLZ"
+      },
+      "baseLabel": "Dali Baizu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-DLZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DHG"
+      },
+      "baseLabel": "Dehong Daizu Jingpozu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-DHG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-NUJ"
+      },
+      "baseLabel": "Nujiang Lisuzu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-NUJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DEZ"
+      },
+      "baseLabel": "Deqên Zangzu Zizhizhou,Yunnan Sheng,China",
+      "key": "location:CN-YN-DEZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ"
+      },
+      "baseLabel": "Xizang Zizhiqu,China",
+      "key": "location:CN-XZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-LXA"
+      },
+      "baseLabel": "Lhasa Shi,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-LXA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-QAD"
+      },
+      "baseLabel": "Qamdo Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-QAD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-SND"
+      },
+      "baseLabel": "Shannan Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-SND",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-XID"
+      },
+      "baseLabel": "Xigaze Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-XID",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NAD"
+      },
+      "baseLabel": "Nagqu Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-NAD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NGD"
+      },
+      "baseLabel": "Ngari Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-NGD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NYD"
+      },
+      "baseLabel": "Nyingchi Diqu,Xizang Zizhiqu,China",
+      "key": "location:CN-XZ-NYD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN"
+      },
+      "baseLabel": "Shaanxi Sheng,China",
+      "key": "location:CN-SN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SIA"
+      },
+      "baseLabel": "Xi'an Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-SIA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-TCN"
+      },
+      "baseLabel": "Tongchuan Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-TCN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-BJI"
+      },
+      "baseLabel": "Baoji Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-BJI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-XYS"
+      },
+      "baseLabel": "Xianyang Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-XYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-WNA"
+      },
+      "baseLabel": "Weinan Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-WNA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YNA"
+      },
+      "baseLabel": "Yan'an Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-YNA",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-HZJ"
+      },
+      "baseLabel": "Hanzhong Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-HZJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YLN"
+      },
+      "baseLabel": "Yulin Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-YLN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-ANK"
+      },
+      "baseLabel": "Ankang Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-ANK",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SLH"
+      },
+      "baseLabel": "Shangluo Shi,Shaanxi Sheng,China",
+      "key": "location:CN-SN-SLH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS"
+      },
+      "baseLabel": "Gansu Sheng,China",
+      "key": "location:CN-GS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LHW"
+      },
+      "baseLabel": "Lanzhou Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-LHW",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JYG"
+      },
+      "baseLabel": "Jiayuguan Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-JYG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JCS"
+      },
+      "baseLabel": "Jinchang Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-JCS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-BYS"
+      },
+      "baseLabel": "Baiyin Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-BYS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-TSU"
+      },
+      "baseLabel": "Tianshui Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-TSU",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-WWS"
+      },
+      "baseLabel": "Wuwei Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-WWS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-ZYE"
+      },
+      "baseLabel": "Zhangye Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-ZYE",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-PLS"
+      },
+      "baseLabel": "Pingliang Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-PLS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JQG"
+      },
+      "baseLabel": "Jiuquan Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-JQG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-QYI"
+      },
+      "baseLabel": "Qingyang Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-QYI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-DNX"
+      },
+      "baseLabel": "Dingxi Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-DNX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LGN"
+      },
+      "baseLabel": "Longnan Shi,Gansu Sheng,China",
+      "key": "location:CN-GS-LGN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LXH"
+      },
+      "baseLabel": "Linxia Huizu Zizhizhou,Gansu Sheng,China",
+      "key": "location:CN-GS-LXH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-GNZ"
+      },
+      "baseLabel": "Gannan Zangzu Zizhizhou,Gansu Sheng,China",
+      "key": "location:CN-GS-GNZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH"
+      },
+      "baseLabel": "Qinghai Sheng,China",
+      "key": "location:CN-QH",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-XNN"
+      },
+      "baseLabel": "Xining Shi,Qinghai Sheng,China",
+      "key": "location:CN-QH-XNN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HDD"
+      },
+      "baseLabel": "Haidong Diqu,Qinghai Sheng,China",
+      "key": "location:CN-QH-HDD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HBZ"
+      },
+      "baseLabel": "Haibei Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-HBZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HN7"
+      },
+      "baseLabel": "Huangnan Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-HN7",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HNN"
+      },
+      "baseLabel": "Hainan Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-HNN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-GOL"
+      },
+      "baseLabel": "Golog Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-GOL",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-YSZ"
+      },
+      "baseLabel": "Yushu Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-YSZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HXZ"
+      },
+      "baseLabel": "Haixi Mongolzu Zangzu Zizhizhou,Qinghai Sheng,China",
+      "key": "location:CN-QH-HXZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX"
+      },
+      "baseLabel": "Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-INC"
+      },
+      "baseLabel": "Yinchuan Shi,Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX-INC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-SZS"
+      },
+      "baseLabel": "Shizuishan Shi,Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX-SZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-WZS"
+      },
+      "baseLabel": "Wuzhong Shi,Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX-WZS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-GYN"
+      },
+      "baseLabel": "Guyuan Shi,Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX-GYN",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-ZWS"
+      },
+      "baseLabel": "Zhongwei Shi,Ningxia Huizu Zizhiqu,China",
+      "key": "location:CN-NX-ZWS",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ"
+      },
+      "baseLabel": "Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-URC"
+      },
+      "baseLabel": "Urümqi  Shi,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-URC",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KAR"
+      },
+      "baseLabel": "Karamay Shi,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-KAR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TUD"
+      },
+      "baseLabel": "Turpan Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-TUD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HMD"
+      },
+      "baseLabel": "Hami(Kumul)Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-HMD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-CJZ"
+      },
+      "baseLabel": "Changji Huizu Zizhizhou,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-CJZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BOR"
+      },
+      "baseLabel": "Bortala Mongol Zizhizhou,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-BOR",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BAG"
+      },
+      "baseLabel": "Bayingolin Mongol Zizhizhou,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-BAG",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-AKD"
+      },
+      "baseLabel": "Aksu Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-AKD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KIZ"
+      },
+      "baseLabel": "Kizilsu Kirgiz Zizhizhou,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-KIZ",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KSI"
+      },
+      "baseLabel": "Kashi(Kaxgar)Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-KSI",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HOD"
+      },
+      "baseLabel": "Hotan Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-HOD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ILD"
+      },
+      "baseLabel": "Ili Kazak Zizhizhou,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-ILD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TCD"
+      },
+      "baseLabel": "Tacheng(Qoqek)Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-TCD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ALD"
+      },
+      "baseLabel": "Altay Diqu,Xinjiang Uygur Zizhiqu,China",
+      "key": "location:CN-XJ-ALD",
+      "provenanceStatus": "project-extension",
+      "sourceIdentity": null,
+      "sourceLabel": null
+    },
+    {
+      "assertion": {
+        "code": "TW"
+      },
+      "baseLabel": "Taiwan Sheng,China",
+      "key": "location:TW",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "TW"
+        },
+        "key": "location:TW"
+      },
+      "sourceLabel": "Taiwan, Province Of China"
+    },
+    {
+      "assertion": {
+        "code": "HK"
+      },
+      "baseLabel": "Hongkong Tebiexingzhengqu,China",
+      "key": "location:HK",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "HK"
+        },
+        "key": "location:HK"
+      },
+      "sourceLabel": "Hong Kong"
+    },
+    {
+      "assertion": {
+        "code": "MO"
+      },
+      "baseLabel": "Macau Tebiexingzhengqu,China",
+      "key": "location:MO",
+      "provenanceStatus": "project-modified",
+      "sourceIdentity": {
+        "assertion": {
+          "code": "MO"
+        },
+        "key": "location:MO"
+      },
+      "sourceLabel": "Macao"
+    }
+  ],
+  "resourceId": "ilcd-locations",
+  "retrievedAt": "2026-07-18",
+  "schemaVersion": 1,
+  "source": {
+    "edition": "European Commission DG JRC (2022), EF reference package 3.1 / ILCD Format 1.1 Tools Build 985",
+    "rawDigest": {
+      "algorithm": "sha256",
+      "byteLength": 13397,
+      "scope": "stylesheets/ILCDLocations_Reference.xml",
+      "value": "ed521f8171ab0f37359f952208c8512462289095d52c990d4b8273ed11edd139"
+    },
+    "role": "official-component",
+    "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+  },
+  "transformVersion": "ilcd-location-xml-code-v1",
+  "unmatchedUpstreamIdentityCount": 5,
+  "upstreamIdentityCount": 275
+}

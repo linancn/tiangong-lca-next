@@ -31,6 +31,12 @@ import {
   getILCDLocationByValues,
   getILCDLocationEntries,
 } from '@/services/locations/api';
+import { getReferenceResourceDefinition } from '@/services/referenceResources/manifest';
+
+const locationResource = getReferenceResourceDefinition('ilcd-locations');
+const LOCATION_EN_FILE = locationResource.runtimeAssets.en!.fileName;
+const LOCATION_ZH_FILE = locationResource.runtimeAssets.zh!.fileName;
+const LOCATION_ZH_STEM = LOCATION_ZH_FILE.replace(/\.min\.json\.gz$/u, '');
 
 describe('Locations API (src/services/locations/api.ts)', () => {
   beforeEach(() => {
@@ -78,7 +84,7 @@ describe('Locations API (src/services/locations/api.ts)', () => {
 
     const result = await getILCDLocationEntries('en', ['all']);
 
-    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenCalledWith('ILCDLocations.min.json.gz');
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenCalledWith(LOCATION_EN_FILE);
     expect(result).toEqual([
       { '@value': 'CN', '#text': 'China' },
       { '@value': 'US', '#text': 'United States' },
@@ -126,23 +132,20 @@ describe('Locations API (src/services/locations/api.ts)', () => {
 
     const result = await getILCDLocationAll('zh');
 
-    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenCalledWith(
-      'ILCDLocations_zh.min.json.gz',
-    );
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenCalledWith(LOCATION_ZH_FILE);
     expect(result).toEqual({
-      data: [{ file_name: 'ILCDLocations_zh', location: [{ '@value': 'CN', '#text': '中国' }] }],
+      data: [{ file_name: LOCATION_ZH_STEM, location: [{ '@value': 'CN', '#text': '中国' }] }],
       success: true,
     });
   });
 
-  it('merges base and localized locations by code with localized fields taking precedence', async () => {
+  it('merges an exactly aligned localized location set with localized fields taking precedence', async () => {
     mockGetCachedOrFetchLocationFileData
       .mockResolvedValueOnce({
         ILCDLocations: {
           location: [
             { '@value': 'CN', '#text': 'China', continent: 'Asia' },
             { '@value': 'US', '#text': 'United States' },
-            { '#text': 'Base entry without code' },
           ],
         },
       })
@@ -150,8 +153,7 @@ describe('Locations API (src/services/locations/api.ts)', () => {
         ILCDLocations: {
           location: [
             { '@value': 'CN', '#text': '中国' },
-            { '@value': 'DE', '#text': '德国' },
-            { '#text': 'Localized entry without code' },
+            { '@value': 'US', '#text': '美国' },
           ],
         },
       });
@@ -160,23 +162,13 @@ describe('Locations API (src/services/locations/api.ts)', () => {
 
     expect(result).toEqual([
       { '@value': 'CN', '#text': '中国', continent: 'Asia' },
-      { '@value': 'US', '#text': 'United States' },
-      { '#text': 'Base entry without code' },
-      { '@value': 'DE', '#text': '德国' },
-      { '#text': 'Localized entry without code' },
+      { '@value': 'US', '#text': '美国' },
     ]);
-    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(
-      1,
-      'ILCDLocations.min.json.gz',
-    );
-    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(
-      2,
-      'ILCDLocations_zh.min.json.gz',
-    );
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(1, LOCATION_EN_FILE);
+    expect(mockGetCachedOrFetchLocationFileData).toHaveBeenNthCalledWith(2, LOCATION_ZH_FILE);
   });
 
-  it('falls back to base locations when the localized location asset cannot be loaded', async () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  it('fails closed when the localized location asset cannot be loaded', async () => {
     mockGetCachedOrFetchLocationFileData
       .mockResolvedValueOnce({
         ILCDLocations: {
@@ -185,14 +177,33 @@ describe('Locations API (src/services/locations/api.ts)', () => {
       })
       .mockRejectedValueOnce(new Error('localized asset unavailable'));
 
-    const result = await getILCDLocationEntries('zh', ['CN']);
-
-    expect(result).toEqual([{ '@value': 'CN', '#text': 'China' }]);
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('falling back to ILCDLocations.min.json.gz'),
-      expect.any(Error),
+    await expect(getILCDLocationEntries('zh', ['CN'])).rejects.toThrow(
+      'localized asset unavailable',
     );
-    consoleWarnSpy.mockRestore();
+  });
+
+  it('fails closed when localized location identities differ from the base', async () => {
+    mockGetCachedOrFetchLocationFileData
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [
+            { '@value': 'CN', '#text': 'China' },
+            { '@value': 'US', '#text': 'United States' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [
+            { '@value': 'CN', '#text': '中国' },
+            { '@value': 'DE', '#text': '德国' },
+          ],
+        },
+      });
+
+    await expect(getILCDLocationEntries('zh', ['all'])).rejects.toThrow(
+      'Localized location structure differs from the base at index 1.',
+    );
   });
 
   it('returns a failure payload when loading all locations throws', async () => {

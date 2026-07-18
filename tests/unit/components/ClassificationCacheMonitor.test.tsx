@@ -1,5 +1,8 @@
 import ClassificationCacheMonitor from '@/components/ClassificationCacheMonitor';
-import { getReferenceResourceCacheVersion } from '@/services/referenceResources/manifest';
+import {
+  getReferenceResourceCacheFiles,
+  getReferenceResourceCacheVersion,
+} from '@/services/referenceResources/manifest';
 import { render } from '@testing-library/react';
 
 const mockUseResourceCacheMonitor = jest.fn();
@@ -41,16 +44,7 @@ describe('ClassificationCacheMonitor', () => {
     expect(container.firstChild).toBeNull();
     expect(mockUseResourceCacheMonitor).toHaveBeenCalledWith({
       version: getReferenceResourceCacheVersion('classification'),
-      files: [
-        'CPCClassification.min.json.gz',
-        'CPCClassification_zh.min.json.gz',
-        'ISICClassification.min.json.gz',
-        'ISICClassification_zh.min.json.gz',
-        'ILCDClassification.min.json.gz',
-        'ILCDClassification_zh.min.json.gz',
-        'ILCDFlowCategorization.min.json.gz',
-        'ILCDFlowCategorization_zh.min.json.gz',
-      ],
+      files: [...getReferenceResourceCacheFiles('classification')],
       batchSize: 2,
       getManifest: expect.any(Function),
       setManifest: expect.any(Function),

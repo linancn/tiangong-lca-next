@@ -62,6 +62,7 @@ ownership:
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
           - scripts/i18n/**
+          - scripts/reference-data/**
       ownerRepo: next
 
 coverage:
@@ -111,6 +112,7 @@ coverage:
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
     - scripts/i18n/**
+    - scripts/reference-data/**
   exclude:
     - node_modules/**
     - dist/**
@@ -164,6 +166,7 @@ routing:
         - scripts/validate-lcia-cache.cjs
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
+        - scripts/reference-data/**
         - tests/**
     repo-docs:
       paths:
@@ -203,6 +206,7 @@ routing:
         - scripts/docpact-gate.js
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
+        - scripts/reference-data/**
         - tests/**
         - docs/agents/i18n-language-delivery-goal.md
         - docs/plans/i18n/**
@@ -241,6 +245,8 @@ routing:
         - src/pages/Teams/**
     classification-assets:
       paths:
+        - src/services/referenceResources/**
+        - scripts/reference-data/**
         - public/classifications/**
         - public/locations/**
         - public/lciamethods/**
@@ -384,6 +390,8 @@ rules:
         kind: localized-reference-asset
       - path: scripts/i18n/**
         kind: locale-governance
+      - path: scripts/reference-data/**
+        kind: reference-resource-generation
       - path: docs/plans/i18n/fallback-contract.json
         kind: locale-fallback-contract
     requiredDocs:
@@ -550,6 +558,8 @@ rules:
         kind: test-gate
       - path: scripts/i18n/**
         kind: test-gate
+      - path: scripts/reference-data/**
+        kind: test-gate
       - path: docs/plans/i18n/**
         kind: test-baseline
       - path: docs/plans/i18n-*/**
@@ -582,6 +592,10 @@ rules:
         kind: static-resource
       - path: public/locations/**
         kind: static-resource
+      - path: src/services/referenceResources/**
+        kind: static-resource-source
+      - path: scripts/reference-data/**
+        kind: static-resource-generator
       - path: docs/agents/public-classifications-gz-usage.md
         kind: domain-doc
     requiredDocs:

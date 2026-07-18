@@ -1,0 +1,1719 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-classification",
+  "locale": "zh",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "过程",
+    "Flow": "流",
+    "FlowProperty": "流属性",
+    "UnitGroup": "单位组",
+    "Contact": "联系信息",
+    "Source": "来源",
+    "LCIAMethod": "生命周期影响评估方法",
+    "LifeCycleModel": "生命周期模型"
+  },
+  "labels": [
+    {
+      "key": "categories[0:Process#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "能源载体与技术"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "能源原材料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "电力"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "热与蒸汽"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "机械能"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "硬煤基燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[5]",
+      "assertion": {
+        "id": "1.6"
+      },
+      "label": "褐煤基燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[6]",
+      "assertion": {
+        "id": "1.7"
+      },
+      "label": "原油基燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[7]",
+      "assertion": {
+        "id": "1.8"
+      },
+      "label": "天然气基燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[8]",
+      "assertion": {
+        "id": "1.9"
+      },
+      "label": "核燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[9]",
+      "assertion": {
+        "id": "1.10"
+      },
+      "label": "其他不可再生燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[10]",
+      "assertion": {
+        "id": "1.11"
+      },
+      "label": "可再生燃料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "材料生产"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "非能源原材料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "金属与半金属"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "有机化学品"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "无机化学品"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.5"
+      },
+      "label": "玻璃与陶瓷"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.6"
+      },
+      "label": "其他矿物材料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.7"
+      },
+      "label": "塑料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.8"
+      },
+      "label": "纸与纸板"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "2.9"
+      },
+      "label": "水"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "2.10"
+      },
+      "label": "农业生产资料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "2.11"
+      },
+      "label": "食品与可再生原材料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[11]",
+      "assertion": {
+        "id": "2.12"
+      },
+      "label": "木材"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[12]",
+      "assertion": {
+        "id": "2.13"
+      },
+      "label": "其他材料"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "系统"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[0]",
+      "assertion": {
+        "id": "3.1"
+      },
+      "label": "包装"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[1]",
+      "assertion": {
+        "id": "3.2"
+      },
+      "label": "电器与电子设备"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[2]",
+      "assertion": {
+        "id": "3.3"
+      },
+      "label": "车辆"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[3]",
+      "assertion": {
+        "id": "3.4"
+      },
+      "label": "其他机械"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[4]",
+      "assertion": {
+        "id": "3.5"
+      },
+      "label": "建筑"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[5]",
+      "assertion": {
+        "id": "3.6"
+      },
+      "label": "白色家电"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[6]",
+      "assertion": {
+        "id": "3.7"
+      },
+      "label": "纺织品、家具与其他室内装饰"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[7]",
+      "assertion": {
+        "id": "3.8"
+      },
+      "label": "非特定部件"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[8]",
+      "assertion": {
+        "id": "3.9"
+      },
+      "label": "油漆与化学制剂"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[9]",
+      "assertion": {
+        "id": "3.10"
+      },
+      "label": "其他系统"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "生命周期终结处理"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[0]",
+      "assertion": {
+        "id": "4.1"
+      },
+      "label": "再利用或进一步使用"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[1]",
+      "assertion": {
+        "id": "4.2"
+      },
+      "label": "材料回收"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[2]",
+      "assertion": {
+        "id": "4.3"
+      },
+      "label": "原材料回收"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[3]",
+      "assertion": {
+        "id": "4.4"
+      },
+      "label": "能量回收"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[4]",
+      "assertion": {
+        "id": "4.5"
+      },
+      "label": "填埋"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[5]",
+      "assertion": {
+        "id": "4.6"
+      },
+      "label": "废物收集"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[6]",
+      "assertion": {
+        "id": "4.7"
+      },
+      "label": "废水处理"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[7]",
+      "assertion": {
+        "id": "4.8"
+      },
+      "label": "原始气体处理"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[8]",
+      "assertion": {
+        "id": "4.9"
+      },
+      "label": "其他生命周期终结服务"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "运输服务"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[0]",
+      "assertion": {
+        "id": "5.1"
+      },
+      "label": "公路"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[1]",
+      "assertion": {
+        "id": "5.2"
+      },
+      "label": "铁路"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[2]",
+      "assertion": {
+        "id": "5.3"
+      },
+      "label": "水路"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[3]",
+      "assertion": {
+        "id": "5.4"
+      },
+      "label": "航空"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[4]",
+      "assertion": {
+        "id": "5.5"
+      },
+      "label": "其他运输"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "其他服务"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[0]",
+      "assertion": {
+        "id": "6.1"
+      },
+      "label": "清洁"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[1]",
+      "assertion": {
+        "id": "6.2"
+      },
+      "label": "存储"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[2]",
+      "assertion": {
+        "id": "6.3"
+      },
+      "label": "健康、社会服务、美容与保健"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[3]",
+      "assertion": {
+        "id": "6.4"
+      },
+      "label": "修理与维护"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[4]",
+      "assertion": {
+        "id": "6.5"
+      },
+      "label": "销售与批发"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[5]",
+      "assertion": {
+        "id": "6.6"
+      },
+      "label": "通信与信息服务"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[6]",
+      "assertion": {
+        "id": "6.7"
+      },
+      "label": "金融、法律与保险"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[7]",
+      "assertion": {
+        "id": "6.8"
+      },
+      "label": "行政与政府"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[8]",
+      "assertion": {
+        "id": "6.9"
+      },
+      "label": "国防"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[9]",
+      "assertion": {
+        "id": "6.10"
+      },
+      "label": "住宿与餐饮"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[10]",
+      "assertion": {
+        "id": "6.11"
+      },
+      "label": "教育"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[11]",
+      "assertion": {
+        "id": "6.12"
+      },
+      "label": "研究与开发"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[12]",
+      "assertion": {
+        "id": "6.13"
+      },
+      "label": "娱乐"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[13]",
+      "assertion": {
+        "id": "6.14"
+      },
+      "label": "租赁"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[14]",
+      "assertion": {
+        "id": "6.15"
+      },
+      "label": "工程与咨询"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[15]",
+      "assertion": {
+        "id": "6.16"
+      },
+      "label": "其他服务"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]",
+      "assertion": {
+        "id": "7"
+      },
+      "label": "使用与消费"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[0]",
+      "assertion": {
+        "id": "7.1"
+      },
+      "label": "商品消费"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[1]",
+      "assertion": {
+        "id": "7.2"
+      },
+      "label": "使用耗能产品"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[2]",
+      "assertion": {
+        "id": "7.3"
+      },
+      "label": "其他使用与消费"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "损害水平LCIA方法"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "跨保护领域的总影响"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "人类健康"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "label": "综合人类健康总影响"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "label": "人类健康，毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "label": "人类健康，气候变化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "label": "人类健康，电离辐射"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[4]",
+      "assertion": {
+        "id": "1.2.5"
+      },
+      "label": "人类健康，臭氧层消耗"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[5]",
+      "assertion": {
+        "id": "1.2.6"
+      },
+      "label": "人类健康，光化学氧化剂生成"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[6]",
+      "assertion": {
+        "id": "1.2.7"
+      },
+      "label": "人类健康，其他"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "自然环境"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "label": "综合自然环境总影响"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "label": "自然环境，气候变化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "label": "自然环境，臭氧层消耗"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[3]",
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "label": "自然环境，土地利用"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[4]",
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "label": "自然环境，淡水生态毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[5]",
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "label": "自然环境，海水生态毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[6]",
+      "assertion": {
+        "id": "1.3.7"
+      },
+      "label": "自然环境，陆地生态毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[7]",
+      "assertion": {
+        "id": "1.3.8"
+      },
+      "label": "自然环境，酸化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[8]",
+      "assertion": {
+        "id": "1.3.9"
+      },
+      "label": "自然环境，富营养化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[9]",
+      "assertion": {
+        "id": "1.3.10"
+      },
+      "label": "自然环境，光化学氧化剂生成"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[10]",
+      "assertion": {
+        "id": "1.3.11"
+      },
+      "label": "自然环境，电离辐射"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[11]",
+      "assertion": {
+        "id": "1.3.12"
+      },
+      "label": "自然环境，其他"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "人造环境"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "1.4.1"
+      },
+      "label": "综合人造环境总影响"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "1.4.2"
+      },
+      "label": "人造环境，酸化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "1.4.3"
+      },
+      "label": "人造环境，气候变化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "1.4.4"
+      },
+      "label": "人造环境，富营养化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "1.4.5"
+      },
+      "label": "人造环境，其他"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "资源可用性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "1.5.1"
+      },
+      "label": "综合资源枯竭总计"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "1.5.2"
+      },
+      "label": "资源枯竭，矿物与金属"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "1.5.3"
+      },
+      "label": "资源枯竭，不可再生能源资源"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "1.5.4"
+      },
+      "label": "资源枯竭，土地利用"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[4]",
+      "assertion": {
+        "id": "1.5.5"
+      },
+      "label": "资源枯竭，可再生能源资源"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[5]",
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "label": "资源枯竭，可再生非能源资源"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[6]",
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "label": "资源枯竭，其他"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "中点水平生命周期影响评价方法"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "综合方法"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "气候变化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "臭氧层损耗"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "土地利用"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.5"
+      },
+      "label": "生态毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.6"
+      },
+      "label": "酸化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.7"
+      },
+      "label": "富营养化"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.8"
+      },
+      "label": "光化学氧化剂生成"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "2.9"
+      },
+      "label": "核辐射"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "2.10"
+      },
+      "label": "人类毒性"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "2.11"
+      },
+      "label": "呼吸系统影响"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[11]",
+      "assertion": {
+        "id": "2.12"
+      },
+      "label": "噪声"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[12]",
+      "assertion": {
+        "id": "2.13"
+      },
+      "label": "资源枯竭"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[13]",
+      "assertion": {
+        "id": "2.14"
+      },
+      "label": "其他中点类别"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "排放"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "放射性物质"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "农药"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "颗粒物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "金属与半金属元素和离子"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "非金属或半金属离子"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[5]",
+      "assertion": {
+        "id": "1.6"
+      },
+      "label": "无机共价化合物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[6]",
+      "assertion": {
+        "id": "1.7"
+      },
+      "label": "环状有机物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[7]",
+      "assertion": {
+        "id": "1.8"
+      },
+      "label": "非环状有机物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[8]",
+      "assertion": {
+        "id": "1.9"
+      },
+      "label": "其他物质类型"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "能源载体与技术"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5.1"
+      },
+      "label": "能源原材料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "5.2"
+      },
+      "label": "电力"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "5.3"
+      },
+      "label": "热能与蒸汽"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "5.4"
+      },
+      "label": "机械能"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "5.5"
+      },
+      "label": "硬煤基燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "5.6"
+      },
+      "label": "褐煤基燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "5.7"
+      },
+      "label": "原油基燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "5.8"
+      },
+      "label": "天然气基燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "5.9"
+      },
+      "label": "核燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "5.10"
+      },
+      "label": "其他不可再生燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "5.11"
+      },
+      "label": "可再生燃料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "材料生产"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6.1"
+      },
+      "label": "原材料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[1]",
+      "assertion": {
+        "id": "6.2"
+      },
+      "label": "金属与半金属"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[2]",
+      "assertion": {
+        "id": "6.3"
+      },
+      "label": "有机化学品"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[3]",
+      "assertion": {
+        "id": "6.4"
+      },
+      "label": "无机化学品"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[4]",
+      "assertion": {
+        "id": "6.5"
+      },
+      "label": "玻璃与陶瓷"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[5]",
+      "assertion": {
+        "id": "6.6"
+      },
+      "label": "其他矿物材料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[6]",
+      "assertion": {
+        "id": "6.7"
+      },
+      "label": "塑料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[7]",
+      "assertion": {
+        "id": "6.8"
+      },
+      "label": "纸与纸板"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[8]",
+      "assertion": {
+        "id": "6.9"
+      },
+      "label": "水"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[9]",
+      "assertion": {
+        "id": "6.10"
+      },
+      "label": "农业生产资料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[10]",
+      "assertion": {
+        "id": "6.11"
+      },
+      "label": "食品与可再生原材料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[11]",
+      "assertion": {
+        "id": "6.12"
+      },
+      "label": "木材"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[12]",
+      "assertion": {
+        "id": "6.13"
+      },
+      "label": "其他材料"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]",
+      "assertion": {
+        "id": "7"
+      },
+      "label": "系统"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[0]",
+      "assertion": {
+        "id": "7.1"
+      },
+      "label": "包装"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[1]",
+      "assertion": {
+        "id": "7.2"
+      },
+      "label": "电器与电子设备"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[2]",
+      "assertion": {
+        "id": "7.3"
+      },
+      "label": "车辆"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[3]",
+      "assertion": {
+        "id": "7.4"
+      },
+      "label": "其他机械"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[4]",
+      "assertion": {
+        "id": "7.5"
+      },
+      "label": "建筑工程"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[5]",
+      "assertion": {
+        "id": "7.6"
+      },
+      "label": "白色家电"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[6]",
+      "assertion": {
+        "id": "7.7"
+      },
+      "label": "纺织品、家具与其他室内装饰"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[7]",
+      "assertion": {
+        "id": "7.8"
+      },
+      "label": "非特定部件"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[8]",
+      "assertion": {
+        "id": "7.9"
+      },
+      "label": "油漆与化学制剂"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[9]",
+      "assertion": {
+        "id": "7.10"
+      },
+      "label": "其他系统"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]",
+      "assertion": {
+        "id": "8"
+      },
+      "label": "生命周期末期处理"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[0]",
+      "assertion": {
+        "id": "8.1"
+      },
+      "label": "再利用或进一步使用"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[1]",
+      "assertion": {
+        "id": "8.2"
+      },
+      "label": "材料回收"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[2]",
+      "assertion": {
+        "id": "8.3"
+      },
+      "label": "原材料回收"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[3]",
+      "assertion": {
+        "id": "8.4"
+      },
+      "label": "能量回收"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[4]",
+      "assertion": {
+        "id": "8.5"
+      },
+      "label": "填埋"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[5]",
+      "assertion": {
+        "id": "8.6"
+      },
+      "label": "废物收集"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[6]",
+      "assertion": {
+        "id": "8.7"
+      },
+      "label": "废水处理"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[7]",
+      "assertion": {
+        "id": "8.8"
+      },
+      "label": "原料气处理"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[8]",
+      "assertion": {
+        "id": "8.9"
+      },
+      "label": "其他生命周期末期服务"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]",
+      "assertion": {
+        "id": "9"
+      },
+      "label": "运输服务"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[0]",
+      "assertion": {
+        "id": "9.1"
+      },
+      "label": "公路"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[1]",
+      "assertion": {
+        "id": "9.2"
+      },
+      "label": "铁路"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[2]",
+      "assertion": {
+        "id": "9.3"
+      },
+      "label": "水路"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[3]",
+      "assertion": {
+        "id": "9.4"
+      },
+      "label": "航空"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[4]",
+      "assertion": {
+        "id": "9.5"
+      },
+      "label": "其他运输"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]",
+      "assertion": {
+        "id": "10"
+      },
+      "label": "其他服务"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[0]",
+      "assertion": {
+        "id": "10.1"
+      },
+      "label": "清洁"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[1]",
+      "assertion": {
+        "id": "10.2"
+      },
+      "label": "存储"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[2]",
+      "assertion": {
+        "id": "10.3"
+      },
+      "label": "健康、社会服务、美容与保健"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[3]",
+      "assertion": {
+        "id": "10.4"
+      },
+      "label": "修理与维护"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[4]",
+      "assertion": {
+        "id": "10.5"
+      },
+      "label": "销售与批发"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[5]",
+      "assertion": {
+        "id": "10.6"
+      },
+      "label": "通信与信息服务"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[6]",
+      "assertion": {
+        "id": "10.7"
+      },
+      "label": "金融、法律与保险"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[7]",
+      "assertion": {
+        "id": "10.8"
+      },
+      "label": "行政与政府"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[8]",
+      "assertion": {
+        "id": "10.9"
+      },
+      "label": "国防"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[9]",
+      "assertion": {
+        "id": "10.10"
+      },
+      "label": "住宿与餐饮"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[10]",
+      "assertion": {
+        "id": "10.11"
+      },
+      "label": "教育"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[11]",
+      "assertion": {
+        "id": "10.12"
+      },
+      "label": "研究与开发"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[12]",
+      "assertion": {
+        "id": "10.13"
+      },
+      "label": "娱乐"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[13]",
+      "assertion": {
+        "id": "10.14"
+      },
+      "label": "租赁"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[14]",
+      "assertion": {
+        "id": "10.15"
+      },
+      "label": "工程与咨询"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[15]",
+      "assertion": {
+        "id": "10.16"
+      },
+      "label": "其他服务"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]",
+      "assertion": {
+        "id": "11"
+      },
+      "label": "使用与消费"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[0]",
+      "assertion": {
+        "id": "11.1"
+      },
+      "label": "商品消费"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[1]",
+      "assertion": {
+        "id": "11.2"
+      },
+      "label": "使用耗能产品"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[2]",
+      "assertion": {
+        "id": "11.3"
+      },
+      "label": "其他使用与消费"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]",
+      "assertion": {
+        "id": "12"
+      },
+      "label": "废弃物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[0]",
+      "assertion": {
+        "id": "12.1"
+      },
+      "label": "采矿废弃物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[1]",
+      "assertion": {
+        "id": "12.2"
+      },
+      "label": "建筑废弃物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[2]",
+      "assertion": {
+        "id": "12.3"
+      },
+      "label": "生产残余物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[3]",
+      "assertion": {
+        "id": "12.4"
+      },
+      "label": "消费后废弃物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[4]",
+      "assertion": {
+        "id": "12.5"
+      },
+      "label": "放射性废弃物"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[5]",
+      "assertion": {
+        "id": "12.6"
+      },
+      "label": "原料气"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[6]",
+      "assertion": {
+        "id": "12.7"
+      },
+      "label": "废水"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[7]",
+      "assertion": {
+        "id": "12.8"
+      },
+      "label": "其他废弃物"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "技术流属性"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "流的化学组成"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "经济流属性"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "其他流属性"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "技术单位组"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "化学组成单位组"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "经济单位组"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "其他单位组"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "组织团体、项目"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "组织"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "私营公司"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "政府组织"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "非政府组织"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "其他组织"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "组织内工作组"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "个人"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[4]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "其他"
+    },
+    {
+      "key": "categories[6:Source#0]/category[0]",
+      "assertion": {
+        "id": "0"
+      },
+      "label": "图像"
+    },
+    {
+      "key": "categories[6:Source#0]/category[1]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "数据集格式"
+    },
+    {
+      "key": "categories[6:Source#0]/category[2]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "数据库"
+    },
+    {
+      "key": "categories[6:Source#0]/category[3]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "合规系统"
+    },
+    {
+      "key": "categories[6:Source#0]/category[4]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "统计分类"
+    },
+    {
+      "key": "categories[6:Source#0]/category[5]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "出版物与通信"
+    },
+    {
+      "key": "categories[6:Source#0]/category[6]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "其他来源类型"
+    }
+  ]
+}

@@ -1,0 +1,5298 @@
+{
+  "locale": "zh",
+  "policyVersion": "reference-project-review-v1",
+  "records": [
+    {
+      "assertion": {
+        "code": "NULL"
+      },
+      "decision": "accepted",
+      "finalLabel": "无",
+      "key": "location:NULL"
+    },
+    {
+      "assertion": {
+        "code": "GLO"
+      },
+      "candidateLabel": "世界",
+      "decision": "corrected",
+      "finalLabel": "全球",
+      "key": "location:GLO"
+    },
+    {
+      "assertion": {
+        "code": "RAF"
+      },
+      "decision": "accepted",
+      "finalLabel": "非洲",
+      "key": "location:RAF"
+    },
+    {
+      "assertion": {
+        "code": "RAM"
+      },
+      "decision": "accepted",
+      "finalLabel": "美洲",
+      "key": "location:RAM"
+    },
+    {
+      "assertion": {
+        "code": "RAS"
+      },
+      "candidateLabel": "亚洲",
+      "decision": "corrected",
+      "finalLabel": "亚洲和太平洋地区",
+      "key": "location:RAS"
+    },
+    {
+      "assertion": {
+        "code": "RER"
+      },
+      "decision": "accepted",
+      "finalLabel": "欧洲",
+      "key": "location:RER"
+    },
+    {
+      "assertion": {
+        "code": "OCE"
+      },
+      "decision": "accepted",
+      "finalLabel": "大洋洲",
+      "key": "location:OCE"
+    },
+    {
+      "assertion": {
+        "code": "MEA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中东和北非",
+      "key": "location:MEA"
+    },
+    {
+      "assertion": {
+        "code": "AFR"
+      },
+      "decision": "accepted",
+      "finalLabel": "撒哈拉以南非洲",
+      "key": "location:AFR"
+    },
+    {
+      "assertion": {
+        "code": "RLA"
+      },
+      "candidateLabel": "拉丁美洲和加勒比",
+      "decision": "corrected",
+      "finalLabel": "拉丁美洲和加勒比地区",
+      "key": "location:RLA"
+    },
+    {
+      "assertion": {
+        "code": "RNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "北美",
+      "key": "location:RNA"
+    },
+    {
+      "assertion": {
+        "code": "CPA"
+      },
+      "candidateLabel": "中亚",
+      "decision": "corrected",
+      "finalLabel": "中央计划亚洲和中国",
+      "key": "location:CPA"
+    },
+    {
+      "assertion": {
+        "code": "EAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "东亚",
+      "key": "location:EAS"
+    },
+    {
+      "assertion": {
+        "code": "PAS"
+      },
+      "candidateLabel": "东南亚（其他太平洋亚洲）",
+      "decision": "corrected",
+      "finalLabel": "其他太平洋亚洲地区",
+      "key": "location:PAS"
+    },
+    {
+      "assertion": {
+        "code": "SAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "南亚",
+      "key": "location:SAS"
+    },
+    {
+      "assertion": {
+        "code": "EEU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中欧和东欧",
+      "key": "location:EEU"
+    },
+    {
+      "assertion": {
+        "code": "WEU"
+      },
+      "decision": "accepted",
+      "finalLabel": "西欧",
+      "key": "location:WEU"
+    },
+    {
+      "assertion": {
+        "code": "RNE"
+      },
+      "decision": "accepted",
+      "finalLabel": "近东",
+      "key": "location:RNE"
+    },
+    {
+      "assertion": {
+        "code": "RME"
+      },
+      "decision": "accepted",
+      "finalLabel": "中东",
+      "key": "location:RME"
+    },
+    {
+      "assertion": {
+        "code": "EU-15"
+      },
+      "candidateLabel": "欧洲15国",
+      "decision": "corrected",
+      "finalLabel": "欧盟15国",
+      "key": "location:EU-15"
+    },
+    {
+      "assertion": {
+        "code": "EU-NMC"
+      },
+      "candidateLabel": "欧洲2004年新加入成员国",
+      "decision": "corrected",
+      "finalLabel": "2004年欧盟新成员国",
+      "key": "location:EU-NMC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25"
+      },
+      "candidateLabel": "欧洲25国",
+      "decision": "corrected",
+      "finalLabel": "欧盟25国",
+      "key": "location:EU-25"
+    },
+    {
+      "assertion": {
+        "code": "EC-CC"
+      },
+      "decision": "accepted",
+      "finalLabel": "2005年欧盟候选国",
+      "key": "location:EC-CC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC"
+      },
+      "candidateLabel": "欧洲25国加2005年候选国",
+      "decision": "corrected",
+      "finalLabel": "欧盟25国加2005年候选国",
+      "key": "location:EU-25&CC"
+    },
+    {
+      "assertion": {
+        "code": "EU-AC"
+      },
+      "candidateLabel": "2005年欧盟关联国",
+      "decision": "corrected",
+      "finalLabel": "2005年欧盟联系国",
+      "key": "location:EU-AC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC&AC"
+      },
+      "candidateLabel": "欧洲25国加2005年候选国及关联国",
+      "decision": "corrected",
+      "finalLabel": "欧盟25国加2005年候选国及联系国",
+      "key": "location:EU-25&CC&AC"
+    },
+    {
+      "assertion": {
+        "code": "EU-27"
+      },
+      "candidateLabel": "欧洲27国",
+      "decision": "corrected",
+      "finalLabel": "欧盟27国",
+      "key": "location:EU-27"
+    },
+    {
+      "assertion": {
+        "code": "PAO"
+      },
+      "candidateLabel": "太平洋经合组织国家（日本、澳大利亚、新西兰）",
+      "decision": "corrected",
+      "finalLabel": "太平洋经合组织（日本、澳大利亚、新西兰）",
+      "key": "location:PAO"
+    },
+    {
+      "assertion": {
+        "code": "FSU"
+      },
+      "decision": "accepted",
+      "finalLabel": "前苏联独立国家",
+      "key": "location:FSU"
+    },
+    {
+      "assertion": {
+        "code": "UCTE"
+      },
+      "candidateLabel": "输电电力协调联盟",
+      "decision": "corrected",
+      "finalLabel": "输电协调联盟",
+      "key": "location:UCTE"
+    },
+    {
+      "assertion": {
+        "code": "CENTREL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中欧电力协会",
+      "key": "location:CENTREL"
+    },
+    {
+      "assertion": {
+        "code": "NORDEL"
+      },
+      "decision": "accepted",
+      "finalLabel": "北欧国家电力协会",
+      "key": "location:NORDEL"
+    },
+    {
+      "assertion": {
+        "code": "EU+EFTA+UK"
+      },
+      "candidateLabel": "泛欧盟区",
+      "decision": "corrected",
+      "finalLabel": "完整欧盟",
+      "key": "location:EU+EFTA+UK"
+    },
+    {
+      "assertion": {
+        "code": "AD"
+      },
+      "decision": "accepted",
+      "finalLabel": "安道尔",
+      "key": "location:AD"
+    },
+    {
+      "assertion": {
+        "code": "AE"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿拉伯联合酋长国",
+      "key": "location:AE"
+    },
+    {
+      "assertion": {
+        "code": "AF"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿富汗",
+      "key": "location:AF"
+    },
+    {
+      "assertion": {
+        "code": "AG"
+      },
+      "decision": "accepted",
+      "finalLabel": "安提瓜和巴布达",
+      "key": "location:AG"
+    },
+    {
+      "assertion": {
+        "code": "AI"
+      },
+      "decision": "accepted",
+      "finalLabel": "安圭拉",
+      "key": "location:AI"
+    },
+    {
+      "assertion": {
+        "code": "AL"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿尔巴尼亚",
+      "key": "location:AL"
+    },
+    {
+      "assertion": {
+        "code": "AM"
+      },
+      "decision": "accepted",
+      "finalLabel": "亚美尼亚",
+      "key": "location:AM"
+    },
+    {
+      "assertion": {
+        "code": "AO"
+      },
+      "decision": "accepted",
+      "finalLabel": "安哥拉",
+      "key": "location:AO"
+    },
+    {
+      "assertion": {
+        "code": "AQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "南极洲",
+      "key": "location:AQ"
+    },
+    {
+      "assertion": {
+        "code": "AR"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿根廷",
+      "key": "location:AR"
+    },
+    {
+      "assertion": {
+        "code": "AS"
+      },
+      "decision": "accepted",
+      "finalLabel": "美属萨摩亚",
+      "key": "location:AS"
+    },
+    {
+      "assertion": {
+        "code": "AT"
+      },
+      "decision": "accepted",
+      "finalLabel": "奥地利",
+      "key": "location:AT"
+    },
+    {
+      "assertion": {
+        "code": "AU"
+      },
+      "decision": "accepted",
+      "finalLabel": "澳大利亚",
+      "key": "location:AU"
+    },
+    {
+      "assertion": {
+        "code": "AW"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿鲁巴",
+      "key": "location:AW"
+    },
+    {
+      "assertion": {
+        "code": "AX"
+      },
+      "decision": "accepted",
+      "finalLabel": "奥兰群岛",
+      "key": "location:AX"
+    },
+    {
+      "assertion": {
+        "code": "AZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿塞拜疆",
+      "key": "location:AZ"
+    },
+    {
+      "assertion": {
+        "code": "BA"
+      },
+      "decision": "accepted",
+      "finalLabel": "波斯尼亚和黑塞哥维那",
+      "key": "location:BA"
+    },
+    {
+      "assertion": {
+        "code": "BB"
+      },
+      "candidateLabel": "巴巴多斯岛",
+      "decision": "corrected",
+      "finalLabel": "巴巴多斯",
+      "key": "location:BB"
+    },
+    {
+      "assertion": {
+        "code": "BD"
+      },
+      "decision": "accepted",
+      "finalLabel": "孟加拉国",
+      "key": "location:BD"
+    },
+    {
+      "assertion": {
+        "code": "BE"
+      },
+      "decision": "accepted",
+      "finalLabel": "比利时",
+      "key": "location:BE"
+    },
+    {
+      "assertion": {
+        "code": "BF"
+      },
+      "decision": "accepted",
+      "finalLabel": "布基纳法索",
+      "key": "location:BF"
+    },
+    {
+      "assertion": {
+        "code": "BG"
+      },
+      "decision": "accepted",
+      "finalLabel": "保加利亚",
+      "key": "location:BG"
+    },
+    {
+      "assertion": {
+        "code": "BH"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴林",
+      "key": "location:BH"
+    },
+    {
+      "assertion": {
+        "code": "BI"
+      },
+      "decision": "accepted",
+      "finalLabel": "布隆迪",
+      "key": "location:BI"
+    },
+    {
+      "assertion": {
+        "code": "BJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "贝宁",
+      "key": "location:BJ"
+    },
+    {
+      "assertion": {
+        "code": "BL"
+      },
+      "candidateLabel": "圣巴泰勒米岛",
+      "decision": "corrected",
+      "finalLabel": "圣巴泰勒米",
+      "key": "location:BL"
+    },
+    {
+      "assertion": {
+        "code": "BM"
+      },
+      "candidateLabel": "百慕大群岛",
+      "decision": "corrected",
+      "finalLabel": "百慕大",
+      "key": "location:BM"
+    },
+    {
+      "assertion": {
+        "code": "BN"
+      },
+      "candidateLabel": "文莱达鲁萨兰国",
+      "decision": "corrected",
+      "finalLabel": "文莱",
+      "key": "location:BN"
+    },
+    {
+      "assertion": {
+        "code": "BO"
+      },
+      "candidateLabel": "多民族玻利维亚国",
+      "decision": "corrected",
+      "finalLabel": "玻利维亚",
+      "key": "location:BO"
+    },
+    {
+      "assertion": {
+        "code": "BQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "博内尔岛、圣尤斯特歇斯岛和萨巴岛",
+      "key": "location:BQ"
+    },
+    {
+      "assertion": {
+        "code": "BR"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴西",
+      "key": "location:BR"
+    },
+    {
+      "assertion": {
+        "code": "BS"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴哈马",
+      "key": "location:BS"
+    },
+    {
+      "assertion": {
+        "code": "BT"
+      },
+      "decision": "accepted",
+      "finalLabel": "不丹",
+      "key": "location:BT"
+    },
+    {
+      "assertion": {
+        "code": "BV"
+      },
+      "decision": "corrected",
+      "finalLabel": "布维岛",
+      "key": "location:BV",
+      "candidateLabel": "布韦岛"
+    },
+    {
+      "assertion": {
+        "code": "BW"
+      },
+      "decision": "accepted",
+      "finalLabel": "博茨瓦纳",
+      "key": "location:BW"
+    },
+    {
+      "assertion": {
+        "code": "BY"
+      },
+      "decision": "accepted",
+      "finalLabel": "白俄罗斯",
+      "key": "location:BY"
+    },
+    {
+      "assertion": {
+        "code": "BZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "伯利兹",
+      "key": "location:BZ"
+    },
+    {
+      "assertion": {
+        "code": "CA"
+      },
+      "decision": "accepted",
+      "finalLabel": "加拿大",
+      "key": "location:CA"
+    },
+    {
+      "assertion": {
+        "code": "CC"
+      },
+      "decision": "accepted",
+      "finalLabel": "科科斯（基林）群岛",
+      "key": "location:CC"
+    },
+    {
+      "assertion": {
+        "code": "CD"
+      },
+      "decision": "accepted",
+      "finalLabel": "刚果民主共和国",
+      "key": "location:CD"
+    },
+    {
+      "assertion": {
+        "code": "CF"
+      },
+      "decision": "accepted",
+      "finalLabel": "中非共和国",
+      "key": "location:CF"
+    },
+    {
+      "assertion": {
+        "code": "CG"
+      },
+      "decision": "accepted",
+      "finalLabel": "刚果",
+      "key": "location:CG"
+    },
+    {
+      "assertion": {
+        "code": "CH"
+      },
+      "decision": "accepted",
+      "finalLabel": "瑞士",
+      "key": "location:CH"
+    },
+    {
+      "assertion": {
+        "code": "CI"
+      },
+      "decision": "accepted",
+      "finalLabel": "科特迪瓦",
+      "key": "location:CI"
+    },
+    {
+      "assertion": {
+        "code": "CK"
+      },
+      "decision": "accepted",
+      "finalLabel": "库克群岛",
+      "key": "location:CK"
+    },
+    {
+      "assertion": {
+        "code": "CL"
+      },
+      "decision": "accepted",
+      "finalLabel": "智利",
+      "key": "location:CL"
+    },
+    {
+      "assertion": {
+        "code": "CM"
+      },
+      "decision": "accepted",
+      "finalLabel": "喀麦隆",
+      "key": "location:CM"
+    },
+    {
+      "assertion": {
+        "code": "CO"
+      },
+      "decision": "accepted",
+      "finalLabel": "哥伦比亚",
+      "key": "location:CO"
+    },
+    {
+      "assertion": {
+        "code": "CR"
+      },
+      "decision": "accepted",
+      "finalLabel": "哥斯达黎加",
+      "key": "location:CR"
+    },
+    {
+      "assertion": {
+        "code": "CU"
+      },
+      "decision": "accepted",
+      "finalLabel": "古巴",
+      "key": "location:CU"
+    },
+    {
+      "assertion": {
+        "code": "CV"
+      },
+      "decision": "accepted",
+      "finalLabel": "佛得角",
+      "key": "location:CV"
+    },
+    {
+      "assertion": {
+        "code": "CW"
+      },
+      "candidateLabel": "库拉索岛",
+      "decision": "corrected",
+      "finalLabel": "库拉索",
+      "key": "location:CW"
+    },
+    {
+      "assertion": {
+        "code": "CX"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣诞岛",
+      "key": "location:CX"
+    },
+    {
+      "assertion": {
+        "code": "CY"
+      },
+      "decision": "accepted",
+      "finalLabel": "塞浦路斯",
+      "key": "location:CY"
+    },
+    {
+      "assertion": {
+        "code": "CZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "捷克",
+      "key": "location:CZ"
+    },
+    {
+      "assertion": {
+        "code": "DE"
+      },
+      "decision": "accepted",
+      "finalLabel": "德国",
+      "key": "location:DE"
+    },
+    {
+      "assertion": {
+        "code": "DJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "吉布提",
+      "key": "location:DJ"
+    },
+    {
+      "assertion": {
+        "code": "DK"
+      },
+      "decision": "accepted",
+      "finalLabel": "丹麦",
+      "key": "location:DK"
+    },
+    {
+      "assertion": {
+        "code": "DM"
+      },
+      "decision": "accepted",
+      "finalLabel": "多米尼克",
+      "key": "location:DM"
+    },
+    {
+      "assertion": {
+        "code": "DO"
+      },
+      "decision": "corrected",
+      "finalLabel": "多明尼加共和国",
+      "key": "location:DO",
+      "candidateLabel": "多米尼加共和国"
+    },
+    {
+      "assertion": {
+        "code": "DZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿尔及利亚",
+      "key": "location:DZ"
+    },
+    {
+      "assertion": {
+        "code": "EC"
+      },
+      "decision": "accepted",
+      "finalLabel": "厄瓜多尔",
+      "key": "location:EC"
+    },
+    {
+      "assertion": {
+        "code": "EE"
+      },
+      "decision": "accepted",
+      "finalLabel": "爱沙尼亚",
+      "key": "location:EE"
+    },
+    {
+      "assertion": {
+        "code": "EG"
+      },
+      "decision": "accepted",
+      "finalLabel": "埃及",
+      "key": "location:EG"
+    },
+    {
+      "assertion": {
+        "code": "EH"
+      },
+      "decision": "accepted",
+      "finalLabel": "西撒哈拉",
+      "key": "location:EH"
+    },
+    {
+      "assertion": {
+        "code": "ER"
+      },
+      "decision": "accepted",
+      "finalLabel": "厄立特里亚",
+      "key": "location:ER"
+    },
+    {
+      "assertion": {
+        "code": "ES"
+      },
+      "decision": "accepted",
+      "finalLabel": "西班牙",
+      "key": "location:ES"
+    },
+    {
+      "assertion": {
+        "code": "ET"
+      },
+      "decision": "accepted",
+      "finalLabel": "埃塞俄比亚",
+      "key": "location:ET"
+    },
+    {
+      "assertion": {
+        "code": "FI"
+      },
+      "decision": "accepted",
+      "finalLabel": "芬兰",
+      "key": "location:FI"
+    },
+    {
+      "assertion": {
+        "code": "FJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "斐济",
+      "key": "location:FJ"
+    },
+    {
+      "assertion": {
+        "code": "FK"
+      },
+      "candidateLabel": "福克兰群岛（马尔维纳斯群岛）",
+      "decision": "corrected",
+      "finalLabel": "福克兰群岛",
+      "key": "location:FK"
+    },
+    {
+      "assertion": {
+        "code": "FM"
+      },
+      "candidateLabel": "密克罗尼西亚（联邦）",
+      "decision": "corrected",
+      "finalLabel": "密克罗尼西亚",
+      "key": "location:FM"
+    },
+    {
+      "assertion": {
+        "code": "FO"
+      },
+      "decision": "accepted",
+      "finalLabel": "法罗群岛",
+      "key": "location:FO"
+    },
+    {
+      "assertion": {
+        "code": "FR"
+      },
+      "decision": "accepted",
+      "finalLabel": "法国",
+      "key": "location:FR"
+    },
+    {
+      "assertion": {
+        "code": "GA"
+      },
+      "decision": "accepted",
+      "finalLabel": "加蓬",
+      "key": "location:GA"
+    },
+    {
+      "assertion": {
+        "code": "GB"
+      },
+      "candidateLabel": "大不列颠及北爱尔兰联合王国",
+      "decision": "corrected",
+      "finalLabel": "英国",
+      "key": "location:GB"
+    },
+    {
+      "assertion": {
+        "code": "GD"
+      },
+      "decision": "accepted",
+      "finalLabel": "格林纳达",
+      "key": "location:GD"
+    },
+    {
+      "assertion": {
+        "code": "GE"
+      },
+      "decision": "accepted",
+      "finalLabel": "格鲁吉亚",
+      "key": "location:GE"
+    },
+    {
+      "assertion": {
+        "code": "GF"
+      },
+      "decision": "accepted",
+      "finalLabel": "法属圭亚那",
+      "key": "location:GF"
+    },
+    {
+      "assertion": {
+        "code": "GG"
+      },
+      "candidateLabel": "格恩西岛",
+      "decision": "corrected",
+      "finalLabel": "根西岛",
+      "key": "location:GG"
+    },
+    {
+      "assertion": {
+        "code": "GH"
+      },
+      "decision": "accepted",
+      "finalLabel": "加纳",
+      "key": "location:GH"
+    },
+    {
+      "assertion": {
+        "code": "GI"
+      },
+      "decision": "accepted",
+      "finalLabel": "直布罗陀",
+      "key": "location:GI"
+    },
+    {
+      "assertion": {
+        "code": "GL"
+      },
+      "candidateLabel": "格陵兰岛",
+      "decision": "corrected",
+      "finalLabel": "格陵兰",
+      "key": "location:GL"
+    },
+    {
+      "assertion": {
+        "code": "GM"
+      },
+      "decision": "accepted",
+      "finalLabel": "冈比亚",
+      "key": "location:GM"
+    },
+    {
+      "assertion": {
+        "code": "GN"
+      },
+      "decision": "accepted",
+      "finalLabel": "几内亚",
+      "key": "location:GN"
+    },
+    {
+      "assertion": {
+        "code": "GP"
+      },
+      "candidateLabel": "瓜德罗普岛",
+      "decision": "corrected",
+      "finalLabel": "瓜德罗普",
+      "key": "location:GP"
+    },
+    {
+      "assertion": {
+        "code": "GQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "赤道几内亚",
+      "key": "location:GQ"
+    },
+    {
+      "assertion": {
+        "code": "GR"
+      },
+      "decision": "accepted",
+      "finalLabel": "希腊",
+      "key": "location:GR"
+    },
+    {
+      "assertion": {
+        "code": "GS"
+      },
+      "candidateLabel": "南乔治亚岛和南桑威奇群岛",
+      "decision": "corrected",
+      "finalLabel": "南乔治亚岛和南桑德韦奇岛",
+      "key": "location:GS"
+    },
+    {
+      "assertion": {
+        "code": "GT"
+      },
+      "decision": "accepted",
+      "finalLabel": "危地马拉",
+      "key": "location:GT"
+    },
+    {
+      "assertion": {
+        "code": "GU"
+      },
+      "decision": "accepted",
+      "finalLabel": "关岛",
+      "key": "location:GU"
+    },
+    {
+      "assertion": {
+        "code": "GW"
+      },
+      "decision": "accepted",
+      "finalLabel": "几内亚比绍",
+      "key": "location:GW"
+    },
+    {
+      "assertion": {
+        "code": "GY"
+      },
+      "decision": "accepted",
+      "finalLabel": "圭亚那",
+      "key": "location:GY"
+    },
+    {
+      "assertion": {
+        "code": "HM"
+      },
+      "decision": "accepted",
+      "finalLabel": "赫德岛和麦克唐纳群岛",
+      "key": "location:HM"
+    },
+    {
+      "assertion": {
+        "code": "HN"
+      },
+      "decision": "accepted",
+      "finalLabel": "洪都拉斯",
+      "key": "location:HN"
+    },
+    {
+      "assertion": {
+        "code": "HR"
+      },
+      "decision": "accepted",
+      "finalLabel": "克罗地亚",
+      "key": "location:HR"
+    },
+    {
+      "assertion": {
+        "code": "HT"
+      },
+      "decision": "accepted",
+      "finalLabel": "海地",
+      "key": "location:HT"
+    },
+    {
+      "assertion": {
+        "code": "HU"
+      },
+      "decision": "accepted",
+      "finalLabel": "匈牙利",
+      "key": "location:HU"
+    },
+    {
+      "assertion": {
+        "code": "ID"
+      },
+      "decision": "accepted",
+      "finalLabel": "印度尼西亚",
+      "key": "location:ID"
+    },
+    {
+      "assertion": {
+        "code": "IE"
+      },
+      "decision": "accepted",
+      "finalLabel": "爱尔兰",
+      "key": "location:IE"
+    },
+    {
+      "assertion": {
+        "code": "IL"
+      },
+      "decision": "accepted",
+      "finalLabel": "以色列",
+      "key": "location:IL"
+    },
+    {
+      "assertion": {
+        "code": "IM"
+      },
+      "decision": "accepted",
+      "finalLabel": "马恩岛",
+      "key": "location:IM"
+    },
+    {
+      "assertion": {
+        "code": "IN"
+      },
+      "decision": "accepted",
+      "finalLabel": "印度",
+      "key": "location:IN"
+    },
+    {
+      "assertion": {
+        "code": "IO"
+      },
+      "decision": "accepted",
+      "finalLabel": "英属印度洋领地",
+      "key": "location:IO"
+    },
+    {
+      "assertion": {
+        "code": "IQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "伊拉克",
+      "key": "location:IQ"
+    },
+    {
+      "assertion": {
+        "code": "IR"
+      },
+      "candidateLabel": "伊朗伊斯兰共和国",
+      "decision": "corrected",
+      "finalLabel": "伊朗",
+      "key": "location:IR"
+    },
+    {
+      "assertion": {
+        "code": "IS"
+      },
+      "decision": "accepted",
+      "finalLabel": "冰岛",
+      "key": "location:IS"
+    },
+    {
+      "assertion": {
+        "code": "IT"
+      },
+      "decision": "accepted",
+      "finalLabel": "意大利",
+      "key": "location:IT"
+    },
+    {
+      "assertion": {
+        "code": "JE"
+      },
+      "decision": "accepted",
+      "finalLabel": "泽西岛",
+      "key": "location:JE"
+    },
+    {
+      "assertion": {
+        "code": "JM"
+      },
+      "decision": "accepted",
+      "finalLabel": "牙买加",
+      "key": "location:JM"
+    },
+    {
+      "assertion": {
+        "code": "JO"
+      },
+      "decision": "accepted",
+      "finalLabel": "约旦",
+      "key": "location:JO"
+    },
+    {
+      "assertion": {
+        "code": "JP"
+      },
+      "decision": "accepted",
+      "finalLabel": "日本",
+      "key": "location:JP"
+    },
+    {
+      "assertion": {
+        "code": "KE"
+      },
+      "decision": "accepted",
+      "finalLabel": "肯尼亚",
+      "key": "location:KE"
+    },
+    {
+      "assertion": {
+        "code": "KG"
+      },
+      "decision": "accepted",
+      "finalLabel": "吉尔吉斯斯坦",
+      "key": "location:KG"
+    },
+    {
+      "assertion": {
+        "code": "KH"
+      },
+      "decision": "accepted",
+      "finalLabel": "柬埔寨",
+      "key": "location:KH"
+    },
+    {
+      "assertion": {
+        "code": "KI"
+      },
+      "decision": "accepted",
+      "finalLabel": "基里巴斯",
+      "key": "location:KI"
+    },
+    {
+      "assertion": {
+        "code": "KM"
+      },
+      "decision": "accepted",
+      "finalLabel": "科摩罗",
+      "key": "location:KM"
+    },
+    {
+      "assertion": {
+        "code": "KN"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣基茨和尼维斯",
+      "key": "location:KN"
+    },
+    {
+      "assertion": {
+        "code": "KP"
+      },
+      "candidateLabel": "朝鲜（朝鲜民主主义人民共和国）",
+      "decision": "corrected",
+      "finalLabel": "朝鲜",
+      "key": "location:KP"
+    },
+    {
+      "assertion": {
+        "code": "KR"
+      },
+      "decision": "accepted",
+      "finalLabel": "韩国",
+      "key": "location:KR"
+    },
+    {
+      "assertion": {
+        "code": "KW"
+      },
+      "decision": "accepted",
+      "finalLabel": "科威特",
+      "key": "location:KW"
+    },
+    {
+      "assertion": {
+        "code": "KY"
+      },
+      "decision": "accepted",
+      "finalLabel": "开曼群岛",
+      "key": "location:KY"
+    },
+    {
+      "assertion": {
+        "code": "KZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "哈萨克斯坦",
+      "key": "location:KZ"
+    },
+    {
+      "assertion": {
+        "code": "LA"
+      },
+      "candidateLabel": "老挝人民民主共和国",
+      "decision": "corrected",
+      "finalLabel": "老挝",
+      "key": "location:LA"
+    },
+    {
+      "assertion": {
+        "code": "LB"
+      },
+      "decision": "accepted",
+      "finalLabel": "黎巴嫩",
+      "key": "location:LB"
+    },
+    {
+      "assertion": {
+        "code": "LC"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣卢西亚",
+      "key": "location:LC"
+    },
+    {
+      "assertion": {
+        "code": "LI"
+      },
+      "decision": "accepted",
+      "finalLabel": "列支敦士登",
+      "key": "location:LI"
+    },
+    {
+      "assertion": {
+        "code": "LK"
+      },
+      "decision": "accepted",
+      "finalLabel": "斯里兰卡",
+      "key": "location:LK"
+    },
+    {
+      "assertion": {
+        "code": "LR"
+      },
+      "decision": "accepted",
+      "finalLabel": "利比里亚",
+      "key": "location:LR"
+    },
+    {
+      "assertion": {
+        "code": "LS"
+      },
+      "decision": "accepted",
+      "finalLabel": "莱索托",
+      "key": "location:LS"
+    },
+    {
+      "assertion": {
+        "code": "LT"
+      },
+      "decision": "accepted",
+      "finalLabel": "立陶宛",
+      "key": "location:LT"
+    },
+    {
+      "assertion": {
+        "code": "LU"
+      },
+      "decision": "accepted",
+      "finalLabel": "卢森堡",
+      "key": "location:LU"
+    },
+    {
+      "assertion": {
+        "code": "LV"
+      },
+      "decision": "accepted",
+      "finalLabel": "拉脱维亚",
+      "key": "location:LV"
+    },
+    {
+      "assertion": {
+        "code": "LY"
+      },
+      "decision": "accepted",
+      "finalLabel": "利比亚",
+      "key": "location:LY"
+    },
+    {
+      "assertion": {
+        "code": "MA"
+      },
+      "decision": "accepted",
+      "finalLabel": "摩洛哥",
+      "key": "location:MA"
+    },
+    {
+      "assertion": {
+        "code": "MC"
+      },
+      "decision": "accepted",
+      "finalLabel": "摩纳哥",
+      "key": "location:MC"
+    },
+    {
+      "assertion": {
+        "code": "MD"
+      },
+      "candidateLabel": "摩尔多瓦共和国",
+      "decision": "corrected",
+      "finalLabel": "摩尔多瓦",
+      "key": "location:MD"
+    },
+    {
+      "assertion": {
+        "code": "ME"
+      },
+      "candidateLabel": "黑山共和国",
+      "decision": "corrected",
+      "finalLabel": "黑山",
+      "key": "location:ME"
+    },
+    {
+      "assertion": {
+        "code": "MF"
+      },
+      "candidateLabel": "圣马丁（法国部分）",
+      "decision": "corrected",
+      "finalLabel": "圣马丁",
+      "key": "location:MF"
+    },
+    {
+      "assertion": {
+        "code": "MG"
+      },
+      "decision": "accepted",
+      "finalLabel": "马达加斯加",
+      "key": "location:MG"
+    },
+    {
+      "assertion": {
+        "code": "MH"
+      },
+      "decision": "accepted",
+      "finalLabel": "马绍尔群岛",
+      "key": "location:MH"
+    },
+    {
+      "assertion": {
+        "code": "MK"
+      },
+      "decision": "accepted",
+      "finalLabel": "北马其顿",
+      "key": "location:MK"
+    },
+    {
+      "assertion": {
+        "code": "ML"
+      },
+      "decision": "accepted",
+      "finalLabel": "马里",
+      "key": "location:ML"
+    },
+    {
+      "assertion": {
+        "code": "MM"
+      },
+      "decision": "accepted",
+      "finalLabel": "缅甸",
+      "key": "location:MM"
+    },
+    {
+      "assertion": {
+        "code": "MN"
+      },
+      "decision": "accepted",
+      "finalLabel": "蒙古",
+      "key": "location:MN"
+    },
+    {
+      "assertion": {
+        "code": "MP"
+      },
+      "decision": "accepted",
+      "finalLabel": "北马里亚纳群岛",
+      "key": "location:MP"
+    },
+    {
+      "assertion": {
+        "code": "MQ"
+      },
+      "candidateLabel": "马提尼克岛",
+      "decision": "corrected",
+      "finalLabel": "马提尼克",
+      "key": "location:MQ"
+    },
+    {
+      "assertion": {
+        "code": "MR"
+      },
+      "decision": "accepted",
+      "finalLabel": "毛里塔尼亚",
+      "key": "location:MR"
+    },
+    {
+      "assertion": {
+        "code": "MS"
+      },
+      "decision": "accepted",
+      "finalLabel": "蒙特塞拉特",
+      "key": "location:MS"
+    },
+    {
+      "assertion": {
+        "code": "MT"
+      },
+      "decision": "accepted",
+      "finalLabel": "马耳他",
+      "key": "location:MT"
+    },
+    {
+      "assertion": {
+        "code": "MU"
+      },
+      "decision": "accepted",
+      "finalLabel": "毛里求斯",
+      "key": "location:MU"
+    },
+    {
+      "assertion": {
+        "code": "MV"
+      },
+      "decision": "accepted",
+      "finalLabel": "马尔代夫",
+      "key": "location:MV"
+    },
+    {
+      "assertion": {
+        "code": "MW"
+      },
+      "decision": "accepted",
+      "finalLabel": "马拉维",
+      "key": "location:MW"
+    },
+    {
+      "assertion": {
+        "code": "MX"
+      },
+      "decision": "accepted",
+      "finalLabel": "墨西哥",
+      "key": "location:MX"
+    },
+    {
+      "assertion": {
+        "code": "MY"
+      },
+      "decision": "accepted",
+      "finalLabel": "马来西亚",
+      "key": "location:MY"
+    },
+    {
+      "assertion": {
+        "code": "MZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "莫桑比克",
+      "key": "location:MZ"
+    },
+    {
+      "assertion": {
+        "code": "NA"
+      },
+      "decision": "accepted",
+      "finalLabel": "纳米比亚",
+      "key": "location:NA"
+    },
+    {
+      "assertion": {
+        "code": "NC"
+      },
+      "decision": "accepted",
+      "finalLabel": "新喀里多尼亚",
+      "key": "location:NC"
+    },
+    {
+      "assertion": {
+        "code": "NE"
+      },
+      "decision": "accepted",
+      "finalLabel": "尼日尔",
+      "key": "location:NE"
+    },
+    {
+      "assertion": {
+        "code": "NF"
+      },
+      "decision": "accepted",
+      "finalLabel": "诺福克岛",
+      "key": "location:NF"
+    },
+    {
+      "assertion": {
+        "code": "NG"
+      },
+      "decision": "accepted",
+      "finalLabel": "尼日利亚",
+      "key": "location:NG"
+    },
+    {
+      "assertion": {
+        "code": "NI"
+      },
+      "decision": "accepted",
+      "finalLabel": "尼加拉瓜",
+      "key": "location:NI"
+    },
+    {
+      "assertion": {
+        "code": "NL"
+      },
+      "decision": "accepted",
+      "finalLabel": "荷兰",
+      "key": "location:NL"
+    },
+    {
+      "assertion": {
+        "code": "NO"
+      },
+      "decision": "accepted",
+      "finalLabel": "挪威",
+      "key": "location:NO"
+    },
+    {
+      "assertion": {
+        "code": "NP"
+      },
+      "decision": "accepted",
+      "finalLabel": "尼泊尔",
+      "key": "location:NP"
+    },
+    {
+      "assertion": {
+        "code": "NR"
+      },
+      "decision": "accepted",
+      "finalLabel": "瑙鲁",
+      "key": "location:NR"
+    },
+    {
+      "assertion": {
+        "code": "NU"
+      },
+      "decision": "accepted",
+      "finalLabel": "纽埃",
+      "key": "location:NU"
+    },
+    {
+      "assertion": {
+        "code": "NZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "新西兰",
+      "key": "location:NZ"
+    },
+    {
+      "assertion": {
+        "code": "OM"
+      },
+      "decision": "accepted",
+      "finalLabel": "阿曼",
+      "key": "location:OM"
+    },
+    {
+      "assertion": {
+        "code": "PA"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴拿马",
+      "key": "location:PA"
+    },
+    {
+      "assertion": {
+        "code": "PE"
+      },
+      "decision": "accepted",
+      "finalLabel": "秘鲁",
+      "key": "location:PE"
+    },
+    {
+      "assertion": {
+        "code": "PF"
+      },
+      "decision": "accepted",
+      "finalLabel": "法属波利尼西亚",
+      "key": "location:PF"
+    },
+    {
+      "assertion": {
+        "code": "PG"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴布亚新几内亚",
+      "key": "location:PG"
+    },
+    {
+      "assertion": {
+        "code": "PH"
+      },
+      "decision": "accepted",
+      "finalLabel": "菲律宾",
+      "key": "location:PH"
+    },
+    {
+      "assertion": {
+        "code": "PK"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴基斯坦",
+      "key": "location:PK"
+    },
+    {
+      "assertion": {
+        "code": "PL"
+      },
+      "decision": "accepted",
+      "finalLabel": "波兰",
+      "key": "location:PL"
+    },
+    {
+      "assertion": {
+        "code": "PM"
+      },
+      "candidateLabel": "圣皮埃尔和密克隆岛",
+      "decision": "corrected",
+      "finalLabel": "圣皮埃尔和密克隆",
+      "key": "location:PM"
+    },
+    {
+      "assertion": {
+        "code": "PN"
+      },
+      "candidateLabel": "皮特凯恩",
+      "decision": "corrected",
+      "finalLabel": "皮特凯恩群岛",
+      "key": "location:PN"
+    },
+    {
+      "assertion": {
+        "code": "PR"
+      },
+      "decision": "accepted",
+      "finalLabel": "波多黎各",
+      "key": "location:PR"
+    },
+    {
+      "assertion": {
+        "code": "PS"
+      },
+      "candidateLabel": "巴勒斯坦国",
+      "decision": "corrected",
+      "finalLabel": "巴勒斯坦*",
+      "key": "location:PS"
+    },
+    {
+      "assertion": {
+        "code": "PT"
+      },
+      "decision": "accepted",
+      "finalLabel": "葡萄牙",
+      "key": "location:PT"
+    },
+    {
+      "assertion": {
+        "code": "PW"
+      },
+      "decision": "accepted",
+      "finalLabel": "帕劳",
+      "key": "location:PW"
+    },
+    {
+      "assertion": {
+        "code": "PY"
+      },
+      "decision": "accepted",
+      "finalLabel": "巴拉圭",
+      "key": "location:PY"
+    },
+    {
+      "assertion": {
+        "code": "QA"
+      },
+      "decision": "accepted",
+      "finalLabel": "卡塔尔",
+      "key": "location:QA"
+    },
+    {
+      "assertion": {
+        "code": "RE"
+      },
+      "candidateLabel": "留尼汪岛",
+      "decision": "corrected",
+      "finalLabel": "留尼汪",
+      "key": "location:RE"
+    },
+    {
+      "assertion": {
+        "code": "RO"
+      },
+      "decision": "accepted",
+      "finalLabel": "罗马尼亚",
+      "key": "location:RO"
+    },
+    {
+      "assertion": {
+        "code": "RS"
+      },
+      "decision": "accepted",
+      "finalLabel": "塞尔维亚",
+      "key": "location:RS"
+    },
+    {
+      "assertion": {
+        "code": "RU"
+      },
+      "candidateLabel": "俄罗斯联邦",
+      "decision": "corrected",
+      "finalLabel": "俄罗斯",
+      "key": "location:RU"
+    },
+    {
+      "assertion": {
+        "code": "RW"
+      },
+      "decision": "accepted",
+      "finalLabel": "卢旺达",
+      "key": "location:RW"
+    },
+    {
+      "assertion": {
+        "code": "SA"
+      },
+      "decision": "accepted",
+      "finalLabel": "沙特阿拉伯",
+      "key": "location:SA"
+    },
+    {
+      "assertion": {
+        "code": "SB"
+      },
+      "decision": "accepted",
+      "finalLabel": "所罗门群岛",
+      "key": "location:SB"
+    },
+    {
+      "assertion": {
+        "code": "SC"
+      },
+      "decision": "accepted",
+      "finalLabel": "塞舌尔",
+      "key": "location:SC"
+    },
+    {
+      "assertion": {
+        "code": "SD"
+      },
+      "decision": "accepted",
+      "finalLabel": "苏丹",
+      "key": "location:SD"
+    },
+    {
+      "assertion": {
+        "code": "SE"
+      },
+      "decision": "accepted",
+      "finalLabel": "瑞典",
+      "key": "location:SE"
+    },
+    {
+      "assertion": {
+        "code": "SG"
+      },
+      "decision": "accepted",
+      "finalLabel": "新加坡",
+      "key": "location:SG"
+    },
+    {
+      "assertion": {
+        "code": "SH"
+      },
+      "candidateLabel": "圣赫勒拿、阿森松和特里斯坦-达库尼亚群岛",
+      "decision": "corrected",
+      "finalLabel": "圣赫勒拿、阿森松和特里斯坦达库尼亚",
+      "key": "location:SH"
+    },
+    {
+      "assertion": {
+        "code": "SI"
+      },
+      "decision": "accepted",
+      "finalLabel": "斯洛文尼亚",
+      "key": "location:SI"
+    },
+    {
+      "assertion": {
+        "code": "SJ"
+      },
+      "candidateLabel": "斯瓦尔巴群岛和扬马延岛",
+      "decision": "corrected",
+      "finalLabel": "斯瓦尔巴岛和扬马延岛",
+      "key": "location:SJ"
+    },
+    {
+      "assertion": {
+        "code": "SK"
+      },
+      "decision": "accepted",
+      "finalLabel": "斯洛伐克",
+      "key": "location:SK"
+    },
+    {
+      "assertion": {
+        "code": "SL"
+      },
+      "decision": "accepted",
+      "finalLabel": "塞拉利昂",
+      "key": "location:SL"
+    },
+    {
+      "assertion": {
+        "code": "SM"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣马力诺",
+      "key": "location:SM"
+    },
+    {
+      "assertion": {
+        "code": "SN"
+      },
+      "decision": "accepted",
+      "finalLabel": "塞内加尔",
+      "key": "location:SN"
+    },
+    {
+      "assertion": {
+        "code": "SO"
+      },
+      "decision": "accepted",
+      "finalLabel": "索马里",
+      "key": "location:SO"
+    },
+    {
+      "assertion": {
+        "code": "SR"
+      },
+      "decision": "accepted",
+      "finalLabel": "苏里南",
+      "key": "location:SR"
+    },
+    {
+      "assertion": {
+        "code": "SS"
+      },
+      "decision": "accepted",
+      "finalLabel": "南苏丹",
+      "key": "location:SS"
+    },
+    {
+      "assertion": {
+        "code": "ST"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣多美和普林西比",
+      "key": "location:ST"
+    },
+    {
+      "assertion": {
+        "code": "SV"
+      },
+      "decision": "accepted",
+      "finalLabel": "萨尔瓦多",
+      "key": "location:SV"
+    },
+    {
+      "assertion": {
+        "code": "SX"
+      },
+      "candidateLabel": "圣马丁岛（荷兰部分）",
+      "decision": "corrected",
+      "finalLabel": "圣马丁",
+      "key": "location:SX"
+    },
+    {
+      "assertion": {
+        "code": "SY"
+      },
+      "candidateLabel": "阿拉伯叙利亚共和国",
+      "decision": "corrected",
+      "finalLabel": "叙利亚",
+      "key": "location:SY"
+    },
+    {
+      "assertion": {
+        "code": "SZ"
+      },
+      "candidateLabel": "埃斯瓦提尼",
+      "decision": "corrected",
+      "finalLabel": "斯威士兰",
+      "key": "location:SZ"
+    },
+    {
+      "assertion": {
+        "code": "TC"
+      },
+      "decision": "accepted",
+      "finalLabel": "特克斯和凯科斯群岛",
+      "key": "location:TC"
+    },
+    {
+      "assertion": {
+        "code": "TD"
+      },
+      "decision": "accepted",
+      "finalLabel": "乍得",
+      "key": "location:TD"
+    },
+    {
+      "assertion": {
+        "code": "TF"
+      },
+      "candidateLabel": "法属南部领土",
+      "decision": "corrected",
+      "finalLabel": "法属南部和南极土地",
+      "key": "location:TF"
+    },
+    {
+      "assertion": {
+        "code": "TG"
+      },
+      "decision": "accepted",
+      "finalLabel": "多哥",
+      "key": "location:TG"
+    },
+    {
+      "assertion": {
+        "code": "TH"
+      },
+      "decision": "accepted",
+      "finalLabel": "泰国",
+      "key": "location:TH"
+    },
+    {
+      "assertion": {
+        "code": "TJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "塔吉克斯坦",
+      "key": "location:TJ"
+    },
+    {
+      "assertion": {
+        "code": "TK"
+      },
+      "decision": "accepted",
+      "finalLabel": "托克劳",
+      "key": "location:TK"
+    },
+    {
+      "assertion": {
+        "code": "TL"
+      },
+      "decision": "accepted",
+      "finalLabel": "东帝汶",
+      "key": "location:TL"
+    },
+    {
+      "assertion": {
+        "code": "TM"
+      },
+      "decision": "accepted",
+      "finalLabel": "土库曼斯坦",
+      "key": "location:TM"
+    },
+    {
+      "assertion": {
+        "code": "TN"
+      },
+      "decision": "accepted",
+      "finalLabel": "突尼斯",
+      "key": "location:TN"
+    },
+    {
+      "assertion": {
+        "code": "TO"
+      },
+      "decision": "accepted",
+      "finalLabel": "汤加",
+      "key": "location:TO"
+    },
+    {
+      "assertion": {
+        "code": "TR"
+      },
+      "decision": "accepted",
+      "finalLabel": "土耳其",
+      "key": "location:TR"
+    },
+    {
+      "assertion": {
+        "code": "TT"
+      },
+      "decision": "accepted",
+      "finalLabel": "特立尼达和多巴哥",
+      "key": "location:TT"
+    },
+    {
+      "assertion": {
+        "code": "TV"
+      },
+      "decision": "accepted",
+      "finalLabel": "图瓦卢",
+      "key": "location:TV"
+    },
+    {
+      "assertion": {
+        "code": "TZ"
+      },
+      "candidateLabel": "坦桑尼亚联合共和国",
+      "decision": "corrected",
+      "finalLabel": "坦桑尼亚",
+      "key": "location:TZ"
+    },
+    {
+      "assertion": {
+        "code": "UA"
+      },
+      "decision": "accepted",
+      "finalLabel": "乌克兰",
+      "key": "location:UA"
+    },
+    {
+      "assertion": {
+        "code": "UG"
+      },
+      "decision": "accepted",
+      "finalLabel": "乌干达",
+      "key": "location:UG"
+    },
+    {
+      "assertion": {
+        "code": "UM"
+      },
+      "decision": "accepted",
+      "finalLabel": "美国本土外小岛屿",
+      "key": "location:UM"
+    },
+    {
+      "assertion": {
+        "code": "US"
+      },
+      "decision": "accepted",
+      "finalLabel": "美国",
+      "key": "location:US"
+    },
+    {
+      "assertion": {
+        "code": "UY"
+      },
+      "decision": "accepted",
+      "finalLabel": "乌拉圭",
+      "key": "location:UY"
+    },
+    {
+      "assertion": {
+        "code": "UZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "乌兹别克斯坦",
+      "key": "location:UZ"
+    },
+    {
+      "assertion": {
+        "code": "VA"
+      },
+      "candidateLabel": "教廷",
+      "decision": "corrected",
+      "finalLabel": "聖座",
+      "key": "location:VA"
+    },
+    {
+      "assertion": {
+        "code": "VC"
+      },
+      "decision": "accepted",
+      "finalLabel": "圣文森特和格林纳丁斯",
+      "key": "location:VC"
+    },
+    {
+      "assertion": {
+        "code": "VE"
+      },
+      "candidateLabel": "委内瑞拉玻利瓦尔共和国",
+      "decision": "corrected",
+      "finalLabel": "委内瑞拉",
+      "key": "location:VE"
+    },
+    {
+      "assertion": {
+        "code": "VG"
+      },
+      "candidateLabel": "维尔京群岛（英属）",
+      "decision": "corrected",
+      "finalLabel": "英属维尔京群岛",
+      "key": "location:VG"
+    },
+    {
+      "assertion": {
+        "code": "VI"
+      },
+      "candidateLabel": "维尔京群岛（美属）",
+      "decision": "corrected",
+      "finalLabel": "美属维尔京群岛",
+      "key": "location:VI"
+    },
+    {
+      "assertion": {
+        "code": "VN"
+      },
+      "decision": "accepted",
+      "finalLabel": "越南",
+      "key": "location:VN"
+    },
+    {
+      "assertion": {
+        "code": "VU"
+      },
+      "decision": "accepted",
+      "finalLabel": "瓦努阿图",
+      "key": "location:VU"
+    },
+    {
+      "assertion": {
+        "code": "WF"
+      },
+      "candidateLabel": "瓦利斯群岛和富图纳群岛",
+      "decision": "corrected",
+      "finalLabel": "瓦利斯和富图纳",
+      "key": "location:WF"
+    },
+    {
+      "assertion": {
+        "code": "WS"
+      },
+      "candidateLabel": "萨摩亚群岛",
+      "decision": "corrected",
+      "finalLabel": "萨摩亚",
+      "key": "location:WS"
+    },
+    {
+      "assertion": {
+        "code": "YE"
+      },
+      "decision": "accepted",
+      "finalLabel": "也门",
+      "key": "location:YE"
+    },
+    {
+      "assertion": {
+        "code": "YT"
+      },
+      "candidateLabel": "马约特岛",
+      "decision": "corrected",
+      "finalLabel": "马约特",
+      "key": "location:YT"
+    },
+    {
+      "assertion": {
+        "code": "ZA"
+      },
+      "decision": "accepted",
+      "finalLabel": "南非",
+      "key": "location:ZA"
+    },
+    {
+      "assertion": {
+        "code": "ZM"
+      },
+      "decision": "accepted",
+      "finalLabel": "赞比亚",
+      "key": "location:ZM"
+    },
+    {
+      "assertion": {
+        "code": "ZW"
+      },
+      "decision": "accepted",
+      "finalLabel": "津巴布韦",
+      "key": "location:ZW"
+    },
+    {
+      "assertion": {
+        "code": "CIS"
+      },
+      "decision": "accepted",
+      "finalLabel": "独立国家联合体",
+      "key": "location:CIS"
+    },
+    {
+      "assertion": {
+        "code": "CN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国",
+      "key": "location:CN"
+    },
+    {
+      "assertion": {
+        "code": "CN-BJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,北京市",
+      "key": "location:CN-BJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-TJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,天津市",
+      "key": "location:CN-TJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省",
+      "key": "location:CN-HE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SJW"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,石家庄市",
+      "key": "location:CN-HE-SJW"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-TGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,唐山市",
+      "key": "location:CN-HE-TGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SHP"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,秦皇岛市",
+      "key": "location:CN-HE-SHP"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,邯郸市",
+      "key": "location:CN-HE-HDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-XTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,邢台市",
+      "key": "location:CN-HE-XTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-BDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,保定市",
+      "key": "location:CN-HE-BDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-ZJK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,张家口市",
+      "key": "location:CN-HE-ZJK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,承德市",
+      "key": "location:CN-HE-CDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CGZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,沧州市",
+      "key": "location:CN-HE-CGZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-LFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,廊坊市",
+      "key": "location:CN-HE-LFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河北省,衡水市",
+      "key": "location:CN-HE-HGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省",
+      "key": "location:CN-SX"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-TYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,太原市",
+      "key": "location:CN-SX-TYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-DTG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,大同市",
+      "key": "location:CN-SX-DTG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YQS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,阳泉市",
+      "key": "location:CN-SX-YQS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-CZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,长治市",
+      "key": "location:CN-SX-CZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JCG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,晋城市",
+      "key": "location:CN-SX-JCG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-SZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,朔州市",
+      "key": "location:CN-SX-SZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JZN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,晋中市",
+      "key": "location:CN-SX-JZN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YCE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,运城市",
+      "key": "location:CN-SX-YCE"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-XZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,忻州市",
+      "key": "location:CN-SX-XZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LFN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,临汾市",
+      "key": "location:CN-SX-LFN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LLH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山西省,吕梁市",
+      "key": "location:CN-SX-LLH"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区",
+      "key": "location:CN-NM"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HET"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,呼和浩特市",
+      "key": "location:CN-NM-HET"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,包头市",
+      "key": "location:CN-NM-BTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-WHM"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,乌海市",
+      "key": "location:CN-NM-WHM"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-CFS"
+      },
+      "candidateLabel": "中国,内蒙古自治区,赤峰市",
+      "decision": "corrected",
+      "finalLabel": "中国,内蒙古自治区,赤峰（乌兰哈达）市",
+      "key": "location:CN-NM-CFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-TLO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,通辽市",
+      "key": "location:CN-NM-TLO"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ODS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,鄂尔多斯市",
+      "key": "location:CN-NM-ODS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HBR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,呼伦贝尔市",
+      "key": "location:CN-NM-HBR"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BYR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,巴彦淖尔市",
+      "key": "location:CN-NM-BYR"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ULS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,乌兰察布市",
+      "key": "location:CN-NM-ULS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HIN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,兴安盟",
+      "key": "location:CN-NM-HIN"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-XGO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,锡林郭勒盟",
+      "key": "location:CN-NM-XGO"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ALM"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,内蒙古自治区,阿拉善盟",
+      "key": "location:CN-NM-ALM"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省",
+      "key": "location:CN-LN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-SHE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,沈阳市",
+      "key": "location:CN-LN-SHE"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DLC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,大连市",
+      "key": "location:CN-LN-DLC"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-ASN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,鞍山市",
+      "key": "location:CN-LN-ASN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,抚顺市",
+      "key": "location:CN-LN-FSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-BXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,本溪市",
+      "key": "location:CN-LN-BXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,丹东市",
+      "key": "location:CN-LN-DDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-JNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,锦州市",
+      "key": "location:CN-LN-JNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-YIK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,营口市",
+      "key": "location:CN-LN-YIK"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,阜新市",
+      "key": "location:CN-LN-FXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-LYL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,辽阳市",
+      "key": "location:CN-LN-LYL"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-PJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,盘锦市",
+      "key": "location:CN-LN-PJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-TLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,铁岭市",
+      "key": "location:CN-LN-TLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-CYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,朝阳市",
+      "key": "location:CN-LN-CYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-HLD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,辽宁省,葫芦岛市",
+      "key": "location:CN-LN-HLD"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省",
+      "key": "location:CN-JL"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-CGQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,长春市",
+      "key": "location:CN-JL-CGQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-JLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,吉林市",
+      "key": "location:CN-JL-JLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,四平市",
+      "key": "location:CN-JL-SPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-LYH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,辽源市",
+      "key": "location:CN-JL-LYH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-THS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,通化市",
+      "key": "location:CN-JL-THS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,白山市",
+      "key": "location:CN-JL-BSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SYU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,松原市",
+      "key": "location:CN-JL-SYU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,白城市",
+      "key": "location:CN-JL-BCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-YBZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,吉林省,延边朝鲜族自治州",
+      "key": "location:CN-JL-YBZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省",
+      "key": "location:CN-HL"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HRB"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,哈尔滨市",
+      "key": "location:CN-HL-HRB"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-NDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,齐齐哈尔市",
+      "key": "location:CN-HL-NDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JXI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,鸡西市",
+      "key": "location:CN-HL-JXI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,鹤岗市",
+      "key": "location:CN-HL-HEG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,双鸭山市",
+      "key": "location:CN-HL-SYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,大庆市",
+      "key": "location:CN-HL-DQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-YCH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,伊春市",
+      "key": "location:CN-HL-YCH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JMU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,佳木斯市",
+      "key": "location:CN-HL-JMU"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-QTH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,七台河市",
+      "key": "location:CN-HL-QTH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-MDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,牡丹江市",
+      "key": "location:CN-HL-MDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,黑河市",
+      "key": "location:CN-HL-HEK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,绥化市",
+      "key": "location:CN-HL-SUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DHL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,黑龙江省,大兴安岭地区",
+      "key": "location:CN-HL-DHL"
+    },
+    {
+      "assertion": {
+        "code": "CN-SH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,上海市",
+      "key": "location:CN-SH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省",
+      "key": "location:CN-JS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NKG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,南京市",
+      "key": "location:CN-JS-NKG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-WUX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,无锡市",
+      "key": "location:CN-JS-WUX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-XUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,徐州市",
+      "key": "location:CN-JS-XUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-CZX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,常州市",
+      "key": "location:CN-JS-CZX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,苏州市",
+      "key": "location:CN-JS-SZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NTG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,南通市",
+      "key": "location:CN-JS-NTG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-LYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,连云港市",
+      "key": "location:CN-JS-LYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-HAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,淮安市",
+      "key": "location:CN-JS-HAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YCK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,盐城市",
+      "key": "location:CN-JS-YCK"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,扬州市",
+      "key": "location:CN-JS-YZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-ZHE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,镇江市",
+      "key": "location:CN-JS-ZHE"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-TZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,泰州市",
+      "key": "location:CN-JS-TZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SUQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江苏省,宿迁市",
+      "key": "location:CN-JS-SUQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省",
+      "key": "location:CN-ZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HGH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,杭州市",
+      "key": "location:CN-ZJ-HGH"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-NGB"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,宁波市",
+      "key": "location:CN-ZJ-NGB"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-WNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,温州市",
+      "key": "location:CN-ZJ-WNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JIX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,嘉兴市",
+      "key": "location:CN-ZJ-JIX"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,湖州市",
+      "key": "location:CN-ZJ-HZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-SXG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,绍兴市",
+      "key": "location:CN-ZJ-SXG"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JHA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,金华市",
+      "key": "location:CN-ZJ-JHA"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-QUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,衢州市",
+      "key": "location:CN-ZJ-QUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-ZOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,舟山市",
+      "key": "location:CN-ZJ-ZOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-TZZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,台州市",
+      "key": "location:CN-ZJ-TZZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-LSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,浙江省,丽水市",
+      "key": "location:CN-ZJ-LSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省",
+      "key": "location:CN-AH"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HFE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,合肥市",
+      "key": "location:CN-AH-HFE"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-WHI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,芜湖市",
+      "key": "location:CN-AH-WHI"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BBU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,蚌埠市",
+      "key": "location:CN-AH-BBU"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,淮南市",
+      "key": "location:CN-AH-HNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-MAA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,马鞍山市",
+      "key": "location:CN-AH-MAA"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HBE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,淮北市",
+      "key": "location:CN-AH-HBE"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-TOL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,铜陵市",
+      "key": "location:CN-AH-TOL"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-AQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,安庆市",
+      "key": "location:CN-AH-AQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,黄山市",
+      "key": "location:CN-AH-HSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,滁州市",
+      "key": "location:CN-AH-CUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-FYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,阜阳市",
+      "key": "location:CN-AH-FYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-SUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,宿州市",
+      "key": "location:CN-AH-SUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CAH"
+      },
+      "candidateLabel": "巢湖市",
+      "decision": "corrected",
+      "finalLabel": "中国,安徽省,巢湖市",
+      "key": "location:CN-AH-CAH"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-LAW"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,六安市",
+      "key": "location:CN-AH-LAW"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BOZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,亳州市",
+      "key": "location:CN-AH-BOZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CIZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,池州市",
+      "key": "location:CN-AH-CIZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-XCI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,安徽省,宣城市",
+      "key": "location:CN-AH-XCI"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省",
+      "key": "location:CN-FJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-FOC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,福州市",
+      "key": "location:CN-FJ-FOC"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-XMN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,厦门市",
+      "key": "location:CN-FJ-XMN"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-PUT"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,莆田市",
+      "key": "location:CN-FJ-PUT"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-SMS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,三明市",
+      "key": "location:CN-FJ-SMS"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-QZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,泉州市",
+      "key": "location:CN-FJ-QZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-ZZU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,漳州市",
+      "key": "location:CN-FJ-ZZU"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,南平市",
+      "key": "location:CN-FJ-NPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-LYF"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,龙岩市",
+      "key": "location:CN-FJ-LYF"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,福建省,宁德市",
+      "key": "location:CN-FJ-NDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省",
+      "key": "location:CN-JX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-KHN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,南昌市",
+      "key": "location:CN-JX-KHN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JDZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,景德镇市",
+      "key": "location:CN-JX-JDZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-PXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,萍乡市",
+      "key": "location:CN-JX-PXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JIU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,九江市",
+      "key": "location:CN-JX-JIU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-XYU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,新余市",
+      "key": "location:CN-JX-XYU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,鹰潭市",
+      "key": "location:CN-JX-YTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-GZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,赣州市",
+      "key": "location:CN-JX-GZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,吉安市",
+      "key": "location:CN-JX-JAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YCN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,宜春市",
+      "key": "location:CN-JX-YCN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-FUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,抚州市",
+      "key": "location:CN-JX-FUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-SRS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,江西省,上饶市",
+      "key": "location:CN-JX-SRS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省",
+      "key": "location:CN-SD"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,济南市",
+      "key": "location:CN-SD-TNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,青岛市",
+      "key": "location:CN-SD-TAO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZBO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,淄博市",
+      "key": "location:CN-SD-ZBO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZZG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,枣庄市",
+      "key": "location:CN-SD-ZZG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,东营市",
+      "key": "location:CN-SD-DYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-YNT"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,烟台市",
+      "key": "location:CN-SD-YNT"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEF"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,潍坊市",
+      "key": "location:CN-SD-WEF"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-JNG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,济宁市",
+      "key": "location:CN-SD-JNG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,泰安市",
+      "key": "location:CN-SD-TAI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,威海市",
+      "key": "location:CN-SD-WEH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-RZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,日照市",
+      "key": "location:CN-SD-RZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LWS"
+      },
+      "candidateLabel": "莱芜市",
+      "decision": "corrected",
+      "finalLabel": "中国,山东省,莱芜市",
+      "key": "location:CN-SD-LWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LYI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,临沂市",
+      "key": "location:CN-SD-LYI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,德州市",
+      "key": "location:CN-SD-DZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LCH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,聊城市",
+      "key": "location:CN-SD-LCH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-BZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,滨州市",
+      "key": "location:CN-SD-BZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-HZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,山东省,菏泽市",
+      "key": "location:CN-SD-HZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省",
+      "key": "location:CN-HA"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-CGO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,郑州市",
+      "key": "location:CN-HA-CGO"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-KFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,开封市",
+      "key": "location:CN-HA-KFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LYA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,洛阳市",
+      "key": "location:CN-HA-LYA"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,平顶山市",
+      "key": "location:CN-HA-PDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-AYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,安阳市",
+      "key": "location:CN-HA-AYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-HBS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,鹤壁市",
+      "key": "location:CN-HA-HBS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,新乡市",
+      "key": "location:CN-HA-XXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-JZY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,焦作市",
+      "key": "location:CN-HA-JZY"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,濮阳市",
+      "key": "location:CN-HA-PYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,许昌市",
+      "key": "location:CN-HA-XCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LHS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,漯河市",
+      "key": "location:CN-HA-LHS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SMX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,三门峡市",
+      "key": "location:CN-HA-SMX"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-NYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,南阳市",
+      "key": "location:CN-HA-NYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SQS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,商丘市",
+      "key": "location:CN-HA-SQS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,信阳市",
+      "key": "location:CN-HA-XYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZKS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,周口市",
+      "key": "location:CN-HA-ZKS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZMD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,河南省,驻马店市",
+      "key": "location:CN-HA-ZMD"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省",
+      "key": "location:CN-HB"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-WUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,武汉市",
+      "key": "location:CN-HB-WUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HSI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,黄石市",
+      "key": "location:CN-HB-HSI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SYE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,十堰市",
+      "key": "location:CN-HB-SYE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-YCO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,宜昌市",
+      "key": "location:CN-HB-YCO"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XFN"
+      },
+      "candidateLabel": "中国,湖北省,襄阳市",
+      "decision": "corrected",
+      "finalLabel": "中国,湖北省,襄樊市",
+      "key": "location:CN-HB-XFN"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-EZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,鄂州市",
+      "key": "location:CN-HB-EZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JMS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,荆门市",
+      "key": "location:CN-HB-JMS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XGE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,孝感市",
+      "key": "location:CN-HB-XGE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JGZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,荆州市",
+      "key": "location:CN-HB-JGZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HGE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,黄冈市",
+      "key": "location:CN-HB-HGE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,咸宁市",
+      "key": "location:CN-HB-XNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SZR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,随州市",
+      "key": "location:CN-HB-SZR"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-ESH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖北省,恩施土家族苗族自治州",
+      "key": "location:CN-HB-ESH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省",
+      "key": "location:CN-HN"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CSX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,长沙市",
+      "key": "location:CN-HN-CSX"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,株洲市",
+      "key": "location:CN-HN-ZZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XGT"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,湘潭市",
+      "key": "location:CN-HN-XGT"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HNY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,衡阳市",
+      "key": "location:CN-HN-HNY"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-SYR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,邵阳市",
+      "key": "location:CN-HN-SYR"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,岳阳市",
+      "key": "location:CN-HN-YYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CDE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,常德市",
+      "key": "location:CN-HN-CDE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZJJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,张家界市",
+      "key": "location:CN-HN-ZJJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,益阳市",
+      "key": "location:CN-HN-YYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,郴州市",
+      "key": "location:CN-HN-CNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,永州市",
+      "key": "location:CN-HN-YZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HHS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,怀化市",
+      "key": "location:CN-HN-HHS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-LDI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,娄底市",
+      "key": "location:CN-HN-LDI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,湖南省,湘西土家族苗族自治州",
+      "key": "location:CN-HN-XXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省",
+      "key": "location:CN-GD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CAN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,广州市",
+      "key": "location:CN-GD-CAN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HSC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,韶关市",
+      "key": "location:CN-GD-HSC"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SZX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,深圳市",
+      "key": "location:CN-GD-SZX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,珠海市",
+      "key": "location:CN-GD-ZUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,汕头市",
+      "key": "location:CN-GD-SWA"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-FOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,佛山市",
+      "key": "location:CN-GD-FOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JMN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,江门市",
+      "key": "location:CN-GD-JMN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZHA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,湛江市",
+      "key": "location:CN-GD-ZHA"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MMI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,茂名市",
+      "key": "location:CN-GD-MMI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,肇庆市",
+      "key": "location:CN-GD-ZQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HUI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,惠州市",
+      "key": "location:CN-GD-HUI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,梅州市",
+      "key": "location:CN-GD-MXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,汕尾市",
+      "key": "location:CN-GD-SWE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HEY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,河源市",
+      "key": "location:CN-GD-HEY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YJI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,阳江市",
+      "key": "location:CN-GD-YJI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-QYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,清远市",
+      "key": "location:CN-GD-QYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-DGG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,东莞市",
+      "key": "location:CN-GD-DGG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,中山市",
+      "key": "location:CN-GD-ZSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CZY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,潮州市",
+      "key": "location:CN-GD-CZY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JIY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,揭阳市",
+      "key": "location:CN-GD-JIY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广东省,云浮市",
+      "key": "location:CN-GD-YFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区",
+      "key": "location:CN-GX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-NNG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,南宁市",
+      "key": "location:CN-GX-NNG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,柳州市",
+      "key": "location:CN-GX-LZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-KWL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,桂林市",
+      "key": "location:CN-GX-KWL"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-WUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,梧州市",
+      "key": "location:CN-GX-WUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BHY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,北海市",
+      "key": "location:CN-GX-BHY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-FAN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,防城港市",
+      "key": "location:CN-GX-FAN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-QZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,钦州市",
+      "key": "location:CN-GX-QZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-GUG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,贵港市",
+      "key": "location:CN-GX-GUG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-YUL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,玉林市",
+      "key": "location:CN-GX-YUL"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,百色市",
+      "key": "location:CN-GX-BSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HZO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,贺州市",
+      "key": "location:CN-GX-HZO"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,河池市",
+      "key": "location:CN-GX-HCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LIB"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,来宾市",
+      "key": "location:CN-GX-LIB"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-COZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,广西壮族自治区,崇左市",
+      "key": "location:CN-GX-COZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,海南省",
+      "key": "location:CN-HI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-HAK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,海南省,海口市",
+      "key": "location:CN-HI-HAK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-SYX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,海南省,三亚市",
+      "key": "location:CN-HI-SYX"
+    },
+    {
+      "assertion": {
+        "code": "CN-CQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,重庆市",
+      "key": "location:CN-CQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省",
+      "key": "location:CN-SC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-CTU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,成都市",
+      "key": "location:CN-SC-CTU"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,自贡市",
+      "key": "location:CN-SC-ZGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-PZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,攀枝花市",
+      "key": "location:CN-SC-PZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,泸州市",
+      "key": "location:CN-SC-LUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DEY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,德阳市",
+      "key": "location:CN-SC-DEY"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,绵阳市",
+      "key": "location:CN-SC-MYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GYC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,广元市",
+      "key": "location:CN-SC-GYC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-SNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,遂宁市",
+      "key": "location:CN-SC-SNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,内江市",
+      "key": "location:CN-SC-NJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LES"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,乐山市",
+      "key": "location:CN-SC-LES"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NCO"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,南充市",
+      "key": "location:CN-SC-NCO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,眉山市",
+      "key": "location:CN-SC-MSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YBS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,宜宾市",
+      "key": "location:CN-SC-YBS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,广安市",
+      "key": "location:CN-SC-GAC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DAZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,达州市",
+      "key": "location:CN-SC-DAZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,雅安市",
+      "key": "location:CN-SC-YAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-BZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,巴中市",
+      "key": "location:CN-SC-BZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,资阳市",
+      "key": "location:CN-SC-ZYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ABA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,阿坝藏族羌族自治州",
+      "key": "location:CN-SC-ABA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,甘孜藏族自治州",
+      "key": "location:CN-SC-GAZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LSY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,四川省,凉山彝族自治州",
+      "key": "location:CN-SC-LSY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省",
+      "key": "location:CN-GZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-KWE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,贵阳市",
+      "key": "location:CN-GZ-KWE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-LPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,六盘水市",
+      "key": "location:CN-GZ-LPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ZNY"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,遵义市",
+      "key": "location:CN-GZ-ZNY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ASS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,安顺市",
+      "key": "location:CN-GZ-ASS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-TRD"
+      },
+      "candidateLabel": "中国,贵州省,铜仁市",
+      "decision": "corrected",
+      "finalLabel": "中国,贵州省,铜仁地区",
+      "key": "location:CN-GZ-TRD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,黔西南布依族苗族自治州",
+      "key": "location:CN-GZ-QXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-BJD"
+      },
+      "candidateLabel": "中国,贵州省,毕节市",
+      "decision": "corrected",
+      "finalLabel": "中国,贵州省,毕节地区",
+      "key": "location:CN-GZ-BJD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QND"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,黔东南苗族侗族自治州",
+      "key": "location:CN-GZ-QND"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,贵州省,黔南布依族苗族自治州",
+      "key": "location:CN-GZ-QNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省",
+      "key": "location:CN-YN"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-KMG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,昆明市",
+      "key": "location:CN-YN-KMG"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-QJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,曲靖市",
+      "key": "location:CN-YN-QJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-YXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,玉溪市",
+      "key": "location:CN-YN-YXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-BOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,保山市",
+      "key": "location:CN-YN-BOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-ZTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,昭通市",
+      "key": "location:CN-YN-ZTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LJH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,丽江市",
+      "key": "location:CN-YN-LJH"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-PRS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,普洱市",
+      "key": "location:CN-YN-PRS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LIH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,临沧市",
+      "key": "location:CN-YN-LIH"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-CXD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,楚雄彝族自治州",
+      "key": "location:CN-YN-CXD"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-HHZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,红河哈尼族彝族自治州",
+      "key": "location:CN-YN-HHZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-WSZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,文山壮族苗族自治州",
+      "key": "location:CN-YN-WSZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-XSB"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,西双版纳傣族自治州",
+      "key": "location:CN-YN-XSB"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DLZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,大理白族自治州",
+      "key": "location:CN-YN-DLZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DHG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,德宏傣族景颇族自治州",
+      "key": "location:CN-YN-DHG"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-NUJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,怒江傈僳族自治州",
+      "key": "location:CN-YN-NUJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DEZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,云南省,迪庆藏族自治州",
+      "key": "location:CN-YN-DEZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,西藏自治区",
+      "key": "location:CN-XZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-LXA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,西藏自治区,拉萨市",
+      "key": "location:CN-XZ-LXA"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-QAD"
+      },
+      "candidateLabel": "中国,西藏自治区,昌都市",
+      "decision": "corrected",
+      "finalLabel": "中国,西藏自治区,昌都地区",
+      "key": "location:CN-XZ-QAD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-SND"
+      },
+      "candidateLabel": "中国,西藏自治区,山南市",
+      "decision": "corrected",
+      "finalLabel": "中国,西藏自治区,山南地区",
+      "key": "location:CN-XZ-SND"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-XID"
+      },
+      "candidateLabel": "中国,西藏自治区,日喀则市",
+      "decision": "corrected",
+      "finalLabel": "中国,西藏自治区,日喀则地区",
+      "key": "location:CN-XZ-XID"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NAD"
+      },
+      "candidateLabel": "中国,西藏自治区,那曲市",
+      "decision": "corrected",
+      "finalLabel": "中国,西藏自治区,那曲地区",
+      "key": "location:CN-XZ-NAD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NGD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,西藏自治区,阿里地区",
+      "key": "location:CN-XZ-NGD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NYD"
+      },
+      "candidateLabel": "中国,西藏自治区,林芝市",
+      "decision": "corrected",
+      "finalLabel": "中国,西藏自治区,林芝地区",
+      "key": "location:CN-XZ-NYD"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省",
+      "key": "location:CN-SN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SIA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,西安市",
+      "key": "location:CN-SN-SIA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-TCN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,铜川市",
+      "key": "location:CN-SN-TCN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-BJI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,宝鸡市",
+      "key": "location:CN-SN-BJI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-XYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,咸阳市",
+      "key": "location:CN-SN-XYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-WNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,渭南市",
+      "key": "location:CN-SN-WNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,延安市",
+      "key": "location:CN-SN-YNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-HZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,汉中市",
+      "key": "location:CN-SN-HZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YLN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,榆林市",
+      "key": "location:CN-SN-YLN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-ANK"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,安康市",
+      "key": "location:CN-SN-ANK"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SLH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,陕西省,商洛市",
+      "key": "location:CN-SN-SLH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省",
+      "key": "location:CN-GS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LHW"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,兰州市",
+      "key": "location:CN-GS-LHW"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,嘉峪关市",
+      "key": "location:CN-GS-JYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,金昌市",
+      "key": "location:CN-GS-JCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-BYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,白银市",
+      "key": "location:CN-GS-BYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-TSU"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,天水市",
+      "key": "location:CN-GS-TSU"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-WWS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,武威市",
+      "key": "location:CN-GS-WWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-ZYE"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,张掖市",
+      "key": "location:CN-GS-ZYE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-PLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,平凉市",
+      "key": "location:CN-GS-PLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,酒泉市",
+      "key": "location:CN-GS-JQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-QYI"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,庆阳市",
+      "key": "location:CN-GS-QYI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-DNX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,定西市",
+      "key": "location:CN-GS-DNX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LGN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,陇南市",
+      "key": "location:CN-GS-LGN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LXH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,临夏回族自治州",
+      "key": "location:CN-GS-LXH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-GNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,甘肃省,甘南藏族自治州",
+      "key": "location:CN-GS-GNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省",
+      "key": "location:CN-QH"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-XNN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,西宁市",
+      "key": "location:CN-QH-XNN"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HDD"
+      },
+      "candidateLabel": "中国,青海省,海东市",
+      "decision": "corrected",
+      "finalLabel": "中国,青海省,海东地区",
+      "key": "location:CN-QH-HDD"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HBZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,海北藏族自治州",
+      "key": "location:CN-QH-HBZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HN7"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,黄南藏族自治州",
+      "key": "location:CN-QH-HN7"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HNN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,海南藏族自治州",
+      "key": "location:CN-QH-HNN"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-GOL"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,果洛藏族自治州",
+      "key": "location:CN-QH-GOL"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-YSZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,玉树藏族自治州",
+      "key": "location:CN-QH-YSZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,青海省,海西蒙古族藏族自治州",
+      "key": "location:CN-QH-HXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区",
+      "key": "location:CN-NX"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-INC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区,银川市",
+      "key": "location:CN-NX-INC"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-SZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区,石嘴山市",
+      "key": "location:CN-NX-SZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-WZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区,吴忠市",
+      "key": "location:CN-NX-WZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-GYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区,固原市",
+      "key": "location:CN-NX-GYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-ZWS"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,宁夏回族自治区,中卫市",
+      "key": "location:CN-NX-ZWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区",
+      "key": "location:CN-XJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-URC"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,乌鲁木齐市",
+      "key": "location:CN-XJ-URC"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KAR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,克拉玛依市",
+      "key": "location:CN-XJ-KAR"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TUD"
+      },
+      "candidateLabel": "中国,新疆维吾尔自治区,吐鲁番市",
+      "decision": "corrected",
+      "finalLabel": "中国,新疆维吾尔自治区,吐鲁番地区",
+      "key": "location:CN-XJ-TUD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HMD"
+      },
+      "candidateLabel": "中国,新疆维吾尔自治区,哈密市",
+      "decision": "corrected",
+      "finalLabel": "中国,新疆维吾尔自治区,哈密（库木勒）地区",
+      "key": "location:CN-XJ-HMD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-CJZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,昌吉回族自治州",
+      "key": "location:CN-XJ-CJZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BOR"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,博尔塔拉蒙古自治州",
+      "key": "location:CN-XJ-BOR"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BAG"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,巴音郭楞蒙古自治州",
+      "key": "location:CN-XJ-BAG"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-AKD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,阿克苏地区",
+      "key": "location:CN-XJ-AKD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KIZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,克孜勒苏柯尔克孜自治州",
+      "key": "location:CN-XJ-KIZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KSI"
+      },
+      "candidateLabel": "中国,新疆维吾尔自治区,喀什地区",
+      "decision": "corrected",
+      "finalLabel": "中国,新疆维吾尔自治区,喀什（喀什噶尔）地区",
+      "key": "location:CN-XJ-KSI"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HOD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,和田地区",
+      "key": "location:CN-XJ-HOD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ILD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,伊犁哈萨克自治州",
+      "key": "location:CN-XJ-ILD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TCD"
+      },
+      "candidateLabel": "中国,新疆维吾尔自治区,塔城地区",
+      "decision": "corrected",
+      "finalLabel": "中国,新疆维吾尔自治区,塔城（绰乔克）地区",
+      "key": "location:CN-XJ-TCD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ALD"
+      },
+      "decision": "accepted",
+      "finalLabel": "中国,新疆维吾尔自治区,阿勒泰地区",
+      "key": "location:CN-XJ-ALD"
+    },
+    {
+      "assertion": {
+        "code": "TW"
+      },
+      "candidateLabel": "中国,台湾省",
+      "decision": "corrected",
+      "finalLabel": "台湾",
+      "key": "location:TW"
+    },
+    {
+      "assertion": {
+        "code": "HK"
+      },
+      "candidateLabel": "中国,香港特别行政区",
+      "decision": "corrected",
+      "finalLabel": "香港",
+      "key": "location:HK"
+    },
+    {
+      "assertion": {
+        "code": "MO"
+      },
+      "candidateLabel": "中国,澳门特别行政区",
+      "decision": "corrected",
+      "finalLabel": "澳门",
+      "key": "location:MO"
+    }
+  ],
+  "resourceId": "ilcd-locations",
+  "reviewKind": "project-translation",
+  "reviewRun": {
+    "correctionsDigest": {
+      "algorithm": "sha256",
+      "value": "6696227d232c14c6ca2fb2fb21178b0871811fad133cc53470795cf66f9e0f70",
+      "scope": "ordered-independent-review-corrections",
+      "identityCount": 75
+    },
+    "finalDigest": {
+      "algorithm": "sha256",
+      "value": "a236b80541c6d4a4b88034afaea64b8ed636ea3436f49ac4d9586b280cc0c1f8",
+      "scope": "ordered-project-reviewed-final-labels",
+      "identityCount": 647
+    },
+    "findingsDigest": {
+      "algorithm": "sha256",
+      "value": "430a6eb2f0d88b9c0f2199970ad36cb5d487e0b4ae6f7a4311af2b75e9b0d6d5",
+      "scope": "ordered-independent-review-findings",
+      "identityCount": 647
+    },
+    "inputCandidateDigest": {
+      "algorithm": "sha256",
+      "value": "4fcf292b21500ff22c9a3b8ac922583568afdb7e99f683f913405d323bf8a5af",
+      "scope": "ordered-translation-candidate-labels",
+      "identityCount": 647
+    },
+    "model": "gpt-5.6-sol",
+    "runId": "reference-review/ilcd-locations/zh/0a3a99ff727e34dadac56daba55d7d4ac7fd2d0c161e87c2d97e530d26ed88c2"
+  },
+  "schemaVersion": 2,
+  "translationRun": {
+    "model": "legacy-project-asset",
+    "outputCandidateDigest": {
+      "algorithm": "sha256",
+      "identityCount": 647,
+      "scope": "ordered-translation-candidate-labels",
+      "value": "4fcf292b21500ff22c9a3b8ac922583568afdb7e99f683f913405d323bf8a5af"
+    },
+    "runId": "reference-translation/ilcd-locations/zh/f49bea4a5f79934863762ae57c44eabfd43cdf847ea2c6b01bfef529a69262ab"
+  }
+}

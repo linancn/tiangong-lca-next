@@ -1,0 +1,410 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-flow-categorization",
+  "locale": "de",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Prozess",
+    "Flow": "Fluss",
+    "FlowProperty": "Flusseigenschaft",
+    "UnitGroup": "Einheitengruppe",
+    "Contact": "Kontakt",
+    "Source": "Quelle",
+    "LCIAMethod": "LCIA-Methode",
+    "LifeCycleModel": "Lebenszyklusmodell"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Emissionen"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "Emissionen in Wasser"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1.1"
+      },
+      "label": "Emissionen in Süßwasser"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.1.2"
+      },
+      "label": "Emissionen in Meerwasser"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.1.3"
+      },
+      "label": "Emissionen in Wasser, nicht spezifiziert"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.1.4"
+      },
+      "label": "Emissionen in Wasser, nicht spezifiziert (langfristig)"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "Emissionen in den Boden"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "label": "Emissionen in landwirtschaftlich genutzte Böden"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "label": "Emissionen in nicht landwirtschaftlich genutzte Böden"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "label": "Emissionen in den Boden, nicht spezifiziert"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "label": "Emissionen in den Boden, nicht spezifiziert (langfristig)"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "Emissionen in die Luft"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "label": "Emissionen in bodennahe städtische Luft"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "label": "Emissionen in nichtstädtische Luft oder aus hohen Schornsteinen"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "label": "Emissionen in die untere Stratosphäre und die obere Troposphäre"
+    },
+    {
+      "key": "category[0]/category[2]/category[3]",
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "label": "Emissionen in die Luft, nicht spezifiziert"
+    },
+    {
+      "key": "category[0]/category[2]/category[4]",
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "label": "Emissionen in die Luft, nicht spezifiziert (langfristig)"
+    },
+    {
+      "key": "category[0]/category[2]/category[5]",
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "label": "Emissionen in die Innenraumluft"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Ressourcen"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "Ressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "2.1.1"
+      },
+      "label": "Nicht erneuerbare materielle Ressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "2.1.2"
+      },
+      "label": "Nicht erneuerbare Elementressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "2.1.3"
+      },
+      "label": "Nicht erneuerbare Energieressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "2.1.4"
+      },
+      "label": "Erneuerbare Elementressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "2.1.5"
+      },
+      "label": "Erneuerbare Energieressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[5]",
+      "assertion": {
+        "id": "2.1.6"
+      },
+      "label": "Erneuerbare materielle Ressourcen aus dem Boden"
+    },
+    {
+      "key": "category[1]/category[0]/category[6]",
+      "assertion": {
+        "id": "2.1.7"
+      },
+      "label": "Erneuerbare Ressourcen aus dem Boden, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[0]/category[7]",
+      "assertion": {
+        "id": "2.1.8"
+      },
+      "label": "Nicht erneuerbare Ressourcen aus dem Boden, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "Ressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.2.1"
+      },
+      "label": "Nicht erneuerbare materielle Ressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2.2"
+      },
+      "label": "Nicht erneuerbare Elementressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.2.3"
+      },
+      "label": "Nicht erneuerbare Energieressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.2.4"
+      },
+      "label": "Erneuerbare Elementressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.2.5"
+      },
+      "label": "Erneuerbare Energieressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.2.6"
+      },
+      "label": "Erneuerbare materielle Ressourcen aus Wasser"
+    },
+    {
+      "key": "category[1]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.2.7"
+      },
+      "label": "Erneuerbare Ressourcen aus Wasser, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.2.8"
+      },
+      "label": "Nicht erneuerbare Ressourcen aus Wasser, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "Ressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "2.3.1"
+      },
+      "label": "Nicht erneuerbare materielle Ressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "2.3.2"
+      },
+      "label": "Nicht erneuerbare Elementressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[2]",
+      "assertion": {
+        "id": "2.3.3"
+      },
+      "label": "Nicht erneuerbare Energieressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[3]",
+      "assertion": {
+        "id": "2.3.4"
+      },
+      "label": "Erneuerbare Elementressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[4]",
+      "assertion": {
+        "id": "2.3.5"
+      },
+      "label": "Erneuerbare Energieressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[5]",
+      "assertion": {
+        "id": "2.3.6"
+      },
+      "label": "Erneuerbare materielle Ressourcen aus Luft"
+    },
+    {
+      "key": "category[1]/category[2]/category[6]",
+      "assertion": {
+        "id": "2.3.7"
+      },
+      "label": "Erneuerbare Ressourcen aus Luft, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[2]/category[7]",
+      "assertion": {
+        "id": "2.3.8"
+      },
+      "label": "Nicht erneuerbare Ressourcen aus Luft, nicht spezifiziert"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "Ressourcen aus der Biosphäre"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "2.4.1"
+      },
+      "label": "Erneuerbare Elementressourcen aus der Biosphäre"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "2.4.2"
+      },
+      "label": "Erneuerbare Energieressourcen aus der Biosphäre"
+    },
+    {
+      "key": "category[1]/category[3]/category[2]",
+      "assertion": {
+        "id": "2.4.3"
+      },
+      "label": "Erneuerbare materielle Ressourcen aus der Biosphäre"
+    },
+    {
+      "key": "category[1]/category[3]/category[3]",
+      "assertion": {
+        "id": "2.4.4"
+      },
+      "label": "Erneuerbare genetische Ressourcen aus der Biosphäre"
+    },
+    {
+      "key": "category[1]/category[3]/category[4]",
+      "assertion": {
+        "id": "2.4.5"
+      },
+      "label": "Erneuerbare Ressourcen aus der Biosphäre, nicht spezifiziert"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Landnutzung"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "3.1"
+      },
+      "label": "Flächenbelegung"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "3.2"
+      },
+      "label": "Flächenumwandlung"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Sonstige Elementarflüsse"
+    }
+  ]
+}

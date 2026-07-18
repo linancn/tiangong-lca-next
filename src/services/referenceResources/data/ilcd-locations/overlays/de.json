@@ -1,0 +1,4547 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-locations",
+  "locale": "de",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Prozess",
+    "Flow": "Fluss",
+    "FlowProperty": "Flusseigenschaft",
+    "UnitGroup": "Einheitengruppe",
+    "Contact": "Kontakt",
+    "Source": "Quelle",
+    "LCIAMethod": "LCIA-Methode",
+    "LifeCycleModel": "Lebenszyklusmodell"
+  },
+  "labels": [
+    {
+      "key": "location:NULL",
+      "assertion": {
+        "code": "NULL"
+      },
+      "label": "Keine"
+    },
+    {
+      "key": "location:GLO",
+      "assertion": {
+        "code": "GLO"
+      },
+      "label": "Global"
+    },
+    {
+      "key": "location:RAF",
+      "assertion": {
+        "code": "RAF"
+      },
+      "label": "Afrika"
+    },
+    {
+      "key": "location:RAM",
+      "assertion": {
+        "code": "RAM"
+      },
+      "label": "Amerika"
+    },
+    {
+      "key": "location:RAS",
+      "assertion": {
+        "code": "RAS"
+      },
+      "label": "Asien und Pazifik"
+    },
+    {
+      "key": "location:RER",
+      "assertion": {
+        "code": "RER"
+      },
+      "label": "Europa"
+    },
+    {
+      "key": "location:OCE",
+      "assertion": {
+        "code": "OCE"
+      },
+      "label": "Ozeanien"
+    },
+    {
+      "key": "location:MEA",
+      "assertion": {
+        "code": "MEA"
+      },
+      "label": "Naher Osten und Nordafrika"
+    },
+    {
+      "key": "location:AFR",
+      "assertion": {
+        "code": "AFR"
+      },
+      "label": "Subsahara-Afrika"
+    },
+    {
+      "key": "location:RLA",
+      "assertion": {
+        "code": "RLA"
+      },
+      "label": "Lateinamerika und Karibik"
+    },
+    {
+      "key": "location:RNA",
+      "assertion": {
+        "code": "RNA"
+      },
+      "label": "Nördliches Amerika"
+    },
+    {
+      "key": "location:CPA",
+      "assertion": {
+        "code": "CPA"
+      },
+      "label": "Zentral geplantes Asien und China"
+    },
+    {
+      "key": "location:EAS",
+      "assertion": {
+        "code": "EAS"
+      },
+      "label": "Ostasien"
+    },
+    {
+      "key": "location:PAS",
+      "assertion": {
+        "code": "PAS"
+      },
+      "label": "Übriges pazifisches Asien"
+    },
+    {
+      "key": "location:SAS",
+      "assertion": {
+        "code": "SAS"
+      },
+      "label": "Südasien"
+    },
+    {
+      "key": "location:EEU",
+      "assertion": {
+        "code": "EEU"
+      },
+      "label": "Mittel- und Osteuropa"
+    },
+    {
+      "key": "location:WEU",
+      "assertion": {
+        "code": "WEU"
+      },
+      "label": "Westeuropa"
+    },
+    {
+      "key": "location:RNE",
+      "assertion": {
+        "code": "RNE"
+      },
+      "label": "Nahost"
+    },
+    {
+      "key": "location:RME",
+      "assertion": {
+        "code": "RME"
+      },
+      "label": "Mittlerer Osten"
+    },
+    {
+      "key": "location:EU-15",
+      "assertion": {
+        "code": "EU-15"
+      },
+      "label": "EU 15"
+    },
+    {
+      "key": "location:EU-NMC",
+      "assertion": {
+        "code": "EU-NMC"
+      },
+      "label": "Neue EU-Mitgliedstaaten 2004"
+    },
+    {
+      "key": "location:EU-25",
+      "assertion": {
+        "code": "EU-25"
+      },
+      "label": "EU 25"
+    },
+    {
+      "key": "location:EC-CC",
+      "assertion": {
+        "code": "EC-CC"
+      },
+      "label": "EU-Beitrittskandidaten 2005"
+    },
+    {
+      "key": "location:EU-25&CC",
+      "assertion": {
+        "code": "EU-25&CC"
+      },
+      "label": "EU 25 plus Beitrittskandidaten 2005"
+    },
+    {
+      "key": "location:EU-AC",
+      "assertion": {
+        "code": "EU-AC"
+      },
+      "label": "Assoziierte EU-Länder 2005"
+    },
+    {
+      "key": "location:EU-25&CC&AC",
+      "assertion": {
+        "code": "EU-25&CC&AC"
+      },
+      "label": "EU 25 plus Beitrittskandidaten und assoziierte Länder 2005"
+    },
+    {
+      "key": "location:EU-27",
+      "assertion": {
+        "code": "EU-27"
+      },
+      "label": "EU 27"
+    },
+    {
+      "key": "location:PAO",
+      "assertion": {
+        "code": "PAO"
+      },
+      "label": "Pazifische OECD (Japan, Australien, Neuseeland)"
+    },
+    {
+      "key": "location:FSU",
+      "assertion": {
+        "code": "FSU"
+      },
+      "label": "Unabhängige Staaten der ehemaligen Sowjetunion"
+    },
+    {
+      "key": "location:UCTE",
+      "assertion": {
+        "code": "UCTE"
+      },
+      "label": "Union für die Koordinierung des Elektrizitätsübertragungsnetzbetriebs"
+    },
+    {
+      "key": "location:CENTREL",
+      "assertion": {
+        "code": "CENTREL"
+      },
+      "label": "Mitteleuropäischer Stromverband"
+    },
+    {
+      "key": "location:NORDEL",
+      "assertion": {
+        "code": "NORDEL"
+      },
+      "label": "Stromverband der nordischen Länder"
+    },
+    {
+      "key": "location:EU+EFTA+UK",
+      "assertion": {
+        "code": "EU+EFTA+UK"
+      },
+      "label": "Gesamte EU"
+    },
+    {
+      "key": "location:AD",
+      "assertion": {
+        "code": "AD"
+      },
+      "label": "Andorra"
+    },
+    {
+      "key": "location:AE",
+      "assertion": {
+        "code": "AE"
+      },
+      "label": "Vereinigte Arabische Emirate"
+    },
+    {
+      "key": "location:AF",
+      "assertion": {
+        "code": "AF"
+      },
+      "label": "Afghanistan"
+    },
+    {
+      "key": "location:AG",
+      "assertion": {
+        "code": "AG"
+      },
+      "label": "Antigua und Barbuda"
+    },
+    {
+      "key": "location:AI",
+      "assertion": {
+        "code": "AI"
+      },
+      "label": "Anguilla"
+    },
+    {
+      "key": "location:AL",
+      "assertion": {
+        "code": "AL"
+      },
+      "label": "Albanien"
+    },
+    {
+      "key": "location:AM",
+      "assertion": {
+        "code": "AM"
+      },
+      "label": "Armenien"
+    },
+    {
+      "key": "location:AO",
+      "assertion": {
+        "code": "AO"
+      },
+      "label": "Angola"
+    },
+    {
+      "key": "location:AQ",
+      "assertion": {
+        "code": "AQ"
+      },
+      "label": "Antarktis"
+    },
+    {
+      "key": "location:AR",
+      "assertion": {
+        "code": "AR"
+      },
+      "label": "Argentinien"
+    },
+    {
+      "key": "location:AS",
+      "assertion": {
+        "code": "AS"
+      },
+      "label": "Amerikanisch-Samoa"
+    },
+    {
+      "key": "location:AT",
+      "assertion": {
+        "code": "AT"
+      },
+      "label": "Österreich"
+    },
+    {
+      "key": "location:AU",
+      "assertion": {
+        "code": "AU"
+      },
+      "label": "Australien"
+    },
+    {
+      "key": "location:AW",
+      "assertion": {
+        "code": "AW"
+      },
+      "label": "Aruba"
+    },
+    {
+      "key": "location:AX",
+      "assertion": {
+        "code": "AX"
+      },
+      "label": "Ålandinseln"
+    },
+    {
+      "key": "location:AZ",
+      "assertion": {
+        "code": "AZ"
+      },
+      "label": "Aserbaidschan"
+    },
+    {
+      "key": "location:BA",
+      "assertion": {
+        "code": "BA"
+      },
+      "label": "Bosnien und Herzegowina"
+    },
+    {
+      "key": "location:BB",
+      "assertion": {
+        "code": "BB"
+      },
+      "label": "Barbados"
+    },
+    {
+      "key": "location:BD",
+      "assertion": {
+        "code": "BD"
+      },
+      "label": "Bangladesch"
+    },
+    {
+      "key": "location:BE",
+      "assertion": {
+        "code": "BE"
+      },
+      "label": "Belgien"
+    },
+    {
+      "key": "location:BF",
+      "assertion": {
+        "code": "BF"
+      },
+      "label": "Burkina Faso"
+    },
+    {
+      "key": "location:BG",
+      "assertion": {
+        "code": "BG"
+      },
+      "label": "Bulgarien"
+    },
+    {
+      "key": "location:BH",
+      "assertion": {
+        "code": "BH"
+      },
+      "label": "Bahrain"
+    },
+    {
+      "key": "location:BI",
+      "assertion": {
+        "code": "BI"
+      },
+      "label": "Burundi"
+    },
+    {
+      "key": "location:BJ",
+      "assertion": {
+        "code": "BJ"
+      },
+      "label": "Benin"
+    },
+    {
+      "key": "location:BL",
+      "assertion": {
+        "code": "BL"
+      },
+      "label": "St. Barthélemy"
+    },
+    {
+      "key": "location:BM",
+      "assertion": {
+        "code": "BM"
+      },
+      "label": "Bermuda"
+    },
+    {
+      "key": "location:BN",
+      "assertion": {
+        "code": "BN"
+      },
+      "label": "Brunei"
+    },
+    {
+      "key": "location:BO",
+      "assertion": {
+        "code": "BO"
+      },
+      "label": "Bolivien"
+    },
+    {
+      "key": "location:BQ",
+      "assertion": {
+        "code": "BQ"
+      },
+      "label": "Bonaire, Sint Eustatius und Saba"
+    },
+    {
+      "key": "location:BR",
+      "assertion": {
+        "code": "BR"
+      },
+      "label": "Brasilien"
+    },
+    {
+      "key": "location:BS",
+      "assertion": {
+        "code": "BS"
+      },
+      "label": "Bahamas"
+    },
+    {
+      "key": "location:BT",
+      "assertion": {
+        "code": "BT"
+      },
+      "label": "Bhutan"
+    },
+    {
+      "key": "location:BV",
+      "assertion": {
+        "code": "BV"
+      },
+      "label": "Bouvetinsel"
+    },
+    {
+      "key": "location:BW",
+      "assertion": {
+        "code": "BW"
+      },
+      "label": "Botsuana"
+    },
+    {
+      "key": "location:BY",
+      "assertion": {
+        "code": "BY"
+      },
+      "label": "Belarus"
+    },
+    {
+      "key": "location:BZ",
+      "assertion": {
+        "code": "BZ"
+      },
+      "label": "Belize"
+    },
+    {
+      "key": "location:CA",
+      "assertion": {
+        "code": "CA"
+      },
+      "label": "Kanada"
+    },
+    {
+      "key": "location:CC",
+      "assertion": {
+        "code": "CC"
+      },
+      "label": "Kokosinseln"
+    },
+    {
+      "key": "location:CD",
+      "assertion": {
+        "code": "CD"
+      },
+      "label": "Demokratische Republik Kongo"
+    },
+    {
+      "key": "location:CF",
+      "assertion": {
+        "code": "CF"
+      },
+      "label": "Zentralafrikanische Republik"
+    },
+    {
+      "key": "location:CG",
+      "assertion": {
+        "code": "CG"
+      },
+      "label": "Kongo"
+    },
+    {
+      "key": "location:CH",
+      "assertion": {
+        "code": "CH"
+      },
+      "label": "Schweiz"
+    },
+    {
+      "key": "location:CI",
+      "assertion": {
+        "code": "CI"
+      },
+      "label": "Côte d’Ivoire"
+    },
+    {
+      "key": "location:CK",
+      "assertion": {
+        "code": "CK"
+      },
+      "label": "Cookinseln"
+    },
+    {
+      "key": "location:CL",
+      "assertion": {
+        "code": "CL"
+      },
+      "label": "Chile"
+    },
+    {
+      "key": "location:CM",
+      "assertion": {
+        "code": "CM"
+      },
+      "label": "Kamerun"
+    },
+    {
+      "key": "location:CO",
+      "assertion": {
+        "code": "CO"
+      },
+      "label": "Kolumbien"
+    },
+    {
+      "key": "location:CR",
+      "assertion": {
+        "code": "CR"
+      },
+      "label": "Costa Rica"
+    },
+    {
+      "key": "location:CU",
+      "assertion": {
+        "code": "CU"
+      },
+      "label": "Kuba"
+    },
+    {
+      "key": "location:CV",
+      "assertion": {
+        "code": "CV"
+      },
+      "label": "Cabo Verde"
+    },
+    {
+      "key": "location:CW",
+      "assertion": {
+        "code": "CW"
+      },
+      "label": "Curaçao"
+    },
+    {
+      "key": "location:CX",
+      "assertion": {
+        "code": "CX"
+      },
+      "label": "Weihnachtsinsel"
+    },
+    {
+      "key": "location:CY",
+      "assertion": {
+        "code": "CY"
+      },
+      "label": "Zypern"
+    },
+    {
+      "key": "location:CZ",
+      "assertion": {
+        "code": "CZ"
+      },
+      "label": "Tschechien"
+    },
+    {
+      "key": "location:DE",
+      "assertion": {
+        "code": "DE"
+      },
+      "label": "Deutschland"
+    },
+    {
+      "key": "location:DJ",
+      "assertion": {
+        "code": "DJ"
+      },
+      "label": "Dschibuti"
+    },
+    {
+      "key": "location:DK",
+      "assertion": {
+        "code": "DK"
+      },
+      "label": "Dänemark"
+    },
+    {
+      "key": "location:DM",
+      "assertion": {
+        "code": "DM"
+      },
+      "label": "Dominica"
+    },
+    {
+      "key": "location:DO",
+      "assertion": {
+        "code": "DO"
+      },
+      "label": "Dominikanische Republik"
+    },
+    {
+      "key": "location:DZ",
+      "assertion": {
+        "code": "DZ"
+      },
+      "label": "Algerien"
+    },
+    {
+      "key": "location:EC",
+      "assertion": {
+        "code": "EC"
+      },
+      "label": "Ecuador"
+    },
+    {
+      "key": "location:EE",
+      "assertion": {
+        "code": "EE"
+      },
+      "label": "Estland"
+    },
+    {
+      "key": "location:EG",
+      "assertion": {
+        "code": "EG"
+      },
+      "label": "Ägypten"
+    },
+    {
+      "key": "location:EH",
+      "assertion": {
+        "code": "EH"
+      },
+      "label": "Westsahara"
+    },
+    {
+      "key": "location:ER",
+      "assertion": {
+        "code": "ER"
+      },
+      "label": "Eritrea"
+    },
+    {
+      "key": "location:ES",
+      "assertion": {
+        "code": "ES"
+      },
+      "label": "Spanien"
+    },
+    {
+      "key": "location:ET",
+      "assertion": {
+        "code": "ET"
+      },
+      "label": "Äthiopien"
+    },
+    {
+      "key": "location:FI",
+      "assertion": {
+        "code": "FI"
+      },
+      "label": "Finnland"
+    },
+    {
+      "key": "location:FJ",
+      "assertion": {
+        "code": "FJ"
+      },
+      "label": "Fidschi"
+    },
+    {
+      "key": "location:FK",
+      "assertion": {
+        "code": "FK"
+      },
+      "label": "Falklandinseln"
+    },
+    {
+      "key": "location:FM",
+      "assertion": {
+        "code": "FM"
+      },
+      "label": "Mikronesien"
+    },
+    {
+      "key": "location:FO",
+      "assertion": {
+        "code": "FO"
+      },
+      "label": "Färöer"
+    },
+    {
+      "key": "location:FR",
+      "assertion": {
+        "code": "FR"
+      },
+      "label": "Frankreich"
+    },
+    {
+      "key": "location:GA",
+      "assertion": {
+        "code": "GA"
+      },
+      "label": "Gabun"
+    },
+    {
+      "key": "location:GB",
+      "assertion": {
+        "code": "GB"
+      },
+      "label": "Vereinigtes Königreich"
+    },
+    {
+      "key": "location:GD",
+      "assertion": {
+        "code": "GD"
+      },
+      "label": "Grenada"
+    },
+    {
+      "key": "location:GE",
+      "assertion": {
+        "code": "GE"
+      },
+      "label": "Georgien"
+    },
+    {
+      "key": "location:GF",
+      "assertion": {
+        "code": "GF"
+      },
+      "label": "Französisch-Guayana"
+    },
+    {
+      "key": "location:GG",
+      "assertion": {
+        "code": "GG"
+      },
+      "label": "Guernsey"
+    },
+    {
+      "key": "location:GH",
+      "assertion": {
+        "code": "GH"
+      },
+      "label": "Ghana"
+    },
+    {
+      "key": "location:GI",
+      "assertion": {
+        "code": "GI"
+      },
+      "label": "Gibraltar"
+    },
+    {
+      "key": "location:GL",
+      "assertion": {
+        "code": "GL"
+      },
+      "label": "Grönland"
+    },
+    {
+      "key": "location:GM",
+      "assertion": {
+        "code": "GM"
+      },
+      "label": "Gambia"
+    },
+    {
+      "key": "location:GN",
+      "assertion": {
+        "code": "GN"
+      },
+      "label": "Guinea"
+    },
+    {
+      "key": "location:GP",
+      "assertion": {
+        "code": "GP"
+      },
+      "label": "Guadeloupe"
+    },
+    {
+      "key": "location:GQ",
+      "assertion": {
+        "code": "GQ"
+      },
+      "label": "Äquatorialguinea"
+    },
+    {
+      "key": "location:GR",
+      "assertion": {
+        "code": "GR"
+      },
+      "label": "Griechenland"
+    },
+    {
+      "key": "location:GS",
+      "assertion": {
+        "code": "GS"
+      },
+      "label": "Südgeorgien und die Südlichen Sandwichinseln"
+    },
+    {
+      "key": "location:GT",
+      "assertion": {
+        "code": "GT"
+      },
+      "label": "Guatemala"
+    },
+    {
+      "key": "location:GU",
+      "assertion": {
+        "code": "GU"
+      },
+      "label": "Guam"
+    },
+    {
+      "key": "location:GW",
+      "assertion": {
+        "code": "GW"
+      },
+      "label": "Guinea-Bissau"
+    },
+    {
+      "key": "location:GY",
+      "assertion": {
+        "code": "GY"
+      },
+      "label": "Guyana"
+    },
+    {
+      "key": "location:HM",
+      "assertion": {
+        "code": "HM"
+      },
+      "label": "Heard und die McDonaldinseln"
+    },
+    {
+      "key": "location:HN",
+      "assertion": {
+        "code": "HN"
+      },
+      "label": "Honduras"
+    },
+    {
+      "key": "location:HR",
+      "assertion": {
+        "code": "HR"
+      },
+      "label": "Kroatien"
+    },
+    {
+      "key": "location:HT",
+      "assertion": {
+        "code": "HT"
+      },
+      "label": "Haiti"
+    },
+    {
+      "key": "location:HU",
+      "assertion": {
+        "code": "HU"
+      },
+      "label": "Ungarn"
+    },
+    {
+      "key": "location:ID",
+      "assertion": {
+        "code": "ID"
+      },
+      "label": "Indonesien"
+    },
+    {
+      "key": "location:IE",
+      "assertion": {
+        "code": "IE"
+      },
+      "label": "Irland"
+    },
+    {
+      "key": "location:IL",
+      "assertion": {
+        "code": "IL"
+      },
+      "label": "Israel"
+    },
+    {
+      "key": "location:IM",
+      "assertion": {
+        "code": "IM"
+      },
+      "label": "Insel Man"
+    },
+    {
+      "key": "location:IN",
+      "assertion": {
+        "code": "IN"
+      },
+      "label": "Indien"
+    },
+    {
+      "key": "location:IO",
+      "assertion": {
+        "code": "IO"
+      },
+      "label": "Britisches Territorium im Indischen Ozean"
+    },
+    {
+      "key": "location:IQ",
+      "assertion": {
+        "code": "IQ"
+      },
+      "label": "Irak"
+    },
+    {
+      "key": "location:IR",
+      "assertion": {
+        "code": "IR"
+      },
+      "label": "Iran"
+    },
+    {
+      "key": "location:IS",
+      "assertion": {
+        "code": "IS"
+      },
+      "label": "Island"
+    },
+    {
+      "key": "location:IT",
+      "assertion": {
+        "code": "IT"
+      },
+      "label": "Italien"
+    },
+    {
+      "key": "location:JE",
+      "assertion": {
+        "code": "JE"
+      },
+      "label": "Jersey"
+    },
+    {
+      "key": "location:JM",
+      "assertion": {
+        "code": "JM"
+      },
+      "label": "Jamaika"
+    },
+    {
+      "key": "location:JO",
+      "assertion": {
+        "code": "JO"
+      },
+      "label": "Jordanien"
+    },
+    {
+      "key": "location:JP",
+      "assertion": {
+        "code": "JP"
+      },
+      "label": "Japan"
+    },
+    {
+      "key": "location:KE",
+      "assertion": {
+        "code": "KE"
+      },
+      "label": "Kenia"
+    },
+    {
+      "key": "location:KG",
+      "assertion": {
+        "code": "KG"
+      },
+      "label": "Kirgisistan"
+    },
+    {
+      "key": "location:KH",
+      "assertion": {
+        "code": "KH"
+      },
+      "label": "Kambodscha"
+    },
+    {
+      "key": "location:KI",
+      "assertion": {
+        "code": "KI"
+      },
+      "label": "Kiribati"
+    },
+    {
+      "key": "location:KM",
+      "assertion": {
+        "code": "KM"
+      },
+      "label": "Komoren"
+    },
+    {
+      "key": "location:KN",
+      "assertion": {
+        "code": "KN"
+      },
+      "label": "St. Kitts und Nevis"
+    },
+    {
+      "key": "location:KP",
+      "assertion": {
+        "code": "KP"
+      },
+      "label": "Nordkorea"
+    },
+    {
+      "key": "location:KR",
+      "assertion": {
+        "code": "KR"
+      },
+      "label": "Südkorea"
+    },
+    {
+      "key": "location:KW",
+      "assertion": {
+        "code": "KW"
+      },
+      "label": "Kuwait"
+    },
+    {
+      "key": "location:KY",
+      "assertion": {
+        "code": "KY"
+      },
+      "label": "Kaimaninseln"
+    },
+    {
+      "key": "location:KZ",
+      "assertion": {
+        "code": "KZ"
+      },
+      "label": "Kasachstan"
+    },
+    {
+      "key": "location:LA",
+      "assertion": {
+        "code": "LA"
+      },
+      "label": "Laos"
+    },
+    {
+      "key": "location:LB",
+      "assertion": {
+        "code": "LB"
+      },
+      "label": "Libanon"
+    },
+    {
+      "key": "location:LC",
+      "assertion": {
+        "code": "LC"
+      },
+      "label": "St. Lucia"
+    },
+    {
+      "key": "location:LI",
+      "assertion": {
+        "code": "LI"
+      },
+      "label": "Liechtenstein"
+    },
+    {
+      "key": "location:LK",
+      "assertion": {
+        "code": "LK"
+      },
+      "label": "Sri Lanka"
+    },
+    {
+      "key": "location:LR",
+      "assertion": {
+        "code": "LR"
+      },
+      "label": "Liberia"
+    },
+    {
+      "key": "location:LS",
+      "assertion": {
+        "code": "LS"
+      },
+      "label": "Lesotho"
+    },
+    {
+      "key": "location:LT",
+      "assertion": {
+        "code": "LT"
+      },
+      "label": "Litauen"
+    },
+    {
+      "key": "location:LU",
+      "assertion": {
+        "code": "LU"
+      },
+      "label": "Luxemburg"
+    },
+    {
+      "key": "location:LV",
+      "assertion": {
+        "code": "LV"
+      },
+      "label": "Lettland"
+    },
+    {
+      "key": "location:LY",
+      "assertion": {
+        "code": "LY"
+      },
+      "label": "Libyen"
+    },
+    {
+      "key": "location:MA",
+      "assertion": {
+        "code": "MA"
+      },
+      "label": "Marokko"
+    },
+    {
+      "key": "location:MC",
+      "assertion": {
+        "code": "MC"
+      },
+      "label": "Monaco"
+    },
+    {
+      "key": "location:MD",
+      "assertion": {
+        "code": "MD"
+      },
+      "label": "Moldau"
+    },
+    {
+      "key": "location:ME",
+      "assertion": {
+        "code": "ME"
+      },
+      "label": "Montenegro"
+    },
+    {
+      "key": "location:MF",
+      "assertion": {
+        "code": "MF"
+      },
+      "label": "St. Martin"
+    },
+    {
+      "key": "location:MG",
+      "assertion": {
+        "code": "MG"
+      },
+      "label": "Madagaskar"
+    },
+    {
+      "key": "location:MH",
+      "assertion": {
+        "code": "MH"
+      },
+      "label": "Marshallinseln"
+    },
+    {
+      "key": "location:MK",
+      "assertion": {
+        "code": "MK"
+      },
+      "label": "Nordmazedonien"
+    },
+    {
+      "key": "location:ML",
+      "assertion": {
+        "code": "ML"
+      },
+      "label": "Mali"
+    },
+    {
+      "key": "location:MM",
+      "assertion": {
+        "code": "MM"
+      },
+      "label": "Myanmar/Birma"
+    },
+    {
+      "key": "location:MN",
+      "assertion": {
+        "code": "MN"
+      },
+      "label": "Mongolei"
+    },
+    {
+      "key": "location:MP",
+      "assertion": {
+        "code": "MP"
+      },
+      "label": "Nördliche Marianen"
+    },
+    {
+      "key": "location:MQ",
+      "assertion": {
+        "code": "MQ"
+      },
+      "label": "Martinique"
+    },
+    {
+      "key": "location:MR",
+      "assertion": {
+        "code": "MR"
+      },
+      "label": "Mauretanien"
+    },
+    {
+      "key": "location:MS",
+      "assertion": {
+        "code": "MS"
+      },
+      "label": "Montserrat"
+    },
+    {
+      "key": "location:MT",
+      "assertion": {
+        "code": "MT"
+      },
+      "label": "Malta"
+    },
+    {
+      "key": "location:MU",
+      "assertion": {
+        "code": "MU"
+      },
+      "label": "Mauritius"
+    },
+    {
+      "key": "location:MV",
+      "assertion": {
+        "code": "MV"
+      },
+      "label": "Malediven"
+    },
+    {
+      "key": "location:MW",
+      "assertion": {
+        "code": "MW"
+      },
+      "label": "Malawi"
+    },
+    {
+      "key": "location:MX",
+      "assertion": {
+        "code": "MX"
+      },
+      "label": "Mexiko"
+    },
+    {
+      "key": "location:MY",
+      "assertion": {
+        "code": "MY"
+      },
+      "label": "Malaysia"
+    },
+    {
+      "key": "location:MZ",
+      "assertion": {
+        "code": "MZ"
+      },
+      "label": "Mosambik"
+    },
+    {
+      "key": "location:NA",
+      "assertion": {
+        "code": "NA"
+      },
+      "label": "Namibia"
+    },
+    {
+      "key": "location:NC",
+      "assertion": {
+        "code": "NC"
+      },
+      "label": "Neukaledonien"
+    },
+    {
+      "key": "location:NE",
+      "assertion": {
+        "code": "NE"
+      },
+      "label": "Niger"
+    },
+    {
+      "key": "location:NF",
+      "assertion": {
+        "code": "NF"
+      },
+      "label": "Norfolkinsel"
+    },
+    {
+      "key": "location:NG",
+      "assertion": {
+        "code": "NG"
+      },
+      "label": "Nigeria"
+    },
+    {
+      "key": "location:NI",
+      "assertion": {
+        "code": "NI"
+      },
+      "label": "Nicaragua"
+    },
+    {
+      "key": "location:NL",
+      "assertion": {
+        "code": "NL"
+      },
+      "label": "Niederlande"
+    },
+    {
+      "key": "location:NO",
+      "assertion": {
+        "code": "NO"
+      },
+      "label": "Norwegen"
+    },
+    {
+      "key": "location:NP",
+      "assertion": {
+        "code": "NP"
+      },
+      "label": "Nepal"
+    },
+    {
+      "key": "location:NR",
+      "assertion": {
+        "code": "NR"
+      },
+      "label": "Nauru"
+    },
+    {
+      "key": "location:NU",
+      "assertion": {
+        "code": "NU"
+      },
+      "label": "Niue"
+    },
+    {
+      "key": "location:NZ",
+      "assertion": {
+        "code": "NZ"
+      },
+      "label": "Neuseeland"
+    },
+    {
+      "key": "location:OM",
+      "assertion": {
+        "code": "OM"
+      },
+      "label": "Oman"
+    },
+    {
+      "key": "location:PA",
+      "assertion": {
+        "code": "PA"
+      },
+      "label": "Panama"
+    },
+    {
+      "key": "location:PE",
+      "assertion": {
+        "code": "PE"
+      },
+      "label": "Peru"
+    },
+    {
+      "key": "location:PF",
+      "assertion": {
+        "code": "PF"
+      },
+      "label": "Französisch-Polynesien"
+    },
+    {
+      "key": "location:PG",
+      "assertion": {
+        "code": "PG"
+      },
+      "label": "Papua-Neuguinea"
+    },
+    {
+      "key": "location:PH",
+      "assertion": {
+        "code": "PH"
+      },
+      "label": "Philippinen"
+    },
+    {
+      "key": "location:PK",
+      "assertion": {
+        "code": "PK"
+      },
+      "label": "Pakistan"
+    },
+    {
+      "key": "location:PL",
+      "assertion": {
+        "code": "PL"
+      },
+      "label": "Polen"
+    },
+    {
+      "key": "location:PM",
+      "assertion": {
+        "code": "PM"
+      },
+      "label": "St. Pierre und Miquelon"
+    },
+    {
+      "key": "location:PN",
+      "assertion": {
+        "code": "PN"
+      },
+      "label": "Pitcairninseln"
+    },
+    {
+      "key": "location:PR",
+      "assertion": {
+        "code": "PR"
+      },
+      "label": "Puerto Rico"
+    },
+    {
+      "key": "location:PS",
+      "assertion": {
+        "code": "PS"
+      },
+      "label": "Palästina*"
+    },
+    {
+      "key": "location:PT",
+      "assertion": {
+        "code": "PT"
+      },
+      "label": "Portugal"
+    },
+    {
+      "key": "location:PW",
+      "assertion": {
+        "code": "PW"
+      },
+      "label": "Palau"
+    },
+    {
+      "key": "location:PY",
+      "assertion": {
+        "code": "PY"
+      },
+      "label": "Paraguay"
+    },
+    {
+      "key": "location:QA",
+      "assertion": {
+        "code": "QA"
+      },
+      "label": "Katar"
+    },
+    {
+      "key": "location:RE",
+      "assertion": {
+        "code": "RE"
+      },
+      "label": "Réunion"
+    },
+    {
+      "key": "location:RO",
+      "assertion": {
+        "code": "RO"
+      },
+      "label": "Rumänien"
+    },
+    {
+      "key": "location:RS",
+      "assertion": {
+        "code": "RS"
+      },
+      "label": "Serbien"
+    },
+    {
+      "key": "location:RU",
+      "assertion": {
+        "code": "RU"
+      },
+      "label": "Russland"
+    },
+    {
+      "key": "location:RW",
+      "assertion": {
+        "code": "RW"
+      },
+      "label": "Ruanda"
+    },
+    {
+      "key": "location:SA",
+      "assertion": {
+        "code": "SA"
+      },
+      "label": "Saudi-Arabien"
+    },
+    {
+      "key": "location:SB",
+      "assertion": {
+        "code": "SB"
+      },
+      "label": "Salomonen"
+    },
+    {
+      "key": "location:SC",
+      "assertion": {
+        "code": "SC"
+      },
+      "label": "Seychellen"
+    },
+    {
+      "key": "location:SD",
+      "assertion": {
+        "code": "SD"
+      },
+      "label": "Sudan"
+    },
+    {
+      "key": "location:SE",
+      "assertion": {
+        "code": "SE"
+      },
+      "label": "Schweden"
+    },
+    {
+      "key": "location:SG",
+      "assertion": {
+        "code": "SG"
+      },
+      "label": "Singapur"
+    },
+    {
+      "key": "location:SH",
+      "assertion": {
+        "code": "SH"
+      },
+      "label": "St. Helena, Ascension und Tristan da Cunha"
+    },
+    {
+      "key": "location:SI",
+      "assertion": {
+        "code": "SI"
+      },
+      "label": "Slowenien"
+    },
+    {
+      "key": "location:SJ",
+      "assertion": {
+        "code": "SJ"
+      },
+      "label": "Svalbard und Jan Mayen"
+    },
+    {
+      "key": "location:SK",
+      "assertion": {
+        "code": "SK"
+      },
+      "label": "Slowakei"
+    },
+    {
+      "key": "location:SL",
+      "assertion": {
+        "code": "SL"
+      },
+      "label": "Sierra Leone"
+    },
+    {
+      "key": "location:SM",
+      "assertion": {
+        "code": "SM"
+      },
+      "label": "San Marino"
+    },
+    {
+      "key": "location:SN",
+      "assertion": {
+        "code": "SN"
+      },
+      "label": "Senegal"
+    },
+    {
+      "key": "location:SO",
+      "assertion": {
+        "code": "SO"
+      },
+      "label": "Somalia"
+    },
+    {
+      "key": "location:SR",
+      "assertion": {
+        "code": "SR"
+      },
+      "label": "Suriname"
+    },
+    {
+      "key": "location:SS",
+      "assertion": {
+        "code": "SS"
+      },
+      "label": "Südsudan"
+    },
+    {
+      "key": "location:ST",
+      "assertion": {
+        "code": "ST"
+      },
+      "label": "São Tomé und Príncipe"
+    },
+    {
+      "key": "location:SV",
+      "assertion": {
+        "code": "SV"
+      },
+      "label": "El Salvador"
+    },
+    {
+      "key": "location:SX",
+      "assertion": {
+        "code": "SX"
+      },
+      "label": "Sint Maarten"
+    },
+    {
+      "key": "location:SY",
+      "assertion": {
+        "code": "SY"
+      },
+      "label": "Syrien"
+    },
+    {
+      "key": "location:SZ",
+      "assertion": {
+        "code": "SZ"
+      },
+      "label": "Eswatini"
+    },
+    {
+      "key": "location:TC",
+      "assertion": {
+        "code": "TC"
+      },
+      "label": "Turks- und Caicosinseln"
+    },
+    {
+      "key": "location:TD",
+      "assertion": {
+        "code": "TD"
+      },
+      "label": "Tschad"
+    },
+    {
+      "key": "location:TF",
+      "assertion": {
+        "code": "TF"
+      },
+      "label": "Französische Süd- und Antarktisgebiete"
+    },
+    {
+      "key": "location:TG",
+      "assertion": {
+        "code": "TG"
+      },
+      "label": "Togo"
+    },
+    {
+      "key": "location:TH",
+      "assertion": {
+        "code": "TH"
+      },
+      "label": "Thailand"
+    },
+    {
+      "key": "location:TJ",
+      "assertion": {
+        "code": "TJ"
+      },
+      "label": "Tadschikistan"
+    },
+    {
+      "key": "location:TK",
+      "assertion": {
+        "code": "TK"
+      },
+      "label": "Tokelau"
+    },
+    {
+      "key": "location:TL",
+      "assertion": {
+        "code": "TL"
+      },
+      "label": "Timor-Leste"
+    },
+    {
+      "key": "location:TM",
+      "assertion": {
+        "code": "TM"
+      },
+      "label": "Turkmenistan"
+    },
+    {
+      "key": "location:TN",
+      "assertion": {
+        "code": "TN"
+      },
+      "label": "Tunesien"
+    },
+    {
+      "key": "location:TO",
+      "assertion": {
+        "code": "TO"
+      },
+      "label": "Tonga"
+    },
+    {
+      "key": "location:TR",
+      "assertion": {
+        "code": "TR"
+      },
+      "label": "Türkei"
+    },
+    {
+      "key": "location:TT",
+      "assertion": {
+        "code": "TT"
+      },
+      "label": "Trinidad und Tobago"
+    },
+    {
+      "key": "location:TV",
+      "assertion": {
+        "code": "TV"
+      },
+      "label": "Tuvalu"
+    },
+    {
+      "key": "location:TZ",
+      "assertion": {
+        "code": "TZ"
+      },
+      "label": "Tansania"
+    },
+    {
+      "key": "location:UA",
+      "assertion": {
+        "code": "UA"
+      },
+      "label": "Ukraine"
+    },
+    {
+      "key": "location:UG",
+      "assertion": {
+        "code": "UG"
+      },
+      "label": "Uganda"
+    },
+    {
+      "key": "location:UM",
+      "assertion": {
+        "code": "UM"
+      },
+      "label": "Kleinere Amerikanischen Überseeinseln"
+    },
+    {
+      "key": "location:US",
+      "assertion": {
+        "code": "US"
+      },
+      "label": "Vereinigte Staaten"
+    },
+    {
+      "key": "location:UY",
+      "assertion": {
+        "code": "UY"
+      },
+      "label": "Uruguay"
+    },
+    {
+      "key": "location:UZ",
+      "assertion": {
+        "code": "UZ"
+      },
+      "label": "Usbekistan"
+    },
+    {
+      "key": "location:VA",
+      "assertion": {
+        "code": "VA"
+      },
+      "label": "Heiliger Stuhl"
+    },
+    {
+      "key": "location:VC",
+      "assertion": {
+        "code": "VC"
+      },
+      "label": "St. Vincent und die Grenadinen"
+    },
+    {
+      "key": "location:VE",
+      "assertion": {
+        "code": "VE"
+      },
+      "label": "Venezuela"
+    },
+    {
+      "key": "location:VG",
+      "assertion": {
+        "code": "VG"
+      },
+      "label": "Britische Jungferninseln"
+    },
+    {
+      "key": "location:VI",
+      "assertion": {
+        "code": "VI"
+      },
+      "label": "Amerikanische Jungferninseln"
+    },
+    {
+      "key": "location:VN",
+      "assertion": {
+        "code": "VN"
+      },
+      "label": "Vietnam"
+    },
+    {
+      "key": "location:VU",
+      "assertion": {
+        "code": "VU"
+      },
+      "label": "Vanuatu"
+    },
+    {
+      "key": "location:WF",
+      "assertion": {
+        "code": "WF"
+      },
+      "label": "Wallis und Futuna"
+    },
+    {
+      "key": "location:WS",
+      "assertion": {
+        "code": "WS"
+      },
+      "label": "Samoa"
+    },
+    {
+      "key": "location:YE",
+      "assertion": {
+        "code": "YE"
+      },
+      "label": "Jemen"
+    },
+    {
+      "key": "location:YT",
+      "assertion": {
+        "code": "YT"
+      },
+      "label": "Mayotte"
+    },
+    {
+      "key": "location:ZA",
+      "assertion": {
+        "code": "ZA"
+      },
+      "label": "Südafrika"
+    },
+    {
+      "key": "location:ZM",
+      "assertion": {
+        "code": "ZM"
+      },
+      "label": "Sambia"
+    },
+    {
+      "key": "location:ZW",
+      "assertion": {
+        "code": "ZW"
+      },
+      "label": "Simbabwe"
+    },
+    {
+      "key": "location:CIS",
+      "assertion": {
+        "code": "CIS"
+      },
+      "label": "Gemeinschaft Unabhängiger Staaten"
+    },
+    {
+      "key": "location:CN",
+      "assertion": {
+        "code": "CN"
+      },
+      "label": "China"
+    },
+    {
+      "key": "location:CN-BJ",
+      "assertion": {
+        "code": "CN-BJ"
+      },
+      "label": "Beijing Shi, China"
+    },
+    {
+      "key": "location:CN-TJ",
+      "assertion": {
+        "code": "CN-TJ"
+      },
+      "label": "Tianjin Shi, China"
+    },
+    {
+      "key": "location:CN-HE",
+      "assertion": {
+        "code": "CN-HE"
+      },
+      "label": "Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-SJW",
+      "assertion": {
+        "code": "CN-HE-SJW"
+      },
+      "label": "Shijiazhuang Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-TGS",
+      "assertion": {
+        "code": "CN-HE-TGS"
+      },
+      "label": "Tangshan Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-SHP",
+      "assertion": {
+        "code": "CN-HE-SHP"
+      },
+      "label": "Qinhuangdao Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-HDS",
+      "assertion": {
+        "code": "CN-HE-HDS"
+      },
+      "label": "Handan Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-XTS",
+      "assertion": {
+        "code": "CN-HE-XTS"
+      },
+      "label": "Xingtai Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-BDS",
+      "assertion": {
+        "code": "CN-HE-BDS"
+      },
+      "label": "Baoding Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-ZJK",
+      "assertion": {
+        "code": "CN-HE-ZJK"
+      },
+      "label": "Zhangjiakou Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-CDS",
+      "assertion": {
+        "code": "CN-HE-CDS"
+      },
+      "label": "Chengde Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-CGZ",
+      "assertion": {
+        "code": "CN-HE-CGZ"
+      },
+      "label": "Cangzhou Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-LFS",
+      "assertion": {
+        "code": "CN-HE-LFS"
+      },
+      "label": "Langfang Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-HE-HGS",
+      "assertion": {
+        "code": "CN-HE-HGS"
+      },
+      "label": "Hengshui Shi, Hebei-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX",
+      "assertion": {
+        "code": "CN-SX"
+      },
+      "label": "Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-TYN",
+      "assertion": {
+        "code": "CN-SX-TYN"
+      },
+      "label": "Taiyuan Shi, Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-DTG",
+      "assertion": {
+        "code": "CN-SX-DTG"
+      },
+      "label": "Datong Shi, Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-YQS",
+      "assertion": {
+        "code": "CN-SX-YQS"
+      },
+      "label": "Yangquan Shi, Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-CZS",
+      "assertion": {
+        "code": "CN-SX-CZS"
+      },
+      "label": "Changzhi Shi, Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-JCG",
+      "assertion": {
+        "code": "CN-SX-JCG"
+      },
+      "label": "Jincheng Shi, Shanxi-Provinz, China"
+    },
+    {
+      "key": "location:CN-SX-SZJ",
+      "assertion": {
+        "code": "CN-SX-SZJ"
+      },
+      "label": "Stadt Shuozhou, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-SX-JZN",
+      "assertion": {
+        "code": "CN-SX-JZN"
+      },
+      "label": "Stadt Jinzhong, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-SX-YCE",
+      "assertion": {
+        "code": "CN-SX-YCE"
+      },
+      "label": "Stadt Yuncheng, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-SX-XZS",
+      "assertion": {
+        "code": "CN-SX-XZS"
+      },
+      "label": "Stadt Xinzhou, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-SX-LFN",
+      "assertion": {
+        "code": "CN-SX-LFN"
+      },
+      "label": "Stadt Linfen, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-SX-LLH",
+      "assertion": {
+        "code": "CN-SX-LLH"
+      },
+      "label": "Stadt Lüliang, Provinz Shanxi, China"
+    },
+    {
+      "key": "location:CN-NM",
+      "assertion": {
+        "code": "CN-NM"
+      },
+      "label": "Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-HET",
+      "assertion": {
+        "code": "CN-NM-HET"
+      },
+      "label": "Stadt Hohhot, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-BTS",
+      "assertion": {
+        "code": "CN-NM-BTS"
+      },
+      "label": "Stadt Baotou, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-WHM",
+      "assertion": {
+        "code": "CN-NM-WHM"
+      },
+      "label": "Stadt Wuhai, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-CFS",
+      "assertion": {
+        "code": "CN-NM-CFS"
+      },
+      "label": "Stadt Chifeng (Ulanhad), Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-TLO",
+      "assertion": {
+        "code": "CN-NM-TLO"
+      },
+      "label": "Stadt Tongliao, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-ODS",
+      "assertion": {
+        "code": "CN-NM-ODS"
+      },
+      "label": "Stadt Ordos, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-HBR",
+      "assertion": {
+        "code": "CN-NM-HBR"
+      },
+      "label": "Stadt Hulun Buir, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-BYR",
+      "assertion": {
+        "code": "CN-NM-BYR"
+      },
+      "label": "Stadt Bayannur, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-ULS",
+      "assertion": {
+        "code": "CN-NM-ULS"
+      },
+      "label": "Stadt Ulanqab, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-HIN",
+      "assertion": {
+        "code": "CN-NM-HIN"
+      },
+      "label": "Bund Hinggan, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-XGO",
+      "assertion": {
+        "code": "CN-NM-XGO"
+      },
+      "label": "Bund Xilin Gol, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-NM-ALM",
+      "assertion": {
+        "code": "CN-NM-ALM"
+      },
+      "label": "Bund Alxa, Autonomes Gebiet Innere Mongolei, China"
+    },
+    {
+      "key": "location:CN-LN",
+      "assertion": {
+        "code": "CN-LN"
+      },
+      "label": "Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-SHE",
+      "assertion": {
+        "code": "CN-LN-SHE"
+      },
+      "label": "Stadt Shenyang, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-DLC",
+      "assertion": {
+        "code": "CN-LN-DLC"
+      },
+      "label": "Stadt Dalian, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-ASN",
+      "assertion": {
+        "code": "CN-LN-ASN"
+      },
+      "label": "Stadt Anshan, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-FSN",
+      "assertion": {
+        "code": "CN-LN-FSN"
+      },
+      "label": "Stadt Fushun, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-BXS",
+      "assertion": {
+        "code": "CN-LN-BXS"
+      },
+      "label": "Stadt Benxi, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-DDG",
+      "assertion": {
+        "code": "CN-LN-DDG"
+      },
+      "label": "Stadt Dandong, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-JNZ",
+      "assertion": {
+        "code": "CN-LN-JNZ"
+      },
+      "label": "Stadt Jinzhou, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-YIK",
+      "assertion": {
+        "code": "CN-LN-YIK"
+      },
+      "label": "Stadt Yingkou, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-FXS",
+      "assertion": {
+        "code": "CN-LN-FXS"
+      },
+      "label": "Stadt Fuxin, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-LYL",
+      "assertion": {
+        "code": "CN-LN-LYL"
+      },
+      "label": "Stadt Liaoyang, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-PJS",
+      "assertion": {
+        "code": "CN-LN-PJS"
+      },
+      "label": "Stadt Panjin, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-TLS",
+      "assertion": {
+        "code": "CN-LN-TLS"
+      },
+      "label": "Stadt Tieling, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-CYS",
+      "assertion": {
+        "code": "CN-LN-CYS"
+      },
+      "label": "Stadt Chaoyang, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-LN-HLD",
+      "assertion": {
+        "code": "CN-LN-HLD"
+      },
+      "label": "Stadt Huludao, Provinz Liaoning, China"
+    },
+    {
+      "key": "location:CN-JL",
+      "assertion": {
+        "code": "CN-JL"
+      },
+      "label": "Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-CGQ",
+      "assertion": {
+        "code": "CN-JL-CGQ"
+      },
+      "label": "Stadt Changchun, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-JLS",
+      "assertion": {
+        "code": "CN-JL-JLS"
+      },
+      "label": "Stadt Jilin, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-SPS",
+      "assertion": {
+        "code": "CN-JL-SPS"
+      },
+      "label": "Stadt Siping, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-LYH",
+      "assertion": {
+        "code": "CN-JL-LYH"
+      },
+      "label": "Stadt Liaoyuan, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-THS",
+      "assertion": {
+        "code": "CN-JL-THS"
+      },
+      "label": "Stadt Tonghua, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-BSN",
+      "assertion": {
+        "code": "CN-JL-BSN"
+      },
+      "label": "Stadt Baishan, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-SYU",
+      "assertion": {
+        "code": "CN-JL-SYU"
+      },
+      "label": "Stadt Songyuan, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-BCS",
+      "assertion": {
+        "code": "CN-JL-BCS"
+      },
+      "label": "Stadt Baicheng, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-JL-YBZ",
+      "assertion": {
+        "code": "CN-JL-YBZ"
+      },
+      "label": "Autonomer Bezirk Yanbian der Koreaner, Provinz Jilin, China"
+    },
+    {
+      "key": "location:CN-HL",
+      "assertion": {
+        "code": "CN-HL"
+      },
+      "label": "Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-HRB",
+      "assertion": {
+        "code": "CN-HL-HRB"
+      },
+      "label": "Stadt Harbin, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-NDG",
+      "assertion": {
+        "code": "CN-HL-NDG"
+      },
+      "label": "Stadt Qiqihar, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-JXI",
+      "assertion": {
+        "code": "CN-HL-JXI"
+      },
+      "label": "Stadt Jixi, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-HEG",
+      "assertion": {
+        "code": "CN-HL-HEG"
+      },
+      "label": "Stadt Hegang, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-SYS",
+      "assertion": {
+        "code": "CN-HL-SYS"
+      },
+      "label": "Stadt Shuangyashan, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-DQG",
+      "assertion": {
+        "code": "CN-HL-DQG"
+      },
+      "label": "Stadt Daqing, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-YCH",
+      "assertion": {
+        "code": "CN-HL-YCH"
+      },
+      "label": "Stadt Yichun, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-JMU",
+      "assertion": {
+        "code": "CN-HL-JMU"
+      },
+      "label": "Stadt Jiamusi, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-QTH",
+      "assertion": {
+        "code": "CN-HL-QTH"
+      },
+      "label": "Stadt Qitaihe, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-MDG",
+      "assertion": {
+        "code": "CN-HL-MDG"
+      },
+      "label": "Stadt Mudanjiang, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-HEK",
+      "assertion": {
+        "code": "CN-HL-HEK"
+      },
+      "label": "Stadt Heihe, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-SUH",
+      "assertion": {
+        "code": "CN-HL-SUH"
+      },
+      "label": "Stadt Suihua, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-HL-DHL",
+      "assertion": {
+        "code": "CN-HL-DHL"
+      },
+      "label": "Bezirk Da Hinggan Ling, Provinz Heilongjiang, China"
+    },
+    {
+      "key": "location:CN-SH",
+      "assertion": {
+        "code": "CN-SH"
+      },
+      "label": "Stadt Shanghai, China"
+    },
+    {
+      "key": "location:CN-JS",
+      "assertion": {
+        "code": "CN-JS"
+      },
+      "label": "Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-NKG",
+      "assertion": {
+        "code": "CN-JS-NKG"
+      },
+      "label": "Stadt Nanjing, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-WUX",
+      "assertion": {
+        "code": "CN-JS-WUX"
+      },
+      "label": "Stadt Wuxi, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-XUZ",
+      "assertion": {
+        "code": "CN-JS-XUZ"
+      },
+      "label": "Stadt Xuzhou, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-CZX",
+      "assertion": {
+        "code": "CN-JS-CZX"
+      },
+      "label": "Stadt Changzhou, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-SZH",
+      "assertion": {
+        "code": "CN-JS-SZH"
+      },
+      "label": "Stadt Suzhou, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-NTG",
+      "assertion": {
+        "code": "CN-JS-NTG"
+      },
+      "label": "Stadt Nantong, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-LYG",
+      "assertion": {
+        "code": "CN-JS-LYG"
+      },
+      "label": "Stadt Lianyungang, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-HAS",
+      "assertion": {
+        "code": "CN-JS-HAS"
+      },
+      "label": "Stadt Huai'an, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-YCK",
+      "assertion": {
+        "code": "CN-JS-YCK"
+      },
+      "label": "Stadt Yancheng, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-YZH",
+      "assertion": {
+        "code": "CN-JS-YZH"
+      },
+      "label": "Stadt Yangzhou, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-ZHE",
+      "assertion": {
+        "code": "CN-JS-ZHE"
+      },
+      "label": "Stadt Zhenjiang, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-TZS",
+      "assertion": {
+        "code": "CN-JS-TZS"
+      },
+      "label": "Stadt Taizhou, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-JS-SUQ",
+      "assertion": {
+        "code": "CN-JS-SUQ"
+      },
+      "label": "Stadt Suqian, Provinz Jiangsu, China"
+    },
+    {
+      "key": "location:CN-ZJ",
+      "assertion": {
+        "code": "CN-ZJ"
+      },
+      "label": "Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-HGH",
+      "assertion": {
+        "code": "CN-ZJ-HGH"
+      },
+      "label": "Stadt Hangzhou, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-NGB",
+      "assertion": {
+        "code": "CN-ZJ-NGB"
+      },
+      "label": "Stadt Ningbo, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-WNZ",
+      "assertion": {
+        "code": "CN-ZJ-WNZ"
+      },
+      "label": "Stadt Wenzhou, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-JIX",
+      "assertion": {
+        "code": "CN-ZJ-JIX"
+      },
+      "label": "Stadt Jiaxing, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-HZH",
+      "assertion": {
+        "code": "CN-ZJ-HZH"
+      },
+      "label": "Stadt Huzhou, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-SXG",
+      "assertion": {
+        "code": "CN-ZJ-SXG"
+      },
+      "label": "Stadt Shaoxing, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-JHA",
+      "assertion": {
+        "code": "CN-ZJ-JHA"
+      },
+      "label": "Stadt Jinhua, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-QUZ",
+      "assertion": {
+        "code": "CN-ZJ-QUZ"
+      },
+      "label": "Stadt Quzhou, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-ZOS",
+      "assertion": {
+        "code": "CN-ZJ-ZOS"
+      },
+      "label": "Stadt Zhoushan, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-TZZ",
+      "assertion": {
+        "code": "CN-ZJ-TZZ"
+      },
+      "label": "Stadt Taizhou, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-ZJ-LSS",
+      "assertion": {
+        "code": "CN-ZJ-LSS"
+      },
+      "label": "Stadt Lishui, Provinz Zhejiang, China"
+    },
+    {
+      "key": "location:CN-AH",
+      "assertion": {
+        "code": "CN-AH"
+      },
+      "label": "Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-HFE",
+      "assertion": {
+        "code": "CN-AH-HFE"
+      },
+      "label": "Stadt Hefei, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-WHI",
+      "assertion": {
+        "code": "CN-AH-WHI"
+      },
+      "label": "Stadt Wuhu, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-BBU",
+      "assertion": {
+        "code": "CN-AH-BBU"
+      },
+      "label": "Stadt Bengbu, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-HNS",
+      "assertion": {
+        "code": "CN-AH-HNS"
+      },
+      "label": "Stadt Huainan, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-MAA",
+      "assertion": {
+        "code": "CN-AH-MAA"
+      },
+      "label": "Stadt Ma'anshan, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-HBE",
+      "assertion": {
+        "code": "CN-AH-HBE"
+      },
+      "label": "Stadt Huaibei, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-TOL",
+      "assertion": {
+        "code": "CN-AH-TOL"
+      },
+      "label": "Stadt Tongling, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-AQG",
+      "assertion": {
+        "code": "CN-AH-AQG"
+      },
+      "label": "Stadt Anqing, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-HSN",
+      "assertion": {
+        "code": "CN-AH-HSN"
+      },
+      "label": "Stadt Huangshan, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-CUZ",
+      "assertion": {
+        "code": "CN-AH-CUZ"
+      },
+      "label": "Stadt Chuzhou, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-FYS",
+      "assertion": {
+        "code": "CN-AH-FYS"
+      },
+      "label": "Stadt Fuyang, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-SUZ",
+      "assertion": {
+        "code": "CN-AH-SUZ"
+      },
+      "label": "Stadt Suzhou, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-CAH",
+      "assertion": {
+        "code": "CN-AH-CAH"
+      },
+      "label": "Stadt Chaohu, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-LAW",
+      "assertion": {
+        "code": "CN-AH-LAW"
+      },
+      "label": "Stadt Lu'an, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-BOZ",
+      "assertion": {
+        "code": "CN-AH-BOZ"
+      },
+      "label": "Bozhou Shi, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-CIZ",
+      "assertion": {
+        "code": "CN-AH-CIZ"
+      },
+      "label": "Chizhou Shi, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-AH-XCI",
+      "assertion": {
+        "code": "CN-AH-XCI"
+      },
+      "label": "Xuancheng Shi, Provinz Anhui, China"
+    },
+    {
+      "key": "location:CN-FJ",
+      "assertion": {
+        "code": "CN-FJ"
+      },
+      "label": "Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-FOC",
+      "assertion": {
+        "code": "CN-FJ-FOC"
+      },
+      "label": "Fuzhou Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-XMN",
+      "assertion": {
+        "code": "CN-FJ-XMN"
+      },
+      "label": "Xiamen Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-PUT",
+      "assertion": {
+        "code": "CN-FJ-PUT"
+      },
+      "label": "Putian Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-SMS",
+      "assertion": {
+        "code": "CN-FJ-SMS"
+      },
+      "label": "Sanming Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-QZJ",
+      "assertion": {
+        "code": "CN-FJ-QZJ"
+      },
+      "label": "Quanzhou Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-ZZU",
+      "assertion": {
+        "code": "CN-FJ-ZZU"
+      },
+      "label": "Zhangzhou Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-NPS",
+      "assertion": {
+        "code": "CN-FJ-NPS"
+      },
+      "label": "Nanping Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-LYF",
+      "assertion": {
+        "code": "CN-FJ-LYF"
+      },
+      "label": "Longyan Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-FJ-NDS",
+      "assertion": {
+        "code": "CN-FJ-NDS"
+      },
+      "label": "Ningde Shi, Provinz Fujian, China"
+    },
+    {
+      "key": "location:CN-JX",
+      "assertion": {
+        "code": "CN-JX"
+      },
+      "label": "Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-KHN",
+      "assertion": {
+        "code": "CN-JX-KHN"
+      },
+      "label": "Nanchang Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-JDZ",
+      "assertion": {
+        "code": "CN-JX-JDZ"
+      },
+      "label": "Jingdezhen Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-PXS",
+      "assertion": {
+        "code": "CN-JX-PXS"
+      },
+      "label": "Pingxiang Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-JIU",
+      "assertion": {
+        "code": "CN-JX-JIU"
+      },
+      "label": "Jiujiang Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-XYU",
+      "assertion": {
+        "code": "CN-JX-XYU"
+      },
+      "label": "Xinyu Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-YTS",
+      "assertion": {
+        "code": "CN-JX-YTS"
+      },
+      "label": "Yingtan Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-GZH",
+      "assertion": {
+        "code": "CN-JX-GZH"
+      },
+      "label": "Ganzhou Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-JAS",
+      "assertion": {
+        "code": "CN-JX-JAS"
+      },
+      "label": "Ji'an Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-YCN",
+      "assertion": {
+        "code": "CN-JX-YCN"
+      },
+      "label": "Yichun Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-FUZ",
+      "assertion": {
+        "code": "CN-JX-FUZ"
+      },
+      "label": "Fuzhou Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-JX-SRS",
+      "assertion": {
+        "code": "CN-JX-SRS"
+      },
+      "label": "Shangrao Shi, Provinz Jiangxi, China"
+    },
+    {
+      "key": "location:CN-SD",
+      "assertion": {
+        "code": "CN-SD"
+      },
+      "label": "Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-TNA",
+      "assertion": {
+        "code": "CN-SD-TNA"
+      },
+      "label": "Jinan Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-TAO",
+      "assertion": {
+        "code": "CN-SD-TAO"
+      },
+      "label": "Qingdao Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-ZBO",
+      "assertion": {
+        "code": "CN-SD-ZBO"
+      },
+      "label": "Zibo Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-ZZG",
+      "assertion": {
+        "code": "CN-SD-ZZG"
+      },
+      "label": "Zaozhuang Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-DYG",
+      "assertion": {
+        "code": "CN-SD-DYG"
+      },
+      "label": "Dongying Sh, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-YNT",
+      "assertion": {
+        "code": "CN-SD-YNT"
+      },
+      "label": "Yantai Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-WEF",
+      "assertion": {
+        "code": "CN-SD-WEF"
+      },
+      "label": "Weifang Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-JNG",
+      "assertion": {
+        "code": "CN-SD-JNG"
+      },
+      "label": "Jining Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-TAI",
+      "assertion": {
+        "code": "CN-SD-TAI"
+      },
+      "label": "Tai'an Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-WEH",
+      "assertion": {
+        "code": "CN-SD-WEH"
+      },
+      "label": "Weihai Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-RZH",
+      "assertion": {
+        "code": "CN-SD-RZH"
+      },
+      "label": "Rizhao Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-LWS",
+      "assertion": {
+        "code": "CN-SD-LWS"
+      },
+      "label": "Laiwu Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-LYI",
+      "assertion": {
+        "code": "CN-SD-LYI"
+      },
+      "label": "Linyi Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-DZS",
+      "assertion": {
+        "code": "CN-SD-DZS"
+      },
+      "label": "Dezhou Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-LCH",
+      "assertion": {
+        "code": "CN-SD-LCH"
+      },
+      "label": "Liaocheng Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-BZH",
+      "assertion": {
+        "code": "CN-SD-BZH"
+      },
+      "label": "Binzhou Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-SD-HZS",
+      "assertion": {
+        "code": "CN-SD-HZS"
+      },
+      "label": "Heze Shi, Provinz Shandong, China"
+    },
+    {
+      "key": "location:CN-HA",
+      "assertion": {
+        "code": "CN-HA"
+      },
+      "label": "Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-CGO",
+      "assertion": {
+        "code": "CN-HA-CGO"
+      },
+      "label": "Zhengzhou Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-KFS",
+      "assertion": {
+        "code": "CN-HA-KFS"
+      },
+      "label": "Kaifeng Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-LYA",
+      "assertion": {
+        "code": "CN-HA-LYA"
+      },
+      "label": "Luoyang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-PDS",
+      "assertion": {
+        "code": "CN-HA-PDS"
+      },
+      "label": "Pingdingshan Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-AYS",
+      "assertion": {
+        "code": "CN-HA-AYS"
+      },
+      "label": "Anyang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-HBS",
+      "assertion": {
+        "code": "CN-HA-HBS"
+      },
+      "label": "Hebi Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-XXS",
+      "assertion": {
+        "code": "CN-HA-XXS"
+      },
+      "label": "Xinxiang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-JZY",
+      "assertion": {
+        "code": "CN-HA-JZY"
+      },
+      "label": "Jiaozuo Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-PYS",
+      "assertion": {
+        "code": "CN-HA-PYS"
+      },
+      "label": "Puyang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-XCS",
+      "assertion": {
+        "code": "CN-HA-XCS"
+      },
+      "label": "Xuchang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-LHS",
+      "assertion": {
+        "code": "CN-HA-LHS"
+      },
+      "label": "Luohe Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-SMX",
+      "assertion": {
+        "code": "CN-HA-SMX"
+      },
+      "label": "Sanmenxia Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-NYS",
+      "assertion": {
+        "code": "CN-HA-NYS"
+      },
+      "label": "Nanyang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-SQS",
+      "assertion": {
+        "code": "CN-HA-SQS"
+      },
+      "label": "Shangqiu Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-XYG",
+      "assertion": {
+        "code": "CN-HA-XYG"
+      },
+      "label": "Xinyang Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-ZKS",
+      "assertion": {
+        "code": "CN-HA-ZKS"
+      },
+      "label": "Zhoukou Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HA-ZMD",
+      "assertion": {
+        "code": "CN-HA-ZMD"
+      },
+      "label": "Zhumadian Shi, Provinz Henan, China"
+    },
+    {
+      "key": "location:CN-HB",
+      "assertion": {
+        "code": "CN-HB"
+      },
+      "label": "Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-WUH",
+      "assertion": {
+        "code": "CN-HB-WUH"
+      },
+      "label": "Wuhan Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-HSI",
+      "assertion": {
+        "code": "CN-HB-HSI"
+      },
+      "label": "Huangshi Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-SYE",
+      "assertion": {
+        "code": "CN-HB-SYE"
+      },
+      "label": "Shiyan Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-YCO",
+      "assertion": {
+        "code": "CN-HB-YCO"
+      },
+      "label": "Yichang Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-XFN",
+      "assertion": {
+        "code": "CN-HB-XFN"
+      },
+      "label": "Xiangfan Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-EZS",
+      "assertion": {
+        "code": "CN-HB-EZS"
+      },
+      "label": "Ezhou Sli, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-JMS",
+      "assertion": {
+        "code": "CN-HB-JMS"
+      },
+      "label": "Jingmen Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-XGE",
+      "assertion": {
+        "code": "CN-HB-XGE"
+      },
+      "label": "Xiaogan Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-JGZ",
+      "assertion": {
+        "code": "CN-HB-JGZ"
+      },
+      "label": "Jingzhou Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-HGE",
+      "assertion": {
+        "code": "CN-HB-HGE"
+      },
+      "label": "Huanggang Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-XNS",
+      "assertion": {
+        "code": "CN-HB-XNS"
+      },
+      "label": "Xianning Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-SZR",
+      "assertion": {
+        "code": "CN-HB-SZR"
+      },
+      "label": "Suizhou Shi, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HB-ESH",
+      "assertion": {
+        "code": "CN-HB-ESH"
+      },
+      "label": "Autonomer Bezirk Enshi der Tujia und Miao, Provinz Hubei, China"
+    },
+    {
+      "key": "location:CN-HN",
+      "assertion": {
+        "code": "CN-HN"
+      },
+      "label": "Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-CSX",
+      "assertion": {
+        "code": "CN-HN-CSX"
+      },
+      "label": "Changsha Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-ZZS",
+      "assertion": {
+        "code": "CN-HN-ZZS"
+      },
+      "label": "Zhuzhou Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-XGT",
+      "assertion": {
+        "code": "CN-HN-XGT"
+      },
+      "label": "Xiangtan Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-HNY",
+      "assertion": {
+        "code": "CN-HN-HNY"
+      },
+      "label": "Hengyang Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-SYR",
+      "assertion": {
+        "code": "CN-HN-SYR"
+      },
+      "label": "Shaoyang Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-YYG",
+      "assertion": {
+        "code": "CN-HN-YYG"
+      },
+      "label": "Yueyang Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-CDE",
+      "assertion": {
+        "code": "CN-HN-CDE"
+      },
+      "label": "Changde Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-ZJJ",
+      "assertion": {
+        "code": "CN-HN-ZJJ"
+      },
+      "label": "Zhangjiajie Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-YYS",
+      "assertion": {
+        "code": "CN-HN-YYS"
+      },
+      "label": "Yiyang Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-CNZ",
+      "assertion": {
+        "code": "CN-HN-CNZ"
+      },
+      "label": "Chenzhou Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-YZS",
+      "assertion": {
+        "code": "CN-HN-YZS"
+      },
+      "label": "Yongzhou Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-HHS",
+      "assertion": {
+        "code": "CN-HN-HHS"
+      },
+      "label": "Huaihua Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-LDI",
+      "assertion": {
+        "code": "CN-HN-LDI"
+      },
+      "label": "Loudi Shi, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-HN-XXZ",
+      "assertion": {
+        "code": "CN-HN-XXZ"
+      },
+      "label": "Autonomer Bezirk Xiangxi der Tujia und Miao, Provinz Hunan, China"
+    },
+    {
+      "key": "location:CN-GD",
+      "assertion": {
+        "code": "CN-GD"
+      },
+      "label": "Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-CAN",
+      "assertion": {
+        "code": "CN-GD-CAN"
+      },
+      "label": "Guangzhou Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-HSC",
+      "assertion": {
+        "code": "CN-GD-HSC"
+      },
+      "label": "Shaoguan Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-SZX",
+      "assertion": {
+        "code": "CN-GD-SZX"
+      },
+      "label": "Shenzhen Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-ZUH",
+      "assertion": {
+        "code": "CN-GD-ZUH"
+      },
+      "label": "Zhuhai Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-SWA",
+      "assertion": {
+        "code": "CN-GD-SWA"
+      },
+      "label": "Shantou Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-FOS",
+      "assertion": {
+        "code": "CN-GD-FOS"
+      },
+      "label": "Foshan Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-JMN",
+      "assertion": {
+        "code": "CN-GD-JMN"
+      },
+      "label": "Jiangmen Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-ZHA",
+      "assertion": {
+        "code": "CN-GD-ZHA"
+      },
+      "label": "Zhanjiang Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-MMI",
+      "assertion": {
+        "code": "CN-GD-MMI"
+      },
+      "label": "Maoming Shi, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-ZQG",
+      "assertion": {
+        "code": "CN-GD-ZQG"
+      },
+      "label": "Zhaoqing, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-HUI",
+      "assertion": {
+        "code": "CN-GD-HUI"
+      },
+      "label": "Huizhou, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-MXZ",
+      "assertion": {
+        "code": "CN-GD-MXZ"
+      },
+      "label": "Meizhou, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-SWE",
+      "assertion": {
+        "code": "CN-GD-SWE"
+      },
+      "label": "Shanwei, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-HEY",
+      "assertion": {
+        "code": "CN-GD-HEY"
+      },
+      "label": "Heyuan, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-YJI",
+      "assertion": {
+        "code": "CN-GD-YJI"
+      },
+      "label": "Yangjiang, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-QYN",
+      "assertion": {
+        "code": "CN-GD-QYN"
+      },
+      "label": "Qingyuan, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-DGG",
+      "assertion": {
+        "code": "CN-GD-DGG"
+      },
+      "label": "Dongguan, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-ZSN",
+      "assertion": {
+        "code": "CN-GD-ZSN"
+      },
+      "label": "Zhongshan, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-CZY",
+      "assertion": {
+        "code": "CN-GD-CZY"
+      },
+      "label": "Chaozhou, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-JIY",
+      "assertion": {
+        "code": "CN-GD-JIY"
+      },
+      "label": "Jieyang, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GD-YFS",
+      "assertion": {
+        "code": "CN-GD-YFS"
+      },
+      "label": "Yunfu, Provinz Guangdong, China"
+    },
+    {
+      "key": "location:CN-GX",
+      "assertion": {
+        "code": "CN-GX"
+      },
+      "label": "Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-NNG",
+      "assertion": {
+        "code": "CN-GX-NNG"
+      },
+      "label": "Nanning, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-LZH",
+      "assertion": {
+        "code": "CN-GX-LZH"
+      },
+      "label": "Liuzhou, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-KWL",
+      "assertion": {
+        "code": "CN-GX-KWL"
+      },
+      "label": "Guilin, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-WUZ",
+      "assertion": {
+        "code": "CN-GX-WUZ"
+      },
+      "label": "Wuzhou, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-BHY",
+      "assertion": {
+        "code": "CN-GX-BHY"
+      },
+      "label": "Beihai, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-FAN",
+      "assertion": {
+        "code": "CN-GX-FAN"
+      },
+      "label": "Fangchenggang, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-QZH",
+      "assertion": {
+        "code": "CN-GX-QZH"
+      },
+      "label": "Qinzhou, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-GUG",
+      "assertion": {
+        "code": "CN-GX-GUG"
+      },
+      "label": "Guigang, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-YUL",
+      "assertion": {
+        "code": "CN-GX-YUL"
+      },
+      "label": "Yulin, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-BSS",
+      "assertion": {
+        "code": "CN-GX-BSS"
+      },
+      "label": "Bose, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-HZO",
+      "assertion": {
+        "code": "CN-GX-HZO"
+      },
+      "label": "Hezhou, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-HCS",
+      "assertion": {
+        "code": "CN-GX-HCS"
+      },
+      "label": "Hechi, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-LIB",
+      "assertion": {
+        "code": "CN-GX-LIB"
+      },
+      "label": "Laibin, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-GX-COZ",
+      "assertion": {
+        "code": "CN-GX-COZ"
+      },
+      "label": "Chongzuo, Autonomes Gebiet Guangxi der Zhuang, China"
+    },
+    {
+      "key": "location:CN-HI",
+      "assertion": {
+        "code": "CN-HI"
+      },
+      "label": "Provinz Hainan, China"
+    },
+    {
+      "key": "location:CN-HI-HAK",
+      "assertion": {
+        "code": "CN-HI-HAK"
+      },
+      "label": "Haikou, Provinz Hainan, China"
+    },
+    {
+      "key": "location:CN-HI-SYX",
+      "assertion": {
+        "code": "CN-HI-SYX"
+      },
+      "label": "Sanva, Provinz Hainan, China"
+    },
+    {
+      "key": "location:CN-CQ",
+      "assertion": {
+        "code": "CN-CQ"
+      },
+      "label": "Chongqing, China"
+    },
+    {
+      "key": "location:CN-SC",
+      "assertion": {
+        "code": "CN-SC"
+      },
+      "label": "Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-CTU",
+      "assertion": {
+        "code": "CN-SC-CTU"
+      },
+      "label": "Chengdu, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-ZGS",
+      "assertion": {
+        "code": "CN-SC-ZGS"
+      },
+      "label": "Zigong, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-PZH",
+      "assertion": {
+        "code": "CN-SC-PZH"
+      },
+      "label": "Panzhihua, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-LUZ",
+      "assertion": {
+        "code": "CN-SC-LUZ"
+      },
+      "label": "Luzhou, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-DEY",
+      "assertion": {
+        "code": "CN-SC-DEY"
+      },
+      "label": "Deyang, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-MYG",
+      "assertion": {
+        "code": "CN-SC-MYG"
+      },
+      "label": "Mianyang, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-GYC",
+      "assertion": {
+        "code": "CN-SC-GYC"
+      },
+      "label": "Guangyuan, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-SNS",
+      "assertion": {
+        "code": "CN-SC-SNS"
+      },
+      "label": "Suining, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-NJS",
+      "assertion": {
+        "code": "CN-SC-NJS"
+      },
+      "label": "Neijiang, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-LES",
+      "assertion": {
+        "code": "CN-SC-LES"
+      },
+      "label": "Leshan, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-NCO",
+      "assertion": {
+        "code": "CN-SC-NCO"
+      },
+      "label": "Nanchong, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-MSS",
+      "assertion": {
+        "code": "CN-SC-MSS"
+      },
+      "label": "Meishan, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-YBS",
+      "assertion": {
+        "code": "CN-SC-YBS"
+      },
+      "label": "Yibin, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-GAC",
+      "assertion": {
+        "code": "CN-SC-GAC"
+      },
+      "label": "Guang'an, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-DAZ",
+      "assertion": {
+        "code": "CN-SC-DAZ"
+      },
+      "label": "Dazhou, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-YAS",
+      "assertion": {
+        "code": "CN-SC-YAS"
+      },
+      "label": "Ya'an, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-BZS",
+      "assertion": {
+        "code": "CN-SC-BZS"
+      },
+      "label": "Bazhong, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-ZYS",
+      "assertion": {
+        "code": "CN-SC-ZYS"
+      },
+      "label": "Ziyang, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-ABA",
+      "assertion": {
+        "code": "CN-SC-ABA"
+      },
+      "label": "Autonomer Bezirk Aba der Tibeter und Qiang, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-GAZ",
+      "assertion": {
+        "code": "CN-SC-GAZ"
+      },
+      "label": "Autonomer Bezirk Garzê der Tibeter, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-SC-LSY",
+      "assertion": {
+        "code": "CN-SC-LSY"
+      },
+      "label": "Autonomer Bezirk Liangshan der Yi, Provinz Sichuan, China"
+    },
+    {
+      "key": "location:CN-GZ",
+      "assertion": {
+        "code": "CN-GZ"
+      },
+      "label": "Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-KWE",
+      "assertion": {
+        "code": "CN-GZ-KWE"
+      },
+      "label": "Guiyang, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-LPS",
+      "assertion": {
+        "code": "CN-GZ-LPS"
+      },
+      "label": "Lupanshui, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-ZNY",
+      "assertion": {
+        "code": "CN-GZ-ZNY"
+      },
+      "label": "Zunyi, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-ASS",
+      "assertion": {
+        "code": "CN-GZ-ASS"
+      },
+      "label": "Anshun, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-TRD",
+      "assertion": {
+        "code": "CN-GZ-TRD"
+      },
+      "label": "Bezirk Tongren, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-QXZ",
+      "assertion": {
+        "code": "CN-GZ-QXZ"
+      },
+      "label": "Autonomer Bezirk Qianxinan der Buyi und Miao, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-BJD",
+      "assertion": {
+        "code": "CN-GZ-BJD"
+      },
+      "label": "Bezirk Bijie, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-QND",
+      "assertion": {
+        "code": "CN-GZ-QND"
+      },
+      "label": "Autonomer Bezirk Qiandongnan der Miao und Dong, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-GZ-QNZ",
+      "assertion": {
+        "code": "CN-GZ-QNZ"
+      },
+      "label": "Autonomer Bezirk Qiannan der Buyei und Miao, Provinz Guizhou, China"
+    },
+    {
+      "key": "location:CN-YN",
+      "assertion": {
+        "code": "CN-YN"
+      },
+      "label": "Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-KMG",
+      "assertion": {
+        "code": "CN-YN-KMG"
+      },
+      "label": "Kunming, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-QJS",
+      "assertion": {
+        "code": "CN-YN-QJS"
+      },
+      "label": "Qujing, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-YXS",
+      "assertion": {
+        "code": "CN-YN-YXS"
+      },
+      "label": "Yuxi, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-BOS",
+      "assertion": {
+        "code": "CN-YN-BOS"
+      },
+      "label": "Baoshan, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-ZTS",
+      "assertion": {
+        "code": "CN-YN-ZTS"
+      },
+      "label": "Zhaotong, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-LJH",
+      "assertion": {
+        "code": "CN-YN-LJH"
+      },
+      "label": "Lijiang, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-PRS",
+      "assertion": {
+        "code": "CN-YN-PRS"
+      },
+      "label": "Pu'er, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-LIH",
+      "assertion": {
+        "code": "CN-YN-LIH"
+      },
+      "label": "Lincang, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-CXD",
+      "assertion": {
+        "code": "CN-YN-CXD"
+      },
+      "label": "Autonomer Bezirk Chuxiong der Yi, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-HHZ",
+      "assertion": {
+        "code": "CN-YN-HHZ"
+      },
+      "label": "Autonomer Bezirk Honghe der Hani und Yi, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-WSZ",
+      "assertion": {
+        "code": "CN-YN-WSZ"
+      },
+      "label": "Autonomer Bezirk Wenshan der Zhuang und Miao, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-XSB",
+      "assertion": {
+        "code": "CN-YN-XSB"
+      },
+      "label": "Autonomer Bezirk Xishuangbanna der Dai, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-DLZ",
+      "assertion": {
+        "code": "CN-YN-DLZ"
+      },
+      "label": "Autonomer Bezirk Dali der Bai, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-DHG",
+      "assertion": {
+        "code": "CN-YN-DHG"
+      },
+      "label": "Autonomer Bezirk Dehong der Dai und Jingpo, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-NUJ",
+      "assertion": {
+        "code": "CN-YN-NUJ"
+      },
+      "label": "Autonomer Bezirk Nujiang der Lisu, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-YN-DEZ",
+      "assertion": {
+        "code": "CN-YN-DEZ"
+      },
+      "label": "Autonomer Bezirk Deqên der Tibeter, Provinz Yunnan, China"
+    },
+    {
+      "key": "location:CN-XZ",
+      "assertion": {
+        "code": "CN-XZ"
+      },
+      "label": "Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-LXA",
+      "assertion": {
+        "code": "CN-XZ-LXA"
+      },
+      "label": "Lhasa, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-QAD",
+      "assertion": {
+        "code": "CN-XZ-QAD"
+      },
+      "label": "Bezirk Qamdo, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-SND",
+      "assertion": {
+        "code": "CN-XZ-SND"
+      },
+      "label": "Bezirk Shannan, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-XID",
+      "assertion": {
+        "code": "CN-XZ-XID"
+      },
+      "label": "Bezirk Xigaze, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-NAD",
+      "assertion": {
+        "code": "CN-XZ-NAD"
+      },
+      "label": "Bezirk Nagqu, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-NGD",
+      "assertion": {
+        "code": "CN-XZ-NGD"
+      },
+      "label": "Bezirk Ngari, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-XZ-NYD",
+      "assertion": {
+        "code": "CN-XZ-NYD"
+      },
+      "label": "Bezirk Nyingchi, Autonomes Gebiet Tibet, China"
+    },
+    {
+      "key": "location:CN-SN",
+      "assertion": {
+        "code": "CN-SN"
+      },
+      "label": "Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-SIA",
+      "assertion": {
+        "code": "CN-SN-SIA"
+      },
+      "label": "Xi'an, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-TCN",
+      "assertion": {
+        "code": "CN-SN-TCN"
+      },
+      "label": "Tongchuan, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-BJI",
+      "assertion": {
+        "code": "CN-SN-BJI"
+      },
+      "label": "Baoji, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-XYS",
+      "assertion": {
+        "code": "CN-SN-XYS"
+      },
+      "label": "Xianyang, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-WNA",
+      "assertion": {
+        "code": "CN-SN-WNA"
+      },
+      "label": "Weinan, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-YNA",
+      "assertion": {
+        "code": "CN-SN-YNA"
+      },
+      "label": "Yan'an, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-HZJ",
+      "assertion": {
+        "code": "CN-SN-HZJ"
+      },
+      "label": "Hanzhong, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-YLN",
+      "assertion": {
+        "code": "CN-SN-YLN"
+      },
+      "label": "Yulin, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-ANK",
+      "assertion": {
+        "code": "CN-SN-ANK"
+      },
+      "label": "Ankang, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-SN-SLH",
+      "assertion": {
+        "code": "CN-SN-SLH"
+      },
+      "label": "Shangluo, Provinz Shaanxi, China"
+    },
+    {
+      "key": "location:CN-GS",
+      "assertion": {
+        "code": "CN-GS"
+      },
+      "label": "Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-LHW",
+      "assertion": {
+        "code": "CN-GS-LHW"
+      },
+      "label": "Stadt Lanzhou, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-JYG",
+      "assertion": {
+        "code": "CN-GS-JYG"
+      },
+      "label": "Stadt Jiayuguan, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-JCS",
+      "assertion": {
+        "code": "CN-GS-JCS"
+      },
+      "label": "Stadt Jinchang, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-BYS",
+      "assertion": {
+        "code": "CN-GS-BYS"
+      },
+      "label": "Stadt Baiyin, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-TSU",
+      "assertion": {
+        "code": "CN-GS-TSU"
+      },
+      "label": "Stadt Tianshui, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-WWS",
+      "assertion": {
+        "code": "CN-GS-WWS"
+      },
+      "label": "Stadt Wuwei, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-ZYE",
+      "assertion": {
+        "code": "CN-GS-ZYE"
+      },
+      "label": "Stadt Zhangye, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-PLS",
+      "assertion": {
+        "code": "CN-GS-PLS"
+      },
+      "label": "Stadt Pingliang, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-JQG",
+      "assertion": {
+        "code": "CN-GS-JQG"
+      },
+      "label": "Stadt Jiuquan, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-QYI",
+      "assertion": {
+        "code": "CN-GS-QYI"
+      },
+      "label": "Stadt Qingyang, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-DNX",
+      "assertion": {
+        "code": "CN-GS-DNX"
+      },
+      "label": "Stadt Dingxi, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-LGN",
+      "assertion": {
+        "code": "CN-GS-LGN"
+      },
+      "label": "Stadt Longnan, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-LXH",
+      "assertion": {
+        "code": "CN-GS-LXH"
+      },
+      "label": "Autonomer Bezirk Linxia der Hui, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-GS-GNZ",
+      "assertion": {
+        "code": "CN-GS-GNZ"
+      },
+      "label": "Autonomer Bezirk Gannan der Tibeter, Provinz Gansu, China"
+    },
+    {
+      "key": "location:CN-QH",
+      "assertion": {
+        "code": "CN-QH"
+      },
+      "label": "Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-XNN",
+      "assertion": {
+        "code": "CN-QH-XNN"
+      },
+      "label": "Stadt Xining, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-HDD",
+      "assertion": {
+        "code": "CN-QH-HDD"
+      },
+      "label": "Bezirk Haidong, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-HBZ",
+      "assertion": {
+        "code": "CN-QH-HBZ"
+      },
+      "label": "Autonomer Bezirk Haibei der Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-HN7",
+      "assertion": {
+        "code": "CN-QH-HN7"
+      },
+      "label": "Autonomer Bezirk Huangnan der Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-HNN",
+      "assertion": {
+        "code": "CN-QH-HNN"
+      },
+      "label": "Autonomer Bezirk Hainan der Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-GOL",
+      "assertion": {
+        "code": "CN-QH-GOL"
+      },
+      "label": "Autonomer Bezirk Golog der Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-YSZ",
+      "assertion": {
+        "code": "CN-QH-YSZ"
+      },
+      "label": "Autonomer Bezirk Yushu der Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-QH-HXZ",
+      "assertion": {
+        "code": "CN-QH-HXZ"
+      },
+      "label": "Autonomer Bezirk Haixi der Mongolen und Tibeter, Provinz Qinghai, China"
+    },
+    {
+      "key": "location:CN-NX",
+      "assertion": {
+        "code": "CN-NX"
+      },
+      "label": "Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-NX-INC",
+      "assertion": {
+        "code": "CN-NX-INC"
+      },
+      "label": "Stadt Yinchuan, Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-NX-SZS",
+      "assertion": {
+        "code": "CN-NX-SZS"
+      },
+      "label": "Stadt Shizuishan, Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-NX-WZS",
+      "assertion": {
+        "code": "CN-NX-WZS"
+      },
+      "label": "Stadt Wuzhong, Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-NX-GYN",
+      "assertion": {
+        "code": "CN-NX-GYN"
+      },
+      "label": "Stadt Guyuan, Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-NX-ZWS",
+      "assertion": {
+        "code": "CN-NX-ZWS"
+      },
+      "label": "Stadt Zhongwei, Autonomes Gebiet Ningxia der Hui, China"
+    },
+    {
+      "key": "location:CN-XJ",
+      "assertion": {
+        "code": "CN-XJ"
+      },
+      "label": "Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-URC",
+      "assertion": {
+        "code": "CN-XJ-URC"
+      },
+      "label": "Stadt Urümqi, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-KAR",
+      "assertion": {
+        "code": "CN-XJ-KAR"
+      },
+      "label": "Stadt Karamay, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-TUD",
+      "assertion": {
+        "code": "CN-XJ-TUD"
+      },
+      "label": "Bezirk Turpan, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-HMD",
+      "assertion": {
+        "code": "CN-XJ-HMD"
+      },
+      "label": "Bezirk Hami (Kumul), Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-CJZ",
+      "assertion": {
+        "code": "CN-XJ-CJZ"
+      },
+      "label": "Autonomer Bezirk Changji der Hui, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-BOR",
+      "assertion": {
+        "code": "CN-XJ-BOR"
+      },
+      "label": "Autonomer Bezirk Bortala der Mongolen, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-BAG",
+      "assertion": {
+        "code": "CN-XJ-BAG"
+      },
+      "label": "Autonomer Bezirk Bayingolin der Mongolen, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-AKD",
+      "assertion": {
+        "code": "CN-XJ-AKD"
+      },
+      "label": "Bezirk Aksu, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-KIZ",
+      "assertion": {
+        "code": "CN-XJ-KIZ"
+      },
+      "label": "Autonomer Bezirk Kizilsu der Kirgisen, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-KSI",
+      "assertion": {
+        "code": "CN-XJ-KSI"
+      },
+      "label": "Bezirk Kashi (Kaxgar), Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-HOD",
+      "assertion": {
+        "code": "CN-XJ-HOD"
+      },
+      "label": "Bezirk Hotan, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-ILD",
+      "assertion": {
+        "code": "CN-XJ-ILD"
+      },
+      "label": "Autonomer Bezirk Ili der Kasachen, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-TCD",
+      "assertion": {
+        "code": "CN-XJ-TCD"
+      },
+      "label": "Bezirk Tacheng (Qoqek), Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:CN-XJ-ALD",
+      "assertion": {
+        "code": "CN-XJ-ALD"
+      },
+      "label": "Bezirk Altay, Autonomes Gebiet Xinjiang der Uiguren, China"
+    },
+    {
+      "key": "location:TW",
+      "assertion": {
+        "code": "TW"
+      },
+      "label": "Taiwan"
+    },
+    {
+      "key": "location:HK",
+      "assertion": {
+        "code": "HK"
+      },
+      "label": "Hongkong"
+    },
+    {
+      "key": "location:MO",
+      "assertion": {
+        "code": "MO"
+      },
+      "label": "Macau"
+    }
+  ]
+}

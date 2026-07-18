@@ -93,20 +93,19 @@ describe('Classifications Cache (src/services/classifications/cache.ts)', () => 
     expect(mockGetILCDClassification).toHaveBeenCalledTimes(2);
   });
 
-  it('shares cache entries when requested languages resolve to the same runtime asset', async () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  it('keeps cache entries separate when languages resolve to different runtime assets', async () => {
     mockGetILCDClassification.mockResolvedValue({
       data: [{ id: 'flow-1', label: 'Flow 1' }],
       success: true,
     });
 
-    const german = await classificationCache.getILCDClassification('Flow', 'de', ['all']);
-    const french = await classificationCache.getILCDClassification('Flow', 'fr', ['all']);
+    const english = await classificationCache.getILCDClassification('Flow', 'en', ['all']);
+    const chinese = await classificationCache.getILCDClassification('Flow', 'zh', ['all']);
 
-    expect(french).toEqual(german);
-    expect(mockGetILCDClassification).toHaveBeenCalledTimes(1);
-    expect(mockGetILCDClassification).toHaveBeenCalledWith('Flow', 'de', ['all']);
-    consoleWarnSpy.mockRestore();
+    expect(chinese).toEqual(english);
+    expect(mockGetILCDClassification).toHaveBeenCalledTimes(2);
+    expect(mockGetILCDClassification).toHaveBeenNthCalledWith(1, 'Flow', 'en', ['all']);
+    expect(mockGetILCDClassification).toHaveBeenNthCalledWith(2, 'Flow', 'zh', ['all']);
   });
 
   it('uses the ISIC cache identity for Process-family classifications', async () => {

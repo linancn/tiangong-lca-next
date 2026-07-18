@@ -1,0 +1,473 @@
+{
+  "locale": "en",
+  "policyVersion": "reference-source-provenance-review-v1",
+  "records": [
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions",
+      "key": "category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to water",
+      "key": "category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to fresh water",
+      "key": "category[0]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to sea water",
+      "key": "category[0]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to water, unspecified",
+      "key": "category[0]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to water, unspecified (long-term)",
+      "key": "category[0]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to soil",
+      "key": "category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to agricultural soil",
+      "key": "category[0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to non-agricultural soil",
+      "key": "category[0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to soil, unspecified",
+      "key": "category[0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to soil, unspecified (long-term)",
+      "key": "category[0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to air",
+      "key": "category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to urban air close to ground",
+      "key": "category[0]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to non-urban air or from high stacks",
+      "key": "category[0]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to lower stratosphere and upper troposphere",
+      "key": "category[0]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to air, unspecified",
+      "key": "category[0]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to air, unspecified (long-term)",
+      "key": "category[0]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissions to air, indoor",
+      "key": "category[0]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Resources",
+      "key": "category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Resources from ground",
+      "key": "category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable material resources from ground",
+      "key": "category[1]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable element resources from ground",
+      "key": "category[1]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable energy resources from ground",
+      "key": "category[1]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable element resources from ground",
+      "key": "category[1]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable energy resources from ground",
+      "key": "category[1]/category[0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable material resources from ground",
+      "key": "category[1]/category[0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable resources from ground, unspecified",
+      "key": "category[1]/category[0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable resources from ground, unspecified",
+      "key": "category[1]/category[0]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Resources from water",
+      "key": "category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable material resources from water",
+      "key": "category[1]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable element resources from water",
+      "key": "category[1]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable energy resources from water",
+      "key": "category[1]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable element resources from water",
+      "key": "category[1]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable energy resources from water",
+      "key": "category[1]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable material resources from water",
+      "key": "category[1]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable resources from water, unspecified",
+      "key": "category[1]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable resources from water, unspecified",
+      "key": "category[1]/category[1]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Resources from air",
+      "key": "category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable material resources from air",
+      "key": "category[1]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable element resources from air",
+      "key": "category[1]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable energy resources from air",
+      "key": "category[1]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable element resources from air",
+      "key": "category[1]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable energy resources from air",
+      "key": "category[1]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable material resources from air",
+      "key": "category[1]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable resources from air, unspecified",
+      "key": "category[1]/category[2]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Non-renewable resources from air, unspecified",
+      "key": "category[1]/category[2]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Resources from biosphere",
+      "key": "category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable element resources from biosphere",
+      "key": "category[1]/category[3]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable energy resources from biosphere",
+      "key": "category[1]/category[3]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable material resources from biosphere",
+      "key": "category[1]/category[3]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable genetic resources from biosphere",
+      "key": "category[1]/category[3]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Renewable resources from biosphere, unspecified",
+      "key": "category[1]/category[3]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Land use",
+      "key": "category[2]"
+    },
+    {
+      "assertion": {
+        "id": "3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Land occupation",
+      "key": "category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Land transformation",
+      "key": "category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Other elementary flows",
+      "key": "category[3]"
+    }
+  ],
+  "resourceId": "ilcd-flow-categorization",
+  "reviewKind": "source-provenance-audit",
+  "schemaVersion": 2,
+  "sourceAuditBinding": {
+    "auditFileDigest": {
+      "algorithm": "sha256",
+      "byteLength": 23957,
+      "scope": "frozen-normalized-official-source-audit-json",
+      "value": "0924f867ba081a2b56c3ba60dd932f08f534193634c2525293caf2604cb43861"
+    },
+    "auditId": "ef3.1-ilcd-flow-categorization-reference",
+    "projectionDigest": {
+      "algorithm": "sha256",
+      "identityCount": 56,
+      "scope": "ordered-scoped-official-source-projection",
+      "value": "bd794ec4f9e3f0d86c2eb005b91a7cf504070d97b44df4a7d3e21b7f56f13336"
+    },
+    "transformVersion": "ilcd-category-xml-identity-path-v1"
+  }
+}

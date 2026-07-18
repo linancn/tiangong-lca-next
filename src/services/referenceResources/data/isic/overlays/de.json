@@ -1,0 +1,5828 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "isic",
+  "locale": "de",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Prozess",
+    "Flow": "Fluss",
+    "FlowProperty": "Flusseigenschaft",
+    "UnitGroup": "Einheitengruppe",
+    "Contact": "Kontakt",
+    "Source": "Quelle",
+    "LCIAMethod": "LCIA-Methode",
+    "LifeCycleModel": "Lebenszyklusmodell"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "A"
+      },
+      "label": "Landwirtschaft, Forstwirtschaft und Fischerei"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "01"
+      },
+      "label": "Pflanzen- und Tierproduktion, Jagd und damit verbundene Dienstleistungen"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "011"
+      },
+      "label": "Anbau einjähriger Pflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0111"
+      },
+      "label": "Anbau von Getreide (ohne Reis), Hülsenfrüchten und Ölsaaten"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "0112"
+      },
+      "label": "Anbau von Reis"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "0113"
+      },
+      "label": "Anbau von Gemüse und Melonen sowie Wurzeln und Knollen"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "0114"
+      },
+      "label": "Anbau von Zuckerrohr"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "0115"
+      },
+      "label": "Anbau von Tabak"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "0116"
+      },
+      "label": "Anbau von Faserpflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "0119"
+      },
+      "label": "Anbau sonstiger einjähriger Pflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "012"
+      },
+      "label": "Anbau mehrjähriger Pflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0121"
+      },
+      "label": "Anbau von Weintrauben"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "0122"
+      },
+      "label": "Anbau tropischer und subtropischer Früchte"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "0123"
+      },
+      "label": "Anbau von Zitrusfrüchten"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "0124"
+      },
+      "label": "Anbau von Kern- und Steinobst"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[4]",
+      "assertion": {
+        "id": "0125"
+      },
+      "label": "Anbau sonstiger Baum- und Strauchfrüchte sowie Nüsse"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[5]",
+      "assertion": {
+        "id": "0126"
+      },
+      "label": "Anbau ölhaltiger Früchte"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[6]",
+      "assertion": {
+        "id": "0127"
+      },
+      "label": "Anbau von Getränkepflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[7]",
+      "assertion": {
+        "id": "0128"
+      },
+      "label": "Anbau von Gewürz-, Aroma-, Arznei- und Pharmapflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[8]",
+      "assertion": {
+        "id": "0129"
+      },
+      "label": "Anbau sonstiger mehrjähriger Pflanzen"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "013"
+      },
+      "label": "Pflanzenvermehrung"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "0130"
+      },
+      "label": "Pflanzenvermehrung"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "014"
+      },
+      "label": "Tierproduktion"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "0141"
+      },
+      "label": "Haltung von Rindern und Büffeln"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "0142"
+      },
+      "label": "Haltung von Pferden und sonstigen Equiden"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "0143"
+      },
+      "label": "Haltung von Kamelen und Kameliden"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "0144"
+      },
+      "label": "Haltung von Schafen und Ziegen"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "0145"
+      },
+      "label": "Haltung von Schweinen"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "0146"
+      },
+      "label": "Haltung von Geflügel"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[6]",
+      "assertion": {
+        "id": "0149"
+      },
+      "label": "Haltung sonstiger Tiere"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "015"
+      },
+      "label": "Gemischte Landwirtschaft"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "0150"
+      },
+      "label": "Gemischte Landwirtschaft"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "016"
+      },
+      "label": "Dienstleistungen für die Landwirtschaft und Tätigkeiten nach der Ernte"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "0161"
+      },
+      "label": "Dienstleistungen für den Pflanzenbau"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "0162"
+      },
+      "label": "Dienstleistungen für die Tierproduktion"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "0163"
+      },
+      "label": "Tätigkeiten nach der Ernte"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[3]",
+      "assertion": {
+        "id": "0164"
+      },
+      "label": "Saatgutaufbereitung zur Vermehrung"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "017"
+      },
+      "label": "Jagd, Fallenstellerei und damit verbundene Dienstleistungen"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "0170"
+      },
+      "label": "Jagd, Fallenstellerei und damit verbundene Dienstleistungen"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "02"
+      },
+      "label": "Forstwirtschaft und Holzeinschlag"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "021"
+      },
+      "label": "Waldbau und sonstige forstwirtschaftliche Tätigkeiten"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0210"
+      },
+      "label": "Waldbau und sonstige forstwirtschaftliche Tätigkeiten"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "022"
+      },
+      "label": "Holzeinschlag"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0220"
+      },
+      "label": "Holzeinschlag"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "023"
+      },
+      "label": "Sammeln von Nichtholzforstprodukten"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "0230"
+      },
+      "label": "Sammeln von Nichtholzforstprodukten"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "024"
+      },
+      "label": "Dienstleistungen für die Forstwirtschaft"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "0240"
+      },
+      "label": "Dienstleistungen für die Forstwirtschaft"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "03"
+      },
+      "label": "Fischerei und Aquakultur"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "031"
+      },
+      "label": "Fischerei"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0311"
+      },
+      "label": "Meeresfischerei"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "0312"
+      },
+      "label": "Binnenfischerei"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "032"
+      },
+      "label": "Aquakultur"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0321"
+      },
+      "label": "Meeres-Aquakultur"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0322"
+      },
+      "label": "Binnenaquakultur"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "033"
+      },
+      "label": "Dienstleistungen für Fischerei und Aquakultur"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "0330"
+      },
+      "label": "Dienstleistungen für Fischerei und Aquakultur"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "B"
+      },
+      "label": "Bergbau und Gewinnung von Steinen und Erden"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "05"
+      },
+      "label": "Steinkohlen- und Braunkohlenbergbau"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "051"
+      },
+      "label": "Steinkohlenbergbau"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0510"
+      },
+      "label": "Steinkohlenbergbau"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "052"
+      },
+      "label": "Braunkohlenbergbau"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0520"
+      },
+      "label": "Braunkohlenbergbau"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "06"
+      },
+      "label": "Gewinnung von Erdöl und Erdgas"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "061"
+      },
+      "label": "Gewinnung von Erdöl"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0610"
+      },
+      "label": "Gewinnung von Erdöl"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "062"
+      },
+      "label": "Gewinnung von Erdgas"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0620"
+      },
+      "label": "Gewinnung von Erdgas"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "07"
+      },
+      "label": "Erzbergbau"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "071"
+      },
+      "label": "Eisenerzbergbau"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0710"
+      },
+      "label": "Eisenerzbergbau"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "072"
+      },
+      "label": "NE-Metallerzbergbau"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0721"
+      },
+      "label": "Bergbau auf Uran- und Thoriumerze"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0729"
+      },
+      "label": "Bergbau auf andere NE-Metallerze"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "08"
+      },
+      "label": "Sonstiger Bergbau und Gewinnung von Steinen und Erden"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "081"
+      },
+      "label": "Gewinnung von Steinen, Sand und Ton"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "0810"
+      },
+      "label": "Gewinnung von Steinen, Sand und Ton"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "089"
+      },
+      "label": "Sonstiger Bergbau und Gewinnung von Steinen und Erden a. n. g."
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "0891"
+      },
+      "label": "Gewinnung von chemischen und Düngemittelmineralen"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "0892"
+      },
+      "label": "Torfgewinnung"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "0893"
+      },
+      "label": "Salzgewinnung"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "0899"
+      },
+      "label": "Sonstiger Bergbau und Gewinnung von Steinen und Erden a. n. g."
+    },
+    {
+      "key": "category[1]/category[4]",
+      "assertion": {
+        "id": "09"
+      },
+      "label": "Erbringung von Dienstleistungen für den Bergbau"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "091"
+      },
+      "label": "Erbringung von Dienstleistungen für die Gewinnung von Erdöl und Erdgas"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "0910"
+      },
+      "label": "Erbringung von Dienstleistungen für die Gewinnung von Erdöl und Erdgas"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "099"
+      },
+      "label": "Erbringung von Dienstleistungen für den sonstigen Bergbau und die Gewinnung von Steinen und Erden"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "0990"
+      },
+      "label": "Erbringung von Dienstleistungen für den sonstigen Bergbau und die Gewinnung von Steinen und Erden"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "C"
+      },
+      "label": "Verarbeitendes Gewerbe"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "10"
+      },
+      "label": "Herstellung von Nahrungs- und Futtermitteln"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "101"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Fleisch"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1010"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Fleisch"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "102"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Fisch, Krebstieren und Weichtieren"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1020"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Fisch, Krebstieren und Weichtieren"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "103"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Obst und Gemüse"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1030"
+      },
+      "label": "Verarbeitung und Haltbarmachung von Obst und Gemüse"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]",
+      "assertion": {
+        "id": "104"
+      },
+      "label": "Herstellung von pflanzlichen und tierischen Ölen und Fetten"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "1040"
+      },
+      "label": "Herstellung von pflanzlichen und tierischen Ölen und Fetten"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]",
+      "assertion": {
+        "id": "105"
+      },
+      "label": "Herstellung von Milchprodukten"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "1050"
+      },
+      "label": "Herstellung von Milchprodukten"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]",
+      "assertion": {
+        "id": "106"
+      },
+      "label": "Herstellung von Mahl- und Schälmühlenerzeugnissen, Stärke und Stärkeerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "1061"
+      },
+      "label": "Herstellung von Mahl- und Schälmühlenerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "1062"
+      },
+      "label": "Herstellung von Stärke und Stärkeerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]",
+      "assertion": {
+        "id": "107"
+      },
+      "label": "Herstellung von sonstigen Nahrungsmitteln"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "1071"
+      },
+      "label": "Herstellung von Backwaren"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "1072"
+      },
+      "label": "Herstellung von Zucker"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "1073"
+      },
+      "label": "Herstellung von Kakao, Schokolade und Zuckerwaren"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "1074"
+      },
+      "label": "Herstellung von Teigwaren, Couscous und ähnlichen Teigwarenerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[4]",
+      "assertion": {
+        "id": "1075"
+      },
+      "label": "Herstellung von Fertiggerichten"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[5]",
+      "assertion": {
+        "id": "1076"
+      },
+      "label": "Verarbeitung von Kaffee und Tee"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[6]",
+      "assertion": {
+        "id": "1079"
+      },
+      "label": "Herstellung von sonstigen Nahrungsmitteln a. n. g."
+    },
+    {
+      "key": "category[2]/category[0]/category[7]",
+      "assertion": {
+        "id": "108"
+      },
+      "label": "Herstellung von Futtermitteln"
+    },
+    {
+      "key": "category[2]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "1080"
+      },
+      "label": "Herstellung von Futtermitteln"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "11"
+      },
+      "label": "Getränkeherstellung"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "110"
+      },
+      "label": "Getränkeherstellung"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "1101"
+      },
+      "label": "Herstellung von Spirituosen"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "1102"
+      },
+      "label": "Herstellung von Wein"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "1103"
+      },
+      "label": "Herstellung von Bier"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "1104"
+      },
+      "label": "Herstellung von Malz"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "1105"
+      },
+      "label": "Herstellung von Erfrischungsgetränken; Herstellung von Mineralwasser und anderem abgefüllten Wasser"
+    },
+    {
+      "key": "category[2]/category[2]",
+      "assertion": {
+        "id": "12"
+      },
+      "label": "Herstellung von Tabakerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "120"
+      },
+      "label": "Herstellung von Tabakerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "1200"
+      },
+      "label": "Herstellung von Tabakerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[3]",
+      "assertion": {
+        "id": "13"
+      },
+      "label": "Herstellung von Textilien"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "131"
+      },
+      "label": "Spinnen, Weben und Veredeln von Textilien"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "1311"
+      },
+      "label": "Aufbereitung und Spinnen von Textilfasern"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "1312"
+      },
+      "label": "Weben von Textilien"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "1313"
+      },
+      "label": "Veredeln von Textilien"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]",
+      "assertion": {
+        "id": "139"
+      },
+      "label": "Herstellung sonstiger Textilien"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "1391"
+      },
+      "label": "Herstellung von Maschenwaren"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "1392"
+      },
+      "label": "Herstellung von konfektionierten Textilwaren, ausgenommen Bekleidung"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "1393"
+      },
+      "label": "Herstellung von Teppichen und Läufern"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "1394"
+      },
+      "label": "Herstellung von Seilerwaren, Bindfäden, Schnüren und Netzen"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "1399"
+      },
+      "label": "Herstellung sonstiger Textilien a. n. g."
+    },
+    {
+      "key": "category[2]/category[4]",
+      "assertion": {
+        "id": "14"
+      },
+      "label": "Herstellung von Bekleidung"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "141"
+      },
+      "label": "Herstellung von Bekleidung, ausgenommen Pelzbekleidung"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "1410"
+      },
+      "label": "Herstellung von Bekleidung, ausgenommen Pelzbekleidung"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]",
+      "assertion": {
+        "id": "142"
+      },
+      "label": "Herstellung von Pelzwaren"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "1420"
+      },
+      "label": "Herstellung von Pelzwaren"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]",
+      "assertion": {
+        "id": "143"
+      },
+      "label": "Herstellung von gestrickter und gehäkelter Bekleidung"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "1430"
+      },
+      "label": "Herstellung von gestrickter und gehäkelter Bekleidung"
+    },
+    {
+      "key": "category[2]/category[5]",
+      "assertion": {
+        "id": "15"
+      },
+      "label": "Herstellung von Leder und verwandten Produkten"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]",
+      "assertion": {
+        "id": "151"
+      },
+      "label": "Gerben, Färben und Zurichten von Leder und Pelzen; Herstellung von Koffern, Taschen, Sattlerwaren und Geschirren"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "1511"
+      },
+      "label": "Gerben und Zurichten von Leder; Zurichten und Färben von Pelzen"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[1]",
+      "assertion": {
+        "id": "1512"
+      },
+      "label": "Herstellung von Koffern, Taschen und Ähnlichem sowie Sattlerwaren und Geschirren aus allen Materialien"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]",
+      "assertion": {
+        "id": "152"
+      },
+      "label": "Herstellung von Schuhen"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "1520"
+      },
+      "label": "Herstellung von Schuhen"
+    },
+    {
+      "key": "category[2]/category[6]",
+      "assertion": {
+        "id": "16"
+      },
+      "label": "Herstellung von Holz sowie Holz- und Korkwaren, ausgenommen Möbel; Herstellung von Waren aus Stroh und Flechtmaterialien"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]",
+      "assertion": {
+        "id": "161"
+      },
+      "label": "Säge- und Hobelwerke"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "1610"
+      },
+      "label": "Säge- und Hobelwerke"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]",
+      "assertion": {
+        "id": "162"
+      },
+      "label": "Herstellung von Holz-, Kork-, Flecht- und Korbwaren"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "1621"
+      },
+      "label": "Herstellung von Furnier-, Sperrholz-, Holzfaser- und Holzspanplatten"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "1622"
+      },
+      "label": "Herstellung von Konstruktionsteilen, Fertigbauteilen, Ausbauelementen und Fertigteilbauten aus Holz"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "1623"
+      },
+      "label": "Herstellung von Verpackungsmitteln, Lagerbehältern und Ladungsträgern aus Holz"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "1629"
+      },
+      "label": "Herstellung von sonstigen Holz-, Kork-, Flecht- und Korbwaren"
+    },
+    {
+      "key": "category[2]/category[7]",
+      "assertion": {
+        "id": "17"
+      },
+      "label": "Herstellung von Papier, Pappe und Waren daraus"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]",
+      "assertion": {
+        "id": "170"
+      },
+      "label": "Herstellung von Papier, Pappe und Waren daraus"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "1701"
+      },
+      "label": "Herstellung von Holz- und Zellstoff, Papier, Karton und Pappe"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "1702"
+      },
+      "label": "Herstellung von Wellpapier und -pappe sowie von Verpackungsmitteln aus Papier, Karton und Pappe"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "1709"
+      },
+      "label": "Herstellung von sonstigen Waren aus Papier, Karton und Pappe"
+    },
+    {
+      "key": "category[2]/category[8]",
+      "assertion": {
+        "id": "18"
+      },
+      "label": "Herstellung von Druckerzeugnissen; Vervielfältigung von bespielten Ton-, Bild- und Datenträgern"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]",
+      "assertion": {
+        "id": "181"
+      },
+      "label": "Drucken und druckbezogene Dienstleistungen"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "1811"
+      },
+      "label": "Drucken"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "1812"
+      },
+      "label": "Druckbezogene Dienstleistungen"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]",
+      "assertion": {
+        "id": "182"
+      },
+      "label": "Vervielfältigung von bespielten Ton-, Bild- und Datenträgern"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "1820"
+      },
+      "label": "Vervielfältigung von bespielten Ton-, Bild- und Datenträgern"
+    },
+    {
+      "key": "category[2]/category[9]",
+      "assertion": {
+        "id": "19"
+      },
+      "label": "Herstellung von Kokerei- und Mineralölerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]",
+      "assertion": {
+        "id": "191"
+      },
+      "label": "Herstellung von Kokereierzeugnissen"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "1910"
+      },
+      "label": "Herstellung von Kokereierzeugnissen"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]",
+      "assertion": {
+        "id": "192"
+      },
+      "label": "Herstellung von raffinierten Mineralölerzeugnissen; Herstellung von Erzeugnissen aus fossilen Brennstoffen"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "1920"
+      },
+      "label": "Herstellung von raffinierten Mineralölerzeugnissen; Herstellung von Erzeugnissen aus fossilen Brennstoffen"
+    },
+    {
+      "key": "category[2]/category[10]",
+      "assertion": {
+        "id": "20"
+      },
+      "label": "Herstellung von chemischen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]",
+      "assertion": {
+        "id": "201"
+      },
+      "label": "Herstellung von chemischen Grundstoffen, Düngemitteln und Stickstoffverbindungen, Kunststoffen in Primärformen und synthetischem Kautschuk in Primärformen"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "2011"
+      },
+      "label": "Herstellung von chemischen Grundstoffen"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "2012"
+      },
+      "label": "Herstellung von Düngemitteln und Stickstoffverbindungen"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "2013"
+      },
+      "label": "Herstellung von Kunststoffen in Primärformen und synthetischem Kautschuk in Primärformen"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]",
+      "assertion": {
+        "id": "202"
+      },
+      "label": "Herstellung von sonstigen chemischen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "2021"
+      },
+      "label": "Herstellung von Schädlingsbekämpfungs-, Pflanzenschutz- und Desinfektionsmitteln"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "2022"
+      },
+      "label": "Herstellung von Anstrichmitteln, Druckfarben und Kitten"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "2023"
+      },
+      "label": "Herstellung von Seifen, Wasch-, Reinigungs- und Körperpflegemitteln sowie von Duftstoffen"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[3]",
+      "assertion": {
+        "id": "2029"
+      },
+      "label": "Herstellung von sonstigen chemischen Erzeugnissen a. n. g."
+    },
+    {
+      "key": "category[2]/category[10]/category[2]",
+      "assertion": {
+        "id": "203"
+      },
+      "label": "Herstellung von Chemiefasern"
+    },
+    {
+      "key": "category[2]/category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "2030"
+      },
+      "label": "Herstellung von Chemiefasern"
+    },
+    {
+      "key": "category[2]/category[11]",
+      "assertion": {
+        "id": "21"
+      },
+      "label": "Herstellung von pharmazeutischen Grundstoffen und pharmazeutischen Zubereitungen"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]",
+      "assertion": {
+        "id": "210"
+      },
+      "label": "Herstellung von pharmazeutischen, medizinisch-chemischen und pflanzlichen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "2100"
+      },
+      "label": "Herstellung von pharmazeutischen, medizinisch-chemischen und pflanzlichen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[12]",
+      "assertion": {
+        "id": "22"
+      },
+      "label": "Herstellung von Gummi- und Kunststoffwaren"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]",
+      "assertion": {
+        "id": "221"
+      },
+      "label": "Herstellung von Gummiwaren"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "2211"
+      },
+      "label": "Herstellung von Gummireifen und -schläuchen; Runderneuerung und Wiederaufbau von Gummireifen"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "2219"
+      },
+      "label": "Herstellung von sonstigen Gummiwaren"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]",
+      "assertion": {
+        "id": "222"
+      },
+      "label": "Herstellung von Kunststoffwaren"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]/category[0]",
+      "assertion": {
+        "id": "2220"
+      },
+      "label": "Herstellung von Kunststoffwaren"
+    },
+    {
+      "key": "category[2]/category[13]",
+      "assertion": {
+        "id": "23"
+      },
+      "label": "Herstellung von sonstigen nichtmetallischen Mineralerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]",
+      "assertion": {
+        "id": "231"
+      },
+      "label": "Herstellung von Glas und Glaswaren"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "2310"
+      },
+      "label": "Herstellung von Glas und Glaswaren"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]",
+      "assertion": {
+        "id": "239"
+      },
+      "label": "Herstellung von nichtmetallischen Mineralerzeugnissen a. n. g."
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "2391"
+      },
+      "label": "Herstellung von feuerfesten Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "2392"
+      },
+      "label": "Herstellung von Baustoffen aus Ton"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[2]",
+      "assertion": {
+        "id": "2393"
+      },
+      "label": "Herstellung von sonstigen Porzellan- und Keramikerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[3]",
+      "assertion": {
+        "id": "2394"
+      },
+      "label": "Herstellung von Zement, Kalk und Gips"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[4]",
+      "assertion": {
+        "id": "2395"
+      },
+      "label": "Herstellung von Erzeugnissen aus Beton, Zement und Gips"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[5]",
+      "assertion": {
+        "id": "2396"
+      },
+      "label": "Schneiden, Formen und Veredeln von Stein"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[6]",
+      "assertion": {
+        "id": "2399"
+      },
+      "label": "Herstellung von sonstigen nichtmetallischen Mineralerzeugnissen a. n. g."
+    },
+    {
+      "key": "category[2]/category[14]",
+      "assertion": {
+        "id": "24"
+      },
+      "label": "Erzeugung von Metallen in Rohform"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]",
+      "assertion": {
+        "id": "241"
+      },
+      "label": "Erzeugung von Roheisen und Stahl"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "2410"
+      },
+      "label": "Erzeugung von Roheisen und Stahl"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]",
+      "assertion": {
+        "id": "242"
+      },
+      "label": "Erzeugung von Edelmetallen und sonstigen NE-Metallen"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "2420"
+      },
+      "label": "Erzeugung von Edelmetallen und sonstigen NE-Metallen"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]",
+      "assertion": {
+        "id": "243"
+      },
+      "label": "Gießen von Metallen"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "2431"
+      },
+      "label": "Gießen von Eisen und Stahl"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "2432"
+      },
+      "label": "Gießen von NE-Metallen"
+    },
+    {
+      "key": "category[2]/category[15]",
+      "assertion": {
+        "id": "25"
+      },
+      "label": "Herstellung von Metallerzeugnissen, ausgenommen Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]",
+      "assertion": {
+        "id": "251"
+      },
+      "label": "Herstellung von Stahl- und Leichtmetallbauerzeugnissen, Behältern und Dampfkesseln"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "2511"
+      },
+      "label": "Herstellung von Stahl- und Leichtmetallbauerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "2512"
+      },
+      "label": "Herstellung von Tanks, Sammelbehältern und Behältern aus Metall"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "2513"
+      },
+      "label": "Herstellung von Dampferzeugern, ausgenommen Warmwasserheizungskessel"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]",
+      "assertion": {
+        "id": "252"
+      },
+      "label": "Herstellung von Waffen und Munition"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]/category[0]",
+      "assertion": {
+        "id": "2520"
+      },
+      "label": "Herstellung von Waffen und Munition"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]",
+      "assertion": {
+        "id": "259"
+      },
+      "label": "Herstellung von sonstigen Metallerzeugnissen; Metallbearbeitungsdienstleistungen"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[0]",
+      "assertion": {
+        "id": "2591"
+      },
+      "label": "Schmieden, Pressen, Stanzen und Walzprofilieren von Metall; Pulvermetallurgie"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[1]",
+      "assertion": {
+        "id": "2592"
+      },
+      "label": "Behandlung und Beschichtung von Metallen; mechanische Bearbeitung"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[2]",
+      "assertion": {
+        "id": "2593"
+      },
+      "label": "Herstellung von Schneidwaren, Handwerkzeugen und allgemeinen Eisenwaren"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[3]",
+      "assertion": {
+        "id": "2599"
+      },
+      "label": "Herstellung von sonstigen Metallerzeugnissen a. n. g."
+    },
+    {
+      "key": "category[2]/category[16]",
+      "assertion": {
+        "id": "26"
+      },
+      "label": "Herstellung von Datenverarbeitungsgeräten, elektronischen und optischen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]",
+      "assertion": {
+        "id": "261"
+      },
+      "label": "Herstellung von elektronischen Bauelementen und Leiterplatten"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "2611"
+      },
+      "label": "Herstellung von Solarzellen, Solarmodulen und Photovoltaik-Wechselrichtern"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "2619"
+      },
+      "label": "Herstellung von sonstigen elektronischen Bauelementen und Leiterplatten"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]",
+      "assertion": {
+        "id": "262"
+      },
+      "label": "Herstellung von Datenverarbeitungsgeräten und peripheren Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]/category[0]",
+      "assertion": {
+        "id": "2620"
+      },
+      "label": "Herstellung von Datenverarbeitungsgeräten und peripheren Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]",
+      "assertion": {
+        "id": "263"
+      },
+      "label": "Herstellung von Kommunikationsausrüstung"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]/category[0]",
+      "assertion": {
+        "id": "2630"
+      },
+      "label": "Herstellung von Kommunikationsausrüstung"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]",
+      "assertion": {
+        "id": "264"
+      },
+      "label": "Herstellung von Geräten der Unterhaltungselektronik"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]/category[0]",
+      "assertion": {
+        "id": "2640"
+      },
+      "label": "Herstellung von Geräten der Unterhaltungselektronik"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]",
+      "assertion": {
+        "id": "265"
+      },
+      "label": "Herstellung von Mess-, Prüf-, Navigations- und Kontrollgeräten; Uhrenherstellung"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[0]",
+      "assertion": {
+        "id": "2651"
+      },
+      "label": "Herstellung von Mess-, Prüf-, Navigations- und Kontrollgeräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[1]",
+      "assertion": {
+        "id": "2652"
+      },
+      "label": "Herstellung von Uhren"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]",
+      "assertion": {
+        "id": "266"
+      },
+      "label": "Herstellung von Bestrahlungs-, elektromedizinischen und elektrotherapeutischen Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]/category[0]",
+      "assertion": {
+        "id": "2660"
+      },
+      "label": "Herstellung von Bestrahlungs-, elektromedizinischen und elektrotherapeutischen Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]",
+      "assertion": {
+        "id": "267"
+      },
+      "label": "Herstellung von optischen Instrumenten und fotografischen Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]/category[0]",
+      "assertion": {
+        "id": "2670"
+      },
+      "label": "Herstellung von optischen Instrumenten und fotografischen Geräten"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]",
+      "assertion": {
+        "id": "268"
+      },
+      "label": "Herstellung von magnetischen und optischen Datenträgern"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]/category[0]",
+      "assertion": {
+        "id": "2680"
+      },
+      "label": "Herstellung von magnetischen und optischen Datenträgern"
+    },
+    {
+      "key": "category[2]/category[17]",
+      "assertion": {
+        "id": "27"
+      },
+      "label": "Herstellung von elektrischen Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]",
+      "assertion": {
+        "id": "271"
+      },
+      "label": "Herstellung von Elektromotoren, Generatoren, Transformatoren sowie Elektrizitätsverteilungs- und -schalteinrichtungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "2710"
+      },
+      "label": "Herstellung von Elektromotoren, Generatoren, Transformatoren sowie Elektrizitätsverteilungs- und -schalteinrichtungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]",
+      "assertion": {
+        "id": "272"
+      },
+      "label": "Herstellung von Batterien und Akkumulatoren"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "2720"
+      },
+      "label": "Herstellung von Batterien und Akkumulatoren"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]",
+      "assertion": {
+        "id": "273"
+      },
+      "label": "Herstellung von Kabeln und elektrischen Installationsmaterialien"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "2731"
+      },
+      "label": "Herstellung von Glasfaserkabeln"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "2732"
+      },
+      "label": "Herstellung von sonstigen elektronischen und elektrischen Drähten und Kabeln"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[2]",
+      "assertion": {
+        "id": "2733"
+      },
+      "label": "Herstellung von elektrischen Installationsmaterialien"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]",
+      "assertion": {
+        "id": "274"
+      },
+      "label": "Herstellung von Beleuchtungseinrichtungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]/category[0]",
+      "assertion": {
+        "id": "2740"
+      },
+      "label": "Herstellung von Beleuchtungseinrichtungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]",
+      "assertion": {
+        "id": "275"
+      },
+      "label": "Herstellung von Haushaltsgeräten"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]/category[0]",
+      "assertion": {
+        "id": "2750"
+      },
+      "label": "Herstellung von Haushaltsgeräten"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]",
+      "assertion": {
+        "id": "279"
+      },
+      "label": "Herstellung von sonstigen elektrischen Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]/category[0]",
+      "assertion": {
+        "id": "2790"
+      },
+      "label": "Herstellung von sonstigen elektrischen Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[18]",
+      "assertion": {
+        "id": "28"
+      },
+      "label": "Maschinenbau a.n.g."
+    },
+    {
+      "key": "category[2]/category[18]/category[0]",
+      "assertion": {
+        "id": "281"
+      },
+      "label": "Herstellung von Maschinen für allgemeine Zwecke"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "2811"
+      },
+      "label": "Herstellung von Motoren und Turbinen, ausgenommen Motoren für Luftfahrzeuge, Kraftfahrzeuge und Krafträder"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "2812"
+      },
+      "label": "Herstellung von hydraulischen und pneumatischen Komponenten"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "2813"
+      },
+      "label": "Herstellung von sonstigen Pumpen, Kompressoren, Armaturen und Ventilen"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[3]",
+      "assertion": {
+        "id": "2814"
+      },
+      "label": "Herstellung von Lagern, Getrieben, Zahnrädern und Antriebselementen"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[4]",
+      "assertion": {
+        "id": "2815"
+      },
+      "label": "Herstellung von Öfen, Brennöfen und ortsfesten Heizgeräten für den Haushalt"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[5]",
+      "assertion": {
+        "id": "2816"
+      },
+      "label": "Herstellung von Hebezeugen und Fördermitteln"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[6]",
+      "assertion": {
+        "id": "2817"
+      },
+      "label": "Herstellung von Büromaschinen und -geräten, ausgenommen Datenverarbeitungsgeräte und periphere Geräte"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[7]",
+      "assertion": {
+        "id": "2818"
+      },
+      "label": "Herstellung von handgeführten kraftbetriebenen Werkzeugen"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[8]",
+      "assertion": {
+        "id": "2819"
+      },
+      "label": "Herstellung von sonstigen Maschinen für allgemeine Zwecke"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]",
+      "assertion": {
+        "id": "282"
+      },
+      "label": "Herstellung von Maschinen für besondere Zwecke"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "2821"
+      },
+      "label": "Herstellung von land- und forstwirtschaftlichen Maschinen"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "2822"
+      },
+      "label": "Herstellung von Maschinen für die Metallumformung und von Werkzeugmaschinen"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "2823"
+      },
+      "label": "Herstellung von Maschinen für die Metallerzeugung"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "2824"
+      },
+      "label": "Herstellung von Maschinen für den Bergbau, die Gewinnung von Steinen und Erden sowie das Baugewerbe"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[4]",
+      "assertion": {
+        "id": "2825"
+      },
+      "label": "Herstellung von Maschinen für die Nahrungs-, Getränke- und Tabakverarbeitung"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[5]",
+      "assertion": {
+        "id": "2826"
+      },
+      "label": "Herstellung von Maschinen für die Textil-, Bekleidungs- und Lederherstellung"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[6]",
+      "assertion": {
+        "id": "2829"
+      },
+      "label": "Herstellung von sonstigen Maschinen für besondere Zwecke"
+    },
+    {
+      "key": "category[2]/category[19]",
+      "assertion": {
+        "id": "29"
+      },
+      "label": "Herstellung von Kraftwagen, Kraftwagenanhängern und Sattelanhängern"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]",
+      "assertion": {
+        "id": "291"
+      },
+      "label": "Herstellung von Kraftwagen"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "2910"
+      },
+      "label": "Herstellung von Kraftwagen"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]",
+      "assertion": {
+        "id": "292"
+      },
+      "label": "Herstellung von Karosserien und Aufbauten für Kraftwagen sowie von Anhängern und Sattelanhängern"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "2920"
+      },
+      "label": "Herstellung von Karosserien und Aufbauten für Kraftwagen sowie von Anhängern und Sattelanhängern"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]",
+      "assertion": {
+        "id": "293"
+      },
+      "label": "Herstellung von Teilen und Zubehör für Kraftwagen"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "2930"
+      },
+      "label": "Herstellung von Teilen und Zubehör für Kraftwagen"
+    },
+    {
+      "key": "category[2]/category[20]",
+      "assertion": {
+        "id": "30"
+      },
+      "label": "Herstellung von sonstigen Fahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]",
+      "assertion": {
+        "id": "301"
+      },
+      "label": "Schiff- und Bootsbau"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "3011"
+      },
+      "label": "Schiffbau und Bau von schwimmenden Konstruktionen"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[1]",
+      "assertion": {
+        "id": "3012"
+      },
+      "label": "Bau von Sport- und Freizeitbooten"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]",
+      "assertion": {
+        "id": "302"
+      },
+      "label": "Herstellung von Schienenfahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "3020"
+      },
+      "label": "Herstellung von Schienenfahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]",
+      "assertion": {
+        "id": "303"
+      },
+      "label": "Herstellung von Luft- und Raumfahrzeugen sowie zugehörigen Maschinen"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]/category[0]",
+      "assertion": {
+        "id": "3030"
+      },
+      "label": "Herstellung von Luft- und Raumfahrzeugen sowie zugehörigen Maschinen"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]",
+      "assertion": {
+        "id": "304"
+      },
+      "label": "Herstellung von militärischen Kampffahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]/category[0]",
+      "assertion": {
+        "id": "3040"
+      },
+      "label": "Herstellung von militärischen Kampffahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]",
+      "assertion": {
+        "id": "309"
+      },
+      "label": "Herstellung von Fahrzeugen a.n.g."
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[0]",
+      "assertion": {
+        "id": "3091"
+      },
+      "label": "Herstellung von Krafträdern"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[1]",
+      "assertion": {
+        "id": "3092"
+      },
+      "label": "Herstellung von Fahrrädern sowie Behindertenfahrzeugen"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[2]",
+      "assertion": {
+        "id": "3099"
+      },
+      "label": "Herstellung von sonstigen Fahrzeugen a.n.g."
+    },
+    {
+      "key": "category[2]/category[21]",
+      "assertion": {
+        "id": "31"
+      },
+      "label": "Herstellung von Möbeln"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]",
+      "assertion": {
+        "id": "310"
+      },
+      "label": "Herstellung von Möbeln"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "3101"
+      },
+      "label": "Herstellung von Holzmöbeln"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[1]",
+      "assertion": {
+        "id": "3102"
+      },
+      "label": "Herstellung von sonstigen Möbeln"
+    },
+    {
+      "key": "category[2]/category[22]",
+      "assertion": {
+        "id": "32"
+      },
+      "label": "Herstellung von sonstigen Waren"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]",
+      "assertion": {
+        "id": "321"
+      },
+      "label": "Herstellung von Schmuck, Bijouteriewaren und ähnlichen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[0]",
+      "assertion": {
+        "id": "3211"
+      },
+      "label": "Herstellung von Schmuck und ähnlichen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[1]",
+      "assertion": {
+        "id": "3212"
+      },
+      "label": "Herstellung von Bijouteriewaren und ähnlichen Erzeugnissen"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]",
+      "assertion": {
+        "id": "322"
+      },
+      "label": "Herstellung von Musikinstrumenten"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]/category[0]",
+      "assertion": {
+        "id": "3220"
+      },
+      "label": "Herstellung von Musikinstrumenten"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]",
+      "assertion": {
+        "id": "323"
+      },
+      "label": "Herstellung von Sportartikeln"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]/category[0]",
+      "assertion": {
+        "id": "3230"
+      },
+      "label": "Herstellung von Sportartikeln"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]",
+      "assertion": {
+        "id": "324"
+      },
+      "label": "Herstellung von Spielwaren"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]/category[0]",
+      "assertion": {
+        "id": "3240"
+      },
+      "label": "Herstellung von Spielwaren"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]",
+      "assertion": {
+        "id": "325"
+      },
+      "label": "Herstellung von medizinischen und zahnmedizinischen Instrumenten und Bedarf"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]/category[0]",
+      "assertion": {
+        "id": "3250"
+      },
+      "label": "Herstellung von medizinischen und zahnmedizinischen Instrumenten und Bedarf"
+    },
+    {
+      "key": "category[2]/category[22]/category[5]",
+      "assertion": {
+        "id": "329"
+      },
+      "label": "Herstellung von sonstigen Waren a. n. g."
+    },
+    {
+      "key": "category[2]/category[22]/category[5]/category[0]",
+      "assertion": {
+        "id": "3290"
+      },
+      "label": "Herstellung von sonstigen Waren a. n. g."
+    },
+    {
+      "key": "category[2]/category[23]",
+      "assertion": {
+        "id": "33"
+      },
+      "label": "Reparatur, Wartung und Installation von Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]",
+      "assertion": {
+        "id": "331"
+      },
+      "label": "Reparatur und Wartung von Metallerzeugnissen, Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[0]",
+      "assertion": {
+        "id": "3311"
+      },
+      "label": "Reparatur und Wartung von Metallerzeugnissen"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[1]",
+      "assertion": {
+        "id": "3312"
+      },
+      "label": "Reparatur und Wartung von Maschinen"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[2]",
+      "assertion": {
+        "id": "3313"
+      },
+      "label": "Reparatur und Wartung von elektronischen und optischen Geräten"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[3]",
+      "assertion": {
+        "id": "3314"
+      },
+      "label": "Reparatur und Wartung von elektrischen Geräten"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[4]",
+      "assertion": {
+        "id": "3315"
+      },
+      "label": "Reparatur und Wartung von Transportausrüstungen, ausgenommen Kraftfahrzeuge"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[5]",
+      "assertion": {
+        "id": "3319"
+      },
+      "label": "Reparatur und Wartung von sonstigen Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]",
+      "assertion": {
+        "id": "332"
+      },
+      "label": "Installation von industriellen Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]/category[0]",
+      "assertion": {
+        "id": "3320"
+      },
+      "label": "Installation von industriellen Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "D"
+      },
+      "label": "Energieversorgung"
+    },
+    {
+      "key": "category[3]/category[0]",
+      "assertion": {
+        "id": "35"
+      },
+      "label": "Energieversorgung"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "351"
+      },
+      "label": "Erzeugung, Übertragung und Verteilung von Elektrizität"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3511"
+      },
+      "label": "Erzeugung von Elektrizität aus nicht erneuerbaren Quellen"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "3512"
+      },
+      "label": "Erzeugung von Elektrizität aus erneuerbaren Quellen"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "3513"
+      },
+      "label": "Übertragung und Verteilung von Elektrizität"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "352"
+      },
+      "label": "Herstellung von Gas; Verteilung gasförmiger Brennstoffe durch Rohrleitungen"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "3520"
+      },
+      "label": "Herstellung von Gas; Verteilung gasförmiger Brennstoffe durch Rohrleitungen"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "353"
+      },
+      "label": "Wärme- und Kälteversorgung"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "3530"
+      },
+      "label": "Wärme- und Kälteversorgung"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]",
+      "assertion": {
+        "id": "354"
+      },
+      "label": "Tätigkeiten von Maklern und Handelsvertretern für Elektrizität und Erdgas"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "3540"
+      },
+      "label": "Tätigkeiten von Maklern und Handelsvertretern für Elektrizität und Erdgas"
+    },
+    {
+      "key": "category[4]",
+      "assertion": {
+        "id": "E"
+      },
+      "label": "Wasserversorgung; Abwasser- und Abfallentsorgung und Beseitigung von Umweltverschmutzungen"
+    },
+    {
+      "key": "category[4]/category[0]",
+      "assertion": {
+        "id": "36"
+      },
+      "label": "Wasserversorgung"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "360"
+      },
+      "label": "Wasserversorgung"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3600"
+      },
+      "label": "Wasserversorgung"
+    },
+    {
+      "key": "category[4]/category[1]",
+      "assertion": {
+        "id": "37"
+      },
+      "label": "Abwasserentsorgung"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "370"
+      },
+      "label": "Abwasserentsorgung"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "3700"
+      },
+      "label": "Abwasserentsorgung"
+    },
+    {
+      "key": "category[4]/category[2]",
+      "assertion": {
+        "id": "38"
+      },
+      "label": "Sammlung, Behandlung und Beseitigung von Abfällen sowie Rückgewinnung"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "381"
+      },
+      "label": "Sammlung von Abfällen"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "3811"
+      },
+      "label": "Sammlung nicht gefährlicher Abfälle"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "3812"
+      },
+      "label": "Sammlung gefährlicher Abfälle"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]",
+      "assertion": {
+        "id": "382"
+      },
+      "label": "Behandlung und Beseitigung von Abfällen"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "3821"
+      },
+      "label": "Behandlung und Beseitigung nicht gefährlicher Abfälle"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "3822"
+      },
+      "label": "Behandlung und Beseitigung gefährlicher Abfälle"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]",
+      "assertion": {
+        "id": "383"
+      },
+      "label": "Rückgewinnung von Materialien und sonstigen Abfällen"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "3830"
+      },
+      "label": "Rückgewinnung von Materialien und sonstigen Abfällen"
+    },
+    {
+      "key": "category[4]/category[3]",
+      "assertion": {
+        "id": "39"
+      },
+      "label": "Beseitigung von Umweltverschmutzungen und sonstige Entsorgungsdienstleistungen"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]",
+      "assertion": {
+        "id": "390"
+      },
+      "label": "Beseitigung von Umweltverschmutzungen und sonstige Entsorgungsdienstleistungen"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "3900"
+      },
+      "label": "Beseitigung von Umweltverschmutzungen und sonstige Entsorgungsdienstleistungen"
+    },
+    {
+      "key": "category[5]",
+      "assertion": {
+        "id": "F"
+      },
+      "label": "Bau"
+    },
+    {
+      "key": "category[5]/category[0]",
+      "assertion": {
+        "id": "41"
+      },
+      "label": "Bau von Wohn- und Nichtwohngebäuden"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "410"
+      },
+      "label": "Bau von Wohn- und Nichtwohngebäuden"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4100"
+      },
+      "label": "Bau von Wohn- und Nichtwohngebäuden"
+    },
+    {
+      "key": "category[5]/category[1]",
+      "assertion": {
+        "id": "42"
+      },
+      "label": "Tiefbau"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "421"
+      },
+      "label": "Bau von Straßen und Bahnverkehrsstrecken"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4210"
+      },
+      "label": "Bau von Straßen und Bahnverkehrsstrecken"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]",
+      "assertion": {
+        "id": "422"
+      },
+      "label": "Bau von Versorgungsanlagen"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4220"
+      },
+      "label": "Bau von Versorgungsanlagen"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]",
+      "assertion": {
+        "id": "429"
+      },
+      "label": "Bau sonstiger Tiefbauprojekte"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4290"
+      },
+      "label": "Bau sonstiger Tiefbauprojekte"
+    },
+    {
+      "key": "category[5]/category[2]",
+      "assertion": {
+        "id": "43"
+      },
+      "label": "Spezialisierte Bautätigkeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "431"
+      },
+      "label": "Abbrucharbeiten und Baustellenvorbereitung"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "4311"
+      },
+      "label": "Abbrucharbeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "4312"
+      },
+      "label": "Baustellenvorbereitung"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]",
+      "assertion": {
+        "id": "432"
+      },
+      "label": "Elektro-, Sanitär- und sonstige Bauinstallationsarbeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "4321"
+      },
+      "label": "Elektroinstallation"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "4322"
+      },
+      "label": "Sanitär-, Heizungs- und Klimainstallation"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "4329"
+      },
+      "label": "Sonstige Bauinstallation"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]",
+      "assertion": {
+        "id": "433"
+      },
+      "label": "Baufertigstellung und Ausbauarbeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "4330"
+      },
+      "label": "Baufertigstellung und Ausbauarbeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]",
+      "assertion": {
+        "id": "434"
+      },
+      "label": "Vermittlung von spezialisierten Bauleistungen"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "4340"
+      },
+      "label": "Vermittlung von spezialisierten Bauleistungen"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]",
+      "assertion": {
+        "id": "439"
+      },
+      "label": "Sonstige spezialisierte Bautätigkeiten"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "4390"
+      },
+      "label": "Sonstige spezialisierte Bautätigkeiten"
+    },
+    {
+      "key": "category[6]",
+      "assertion": {
+        "id": "G"
+      },
+      "label": "Groß- und Einzelhandel"
+    },
+    {
+      "key": "category[6]/category[0]",
+      "assertion": {
+        "id": "46"
+      },
+      "label": "Großhandel"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "461"
+      },
+      "label": "Handelsvermittlung"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4610"
+      },
+      "label": "Handelsvermittlung"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]",
+      "assertion": {
+        "id": "462"
+      },
+      "label": "Großhandel mit landwirtschaftlichen Rohstoffen und lebenden Tieren"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4620"
+      },
+      "label": "Großhandel mit landwirtschaftlichen Rohstoffen und lebenden Tieren"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]",
+      "assertion": {
+        "id": "463"
+      },
+      "label": "Großhandel mit Nahrungs- und Genussmitteln, Getränken und Tabakwaren"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4630"
+      },
+      "label": "Großhandel mit Nahrungs- und Genussmitteln, Getränken und Tabakwaren"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]",
+      "assertion": {
+        "id": "464"
+      },
+      "label": "Großhandel mit Haushaltswaren"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "4641"
+      },
+      "label": "Großhandel mit Textilien, Bekleidung und Schuhen"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "4642"
+      },
+      "label": "Großhandel mit Haushalts-, Büro- und Ladenmöbeln, Teppichen und Beleuchtungsartikeln"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "4649"
+      },
+      "label": "Großhandel mit sonstigen Haushaltswaren"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]",
+      "assertion": {
+        "id": "465"
+      },
+      "label": "Großhandel mit Maschinen, Ausrüstungen und Zubehör"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "4651"
+      },
+      "label": "Großhandel mit Computern, Computerperipheriegeräten und Software"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "4652"
+      },
+      "label": "Großhandel mit elektronischen und Telekommunikationsgeräten sowie Teilen davon"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "4653"
+      },
+      "label": "Großhandel mit landwirtschaftlichen Maschinen, Ausrüstungen und Zubehör"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "4659"
+      },
+      "label": "Großhandel mit sonstigen Maschinen und Ausrüstungen"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]",
+      "assertion": {
+        "id": "466"
+      },
+      "label": "Großhandel mit Kraftfahrzeugen, Krafträdern sowie Teilen und Zubehör"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "4661"
+      },
+      "label": "Großhandel mit Kraftfahrzeugen"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "4662"
+      },
+      "label": "Großhandel mit Teilen und Zubehör für Kraftfahrzeuge"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "4663"
+      },
+      "label": "Großhandel mit Krafträdern sowie Teilen und Zubehör"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]",
+      "assertion": {
+        "id": "467"
+      },
+      "label": "Sonstiger spezialisierter Großhandel"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "4671"
+      },
+      "label": "Großhandel mit festen, flüssigen und gasförmigen Brennstoffen und verwandten Erzeugnissen"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "4672"
+      },
+      "label": "Großhandel mit Metallen und Metallerzen"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "4673"
+      },
+      "label": "Großhandel mit Baustoffen, Eisenwaren sowie Sanitär- und Heizungsbedarf"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "4679"
+      },
+      "label": "Großhandel mit chemischen Erzeugnissen, Abfällen und Schrott sowie sonstigen Erzeugnissen a. n. g."
+    },
+    {
+      "key": "category[6]/category[0]/category[7]",
+      "assertion": {
+        "id": "469"
+      },
+      "label": "Nicht spezialisierter Großhandel"
+    },
+    {
+      "key": "category[6]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "4690"
+      },
+      "label": "Nicht spezialisierter Großhandel"
+    },
+    {
+      "key": "category[6]/category[1]",
+      "assertion": {
+        "id": "47"
+      },
+      "label": "Einzelhandel"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "471"
+      },
+      "label": "Nicht spezialisierter Einzelhandel"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4711"
+      },
+      "label": "Nicht spezialisierter Einzelhandel mit Nahrungs- und Genussmitteln, Getränken oder Tabakwaren als Schwerpunkt"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "4719"
+      },
+      "label": "Sonstiger nicht spezialisierter Einzelhandel"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "472"
+      },
+      "label": "Einzelhandel mit Nahrungs- und Genussmitteln, Getränken und Tabakwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4721"
+      },
+      "label": "Einzelhandel mit Nahrungs- und Genussmitteln"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "4722"
+      },
+      "label": "Einzelhandel mit Getränken"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "4723"
+      },
+      "label": "Einzelhandel mit Tabakwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "473"
+      },
+      "label": "Einzelhandel mit Kraftstoffen"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4730"
+      },
+      "label": "Einzelhandel mit Kraftstoffen"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "474"
+      },
+      "label": "Einzelhandel mit Geräten der Informations- und Kommunikationstechnik"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "4740"
+      },
+      "label": "Einzelhandel mit Geräten der Informations- und Kommunikationstechnik"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]",
+      "assertion": {
+        "id": "475"
+      },
+      "label": "Einzelhandel mit sonstigen Haushaltsgeräten"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "4751"
+      },
+      "label": "Einzelhandel mit Textilien"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "4752"
+      },
+      "label": "Einzelhandel mit Eisenwaren, Baustoffen, Anstrichmitteln und Glas"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[2]",
+      "assertion": {
+        "id": "4753"
+      },
+      "label": "Einzelhandel mit Teppichen, Brücken, Wand- und Bodenbelägen"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[3]",
+      "assertion": {
+        "id": "4759"
+      },
+      "label": "Einzelhandel mit elektrischen Haushaltsgeräten, Möbeln, Beleuchtungsartikeln und sonstigen Haushaltsgegenständen"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]",
+      "assertion": {
+        "id": "476"
+      },
+      "label": "Einzelhandel mit Kultur- und Freizeitwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[0]",
+      "assertion": {
+        "id": "4761"
+      },
+      "label": "Einzelhandel mit Büchern, Zeitungen, Schreibwaren und Bürobedarf"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[1]",
+      "assertion": {
+        "id": "4762"
+      },
+      "label": "Einzelhandel mit Sportartikeln"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[2]",
+      "assertion": {
+        "id": "4763"
+      },
+      "label": "Einzelhandel mit Spielen und Spielwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[3]",
+      "assertion": {
+        "id": "4769"
+      },
+      "label": "Einzelhandel mit Kultur- und Freizeitwaren a. n. g."
+    },
+    {
+      "key": "category[6]/category[1]/category[6]",
+      "assertion": {
+        "id": "477"
+      },
+      "label": "Einzelhandel mit sonstigen Waren, ohne Kraftfahrzeuge und Krafträder"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[0]",
+      "assertion": {
+        "id": "4771"
+      },
+      "label": "Einzelhandel mit Bekleidung, Schuhen und Lederwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[1]",
+      "assertion": {
+        "id": "4772"
+      },
+      "label": "Einzelhandel mit pharmazeutischen und medizinischen Waren, Kosmetik- und Toilettenartikeln"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[2]",
+      "assertion": {
+        "id": "4773"
+      },
+      "label": "Einzelhandel mit sonstigen neuen Waren a. n. g."
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[3]",
+      "assertion": {
+        "id": "4774"
+      },
+      "label": "Einzelhandel mit Gebrauchtwaren"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]",
+      "assertion": {
+        "id": "478"
+      },
+      "label": "Einzelhandel mit Kraftfahrzeugen, Krafträdern sowie Teilen und Zubehör dafür"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[0]",
+      "assertion": {
+        "id": "4781"
+      },
+      "label": "Einzelhandel mit Kraftfahrzeugen"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[1]",
+      "assertion": {
+        "id": "4782"
+      },
+      "label": "Einzelhandel mit Kraftfahrzeugteilen und -zubehör"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[2]",
+      "assertion": {
+        "id": "4783"
+      },
+      "label": "Einzelhandel mit Krafträdern sowie Teilen und Zubehör dafür"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]",
+      "assertion": {
+        "id": "479"
+      },
+      "label": "Vermittlungsdienstleistungen im Einzelhandel"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]/category[0]",
+      "assertion": {
+        "id": "4790"
+      },
+      "label": "Vermittlungsdienstleistungen im Einzelhandel"
+    },
+    {
+      "key": "category[7]",
+      "assertion": {
+        "id": "H"
+      },
+      "label": "Verkehr und Lagerei"
+    },
+    {
+      "key": "category[7]/category[0]",
+      "assertion": {
+        "id": "49"
+      },
+      "label": "Landverkehr und Transport in Rohrfernleitungen"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "491"
+      },
+      "label": "Eisenbahnverkehr"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4911"
+      },
+      "label": "Personenfernverkehr mit der Eisenbahn"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "4912"
+      },
+      "label": "Güterverkehr mit der Eisenbahn"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "492"
+      },
+      "label": "Sonstiger Landverkehr"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4921"
+      },
+      "label": "Personennahverkehr zu Land"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "4922"
+      },
+      "label": "Sonstiger Personenverkehr zu Land"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "4923"
+      },
+      "label": "Güterbeförderung im Straßenverkehr"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "493"
+      },
+      "label": "Transport in Rohrfernleitungen"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4930"
+      },
+      "label": "Transport in Rohrfernleitungen"
+    },
+    {
+      "key": "category[7]/category[1]",
+      "assertion": {
+        "id": "50"
+      },
+      "label": "Schifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]",
+      "assertion": {
+        "id": "501"
+      },
+      "label": "See- und Küstenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5011"
+      },
+      "label": "Personenbeförderung in der See- und Küstenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5012"
+      },
+      "label": "Güterbeförderung in der See- und Küstenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]",
+      "assertion": {
+        "id": "502"
+      },
+      "label": "Binnenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5021"
+      },
+      "label": "Personenbeförderung in der Binnenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5022"
+      },
+      "label": "Güterbeförderung in der Binnenschifffahrt"
+    },
+    {
+      "key": "category[7]/category[2]",
+      "assertion": {
+        "id": "51"
+      },
+      "label": "Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]",
+      "assertion": {
+        "id": "511"
+      },
+      "label": "Personenbeförderung in der Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "5110"
+      },
+      "label": "Personenbeförderung in der Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]",
+      "assertion": {
+        "id": "512"
+      },
+      "label": "Güterbeförderung in der Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "5120"
+      },
+      "label": "Güterbeförderung in der Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[3]",
+      "assertion": {
+        "id": "52"
+      },
+      "label": "Lagerei sowie Erbringung von sonstigen Dienstleistungen für den Verkehr"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]",
+      "assertion": {
+        "id": "521"
+      },
+      "label": "Lagerei"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "5210"
+      },
+      "label": "Lagerei"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]",
+      "assertion": {
+        "id": "522"
+      },
+      "label": "Erbringung von sonstigen Dienstleistungen für den Verkehr"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "5221"
+      },
+      "label": "Erbringung von sonstigen Dienstleistungen für den Landverkehr"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "5222"
+      },
+      "label": "Erbringung von sonstigen Dienstleistungen für die Schifffahrt"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "5223"
+      },
+      "label": "Erbringung von sonstigen Dienstleistungen für die Luftfahrt"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "5224"
+      },
+      "label": "Frachtumschlag"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "5229"
+      },
+      "label": "Erbringung von sonstigen Dienstleistungen für den Verkehr"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]",
+      "assertion": {
+        "id": "523"
+      },
+      "label": "Vermittlungsdienstleistungen für den Verkehr"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[0]",
+      "assertion": {
+        "id": "5231"
+      },
+      "label": "Vermittlungsdienstleistungen für die Güterbeförderung"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[1]",
+      "assertion": {
+        "id": "5232"
+      },
+      "label": "Vermittlungsdienstleistungen für die Personenbeförderung"
+    },
+    {
+      "key": "category[7]/category[4]",
+      "assertion": {
+        "id": "53"
+      },
+      "label": "Post- und Kurierdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]",
+      "assertion": {
+        "id": "531"
+      },
+      "label": "Postdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "5310"
+      },
+      "label": "Postdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]",
+      "assertion": {
+        "id": "532"
+      },
+      "label": "Kurierdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "5320"
+      },
+      "label": "Kurierdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]",
+      "assertion": {
+        "id": "533"
+      },
+      "label": "Vermittlungsdienste für Post- und Kurierdienste"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "5330"
+      },
+      "label": "Vermittlungsdienste für Post- und Kurierdienste"
+    },
+    {
+      "key": "category[8]",
+      "assertion": {
+        "id": "I"
+      },
+      "label": "Beherbergung und Gastronomie"
+    },
+    {
+      "key": "category[8]/category[0]",
+      "assertion": {
+        "id": "55"
+      },
+      "label": "Beherbergung"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "551"
+      },
+      "label": "Hotels und ähnliche Beherbergungsstätten"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5510"
+      },
+      "label": "Hotels und ähnliche Beherbergungsstätten"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "552"
+      },
+      "label": "Sonstige kurzfristige Beherbergung"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5520"
+      },
+      "label": "Sonstige kurzfristige Beherbergung"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]",
+      "assertion": {
+        "id": "553"
+      },
+      "label": "Campingplätze, Stellplätze für Wohnmobile und Wohnwagenparks"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "5530"
+      },
+      "label": "Campingplätze, Stellplätze für Wohnmobile und Wohnwagenparks"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]",
+      "assertion": {
+        "id": "554"
+      },
+      "label": "Vermittlungsdienste für Beherbergung"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "5540"
+      },
+      "label": "Vermittlungsdienste für Beherbergung"
+    },
+    {
+      "key": "category[8]/category[0]/category[4]",
+      "assertion": {
+        "id": "559"
+      },
+      "label": "Sonstige Beherbergung a. n. g."
+    },
+    {
+      "key": "category[8]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "5590"
+      },
+      "label": "Sonstige Beherbergung a. n. g."
+    },
+    {
+      "key": "category[8]/category[1]",
+      "assertion": {
+        "id": "56"
+      },
+      "label": "Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "561"
+      },
+      "label": "Restaurants und mobile Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5610"
+      },
+      "label": "Restaurants und mobile Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]",
+      "assertion": {
+        "id": "562"
+      },
+      "label": "Event-Catering und sonstige Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5621"
+      },
+      "label": "Event-Catering"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5629"
+      },
+      "label": "Sonstige Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]",
+      "assertion": {
+        "id": "563"
+      },
+      "label": "Ausschank von Getränken"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "5630"
+      },
+      "label": "Ausschank von Getränken"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]",
+      "assertion": {
+        "id": "564"
+      },
+      "label": "Vermittlungsdienste für Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "5640"
+      },
+      "label": "Vermittlungsdienste für Gastronomiedienstleistungen"
+    },
+    {
+      "key": "category[9]",
+      "assertion": {
+        "id": "J"
+      },
+      "label": "Verlagswesen, Rundfunk, Produktion und Verbreitung von Inhalten"
+    },
+    {
+      "key": "category[9]/category[0]",
+      "assertion": {
+        "id": "58"
+      },
+      "label": "Verlagswesen"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "581"
+      },
+      "label": "Verlegen von Büchern, Zeitungen und Zeitschriften sowie sonstige Verlagstätigkeiten"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5811"
+      },
+      "label": "Verlegen von Büchern"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "5812"
+      },
+      "label": "Verlegen von Zeitungen"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "5813"
+      },
+      "label": "Verlegen von Zeitschriften und Periodika"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "5819"
+      },
+      "label": "Sonstige Verlagstätigkeiten"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]",
+      "assertion": {
+        "id": "582"
+      },
+      "label": "Verlegen von Software"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5821"
+      },
+      "label": "Verlegen von Videospielen"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "5829"
+      },
+      "label": "Sonstiges Verlegen von Software"
+    },
+    {
+      "key": "category[9]/category[1]",
+      "assertion": {
+        "id": "59"
+      },
+      "label": "Herstellung von Filmen, Videofilmen und Fernsehprogrammen, Tonaufnahmen und Musikverlag"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "591"
+      },
+      "label": "Film-, Video- und Fernsehprogrammtätigkeiten"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5911"
+      },
+      "label": "Herstellung von Filmen, Videofilmen und Fernsehprogrammen"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5912"
+      },
+      "label": "Nachbearbeitung von Filmen, Videofilmen und Fernsehprogrammen"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "5913"
+      },
+      "label": "Vertrieb von Filmen, Videofilmen und Fernsehprogrammen"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "5914"
+      },
+      "label": "Filmvorführung"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]",
+      "assertion": {
+        "id": "592"
+      },
+      "label": "Tonaufnahmen und Musikverlag"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5920"
+      },
+      "label": "Tonaufnahmen und Musikverlag"
+    },
+    {
+      "key": "category[9]/category[2]",
+      "assertion": {
+        "id": "60"
+      },
+      "label": "Programmgestaltung, Rundfunk, Nachrichtenagenturen und sonstige Verbreitung von Inhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]",
+      "assertion": {
+        "id": "601"
+      },
+      "label": "Hörfunk und Verbreitung von Audioinhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6010"
+      },
+      "label": "Hörfunk und Verbreitung von Audioinhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]",
+      "assertion": {
+        "id": "602"
+      },
+      "label": "Fernsehprogrammgestaltung, Fernsehen und Verbreitung von Videoinhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6020"
+      },
+      "label": "Fernsehprogrammgestaltung, Fernsehen und Verbreitung von Videoinhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]",
+      "assertion": {
+        "id": "603"
+      },
+      "label": "Nachrichtenagenturen und sonstige Verbreitung von Inhalten"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6031"
+      },
+      "label": "Nachrichtenagenturen"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[1]",
+      "assertion": {
+        "id": "6039"
+      },
+      "label": "Soziale Netzwerke und sonstige Verbreitung von Inhalten"
+    },
+    {
+      "key": "category[10]",
+      "assertion": {
+        "id": "K"
+      },
+      "label": "Telekommunikation, Computerprogrammierung, Beratung, IT-Infrastruktur und sonstige Informationsdienstleistungen"
+    },
+    {
+      "key": "category[10]/category[0]",
+      "assertion": {
+        "id": "61"
+      },
+      "label": "Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "611"
+      },
+      "label": "Drahtgebundene, drahtlose und satellitengestützte Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6110"
+      },
+      "label": "Drahtgebundene, drahtlose und satellitengestützte Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "612"
+      },
+      "label": "Weiterverkauf von Telekommunikationsdiensten und Vermittlungsdienste für Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6120"
+      },
+      "label": "Weiterverkauf von Telekommunikationsdiensten und Vermittlungsdienste für Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "619"
+      },
+      "label": "Sonstige Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6190"
+      },
+      "label": "Sonstige Telekommunikation"
+    },
+    {
+      "key": "category[10]/category[1]",
+      "assertion": {
+        "id": "62"
+      },
+      "label": "Computerprogrammierung, Beratung und damit verbundene Tätigkeiten"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "621"
+      },
+      "label": "Computerprogrammierung"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6211"
+      },
+      "label": "Entwicklung von Videospielen, Videospielsoftware und Videospielsoftware-Tools"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6219"
+      },
+      "label": "Sonstige Computerprogrammierung"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "622"
+      },
+      "label": "IT-Beratung und Management von Computereinrichtungen"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6220"
+      },
+      "label": "IT-Beratung und Management von Computereinrichtungen"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "629"
+      },
+      "label": "Sonstige Dienstleistungen der Informationstechnologie und Computertechnik"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6290"
+      },
+      "label": "Sonstige Dienstleistungen der Informationstechnologie und Computertechnik"
+    },
+    {
+      "key": "category[10]/category[2]",
+      "assertion": {
+        "id": "63"
+      },
+      "label": "IT-Infrastruktur, Datenverarbeitung, Hosting und sonstige Informationsdienstleistungen"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "631"
+      },
+      "label": "IT-Infrastruktur, Datenverarbeitung, Hosting und verwandte Tätigkeiten"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6310"
+      },
+      "label": "IT-Infrastruktur, Datenverarbeitung, Hosting und verwandte Tätigkeiten"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]",
+      "assertion": {
+        "id": "639"
+      },
+      "label": "Tätigkeiten von Websuchportalen und sonstige Informationsdienstleistungen"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6390"
+      },
+      "label": "Tätigkeiten von Websuchportalen und sonstige Informationsdienstleistungen"
+    },
+    {
+      "key": "category[11]",
+      "assertion": {
+        "id": "L"
+      },
+      "label": "Finanz- und Versicherungsdienstleistungen"
+    },
+    {
+      "key": "category[11]/category[0]",
+      "assertion": {
+        "id": "64"
+      },
+      "label": "Finanzdienstleistungen, ausgenommen Versicherungen und Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "641"
+      },
+      "label": "Monetäre Finanzintermediation"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6411"
+      },
+      "label": "Zentralbankwesen"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "6419"
+      },
+      "label": "Sonstige monetäre Finanzintermediation"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]",
+      "assertion": {
+        "id": "642"
+      },
+      "label": "Tätigkeiten von Holdinggesellschaften und Finanzierungsgesellschaften"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6421"
+      },
+      "label": "Tätigkeiten von Holdinggesellschaften"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6422"
+      },
+      "label": "Tätigkeiten von Finanzierungsgesellschaften"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]",
+      "assertion": {
+        "id": "643"
+      },
+      "label": "Tätigkeiten von Trusts, Fonds und ähnlichen Finanzinstitutionen"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6431"
+      },
+      "label": "Tätigkeiten von Geldmarktfonds"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "6432"
+      },
+      "label": "Tätigkeiten von Investmentfonds außerhalb des Geldmarkts"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "6433"
+      },
+      "label": "Tätigkeiten von Treuhand-, Nachlass- und Agenturkonten"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]",
+      "assertion": {
+        "id": "649"
+      },
+      "label": "Sonstige Finanzdienstleistungen, ausgenommen Versicherungen und Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "6491"
+      },
+      "label": "Finanzierungsleasing"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "6492"
+      },
+      "label": "Finanzierung des internationalen Handels"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "6493"
+      },
+      "label": "Factoring"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "6494"
+      },
+      "label": "Verbriefungstätigkeiten"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "6495"
+      },
+      "label": "Sonstige Kreditvergabe"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "6499"
+      },
+      "label": "Sonstige Finanzdienstleistungen a. n. g., ausgenommen Versicherungen und Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[1]",
+      "assertion": {
+        "id": "65"
+      },
+      "label": "Versicherungen, Rückversicherungen und Pensionskassen, ausgenommen gesetzliche Sozialversicherung"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]",
+      "assertion": {
+        "id": "651"
+      },
+      "label": "Versicherungen"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6511"
+      },
+      "label": "Lebensversicherungen"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6512"
+      },
+      "label": "Nichtlebensversicherungen"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]",
+      "assertion": {
+        "id": "652"
+      },
+      "label": "Rückversicherungen"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6520"
+      },
+      "label": "Rückversicherungen"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]",
+      "assertion": {
+        "id": "653"
+      },
+      "label": "Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6530"
+      },
+      "label": "Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[2]",
+      "assertion": {
+        "id": "66"
+      },
+      "label": "Mit Finanz- und Versicherungsdienstleistungen verbundene Tätigkeiten"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]",
+      "assertion": {
+        "id": "661"
+      },
+      "label": "Mit Finanzdienstleistungen verbundene Tätigkeiten, ausgenommen Versicherungen und Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6611"
+      },
+      "label": "Verwaltung von Finanzmärkten"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "6612"
+      },
+      "label": "Vermittlung von Wertpapieren und Warenterminkontrakten"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "6619"
+      },
+      "label": "Sonstige mit Finanzdienstleistungen verbundene Tätigkeiten, ausgenommen Versicherungen und Pensionskassen"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]",
+      "assertion": {
+        "id": "662"
+      },
+      "label": "Mit Versicherungen und Pensionskassen verbundene Tätigkeiten"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6621"
+      },
+      "label": "Risiko- und Schadensbewertung"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "6622"
+      },
+      "label": "Tätigkeiten von Versicherungsvertretern und -maklern"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "6629"
+      },
+      "label": "Sonstige mit Versicherungen und Pensionskassen verbundene Tätigkeiten"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]",
+      "assertion": {
+        "id": "663"
+      },
+      "label": "Fondsmanagement"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6630"
+      },
+      "label": "Fondsmanagement"
+    },
+    {
+      "key": "category[12]",
+      "assertion": {
+        "id": "M"
+      },
+      "label": "Grundstücks- und Wohnungswesen"
+    },
+    {
+      "key": "category[12]/category[0]",
+      "assertion": {
+        "id": "68"
+      },
+      "label": "Grundstücks- und Wohnungswesen"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "681"
+      },
+      "label": "Grundstücks- und Wohnungswesen mit eigenen oder gemieteten Immobilien"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6810"
+      },
+      "label": "Grundstücks- und Wohnungswesen mit eigenen oder gemieteten Immobilien"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "682"
+      },
+      "label": "Grundstücks- und Wohnungswesen gegen Entgelt oder auf Vertragsbasis"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6821"
+      },
+      "label": "Vermittlungsdienstleistungen für Immobilien"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6829"
+      },
+      "label": "Sonstiges Grundstücks- und Wohnungswesen gegen Entgelt oder auf Vertragsbasis"
+    },
+    {
+      "key": "category[13]",
+      "assertion": {
+        "id": "N"
+      },
+      "label": "Freiberufliche, wissenschaftliche und technische Dienstleistungen"
+    },
+    {
+      "key": "category[13]/category[0]",
+      "assertion": {
+        "id": "69"
+      },
+      "label": "Rechts- und Steuerberatung, Wirtschaftsprüfung"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "691"
+      },
+      "label": "Rechtsberatung"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6910"
+      },
+      "label": "Rechtsberatung"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]",
+      "assertion": {
+        "id": "692"
+      },
+      "label": "Wirtschaftsprüfung und Steuerberatung; Buchführung"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6920"
+      },
+      "label": "Wirtschaftsprüfung und Steuerberatung; Buchführung"
+    },
+    {
+      "key": "category[13]/category[1]",
+      "assertion": {
+        "id": "70"
+      },
+      "label": "Tätigkeiten von Unternehmenszentralen; Unternehmensberatung"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "701"
+      },
+      "label": "Tätigkeiten von Unternehmenszentralen"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7010"
+      },
+      "label": "Tätigkeiten von Unternehmenszentralen"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "702"
+      },
+      "label": "Unternehmensberatung und sonstige Managementberatung"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7020"
+      },
+      "label": "Unternehmensberatung und sonstige Managementberatung"
+    },
+    {
+      "key": "category[13]/category[2]",
+      "assertion": {
+        "id": "71"
+      },
+      "label": "Architektur- und Ingenieurtätigkeiten; technische Untersuchungen und Analysen"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]",
+      "assertion": {
+        "id": "711"
+      },
+      "label": "Architektur- und Ingenieurtätigkeiten sowie zugehörige technische Beratung"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7110"
+      },
+      "label": "Architektur- und Ingenieurtätigkeiten sowie zugehörige technische Beratung"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]",
+      "assertion": {
+        "id": "712"
+      },
+      "label": "Technische Untersuchungen und Analysen"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7120"
+      },
+      "label": "Technische Untersuchungen und Analysen"
+    },
+    {
+      "key": "category[13]/category[3]",
+      "assertion": {
+        "id": "72"
+      },
+      "label": "Forschung und Entwicklung"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]",
+      "assertion": {
+        "id": "721"
+      },
+      "label": "Forschung und experimentelle Entwicklung in Naturwissenschaften und Technik"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "7210"
+      },
+      "label": "Forschung und experimentelle Entwicklung in Naturwissenschaften und Technik"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]",
+      "assertion": {
+        "id": "722"
+      },
+      "label": "Forschung und experimentelle Entwicklung in Sozial- und Geisteswissenschaften"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "7220"
+      },
+      "label": "Forschung und experimentelle Entwicklung in Sozial- und Geisteswissenschaften"
+    },
+    {
+      "key": "category[13]/category[4]",
+      "assertion": {
+        "id": "73"
+      },
+      "label": "Werbung, Marktforschung und Öffentlichkeitsarbeit"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]",
+      "assertion": {
+        "id": "731"
+      },
+      "label": "Werbung"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "7310"
+      },
+      "label": "Werbung"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]",
+      "assertion": {
+        "id": "732"
+      },
+      "label": "Markt- und Meinungsforschung"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "7320"
+      },
+      "label": "Markt- und Meinungsforschung"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]",
+      "assertion": {
+        "id": "733"
+      },
+      "label": "Öffentlichkeitsarbeit"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "7330"
+      },
+      "label": "Öffentlichkeitsarbeit"
+    },
+    {
+      "key": "category[13]/category[5]",
+      "assertion": {
+        "id": "74"
+      },
+      "label": "Sonstige freiberufliche, wissenschaftliche und technische Tätigkeiten"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]",
+      "assertion": {
+        "id": "741"
+      },
+      "label": "Spezialisierte Designtätigkeiten"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "7410"
+      },
+      "label": "Spezialisierte Designtätigkeiten"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]",
+      "assertion": {
+        "id": "742"
+      },
+      "label": "Fotografie"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "7420"
+      },
+      "label": "Fotografie"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]",
+      "assertion": {
+        "id": "743"
+      },
+      "label": "Übersetzen und Dolmetschen"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "7430"
+      },
+      "label": "Übersetzen und Dolmetschen"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]",
+      "assertion": {
+        "id": "749"
+      },
+      "label": "Sonstige freiberufliche, wissenschaftliche und technische Tätigkeiten a. n. g."
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "7491"
+      },
+      "label": "Patentvermittlung und Marketingdienstleistungen"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[1]",
+      "assertion": {
+        "id": "7499"
+      },
+      "label": "Alle sonstigen freiberuflichen, wissenschaftlichen und technischen Tätigkeiten a. n. g."
+    },
+    {
+      "key": "category[13]/category[6]",
+      "assertion": {
+        "id": "75"
+      },
+      "label": "Veterinärtätigkeiten"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]",
+      "assertion": {
+        "id": "750"
+      },
+      "label": "Veterinärtätigkeiten"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "7500"
+      },
+      "label": "Veterinärtätigkeiten"
+    },
+    {
+      "key": "category[14]",
+      "assertion": {
+        "id": "O"
+      },
+      "label": "Erbringung von sonstigen wirtschaftlichen Dienstleistungen"
+    },
+    {
+      "key": "category[14]/category[0]",
+      "assertion": {
+        "id": "77"
+      },
+      "label": "Vermietung und Leasing"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "771"
+      },
+      "label": "Vermietung und Leasing von Kraftwagen"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "7710"
+      },
+      "label": "Vermietung und Leasing von Kraftwagen"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]",
+      "assertion": {
+        "id": "772"
+      },
+      "label": "Vermietung und Leasing von Gebrauchsgütern"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "7721"
+      },
+      "label": "Vermietung und Leasing von Sport- und Freizeitgeräten"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "7729"
+      },
+      "label": "Vermietung und Leasing sonstiger Gebrauchsgüter"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]",
+      "assertion": {
+        "id": "773"
+      },
+      "label": "Vermietung und Leasing sonstiger Maschinen, Geräte und Sachgüter"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "7730"
+      },
+      "label": "Vermietung und Leasing sonstiger Maschinen, Geräte und Sachgüter"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]",
+      "assertion": {
+        "id": "774"
+      },
+      "label": "Leasing von geistigem Eigentum und ähnlichen Produkten, ausgenommen urheberrechtlich geschützte Werke"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "7740"
+      },
+      "label": "Leasing von geistigem Eigentum und ähnlichen Produkten, ausgenommen urheberrechtlich geschützte Werke"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]",
+      "assertion": {
+        "id": "775"
+      },
+      "label": "Vermittlungstätigkeiten bei der Vermietung und beim Leasing von Sachgütern und nichtfinanziellen immateriellen Vermögenswerten"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "7751"
+      },
+      "label": "Vermittlungstätigkeiten bei der Vermietung und beim Leasing von Pkw, Wohnmobilen und Anhängern"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "7752"
+      },
+      "label": "Vermittlungstätigkeiten bei der Vermietung und beim Leasing sonstiger Sachgüter und nichtfinanzieller immaterieller Vermögenswerte"
+    },
+    {
+      "key": "category[14]/category[1]",
+      "assertion": {
+        "id": "78"
+      },
+      "label": "Vermittlung und Überlassung von Arbeitskräften"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "781"
+      },
+      "label": "Tätigkeiten von Arbeitsvermittlungsagenturen"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7810"
+      },
+      "label": "Tätigkeiten von Arbeitsvermittlungsagenturen"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]",
+      "assertion": {
+        "id": "782"
+      },
+      "label": "Tätigkeiten von Zeitarbeitsagenturen und sonstige Bereitstellung von Arbeitskräften"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7820"
+      },
+      "label": "Tätigkeiten von Zeitarbeitsagenturen und sonstige Bereitstellung von Arbeitskräften"
+    },
+    {
+      "key": "category[14]/category[2]",
+      "assertion": {
+        "id": "79"
+      },
+      "label": "Reisebüros, Reiseveranstalter und sonstige reisebezogene Tätigkeiten"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "791"
+      },
+      "label": "Tätigkeiten von Reisebüros und Reiseveranstaltern"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7911"
+      },
+      "label": "Tätigkeiten von Reisebüros"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "7912"
+      },
+      "label": "Tätigkeiten von Reiseveranstaltern"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "799"
+      },
+      "label": "Sonstige reisebezogene Tätigkeiten"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7990"
+      },
+      "label": "Sonstige reisebezogene Tätigkeiten"
+    },
+    {
+      "key": "category[14]/category[3]",
+      "assertion": {
+        "id": "80"
+      },
+      "label": "Ermittlungs- und Sicherheitsdienste"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]",
+      "assertion": {
+        "id": "801"
+      },
+      "label": "Ermittlungs- und Sicherheitsdienste"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "8011"
+      },
+      "label": "Ermittlungs- und private Sicherheitsdienste"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "8019"
+      },
+      "label": "Sicherheitsdienste a. n. g."
+    },
+    {
+      "key": "category[14]/category[4]",
+      "assertion": {
+        "id": "81"
+      },
+      "label": "Dienstleistungen für Gebäude und Landschaftsgestaltung"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]",
+      "assertion": {
+        "id": "811"
+      },
+      "label": "Kombinierte Dienstleistungen im Zusammenhang mit Gebäuden"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "8110"
+      },
+      "label": "Kombinierte Dienstleistungen im Zusammenhang mit Gebäuden"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]",
+      "assertion": {
+        "id": "812"
+      },
+      "label": "Reinigungstätigkeiten"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "8121"
+      },
+      "label": "Allgemeine Gebäudereinigung"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[1]",
+      "assertion": {
+        "id": "8129"
+      },
+      "label": "Sonstige Reinigungstätigkeiten"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]",
+      "assertion": {
+        "id": "813"
+      },
+      "label": "Dienstleistungen der Landschaftsgestaltung"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "8130"
+      },
+      "label": "Dienstleistungen der Landschaftsgestaltung"
+    },
+    {
+      "key": "category[14]/category[5]",
+      "assertion": {
+        "id": "82"
+      },
+      "label": "Büroverwaltungs-, Bürounterstützungs- und sonstige unternehmensbezogene Dienstleistungen"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]",
+      "assertion": {
+        "id": "821"
+      },
+      "label": "Büroverwaltungs- und Bürounterstützungsdienstleistungen"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "8210"
+      },
+      "label": "Büroverwaltungs- und Bürounterstützungsdienstleistungen"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]",
+      "assertion": {
+        "id": "822"
+      },
+      "label": "Tätigkeiten von Callcentern"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "8220"
+      },
+      "label": "Tätigkeiten von Callcentern"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]",
+      "assertion": {
+        "id": "823"
+      },
+      "label": "Veranstaltung von Kongressen und Messen"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "8230"
+      },
+      "label": "Veranstaltung von Kongressen und Messen"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]",
+      "assertion": {
+        "id": "824"
+      },
+      "label": "Vermittlung von unternehmensbezogenen Dienstleistungen a. n. g., ausgenommen Finanzvermittlung"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "8240"
+      },
+      "label": "Vermittlung von unternehmensbezogenen Dienstleistungen a. n. g., ausgenommen Finanzvermittlung"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]",
+      "assertion": {
+        "id": "829"
+      },
+      "label": "Sonstige unternehmensbezogene Dienstleistungen a. n. g."
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[0]",
+      "assertion": {
+        "id": "8291"
+      },
+      "label": "Tätigkeiten von Inkassobüros und Auskunfteien"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[1]",
+      "assertion": {
+        "id": "8292"
+      },
+      "label": "Verpackungstätigkeiten"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[2]",
+      "assertion": {
+        "id": "8299"
+      },
+      "label": "Sonstige unternehmensbezogene Dienstleistungen a. n. g."
+    },
+    {
+      "key": "category[15]",
+      "assertion": {
+        "id": "P"
+      },
+      "label": "Öffentliche Verwaltung, Verteidigung; gesetzliche Sozialversicherung"
+    },
+    {
+      "key": "category[15]/category[0]",
+      "assertion": {
+        "id": "84"
+      },
+      "label": "Öffentliche Verwaltung, Verteidigung; gesetzliche Sozialversicherung"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "841"
+      },
+      "label": "Verwaltung des Staates sowie Wirtschafts-, Sozial- und Umweltpolitik"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8411"
+      },
+      "label": "Allgemeine öffentliche Verwaltung"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "8412"
+      },
+      "label": "Regulierung von Tätigkeiten im Gesundheitswesen, Bildungswesen, kulturellen Bereich und anderen sozialen Diensten, ausgenommen Sozialversicherung und Umwelt"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "8413"
+      },
+      "label": "Regulierung von Tätigkeiten zur Erbringung von Umweltdienstleistungen"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "8414"
+      },
+      "label": "Regulierung und Förderung eines effizienteren Betriebs von Unternehmen"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "842"
+      },
+      "label": "Erbringung von Dienstleistungen für die Allgemeinheit"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8421"
+      },
+      "label": "Auswärtige Angelegenheiten"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "8422"
+      },
+      "label": "Verteidigung"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "8423"
+      },
+      "label": "Öffentliche Sicherheit und Ordnung"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "843"
+      },
+      "label": "Gesetzliche Sozialversicherung"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8430"
+      },
+      "label": "Gesetzliche Sozialversicherung"
+    },
+    {
+      "key": "category[16]",
+      "assertion": {
+        "id": "Q"
+      },
+      "label": "Bildungswesen"
+    },
+    {
+      "key": "category[16]/category[0]",
+      "assertion": {
+        "id": "85"
+      },
+      "label": "Bildungswesen"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "851"
+      },
+      "label": "Vorschulische Bildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8510"
+      },
+      "label": "Vorschulische Bildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "852"
+      },
+      "label": "Grundschulbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8520"
+      },
+      "label": "Grundschulbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]",
+      "assertion": {
+        "id": "853"
+      },
+      "label": "Sekundarbildung und postsekundare nichttertiäre Bildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8531"
+      },
+      "label": "Allgemeinbildende Sekundarbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8532"
+      },
+      "label": "Berufliche Sekundarbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "8533"
+      },
+      "label": "Postsekundare nichttertiäre Bildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]",
+      "assertion": {
+        "id": "854"
+      },
+      "label": "Tertiärbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "8540"
+      },
+      "label": "Tertiärbildung"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]",
+      "assertion": {
+        "id": "855"
+      },
+      "label": "Sonstiges Bildungswesen"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "8551"
+      },
+      "label": "Sport- und Freizeitunterricht"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "8552"
+      },
+      "label": "Kultureller Unterricht"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "8553"
+      },
+      "label": "Tätigkeiten von Fahrschulen"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "8559"
+      },
+      "label": "Sonstiges Bildungswesen a. n. g."
+    },
+    {
+      "key": "category[16]/category[0]/category[5]",
+      "assertion": {
+        "id": "856"
+      },
+      "label": "Bildungsunterstützende Dienstleistungen"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "8561"
+      },
+      "label": "Vermittlung von Kursen und Nachhilfelehrkräften"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "8569"
+      },
+      "label": "Sonstige unterstützende Tätigkeiten im Bildungswesen"
+    },
+    {
+      "key": "category[17]",
+      "assertion": {
+        "id": "R"
+      },
+      "label": "Gesundheitswesen und Sozialwesen"
+    },
+    {
+      "key": "category[17]/category[0]",
+      "assertion": {
+        "id": "86"
+      },
+      "label": "Gesundheitswesen"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "861"
+      },
+      "label": "Krankenhaustätigkeiten"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8610"
+      },
+      "label": "Krankenhaustätigkeiten"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]",
+      "assertion": {
+        "id": "862"
+      },
+      "label": "Arzt- und Zahnarztpraxen"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8620"
+      },
+      "label": "Arzt- und Zahnarztpraxen"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]",
+      "assertion": {
+        "id": "869"
+      },
+      "label": "Sonstige Tätigkeiten im Gesundheitswesen"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8691"
+      },
+      "label": "Vermittlung von medizinischen, zahnmedizinischen und sonstigen Gesundheitsdienstleistungen"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8699"
+      },
+      "label": "Sonstige Tätigkeiten im Gesundheitswesen a. n. g."
+    },
+    {
+      "key": "category[17]/category[1]",
+      "assertion": {
+        "id": "87"
+      },
+      "label": "Stationäre Pflegeeinrichtungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "871"
+      },
+      "label": "Stationäre Pflegeeinrichtungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "8710"
+      },
+      "label": "Stationäre Pflegeeinrichtungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]",
+      "assertion": {
+        "id": "872"
+      },
+      "label": "Stationäre Pflegeeinrichtungen für Personen mit psychischen Erkrankungen oder Suchterkrankungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "8720"
+      },
+      "label": "Stationäre Pflegeeinrichtungen für Personen mit psychischen Erkrankungen oder Suchterkrankungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]",
+      "assertion": {
+        "id": "873"
+      },
+      "label": "Stationäre Pflegeeinrichtungen für ältere Menschen oder Menschen mit körperlichen Behinderungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "8730"
+      },
+      "label": "Stationäre Pflegeeinrichtungen für ältere Menschen oder Menschen mit körperlichen Behinderungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]",
+      "assertion": {
+        "id": "879"
+      },
+      "label": "Sonstige stationäre Pflegeeinrichtungen"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "8791"
+      },
+      "label": "Vermittlung von Dienstleistungen der stationären Pflege"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "8799"
+      },
+      "label": "Sonstige stationäre Pflegeeinrichtungen a. n. g."
+    },
+    {
+      "key": "category[17]/category[2]",
+      "assertion": {
+        "id": "88"
+      },
+      "label": "Sozialwesen ohne Unterkunft"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "881"
+      },
+      "label": "Sozialwesen ohne Unterkunft für ältere Menschen oder Menschen mit Behinderungen"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "8810"
+      },
+      "label": "Sozialwesen ohne Unterkunft für ältere Menschen oder Menschen mit Behinderungen"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "889"
+      },
+      "label": "Sonstiges Sozialwesen ohne Unterkunft"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "8890"
+      },
+      "label": "Sonstiges Sozialwesen ohne Unterkunft"
+    },
+    {
+      "key": "category[18]",
+      "assertion": {
+        "id": "S"
+      },
+      "label": "Kunst, Sport und Erholung"
+    },
+    {
+      "key": "category[18]/category[0]",
+      "assertion": {
+        "id": "90"
+      },
+      "label": "Künstlerisches und darstellendes Schaffen"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "901"
+      },
+      "label": "Künstlerisches Schaffen"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9011"
+      },
+      "label": "Literarisches Schaffen und musikalische Kompositionstätigkeiten"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9012"
+      },
+      "label": "Bildende Kunst"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "9013"
+      },
+      "label": "Sonstiges künstlerisches Schaffen"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "902"
+      },
+      "label": "Darstellende Kunst"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9020"
+      },
+      "label": "Darstellende Kunst"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "903"
+      },
+      "label": "Unterstützende Tätigkeiten für künstlerisches und darstellendes Schaffen"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9031"
+      },
+      "label": "Betrieb von Kunststätten und -einrichtungen"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9039"
+      },
+      "label": "Sonstige unterstützende Tätigkeiten für künstlerisches und darstellendes Schaffen"
+    },
+    {
+      "key": "category[18]/category[1]",
+      "assertion": {
+        "id": "91"
+      },
+      "label": "Bibliotheken, Archive, Museen und sonstige kulturelle Tätigkeiten"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "911"
+      },
+      "label": "Bibliotheken und Archive"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9111"
+      },
+      "label": "Bibliotheken"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "9112"
+      },
+      "label": "Archive"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "912"
+      },
+      "label": "Museen, Sammlungen, historische Stätten und Denkmäler"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9121"
+      },
+      "label": "Museen und Sammlungen"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9122"
+      },
+      "label": "Historische Stätten und Denkmäler"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "913"
+      },
+      "label": "Konservierung, Restaurierung und sonstige unterstützende Tätigkeiten für das Kulturerbe"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9130"
+      },
+      "label": "Konservierung, Restaurierung und sonstige unterstützende Tätigkeiten für das Kulturerbe"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "914"
+      },
+      "label": "Botanische und zoologische Gärten sowie Naturschutzgebiete"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9141"
+      },
+      "label": "Botanische und zoologische Gärten"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "9142"
+      },
+      "label": "Tätigkeiten von Naturschutzgebieten"
+    },
+    {
+      "key": "category[18]/category[2]",
+      "assertion": {
+        "id": "92"
+      },
+      "label": "Glücksspiel- und Wettaktivitäten"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]",
+      "assertion": {
+        "id": "920"
+      },
+      "label": "Glücksspiel- und Wettaktivitäten"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9200"
+      },
+      "label": "Glücksspiel- und Wettaktivitäten"
+    },
+    {
+      "key": "category[18]/category[3]",
+      "assertion": {
+        "id": "93"
+      },
+      "label": "Sport, Unterhaltung und Erholung"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]",
+      "assertion": {
+        "id": "931"
+      },
+      "label": "Sport"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "9311"
+      },
+      "label": "Betrieb von Sportanlagen"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "9312"
+      },
+      "label": "Tätigkeiten von Sportvereinen"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "9319"
+      },
+      "label": "Sonstige Sporttätigkeiten"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]",
+      "assertion": {
+        "id": "932"
+      },
+      "label": "Unterhaltung und Erholung"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "9321"
+      },
+      "label": "Betrieb von Vergnügungs- und Themenparks"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "9329"
+      },
+      "label": "Sonstige Unterhaltungs- und Erholungstätigkeiten"
+    },
+    {
+      "key": "category[19]",
+      "assertion": {
+        "id": "T"
+      },
+      "label": "Sonstige Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[0]",
+      "assertion": {
+        "id": "94"
+      },
+      "label": "Tätigkeiten von Mitgliederorganisationen"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "941"
+      },
+      "label": "Tätigkeiten von Wirtschafts-, Arbeitgeber- und Berufsverbänden"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9411"
+      },
+      "label": "Tätigkeiten von Wirtschafts- und Arbeitgeberverbänden"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9412"
+      },
+      "label": "Tätigkeiten von Berufsverbänden"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]",
+      "assertion": {
+        "id": "942"
+      },
+      "label": "Tätigkeiten von Gewerkschaften"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9420"
+      },
+      "label": "Tätigkeiten von Gewerkschaften"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]",
+      "assertion": {
+        "id": "949"
+      },
+      "label": "Tätigkeiten sonstiger Mitgliederorganisationen"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9491"
+      },
+      "label": "Tätigkeiten religiöser Organisationen"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9492"
+      },
+      "label": "Tätigkeiten politischer Organisationen"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "9499"
+      },
+      "label": "Tätigkeiten sonstiger Mitgliederorganisationen a. n. g."
+    },
+    {
+      "key": "category[19]/category[1]",
+      "assertion": {
+        "id": "95"
+      },
+      "label": "Reparatur und Wartung von Computern, persönlichen und Haushaltsgegenständen sowie Kraftfahrzeugen und Motorrädern"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "951"
+      },
+      "label": "Reparatur und Wartung von Computern und Kommunikationsgeräten"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9510"
+      },
+      "label": "Reparatur und Wartung von Computern und Kommunikationsgeräten"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]",
+      "assertion": {
+        "id": "952"
+      },
+      "label": "Reparatur und Wartung von persönlichen und Haushaltsgegenständen"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9521"
+      },
+      "label": "Reparatur und Wartung von Unterhaltungselektronik"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9522"
+      },
+      "label": "Reparatur und Wartung von Haushaltsgeräten sowie Heim- und Gartengeräten"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "9523"
+      },
+      "label": "Reparatur und Wartung von Schuhen und Lederwaren"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "9524"
+      },
+      "label": "Reparatur und Wartung von Möbeln und Einrichtungsgegenständen"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "9529"
+      },
+      "label": "Reparatur und Wartung sonstiger persönlicher und Haushaltsgegenstände"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]",
+      "assertion": {
+        "id": "953"
+      },
+      "label": "Reparatur und Wartung von Kraftfahrzeugen und Motorrädern"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9531"
+      },
+      "label": "Reparatur und Wartung von Kraftfahrzeugen"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "9532"
+      },
+      "label": "Reparatur und Wartung von Motorrädern"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]",
+      "assertion": {
+        "id": "954"
+      },
+      "label": "Vermittlungstätigkeiten für Reparatur und Wartung von Computern, persönlichen und Haushaltsgegenständen sowie Kraftfahrzeugen und Motorrädern"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9540"
+      },
+      "label": "Vermittlungstätigkeiten für Reparatur und Wartung von Computern, persönlichen und Haushaltsgegenständen sowie Kraftfahrzeugen und Motorrädern"
+    },
+    {
+      "key": "category[19]/category[2]",
+      "assertion": {
+        "id": "96"
+      },
+      "label": "Persönliche Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "961"
+      },
+      "label": "Waschen und Reinigen von Textilien und Pelzwaren"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9610"
+      },
+      "label": "Waschen und Reinigen von Textilien und Pelzwaren"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]",
+      "assertion": {
+        "id": "962"
+      },
+      "label": "Friseur-, Kosmetik-, Tages-Spa- und ähnliche Tätigkeiten"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "9621"
+      },
+      "label": "Friseur- und Barbiertätigkeiten"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "9622"
+      },
+      "label": "Kosmetikpflege und sonstige kosmetische Behandlungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "9623"
+      },
+      "label": "Tages-Spa-, Sauna- und Dampfbadtätigkeiten"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]",
+      "assertion": {
+        "id": "963"
+      },
+      "label": "Bestattungswesen und damit verbundene Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "9630"
+      },
+      "label": "Bestattungswesen und damit verbundene Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]",
+      "assertion": {
+        "id": "964"
+      },
+      "label": "Vermittlungstätigkeiten für persönliche Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "9640"
+      },
+      "label": "Vermittlungstätigkeiten für persönliche Dienstleistungen"
+    },
+    {
+      "key": "category[19]/category[2]/category[4]",
+      "assertion": {
+        "id": "969"
+      },
+      "label": "Sonstige persönliche Dienstleistungen a. n. g."
+    },
+    {
+      "key": "category[19]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "9690"
+      },
+      "label": "Sonstige persönliche Dienstleistungen a. n. g."
+    },
+    {
+      "key": "category[20]",
+      "assertion": {
+        "id": "U"
+      },
+      "label": "Tätigkeiten privater Haushalte als Arbeitgeber; undifferenzierte Waren- und Dienstleistungsproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[20]/category[0]",
+      "assertion": {
+        "id": "97"
+      },
+      "label": "Tätigkeiten privater Haushalte als Arbeitgeber von Hauspersonal"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "970"
+      },
+      "label": "Tätigkeiten privater Haushalte als Arbeitgeber von Hauspersonal"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9700"
+      },
+      "label": "Tätigkeiten privater Haushalte als Arbeitgeber von Hauspersonal"
+    },
+    {
+      "key": "category[20]/category[1]",
+      "assertion": {
+        "id": "98"
+      },
+      "label": "Undifferenzierte Waren- und Dienstleistungsproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "981"
+      },
+      "label": "Undifferenzierte Warenproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9810"
+      },
+      "label": "Undifferenzierte Warenproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]",
+      "assertion": {
+        "id": "982"
+      },
+      "label": "Undifferenzierte Dienstleistungsproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9820"
+      },
+      "label": "Undifferenzierte Dienstleistungsproduktion privater Haushalte für den Eigenbedarf"
+    },
+    {
+      "key": "category[21]",
+      "assertion": {
+        "id": "V"
+      },
+      "label": "Tätigkeiten extraterritorialer Organisationen und Körperschaften"
+    },
+    {
+      "key": "category[21]/category[0]",
+      "assertion": {
+        "id": "99"
+      },
+      "label": "Tätigkeiten extraterritorialer Organisationen und Körperschaften"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "990"
+      },
+      "label": "Tätigkeiten extraterritorialer Organisationen und Körperschaften"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9900"
+      },
+      "label": "Tätigkeiten extraterritorialer Organisationen und Körperschaften"
+    }
+  ]
+}

@@ -33,6 +33,7 @@ import {
   getLocalizedCategoryDataType,
   setClassificationCacheManifest,
 } from '@/services/classifications/util';
+import { getReferenceResourceDefinition } from '@/services/referenceResources/manifest';
 
 describe('Classifications Util (src/services/classifications/util.ts)', () => {
   const originalFetch = global.fetch;
@@ -49,7 +50,6 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   it('resolves category data type names through the resource manifest', () => {
     expect(getLocalizedCategoryDataType('Process', 'en')).toBe('Process');
     expect(getLocalizedCategoryDataType('Process', 'zh')).toBe('过程');
-    expect(getLocalizedCategoryDataType('Process', 'de')).toBe('Process');
   });
 
   it('builds classification trees recursively in genClass', () => {
@@ -71,7 +71,7 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     ]);
   });
 
-  it('uses scoped localized labels and falls back to the base label when needed', () => {
+  it('uses scoped localized labels when the localized tree exactly covers the base', () => {
     const result = genClassWithLocalizedLabels(
       [
         {
@@ -80,7 +80,13 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
           category: [{ '@id': 'leaf', '@name': 'Leaf' }],
         },
       ],
-      [{ '@id': 'root', '@name': '根' }],
+      [
+        {
+          '@id': 'root',
+          '@name': '根',
+          category: [{ '@id': 'leaf', '@name': '叶' }],
+        },
+      ],
     );
 
     expect(result).toEqual([
@@ -88,9 +94,24 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
         id: 'root',
         value: 'Root',
         label: '根',
-        children: [{ id: 'leaf', value: 'Leaf', label: 'Leaf', children: [] }],
+        children: [{ id: 'leaf', value: 'Leaf', label: '叶', children: [] }],
       },
     ]);
+  });
+
+  it('fails closed instead of silently using a base label for a partial localized tree', () => {
+    expect(() =>
+      genClassWithLocalizedLabels(
+        [
+          {
+            '@id': 'root',
+            '@name': 'Root',
+            category: [{ '@id': 'leaf', '@name': 'Leaf' }],
+          },
+        ],
+        [{ '@id': 'root', '@name': 'Wurzel' }],
+      ),
+    ).toThrow('Localized classification does not exactly cover the base structure.');
   });
 
   it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
@@ -148,6 +169,29 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
       'db',
       'classification_files',
       'file.json.gz',
+    );
+  });
+
+  it('does not address a stale unversioned IndexedDB entry after manifest activation', async () => {
+    const legacyFileName = 'CPCClassification.min.json.gz';
+    const activeFileName = getReferenceResourceDefinition('cpc').runtimeAssets.en!.fileName;
+    expect(activeFileName).not.toBe(legacyFileName);
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockImplementation(
+      async (_db: unknown, _store: string, fileName: string) =>
+        fileName === legacyFileName ? { data: { stale: true } } : null,
+    );
+
+    await expect(getCachedClassificationFileData(activeFileName)).resolves.toBeNull();
+    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith(
+      'db',
+      'classification_files',
+      activeFileName,
+    );
+    expect(mockGetCachedJsonEntry).not.toHaveBeenCalledWith(
+      'db',
+      'classification_files',
+      legacyFileName,
     );
   });
 

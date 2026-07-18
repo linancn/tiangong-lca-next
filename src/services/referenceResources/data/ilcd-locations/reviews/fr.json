@@ -1,0 +1,5275 @@
+{
+  "locale": "fr",
+  "policyVersion": "reference-project-review-v1",
+  "records": [
+    {
+      "assertion": {
+        "code": "NULL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Aucun",
+      "key": "location:NULL"
+    },
+    {
+      "assertion": {
+        "code": "GLO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mondial",
+      "key": "location:GLO"
+    },
+    {
+      "assertion": {
+        "code": "RAF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Afrique",
+      "key": "location:RAF"
+    },
+    {
+      "assertion": {
+        "code": "RAM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Amériques",
+      "key": "location:RAM"
+    },
+    {
+      "assertion": {
+        "code": "RAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Asie et Pacifique",
+      "key": "location:RAS"
+    },
+    {
+      "assertion": {
+        "code": "RER"
+      },
+      "decision": "accepted",
+      "finalLabel": "Europe",
+      "key": "location:RER"
+    },
+    {
+      "assertion": {
+        "code": "OCE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Océanie",
+      "key": "location:OCE"
+    },
+    {
+      "assertion": {
+        "code": "MEA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Moyen-Orient et Afrique du Nord",
+      "key": "location:MEA"
+    },
+    {
+      "assertion": {
+        "code": "AFR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Afrique subsaharienne",
+      "key": "location:AFR"
+    },
+    {
+      "assertion": {
+        "code": "RLA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Amérique latine et Caraïbes",
+      "key": "location:RLA"
+    },
+    {
+      "assertion": {
+        "code": "RNA"
+      },
+      "candidateLabel": "Amérique du Nord",
+      "decision": "corrected",
+      "finalLabel": "Amérique septentrionale",
+      "key": "location:RNA"
+    },
+    {
+      "assertion": {
+        "code": "CPA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Asie à économie planifiée et Chine",
+      "key": "location:CPA"
+    },
+    {
+      "assertion": {
+        "code": "EAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Asie de l'Est",
+      "key": "location:EAS"
+    },
+    {
+      "assertion": {
+        "code": "PAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autre Asie du Pacifique",
+      "key": "location:PAS"
+    },
+    {
+      "assertion": {
+        "code": "SAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Asie du Sud",
+      "key": "location:SAS"
+    },
+    {
+      "assertion": {
+        "code": "EEU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Europe centrale et orientale",
+      "key": "location:EEU"
+    },
+    {
+      "assertion": {
+        "code": "WEU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Europe occidentale",
+      "key": "location:WEU"
+    },
+    {
+      "assertion": {
+        "code": "RNE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Proche-Orient",
+      "key": "location:RNE"
+    },
+    {
+      "assertion": {
+        "code": "RME"
+      },
+      "decision": "accepted",
+      "finalLabel": "Moyen-Orient",
+      "key": "location:RME"
+    },
+    {
+      "assertion": {
+        "code": "EU-15"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE 15",
+      "key": "location:EU-15"
+    },
+    {
+      "assertion": {
+        "code": "EU-NMC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nouveaux États membres de l'UE 2004",
+      "key": "location:EU-NMC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE 25",
+      "key": "location:EU-25"
+    },
+    {
+      "assertion": {
+        "code": "EC-CC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pays candidats à l'UE 2005",
+      "key": "location:EC-CC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE 25 et pays candidats 2005",
+      "key": "location:EU-25&CC"
+    },
+    {
+      "assertion": {
+        "code": "EU-AC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pays associés à l'UE 2005",
+      "key": "location:EU-AC"
+    },
+    {
+      "assertion": {
+        "code": "EU-25&CC&AC"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE 25, pays candidats et pays associés 2005",
+      "key": "location:EU-25&CC&AC"
+    },
+    {
+      "assertion": {
+        "code": "EU-27"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE 27",
+      "key": "location:EU-27"
+    },
+    {
+      "assertion": {
+        "code": "PAO"
+      },
+      "decision": "accepted",
+      "finalLabel": "OCDE Pacifique (Japon, Australie, Nouvelle-Zélande)",
+      "key": "location:PAO"
+    },
+    {
+      "assertion": {
+        "code": "FSU"
+      },
+      "decision": "accepted",
+      "finalLabel": "États indépendants de l'ancienne Union soviétique",
+      "key": "location:FSU"
+    },
+    {
+      "assertion": {
+        "code": "UCTE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Union pour la coordination du transport de l'électricité",
+      "key": "location:UCTE"
+    },
+    {
+      "assertion": {
+        "code": "CENTREL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Association électrique d'Europe centrale",
+      "key": "location:CENTREL"
+    },
+    {
+      "assertion": {
+        "code": "NORDEL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Association électrique des pays nordiques",
+      "key": "location:NORDEL"
+    },
+    {
+      "assertion": {
+        "code": "EU+EFTA+UK"
+      },
+      "decision": "accepted",
+      "finalLabel": "UE complète",
+      "key": "location:EU+EFTA+UK"
+    },
+    {
+      "assertion": {
+        "code": "AD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Andorre",
+      "key": "location:AD"
+    },
+    {
+      "assertion": {
+        "code": "AE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Émirats arabes unis",
+      "key": "location:AE"
+    },
+    {
+      "assertion": {
+        "code": "AF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Afghanistan",
+      "key": "location:AF"
+    },
+    {
+      "assertion": {
+        "code": "AG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Antigua-et-Barbuda",
+      "key": "location:AG"
+    },
+    {
+      "assertion": {
+        "code": "AI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anguilla",
+      "key": "location:AI"
+    },
+    {
+      "assertion": {
+        "code": "AL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Albanie",
+      "key": "location:AL"
+    },
+    {
+      "assertion": {
+        "code": "AM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Arménie",
+      "key": "location:AM"
+    },
+    {
+      "assertion": {
+        "code": "AO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Angola",
+      "key": "location:AO"
+    },
+    {
+      "assertion": {
+        "code": "AQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Antarctique",
+      "key": "location:AQ"
+    },
+    {
+      "assertion": {
+        "code": "AR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Argentine",
+      "key": "location:AR"
+    },
+    {
+      "assertion": {
+        "code": "AS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Samoa américaines",
+      "key": "location:AS"
+    },
+    {
+      "assertion": {
+        "code": "AT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Autriche",
+      "key": "location:AT"
+    },
+    {
+      "assertion": {
+        "code": "AU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Australie",
+      "key": "location:AU"
+    },
+    {
+      "assertion": {
+        "code": "AW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Aruba",
+      "key": "location:AW"
+    },
+    {
+      "assertion": {
+        "code": "AX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Åland",
+      "key": "location:AX"
+    },
+    {
+      "assertion": {
+        "code": "AZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Azerbaïdjan",
+      "key": "location:AZ"
+    },
+    {
+      "assertion": {
+        "code": "BA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bosnie-Herzégovine",
+      "key": "location:BA"
+    },
+    {
+      "assertion": {
+        "code": "BB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Barbade",
+      "key": "location:BB"
+    },
+    {
+      "assertion": {
+        "code": "BD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bangladesh",
+      "key": "location:BD"
+    },
+    {
+      "assertion": {
+        "code": "BE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Belgique",
+      "key": "location:BE"
+    },
+    {
+      "assertion": {
+        "code": "BF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Burkina Faso",
+      "key": "location:BF"
+    },
+    {
+      "assertion": {
+        "code": "BG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bulgarie",
+      "key": "location:BG"
+    },
+    {
+      "assertion": {
+        "code": "BH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bahreïn",
+      "key": "location:BH"
+    },
+    {
+      "assertion": {
+        "code": "BI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Burundi",
+      "key": "location:BI"
+    },
+    {
+      "assertion": {
+        "code": "BJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bénin",
+      "key": "location:BJ"
+    },
+    {
+      "assertion": {
+        "code": "BL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Saint-Barthélemy",
+      "key": "location:BL"
+    },
+    {
+      "assertion": {
+        "code": "BM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bermudes",
+      "key": "location:BM"
+    },
+    {
+      "assertion": {
+        "code": "BN"
+      },
+      "candidateLabel": "Brunei Darussalam",
+      "decision": "corrected",
+      "finalLabel": "Brunei",
+      "key": "location:BN"
+    },
+    {
+      "assertion": {
+        "code": "BO"
+      },
+      "candidateLabel": "Bolivie (État plurinational de)",
+      "decision": "corrected",
+      "finalLabel": "Bolivie",
+      "key": "location:BO"
+    },
+    {
+      "assertion": {
+        "code": "BQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bonaire, Saint-Eustache et Saba",
+      "key": "location:BQ"
+    },
+    {
+      "assertion": {
+        "code": "BR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Brésil",
+      "key": "location:BR"
+    },
+    {
+      "assertion": {
+        "code": "BS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bahamas",
+      "key": "location:BS"
+    },
+    {
+      "assertion": {
+        "code": "BT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bhoutan",
+      "key": "location:BT"
+    },
+    {
+      "assertion": {
+        "code": "BV"
+      },
+      "decision": "accepted",
+      "finalLabel": "Île Bouvet",
+      "key": "location:BV"
+    },
+    {
+      "assertion": {
+        "code": "BW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Botswana",
+      "key": "location:BW"
+    },
+    {
+      "assertion": {
+        "code": "BY"
+      },
+      "candidateLabel": "Bélarus",
+      "decision": "corrected",
+      "finalLabel": "Biélorussie",
+      "key": "location:BY"
+    },
+    {
+      "assertion": {
+        "code": "BZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Belize",
+      "key": "location:BZ"
+    },
+    {
+      "assertion": {
+        "code": "CA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Canada",
+      "key": "location:CA"
+    },
+    {
+      "assertion": {
+        "code": "CC"
+      },
+      "candidateLabel": "Îles Cocos (Keeling)",
+      "decision": "corrected",
+      "finalLabel": "Îles des Cocos",
+      "key": "location:CC"
+    },
+    {
+      "assertion": {
+        "code": "CD"
+      },
+      "decision": "accepted",
+      "finalLabel": "République démocratique du Congo",
+      "key": "location:CD"
+    },
+    {
+      "assertion": {
+        "code": "CF"
+      },
+      "decision": "accepted",
+      "finalLabel": "République centrafricaine",
+      "key": "location:CF"
+    },
+    {
+      "assertion": {
+        "code": "CG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Congo",
+      "key": "location:CG"
+    },
+    {
+      "assertion": {
+        "code": "CH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suisse",
+      "key": "location:CH"
+    },
+    {
+      "assertion": {
+        "code": "CI"
+      },
+      "candidateLabel": "Côte d'Ivoire",
+      "decision": "corrected",
+      "finalLabel": "Côte d’Ivoire",
+      "key": "location:CI"
+    },
+    {
+      "assertion": {
+        "code": "CK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Cook",
+      "key": "location:CK"
+    },
+    {
+      "assertion": {
+        "code": "CL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chili",
+      "key": "location:CL"
+    },
+    {
+      "assertion": {
+        "code": "CM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Cameroun",
+      "key": "location:CM"
+    },
+    {
+      "assertion": {
+        "code": "CO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Colombie",
+      "key": "location:CO"
+    },
+    {
+      "assertion": {
+        "code": "CR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Costa Rica",
+      "key": "location:CR"
+    },
+    {
+      "assertion": {
+        "code": "CU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Cuba",
+      "key": "location:CU"
+    },
+    {
+      "assertion": {
+        "code": "CV"
+      },
+      "decision": "accepted",
+      "finalLabel": "Cabo Verde",
+      "key": "location:CV"
+    },
+    {
+      "assertion": {
+        "code": "CW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Curaçao",
+      "key": "location:CW"
+    },
+    {
+      "assertion": {
+        "code": "CX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Île Christmas",
+      "key": "location:CX"
+    },
+    {
+      "assertion": {
+        "code": "CY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chypre",
+      "key": "location:CY"
+    },
+    {
+      "assertion": {
+        "code": "CZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tchéquie",
+      "key": "location:CZ"
+    },
+    {
+      "assertion": {
+        "code": "DE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Allemagne",
+      "key": "location:DE"
+    },
+    {
+      "assertion": {
+        "code": "DJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Djibouti",
+      "key": "location:DJ"
+    },
+    {
+      "assertion": {
+        "code": "DK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Danemark",
+      "key": "location:DK"
+    },
+    {
+      "assertion": {
+        "code": "DM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dominique",
+      "key": "location:DM"
+    },
+    {
+      "assertion": {
+        "code": "DO"
+      },
+      "decision": "accepted",
+      "finalLabel": "République dominicaine",
+      "key": "location:DO"
+    },
+    {
+      "assertion": {
+        "code": "DZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Algérie",
+      "key": "location:DZ"
+    },
+    {
+      "assertion": {
+        "code": "EC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Équateur",
+      "key": "location:EC"
+    },
+    {
+      "assertion": {
+        "code": "EE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Estonie",
+      "key": "location:EE"
+    },
+    {
+      "assertion": {
+        "code": "EG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Égypte",
+      "key": "location:EG"
+    },
+    {
+      "assertion": {
+        "code": "EH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sahara occidental",
+      "key": "location:EH"
+    },
+    {
+      "assertion": {
+        "code": "ER"
+      },
+      "decision": "accepted",
+      "finalLabel": "Érythrée",
+      "key": "location:ER"
+    },
+    {
+      "assertion": {
+        "code": "ES"
+      },
+      "decision": "accepted",
+      "finalLabel": "Espagne",
+      "key": "location:ES"
+    },
+    {
+      "assertion": {
+        "code": "ET"
+      },
+      "decision": "accepted",
+      "finalLabel": "Éthiopie",
+      "key": "location:ET"
+    },
+    {
+      "assertion": {
+        "code": "FI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Finlande",
+      "key": "location:FI"
+    },
+    {
+      "assertion": {
+        "code": "FJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fidji",
+      "key": "location:FJ"
+    },
+    {
+      "assertion": {
+        "code": "FK"
+      },
+      "candidateLabel": "Îles Falkland (Malvinas)",
+      "decision": "corrected",
+      "finalLabel": "Îles Falkland",
+      "key": "location:FK"
+    },
+    {
+      "assertion": {
+        "code": "FM"
+      },
+      "candidateLabel": "Micronésie (États fédérés de)",
+      "decision": "corrected",
+      "finalLabel": "Micronésie",
+      "key": "location:FM"
+    },
+    {
+      "assertion": {
+        "code": "FO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Féroé",
+      "key": "location:FO"
+    },
+    {
+      "assertion": {
+        "code": "FR"
+      },
+      "decision": "accepted",
+      "finalLabel": "France",
+      "key": "location:FR"
+    },
+    {
+      "assertion": {
+        "code": "GA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Gabon",
+      "key": "location:GA"
+    },
+    {
+      "assertion": {
+        "code": "GB"
+      },
+      "candidateLabel": "Royaume-Uni de Grande-Bretagne et d'Irlande du Nord",
+      "decision": "corrected",
+      "finalLabel": "Royaume-Uni",
+      "key": "location:GB"
+    },
+    {
+      "assertion": {
+        "code": "GD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Grenade",
+      "key": "location:GD"
+    },
+    {
+      "assertion": {
+        "code": "GE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Géorgie",
+      "key": "location:GE"
+    },
+    {
+      "assertion": {
+        "code": "GF"
+      },
+      "candidateLabel": "Guyane française",
+      "decision": "corrected",
+      "finalLabel": "Guyane",
+      "key": "location:GF"
+    },
+    {
+      "assertion": {
+        "code": "GG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guernesey",
+      "key": "location:GG"
+    },
+    {
+      "assertion": {
+        "code": "GH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ghana",
+      "key": "location:GH"
+    },
+    {
+      "assertion": {
+        "code": "GI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Gibraltar",
+      "key": "location:GI"
+    },
+    {
+      "assertion": {
+        "code": "GL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Groenland",
+      "key": "location:GL"
+    },
+    {
+      "assertion": {
+        "code": "GM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Gambie",
+      "key": "location:GM"
+    },
+    {
+      "assertion": {
+        "code": "GN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guinée",
+      "key": "location:GN"
+    },
+    {
+      "assertion": {
+        "code": "GP"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guadeloupe",
+      "key": "location:GP"
+    },
+    {
+      "assertion": {
+        "code": "GQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guinée équatoriale",
+      "key": "location:GQ"
+    },
+    {
+      "assertion": {
+        "code": "GR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Grèce",
+      "key": "location:GR"
+    },
+    {
+      "assertion": {
+        "code": "GS"
+      },
+      "candidateLabel": "Géorgie du Sud-et-les Îles Sandwich du Sud",
+      "decision": "corrected",
+      "finalLabel": "Îles Géorgie du Sud et Sandwich du Sud",
+      "key": "location:GS"
+    },
+    {
+      "assertion": {
+        "code": "GT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guatemala",
+      "key": "location:GT"
+    },
+    {
+      "assertion": {
+        "code": "GU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guam",
+      "key": "location:GU"
+    },
+    {
+      "assertion": {
+        "code": "GW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guinée-Bissau",
+      "key": "location:GW"
+    },
+    {
+      "assertion": {
+        "code": "GY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guyana",
+      "key": "location:GY"
+    },
+    {
+      "assertion": {
+        "code": "HM"
+      },
+      "candidateLabel": "Îles Heard-et-MacDonald",
+      "decision": "corrected",
+      "finalLabel": "Îles Heard et McDonald",
+      "key": "location:HM"
+    },
+    {
+      "assertion": {
+        "code": "HN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Honduras",
+      "key": "location:HN"
+    },
+    {
+      "assertion": {
+        "code": "HR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Croatie",
+      "key": "location:HR"
+    },
+    {
+      "assertion": {
+        "code": "HT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Haïti",
+      "key": "location:HT"
+    },
+    {
+      "assertion": {
+        "code": "HU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hongrie",
+      "key": "location:HU"
+    },
+    {
+      "assertion": {
+        "code": "ID"
+      },
+      "decision": "accepted",
+      "finalLabel": "Indonésie",
+      "key": "location:ID"
+    },
+    {
+      "assertion": {
+        "code": "IE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Irlande",
+      "key": "location:IE"
+    },
+    {
+      "assertion": {
+        "code": "IL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Israël",
+      "key": "location:IL"
+    },
+    {
+      "assertion": {
+        "code": "IM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Île de Man",
+      "key": "location:IM"
+    },
+    {
+      "assertion": {
+        "code": "IN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Inde",
+      "key": "location:IN"
+    },
+    {
+      "assertion": {
+        "code": "IO"
+      },
+      "candidateLabel": "Territoire britannique de l'océan Indien",
+      "decision": "corrected",
+      "finalLabel": "Territoire britannique de l’océan Indien",
+      "key": "location:IO"
+    },
+    {
+      "assertion": {
+        "code": "IQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Iraq",
+      "key": "location:IQ"
+    },
+    {
+      "assertion": {
+        "code": "IR"
+      },
+      "candidateLabel": "Iran (République islamique d')",
+      "decision": "corrected",
+      "finalLabel": "Iran",
+      "key": "location:IR"
+    },
+    {
+      "assertion": {
+        "code": "IS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Islande",
+      "key": "location:IS"
+    },
+    {
+      "assertion": {
+        "code": "IT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Italie",
+      "key": "location:IT"
+    },
+    {
+      "assertion": {
+        "code": "JE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jersey",
+      "key": "location:JE"
+    },
+    {
+      "assertion": {
+        "code": "JM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jamaïque",
+      "key": "location:JM"
+    },
+    {
+      "assertion": {
+        "code": "JO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jordanie",
+      "key": "location:JO"
+    },
+    {
+      "assertion": {
+        "code": "JP"
+      },
+      "decision": "accepted",
+      "finalLabel": "Japon",
+      "key": "location:JP"
+    },
+    {
+      "assertion": {
+        "code": "KE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Kenya",
+      "key": "location:KE"
+    },
+    {
+      "assertion": {
+        "code": "KG"
+      },
+      "candidateLabel": "Kirghizistan",
+      "decision": "corrected",
+      "finalLabel": "Kirghizstan",
+      "key": "location:KG"
+    },
+    {
+      "assertion": {
+        "code": "KH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Cambodge",
+      "key": "location:KH"
+    },
+    {
+      "assertion": {
+        "code": "KI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Kiribati",
+      "key": "location:KI"
+    },
+    {
+      "assertion": {
+        "code": "KM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Comores",
+      "key": "location:KM"
+    },
+    {
+      "assertion": {
+        "code": "KN"
+      },
+      "candidateLabel": "Saint-Kitts-et-Nevis",
+      "decision": "corrected",
+      "finalLabel": "Saint-Christophe-et-Niévès",
+      "key": "location:KN"
+    },
+    {
+      "assertion": {
+        "code": "KP"
+      },
+      "candidateLabel": "République populaire démocratique de Corée",
+      "decision": "corrected",
+      "finalLabel": "Corée du Nord",
+      "key": "location:KP"
+    },
+    {
+      "assertion": {
+        "code": "KR"
+      },
+      "candidateLabel": "République de Corée",
+      "decision": "corrected",
+      "finalLabel": "Corée du Sud",
+      "key": "location:KR"
+    },
+    {
+      "assertion": {
+        "code": "KW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Koweït",
+      "key": "location:KW"
+    },
+    {
+      "assertion": {
+        "code": "KY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Caïmans",
+      "key": "location:KY"
+    },
+    {
+      "assertion": {
+        "code": "KZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Kazakhstan",
+      "key": "location:KZ"
+    },
+    {
+      "assertion": {
+        "code": "LA"
+      },
+      "candidateLabel": "République démocratique populaire lao",
+      "decision": "corrected",
+      "finalLabel": "Laos",
+      "key": "location:LA"
+    },
+    {
+      "assertion": {
+        "code": "LB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liban",
+      "key": "location:LB"
+    },
+    {
+      "assertion": {
+        "code": "LC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sainte-Lucie",
+      "key": "location:LC"
+    },
+    {
+      "assertion": {
+        "code": "LI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liechtenstein",
+      "key": "location:LI"
+    },
+    {
+      "assertion": {
+        "code": "LK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sri Lanka",
+      "key": "location:LK"
+    },
+    {
+      "assertion": {
+        "code": "LR"
+      },
+      "candidateLabel": "Libéria",
+      "decision": "corrected",
+      "finalLabel": "Liberia",
+      "key": "location:LR"
+    },
+    {
+      "assertion": {
+        "code": "LS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lesotho",
+      "key": "location:LS"
+    },
+    {
+      "assertion": {
+        "code": "LT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lituanie",
+      "key": "location:LT"
+    },
+    {
+      "assertion": {
+        "code": "LU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Luxembourg",
+      "key": "location:LU"
+    },
+    {
+      "assertion": {
+        "code": "LV"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lettonie",
+      "key": "location:LV"
+    },
+    {
+      "assertion": {
+        "code": "LY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Libye",
+      "key": "location:LY"
+    },
+    {
+      "assertion": {
+        "code": "MA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Maroc",
+      "key": "location:MA"
+    },
+    {
+      "assertion": {
+        "code": "MC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Monaco",
+      "key": "location:MC"
+    },
+    {
+      "assertion": {
+        "code": "MD"
+      },
+      "candidateLabel": "République de Moldova",
+      "decision": "corrected",
+      "finalLabel": "Moldavie",
+      "key": "location:MD"
+    },
+    {
+      "assertion": {
+        "code": "ME"
+      },
+      "decision": "accepted",
+      "finalLabel": "Monténégro",
+      "key": "location:ME"
+    },
+    {
+      "assertion": {
+        "code": "MF"
+      },
+      "candidateLabel": "Saint-Martin (partie française)",
+      "decision": "corrected",
+      "finalLabel": "Saint-Martin",
+      "key": "location:MF"
+    },
+    {
+      "assertion": {
+        "code": "MG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Madagascar",
+      "key": "location:MG"
+    },
+    {
+      "assertion": {
+        "code": "MH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Marshall",
+      "key": "location:MH"
+    },
+    {
+      "assertion": {
+        "code": "MK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Macédoine du Nord",
+      "key": "location:MK"
+    },
+    {
+      "assertion": {
+        "code": "ML"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mali",
+      "key": "location:ML"
+    },
+    {
+      "assertion": {
+        "code": "MM"
+      },
+      "candidateLabel": "Myanmar",
+      "decision": "corrected",
+      "finalLabel": "Myanmar/Birmanie",
+      "key": "location:MM"
+    },
+    {
+      "assertion": {
+        "code": "MN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mongolie",
+      "key": "location:MN"
+    },
+    {
+      "assertion": {
+        "code": "MP"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Mariannes du Nord",
+      "key": "location:MP"
+    },
+    {
+      "assertion": {
+        "code": "MQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Martinique",
+      "key": "location:MQ"
+    },
+    {
+      "assertion": {
+        "code": "MR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mauritanie",
+      "key": "location:MR"
+    },
+    {
+      "assertion": {
+        "code": "MS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Montserrat",
+      "key": "location:MS"
+    },
+    {
+      "assertion": {
+        "code": "MT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Malte",
+      "key": "location:MT"
+    },
+    {
+      "assertion": {
+        "code": "MU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Maurice",
+      "key": "location:MU"
+    },
+    {
+      "assertion": {
+        "code": "MV"
+      },
+      "decision": "accepted",
+      "finalLabel": "Maldives",
+      "key": "location:MV"
+    },
+    {
+      "assertion": {
+        "code": "MW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Malawi",
+      "key": "location:MW"
+    },
+    {
+      "assertion": {
+        "code": "MX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mexique",
+      "key": "location:MX"
+    },
+    {
+      "assertion": {
+        "code": "MY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Malaisie",
+      "key": "location:MY"
+    },
+    {
+      "assertion": {
+        "code": "MZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mozambique",
+      "key": "location:MZ"
+    },
+    {
+      "assertion": {
+        "code": "NA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Namibie",
+      "key": "location:NA"
+    },
+    {
+      "assertion": {
+        "code": "NC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nouvelle-Calédonie",
+      "key": "location:NC"
+    },
+    {
+      "assertion": {
+        "code": "NE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Niger",
+      "key": "location:NE"
+    },
+    {
+      "assertion": {
+        "code": "NF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Île Norfolk",
+      "key": "location:NF"
+    },
+    {
+      "assertion": {
+        "code": "NG"
+      },
+      "candidateLabel": "Nigéria",
+      "decision": "corrected",
+      "finalLabel": "Nigeria",
+      "key": "location:NG"
+    },
+    {
+      "assertion": {
+        "code": "NI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicaragua",
+      "key": "location:NI"
+    },
+    {
+      "assertion": {
+        "code": "NL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pays-Bas",
+      "key": "location:NL"
+    },
+    {
+      "assertion": {
+        "code": "NO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Norvège",
+      "key": "location:NO"
+    },
+    {
+      "assertion": {
+        "code": "NP"
+      },
+      "decision": "accepted",
+      "finalLabel": "Népal",
+      "key": "location:NP"
+    },
+    {
+      "assertion": {
+        "code": "NR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nauru",
+      "key": "location:NR"
+    },
+    {
+      "assertion": {
+        "code": "NU"
+      },
+      "candidateLabel": "Niue",
+      "decision": "corrected",
+      "finalLabel": "Niué",
+      "key": "location:NU"
+    },
+    {
+      "assertion": {
+        "code": "NZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nouvelle-Zélande",
+      "key": "location:NZ"
+    },
+    {
+      "assertion": {
+        "code": "OM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Oman",
+      "key": "location:OM"
+    },
+    {
+      "assertion": {
+        "code": "PA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Panama",
+      "key": "location:PA"
+    },
+    {
+      "assertion": {
+        "code": "PE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pérou",
+      "key": "location:PE"
+    },
+    {
+      "assertion": {
+        "code": "PF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Polynésie française",
+      "key": "location:PF"
+    },
+    {
+      "assertion": {
+        "code": "PG"
+      },
+      "candidateLabel": "Papouasie-Nouvelle-Guinée",
+      "decision": "corrected",
+      "finalLabel": "Papouasie - Nouvelle-Guinée",
+      "key": "location:PG"
+    },
+    {
+      "assertion": {
+        "code": "PH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Philippines",
+      "key": "location:PH"
+    },
+    {
+      "assertion": {
+        "code": "PK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pakistan",
+      "key": "location:PK"
+    },
+    {
+      "assertion": {
+        "code": "PL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pologne",
+      "key": "location:PL"
+    },
+    {
+      "assertion": {
+        "code": "PM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Saint-Pierre-et-Miquelon",
+      "key": "location:PM"
+    },
+    {
+      "assertion": {
+        "code": "PN"
+      },
+      "candidateLabel": "Pitcairn",
+      "decision": "corrected",
+      "finalLabel": "Îles Pitcairn",
+      "key": "location:PN"
+    },
+    {
+      "assertion": {
+        "code": "PR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Porto Rico",
+      "key": "location:PR"
+    },
+    {
+      "assertion": {
+        "code": "PS"
+      },
+      "candidateLabel": "État de Palestine",
+      "decision": "corrected",
+      "finalLabel": "Palestine*",
+      "key": "location:PS"
+    },
+    {
+      "assertion": {
+        "code": "PT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Portugal",
+      "key": "location:PT"
+    },
+    {
+      "assertion": {
+        "code": "PW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Palaos",
+      "key": "location:PW"
+    },
+    {
+      "assertion": {
+        "code": "PY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Paraguay",
+      "key": "location:PY"
+    },
+    {
+      "assertion": {
+        "code": "QA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qatar",
+      "key": "location:QA"
+    },
+    {
+      "assertion": {
+        "code": "RE"
+      },
+      "decision": "accepted",
+      "finalLabel": "La Réunion",
+      "key": "location:RE"
+    },
+    {
+      "assertion": {
+        "code": "RO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Roumanie",
+      "key": "location:RO"
+    },
+    {
+      "assertion": {
+        "code": "RS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Serbie",
+      "key": "location:RS"
+    },
+    {
+      "assertion": {
+        "code": "RU"
+      },
+      "candidateLabel": "Fédération de Russie",
+      "decision": "corrected",
+      "finalLabel": "Russie",
+      "key": "location:RU"
+    },
+    {
+      "assertion": {
+        "code": "RW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Rwanda",
+      "key": "location:RW"
+    },
+    {
+      "assertion": {
+        "code": "SA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Arabie saoudite",
+      "key": "location:SA"
+    },
+    {
+      "assertion": {
+        "code": "SB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Salomon",
+      "key": "location:SB"
+    },
+    {
+      "assertion": {
+        "code": "SC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Seychelles",
+      "key": "location:SC"
+    },
+    {
+      "assertion": {
+        "code": "SD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Soudan",
+      "key": "location:SD"
+    },
+    {
+      "assertion": {
+        "code": "SE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suède",
+      "key": "location:SE"
+    },
+    {
+      "assertion": {
+        "code": "SG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Singapour",
+      "key": "location:SG"
+    },
+    {
+      "assertion": {
+        "code": "SH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sainte-Hélène, Ascension et Tristan da Cunha",
+      "key": "location:SH"
+    },
+    {
+      "assertion": {
+        "code": "SI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Slovénie",
+      "key": "location:SI"
+    },
+    {
+      "assertion": {
+        "code": "SJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Svalbard et Jan Mayen",
+      "key": "location:SJ"
+    },
+    {
+      "assertion": {
+        "code": "SK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Slovaquie",
+      "key": "location:SK"
+    },
+    {
+      "assertion": {
+        "code": "SL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sierra Leone",
+      "key": "location:SL"
+    },
+    {
+      "assertion": {
+        "code": "SM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Saint-Marin",
+      "key": "location:SM"
+    },
+    {
+      "assertion": {
+        "code": "SN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sénégal",
+      "key": "location:SN"
+    },
+    {
+      "assertion": {
+        "code": "SO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Somalie",
+      "key": "location:SO"
+    },
+    {
+      "assertion": {
+        "code": "SR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suriname",
+      "key": "location:SR"
+    },
+    {
+      "assertion": {
+        "code": "SS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Soudan du Sud",
+      "key": "location:SS"
+    },
+    {
+      "assertion": {
+        "code": "ST"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sao Tomé-et-Principe",
+      "key": "location:ST"
+    },
+    {
+      "assertion": {
+        "code": "SV"
+      },
+      "decision": "accepted",
+      "finalLabel": "El Salvador",
+      "key": "location:SV"
+    },
+    {
+      "assertion": {
+        "code": "SX"
+      },
+      "candidateLabel": "Saint-Martin (partie néerlandaise)",
+      "decision": "corrected",
+      "finalLabel": "Sint-Maarten",
+      "key": "location:SX"
+    },
+    {
+      "assertion": {
+        "code": "SY"
+      },
+      "candidateLabel": "République arabe syrienne",
+      "decision": "corrected",
+      "finalLabel": "Syrie",
+      "key": "location:SY"
+    },
+    {
+      "assertion": {
+        "code": "SZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Eswatini",
+      "key": "location:SZ"
+    },
+    {
+      "assertion": {
+        "code": "TC"
+      },
+      "candidateLabel": "Îles Turques-et-Caïques",
+      "decision": "corrected",
+      "finalLabel": "Îles Turks-et-Caïcos",
+      "key": "location:TC"
+    },
+    {
+      "assertion": {
+        "code": "TD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tchad",
+      "key": "location:TD"
+    },
+    {
+      "assertion": {
+        "code": "TF"
+      },
+      "candidateLabel": "Terres australes françaises",
+      "decision": "corrected",
+      "finalLabel": "Terres australes et antarctiques françaises",
+      "key": "location:TF"
+    },
+    {
+      "assertion": {
+        "code": "TG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Togo",
+      "key": "location:TG"
+    },
+    {
+      "assertion": {
+        "code": "TH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Thaïlande",
+      "key": "location:TH"
+    },
+    {
+      "assertion": {
+        "code": "TJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tadjikistan",
+      "key": "location:TJ"
+    },
+    {
+      "assertion": {
+        "code": "TK"
+      },
+      "candidateLabel": "Tokelau",
+      "decision": "corrected",
+      "finalLabel": "Tokélaou",
+      "key": "location:TK"
+    },
+    {
+      "assertion": {
+        "code": "TL"
+      },
+      "candidateLabel": "Timor-Leste",
+      "decision": "corrected",
+      "finalLabel": "Timor-Oriental",
+      "key": "location:TL"
+    },
+    {
+      "assertion": {
+        "code": "TM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Turkménistan",
+      "key": "location:TM"
+    },
+    {
+      "assertion": {
+        "code": "TN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tunisie",
+      "key": "location:TN"
+    },
+    {
+      "assertion": {
+        "code": "TO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tonga",
+      "key": "location:TO"
+    },
+    {
+      "assertion": {
+        "code": "TR"
+      },
+      "candidateLabel": "Türkiye",
+      "decision": "corrected",
+      "finalLabel": "Turquie",
+      "key": "location:TR"
+    },
+    {
+      "assertion": {
+        "code": "TT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Trinité-et-Tobago",
+      "key": "location:TT"
+    },
+    {
+      "assertion": {
+        "code": "TV"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tuvalu",
+      "key": "location:TV"
+    },
+    {
+      "assertion": {
+        "code": "TZ"
+      },
+      "candidateLabel": "République-Unie de Tanzanie",
+      "decision": "corrected",
+      "finalLabel": "Tanzanie",
+      "key": "location:TZ"
+    },
+    {
+      "assertion": {
+        "code": "UA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ukraine",
+      "key": "location:UA"
+    },
+    {
+      "assertion": {
+        "code": "UG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ouganda",
+      "key": "location:UG"
+    },
+    {
+      "assertion": {
+        "code": "UM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles mineures éloignées des États-Unis",
+      "key": "location:UM"
+    },
+    {
+      "assertion": {
+        "code": "US"
+      },
+      "candidateLabel": "États-Unis d'Amérique",
+      "decision": "corrected",
+      "finalLabel": "États-Unis",
+      "key": "location:US"
+    },
+    {
+      "assertion": {
+        "code": "UY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Uruguay",
+      "key": "location:UY"
+    },
+    {
+      "assertion": {
+        "code": "UZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ouzbékistan",
+      "key": "location:UZ"
+    },
+    {
+      "assertion": {
+        "code": "VA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Saint-Siège",
+      "key": "location:VA"
+    },
+    {
+      "assertion": {
+        "code": "VC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Saint-Vincent-et-les-Grenadines",
+      "key": "location:VC"
+    },
+    {
+      "assertion": {
+        "code": "VE"
+      },
+      "candidateLabel": "Venezuela (République bolivarienne du)",
+      "decision": "corrected",
+      "finalLabel": "Venezuela",
+      "key": "location:VE"
+    },
+    {
+      "assertion": {
+        "code": "VG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Îles Vierges britanniques",
+      "key": "location:VG"
+    },
+    {
+      "assertion": {
+        "code": "VI"
+      },
+      "candidateLabel": "Îles Vierges des États-Unis",
+      "decision": "corrected",
+      "finalLabel": "Îles Vierges américaines",
+      "key": "location:VI"
+    },
+    {
+      "assertion": {
+        "code": "VN"
+      },
+      "candidateLabel": "Viet Nam",
+      "decision": "corrected",
+      "finalLabel": "Viêt Nam",
+      "key": "location:VN"
+    },
+    {
+      "assertion": {
+        "code": "VU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Vanuatu",
+      "key": "location:VU"
+    },
+    {
+      "assertion": {
+        "code": "WF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wallis-et-Futuna",
+      "key": "location:WF"
+    },
+    {
+      "assertion": {
+        "code": "WS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Samoa",
+      "key": "location:WS"
+    },
+    {
+      "assertion": {
+        "code": "YE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yémen",
+      "key": "location:YE"
+    },
+    {
+      "assertion": {
+        "code": "YT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mayotte",
+      "key": "location:YT"
+    },
+    {
+      "assertion": {
+        "code": "ZA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Afrique du Sud",
+      "key": "location:ZA"
+    },
+    {
+      "assertion": {
+        "code": "ZM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zambie",
+      "key": "location:ZM"
+    },
+    {
+      "assertion": {
+        "code": "ZW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zimbabwe",
+      "key": "location:ZW"
+    },
+    {
+      "assertion": {
+        "code": "CIS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Communauté des États indépendants",
+      "key": "location:CIS"
+    },
+    {
+      "assertion": {
+        "code": "CN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chine",
+      "key": "location:CN"
+    },
+    {
+      "assertion": {
+        "code": "CN-BJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pékin, Chine",
+      "key": "location:CN-BJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-TJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tianjin, Chine",
+      "key": "location:CN-TJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hebei, Chine",
+      "key": "location:CN-HE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SJW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shijiazhuang, Hebei, Chine",
+      "key": "location:CN-HE-SJW"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-TGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tangshan, Hebei, Chine",
+      "key": "location:CN-HE-TGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-SHP"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qinhuangdao, Hebei, Chine",
+      "key": "location:CN-HE-SHP"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Handan, Hebei, Chine",
+      "key": "location:CN-HE-HDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-XTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xingtai, Hebei, Chine",
+      "key": "location:CN-HE-XTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-BDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baoding, Hebei, Chine",
+      "key": "location:CN-HE-BDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-ZJK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhangjiakou, Hebei, Chine",
+      "key": "location:CN-HE-ZJK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chengde, Hebei, Chine",
+      "key": "location:CN-HE-CDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-CGZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Cangzhou, Hebei, Chine",
+      "key": "location:CN-HE-CGZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-LFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Langfang, Hebei, Chine",
+      "key": "location:CN-HE-LFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HE-HGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hengshui, Hebei, Chine",
+      "key": "location:CN-HE-HGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shanxi, Chine",
+      "key": "location:CN-SX"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-TYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Taiyuan, Shanxi, Chine",
+      "key": "location:CN-SX-TYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-DTG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Datong, Shanxi, Chine",
+      "key": "location:CN-SX-DTG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YQS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yangquan, Shanxi, Chine",
+      "key": "location:CN-SX-YQS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-CZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changzhi, Shanxi, Chine",
+      "key": "location:CN-SX-CZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JCG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jincheng, Shanxi, Chine",
+      "key": "location:CN-SX-JCG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-SZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shuozhou, Shanxi, Chine",
+      "key": "location:CN-SX-SZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-JZN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jinzhong, Shanxi, Chine",
+      "key": "location:CN-SX-JZN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-YCE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yuncheng, Shanxi, Chine",
+      "key": "location:CN-SX-YCE"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-XZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xinzhou, Shanxi, Chine",
+      "key": "location:CN-SX-XZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LFN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Linfen, Shanxi, Chine",
+      "key": "location:CN-SX-LFN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SX-LLH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lüliang, Shanxi, Chine",
+      "key": "location:CN-SX-LLH"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région autonome de Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HET"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hohhot, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-HET"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baotou, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-BTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-WHM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuhai, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-WHM"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-CFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chifeng (Ulanhad), Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-CFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-TLO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tongliao, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-TLO"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ODS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ordos, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-ODS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HBR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hulun Buir, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-HBR"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-BYR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bayannur, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-BYR"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ULS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ulanqab, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-ULS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-HIN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ligue de Hinggan, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-HIN"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-XGO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ligue de Xilin Gol, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-XGO"
+    },
+    {
+      "assertion": {
+        "code": "CN-NM-ALM"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ligue d'Alxa, Mongolie-Intérieure, Chine",
+      "key": "location:CN-NM-ALM"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liaoning, Chine",
+      "key": "location:CN-LN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-SHE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shenyang, Liaoning, Chine",
+      "key": "location:CN-LN-SHE"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DLC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dalian, Liaoning, Chine",
+      "key": "location:CN-LN-DLC"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-ASN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anshan, Liaoning, Chine",
+      "key": "location:CN-LN-ASN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fushun, Liaoning, Chine",
+      "key": "location:CN-LN-FSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-BXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Benxi, Liaoning, Chine",
+      "key": "location:CN-LN-BXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-DDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dandong, Liaoning, Chine",
+      "key": "location:CN-LN-DDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-JNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jinzhou, Liaoning, Chine",
+      "key": "location:CN-LN-JNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-YIK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yingkou, Liaoning, Chine",
+      "key": "location:CN-LN-YIK"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-FXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fuxin, Liaoning, Chine",
+      "key": "location:CN-LN-FXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-LYL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liaoyang, Liaoning, Chine",
+      "key": "location:CN-LN-LYL"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-PJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Panjin, Liaoning, Chine",
+      "key": "location:CN-LN-PJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-TLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tieling, Liaoning, Chine",
+      "key": "location:CN-LN-TLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-CYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chaoyang, Liaoning, Chine",
+      "key": "location:CN-LN-CYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-LN-HLD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huludao, Liaoning, Chine",
+      "key": "location:CN-LN-HLD"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jilin, Chine",
+      "key": "location:CN-JL"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-CGQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changchun, Jilin, Chine",
+      "key": "location:CN-JL-CGQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-JLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jilin, Jilin, Chine",
+      "key": "location:CN-JL-JLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Siping, Jilin, Chine",
+      "key": "location:CN-JL-SPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-LYH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liaoyuan, Jilin, Chine",
+      "key": "location:CN-JL-LYH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-THS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tonghua, Jilin, Chine",
+      "key": "location:CN-JL-THS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baishan, Jilin, Chine",
+      "key": "location:CN-JL-BSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-SYU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Songyuan, Jilin, Chine",
+      "key": "location:CN-JL-SYU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-BCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baicheng, Jilin, Chine",
+      "key": "location:CN-JL-BCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JL-YBZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome coréenne de Yanbian, Jilin, Chine",
+      "key": "location:CN-JL-YBZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Heilongjiang, Chine",
+      "key": "location:CN-HL"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HRB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Harbin, Heilongjiang, Chine",
+      "key": "location:CN-HL-HRB"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-NDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qiqihar, Heilongjiang, Chine",
+      "key": "location:CN-HL-NDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JXI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jixi, Heilongjiang, Chine",
+      "key": "location:CN-HL-JXI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hegang, Heilongjiang, Chine",
+      "key": "location:CN-HL-HEG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shuangyashan, Heilongjiang, Chine",
+      "key": "location:CN-HL-SYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Daqing, Heilongjiang, Chine",
+      "key": "location:CN-HL-DQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-YCH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yichun, Heilongjiang, Chine",
+      "key": "location:CN-HL-YCH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-JMU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiamusi, Heilongjiang, Chine",
+      "key": "location:CN-HL-JMU"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-QTH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qitaihe, Heilongjiang, Chine",
+      "key": "location:CN-HL-QTH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-MDG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mudanjiang, Heilongjiang, Chine",
+      "key": "location:CN-HL-MDG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-HEK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Heihe, Heilongjiang, Chine",
+      "key": "location:CN-HL-HEK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-SUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suihua, Heilongjiang, Chine",
+      "key": "location:CN-HL-SUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HL-DHL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région de Da Hinggan Ling, Heilongjiang, Chine",
+      "key": "location:CN-HL-DHL"
+    },
+    {
+      "assertion": {
+        "code": "CN-SH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shanghai, Chine",
+      "key": "location:CN-SH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiangsu, Chine",
+      "key": "location:CN-JS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NKG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nankin, Jiangsu, Chine",
+      "key": "location:CN-JS-NKG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-WUX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuxi, Jiangsu, Chine",
+      "key": "location:CN-JS-WUX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-XUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xuzhou, Jiangsu, Chine",
+      "key": "location:CN-JS-XUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-CZX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changzhou, Jiangsu, Chine",
+      "key": "location:CN-JS-CZX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suzhou, Jiangsu, Chine",
+      "key": "location:CN-JS-SZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-NTG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nantong, Jiangsu, Chine",
+      "key": "location:CN-JS-NTG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-LYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lianyungang, Jiangsu, Chine",
+      "key": "location:CN-JS-LYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-HAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huai'an, Jiangsu, Chine",
+      "key": "location:CN-JS-HAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YCK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yancheng, Jiangsu, Chine",
+      "key": "location:CN-JS-YCK"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-YZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yangzhou, Jiangsu, Chine",
+      "key": "location:CN-JS-YZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-ZHE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhenjiang, Jiangsu, Chine",
+      "key": "location:CN-JS-ZHE"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-TZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Taizhou, Jiangsu, Chine",
+      "key": "location:CN-JS-TZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JS-SUQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suqian, Jiangsu, Chine",
+      "key": "location:CN-JS-SUQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhejiang, Chine",
+      "key": "location:CN-ZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HGH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hangzhou, Zhejiang, Chine",
+      "key": "location:CN-ZJ-HGH"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-NGB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ningbo, Zhejiang, Chine",
+      "key": "location:CN-ZJ-NGB"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-WNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wenzhou, Zhejiang, Chine",
+      "key": "location:CN-ZJ-WNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JIX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiaxing, Zhejiang, Chine",
+      "key": "location:CN-ZJ-JIX"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-HZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huzhou, Zhejiang, Chine",
+      "key": "location:CN-ZJ-HZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-SXG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shaoxing, Zhejiang, Chine",
+      "key": "location:CN-ZJ-SXG"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-JHA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jinhua, Zhejiang, Chine",
+      "key": "location:CN-ZJ-JHA"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-QUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Quzhou, Zhejiang, Chine",
+      "key": "location:CN-ZJ-QUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-ZOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhoushan, Zhejiang, Chine",
+      "key": "location:CN-ZJ-ZOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-TZZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Taizhou, Zhejiang, Chine",
+      "key": "location:CN-ZJ-TZZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-ZJ-LSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lishui, Zhejiang, Chine",
+      "key": "location:CN-ZJ-LSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anhui, Chine",
+      "key": "location:CN-AH"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HFE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hefei, Anhui, Chine",
+      "key": "location:CN-AH-HFE"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-WHI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuhu, Anhui, Chine",
+      "key": "location:CN-AH-WHI"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BBU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bengbu, Anhui, Chine",
+      "key": "location:CN-AH-BBU"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huainan, Anhui, Chine",
+      "key": "location:CN-AH-HNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-MAA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ma'anshan, Anhui, Chine",
+      "key": "location:CN-AH-MAA"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HBE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huaibei, Anhui, Chine",
+      "key": "location:CN-AH-HBE"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-TOL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tongling, Anhui, Chine",
+      "key": "location:CN-AH-TOL"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-AQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anqing, Anhui, Chine",
+      "key": "location:CN-AH-AQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-HSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huangshan, Anhui, Chine",
+      "key": "location:CN-AH-HSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chuzhou, Anhui, Chine",
+      "key": "location:CN-AH-CUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-FYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fuyang, Anhui, Chine",
+      "key": "location:CN-AH-FYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-SUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suzhou, Anhui, Chine",
+      "key": "location:CN-AH-SUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CAH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chaohu, Anhui, Chine",
+      "key": "location:CN-AH-CAH"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-LAW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lu'an, Anhui, Chine",
+      "key": "location:CN-AH-LAW"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-BOZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bozhou, Anhui, Chine",
+      "key": "location:CN-AH-BOZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-CIZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chizhou, Anhui, Chine",
+      "key": "location:CN-AH-CIZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-AH-XCI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xuancheng, Anhui, Chine",
+      "key": "location:CN-AH-XCI"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fujian, Chine",
+      "key": "location:CN-FJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-FOC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fuzhou, Fujian, Chine",
+      "key": "location:CN-FJ-FOC"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-XMN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xiamen, Fujian, Chine",
+      "key": "location:CN-FJ-XMN"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-PUT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Putian, Fujian, Chine",
+      "key": "location:CN-FJ-PUT"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-SMS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sanming, Fujian, Chine",
+      "key": "location:CN-FJ-SMS"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-QZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Quanzhou, Fujian, Chine",
+      "key": "location:CN-FJ-QZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-ZZU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhangzhou, Fujian, Chine",
+      "key": "location:CN-FJ-ZZU"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nanping, Fujian, Chine",
+      "key": "location:CN-FJ-NPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-LYF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Longyan, Fujian, Chine",
+      "key": "location:CN-FJ-LYF"
+    },
+    {
+      "assertion": {
+        "code": "CN-FJ-NDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ningde, Fujian, Chine",
+      "key": "location:CN-FJ-NDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiangxi, Chine",
+      "key": "location:CN-JX"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-KHN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nanchang, Jiangxi, Chine",
+      "key": "location:CN-JX-KHN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JDZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jingdezhen, Jiangxi, Chine",
+      "key": "location:CN-JX-JDZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-PXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pingxiang, Jiangxi, Chine",
+      "key": "location:CN-JX-PXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JIU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiujiang, Jiangxi, Chine",
+      "key": "location:CN-JX-JIU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-XYU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xinyu, Jiangxi, Chine",
+      "key": "location:CN-JX-XYU"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yingtan, Jiangxi, Chine",
+      "key": "location:CN-JX-YTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-GZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ganzhou, Jiangxi, Chine",
+      "key": "location:CN-JX-GZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-JAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ji'an, Jiangxi, Chine",
+      "key": "location:CN-JX-JAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-YCN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yichun, Jiangxi, Chine",
+      "key": "location:CN-JX-YCN"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-FUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fuzhou, Jiangxi, Chine",
+      "key": "location:CN-JX-FUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-JX-SRS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shangrao, Jiangxi, Chine",
+      "key": "location:CN-JX-SRS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shandong, Chine",
+      "key": "location:CN-SD"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jinan, Shandong, Chine",
+      "key": "location:CN-SD-TNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qingdao, Shandong, Chine",
+      "key": "location:CN-SD-TAO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZBO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zibo, Shandong, Chine",
+      "key": "location:CN-SD-ZBO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-ZZG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zaozhuang, Shandong, Chine",
+      "key": "location:CN-SD-ZZG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dongying, Shandong, Chine",
+      "key": "location:CN-SD-DYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-YNT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yantai, Shandong, Chine",
+      "key": "location:CN-SD-YNT"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEF"
+      },
+      "decision": "accepted",
+      "finalLabel": "Weifang, Shandong, Chine",
+      "key": "location:CN-SD-WEF"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-JNG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jining, Shandong, Chine",
+      "key": "location:CN-SD-JNG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-TAI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tai'an, Shandong, Chine",
+      "key": "location:CN-SD-TAI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-WEH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Weihai, Shandong, Chine",
+      "key": "location:CN-SD-WEH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-RZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Rizhao, Shandong, Chine",
+      "key": "location:CN-SD-RZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LWS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Laiwu, Shandong, Chine",
+      "key": "location:CN-SD-LWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LYI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Linyi, Shandong, Chine",
+      "key": "location:CN-SD-LYI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-DZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dezhou, Shandong, Chine",
+      "key": "location:CN-SD-DZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-LCH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liaocheng, Shandong, Chine",
+      "key": "location:CN-SD-LCH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-BZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Binzhou, Shandong, Chine",
+      "key": "location:CN-SD-BZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SD-HZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Heze, Shandong, Chine",
+      "key": "location:CN-SD-HZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Henan, Chine",
+      "key": "location:CN-HA"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-CGO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhengzhou, Henan, Chine",
+      "key": "location:CN-HA-CGO"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-KFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Kaifeng, Henan, Chine",
+      "key": "location:CN-HA-KFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LYA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Luoyang, Henan, Chine",
+      "key": "location:CN-HA-LYA"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PDS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pingdingshan, Henan, Chine",
+      "key": "location:CN-HA-PDS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-AYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anyang, Henan, Chine",
+      "key": "location:CN-HA-AYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-HBS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hebi, Henan, Chine",
+      "key": "location:CN-HA-HBS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xinxiang, Henan, Chine",
+      "key": "location:CN-HA-XXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-JZY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiaozuo, Henan, Chine",
+      "key": "location:CN-HA-JZY"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-PYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Puyang, Henan, Chine",
+      "key": "location:CN-HA-PYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xuchang, Henan, Chine",
+      "key": "location:CN-HA-XCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-LHS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Luohe, Henan, Chine",
+      "key": "location:CN-HA-LHS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SMX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sanmenxia, Henan, Chine",
+      "key": "location:CN-HA-SMX"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-NYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nanyang, Henan, Chine",
+      "key": "location:CN-HA-NYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-SQS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shangqiu, Henan, Chine",
+      "key": "location:CN-HA-SQS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-XYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xinyang, Henan, Chine",
+      "key": "location:CN-HA-XYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZKS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhoukou, Henan, Chine",
+      "key": "location:CN-HA-ZKS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HA-ZMD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhumadian, Henan, Chine",
+      "key": "location:CN-HA-ZMD"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hubei, Chine",
+      "key": "location:CN-HB"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-WUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuhan, Hubei, Chine",
+      "key": "location:CN-HB-WUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HSI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huangshi, Hubei, Chine",
+      "key": "location:CN-HB-HSI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SYE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shiyan, Hubei, Chine",
+      "key": "location:CN-HB-SYE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-YCO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yichang, Hubei, Chine",
+      "key": "location:CN-HB-YCO"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XFN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xiangfan, Hubei, Chine",
+      "key": "location:CN-HB-XFN"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-EZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ezhou, Hubei, Chine",
+      "key": "location:CN-HB-EZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JMS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jingmen, Hubei, Chine",
+      "key": "location:CN-HB-JMS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XGE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xiaogan, Hubei, Chine",
+      "key": "location:CN-HB-XGE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-JGZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jingzhou, Hubei, Chine",
+      "key": "location:CN-HB-JGZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-HGE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huanggang, Hubei, Chine",
+      "key": "location:CN-HB-HGE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-XNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xianning, Hubei, Chine",
+      "key": "location:CN-HB-XNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-SZR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suizhou, Hubei, Chine",
+      "key": "location:CN-HB-SZR"
+    },
+    {
+      "assertion": {
+        "code": "CN-HB-ESH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tujia et miao d'Enshi, Hubei, Chine",
+      "key": "location:CN-HB-ESH"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hunan, Chine",
+      "key": "location:CN-HN"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CSX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changsha, Hunan, Chine",
+      "key": "location:CN-HN-CSX"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhuzhou, Hunan, Chine",
+      "key": "location:CN-HN-ZZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XGT"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xiangtan, Hunan, Chine",
+      "key": "location:CN-HN-XGT"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HNY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hengyang, Hunan, Chine",
+      "key": "location:CN-HN-HNY"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-SYR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shaoyang, Hunan, Chine",
+      "key": "location:CN-HN-SYR"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yueyang, Hunan, Chine",
+      "key": "location:CN-HN-YYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CDE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Changde, Hunan, Chine",
+      "key": "location:CN-HN-CDE"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-ZJJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhangjiajie, Hunan, Chine",
+      "key": "location:CN-HN-ZJJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yiyang, Hunan, Chine",
+      "key": "location:CN-HN-YYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-CNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chenzhou, Hunan, Chine",
+      "key": "location:CN-HN-CNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-YZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yongzhou, Hunan, Chine",
+      "key": "location:CN-HN-YZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-HHS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huaihua, Hunan, Chine",
+      "key": "location:CN-HN-HHS"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-LDI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Loudi, Hunan, Chine",
+      "key": "location:CN-HN-LDI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HN-XXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tujia et miao de Xiangxi, Hunan, Chine",
+      "key": "location:CN-HN-XXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guangdong, Chine",
+      "key": "location:CN-GD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CAN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guangzhou, Guangdong, Chine",
+      "key": "location:CN-GD-CAN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HSC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shaoguan, Guangdong, Chine",
+      "key": "location:CN-GD-HSC"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SZX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shenzhen, Guangdong, Chine",
+      "key": "location:CN-GD-SZX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZUH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhuhai, Guangdong, Chine",
+      "key": "location:CN-GD-ZUH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shantou, Guangdong, Chine",
+      "key": "location:CN-GD-SWA"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-FOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Foshan, Guangdong, Chine",
+      "key": "location:CN-GD-FOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JMN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiangmen, Guangdong, Chine",
+      "key": "location:CN-GD-JMN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZHA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhanjiang, Guangdong, Chine",
+      "key": "location:CN-GD-ZHA"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MMI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Maoming, Guangdong, Chine",
+      "key": "location:CN-GD-MMI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhaoqing, Guangdong, Chine",
+      "key": "location:CN-GD-ZQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HUI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Huizhou, Guangdong, Chine",
+      "key": "location:CN-GD-HUI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-MXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Meizhou, Guangdong, Chine",
+      "key": "location:CN-GD-MXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-SWE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shanwei, Guangdong, Chine",
+      "key": "location:CN-GD-SWE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-HEY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Heyuan, Guangdong, Chine",
+      "key": "location:CN-GD-HEY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YJI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yangjiang, Guangdong, Chine",
+      "key": "location:CN-GD-YJI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-QYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qingyuan, Guangdong, Chine",
+      "key": "location:CN-GD-QYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-DGG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dongguan, Guangdong, Chine",
+      "key": "location:CN-GD-DGG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-ZSN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhongshan, Guangdong, Chine",
+      "key": "location:CN-GD-ZSN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-CZY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chaozhou, Guangdong, Chine",
+      "key": "location:CN-GD-CZY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-JIY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jieyang, Guangdong, Chine",
+      "key": "location:CN-GD-JIY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GD-YFS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yunfu, Guangdong, Chine",
+      "key": "location:CN-GD-YFS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-NNG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nanning, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-NNG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Liuzhou, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-LZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-KWL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guilin, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-KWL"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-WUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuzhou, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-WUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BHY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Beihai, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-BHY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-FAN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Fangchenggang, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-FAN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-QZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qinzhou, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-QZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-GUG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guigang, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-GUG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-YUL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yulin, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-YUL"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-BSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bose, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-BSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HZO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hezhou, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-HZO"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-HCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hechi, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-HCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-LIB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Laibin, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-LIB"
+    },
+    {
+      "assertion": {
+        "code": "CN-GX-COZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chongzuo, région autonome zhuang du Guangxi, Chine",
+      "key": "location:CN-GX-COZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hainan, Chine",
+      "key": "location:CN-HI"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-HAK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Haikou, Hainan, Chine",
+      "key": "location:CN-HI-HAK"
+    },
+    {
+      "assertion": {
+        "code": "CN-HI-SYX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sanva, Hainan, Chine",
+      "key": "location:CN-HI-SYX"
+    },
+    {
+      "assertion": {
+        "code": "CN-CQ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chongqing, Chine",
+      "key": "location:CN-CQ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Sichuan, Chine",
+      "key": "location:CN-SC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-CTU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Chengdu, Sichuan, Chine",
+      "key": "location:CN-SC-CTU"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZGS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zigong, Sichuan, Chine",
+      "key": "location:CN-SC-ZGS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-PZH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Panzhihua, Sichuan, Chine",
+      "key": "location:CN-SC-PZH"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LUZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Luzhou, Sichuan, Chine",
+      "key": "location:CN-SC-LUZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DEY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Deyang, Sichuan, Chine",
+      "key": "location:CN-SC-DEY"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Mianyang, Sichuan, Chine",
+      "key": "location:CN-SC-MYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GYC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guangyuan, Sichuan, Chine",
+      "key": "location:CN-SC-GYC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-SNS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Suining, Sichuan, Chine",
+      "key": "location:CN-SC-SNS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Neijiang, Sichuan, Chine",
+      "key": "location:CN-SC-NJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LES"
+      },
+      "decision": "accepted",
+      "finalLabel": "Leshan, Sichuan, Chine",
+      "key": "location:CN-SC-LES"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-NCO"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nanchong, Sichuan, Chine",
+      "key": "location:CN-SC-NCO"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-MSS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Meishan, Sichuan, Chine",
+      "key": "location:CN-SC-MSS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YBS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yibin, Sichuan, Chine",
+      "key": "location:CN-SC-YBS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guang'an, Sichuan, Chine",
+      "key": "location:CN-SC-GAC"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-DAZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dazhou, Sichuan, Chine",
+      "key": "location:CN-SC-DAZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-YAS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ya'an, Sichuan, Chine",
+      "key": "location:CN-SC-YAS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-BZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Bazhong, Sichuan, Chine",
+      "key": "location:CN-SC-BZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ZYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ziyang, Sichuan, Chine",
+      "key": "location:CN-SC-ZYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-ABA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine et qiang d'Aba (Ngawa), Sichuan, Chine",
+      "key": "location:CN-SC-ABA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-GAZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Garzê, Sichuan, Chine",
+      "key": "location:CN-SC-GAZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SC-LSY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome yi de Liangshan, Sichuan, Chine",
+      "key": "location:CN-SC-LSY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guizhou, Chine",
+      "key": "location:CN-GZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-KWE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guiyang, Guizhou, Chine",
+      "key": "location:CN-GZ-KWE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-LPS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lupanshui, Guizhou, Chine",
+      "key": "location:CN-GZ-LPS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ZNY"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zunyi, Guizhou, Chine",
+      "key": "location:CN-GZ-ZNY"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-ASS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Anshun, Guizhou, Chine",
+      "key": "location:CN-GZ-ASS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-TRD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Tongren, Guizhou, Chine",
+      "key": "location:CN-GZ-TRD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome bouyei et miao de Qianxinan, Guizhou, Chine",
+      "key": "location:CN-GZ-QXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-BJD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Bijie, Guizhou, Chine",
+      "key": "location:CN-GZ-BJD"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QND"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome miao et dong de Qiandongnan, Guizhou, Chine",
+      "key": "location:CN-GZ-QND"
+    },
+    {
+      "assertion": {
+        "code": "CN-GZ-QNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome bouyei et miao de Qiannan, Guizhou, Chine",
+      "key": "location:CN-GZ-QNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yunnan, Chine",
+      "key": "location:CN-YN"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-KMG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Kunming, Yunnan, Chine",
+      "key": "location:CN-YN-KMG"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-QJS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qujing, Yunnan, Chine",
+      "key": "location:CN-YN-QJS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-YXS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yuxi, Yunnan, Chine",
+      "key": "location:CN-YN-YXS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-BOS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baoshan, Yunnan, Chine",
+      "key": "location:CN-YN-BOS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-ZTS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhaotong, Yunnan, Chine",
+      "key": "location:CN-YN-ZTS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LJH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lijiang, Yunnan, Chine",
+      "key": "location:CN-YN-LJH"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-PRS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pu'er, Yunnan, Chine",
+      "key": "location:CN-YN-PRS"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-LIH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lincang, Yunnan, Chine",
+      "key": "location:CN-YN-LIH"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-CXD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome yi de Chuxiong, Yunnan, Chine",
+      "key": "location:CN-YN-CXD"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-HHZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome hani et yi de Honghe, Yunnan, Chine",
+      "key": "location:CN-YN-HHZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-WSZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome zhuang et miao de Wenshan, Yunnan, Chine",
+      "key": "location:CN-YN-WSZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-XSB"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome dai de Xishuangbanna, Yunnan, Chine",
+      "key": "location:CN-YN-XSB"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DLZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome bai de Dali, Yunnan, Chine",
+      "key": "location:CN-YN-DLZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DHG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome dai et jingpo de Dehong, Yunnan, Chine",
+      "key": "location:CN-YN-DHG"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-NUJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome lisu de Nujiang, Yunnan, Chine",
+      "key": "location:CN-YN-NUJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-YN-DEZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Deqên, Yunnan, Chine",
+      "key": "location:CN-YN-DEZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région autonome du Tibet, Chine",
+      "key": "location:CN-XZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-LXA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lhassa, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-LXA"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-QAD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Qamdo, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-QAD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-SND"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Shannan, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-SND"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-XID"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Xigaze, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-XID"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NAD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Nagqu, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-NAD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NGD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Ngari, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-NGD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XZ-NYD"
+      },
+      "decision": "accepted",
+      "finalLabel": "District de Nyingchi, région autonome du Tibet, Chine",
+      "key": "location:CN-XZ-NYD"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shaanxi, Chine",
+      "key": "location:CN-SN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SIA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xi'an, Shaanxi, Chine",
+      "key": "location:CN-SN-SIA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-TCN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tongchuan, Shaanxi, Chine",
+      "key": "location:CN-SN-TCN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-BJI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baoji, Shaanxi, Chine",
+      "key": "location:CN-SN-BJI"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-XYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xianyang, Shaanxi, Chine",
+      "key": "location:CN-SN-XYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-WNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Weinan, Shaanxi, Chine",
+      "key": "location:CN-SN-WNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YNA"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yan'an, Shaanxi, Chine",
+      "key": "location:CN-SN-YNA"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-HZJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Hanzhong, Shaanxi, Chine",
+      "key": "location:CN-SN-HZJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-YLN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yulin, Shaanxi, Chine",
+      "key": "location:CN-SN-YLN"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-ANK"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ankang, Shaanxi, Chine",
+      "key": "location:CN-SN-ANK"
+    },
+    {
+      "assertion": {
+        "code": "CN-SN-SLH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shangluo, Shaanxi, Chine",
+      "key": "location:CN-SN-SLH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Gansu, Chine",
+      "key": "location:CN-GS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LHW"
+      },
+      "decision": "accepted",
+      "finalLabel": "Lanzhou, Gansu, Chine",
+      "key": "location:CN-GS-LHW"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JYG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiayuguan, Gansu, Chine",
+      "key": "location:CN-GS-JYG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JCS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jinchang, Gansu, Chine",
+      "key": "location:CN-GS-JCS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-BYS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Baiyin, Gansu, Chine",
+      "key": "location:CN-GS-BYS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-TSU"
+      },
+      "decision": "accepted",
+      "finalLabel": "Tianshui, Gansu, Chine",
+      "key": "location:CN-GS-TSU"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-WWS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuwei, Gansu, Chine",
+      "key": "location:CN-GS-WWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-ZYE"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhangye, Gansu, Chine",
+      "key": "location:CN-GS-ZYE"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-PLS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Pingliang, Gansu, Chine",
+      "key": "location:CN-GS-PLS"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-JQG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Jiuquan, Gansu, Chine",
+      "key": "location:CN-GS-JQG"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-QYI"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qingyang, Gansu, Chine",
+      "key": "location:CN-GS-QYI"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-DNX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Dingxi, Gansu, Chine",
+      "key": "location:CN-GS-DNX"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LGN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Longnan, Gansu, Chine",
+      "key": "location:CN-GS-LGN"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-LXH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome hui de Linxia, Gansu, Chine",
+      "key": "location:CN-GS-LXH"
+    },
+    {
+      "assertion": {
+        "code": "CN-GS-GNZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Gannan, Gansu, Chine",
+      "key": "location:CN-GS-GNZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH"
+      },
+      "decision": "accepted",
+      "finalLabel": "Qinghai, Chine",
+      "key": "location:CN-QH"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-XNN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Xining, Qinghai, Chine",
+      "key": "location:CN-QH-XNN"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HDD"
+      },
+      "candidateLabel": "Haidong, Qinghai, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Haidong, Qinghai, Chine",
+      "key": "location:CN-QH-HDD"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HBZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Haibei, Qinghai, Chine",
+      "key": "location:CN-QH-HBZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HN7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Huangnan, Qinghai, Chine",
+      "key": "location:CN-QH-HN7"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HNN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Hainan, Qinghai, Chine",
+      "key": "location:CN-QH-HNN"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-GOL"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Golog, Qinghai, Chine",
+      "key": "location:CN-QH-GOL"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-YSZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome tibétaine de Yushu, Qinghai, Chine",
+      "key": "location:CN-QH-YSZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-QH-HXZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome mongole et tibétaine de Haixi, Qinghai, Chine",
+      "key": "location:CN-QH-HXZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-INC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Yinchuan, région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX-INC"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-SZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Shizuishan, région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX-SZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-WZS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Wuzhong, région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX-WZS"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-GYN"
+      },
+      "decision": "accepted",
+      "finalLabel": "Guyuan, région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX-GYN"
+    },
+    {
+      "assertion": {
+        "code": "CN-NX-ZWS"
+      },
+      "decision": "accepted",
+      "finalLabel": "Zhongwei, région autonome hui du Ningxia, Chine",
+      "key": "location:CN-NX-ZWS"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-URC"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ürümqi, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-URC"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KAR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Karamay, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-KAR"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TUD"
+      },
+      "candidateLabel": "Turpan, région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Turpan, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-TUD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HMD"
+      },
+      "candidateLabel": "Hami (Kumul), région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Hami (Kumul), région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-HMD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-CJZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome hui de Changji, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-CJZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BOR"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome mongole de Bortala, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-BOR"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-BAG"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome mongole de Bayingolin, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-BAG"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-AKD"
+      },
+      "candidateLabel": "Aksu, région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture d’Aksu, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-AKD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KIZ"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome kirghize de Kizilsu, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-KIZ"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-KSI"
+      },
+      "candidateLabel": "Kashi (Kaxgar), région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Kashi (Kaxgar), région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-KSI"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-HOD"
+      },
+      "candidateLabel": "Hotan, région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Hotan, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-HOD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ILD"
+      },
+      "decision": "accepted",
+      "finalLabel": "Préfecture autonome kazakhe d’Ili, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-ILD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-TCD"
+      },
+      "candidateLabel": "Tacheng (Qoqek), région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture de Tacheng (Qoqek), région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-TCD"
+    },
+    {
+      "assertion": {
+        "code": "CN-XJ-ALD"
+      },
+      "candidateLabel": "Altay, région autonome ouïghoure du Xinjiang, Chine",
+      "decision": "corrected",
+      "finalLabel": "Préfecture d’Altay, région autonome ouïghoure du Xinjiang, Chine",
+      "key": "location:CN-XJ-ALD"
+    },
+    {
+      "assertion": {
+        "code": "TW"
+      },
+      "candidateLabel": "Taïwan, Chine",
+      "decision": "corrected",
+      "finalLabel": "Taïwan",
+      "key": "location:TW"
+    },
+    {
+      "assertion": {
+        "code": "HK"
+      },
+      "candidateLabel": "Région administrative spéciale de Hong Kong, Chine",
+      "decision": "corrected",
+      "finalLabel": "Hong Kong",
+      "key": "location:HK"
+    },
+    {
+      "assertion": {
+        "code": "MO"
+      },
+      "candidateLabel": "Région administrative spéciale de Macao, Chine",
+      "decision": "corrected",
+      "finalLabel": "Macao",
+      "key": "location:MO"
+    }
+  ],
+  "resourceId": "ilcd-locations",
+  "reviewKind": "project-translation",
+  "reviewRun": {
+    "correctionsDigest": {
+      "algorithm": "sha256",
+      "value": "bddbebf342db6c4e317c8325e666c5e560dc9ff9fc881e54cbe2f1adad0da419",
+      "scope": "ordered-independent-review-corrections",
+      "identityCount": 52
+    },
+    "finalDigest": {
+      "algorithm": "sha256",
+      "value": "edf6d0171cb5ac02fb3898057b7b406c0bfa848eaa661cff5aac338f408ff51b",
+      "scope": "ordered-project-reviewed-final-labels",
+      "identityCount": 647
+    },
+    "findingsDigest": {
+      "algorithm": "sha256",
+      "value": "bb71fee9f48a384f4029e0016b449c80ce96ef301b4312e9cb6dd0ee00564907",
+      "scope": "ordered-independent-review-findings",
+      "identityCount": 647
+    },
+    "inputCandidateDigest": {
+      "algorithm": "sha256",
+      "value": "ff82bd1f31bb3eb5e71dc6a687242bd215c0a066b026de6526f21bb3e991ca6b",
+      "scope": "ordered-translation-candidate-labels",
+      "identityCount": 647
+    },
+    "model": "gpt-5.6-sol",
+    "runId": "reference-review/ilcd-locations/fr/ee092ff8bac3a17a4040ffb40344892535588e710d8684a63dbef9f5232c88e4"
+  },
+  "schemaVersion": 2,
+  "translationRun": {
+    "model": "gpt-5.6-terra",
+    "outputCandidateDigest": {
+      "algorithm": "sha256",
+      "identityCount": 647,
+      "scope": "ordered-translation-candidate-labels",
+      "value": "ff82bd1f31bb3eb5e71dc6a687242bd215c0a066b026de6526f21bb3e991ca6b"
+    },
+    "runId": "reference-translation/ilcd-locations/fr/19f4008e212b560bb25dca5dd61a75c78d20c148c5c1d59501afb063142ce6be"
+  }
+}

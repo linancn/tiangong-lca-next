@@ -1,0 +1,1520 @@
+{
+  "canonicalDataTypes": [
+    "Process",
+    "Flow",
+    "FlowProperty",
+    "UnitGroup",
+    "Contact",
+    "Source",
+    "LCIAMethod",
+    "LifeCycleModel"
+  ],
+  "generator": {
+    "script": "scripts/reference-data/reference-resource-pipeline.mjs",
+    "version": "1"
+  },
+  "managedRuntimeDirectories": ["public/classifications", "public/locations"],
+  "resources": [
+    {
+      "baseLocale": "en",
+      "cacheRevision": "eaaac3cbcce6546f",
+      "edition": {
+        "note": "All 4,586 held nodes match the official code/order/title structure after trailing-whitespace normalization.",
+        "value": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+        "verificationStatus": "verified"
+      },
+      "identityStrategy": "tree-index-path-with-id-assertion",
+      "overlays": {
+        "de": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 4586,
+            "extra": 0,
+            "missing": 0,
+            "translated": 4586
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "48f1711afb2fb2c7fdccb260b9a3fc9050a08eaba4262ff16678d0d3c715419c"
+            },
+            "reviewFile": "src/services/referenceResources/data/cpc/reviews/de.json",
+            "sources": [
+              "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "dd40bc21b90b900ebad0ada95409e7e80775aaf12c9305a38d01b1cc21641d74"
+          },
+          "sourceFile": "src/services/referenceResources/data/cpc/overlays/de.json",
+          "status": "project-reviewed"
+        },
+        "en": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 4586,
+            "extra": 0,
+            "missing": 0,
+            "translated": 4586
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": null,
+            "sourceAuditBinding": {
+              "auditFileDigest": {
+                "algorithm": "sha256",
+                "byteLength": 2336703,
+                "scope": "frozen-normalized-official-source-audit-json",
+                "value": "3d72e3e962fc9952609aefb130cad1da6b0349c3b1ac81b70c77ae46975f2a3b"
+              },
+              "auditId": "cpc-v3.0-2025-06-30-official-structure",
+              "projectionDigest": {
+                "algorithm": "sha256",
+                "identityCount": 4586,
+                "scope": "ordered-scoped-official-source-projection",
+                "value": "06db2500aa73a96508445989a7c2e3227062a0707d72ba7753edeb71018e2df7"
+              },
+              "transformVersion": "unsd-hierarchy-csv-trailing-whitespace-v1"
+            },
+            "sources": [
+              "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv"
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "2499c4c4208790ec9b18ace16148bb8ad73ace54bb1045aee325f646b01e18f7"
+          },
+          "sourceFile": null,
+          "status": "official"
+        },
+        "fr": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 4586,
+            "extra": 0,
+            "missing": 0,
+            "translated": 4586
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "de65553b13098990730178b87cb186ab48f93c5d6fbd3a254a8b3b60c3da47b2"
+            },
+            "reviewFile": "src/services/referenceResources/data/cpc/reviews/fr.json",
+            "sources": [
+              "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "083a1f91cece9764c23ed469208a2c130dd9e16f05c3ca1e79d80f3cd4e79451"
+          },
+          "sourceFile": "src/services/referenceResources/data/cpc/overlays/fr.json",
+          "status": "project-reviewed"
+        },
+        "zh": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 4586,
+            "extra": 0,
+            "missing": 0,
+            "translated": 4586
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "d18e8f45f9838a939bc287d2875d647821fef72a3d5b8ff5835e365b653e5ad2"
+            },
+            "reviewFile": "src/services/referenceResources/data/cpc/reviews/zh.json",
+            "sources": [
+              "Project translation of the frozen UNSD CPC Version 3.0, structure dated 30 June 2025 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "0e2038c44cb155b4b3ef057987cd0429f45fd091129a718151a9bfc3872b4983"
+          },
+          "sourceFile": "src/services/referenceResources/data/cpc/overlays/zh.json",
+          "status": "project-reviewed"
+        }
+      },
+      "required": true,
+      "resourceId": "cpc",
+      "runtime": {
+        "assets": {
+          "de": {
+            "byteLength": 78391,
+            "dataTypeNames": {
+              "Contact": "Kontakt",
+              "Flow": "Fluss",
+              "FlowProperty": "Flusseigenschaft",
+              "LCIAMethod": "LCIA-Methode",
+              "LifeCycleModel": "Lebenszyklusmodell",
+              "Process": "Prozess",
+              "Source": "Quelle",
+              "UnitGroup": "Einheitengruppe"
+            },
+            "fileName": "CPCClassification.623e9b86917a5f7d_de.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "95b4a7eaee598b90f3eefa2c3235a58e1fbaca413417321fcdb70ab35221438e"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "623e9b86917a5f7df356fd72efdbff9add15e4b6092492c2e65a301089654fc9"
+            },
+            "language": "de"
+          },
+          "en": {
+            "byteLength": 72262,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flow",
+              "FlowProperty": "FlowProperty",
+              "LCIAMethod": "LCIAMethod",
+              "LifeCycleModel": "LifeCycleModel",
+              "Process": "Process",
+              "Source": "Source",
+              "UnitGroup": "UnitGroup"
+            },
+            "fileName": "CPCClassification.ed784ea38b85fc5b.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "9c88b6c9c00902d4295e97532c2450a90e56ae8adb5df13cb5199f0a5b8beb36"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "ed784ea38b85fc5b416fa5984e02481eadf0e877e8b46bd36d1c0db35bfe6851"
+            },
+            "language": "en"
+          },
+          "fr": {
+            "byteLength": 77716,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flux",
+              "FlowProperty": "Propriété de flux",
+              "LCIAMethod": "Méthode d'ACVI",
+              "LifeCycleModel": "Modèle de cycle de vie",
+              "Process": "Procédé",
+              "Source": "Source",
+              "UnitGroup": "Groupe d'unités"
+            },
+            "fileName": "CPCClassification.9d45ad0a5395f2dd_fr.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "0bebcf43d2340416b634372ad35d1dd92fff1870738aea1e779f931923fb5091"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "9d45ad0a5395f2dde4fbd13986a8d98855af3c6c7c8efb048ac86c75d42b9437"
+            },
+            "language": "fr"
+          },
+          "zh": {
+            "byteLength": 71239,
+            "dataTypeNames": {
+              "Contact": "联系信息",
+              "Flow": "流",
+              "FlowProperty": "流属性",
+              "LCIAMethod": "生命周期影响评估方法",
+              "LifeCycleModel": "生命周期模型",
+              "Process": "过程",
+              "Source": "来源",
+              "UnitGroup": "单位组"
+            },
+            "fileName": "CPCClassification.27c6fd06261f6e06_zh.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "fe672f7a88d1636a5f2eadce531effd0c7dbd91f265c9dff39f12cba7c895bc9"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "27c6fd06261f6e06c99507de38fb5cbbb6a6f69a2f3343eb90150d2fe3b9776b"
+            },
+            "language": "zh"
+          }
+        },
+        "directory": "public/classifications",
+        "fileStem": "CPCClassification"
+      },
+      "scope": "classification",
+      "sourceFiles": {
+        "base": "src/services/referenceResources/data/cpc/base.json"
+      },
+      "structureDigest": {
+        "algorithm": "sha256",
+        "identityCount": 4586,
+        "scope": "ordered-identity-and-assertion-sequence",
+        "value": "4eb8a584a0da235074c6b82e2466f4c7c1c2c66c9db5b63647367963f74df493"
+      },
+      "structureSource": {
+        "authority": "United Nations Statistics Division (UNSD)",
+        "notes": [
+          "No same-edition official German, French, or Chinese structure labels were evidenced on the UNSD current-edition registry; those overlays are project-reviewed translations."
+        ],
+        "officialSourceAudit": {
+          "auditId": "cpc-v3.0-2025-06-30-official-structure",
+          "digest": {
+            "algorithm": "sha256",
+            "byteLength": 2336703,
+            "scope": "frozen-normalized-official-source-audit-json",
+            "value": "3d72e3e962fc9952609aefb130cad1da6b0349c3b1ac81b70c77ae46975f2a3b"
+          },
+          "sourceComponentRole": "official-base",
+          "sourceFile": "src/services/referenceResources/data/cpc/official-source-audit.json",
+          "transformVersion": "unsd-hierarchy-csv-trailing-whitespace-v1"
+        },
+        "retrievedAt": "2026-07-18",
+        "sourceComponents": [
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 329384,
+              "scope": "CPC_Ver_3.0_Structure_30Jun2025.csv",
+              "value": "5cd2c1c4890dd6be16af48e9bb940fed48efff9865f39ff15edaa921da25fb7c"
+            },
+            "edition": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+            "note": "All 4,586 held nodes match the official code/order/title structure after trailing-whitespace normalization. The UNSD Family Registry states that the current edition is fully available only in English as of 2026-07-18.",
+            "role": "official-base",
+            "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv"
+          }
+        ],
+        "sourceDigest": {
+          "algorithm": "sha256",
+          "scope": "canonical-base-json",
+          "value": "ed784ea38b85fc5b416fa5984e02481eadf0e877e8b46bd36d1c0db35bfe6851"
+        },
+        "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv",
+        "usageTerms": {
+          "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
+          "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
+          "ownerIssue": "#634",
+          "productionStatus": "blocked",
+          "status": "rights-clearance-required",
+          "url": "https://shop.un.org/rights-permissions"
+        },
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "baseLocale": "en",
+      "cacheRevision": "2a43a39b3f86a7bf",
+      "edition": {
+        "note": "All 830 held nodes (22 sections, 87 divisions, 258 groups, and 463 classes) match the official code/order/title structure after encoding and whitespace normalization.",
+        "value": "UNSD International Standard Industrial Classification Revision 5",
+        "verificationStatus": "verified"
+      },
+      "identityStrategy": "tree-index-path-with-id-assertion",
+      "overlays": {
+        "de": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 830,
+            "extra": 0,
+            "missing": 0,
+            "translated": 830
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "adc37d297c155670dfd8d8cbcef6ab5a1279ff2e67c622664d7c27deeef75817"
+            },
+            "reviewFile": "src/services/referenceResources/data/isic/reviews/de.json",
+            "sources": [
+              "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "c4c277027c3fbf4813ad7fd7041ccfe70d106e81ba05a3ad80c701e30c65878c"
+          },
+          "sourceFile": "src/services/referenceResources/data/isic/overlays/de.json",
+          "status": "project-reviewed"
+        },
+        "en": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 830,
+            "extra": 0,
+            "missing": 0,
+            "translated": 830
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": null,
+            "sourceAuditBinding": {
+              "auditFileDigest": {
+                "algorithm": "sha256",
+                "byteLength": 367522,
+                "scope": "frozen-normalized-official-source-audit-json",
+                "value": "47d02d8f6fd33ede01da3ad95183b14f693fd5b4c6ecb4399d9ceacf0fa6ae09"
+              },
+              "auditId": "isic-rev5-official-structure",
+              "projectionDigest": {
+                "algorithm": "sha256",
+                "identityCount": 830,
+                "scope": "ordered-scoped-official-source-projection",
+                "value": "8938273ae6d6e0b1344bb50399e5b06d828656c047c995ed97356b2b7bab7db0"
+              },
+              "transformVersion": "unsd-hierarchy-csv-trailing-whitespace-v1"
+            },
+            "sources": [
+              "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv"
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "71748b738ae5eaed37b411fa63eede6d6cb3e45b6881d32259268b6be2303b92"
+          },
+          "sourceFile": null,
+          "status": "official"
+        },
+        "fr": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 830,
+            "extra": 0,
+            "missing": 0,
+            "translated": 830
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "651e6f392723951b3dd79c8e9f06dc307d3585c7c1fd17ee43fa47f9368ad3c7"
+            },
+            "reviewFile": "src/services/referenceResources/data/isic/reviews/fr.json",
+            "sources": [
+              "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "fefd4dff0f7724d4b8cac7747dba37104e8c108230b6096f764975b70b928144"
+          },
+          "sourceFile": "src/services/referenceResources/data/isic/overlays/fr.json",
+          "status": "project-reviewed"
+        },
+        "zh": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 830,
+            "extra": 0,
+            "missing": 0,
+            "translated": 830
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "949561ef6ea6e7fc1a37463903ce30f7ae32d0d271e9100e3855e13a41ddd3e8"
+            },
+            "reviewFile": "src/services/referenceResources/data/isic/reviews/zh.json",
+            "sources": [
+              "Project translation of the frozen UNSD International Standard Industrial Classification Revision 5 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "6ad3586e15b0a84caf21b23017197f0f3fd6c71871a5b7a1422b420034712886"
+          },
+          "sourceFile": "src/services/referenceResources/data/isic/overlays/zh.json",
+          "status": "project-reviewed"
+        }
+      },
+      "required": true,
+      "resourceId": "isic",
+      "runtime": {
+        "assets": {
+          "de": {
+            "byteLength": 11387,
+            "dataTypeNames": {
+              "Contact": "Kontakt",
+              "Flow": "Fluss",
+              "FlowProperty": "Flusseigenschaft",
+              "LCIAMethod": "LCIA-Methode",
+              "LifeCycleModel": "Lebenszyklusmodell",
+              "Process": "Prozess",
+              "Source": "Quelle",
+              "UnitGroup": "Einheitengruppe"
+            },
+            "fileName": "ISICClassification.c87a6025d12803b1_de.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "9518fd0397e095a47a2c3f2fc04434de6ac98d0e4b4e10bb4b65007c5daaf12e"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "c87a6025d12803b1380da0ba511717442aef89e7e381f44e37d9b9a3d261bdd2"
+            },
+            "language": "de"
+          },
+          "en": {
+            "byteLength": 10392,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flow",
+              "FlowProperty": "FlowProperty",
+              "LCIAMethod": "LCIAMethod",
+              "LifeCycleModel": "LifeCycleModel",
+              "Process": "Process",
+              "Source": "Source",
+              "UnitGroup": "UnitGroup"
+            },
+            "fileName": "ISICClassification.852053b3e1692408.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "19f60846d7658d21cf0993ebe94993588dfc686953840f15a658a39a74084aa1"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "852053b3e16924083891e85d6d30af4a0fb681b6718291cf21bb5d37ce894ffb"
+            },
+            "language": "en"
+          },
+          "fr": {
+            "byteLength": 11318,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flux",
+              "FlowProperty": "Propriété de flux",
+              "LCIAMethod": "Méthode d'ACVI",
+              "LifeCycleModel": "Modèle de cycle de vie",
+              "Process": "Procédé",
+              "Source": "Source",
+              "UnitGroup": "Groupe d'unités"
+            },
+            "fileName": "ISICClassification.5d9f08d11bb7028a_fr.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "483e91296284e075010ab8407562e0235686518492a31d5cb341eb6f8bd4d278"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "5d9f08d11bb7028a97fb28b2517d976b4300cfac29dc8ba1a6454dd77da5c880"
+            },
+            "language": "fr"
+          },
+          "zh": {
+            "byteLength": 10251,
+            "dataTypeNames": {
+              "Contact": "联系信息",
+              "Flow": "流",
+              "FlowProperty": "流属性",
+              "LCIAMethod": "生命周期影响评估方法",
+              "LifeCycleModel": "生命周期模型",
+              "Process": "过程",
+              "Source": "来源",
+              "UnitGroup": "单位组"
+            },
+            "fileName": "ISICClassification.6455c8b1a0747aed_zh.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "86be671105200aa7a6afcbf2e3f9560142b52b74c82b6dbe3e2c45ddb49a4807"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "6455c8b1a0747aed6bfc27d87ac3171167d55f8a5e22bc8b7c341da6cfa3e861"
+            },
+            "language": "zh"
+          }
+        },
+        "directory": "public/classifications",
+        "fileStem": "ISICClassification"
+      },
+      "scope": "classification",
+      "sourceFiles": {
+        "base": "src/services/referenceResources/data/isic/base.json"
+      },
+      "structureDigest": {
+        "algorithm": "sha256",
+        "identityCount": 830,
+        "scope": "ordered-identity-and-assertion-sequence",
+        "value": "781654453df491f28c0059f904154017c1818e72930878c860a1c5c473754904"
+      },
+      "structureSource": {
+        "authority": "United Nations Statistics Division (UNSD)",
+        "notes": [
+          "No same-edition official German, French, or Chinese structure labels were evidenced on the UNSD current-edition registry; those overlays are project-reviewed translations."
+        ],
+        "officialSourceAudit": {
+          "auditId": "isic-rev5-official-structure",
+          "digest": {
+            "algorithm": "sha256",
+            "byteLength": 367522,
+            "scope": "frozen-normalized-official-source-audit-json",
+            "value": "47d02d8f6fd33ede01da3ad95183b14f693fd5b4c6ecb4399d9ceacf0fa6ae09"
+          },
+          "sourceComponentRole": "official-base",
+          "sourceFile": "src/services/referenceResources/data/isic/official-source-audit.json",
+          "transformVersion": "unsd-hierarchy-csv-trailing-whitespace-v1"
+        },
+        "retrievedAt": "2026-07-18",
+        "sourceComponents": [
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 45481,
+              "scope": "ISIC_Rev_5_english_structure.csv",
+              "value": "fc408f57bd3a4f33c35a4f384ec0010283dd72774892c8d48ae1330a8caeb57f"
+            },
+            "edition": "UNSD International Standard Industrial Classification Revision 5",
+            "note": "All 830 held nodes (22 sections, 87 divisions, 258 groups, and 463 classes) match the official code/order/title structure after encoding and whitespace normalization. The UNSD Family Registry states that the current edition is fully available only in English as of 2026-07-18.",
+            "role": "official-base",
+            "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv"
+          }
+        ],
+        "sourceDigest": {
+          "algorithm": "sha256",
+          "scope": "canonical-base-json",
+          "value": "852053b3e16924083891e85d6d30af4a0fb681b6718291cf21bb5d37ce894ffb"
+        },
+        "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv",
+        "usageTerms": {
+          "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
+          "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
+          "ownerIssue": "#634",
+          "productionStatus": "blocked",
+          "status": "rights-clearance-required",
+          "url": "https://shop.un.org/rights-permissions"
+        },
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "baseLocale": "en",
+      "cacheRevision": "9156d013da844d5f",
+      "edition": {
+        "note": "All 243 held classification nodes match the official package by identity path, order, ID, and English label.",
+        "value": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+        "verificationStatus": "verified"
+      },
+      "identityStrategy": "data-type-index-path-occurrence-with-id-assertion",
+      "overlays": {
+        "de": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 243,
+            "extra": 0,
+            "missing": 0,
+            "translated": 243
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "83406e2bc16a3519edb18e3217528da8bdd2c499e5595e4da7798af2fabd1ea3"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-classification/reviews/de.json",
+            "sources": [
+              "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "5b5d83361efc23d7637cfb1665d5a60f9a0aac336932a8dff66cba914704e531"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-classification/overlays/de.json",
+          "status": "project-reviewed"
+        },
+        "en": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 243,
+            "extra": 0,
+            "missing": 0,
+            "translated": 243
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": null,
+            "sourceAuditBinding": {
+              "auditFileDigest": {
+                "algorithm": "sha256",
+                "byteLength": 99791,
+                "scope": "frozen-normalized-official-source-audit-json",
+                "value": "4f64dda5adf494edde333620351039b1e4c0188ec5e45b9ead99e516090499d3"
+              },
+              "auditId": "ef3.1-ilcd-classification-reference",
+              "projectionDigest": {
+                "algorithm": "sha256",
+                "identityCount": 243,
+                "scope": "ordered-scoped-official-source-projection",
+                "value": "1b00ab988e2a2df3f8d8fd621ff668c443903d1866a4ed2535e750638d37afae"
+              },
+              "transformVersion": "ilcd-category-xml-identity-path-v1"
+            },
+            "sources": [
+              "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip#stylesheets/ILCDClassification_Reference.xml"
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "7e118a8f116cdad7cd9bc1d5695ecfc73c1b6f67788e94a47563bf72b890bb94"
+          },
+          "sourceFile": null,
+          "status": "official"
+        },
+        "fr": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 243,
+            "extra": 0,
+            "missing": 0,
+            "translated": 243
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "970890f8c7eb19c8263a3767a91eca8cb69d589cec029671b8847f89b707117a"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-classification/reviews/fr.json",
+            "sources": [
+              "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "d38da0a03959043dc40a52115ff2a3fc3478b1cb4e2253dba1a58d9a30ba22af"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-classification/overlays/fr.json",
+          "status": "project-reviewed"
+        },
+        "zh": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 243,
+            "extra": 0,
+            "missing": 0,
+            "translated": 243
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "efdd00a3a7dc0c2969cea9bfce71f5ed73be2b167d4fe89e7b115ad5a95cc408"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-classification/reviews/zh.json",
+            "sources": [
+              "Project translation of the frozen European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985 English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "2c2b0e6c917d7d033e6ae40fef106717d4fb428dafc1d28556839276d5c3a488"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-classification/overlays/zh.json",
+          "status": "project-reviewed"
+        }
+      },
+      "required": true,
+      "resourceId": "ilcd-classification",
+      "runtime": {
+        "assets": {
+          "de": {
+            "byteLength": 2669,
+            "dataTypeNames": {
+              "Contact": "Kontakt",
+              "Flow": "Fluss",
+              "FlowProperty": "Flusseigenschaft",
+              "LCIAMethod": "LCIA-Methode",
+              "LifeCycleModel": "Lebenszyklusmodell",
+              "Process": "Prozess",
+              "Source": "Quelle",
+              "UnitGroup": "Einheitengruppe"
+            },
+            "fileName": "ILCDClassification.a0ebc4f03bdd49cc_de.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "0cc8c5526b8b89ed4638fccfd289ca3725fefec997e74472efc621ca4d60ab06"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "a0ebc4f03bdd49cc39055222fe24093f5db254ce4a8b8408815707da463d9343"
+            },
+            "language": "de"
+          },
+          "en": {
+            "byteLength": 2376,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flow",
+              "FlowProperty": "FlowProperty",
+              "LCIAMethod": "LCIAMethod",
+              "LifeCycleModel": "LifeCycleModel",
+              "Process": "Process",
+              "Source": "Source",
+              "UnitGroup": "UnitGroup"
+            },
+            "fileName": "ILCDClassification.5c74d092637aa320.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "329ff554769d26d2e39168d221a5854c4f8f30833ef3316b1ff73c8884c9c52a"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "5c74d092637aa32021319111d71092c9534edb76fd154a86a104419b923c6ef4"
+            },
+            "language": "en"
+          },
+          "fr": {
+            "byteLength": 2717,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flux",
+              "FlowProperty": "Propriété de flux",
+              "LCIAMethod": "Méthode d'ACVI",
+              "LifeCycleModel": "Modèle de cycle de vie",
+              "Process": "Procédé",
+              "Source": "Source",
+              "UnitGroup": "Groupe d'unités"
+            },
+            "fileName": "ILCDClassification.66a7df47fc937089_fr.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "cb411444ead23418a50d20c18accf3724f9e4e141cbf917c680dc278b74160f0"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "66a7df47fc93708958e13cb13ee4e4ea0a50ccbe579ed28ea5b9d5cc5fefc00f"
+            },
+            "language": "fr"
+          },
+          "zh": {
+            "byteLength": 2448,
+            "dataTypeNames": {
+              "Contact": "联系信息",
+              "Flow": "流",
+              "FlowProperty": "流属性",
+              "LCIAMethod": "生命周期影响评估方法",
+              "LifeCycleModel": "生命周期模型",
+              "Process": "过程",
+              "Source": "来源",
+              "UnitGroup": "单位组"
+            },
+            "fileName": "ILCDClassification.e30a3e90520a915f_zh.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "df8f76376eec7162760329f521e2d5e3a35a22879610b76ac9e3a58b404acffd"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "e30a3e90520a915f9139157f932eb97fb872c27d22095699250d067256e144e6"
+            },
+            "language": "zh"
+          }
+        },
+        "directory": "public/classifications",
+        "fileStem": "ILCDClassification"
+      },
+      "scope": "classification",
+      "sourceFiles": {
+        "base": "src/services/referenceResources/data/ilcd-classification/base.json"
+      },
+      "structureDigest": {
+        "algorithm": "sha256",
+        "identityCount": 243,
+        "scope": "ordered-identity-and-assertion-sequence",
+        "value": "12462331ea4e061b37bdc8698f4c401bc0c3badae74bb6c8e74ccdb050f0ff90"
+      },
+      "structureSource": {
+        "authority": "European Commission DG JRC",
+        "notes": [],
+        "officialSourceAudit": {
+          "auditId": "ef3.1-ilcd-classification-reference",
+          "digest": {
+            "algorithm": "sha256",
+            "byteLength": 99791,
+            "scope": "frozen-normalized-official-source-audit-json",
+            "value": "4f64dda5adf494edde333620351039b1e4c0188ec5e45b9ead99e516090499d3"
+          },
+          "sourceComponentRole": "official-base",
+          "sourceFile": "src/services/referenceResources/data/ilcd-classification/official-source-audit.json",
+          "transformVersion": "ilcd-category-xml-identity-path-v1"
+        },
+        "retrievedAt": "2026-07-18",
+        "sourceComponents": [
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 13710,
+              "scope": "stylesheets/ILCDClassification_Reference.xml",
+              "value": "f73babf7069ccaf2c0c4d02745aa6944aea6138f01797d811058f8262a4b4f0c"
+            },
+            "edition": "European Commission DG JRC (2022), EF reference package 3.1 / ILCD Format 1.1 Tools Build 985",
+            "note": "Exact identity-path, order, ID, and English-label match for all 243 held nodes; no official German or French labels are present.",
+            "role": "official-base",
+            "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+          }
+        ],
+        "sourceDigest": {
+          "algorithm": "sha256",
+          "scope": "canonical-base-json",
+          "value": "5c74d092637aa32021319111d71092c9534edb76fd154a86a104419b923c6ef4"
+        },
+        "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
+        "usageTerms": {
+          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
+          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
+          "ownerIssue": "#634",
+          "productionStatus": "blocked",
+          "status": "file-specific-owner-confirmation-required",
+          "url": "https://commission.europa.eu/legal-notice_en"
+        },
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "baseLocale": "en",
+      "cacheRevision": "65742a68b070bf08",
+      "edition": {
+        "note": "The held hierarchy contains 55 exact official nodes plus one TianGong indoor-air extension.",
+        "value": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
+        "verificationStatus": "verified"
+      },
+      "identityStrategy": "tree-index-path-with-id-assertion",
+      "overlays": {
+        "de": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 56,
+            "extra": 0,
+            "missing": 0,
+            "translated": 56
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "c53aa7229095aa4b7f51daed53ef690eca74ef2c0092e614d69513b880de8975"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-flow-categorization/reviews/de.json",
+            "sources": [
+              "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "dcdb5ba69e9df1af298996d9e8cb229712e0a2b7686cae832cc4bd3915a3d047"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-flow-categorization/overlays/de.json",
+          "status": "project-reviewed"
+        },
+        "en": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 56,
+            "extra": 0,
+            "missing": 0,
+            "translated": 56
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "acaef41c64e63f75c74f02b5d4f09640c698183e72ae88ec1fd8f739d589fe4f"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-flow-categorization/reviews/en.json",
+            "sources": [
+              "EF 3.1 exact comparison for 55 official nodes",
+              "TianGong project-extension record for node 1.3.6"
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "708fe27dbcd3e14508cdd74320533614a71b8b8d80d9d8be28ed47dbb684c86a"
+          },
+          "sourceFile": null,
+          "status": "project-reviewed"
+        },
+        "fr": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 56,
+            "extra": 0,
+            "missing": 0,
+            "translated": 56
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "bec6b724730b4fb413c34eb51721782485b9e31631bd2cbf33c90ea900887e34"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-flow-categorization/reviews/fr.json",
+            "sources": [
+              "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "f621898b1a2e579d24ddd388c5a2d2c11601ffb79d40d1f9c8a6e8912bb8723b"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-flow-categorization/overlays/fr.json",
+          "status": "project-reviewed"
+        },
+        "zh": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 56,
+            "extra": 0,
+            "missing": 0,
+            "translated": 56
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "aff917aba80a08bfb7807fe2041ba987d7898b54752deebfd4a11e2f2c93135d"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-flow-categorization/reviews/zh.json",
+            "sources": [
+              "Project translation of the frozen ILCD Format 1.1 / EF reference package 3.1 plus project extension English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "a05ddac47a63eae3e5d49ae51c1d17a7d831aaa27d9fd93751d19493fb081176"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-flow-categorization/overlays/zh.json",
+          "status": "project-reviewed"
+        }
+      },
+      "required": true,
+      "resourceId": "ilcd-flow-categorization",
+      "runtime": {
+        "assets": {
+          "de": {
+            "byteLength": 794,
+            "dataTypeNames": {
+              "Contact": "Kontakt",
+              "Flow": "Fluss",
+              "FlowProperty": "Flusseigenschaft",
+              "LCIAMethod": "LCIA-Methode",
+              "LifeCycleModel": "Lebenszyklusmodell",
+              "Process": "Prozess",
+              "Source": "Quelle",
+              "UnitGroup": "Einheitengruppe"
+            },
+            "fileName": "ILCDFlowCategorization.ae503754e77e5b19_de.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "833498ff140db4a3536356b12f7f4de7a4df9389038895f5b3a838604dfb51f0"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "ae503754e77e5b194abe65196edb7ccb8a58bbc957e2842f9b3ac220551acb11"
+            },
+            "language": "de"
+          },
+          "en": {
+            "byteLength": 718,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flow",
+              "FlowProperty": "FlowProperty",
+              "LCIAMethod": "LCIAMethod",
+              "LifeCycleModel": "LifeCycleModel",
+              "Process": "Process",
+              "Source": "Source",
+              "UnitGroup": "UnitGroup"
+            },
+            "fileName": "ILCDFlowCategorization.519b7ec408131c56.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "18609273d614dad632aa4b23a582d14193aa1726d4a7d6f53acf2b09fdfafa87"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "519b7ec408131c5620a4b0c29cc195786698c2d045b459d302fe5cdcd06565c9"
+            },
+            "language": "en"
+          },
+          "fr": {
+            "byteLength": 772,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flux",
+              "FlowProperty": "Propriété de flux",
+              "LCIAMethod": "Méthode d'ACVI",
+              "LifeCycleModel": "Modèle de cycle de vie",
+              "Process": "Procédé",
+              "Source": "Source",
+              "UnitGroup": "Groupe d'unités"
+            },
+            "fileName": "ILCDFlowCategorization.cf2bf4be7fc6ab91_fr.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "3a1b6a81504692c69c4af6b0564c358c020f6c28e0e37ee3ca71320465c584be"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "cf2bf4be7fc6ab918e1215233147157c03cb2e6eb3bfbe941646967583ebfab9"
+            },
+            "language": "fr"
+          },
+          "zh": {
+            "byteLength": 762,
+            "dataTypeNames": {
+              "Contact": "联系信息",
+              "Flow": "流",
+              "FlowProperty": "流属性",
+              "LCIAMethod": "生命周期影响评估方法",
+              "LifeCycleModel": "生命周期模型",
+              "Process": "过程",
+              "Source": "来源",
+              "UnitGroup": "单位组"
+            },
+            "fileName": "ILCDFlowCategorization.dbc4de4506d39a2e_zh.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "db1f8c6f634e9b37990f1c452034e9b25c5392162b0f883c6a2fedcaab04e539"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "dbc4de4506d39a2ea8aecce78fab6fb0a0b7c87b8b2d69d8d4d799c2c39dbd5d"
+            },
+            "language": "zh"
+          }
+        },
+        "directory": "public/classifications",
+        "fileStem": "ILCDFlowCategorization"
+      },
+      "scope": "classification",
+      "sourceFiles": {
+        "base": "src/services/referenceResources/data/ilcd-flow-categorization/base.json"
+      },
+      "structureDigest": {
+        "algorithm": "sha256",
+        "identityCount": 56,
+        "scope": "ordered-identity-and-assertion-sequence",
+        "value": "543e1ff8425c4d92437378d0e1f8e9fca18d2db5cb9123d47dc64c7e6cc28eb7"
+      },
+      "structureSource": {
+        "authority": "European Commission DG JRC and TianGong LCA",
+        "notes": ["This resource must not be represented as a purely official tree."],
+        "officialSourceAudit": {
+          "auditId": "ef3.1-ilcd-flow-categorization-reference",
+          "digest": {
+            "algorithm": "sha256",
+            "byteLength": 23957,
+            "scope": "frozen-normalized-official-source-audit-json",
+            "value": "0924f867ba081a2b56c3ba60dd932f08f534193634c2525293caf2604cb43861"
+          },
+          "sourceComponentRole": "official-base",
+          "sourceFile": "src/services/referenceResources/data/ilcd-flow-categorization/official-source-audit.json",
+          "transformVersion": "ilcd-category-xml-identity-path-v1"
+        },
+        "retrievedAt": "2026-07-18",
+        "sourceComponents": [
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 4250,
+              "scope": "stylesheets/ILCDFlowCategorization_Reference.xml",
+              "value": "f3e20580bb9092b3d1f2fb6c42bf7b824d84778a72f9e7463157f4072f8eccb6"
+            },
+            "edition": "European Commission DG JRC (2022), EF reference package 3.1 / ILCD Format 1.1 Tools Build 985",
+            "note": "Exact identity-path, order, ID, and English-label match for 55 nodes; no official German or French labels are present.",
+            "role": "official-base",
+            "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+          },
+          {
+            "digest": null,
+            "edition": "TianGong extension",
+            "note": "Adds node 1.3.6 Emissions to air, indoor.",
+            "role": "project-extension",
+            "sourceUrl": null
+          }
+        ],
+        "sourceDigest": {
+          "algorithm": "sha256",
+          "scope": "canonical-base-json",
+          "value": "519b7ec408131c5620a4b0c29cc195786698c2d045b459d302fe5cdcd06565c9"
+        },
+        "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
+        "usageTerms": {
+          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
+          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
+          "ownerIssue": "#634",
+          "productionStatus": "blocked",
+          "status": "file-specific-owner-confirmation-required",
+          "url": "https://commission.europa.eu/legal-notice_en"
+        },
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "baseLocale": "en",
+      "cacheRevision": "1e64d1284ea03e96",
+      "edition": {
+        "note": "The 647-code catalog contains 225 exact official-derived entries, 45 entries with project-modified labels, and 377 project extensions relative to the 275-code EF 3.1 table.",
+        "value": "composite project-held ILCD-compatible location catalog",
+        "verificationStatus": "verified"
+      },
+      "identityStrategy": "location-code",
+      "officialSecondaryMappings": [
+        {
+          "datasetUrl": "http://publications.europa.eu/resource/dataset/country",
+          "mappingId": "eu-vocab-country-20260617-0-iso-alpha2",
+          "queryUrl": "https://publications.europa.eu/webapi/rdf/sparql",
+          "rawResponseDigest": {
+            "algorithm": "sha256",
+            "byteLength": 101667,
+            "scope": "cellar-sparql-application-sparql-results-json-response-body",
+            "value": "a53ce2176ec0e03a5b5773417b2628cc8b6ff5882b6298ed497ed7f6d9553a4c"
+          },
+          "release": "20260617-0",
+          "retrievedAt": "2026-07-18",
+          "sourceFile": "src/services/referenceResources/data/ilcd-locations/official-secondary-mappings/eu-vocab-country-20260617-0.json",
+          "sourceFileDigest": {
+            "algorithm": "sha256",
+            "byteLength": 295798,
+            "scope": "official-secondary-mapping-audit-json",
+            "value": "c5ade5cca8b0ffe4353ec6b31ed839a23ba521b5ca9be34eb501291b1bbf6d36"
+          },
+          "sourceUrl": "https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/country&version=20260617-0",
+          "status": "official-secondary-mapping",
+          "usageTerms": {
+            "note": "Reuse is subject to the European Commission reuse policy, including source attribution and indication of changes; third-party material is excluded. This per-entry terminology crosswalk is not an official ILCD translation.",
+            "status": "european-commission-reuse-notice",
+            "url": "https://commission.europa.eu/legal-notice_en"
+          }
+        }
+      ],
+      "overlays": {
+        "de": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 647,
+            "extra": 0,
+            "missing": 0,
+            "translated": 647
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "5092342ba0831e38f195ddfe56eafe4036801be63f815d521df2de326f9c892d"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-locations/reviews/de.json",
+            "sources": [
+              "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "f78223937ed28b889e315b905bf564d93a466333bc72348fee0a947b2e60cc5a"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-locations/overlays/de.json",
+          "status": "project-reviewed"
+        },
+        "en": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 647,
+            "extra": 0,
+            "missing": 0,
+            "translated": 647
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "48615debe21f9bfe63469b065701d81e5512378f1a3ec2b5b45f5b568e332f32"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-locations/reviews/en.json",
+            "sources": [
+              "EF 3.1 entry comparison: 225 exact official-derived entries",
+              "project provenance: 45 modified labels and 377 extensions"
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "7f0591319e4b2242e67b299715223232f3ab48415b1d2b11349b33f7cb86417b"
+          },
+          "sourceFile": null,
+          "status": "project-reviewed"
+        },
+        "fr": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 647,
+            "extra": 0,
+            "missing": 0,
+            "translated": 647
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "74d50f82f6b3d0079b1707376a50ea9415c84c8df32c1500361c8ea0d375c9a7"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-locations/reviews/fr.json",
+            "sources": [
+              "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "edf6d0171cb5ac02fb3898057b7b406c0bfa848eaa661cff5aac338f408ff51b"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-locations/overlays/fr.json",
+          "status": "project-reviewed"
+        },
+        "zh": {
+          "coverage": {
+            "blank": 0,
+            "duplicate": 0,
+            "expected": 647,
+            "extra": 0,
+            "missing": 0,
+            "translated": 647
+          },
+          "evidence": {
+            "generatorVersion": "1",
+            "reviewDigest": {
+              "algorithm": "sha256",
+              "value": "01b8cfc23abe169b5a4bee761417e3edbcad12ad6e04fd4726b5beda02dc9d28"
+            },
+            "reviewFile": "src/services/referenceResources/data/ilcd-locations/reviews/zh.json",
+            "sources": [
+              "Project translation of the frozen composite project-held ILCD-compatible location catalog English base; independently reviewed against resource identity, ancestry, LCA/classification context, and preserved technical tokens. Not an official publisher translation."
+            ],
+            "tests": ["npm run reference-data:check"]
+          },
+          "labelDigest": {
+            "algorithm": "sha256",
+            "value": "a236b80541c6d4a4b88034afaea64b8ed636ea3436f49ac4d9586b280cc0c1f8"
+          },
+          "sourceFile": "src/services/referenceResources/data/ilcd-locations/overlays/zh.json",
+          "status": "project-reviewed"
+        }
+      },
+      "required": true,
+      "resourceId": "ilcd-locations",
+      "runtime": {
+        "assets": {
+          "de": {
+            "byteLength": 6868,
+            "dataTypeNames": {
+              "Contact": "Kontakt",
+              "Flow": "Fluss",
+              "FlowProperty": "Flusseigenschaft",
+              "LCIAMethod": "LCIA-Methode",
+              "LifeCycleModel": "Lebenszyklusmodell",
+              "Process": "Prozess",
+              "Source": "Quelle",
+              "UnitGroup": "Einheitengruppe"
+            },
+            "fileName": "ILCDLocations.7048b701b1dfacb4_de.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "77479039e4dbd7484b39c3ef31eaf9df404258bb34b576c66674e5cc718cb0c6"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "7048b701b1dfacb4d06d6d779fdf1135ad0c8e8bb1e92f09d64e7ada303d44cb"
+            },
+            "language": "de"
+          },
+          "en": {
+            "byteLength": 6688,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flow",
+              "FlowProperty": "FlowProperty",
+              "LCIAMethod": "LCIAMethod",
+              "LifeCycleModel": "LifeCycleModel",
+              "Process": "Process",
+              "Source": "Source",
+              "UnitGroup": "UnitGroup"
+            },
+            "fileName": "ILCDLocations.b65e8d45de515726.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "e47cb3299abb9e56ae1ef54d8f3906144975da99ef20a7ebb809a6423ac27e85"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "b65e8d45de515726c86deffd794d719e6c4f7e16af4864bff80a6b20168a3417"
+            },
+            "language": "en"
+          },
+          "fr": {
+            "byteLength": 6750,
+            "dataTypeNames": {
+              "Contact": "Contact",
+              "Flow": "Flux",
+              "FlowProperty": "Propriété de flux",
+              "LCIAMethod": "Méthode d'ACVI",
+              "LifeCycleModel": "Modèle de cycle de vie",
+              "Process": "Procédé",
+              "Source": "Source",
+              "UnitGroup": "Groupe d'unités"
+            },
+            "fileName": "ILCDLocations.3fdd552e27dca310_fr.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "ed69e79b8aaa1600609dfa308dff59c856f263e023a1709dc6ab6d0098cdd27a"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "3fdd552e27dca31048fba2ea4586cafe464c6612bc222f2682803386f6c429a8"
+            },
+            "language": "fr"
+          },
+          "zh": {
+            "byteLength": 7568,
+            "dataTypeNames": {
+              "Contact": "联系信息",
+              "Flow": "流",
+              "FlowProperty": "流属性",
+              "LCIAMethod": "生命周期影响评估方法",
+              "LifeCycleModel": "生命周期模型",
+              "Process": "过程",
+              "Source": "来源",
+              "UnitGroup": "单位组"
+            },
+            "fileName": "ILCDLocations.c406f6ae5aa30ef1_zh.min.json.gz",
+            "gzipDigest": {
+              "algorithm": "sha256",
+              "value": "e2d92a822bc3c97f8d45f6b55b6734aea8e2f86ba047c450be3dec1bc8913208"
+            },
+            "jsonDigest": {
+              "algorithm": "sha256",
+              "value": "c406f6ae5aa30ef18c705c9ff63432be929725d178c00b7e098070d8533d86a3"
+            },
+            "language": "zh"
+          }
+        },
+        "directory": "public/locations",
+        "fileStem": "ILCDLocations"
+      },
+      "scope": "location",
+      "sourceFiles": {
+        "base": "src/services/referenceResources/data/ilcd-locations/base.json"
+      },
+      "structureDigest": {
+        "algorithm": "sha256",
+        "identityCount": 647,
+        "scope": "ordered-identity-and-assertion-sequence",
+        "value": "7579b820f0fb834b626f5abe5e79d5c9d4a04861b28dcda35bd838edd8a7efaf"
+      },
+      "structureSource": {
+        "authority": "Composite project catalog",
+        "notes": [
+          "This resource must not be represented as a single official ILCD location table."
+        ],
+        "officialSourceAudit": {
+          "auditId": "ef3.1-ilcd-locations-reference",
+          "digest": {
+            "algorithm": "sha256",
+            "byteLength": 187492,
+            "scope": "frozen-normalized-official-source-audit-json",
+            "value": "bf9fd46fa57b1ea4bd8a6d969afcac804e8c08bb78c481ca8dfa97b5aa6af5e5"
+          },
+          "sourceComponentRole": "official-component",
+          "sourceFile": "src/services/referenceResources/data/ilcd-locations/official-source-audit.json",
+          "transformVersion": "ilcd-location-xml-code-v1"
+        },
+        "retrievedAt": "2026-07-18",
+        "sourceComponents": [
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 13397,
+              "scope": "stylesheets/ILCDLocations_Reference.xml",
+              "value": "ed521f8171ab0f37359f952208c8512462289095d52c990d4b8273ed11edd139"
+            },
+            "edition": "European Commission DG JRC (2022), EF reference package 3.1 / ILCD Format 1.1 Tools Build 985",
+            "note": "The official file has 275 entries; 225 held entries match exactly and 45 reuse a code with a project-modified label.",
+            "role": "official-component",
+            "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+          },
+          {
+            "digest": null,
+            "edition": "project-held catalog",
+            "note": "Adds 377 entries, including region and China subdivision/city codes beyond the official component.",
+            "role": "project-composite-extension",
+            "sourceUrl": null
+          },
+          {
+            "digest": {
+              "algorithm": "sha256",
+              "byteLength": 101667,
+              "scope": "cellar-sparql-application-sparql-results-json-response-body",
+              "value": "a53ce2176ec0e03a5b5773417b2628cc8b6ff5882b6298ed497ed7f6d9553a4c"
+            },
+            "edition": "EU Vocabularies Countries and territories 20260617-0",
+            "note": "Exact ISO 3166-1 alpha-2 crosswalk for 249 held country/territory entries and 747 German, French, and Chinese labels. This is per-entry official secondary terminology only; it does not make the composite location catalog or its overlays an official ILCD translation.",
+            "queryUrl": "https://publications.europa.eu/webapi/rdf/sparql",
+            "role": "official-secondary-label-crosswalk",
+            "sourceUrl": "https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/country&version=20260617-0"
+          }
+        ],
+        "sourceDigest": {
+          "algorithm": "sha256",
+          "scope": "canonical-base-json",
+          "value": "b65e8d45de515726c86deffd794d719e6c4f7e16af4864bff80a6b20168a3417"
+        },
+        "sourceUrl": null,
+        "usageTerms": {
+          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
+          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
+          "ownerIssue": "#634",
+          "productionStatus": "blocked",
+          "status": "file-specific-owner-confirmation-required",
+          "url": "https://commission.europa.eu/legal-notice_en"
+        },
+        "verificationStatus": "verified"
+      }
+    }
+  ],
+  "schemaVersion": 2
+}

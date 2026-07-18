@@ -165,12 +165,45 @@ describe('shared locale delivery contracts', () => {
           referenceResourceBlockers: expect.any(Array),
         }),
       );
-      expect(activation.referenceResourceBlockers).toHaveLength(
-        REFERENCE_RESOURCE_MANIFEST.filter(({ required }) => required).length,
-      );
+      const capability = LOCALE_CAPABILITY_MATRIX.find(({ appLocale }) => appLocale === locale)!;
+      const expectedReferenceBlockerIds = REFERENCE_RESOURCE_MANIFEST.filter((resource) => {
+        const localized = capability.referenceResources.find(
+          ({ resourceId }) => resourceId === resource.resourceId,
+        );
+        const deliveryBlocked =
+          localized?.status !== 'native' ||
+          (localized.deliveryStatus !== 'official' &&
+            localized.deliveryStatus !== 'project-reviewed');
+        return (
+          resource.required &&
+          (deliveryBlocked ||
+            (resource.structureSource.usageTerms as { productionStatus?: string })
+              .productionStatus !== 'ready')
+        );
+      }).map(({ resourceId }) => resourceId);
+      expect(
+        activation.referenceResourceBlockers.map(({ resourceId }: any) => resourceId).sort(),
+      ).toEqual(expectedReferenceBlockerIds.sort());
       expect(
         activation.referenceResourceBlockers.every(({ ownerIssue }: any) => ownerIssue === '#634'),
       ).toBe(true);
+      for (const resource of REFERENCE_RESOURCE_MANIFEST.filter(
+        ({ required, structureSource }) =>
+          required &&
+          (structureSource.usageTerms as { productionStatus?: string }).productionStatus !==
+            'ready',
+      )) {
+        expect(activation.referenceResourceBlockers).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              resourceId: resource.resourceId,
+              usageTermsStatus: resource.structureSource.usageTerms.status,
+              usageTermsProductionStatus: 'blocked',
+              reason: expect.stringContaining('usage terms are'),
+            }),
+          ]),
+        );
+      }
       expect(activation.productionActivationBlockers).toHaveLength(
         activation.referenceResourceBlockers.length + 1,
       );
@@ -383,12 +416,14 @@ describe('shared locale delivery contracts', () => {
     expect(result.stderr).toContain('is not production-ready');
     expect(result.stderr).toContain('#634');
     expect(result.stderr).toContain('#635');
+    expect(result.stderr).toContain('rights-clearance-required');
   });
 
-  it('wires the production-readiness command into every production-effective workflow', () => {
+  it('wires reference-resource readiness into every production-effective workflow without pretending #635 E2E is complete', () => {
     for (const workflow of ['.github/workflows/build.yml', '.github/workflows/ci.yml']) {
       const source = fs.readFileSync(path.join(REPOSITORY_ROOT, workflow), 'utf8');
-      expect(source).toContain('npm run i18n:locale:all:production:check');
+      expect(source).toContain('npm run i18n:locale:all:check');
+      expect(source).toContain('npm run reference-data:production:check');
     }
   });
 });
