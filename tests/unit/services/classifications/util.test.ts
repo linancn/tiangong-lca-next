@@ -114,6 +114,22 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     ).toThrow('Localized classification does not exactly cover the base structure.');
   });
 
+  it('rejects localized nodes when the base structure is absent', () => {
+    expect(() =>
+      genClassWithLocalizedLabels(undefined, [{ '@id': 'orphan', '@name': 'Orphelin' }]),
+    ).toThrow('Localized classification contains nodes outside the base structure.');
+  });
+
+  it.each([
+    { localizedData: [{ '@id': 'other', '@name': 'Andere' }] },
+    { localizedData: [{ '@id': 'root', '@name': '' }] },
+    { localizedData: [{ '@id': 'root', '@name': 42 as unknown as string }] },
+  ])('rejects missing, blank, or non-string localized labels', ({ localizedData }) => {
+    expect(() =>
+      genClassWithLocalizedLabels([{ '@id': 'root', '@name': 'Root' }], localizedData),
+    ).toThrow('Localized classification is missing a label for root.');
+  });
+
   it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
     const legacyGenClass = (
       jest.requireActual('@/services/classifications/util') as Record<

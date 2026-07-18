@@ -108,6 +108,58 @@ describe('localeCapabilities', () => {
     ).toBe(true);
   });
 
+  it('keeps fallback and unreviewed native reference ownership visible', () => {
+    let isolatedCapabilities: typeof import('@/services/general/localeCapabilities') | undefined;
+
+    jest.doMock('@/services/referenceResources/resolver', () => ({
+      resolveReferenceResource: (resourceId: string, requestedLanguage: string) =>
+        resourceId === 'cpc'
+          ? {
+              status: 'development-base',
+              resourceId,
+              requestedLanguage,
+              resolvedLanguage: 'en',
+              usedFallback: true,
+              ownerIssue: '#634',
+              diagnostic: 'Development fallback fixture.',
+            }
+          : {
+              status: 'native',
+              resourceId,
+              requestedLanguage,
+              resolvedLanguage: requestedLanguage,
+              usedFallback: false,
+              deliveryStatus: 'legacy-unverified',
+            },
+    }));
+
+    try {
+      jest.isolateModules(() => {
+        isolatedCapabilities = require('@/services/general/localeCapabilities');
+      });
+    } finally {
+      jest.dontMock('@/services/referenceResources/resolver');
+      jest.resetModules();
+    }
+
+    const english = isolatedCapabilities?.getLocaleCapability('en-US');
+    expect(english?.referenceResources.find(({ resourceId }) => resourceId === 'cpc')).toEqual(
+      expect.objectContaining({
+        status: 'development-base',
+        deliveryStatus: undefined,
+        ownerIssue: '#634',
+      }),
+    );
+    expect(
+      english?.referenceResources
+        .filter(({ resourceId }) => resourceId !== 'cpc')
+        .every(
+          ({ deliveryStatus, ownerIssue }) =>
+            deliveryStatus === 'legacy-unverified' && ownerIssue === '#634',
+        ),
+    ).toBe(true);
+  });
+
   it('fails closed when an app locale has no matching content capability', () => {
     jest.doMock('@/services/general/contentLanguageRegistry', () => {
       const actual = jest.requireActual<

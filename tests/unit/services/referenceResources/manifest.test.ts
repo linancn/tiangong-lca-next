@@ -151,4 +151,34 @@ describe('reference resource manifest and resolver', () => {
       localizations.de = germanAvailability;
     }
   });
+
+  it('resolves an explicitly declared development-base asset without hiding the fallback', () => {
+    const resource = REFERENCE_RESOURCE_MANIFEST.find(({ resourceId }) => resourceId === 'cpc')!;
+    const localizations = resource.localizations as unknown as Record<
+      string,
+      ReferenceLocaleAvailability
+    >;
+    const germanAvailability = localizations.de;
+
+    try {
+      localizations.de = {
+        status: 'development-base',
+        resolvedLanguage: 'en',
+        ownerIssue: '#634',
+        diagnostic: 'German CPC labels temporarily use the development base.',
+      };
+
+      expect(resolveReferenceResource('cpc', 'de')).toEqual(
+        expect.objectContaining({
+          status: 'development-base',
+          requestedLanguage: 'de',
+          resolvedLanguage: 'en',
+          usedFallback: true,
+          localizedAsset: resource.runtimeAssets.en,
+        }),
+      );
+    } finally {
+      localizations.de = germanAvailability;
+    }
+  });
 });

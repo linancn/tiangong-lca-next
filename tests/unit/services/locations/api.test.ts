@@ -206,6 +206,27 @@ describe('Locations API (src/services/locations/api.ts)', () => {
     );
   });
 
+  it('fails closed when localized locations do not cover every base identity', async () => {
+    mockGetCachedOrFetchLocationFileData
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [
+            { '@value': 'CN', '#text': 'China' },
+            { '@value': 'US', '#text': 'United States' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({
+        ILCDLocations: {
+          location: [{ '@value': 'CN', '#text': '中国' }],
+        },
+      });
+
+    await expect(getILCDLocationEntries('zh', ['all'])).rejects.toThrow(
+      'Localized locations do not exactly cover the base structure.',
+    );
+  });
+
   it('returns a failure payload when loading all locations throws', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockGetCachedOrFetchLocationFileData.mockResolvedValue(null);
