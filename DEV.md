@@ -21,7 +21,7 @@ checkPaths:
   - package.json
   - .nvmrc
 lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
+lastReviewedCommit: 1122df8d34b76115d56ba3320532f660d37e70b7
 lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; the documented bootstrap commands and safe work loop remain current.'
 ---
 

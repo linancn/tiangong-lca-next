@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-18"
-lastReviewedCommit: "762a287342456defb1c298f87d6922261e398284"
-lastReviewedNote: 'Reviewed the second Issue #625 full-gate result and exact async/runtime fallback closure; testing and full-gate governance rules remain unchanged.'
+lastReviewedCommit: "1122df8d34b76115d56ba3320532f660d37e70b7"
+lastReviewedNote: 'Expanded the language-delivery Goal routing contract to cover content-language components, classification/location services and assets, cache manifests, all-active-locale validation, and anti-hardcoding work.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -356,12 +356,32 @@ rules:
         kind: locale-selector
       - path: src/services/general/runtimeLocale.ts
         kind: locale-runtime
+      - path: src/services/general/localeRegistry.ts
+        kind: locale-capability-registry
+      - path: src/services/general/data.ts
+        kind: content-language-options
+      - path: src/services/general/util.ts
+        kind: content-language-resolution
+      - path: src/components/LangTextItem/**
+        kind: content-language-ui
+      - path: src/services/classifications/**
+        kind: localized-reference-resource
+      - path: src/services/locations/**
+        kind: localized-reference-resource
+      - path: src/components/ClassificationCacheMonitor/**
+        kind: localized-reference-cache
+      - path: src/components/LocationCacheMonitor/**
+        kind: localized-reference-cache
+      - path: public/classifications/**
+        kind: localized-reference-asset
+      - path: public/locations/**
+        kind: localized-reference-asset
       - path: scripts/i18n/**
         kind: locale-governance
     requiredDocs:
       - path: docs/agents/i18n-language-delivery-goal.md
         mode: review_or_update
-    reason: Shared locale selector, runtime, and audit changes must keep the reusable single-language delivery Goal aligned with shipped behavior.
+    reason: Shared locale, content-language, reference-resource, cache, runtime, and audit changes must keep the reusable language delivery Goal aligned with shipped behavior and all-active-locale capability requirements.
   - id: next-frontend-runtime-contract
     scope: repo
     repo: next
