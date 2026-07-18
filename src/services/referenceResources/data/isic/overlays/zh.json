@@ -1,0 +1,5828 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "isic",
+  "locale": "zh",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "过程",
+    "Flow": "流",
+    "FlowProperty": "流属性",
+    "UnitGroup": "单位组",
+    "Contact": "联系信息",
+    "Source": "来源",
+    "LCIAMethod": "生命周期影响评估方法",
+    "LifeCycleModel": "生命周期模型"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "A"
+      },
+      "label": "农业、林业及渔业"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "01"
+      },
+      "label": "作物和牲畜生产、狩猎及相关服务活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "011"
+      },
+      "label": "非多年生作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0111"
+      },
+      "label": "谷类（水稻除外）、豆类和油籽类作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "0112"
+      },
+      "label": "水稻的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "0113"
+      },
+      "label": "蔬菜、瓜类、根和块茎作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "0114"
+      },
+      "label": "甘蔗的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "0115"
+      },
+      "label": "烟草的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "0116"
+      },
+      "label": "纤维作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "0119"
+      },
+      "label": "其他非多年生作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "012"
+      },
+      "label": "多年生作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0121"
+      },
+      "label": "葡萄的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "0122"
+      },
+      "label": "热带和亚热带水果的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "0123"
+      },
+      "label": "柑橘类水果的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "0124"
+      },
+      "label": "仁果类和核果类水果的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[4]",
+      "assertion": {
+        "id": "0125"
+      },
+      "label": "其他乔木和灌木水果及坚果的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[5]",
+      "assertion": {
+        "id": "0126"
+      },
+      "label": "油料水果的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[6]",
+      "assertion": {
+        "id": "0127"
+      },
+      "label": "饮料作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[7]",
+      "assertion": {
+        "id": "0128"
+      },
+      "label": "香料、芳香、药用和制药作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[8]",
+      "assertion": {
+        "id": "0129"
+      },
+      "label": "其他多年生作物的种植"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "013"
+      },
+      "label": "植物繁殖"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "0130"
+      },
+      "label": "植物繁殖"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "014"
+      },
+      "label": "动物生产"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "0141"
+      },
+      "label": "牛和水牛的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "0142"
+      },
+      "label": "马和其他马科动物的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "0143"
+      },
+      "label": "骆驼和骆驼科动物的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "0144"
+      },
+      "label": "绵羊和山羊的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "0145"
+      },
+      "label": "猪的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "0146"
+      },
+      "label": "家禽的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[6]",
+      "assertion": {
+        "id": "0149"
+      },
+      "label": "其他动物的饲养"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "015"
+      },
+      "label": "混合农业"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "0150"
+      },
+      "label": "混合农业"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "016"
+      },
+      "label": "农业辅助活动和作物收获后活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "0161"
+      },
+      "label": "作物生产辅助活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "0162"
+      },
+      "label": "动物生产辅助活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "0163"
+      },
+      "label": "作物收获后活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[3]",
+      "assertion": {
+        "id": "0164"
+      },
+      "label": "繁殖用种子加工"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "017"
+      },
+      "label": "狩猎、捕捉及相关服务活动"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "0170"
+      },
+      "label": "狩猎、捕捉及相关服务活动"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "02"
+      },
+      "label": "林业和伐木业"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "021"
+      },
+      "label": "造林及其他林业活动"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0210"
+      },
+      "label": "造林及其他林业活动"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "022"
+      },
+      "label": "伐木业"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0220"
+      },
+      "label": "伐木业"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "023"
+      },
+      "label": "非木材林产品采集"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "0230"
+      },
+      "label": "非木材林产品采集"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "024"
+      },
+      "label": "林业辅助服务"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "0240"
+      },
+      "label": "林业辅助服务"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "03"
+      },
+      "label": "渔业和水产养殖业"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "031"
+      },
+      "label": "渔业"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0311"
+      },
+      "label": "海洋渔业"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "0312"
+      },
+      "label": "淡水渔业"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "032"
+      },
+      "label": "水产养殖业"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0321"
+      },
+      "label": "海水养殖"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0322"
+      },
+      "label": "淡水养殖"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "033"
+      },
+      "label": "渔业和水产养殖辅助活动"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "0330"
+      },
+      "label": "渔业和水产养殖辅助活动"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "B"
+      },
+      "label": "采矿和采石业"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "05"
+      },
+      "label": "煤炭和褐煤开采"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "051"
+      },
+      "label": "硬煤开采"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0510"
+      },
+      "label": "硬煤开采"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "052"
+      },
+      "label": "褐煤开采"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0520"
+      },
+      "label": "褐煤开采"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "06"
+      },
+      "label": "原油和天然气开采"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "061"
+      },
+      "label": "原油开采"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0610"
+      },
+      "label": "原油开采"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "062"
+      },
+      "label": "天然气开采"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0620"
+      },
+      "label": "天然气开采"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "07"
+      },
+      "label": "金属矿开采"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "071"
+      },
+      "label": "铁矿开采"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0710"
+      },
+      "label": "铁矿开采"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "072"
+      },
+      "label": "有色金属矿开采"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0721"
+      },
+      "label": "铀矿和钍矿开采"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0729"
+      },
+      "label": "其他有色金属矿开采"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "08"
+      },
+      "label": "其他采矿和采石业"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "081"
+      },
+      "label": "石材、砂和黏土采掘"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "0810"
+      },
+      "label": "石材、砂和黏土采掘"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "089"
+      },
+      "label": "未另分类的采矿和采石业"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "0891"
+      },
+      "label": "化学矿物和肥料矿物开采"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "0892"
+      },
+      "label": "泥炭开采"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "0893"
+      },
+      "label": "盐开采"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "0899"
+      },
+      "label": "未另分类的其他采矿和采石业"
+    },
+    {
+      "key": "category[1]/category[4]",
+      "assertion": {
+        "id": "09"
+      },
+      "label": "采矿辅助服务活动"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "091"
+      },
+      "label": "石油和天然气开采辅助活动"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "0910"
+      },
+      "label": "石油和天然气开采辅助活动"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "099"
+      },
+      "label": "其他采矿和采石辅助活动"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "0990"
+      },
+      "label": "其他采矿和采石辅助活动"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "C"
+      },
+      "label": "制造业"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "10"
+      },
+      "label": "食品制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "101"
+      },
+      "label": "肉类加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1010"
+      },
+      "label": "肉类加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "102"
+      },
+      "label": "鱼类、甲壳类和软体动物加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1020"
+      },
+      "label": "鱼类、甲壳类和软体动物加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "103"
+      },
+      "label": "水果和蔬菜加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1030"
+      },
+      "label": "水果和蔬菜加工和保藏"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]",
+      "assertion": {
+        "id": "104"
+      },
+      "label": "动植物油脂制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "1040"
+      },
+      "label": "动植物油脂制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]",
+      "assertion": {
+        "id": "105"
+      },
+      "label": "乳制品制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "1050"
+      },
+      "label": "乳制品制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]",
+      "assertion": {
+        "id": "106"
+      },
+      "label": "谷物磨制品、淀粉和淀粉制品制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "1061"
+      },
+      "label": "谷物磨制品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "1062"
+      },
+      "label": "淀粉及淀粉制品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]",
+      "assertion": {
+        "id": "107"
+      },
+      "label": "其他食品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "1071"
+      },
+      "label": "烘焙食品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "1072"
+      },
+      "label": "糖的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "1073"
+      },
+      "label": "可可、巧克力和糖果的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "1074"
+      },
+      "label": "通心粉、面条、蒸粗麦粉及类似面粉制品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[4]",
+      "assertion": {
+        "id": "1075"
+      },
+      "label": "预制餐食和菜肴的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[5]",
+      "assertion": {
+        "id": "1076"
+      },
+      "label": "咖啡和茶的加工"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[6]",
+      "assertion": {
+        "id": "1079"
+      },
+      "label": "未另分类的其他食品的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[7]",
+      "assertion": {
+        "id": "108"
+      },
+      "label": "配制动物饲料的制造"
+    },
+    {
+      "key": "category[2]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "1080"
+      },
+      "label": "配制动物饲料的制造"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "11"
+      },
+      "label": "饮料的制造"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "110"
+      },
+      "label": "饮料的制造"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "1101"
+      },
+      "label": "烈酒的蒸馏、精馏及勾兑"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "1102"
+      },
+      "label": "葡萄酒的制造"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "1103"
+      },
+      "label": "啤酒的制造"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "1104"
+      },
+      "label": "麦芽的制造"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "1105"
+      },
+      "label": "软饮料的制造；矿泉水和其他瓶装水的生产"
+    },
+    {
+      "key": "category[2]/category[2]",
+      "assertion": {
+        "id": "12"
+      },
+      "label": "烟草制品的制造"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "120"
+      },
+      "label": "烟草制品的制造"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "1200"
+      },
+      "label": "烟草制品的制造"
+    },
+    {
+      "key": "category[2]/category[3]",
+      "assertion": {
+        "id": "13"
+      },
+      "label": "纺织品的制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "131"
+      },
+      "label": "纺织品的纺纱、织造和整理"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "1311"
+      },
+      "label": "纺织纤维的准备和纺纱"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "1312"
+      },
+      "label": "纺织品的织造"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "1313"
+      },
+      "label": "纺织品的整理"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]",
+      "assertion": {
+        "id": "139"
+      },
+      "label": "其他纺织品的制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "1391"
+      },
+      "label": "针织及钩针编织织物的制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "1392"
+      },
+      "label": "服装除外的纺织制成品制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "1393"
+      },
+      "label": "地毯和小地毯的制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "1394"
+      },
+      "label": "缆绳、绳索、细绳和网具的制造"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "1399"
+      },
+      "label": "未另分类的其他纺织品的制造"
+    },
+    {
+      "key": "category[2]/category[4]",
+      "assertion": {
+        "id": "14"
+      },
+      "label": "服装的制造"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "141"
+      },
+      "label": "服装制造，但毛皮服装除外"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "1410"
+      },
+      "label": "服装制造，但毛皮服装除外"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]",
+      "assertion": {
+        "id": "142"
+      },
+      "label": "毛皮制品的制造"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "1420"
+      },
+      "label": "毛皮制品的制造"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]",
+      "assertion": {
+        "id": "143"
+      },
+      "label": "针织和钩针编织服装的制造"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "1430"
+      },
+      "label": "针织和钩针编织服装的制造"
+    },
+    {
+      "key": "category[2]/category[5]",
+      "assertion": {
+        "id": "15"
+      },
+      "label": "皮革和相关产品的制造"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]",
+      "assertion": {
+        "id": "151"
+      },
+      "label": "皮革和毛皮的鞣制、染色和整理；行李、手提包、马具和挽具的制造"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "1511"
+      },
+      "label": "皮革的鞣制和整理；毛皮的整理和染色"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[1]",
+      "assertion": {
+        "id": "1512"
+      },
+      "label": "任何材料制成的行李、手提包及类似制品、马具和挽具的制造"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]",
+      "assertion": {
+        "id": "152"
+      },
+      "label": "鞋靴的制造"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "1520"
+      },
+      "label": "鞋靴的制造"
+    },
+    {
+      "key": "category[2]/category[6]",
+      "assertion": {
+        "id": "16"
+      },
+      "label": "木材及木制品和软木制品的制造（家具除外）；草编制品及编织材料制品的制造"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]",
+      "assertion": {
+        "id": "161"
+      },
+      "label": "锯木和刨木"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "1610"
+      },
+      "label": "锯木和刨木"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]",
+      "assertion": {
+        "id": "162"
+      },
+      "label": "木材、软木、草和编织材料制品的制造"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "1621"
+      },
+      "label": "单板和人造板的制造"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "1622"
+      },
+      "label": "建筑用木工制品和木结构件的制造"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "1623"
+      },
+      "label": "木容器的制造"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "1629"
+      },
+      "label": "其他木制品的制造；软木、草及编织材料制品的制造"
+    },
+    {
+      "key": "category[2]/category[7]",
+      "assertion": {
+        "id": "17"
+      },
+      "label": "纸和纸制品的制造"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]",
+      "assertion": {
+        "id": "170"
+      },
+      "label": "纸和纸制品的制造"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "1701"
+      },
+      "label": "纸浆、纸和纸板的制造"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "1702"
+      },
+      "label": "瓦楞纸和纸板以及纸和纸板容器的制造"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "1709"
+      },
+      "label": "其他纸和纸板制品的制造"
+    },
+    {
+      "key": "category[2]/category[8]",
+      "assertion": {
+        "id": "18"
+      },
+      "label": "记录媒介物的印刷及复制"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]",
+      "assertion": {
+        "id": "181"
+      },
+      "label": "印刷和与印刷有关的服务活动"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "1811"
+      },
+      "label": "印刷"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "1812"
+      },
+      "label": "与印刷有关的服务活动"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]",
+      "assertion": {
+        "id": "182"
+      },
+      "label": "记录媒介物的复制"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "1820"
+      },
+      "label": "记录媒介物的复制"
+    },
+    {
+      "key": "category[2]/category[9]",
+      "assertion": {
+        "id": "19"
+      },
+      "label": "焦炭和精炼石油产品的制造"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]",
+      "assertion": {
+        "id": "191"
+      },
+      "label": "焦炉产品的制造"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "1910"
+      },
+      "label": "焦炉产品的制造"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]",
+      "assertion": {
+        "id": "192"
+      },
+      "label": "精炼石油产品和化石燃料产品的制造"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "1920"
+      },
+      "label": "精炼石油产品和化石燃料产品的制造"
+    },
+    {
+      "key": "category[2]/category[10]",
+      "assertion": {
+        "id": "20"
+      },
+      "label": "化学品及化学制品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]",
+      "assertion": {
+        "id": "201"
+      },
+      "label": "基本化学品、化肥和氮化合物、初级形态塑料及合成橡胶的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "2011"
+      },
+      "label": "基本化学品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "2012"
+      },
+      "label": "化肥及氮化合物的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "2013"
+      },
+      "label": "初级形态塑料和合成橡胶的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]",
+      "assertion": {
+        "id": "202"
+      },
+      "label": "其他化学制品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "2021"
+      },
+      "label": "农药及其他农用化学制品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "2022"
+      },
+      "label": "涂料、清漆和类似涂层、印刷油墨及密封胶的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "2023"
+      },
+      "label": "肥皂和洗涤剂、清洁和抛光制剂、香水及盥洗用品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[3]",
+      "assertion": {
+        "id": "2029"
+      },
+      "label": "未另分类的其他化学制品的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[2]",
+      "assertion": {
+        "id": "203"
+      },
+      "label": "人造纤维的制造"
+    },
+    {
+      "key": "category[2]/category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "2030"
+      },
+      "label": "人造纤维的制造"
+    },
+    {
+      "key": "category[2]/category[11]",
+      "assertion": {
+        "id": "21"
+      },
+      "label": "基本医药产品和医药制剂的制造"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]",
+      "assertion": {
+        "id": "210"
+      },
+      "label": "药品、药用化学品及植物药材的制造"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "2100"
+      },
+      "label": "药品、药用化学品及植物药材的制造"
+    },
+    {
+      "key": "category[2]/category[12]",
+      "assertion": {
+        "id": "22"
+      },
+      "label": "橡胶和塑料制品的制造"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]",
+      "assertion": {
+        "id": "221"
+      },
+      "label": "橡胶制品的制造"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "2211"
+      },
+      "label": "橡胶轮胎和内胎的制造；橡胶轮胎的翻新和再制造"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "2219"
+      },
+      "label": "其他橡胶制品的制造"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]",
+      "assertion": {
+        "id": "222"
+      },
+      "label": "塑料制品的制造"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]/category[0]",
+      "assertion": {
+        "id": "2220"
+      },
+      "label": "塑料制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]",
+      "assertion": {
+        "id": "23"
+      },
+      "label": "其他非金属矿物制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]",
+      "assertion": {
+        "id": "231"
+      },
+      "label": "玻璃和玻璃制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "2310"
+      },
+      "label": "玻璃和玻璃制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]",
+      "assertion": {
+        "id": "239"
+      },
+      "label": "未另分类的非金属矿物制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "2391"
+      },
+      "label": "耐火制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "2392"
+      },
+      "label": "黏土建筑材料的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[2]",
+      "assertion": {
+        "id": "2393"
+      },
+      "label": "其他瓷器和陶瓷制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[3]",
+      "assertion": {
+        "id": "2394"
+      },
+      "label": "水泥、石灰和石膏的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[4]",
+      "assertion": {
+        "id": "2395"
+      },
+      "label": "混凝土、水泥及石膏制品的制造"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[5]",
+      "assertion": {
+        "id": "2396"
+      },
+      "label": "石材的切割、成形和精加工"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[6]",
+      "assertion": {
+        "id": "2399"
+      },
+      "label": "未另分类的其他非金属矿物制品的制造"
+    },
+    {
+      "key": "category[2]/category[14]",
+      "assertion": {
+        "id": "24"
+      },
+      "label": "基本金属的制造"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]",
+      "assertion": {
+        "id": "241"
+      },
+      "label": "炼铁和炼钢"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "2410"
+      },
+      "label": "炼铁和炼钢"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]",
+      "assertion": {
+        "id": "242"
+      },
+      "label": "基本贵金属及其他有色金属的制造"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "2420"
+      },
+      "label": "基本贵金属及其他有色金属的制造"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]",
+      "assertion": {
+        "id": "243"
+      },
+      "label": "金属铸造"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "2431"
+      },
+      "label": "钢铁铸造"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "2432"
+      },
+      "label": "有色金属铸造"
+    },
+    {
+      "key": "category[2]/category[15]",
+      "assertion": {
+        "id": "25"
+      },
+      "label": "金属制品的制造，但机械和设备除外"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]",
+      "assertion": {
+        "id": "251"
+      },
+      "label": "结构性金属制品、贮罐、贮槽和蒸汽发生器的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "2511"
+      },
+      "label": "结构性金属制品的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "2512"
+      },
+      "label": "金属贮罐、贮槽和容器的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "2513"
+      },
+      "label": "蒸汽发生器的制造，但中央供暖热水锅炉除外"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]",
+      "assertion": {
+        "id": "252"
+      },
+      "label": "武器和弹药的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]/category[0]",
+      "assertion": {
+        "id": "2520"
+      },
+      "label": "武器和弹药的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]",
+      "assertion": {
+        "id": "259"
+      },
+      "label": "其他金属制品的制造；金属加工服务活动"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[0]",
+      "assertion": {
+        "id": "2591"
+      },
+      "label": "金属锻造、压制、冲压和辊压成型；粉末冶金"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[1]",
+      "assertion": {
+        "id": "2592"
+      },
+      "label": "金属处理和涂层；机械加工"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[2]",
+      "assertion": {
+        "id": "2593"
+      },
+      "label": "餐具、手工工具和通用五金件的制造"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[3]",
+      "assertion": {
+        "id": "2599"
+      },
+      "label": "未另分类的其他金属制品的制造"
+    },
+    {
+      "key": "category[2]/category[16]",
+      "assertion": {
+        "id": "26"
+      },
+      "label": "计算机、电子和光学产品的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]",
+      "assertion": {
+        "id": "261"
+      },
+      "label": "电子元件和电路板的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "2611"
+      },
+      "label": "太阳能电池、太阳能电池板和光伏逆变器的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "2619"
+      },
+      "label": "其他电子元件和电路板的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]",
+      "assertion": {
+        "id": "262"
+      },
+      "label": "计算机和外围设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]/category[0]",
+      "assertion": {
+        "id": "2620"
+      },
+      "label": "计算机和外围设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]",
+      "assertion": {
+        "id": "263"
+      },
+      "label": "通信设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]/category[0]",
+      "assertion": {
+        "id": "2630"
+      },
+      "label": "通信设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]",
+      "assertion": {
+        "id": "264"
+      },
+      "label": "消费电子产品的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]/category[0]",
+      "assertion": {
+        "id": "2640"
+      },
+      "label": "消费电子产品的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]",
+      "assertion": {
+        "id": "265"
+      },
+      "label": "测量、测试、导航和控制设备；钟表的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[0]",
+      "assertion": {
+        "id": "2651"
+      },
+      "label": "测量、测试、导航和控制设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[1]",
+      "assertion": {
+        "id": "2652"
+      },
+      "label": "钟表的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]",
+      "assertion": {
+        "id": "266"
+      },
+      "label": "辐照、电医疗和电治疗设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]/category[0]",
+      "assertion": {
+        "id": "2660"
+      },
+      "label": "辐照、电医疗和电治疗设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]",
+      "assertion": {
+        "id": "267"
+      },
+      "label": "光学仪器和摄影设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]/category[0]",
+      "assertion": {
+        "id": "2670"
+      },
+      "label": "光学仪器和摄影设备的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]",
+      "assertion": {
+        "id": "268"
+      },
+      "label": "磁性和光学介质的制造"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]/category[0]",
+      "assertion": {
+        "id": "2680"
+      },
+      "label": "磁性和光学介质的制造"
+    },
+    {
+      "key": "category[2]/category[17]",
+      "assertion": {
+        "id": "27"
+      },
+      "label": "电气设备的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]",
+      "assertion": {
+        "id": "271"
+      },
+      "label": "电动机、发电机、变压器以及配电和控制装置的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "2710"
+      },
+      "label": "电动机、发电机、变压器以及配电和控制装置的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]",
+      "assertion": {
+        "id": "272"
+      },
+      "label": "电池和蓄电池的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "2720"
+      },
+      "label": "电池和蓄电池的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]",
+      "assertion": {
+        "id": "273"
+      },
+      "label": "电线电缆及布线器具的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "2731"
+      },
+      "label": "光纤电缆的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "2732"
+      },
+      "label": "其他电子和电气电线电缆的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[2]",
+      "assertion": {
+        "id": "2733"
+      },
+      "label": "布线器具的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]",
+      "assertion": {
+        "id": "274"
+      },
+      "label": "照明设备的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]/category[0]",
+      "assertion": {
+        "id": "2740"
+      },
+      "label": "照明设备的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]",
+      "assertion": {
+        "id": "275"
+      },
+      "label": "家用电器的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]/category[0]",
+      "assertion": {
+        "id": "2750"
+      },
+      "label": "家用电器的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]",
+      "assertion": {
+        "id": "279"
+      },
+      "label": "其他电气设备的制造"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]/category[0]",
+      "assertion": {
+        "id": "2790"
+      },
+      "label": "其他电气设备的制造"
+    },
+    {
+      "key": "category[2]/category[18]",
+      "assertion": {
+        "id": "28"
+      },
+      "label": "未另分类的机械和设备制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]",
+      "assertion": {
+        "id": "281"
+      },
+      "label": "通用机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "2811"
+      },
+      "label": "发动机和涡轮机的制造（飞机、车辆和自行车发动机除外）"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "2812"
+      },
+      "label": "流体动力设备的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "2813"
+      },
+      "label": "其他泵、压缩机、旋塞和阀门的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[3]",
+      "assertion": {
+        "id": "2814"
+      },
+      "label": "轴承、齿轮、传动装置和驱动部件的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[4]",
+      "assertion": {
+        "id": "2815"
+      },
+      "label": "烤箱、炉子和固定式家用供暖设备的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[5]",
+      "assertion": {
+        "id": "2816"
+      },
+      "label": "起重和搬运设备的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[6]",
+      "assertion": {
+        "id": "2817"
+      },
+      "label": "办公机械和设备的制造（计算机和外围设备除外）"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[7]",
+      "assertion": {
+        "id": "2818"
+      },
+      "label": "动力驱动手工工具的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[8]",
+      "assertion": {
+        "id": "2819"
+      },
+      "label": "其他通用机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]",
+      "assertion": {
+        "id": "282"
+      },
+      "label": "专用机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "2821"
+      },
+      "label": "农业和林业机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "2822"
+      },
+      "label": "金属成型机械和机床的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "2823"
+      },
+      "label": "冶金机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "2824"
+      },
+      "label": "采矿、采石和建筑机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[4]",
+      "assertion": {
+        "id": "2825"
+      },
+      "label": "食品、饮料和烟草加工机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[5]",
+      "assertion": {
+        "id": "2826"
+      },
+      "label": "纺织、服装和皮革生产机械的制造"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[6]",
+      "assertion": {
+        "id": "2829"
+      },
+      "label": "其他专用机械的制造"
+    },
+    {
+      "key": "category[2]/category[19]",
+      "assertion": {
+        "id": "29"
+      },
+      "label": "汽车、挂车和半挂车的制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]",
+      "assertion": {
+        "id": "291"
+      },
+      "label": "汽车的制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "2910"
+      },
+      "label": "汽车的制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]",
+      "assertion": {
+        "id": "292"
+      },
+      "label": "汽车车身制造；挂车和半挂车制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "2920"
+      },
+      "label": "汽车车身制造；挂车和半挂车制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]",
+      "assertion": {
+        "id": "293"
+      },
+      "label": "汽车零部件和附件的制造"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "2930"
+      },
+      "label": "汽车零部件和附件的制造"
+    },
+    {
+      "key": "category[2]/category[20]",
+      "assertion": {
+        "id": "30"
+      },
+      "label": "其他运输设备的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]",
+      "assertion": {
+        "id": "301"
+      },
+      "label": "船舶和艇的建造"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "3011"
+      },
+      "label": "船舶和浮动结构物的建造"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[1]",
+      "assertion": {
+        "id": "3012"
+      },
+      "label": "游艇和运动艇的建造"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]",
+      "assertion": {
+        "id": "302"
+      },
+      "label": "铁路机车和车辆的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "3020"
+      },
+      "label": "铁路机车和车辆的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]",
+      "assertion": {
+        "id": "303"
+      },
+      "label": "航空器、航天器及相关机械的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]/category[0]",
+      "assertion": {
+        "id": "3030"
+      },
+      "label": "航空器、航天器及相关机械的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]",
+      "assertion": {
+        "id": "304"
+      },
+      "label": "军用战斗车辆的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]/category[0]",
+      "assertion": {
+        "id": "3040"
+      },
+      "label": "军用战斗车辆的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]",
+      "assertion": {
+        "id": "309"
+      },
+      "label": "未另分类的运输设备制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[0]",
+      "assertion": {
+        "id": "3091"
+      },
+      "label": "摩托车的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[1]",
+      "assertion": {
+        "id": "3092"
+      },
+      "label": "自行车和残疾人车辆的制造"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[2]",
+      "assertion": {
+        "id": "3099"
+      },
+      "label": "未另分类的其他运输设备制造"
+    },
+    {
+      "key": "category[2]/category[21]",
+      "assertion": {
+        "id": "31"
+      },
+      "label": "家具的制造"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]",
+      "assertion": {
+        "id": "310"
+      },
+      "label": "家具的制造"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "3101"
+      },
+      "label": "木制家具的制造"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[1]",
+      "assertion": {
+        "id": "3102"
+      },
+      "label": "其他家具的制造"
+    },
+    {
+      "key": "category[2]/category[22]",
+      "assertion": {
+        "id": "32"
+      },
+      "label": "其他制造业"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]",
+      "assertion": {
+        "id": "321"
+      },
+      "label": "珠宝、仿制珠宝及相关制品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[0]",
+      "assertion": {
+        "id": "3211"
+      },
+      "label": "珠宝及相关制品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[1]",
+      "assertion": {
+        "id": "3212"
+      },
+      "label": "仿制珠宝及相关制品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]",
+      "assertion": {
+        "id": "322"
+      },
+      "label": "乐器的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]/category[0]",
+      "assertion": {
+        "id": "3220"
+      },
+      "label": "乐器的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]",
+      "assertion": {
+        "id": "323"
+      },
+      "label": "体育用品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]/category[0]",
+      "assertion": {
+        "id": "3230"
+      },
+      "label": "体育用品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]",
+      "assertion": {
+        "id": "324"
+      },
+      "label": "游戏用品及玩具的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]/category[0]",
+      "assertion": {
+        "id": "3240"
+      },
+      "label": "游戏用品及玩具的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]",
+      "assertion": {
+        "id": "325"
+      },
+      "label": "医疗和牙科仪器及用品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]/category[0]",
+      "assertion": {
+        "id": "3250"
+      },
+      "label": "医疗和牙科仪器及用品的制造"
+    },
+    {
+      "key": "category[2]/category[22]/category[5]",
+      "assertion": {
+        "id": "329"
+      },
+      "label": "未另分类的其他制造业"
+    },
+    {
+      "key": "category[2]/category[22]/category[5]/category[0]",
+      "assertion": {
+        "id": "3290"
+      },
+      "label": "未另分类的其他制造业"
+    },
+    {
+      "key": "category[2]/category[23]",
+      "assertion": {
+        "id": "33"
+      },
+      "label": "机械和设备的维修、保养和安装"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]",
+      "assertion": {
+        "id": "331"
+      },
+      "label": "金属制品、机械和设备的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[0]",
+      "assertion": {
+        "id": "3311"
+      },
+      "label": "金属制品的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[1]",
+      "assertion": {
+        "id": "3312"
+      },
+      "label": "机械的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[2]",
+      "assertion": {
+        "id": "3313"
+      },
+      "label": "电子和光学设备的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[3]",
+      "assertion": {
+        "id": "3314"
+      },
+      "label": "电气设备的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[4]",
+      "assertion": {
+        "id": "3315"
+      },
+      "label": "运输设备（机动车除外）的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[5]",
+      "assertion": {
+        "id": "3319"
+      },
+      "label": "其他设备的维修和保养"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]",
+      "assertion": {
+        "id": "332"
+      },
+      "label": "工业机械和设备的安装"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]/category[0]",
+      "assertion": {
+        "id": "3320"
+      },
+      "label": "工业机械和设备的安装"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "D"
+      },
+      "label": "电、燃气、蒸汽和空调供应"
+    },
+    {
+      "key": "category[3]/category[0]",
+      "assertion": {
+        "id": "35"
+      },
+      "label": "电、燃气、蒸汽和空调供应"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "351"
+      },
+      "label": "电力生产、输电和配电活动"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3511"
+      },
+      "label": "利用不可再生能源的电力生产活动"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "3512"
+      },
+      "label": "利用可再生能源的电力生产活动"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "3513"
+      },
+      "label": "输电和配电活动"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "352"
+      },
+      "label": "燃气制造；通过管道分配气体燃料"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "3520"
+      },
+      "label": "燃气制造；通过管道分配气体燃料"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "353"
+      },
+      "label": "蒸汽和空调供应"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "3530"
+      },
+      "label": "蒸汽和空调供应"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]",
+      "assertion": {
+        "id": "354"
+      },
+      "label": "电力和天然气经纪及代理活动"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "3540"
+      },
+      "label": "电力和天然气经纪及代理活动"
+    },
+    {
+      "key": "category[4]",
+      "assertion": {
+        "id": "E"
+      },
+      "label": "供水；污水处理、废物管理和修复活动"
+    },
+    {
+      "key": "category[4]/category[0]",
+      "assertion": {
+        "id": "36"
+      },
+      "label": "集水、水处理与供水"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "360"
+      },
+      "label": "集水、水处理与供水"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3600"
+      },
+      "label": "集水、水处理与供水"
+    },
+    {
+      "key": "category[4]/category[1]",
+      "assertion": {
+        "id": "37"
+      },
+      "label": "污水处理"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "370"
+      },
+      "label": "污水处理"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "3700"
+      },
+      "label": "污水处理"
+    },
+    {
+      "key": "category[4]/category[2]",
+      "assertion": {
+        "id": "38"
+      },
+      "label": "废物收集、处理和处置及回收活动"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "381"
+      },
+      "label": "废物收集活动"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "3811"
+      },
+      "label": "非危险废物的收集"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "3812"
+      },
+      "label": "危险废物的收集"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]",
+      "assertion": {
+        "id": "382"
+      },
+      "label": "废物处理和处置"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "3821"
+      },
+      "label": "非危险废物的处理和处置"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "3822"
+      },
+      "label": "危险废物的处理和处置"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]",
+      "assertion": {
+        "id": "383"
+      },
+      "label": "材料及其他废物回收"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "3830"
+      },
+      "label": "材料及其他废物回收"
+    },
+    {
+      "key": "category[4]/category[3]",
+      "assertion": {
+        "id": "39"
+      },
+      "label": "修复及其他废物管理服务活动"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]",
+      "assertion": {
+        "id": "390"
+      },
+      "label": "修复及其他废物管理服务活动"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "3900"
+      },
+      "label": "修复及其他废物管理服务活动"
+    },
+    {
+      "key": "category[5]",
+      "assertion": {
+        "id": "F"
+      },
+      "label": "建筑业"
+    },
+    {
+      "key": "category[5]/category[0]",
+      "assertion": {
+        "id": "41"
+      },
+      "label": "住宅和非住宅建筑的建设"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "410"
+      },
+      "label": "住宅和非住宅建筑的建设"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4100"
+      },
+      "label": "住宅和非住宅建筑的建设"
+    },
+    {
+      "key": "category[5]/category[1]",
+      "assertion": {
+        "id": "42"
+      },
+      "label": "土木工程"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "421"
+      },
+      "label": "道路和铁路建设"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4210"
+      },
+      "label": "道路和铁路建设"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]",
+      "assertion": {
+        "id": "422"
+      },
+      "label": "公用设施工程建设"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4220"
+      },
+      "label": "公用设施工程建设"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]",
+      "assertion": {
+        "id": "429"
+      },
+      "label": "其他土木工程项目建设"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4290"
+      },
+      "label": "其他土木工程项目建设"
+    },
+    {
+      "key": "category[5]/category[2]",
+      "assertion": {
+        "id": "43"
+      },
+      "label": "专业建筑活动"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "431"
+      },
+      "label": "拆除和场地准备"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "4311"
+      },
+      "label": "拆除"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "4312"
+      },
+      "label": "场地准备"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]",
+      "assertion": {
+        "id": "432"
+      },
+      "label": "电气、管道及其他建筑安装活动"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "4321"
+      },
+      "label": "电气安装"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "4322"
+      },
+      "label": "管道、供暖和空调安装"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "4329"
+      },
+      "label": "其他建筑安装"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]",
+      "assertion": {
+        "id": "433"
+      },
+      "label": "建筑竣工和装修"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "4330"
+      },
+      "label": "建筑竣工和装修"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]",
+      "assertion": {
+        "id": "434"
+      },
+      "label": "专业建筑服务中介活动"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "4340"
+      },
+      "label": "专业建筑服务中介活动"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]",
+      "assertion": {
+        "id": "439"
+      },
+      "label": "其他专业建筑活动"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "4390"
+      },
+      "label": "其他专业建筑活动"
+    },
+    {
+      "key": "category[6]",
+      "assertion": {
+        "id": "G"
+      },
+      "label": "批发和零售贸易"
+    },
+    {
+      "key": "category[6]/category[0]",
+      "assertion": {
+        "id": "46"
+      },
+      "label": "批发贸易"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "461"
+      },
+      "label": "佣金或合同批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4610"
+      },
+      "label": "佣金或合同批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]",
+      "assertion": {
+        "id": "462"
+      },
+      "label": "农业原料和活畜批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4620"
+      },
+      "label": "农业原料和活畜批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]",
+      "assertion": {
+        "id": "463"
+      },
+      "label": "食品、饮料和烟草批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4630"
+      },
+      "label": "食品、饮料和烟草批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]",
+      "assertion": {
+        "id": "464"
+      },
+      "label": "家庭用品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "4641"
+      },
+      "label": "纺织品、服装和鞋类批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "4642"
+      },
+      "label": "家庭、办公室和商店用家具、地毯及照明设备批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "4649"
+      },
+      "label": "其他家庭用品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]",
+      "assertion": {
+        "id": "465"
+      },
+      "label": "机械、设备和用品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "4651"
+      },
+      "label": "计算机、计算机外围设备和软件批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "4652"
+      },
+      "label": "电子和电信设备及零件批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "4653"
+      },
+      "label": "农业机械、设备和用品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "4659"
+      },
+      "label": "其他机械和设备批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]",
+      "assertion": {
+        "id": "466"
+      },
+      "label": "机动车、摩托车及相关零件和配件批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "4661"
+      },
+      "label": "机动车批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "4662"
+      },
+      "label": "机动车零件和配件批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "4663"
+      },
+      "label": "摩托车、摩托车零件及配件批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]",
+      "assertion": {
+        "id": "467"
+      },
+      "label": "其他专业化批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "4671"
+      },
+      "label": "固体、液体和气体燃料及相关产品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "4672"
+      },
+      "label": "金属和金属矿石批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "4673"
+      },
+      "label": "建筑材料、五金、管道和供暖设备及用品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "4679"
+      },
+      "label": "化学品、废弃物和废料及其他未另分类产品批发"
+    },
+    {
+      "key": "category[6]/category[0]/category[7]",
+      "assertion": {
+        "id": "469"
+      },
+      "label": "非专业化批发贸易"
+    },
+    {
+      "key": "category[6]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "4690"
+      },
+      "label": "非专业化批发贸易"
+    },
+    {
+      "key": "category[6]/category[1]",
+      "assertion": {
+        "id": "47"
+      },
+      "label": "零售贸易"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "471"
+      },
+      "label": "非专业化零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4711"
+      },
+      "label": "以食品、饮料或烟草为主的非专业化零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "4719"
+      },
+      "label": "其他非专业化零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "472"
+      },
+      "label": "食品、饮料和烟草零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4721"
+      },
+      "label": "食品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "4722"
+      },
+      "label": "饮料零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "4723"
+      },
+      "label": "烟草制品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "473"
+      },
+      "label": "汽车燃料零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4730"
+      },
+      "label": "汽车燃料零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "474"
+      },
+      "label": "信息和通信设备零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "4740"
+      },
+      "label": "信息和通信设备零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]",
+      "assertion": {
+        "id": "475"
+      },
+      "label": "其他家庭设备零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "4751"
+      },
+      "label": "纺织品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "4752"
+      },
+      "label": "五金、建筑材料、油漆和玻璃零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[2]",
+      "assertion": {
+        "id": "4753"
+      },
+      "label": "地毯、小地毯、墙面和地面覆盖物零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[3]",
+      "assertion": {
+        "id": "4759"
+      },
+      "label": "家用电器、家具、照明设备及其他家庭用品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]",
+      "assertion": {
+        "id": "476"
+      },
+      "label": "文化和娱乐商品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[0]",
+      "assertion": {
+        "id": "4761"
+      },
+      "label": "书籍、报纸、文具及办公用品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[1]",
+      "assertion": {
+        "id": "4762"
+      },
+      "label": "体育用品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[2]",
+      "assertion": {
+        "id": "4763"
+      },
+      "label": "游戏和玩具零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[3]",
+      "assertion": {
+        "id": "4769"
+      },
+      "label": "其他未另分类文化和娱乐商品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]",
+      "assertion": {
+        "id": "477"
+      },
+      "label": "机动车和摩托车以外其他商品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[0]",
+      "assertion": {
+        "id": "4771"
+      },
+      "label": "服装、鞋类和皮革制品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[1]",
+      "assertion": {
+        "id": "4772"
+      },
+      "label": "药品和医疗用品、化妆品及盥洗用品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[2]",
+      "assertion": {
+        "id": "4773"
+      },
+      "label": "其他未另分类新商品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[3]",
+      "assertion": {
+        "id": "4774"
+      },
+      "label": "二手商品零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]",
+      "assertion": {
+        "id": "478"
+      },
+      "label": "机动车、摩托车及相关零件和配件零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[0]",
+      "assertion": {
+        "id": "4781"
+      },
+      "label": "机动车零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[1]",
+      "assertion": {
+        "id": "4782"
+      },
+      "label": "机动车零件及配件零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[2]",
+      "assertion": {
+        "id": "4783"
+      },
+      "label": "摩托车、摩托车零件及配件零售"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]",
+      "assertion": {
+        "id": "479"
+      },
+      "label": "零售中介服务活动"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]/category[0]",
+      "assertion": {
+        "id": "4790"
+      },
+      "label": "零售中介服务活动"
+    },
+    {
+      "key": "category[7]",
+      "assertion": {
+        "id": "H"
+      },
+      "label": "运输和储存"
+    },
+    {
+      "key": "category[7]/category[0]",
+      "assertion": {
+        "id": "49"
+      },
+      "label": "陆路运输和管道运输"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "491"
+      },
+      "label": "铁路运输"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4911"
+      },
+      "label": "城际铁路客运"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "4912"
+      },
+      "label": "铁路货运"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "492"
+      },
+      "label": "其他陆路运输"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4921"
+      },
+      "label": "城市和郊区陆路客运"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "4922"
+      },
+      "label": "其他陆路客运"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "4923"
+      },
+      "label": "公路货运"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "493"
+      },
+      "label": "管道运输"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4930"
+      },
+      "label": "管道运输"
+    },
+    {
+      "key": "category[7]/category[1]",
+      "assertion": {
+        "id": "50"
+      },
+      "label": "水上运输"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]",
+      "assertion": {
+        "id": "501"
+      },
+      "label": "海洋和沿海水上运输"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5011"
+      },
+      "label": "海洋和沿海水上客运"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5012"
+      },
+      "label": "海洋和沿海水上货运"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]",
+      "assertion": {
+        "id": "502"
+      },
+      "label": "内陆水运"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5021"
+      },
+      "label": "内陆水上客运"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5022"
+      },
+      "label": "内陆水上货运"
+    },
+    {
+      "key": "category[7]/category[2]",
+      "assertion": {
+        "id": "51"
+      },
+      "label": "航空运输"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]",
+      "assertion": {
+        "id": "511"
+      },
+      "label": "航空客运"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "5110"
+      },
+      "label": "航空客运"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]",
+      "assertion": {
+        "id": "512"
+      },
+      "label": "航空货运"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "5120"
+      },
+      "label": "航空货运"
+    },
+    {
+      "key": "category[7]/category[3]",
+      "assertion": {
+        "id": "52"
+      },
+      "label": "仓储和运输辅助活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]",
+      "assertion": {
+        "id": "521"
+      },
+      "label": "仓储"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "5210"
+      },
+      "label": "仓储"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]",
+      "assertion": {
+        "id": "522"
+      },
+      "label": "运输辅助活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "5221"
+      },
+      "label": "陆路运输附属服务活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "5222"
+      },
+      "label": "水上运输附属服务活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "5223"
+      },
+      "label": "航空运输附属服务活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "5224"
+      },
+      "label": "货物装卸"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "5229"
+      },
+      "label": "其他运输辅助活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]",
+      "assertion": {
+        "id": "523"
+      },
+      "label": "运输中介服务活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[0]",
+      "assertion": {
+        "id": "5231"
+      },
+      "label": "货运中介服务活动"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[1]",
+      "assertion": {
+        "id": "5232"
+      },
+      "label": "客运中介服务活动"
+    },
+    {
+      "key": "category[7]/category[4]",
+      "assertion": {
+        "id": "53"
+      },
+      "label": "邮政和快递活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]",
+      "assertion": {
+        "id": "531"
+      },
+      "label": "邮政活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "5310"
+      },
+      "label": "邮政活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]",
+      "assertion": {
+        "id": "532"
+      },
+      "label": "快递活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "5320"
+      },
+      "label": "快递活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]",
+      "assertion": {
+        "id": "533"
+      },
+      "label": "邮政和快递中介服务活动"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "5330"
+      },
+      "label": "邮政和快递中介服务活动"
+    },
+    {
+      "key": "category[8]",
+      "assertion": {
+        "id": "I"
+      },
+      "label": "住宿和餐饮服务活动"
+    },
+    {
+      "key": "category[8]/category[0]",
+      "assertion": {
+        "id": "55"
+      },
+      "label": "住宿"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "551"
+      },
+      "label": "酒店及类似住宿活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5510"
+      },
+      "label": "酒店及类似住宿活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "552"
+      },
+      "label": "其他短期住宿活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5520"
+      },
+      "label": "其他短期住宿活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]",
+      "assertion": {
+        "id": "553"
+      },
+      "label": "露营地、休闲车停车场和拖车停车场"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "5530"
+      },
+      "label": "露营地、休闲车停车场和拖车停车场"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]",
+      "assertion": {
+        "id": "554"
+      },
+      "label": "住宿中介服务活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "5540"
+      },
+      "label": "住宿中介服务活动"
+    },
+    {
+      "key": "category[8]/category[0]/category[4]",
+      "assertion": {
+        "id": "559"
+      },
+      "label": "其他未另分类住宿"
+    },
+    {
+      "key": "category[8]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "5590"
+      },
+      "label": "其他未另分类住宿"
+    },
+    {
+      "key": "category[8]/category[1]",
+      "assertion": {
+        "id": "56"
+      },
+      "label": "食品和饮料服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "561"
+      },
+      "label": "餐馆和流动餐饮服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5610"
+      },
+      "label": "餐馆和流动餐饮服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]",
+      "assertion": {
+        "id": "562"
+      },
+      "label": "活动餐饮和其他食品服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5621"
+      },
+      "label": "活动餐饮服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5629"
+      },
+      "label": "其他餐饮服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]",
+      "assertion": {
+        "id": "563"
+      },
+      "label": "饮料供应服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "5630"
+      },
+      "label": "饮料供应服务活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]",
+      "assertion": {
+        "id": "564"
+      },
+      "label": "餐饮服务中介活动"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "5640"
+      },
+      "label": "餐饮服务中介活动"
+    },
+    {
+      "key": "category[9]",
+      "assertion": {
+        "id": "J"
+      },
+      "label": "出版、广播及内容制作和分发活动"
+    },
+    {
+      "key": "category[9]/category[0]",
+      "assertion": {
+        "id": "58"
+      },
+      "label": "出版活动"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "581"
+      },
+      "label": "图书、报纸、期刊及其他出版活动"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5811"
+      },
+      "label": "图书出版"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "5812"
+      },
+      "label": "报纸出版"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "5813"
+      },
+      "label": "期刊和杂志出版"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "5819"
+      },
+      "label": "其他出版活动"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]",
+      "assertion": {
+        "id": "582"
+      },
+      "label": "软件出版"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5821"
+      },
+      "label": "视频游戏出版"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "5829"
+      },
+      "label": "其他软件出版"
+    },
+    {
+      "key": "category[9]/category[1]",
+      "assertion": {
+        "id": "59"
+      },
+      "label": "电影、录像和电视节目制作、录音及音乐出版活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "591"
+      },
+      "label": "电影、录像和电视节目活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5911"
+      },
+      "label": "电影、录像和电视节目制作活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5912"
+      },
+      "label": "电影、录像和电视节目后期制作活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "5913"
+      },
+      "label": "电影、录像和电视节目发行活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "5914"
+      },
+      "label": "电影放映活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]",
+      "assertion": {
+        "id": "592"
+      },
+      "label": "录音和音乐出版活动"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5920"
+      },
+      "label": "录音和音乐出版活动"
+    },
+    {
+      "key": "category[9]/category[2]",
+      "assertion": {
+        "id": "60"
+      },
+      "label": "节目制作、广播、通讯社及其他内容分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]",
+      "assertion": {
+        "id": "601"
+      },
+      "label": "广播和音频分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6010"
+      },
+      "label": "广播和音频分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]",
+      "assertion": {
+        "id": "602"
+      },
+      "label": "电视节目制作、广播和视频分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6020"
+      },
+      "label": "电视节目制作、广播和视频分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]",
+      "assertion": {
+        "id": "603"
+      },
+      "label": "通讯社及其他内容分发活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6031"
+      },
+      "label": "通讯社活动"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[1]",
+      "assertion": {
+        "id": "6039"
+      },
+      "label": "社交网站及其他内容分发活动"
+    },
+    {
+      "key": "category[10]",
+      "assertion": {
+        "id": "K"
+      },
+      "label": "电信、计算机编程、咨询、计算基础设施及其他信息服务活动"
+    },
+    {
+      "key": "category[10]/category[0]",
+      "assertion": {
+        "id": "61"
+      },
+      "label": "电信"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "611"
+      },
+      "label": "有线、无线和卫星电信活动"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6110"
+      },
+      "label": "有线、无线和卫星电信活动"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "612"
+      },
+      "label": "电信转售及电信中介服务活动"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6120"
+      },
+      "label": "电信转售及电信中介服务活动"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "619"
+      },
+      "label": "其他电信活动"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6190"
+      },
+      "label": "其他电信活动"
+    },
+    {
+      "key": "category[10]/category[1]",
+      "assertion": {
+        "id": "62"
+      },
+      "label": "计算机编程、咨询及相关活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "621"
+      },
+      "label": "计算机编程活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6211"
+      },
+      "label": "视频游戏、视频游戏软件及视频游戏软件工具开发"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6219"
+      },
+      "label": "其他计算机编程活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "622"
+      },
+      "label": "计算机咨询和计算机设施管理活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6220"
+      },
+      "label": "计算机咨询和计算机设施管理活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "629"
+      },
+      "label": "其他信息技术和计算机服务活动"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6290"
+      },
+      "label": "其他信息技术和计算机服务活动"
+    },
+    {
+      "key": "category[10]/category[2]",
+      "assertion": {
+        "id": "63"
+      },
+      "label": "计算基础设施、数据处理、托管及其他信息服务活动"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "631"
+      },
+      "label": "计算基础设施、数据处理、托管及相关活动"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6310"
+      },
+      "label": "计算基础设施、数据处理、托管及相关活动"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]",
+      "assertion": {
+        "id": "639"
+      },
+      "label": "网络搜索门户活动及其他信息服务活动"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6390"
+      },
+      "label": "网络搜索门户活动及其他信息服务活动"
+    },
+    {
+      "key": "category[11]",
+      "assertion": {
+        "id": "L"
+      },
+      "label": "金融和保险活动"
+    },
+    {
+      "key": "category[11]/category[0]",
+      "assertion": {
+        "id": "64"
+      },
+      "label": "金融服务活动，不包括保险和养老金筹资"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "641"
+      },
+      "label": "货币中介活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6411"
+      },
+      "label": "中央银行业务"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "6419"
+      },
+      "label": "其他货币中介活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]",
+      "assertion": {
+        "id": "642"
+      },
+      "label": "控股公司和融资渠道活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6421"
+      },
+      "label": "控股公司活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6422"
+      },
+      "label": "融资渠道活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]",
+      "assertion": {
+        "id": "643"
+      },
+      "label": "信托、基金及类似金融实体活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6431"
+      },
+      "label": "货币市场基金活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "6432"
+      },
+      "label": "非货币市场投资基金活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "6433"
+      },
+      "label": "信托、遗产和代理账户活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]",
+      "assertion": {
+        "id": "649"
+      },
+      "label": "其他金融服务活动，不包括保险和养老金筹资活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "6491"
+      },
+      "label": "金融租赁活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "6492"
+      },
+      "label": "国际贸易融资活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "6493"
+      },
+      "label": "保理活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "6494"
+      },
+      "label": "证券化活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "6495"
+      },
+      "label": "其他信贷发放活动"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "6499"
+      },
+      "label": "其他未另分类的金融服务活动，不包括保险和养老金筹资活动"
+    },
+    {
+      "key": "category[11]/category[1]",
+      "assertion": {
+        "id": "65"
+      },
+      "label": "保险、再保险和养老金筹资活动，不包括强制性社会保障"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]",
+      "assertion": {
+        "id": "651"
+      },
+      "label": "保险"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6511"
+      },
+      "label": "人寿保险"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6512"
+      },
+      "label": "非人寿保险"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]",
+      "assertion": {
+        "id": "652"
+      },
+      "label": "再保险"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6520"
+      },
+      "label": "再保险"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]",
+      "assertion": {
+        "id": "653"
+      },
+      "label": "养老金筹资"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6530"
+      },
+      "label": "养老金筹资"
+    },
+    {
+      "key": "category[11]/category[2]",
+      "assertion": {
+        "id": "66"
+      },
+      "label": "金融服务和保险活动的辅助活动"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]",
+      "assertion": {
+        "id": "661"
+      },
+      "label": "金融服务辅助活动，不包括保险和养老金筹资"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6611"
+      },
+      "label": "金融市场管理"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "6612"
+      },
+      "label": "证券和商品合约经纪"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "6619"
+      },
+      "label": "其他金融服务辅助活动，不包括保险和养老金筹资"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]",
+      "assertion": {
+        "id": "662"
+      },
+      "label": "保险和养老金筹资辅助活动"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6621"
+      },
+      "label": "风险和损失评估"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "6622"
+      },
+      "label": "保险代理人和经纪人活动"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "6629"
+      },
+      "label": "其他保险和养老金筹资辅助活动"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]",
+      "assertion": {
+        "id": "663"
+      },
+      "label": "基金管理活动"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6630"
+      },
+      "label": "基金管理活动"
+    },
+    {
+      "key": "category[12]",
+      "assertion": {
+        "id": "M"
+      },
+      "label": "房地产活动"
+    },
+    {
+      "key": "category[12]/category[0]",
+      "assertion": {
+        "id": "68"
+      },
+      "label": "房地产活动"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "681"
+      },
+      "label": "自有或租赁房地产活动"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6810"
+      },
+      "label": "自有或租赁房地产活动"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "682"
+      },
+      "label": "收费或合同制房地产活动"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6821"
+      },
+      "label": "房地产中介服务活动"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6829"
+      },
+      "label": "其他收费或合同制房地产活动"
+    },
+    {
+      "key": "category[13]",
+      "assertion": {
+        "id": "N"
+      },
+      "label": "专业、科学和技术活动"
+    },
+    {
+      "key": "category[13]/category[0]",
+      "assertion": {
+        "id": "69"
+      },
+      "label": "法律和会计活动"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "691"
+      },
+      "label": "法律活动"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6910"
+      },
+      "label": "法律活动"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]",
+      "assertion": {
+        "id": "692"
+      },
+      "label": "会计、簿记和审计活动；税务咨询服务"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6920"
+      },
+      "label": "会计、簿记和审计活动；税务咨询服务"
+    },
+    {
+      "key": "category[13]/category[1]",
+      "assertion": {
+        "id": "70"
+      },
+      "label": "总公司的活动；管理咨询活动"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "701"
+      },
+      "label": "总公司的活动"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7010"
+      },
+      "label": "总公司的活动"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "702"
+      },
+      "label": "商务及其他管理咨询活动"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7020"
+      },
+      "label": "商务及其他管理咨询活动"
+    },
+    {
+      "key": "category[13]/category[2]",
+      "assertion": {
+        "id": "71"
+      },
+      "label": "建筑和工程活动；技术测试和分析"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]",
+      "assertion": {
+        "id": "711"
+      },
+      "label": "建筑和工程及相关技术咨询活动"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7110"
+      },
+      "label": "建筑和工程及相关技术咨询活动"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]",
+      "assertion": {
+        "id": "712"
+      },
+      "label": "技术测试和分析"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7120"
+      },
+      "label": "技术测试和分析"
+    },
+    {
+      "key": "category[13]/category[3]",
+      "assertion": {
+        "id": "72"
+      },
+      "label": "科学研究与开发"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]",
+      "assertion": {
+        "id": "721"
+      },
+      "label": "自然科学和工程学的研究及试验发展"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "7210"
+      },
+      "label": "自然科学和工程学的研究及试验发展"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]",
+      "assertion": {
+        "id": "722"
+      },
+      "label": "社会科学和人文学的研究与试验发展"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "7220"
+      },
+      "label": "社会科学和人文学的研究与试验发展"
+    },
+    {
+      "key": "category[13]/category[4]",
+      "assertion": {
+        "id": "73"
+      },
+      "label": "广告、市场研究及公共关系活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]",
+      "assertion": {
+        "id": "731"
+      },
+      "label": "广告活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "7310"
+      },
+      "label": "广告活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]",
+      "assertion": {
+        "id": "732"
+      },
+      "label": "市场研究及民意调查活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "7320"
+      },
+      "label": "市场研究及民意调查活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]",
+      "assertion": {
+        "id": "733"
+      },
+      "label": "公共关系活动"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "7330"
+      },
+      "label": "公共关系活动"
+    },
+    {
+      "key": "category[13]/category[5]",
+      "assertion": {
+        "id": "74"
+      },
+      "label": "其他专业、科学和技术活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]",
+      "assertion": {
+        "id": "741"
+      },
+      "label": "专业化设计活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "7410"
+      },
+      "label": "专业化设计活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]",
+      "assertion": {
+        "id": "742"
+      },
+      "label": "摄影活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "7420"
+      },
+      "label": "摄影活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]",
+      "assertion": {
+        "id": "743"
+      },
+      "label": "翻译和口译活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "7430"
+      },
+      "label": "翻译和口译活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]",
+      "assertion": {
+        "id": "749"
+      },
+      "label": "未另分类的其他专业、科学和技术活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "7491"
+      },
+      "label": "专利经纪和营销服务活动"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[1]",
+      "assertion": {
+        "id": "7499"
+      },
+      "label": "所有其他未另分类的专业、科学和技术活动"
+    },
+    {
+      "key": "category[13]/category[6]",
+      "assertion": {
+        "id": "75"
+      },
+      "label": "兽医活动"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]",
+      "assertion": {
+        "id": "750"
+      },
+      "label": "兽医活动"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "7500"
+      },
+      "label": "兽医活动"
+    },
+    {
+      "key": "category[14]",
+      "assertion": {
+        "id": "O"
+      },
+      "label": "行政和支持服务活动"
+    },
+    {
+      "key": "category[14]/category[0]",
+      "assertion": {
+        "id": "77"
+      },
+      "label": "出租和租赁活动"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "771"
+      },
+      "label": "机动车的出租和租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "7710"
+      },
+      "label": "机动车的出租和租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]",
+      "assertion": {
+        "id": "772"
+      },
+      "label": "个人和家庭用品的出租和租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "7721"
+      },
+      "label": "娱乐和体育用品的出租和租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "7729"
+      },
+      "label": "其他个人和家庭用品的出租和租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]",
+      "assertion": {
+        "id": "773"
+      },
+      "label": "其他机械、设备和有形商品的租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "7730"
+      },
+      "label": "其他机械、设备和有形商品的租赁"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]",
+      "assertion": {
+        "id": "774"
+      },
+      "label": "知识产权和类似产品的租赁，版权作品除外"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "7740"
+      },
+      "label": "知识产权和类似产品的租赁，版权作品除外"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]",
+      "assertion": {
+        "id": "775"
+      },
+      "label": "有形物品和非金融无形资产出租和租赁的中介服务活动"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "7751"
+      },
+      "label": "汽车、房车和拖车出租和租赁的中介服务活动"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "7752"
+      },
+      "label": "其他有形物品和非金融无形资产出租和租赁的中介服务活动"
+    },
+    {
+      "key": "category[14]/category[1]",
+      "assertion": {
+        "id": "78"
+      },
+      "label": "就业活动"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "781"
+      },
+      "label": "就业介绍机构活动"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7810"
+      },
+      "label": "就业介绍机构活动"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]",
+      "assertion": {
+        "id": "782"
+      },
+      "label": "临时就业机构活动及其他人力资源提供服务"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7820"
+      },
+      "label": "临时就业机构活动及其他人力资源提供服务"
+    },
+    {
+      "key": "category[14]/category[2]",
+      "assertion": {
+        "id": "79"
+      },
+      "label": "旅行社、旅游经营者及其他与旅游相关的活动"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "791"
+      },
+      "label": "旅行社和旅游经营者的活动"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7911"
+      },
+      "label": "旅行社的活动"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "7912"
+      },
+      "label": "旅游经营者的活动"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "799"
+      },
+      "label": "其他与旅游相关的活动"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7990"
+      },
+      "label": "其他与旅游相关的活动"
+    },
+    {
+      "key": "category[14]/category[3]",
+      "assertion": {
+        "id": "80"
+      },
+      "label": "调查与安保活动"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]",
+      "assertion": {
+        "id": "801"
+      },
+      "label": "调查与安保活动"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "8011"
+      },
+      "label": "调查与私人安保活动"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "8019"
+      },
+      "label": "未另分类的安保活动"
+    },
+    {
+      "key": "category[14]/category[4]",
+      "assertion": {
+        "id": "81"
+      },
+      "label": "建筑物和景观服务活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]",
+      "assertion": {
+        "id": "811"
+      },
+      "label": "综合设施支持活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "8110"
+      },
+      "label": "综合设施支持活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]",
+      "assertion": {
+        "id": "812"
+      },
+      "label": "清洁活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "8121"
+      },
+      "label": "建筑物一般清洁"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[1]",
+      "assertion": {
+        "id": "8129"
+      },
+      "label": "其他清洁活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]",
+      "assertion": {
+        "id": "813"
+      },
+      "label": "景观服务活动"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "8130"
+      },
+      "label": "景观服务活动"
+    },
+    {
+      "key": "category[14]/category[5]",
+      "assertion": {
+        "id": "82"
+      },
+      "label": "办公室行政、办公室支持和其他商务支持活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]",
+      "assertion": {
+        "id": "821"
+      },
+      "label": "办公室行政和支持活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "8210"
+      },
+      "label": "办公室行政和支持活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]",
+      "assertion": {
+        "id": "822"
+      },
+      "label": "呼叫中心活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "8220"
+      },
+      "label": "呼叫中心活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]",
+      "assertion": {
+        "id": "823"
+      },
+      "label": "会议和贸易展览会组织活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "8230"
+      },
+      "label": "会议和贸易展览会组织活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]",
+      "assertion": {
+        "id": "824"
+      },
+      "label": "未另分类的商务支持活动中介服务活动，金融中介除外"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "8240"
+      },
+      "label": "未另分类的商务支持活动中介服务活动，金融中介除外"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]",
+      "assertion": {
+        "id": "829"
+      },
+      "label": "未另分类的商务支持服务活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[0]",
+      "assertion": {
+        "id": "8291"
+      },
+      "label": "收债机构和征信机构活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[1]",
+      "assertion": {
+        "id": "8292"
+      },
+      "label": "包装活动"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[2]",
+      "assertion": {
+        "id": "8299"
+      },
+      "label": "未另分类的其他商务支持服务活动"
+    },
+    {
+      "key": "category[15]",
+      "assertion": {
+        "id": "P"
+      },
+      "label": "公共行政和国防；强制性社会保障"
+    },
+    {
+      "key": "category[15]/category[0]",
+      "assertion": {
+        "id": "84"
+      },
+      "label": "公共行政和国防；强制性社会保障"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "841"
+      },
+      "label": "国家及社区经济、社会和环境政策的管理"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8411"
+      },
+      "label": "一般公共行政管理活动"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "8412"
+      },
+      "label": "医疗、教育、文化服务和其他社会服务提供活动的监管，不包括社会保障和环境"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "8413"
+      },
+      "label": "环境服务提供活动的监管"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "8414"
+      },
+      "label": "企业经营效率提升的监管和促进"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "842"
+      },
+      "label": "向整个社区提供服务"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8421"
+      },
+      "label": "外交事务"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "8422"
+      },
+      "label": "国防活动"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "8423"
+      },
+      "label": "公共秩序和安全活动"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "843"
+      },
+      "label": "强制性社会保障活动"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8430"
+      },
+      "label": "强制性社会保障活动"
+    },
+    {
+      "key": "category[16]",
+      "assertion": {
+        "id": "Q"
+      },
+      "label": "教育"
+    },
+    {
+      "key": "category[16]/category[0]",
+      "assertion": {
+        "id": "85"
+      },
+      "label": "教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "851"
+      },
+      "label": "学前教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8510"
+      },
+      "label": "学前教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "852"
+      },
+      "label": "初等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8520"
+      },
+      "label": "初等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]",
+      "assertion": {
+        "id": "853"
+      },
+      "label": "中等及中学后非高等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8531"
+      },
+      "label": "普通中等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8532"
+      },
+      "label": "职业中等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "8533"
+      },
+      "label": "中学后非高等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]",
+      "assertion": {
+        "id": "854"
+      },
+      "label": "高等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "8540"
+      },
+      "label": "高等教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]",
+      "assertion": {
+        "id": "855"
+      },
+      "label": "其他教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "8551"
+      },
+      "label": "体育和娱乐教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "8552"
+      },
+      "label": "文化教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "8553"
+      },
+      "label": "驾驶学校活动"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "8559"
+      },
+      "label": "未另分类的其他教育"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]",
+      "assertion": {
+        "id": "856"
+      },
+      "label": "教育辅助活动"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "8561"
+      },
+      "label": "课程和导师的中介服务活动"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "8569"
+      },
+      "label": "其他教育辅助活动"
+    },
+    {
+      "key": "category[17]",
+      "assertion": {
+        "id": "R"
+      },
+      "label": "人类健康和社会工作活动"
+    },
+    {
+      "key": "category[17]/category[0]",
+      "assertion": {
+        "id": "86"
+      },
+      "label": "人类健康活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "861"
+      },
+      "label": "医院活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8610"
+      },
+      "label": "医院活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]",
+      "assertion": {
+        "id": "862"
+      },
+      "label": "医疗和牙科诊疗活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8620"
+      },
+      "label": "医疗和牙科诊疗活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]",
+      "assertion": {
+        "id": "869"
+      },
+      "label": "其他人类健康活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8691"
+      },
+      "label": "医疗、牙科及其他人类健康服务的中介服务活动"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8699"
+      },
+      "label": "未另分类的其他人类健康活动"
+    },
+    {
+      "key": "category[17]/category[1]",
+      "assertion": {
+        "id": "87"
+      },
+      "label": "住宿照料活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "871"
+      },
+      "label": "住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "8710"
+      },
+      "label": "住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]",
+      "assertion": {
+        "id": "872"
+      },
+      "label": "为患有或被诊断患有精神疾病或物质滥用问题者提供的住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "8720"
+      },
+      "label": "为患有或被诊断患有精神疾病或物质滥用问题者提供的住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]",
+      "assertion": {
+        "id": "873"
+      },
+      "label": "为老年人或身体残疾者提供的住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "8730"
+      },
+      "label": "为老年人或身体残疾者提供的住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]",
+      "assertion": {
+        "id": "879"
+      },
+      "label": "其他住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "8791"
+      },
+      "label": "住宿护理活动的中介服务活动"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "8799"
+      },
+      "label": "未另分类的其他住宿护理活动"
+    },
+    {
+      "key": "category[17]/category[2]",
+      "assertion": {
+        "id": "88"
+      },
+      "label": "不提供住宿的社会工作活动"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "881"
+      },
+      "label": "为老年人或残疾人提供的不提供住宿的社会工作活动"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "8810"
+      },
+      "label": "为老年人或残疾人提供的不提供住宿的社会工作活动"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "889"
+      },
+      "label": "其他不提供住宿的社会工作活动"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "8890"
+      },
+      "label": "其他不提供住宿的社会工作活动"
+    },
+    {
+      "key": "category[18]",
+      "assertion": {
+        "id": "S"
+      },
+      "label": "艺术、体育和娱乐"
+    },
+    {
+      "key": "category[18]/category[0]",
+      "assertion": {
+        "id": "90"
+      },
+      "label": "艺术创作与表演艺术活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "901"
+      },
+      "label": "艺术创作活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9011"
+      },
+      "label": "文学创作和音乐创作活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9012"
+      },
+      "label": "视觉艺术创作活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "9013"
+      },
+      "label": "其他艺术创作活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "902"
+      },
+      "label": "表演艺术活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9020"
+      },
+      "label": "表演艺术活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "903"
+      },
+      "label": "艺术创作与表演艺术的支持活动"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9031"
+      },
+      "label": "艺术设施和场地的运营"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9039"
+      },
+      "label": "其他艺术创作与表演艺术支持活动"
+    },
+    {
+      "key": "category[18]/category[1]",
+      "assertion": {
+        "id": "91"
+      },
+      "label": "图书馆、档案馆、博物馆及其他文化活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "911"
+      },
+      "label": "图书馆和档案馆活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9111"
+      },
+      "label": "图书馆活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "9112"
+      },
+      "label": "档案馆活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "912"
+      },
+      "label": "博物馆、收藏、历史遗址及纪念碑活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9121"
+      },
+      "label": "博物馆和收藏活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9122"
+      },
+      "label": "历史遗址和纪念碑活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "913"
+      },
+      "label": "文化遗产的保护、修复及其他支持活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9130"
+      },
+      "label": "文化遗产的保护、修复及其他支持活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "914"
+      },
+      "label": "植物园、动物园和自然保护区活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9141"
+      },
+      "label": "植物园和动物园活动"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "9142"
+      },
+      "label": "自然保护区活动"
+    },
+    {
+      "key": "category[18]/category[2]",
+      "assertion": {
+        "id": "92"
+      },
+      "label": "赌博和博彩活动"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]",
+      "assertion": {
+        "id": "920"
+      },
+      "label": "赌博和博彩活动"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9200"
+      },
+      "label": "赌博和博彩活动"
+    },
+    {
+      "key": "category[18]/category[3]",
+      "assertion": {
+        "id": "93"
+      },
+      "label": "体育活动、娱乐及休闲活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]",
+      "assertion": {
+        "id": "931"
+      },
+      "label": "体育活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "9311"
+      },
+      "label": "体育设施的运营"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "9312"
+      },
+      "label": "体育俱乐部活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "9319"
+      },
+      "label": "其他体育活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]",
+      "assertion": {
+        "id": "932"
+      },
+      "label": "娱乐和休闲活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "9321"
+      },
+      "label": "游乐公园和主题公园活动"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "9329"
+      },
+      "label": "其他娱乐和休闲活动"
+    },
+    {
+      "key": "category[19]",
+      "assertion": {
+        "id": "T"
+      },
+      "label": "其他服务活动"
+    },
+    {
+      "key": "category[19]/category[0]",
+      "assertion": {
+        "id": "94"
+      },
+      "label": "会员组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "941"
+      },
+      "label": "企业、雇主和专业会员组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9411"
+      },
+      "label": "企业和雇主会员组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9412"
+      },
+      "label": "专业会员组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]",
+      "assertion": {
+        "id": "942"
+      },
+      "label": "工会活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9420"
+      },
+      "label": "工会活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]",
+      "assertion": {
+        "id": "949"
+      },
+      "label": "其他会员组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9491"
+      },
+      "label": "宗教组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9492"
+      },
+      "label": "政治组织活动"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "9499"
+      },
+      "label": "未另分类的其他会员组织活动"
+    },
+    {
+      "key": "category[19]/category[1]",
+      "assertion": {
+        "id": "95"
+      },
+      "label": "计算机、个人及家庭用品、机动车辆和摩托车的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "951"
+      },
+      "label": "计算机及通信设备的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9510"
+      },
+      "label": "计算机及通信设备的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]",
+      "assertion": {
+        "id": "952"
+      },
+      "label": "个人及家庭用品的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9521"
+      },
+      "label": "消费电子产品的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9522"
+      },
+      "label": "家用电器及家居和园艺设备的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "9523"
+      },
+      "label": "鞋类及皮革制品的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "9524"
+      },
+      "label": "家具及家居陈设的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "9529"
+      },
+      "label": "其他个人及家庭用品的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]",
+      "assertion": {
+        "id": "953"
+      },
+      "label": "机动车辆及摩托车的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9531"
+      },
+      "label": "机动车辆的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "9532"
+      },
+      "label": "摩托车的维修和保养"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]",
+      "assertion": {
+        "id": "954"
+      },
+      "label": "为计算机、个人及家庭用品、机动车辆和摩托车维修和保养提供的中介服务活动"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9540"
+      },
+      "label": "为计算机、个人及家庭用品、机动车辆和摩托车维修和保养提供的中介服务活动"
+    },
+    {
+      "key": "category[19]/category[2]",
+      "assertion": {
+        "id": "96"
+      },
+      "label": "个人服务活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "961"
+      },
+      "label": "纺织品和毛皮制品的清洗和洗涤"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9610"
+      },
+      "label": "纺织品和毛皮制品的清洗和洗涤"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]",
+      "assertion": {
+        "id": "962"
+      },
+      "label": "美发、美容护理、日间水疗和类似活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "9621"
+      },
+      "label": "美发和理发活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "9622"
+      },
+      "label": "美容护理及其他美容服务活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "9623"
+      },
+      "label": "日间水疗、桑拿和蒸汽浴活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]",
+      "assertion": {
+        "id": "963"
+      },
+      "label": "殡葬及有关活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "9630"
+      },
+      "label": "殡葬及有关活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]",
+      "assertion": {
+        "id": "964"
+      },
+      "label": "个人服务的中介服务活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "9640"
+      },
+      "label": "个人服务的中介服务活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[4]",
+      "assertion": {
+        "id": "969"
+      },
+      "label": "未另分类的其他个人服务活动"
+    },
+    {
+      "key": "category[19]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "9690"
+      },
+      "label": "未另分类的其他个人服务活动"
+    },
+    {
+      "key": "category[20]",
+      "assertion": {
+        "id": "U"
+      },
+      "label": "作为雇主的家庭活动；家庭自用的未加区分的货物和服务生产活动"
+    },
+    {
+      "key": "category[20]/category[0]",
+      "assertion": {
+        "id": "97"
+      },
+      "label": "家庭作为家政人员雇主的活动"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "970"
+      },
+      "label": "家庭作为家政人员雇主的活动"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9700"
+      },
+      "label": "家庭作为家政人员雇主的活动"
+    },
+    {
+      "key": "category[20]/category[1]",
+      "assertion": {
+        "id": "98"
+      },
+      "label": "私人家庭自用的未加区分的货物和服务生产活动"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "981"
+      },
+      "label": "私人家庭自用的未加区分的货物生产活动"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9810"
+      },
+      "label": "私人家庭自用的未加区分的货物生产活动"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]",
+      "assertion": {
+        "id": "982"
+      },
+      "label": "私人家庭自用的未加区分的服务生产活动"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9820"
+      },
+      "label": "私人家庭自用的未加区分的服务生产活动"
+    },
+    {
+      "key": "category[21]",
+      "assertion": {
+        "id": "V"
+      },
+      "label": "国际组织和机构的活动"
+    },
+    {
+      "key": "category[21]/category[0]",
+      "assertion": {
+        "id": "99"
+      },
+      "label": "国际组织和机构的活动"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "990"
+      },
+      "label": "国际组织和机构的活动"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9900"
+      },
+      "label": "国际组织和机构的活动"
+    }
+  ]
+}

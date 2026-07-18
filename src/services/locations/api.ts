@@ -42,47 +42,23 @@ function mergeLocationNodes(
   baseNodes: ILCDLocationNode[],
   localizedNodes: ILCDLocationNode[],
 ): ILCDLocationNode[] {
-  const localizedByValue = new Map<string, ILCDLocationNode>();
-  const localizedWithoutValue: ILCDLocationNode[] = [];
-
-  for (const node of localizedNodes) {
-    const value = node['@value'];
-    if (typeof value === 'string') {
-      localizedByValue.set(value, node);
-    } else {
-      localizedWithoutValue.push(node);
-    }
+  if (localizedNodes.length !== baseNodes.length) {
+    throw new Error('Localized locations do not exactly cover the base structure.');
   }
 
-  const baseValues = new Set<string>();
-  const mergedNodes = baseNodes.map((baseNode) => {
+  return baseNodes.map((baseNode, index) => {
+    const localizedNode = localizedNodes[index];
     const value = baseNode['@value'];
-    if (typeof value !== 'string') {
-      return baseNode;
-    }
-
-    baseValues.add(value);
-    const localizedNode = localizedByValue.get(value);
-    return localizedNode ? { ...baseNode, ...localizedNode, '@value': value } : baseNode;
-  });
-
-  const appendedLocalizedValues = new Set<string>();
-  for (const localizedNode of localizedNodes) {
-    const value = localizedNode['@value'];
     if (
-      typeof value === 'string' &&
-      !baseValues.has(value) &&
-      !appendedLocalizedValues.has(value)
+      typeof value !== 'string' ||
+      localizedNode?.['@value'] !== value ||
+      typeof localizedNode?.['#text'] !== 'string' ||
+      localizedNode['#text'].trim() === ''
     ) {
-      const mergedNode = localizedByValue.get(value);
-      if (mergedNode) {
-        mergedNodes.push(mergedNode);
-        appendedLocalizedValues.add(value);
-      }
+      throw new Error(`Localized location structure differs from the base at index ${index}.`);
     }
-  }
-
-  return [...mergedNodes, ...localizedWithoutValue];
+    return { ...baseNode, ...localizedNode, '@value': value };
+  });
 }
 
 export async function getILCDLocationEntries(
@@ -98,17 +74,7 @@ export async function getILCDLocationEntries(
   const localizedNodes =
     resolution.localizedAsset.fileName === resolution.baseAsset.fileName
       ? baseNodes
-      : await (async () => {
-          try {
-            return await getLocationNodes(resolution.localizedAsset.fileName);
-          } catch (error) {
-            console.warn(
-              `[i18n-reference-resource] Failed to load localized location asset ${resolution.localizedAsset.fileName} for ${lang}; falling back to ${resolution.baseAsset.fileName}.`,
-              error,
-            );
-            return baseNodes;
-          }
-        })();
+      : await getLocationNodes(resolution.localizedAsset.fileName);
   const nodes =
     localizedNodes === baseNodes ? baseNodes : mergeLocationNodes(baseNodes, localizedNodes);
 

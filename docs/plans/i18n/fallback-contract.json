@@ -221,42 +221,42 @@
           "resourceId": "cpc",
           "resolvedLocale": "zh",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "isic",
           "resolvedLocale": "zh",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-classification",
           "resolvedLocale": "zh",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-flow-categorization",
           "resolvedLocale": "zh",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "CPC, ISIC, ILCD classification, and ILCD flow categorization zh assets",
+      "urlOrPayload": "project-reviewed native zh overlays for CPC, ISIC, ILCD classification, and ILCD flow categorization",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not describe legacy-unverified assets as official or project-reviewed.",
+      "forbiddenBehavior": "Do not describe project-reviewed translations as official publisher translations.",
       "test": "reference-resource manifest and resolver"
     },
     {
@@ -267,42 +267,42 @@
           "resourceId": "cpc",
           "resolvedLocale": "en",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "official",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "isic",
           "resolvedLocale": "en",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "official",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-classification",
           "resolvedLocale": "en",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "official",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-flow-categorization",
           "resolvedLocale": "en",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "CPC, ISIC, ILCD classification, and ILCD flow categorization en assets",
+      "urlOrPayload": "official native en CPC, ISIC, and ILCD classification bases plus the project-reviewed extension-bearing ILCD flow categorization",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not describe legacy-unverified assets as official or project-reviewed.",
+      "forbiddenBehavior": "Do not describe the extension-bearing ILCD flow categorization as wholly official.",
       "test": "reference-resource manifest and resolver"
     },
     {
@@ -311,45 +311,45 @@
       "resources": [
         {
           "resourceId": "cpc",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "de",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "isic",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "de",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-classification",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "de",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-flow-categorization",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "de",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "development-only English base for CPC, ISIC, ILCD classification, and ILCD flow categorization",
+      "urlOrPayload": "project-reviewed native de overlays for CPC, ISIC, ILCD classification, and ILCD flow categorization",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not treat the development base as German localization or an activation-complete state.",
-      "test": "reference-resource resolver fallback diagnostic"
+      "forbiddenBehavior": "Do not describe project-reviewed translations as official publisher translations.",
+      "test": "reference-resource manifest and resolver"
     },
     {
       "surface": "classification-reference-data",
@@ -357,45 +357,45 @@
       "resources": [
         {
           "resourceId": "cpc",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "fr",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "isic",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "fr",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-classification",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "fr",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         },
         {
           "resourceId": "ilcd-flow-categorization",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "fr",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "development-only English base for CPC, ISIC, ILCD classification, and ILCD flow categorization",
+      "urlOrPayload": "project-reviewed native fr overlays for CPC, ISIC, ILCD classification, and ILCD flow categorization",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not treat the development base as French localization or an activation-complete state.",
-      "test": "reference-resource resolver fallback diagnostic"
+      "forbiddenBehavior": "Do not describe project-reviewed translations as official publisher translations.",
+      "test": "reference-resource manifest and resolver"
     },
     {
       "surface": "location-reference-data",
@@ -405,15 +405,15 @@
           "resourceId": "ilcd-locations",
           "resolvedLocale": "zh",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "ILCD locations zh asset",
+      "urlOrPayload": "project-reviewed native zh ILCD locations overlay with bound official secondary terminology",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not describe a legacy-unverified asset as official or project-reviewed.",
+      "forbiddenBehavior": "Do not describe the composite project catalog as an official ILCD translation.",
       "test": "reference-resource manifest and resolver"
     },
     {
@@ -424,15 +424,15 @@
           "resourceId": "ilcd-locations",
           "resolvedLocale": "en",
           "capabilityStatus": "native",
-          "deliveryStatus": "legacy-unverified",
+          "deliveryStatus": "project-reviewed",
           "usedFallback": false,
           "disclosure": "none",
-          "ownerIssue": "#634"
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "ILCD locations en asset",
+      "urlOrPayload": "project-reviewed native en composite ILCD locations catalog",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not describe a legacy-unverified asset as official or project-reviewed.",
+      "forbiddenBehavior": "Do not describe the composite project catalog as wholly official.",
       "test": "reference-resource manifest and resolver"
     },
     {
@@ -441,18 +441,18 @@
       "resources": [
         {
           "resourceId": "ilcd-locations",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "de",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "development-only English base for ILCD locations",
+      "urlOrPayload": "project-reviewed native de ILCD locations overlay with bound official secondary terminology",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not treat the development base as German localization or an activation-complete state.",
-      "test": "reference-resource resolver fallback diagnostic"
+      "forbiddenBehavior": "Do not describe the composite project catalog as an official ILCD translation.",
+      "test": "reference-resource manifest and resolver"
     },
     {
       "surface": "location-reference-data",
@@ -460,18 +460,18 @@
       "resources": [
         {
           "resourceId": "ilcd-locations",
-          "resolvedLocale": "en",
-          "capabilityStatus": "development-base",
-          "deliveryStatus": null,
-          "usedFallback": true,
-          "disclosure": "diagnostic",
-          "ownerIssue": "#634"
+          "resolvedLocale": "fr",
+          "capabilityStatus": "native",
+          "deliveryStatus": "project-reviewed",
+          "usedFallback": false,
+          "disclosure": "none",
+          "ownerIssue": null
         }
       ],
-      "urlOrPayload": "development-only English base for ILCD locations",
+      "urlOrPayload": "project-reviewed native fr ILCD locations overlay with bound official secondary terminology",
       "userDisclosure": false,
-      "forbiddenBehavior": "Do not treat the development base as French localization or an activation-complete state.",
-      "test": "reference-resource resolver fallback diagnostic"
+      "forbiddenBehavior": "Do not describe the composite project catalog as an official ILCD translation.",
+      "test": "reference-resource manifest and resolver"
     },
     {
       "surface": "service-errors",

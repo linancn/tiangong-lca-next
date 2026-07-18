@@ -33,12 +33,15 @@ const PLATFORM_MODULES = {
   capability: 'src/services/general/localeCapabilities.ts',
   reference: 'src/services/referenceResources/manifest.ts',
 };
+const GENERATED_REFERENCE_RESOURCE_MANIFEST =
+  'src/services/referenceResources/generatedManifest.ts';
 
 const SOURCE_OF_TRUTH_PATHS = new Set([
   PLATFORM_MODULES.locale,
   PLATFORM_MODULES.content,
   PLATFORM_MODULES.capability,
   PLATFORM_MODULES.reference,
+  GENERATED_REFERENCE_RESOURCE_MANIFEST,
 ]);
 
 const EQUALITY_OPERATORS = new Set([

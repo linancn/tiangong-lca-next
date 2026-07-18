@@ -125,6 +125,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - deterministic locale audit: `npm run i18n:audit`
 - language registry/Manifest contract audit: `npm run i18n:platform:audit`
 - business-language hardcoding audit: `npm run i18n:hardcoding:audit`
+- governed classification/location asset check: `npm run reference-data:check`; regenerate only through `npm run reference-data:write`; production publication must also pass `npm run reference-data:production:check`
 - locale-specific context/quality/activation proof: `npm run i18n:locale:activation:check -- --locale <canonical-locale>`
 - all-active-locale activation proof: `npm run i18n:locale:all:check`
 - production-readiness gate (expected to fail while owned blockers remain): `npm run i18n:locale:all:production:check`

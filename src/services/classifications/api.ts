@@ -161,20 +161,7 @@ async function getLocalizedClassificationNodes(
     resolution.localizedAsset.fileName === resolution.baseAsset.fileName &&
     localizedDataType === baseDataType
       ? baseNodes
-      : await (async () => {
-          try {
-            return await getClassificationNodesByType(
-              resolution.localizedAsset.fileName,
-              localizedDataType,
-            );
-          } catch (error) {
-            console.warn(
-              `[i18n-reference-resource] Failed to load localized classification asset ${resolution.localizedAsset.fileName} for ${language}; falling back to ${resolution.baseAsset.fileName}.`,
-              error,
-            );
-            return baseNodes;
-          }
-        })();
+      : await getClassificationNodesByType(resolution.localizedAsset.fileName, localizedDataType);
 
   return { baseNodes, localizedNodes };
 }
@@ -225,17 +212,7 @@ export async function getILCDFlowCategorization(
     const localizedNodes =
       resolution.localizedAsset.fileName === resolution.baseAsset.fileName
         ? baseNodes
-        : await (async () => {
-            try {
-              return await getFlowCategorizationNodes(resolution.localizedAsset.fileName);
-            } catch (error) {
-              console.warn(
-                `[i18n-reference-resource] Failed to load localized flow categorization asset ${resolution.localizedAsset.fileName} for ${lang}; falling back to ${resolution.baseAsset.fileName}.`,
-                error,
-              );
-              return baseNodes;
-            }
-          })();
+        : await getFlowCategorizationNodes(resolution.localizedAsset.fileName);
     const localizedData: Classification[] =
       localizedNodes === baseNodes
         ? genClass(baseNodes)
@@ -264,6 +241,6 @@ export async function getILCDFlowCategorizationAll(lang: string) {
       category: result.data,
       categoryElementaryFlow: resultElementaryFlow.data,
     },
-    success: true,
+    success: result.success && resultElementaryFlow.success,
   });
 }

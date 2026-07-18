@@ -4,7 +4,10 @@ import {
   LOCALE_CAPABILITY_MATRIX,
 } from '@/services/general/localeCapabilities';
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
-import { REQUIRED_REFERENCE_RESOURCE_IDS } from '@/services/referenceResources/manifest';
+import {
+  REFERENCE_RESOURCE_MANIFEST,
+  REQUIRED_REFERENCE_RESOURCE_IDS,
+} from '@/services/referenceResources/manifest';
 
 describe('localeCapabilities', () => {
   it('derives one complete capability row for every registered app locale', () => {
@@ -20,7 +23,7 @@ describe('localeCapabilities', () => {
     }
   });
 
-  it('exposes development reference fallbacks without claiming delivery completion', () => {
+  it('exposes each reference status from the resource manifest', () => {
     const german = getLocaleCapability('de-DE');
     expect(german.contentLanguage).toBe('de');
     expect(german.serviceQuery).toEqual({
@@ -29,21 +32,29 @@ describe('localeCapabilities', () => {
       disclosure: 'diagnostic',
     });
     expect(german.referenceResources).toHaveLength(REQUIRED_REFERENCE_RESOURCE_IDS.length);
-    expect(german.referenceResources.every(({ status }) => status === 'development-base')).toBe(
-      true,
-    );
-    expect(german.referenceResources.every(({ ownerIssue }) => ownerIssue === '#634')).toBe(true);
+    for (const capability of german.referenceResources) {
+      const resource = REFERENCE_RESOURCE_MANIFEST.find(
+        ({ resourceId }) => resourceId === capability.resourceId,
+      )!;
+      expect(capability.status).toBe(resource.localizations.de.status);
+    }
+    expect(
+      german.referenceResources
+        .filter(({ status }) => status !== 'native')
+        .every(({ ownerIssue }) => ownerIssue === '#634'),
+    ).toBe(true);
   });
 
-  it('keeps legacy native-resource verification debt owned by the localization issue', () => {
+  it('derives native delivery evidence from the localization manifest', () => {
     const english = getLocaleCapability('en-US');
 
-    expect(
-      english.referenceResources.every(
-        ({ deliveryStatus, ownerIssue }) =>
-          deliveryStatus === 'legacy-unverified' && ownerIssue === '#634',
-      ),
-    ).toBe(true);
+    for (const capability of english.referenceResources) {
+      const resource = REFERENCE_RESOURCE_MANIFEST.find(
+        ({ resourceId }) => resourceId === capability.resourceId,
+      )!;
+      expect(capability.status).toBe('native');
+      expect(capability.deliveryStatus).toBe(resource.localizations.en.deliveryStatus);
+    }
   });
 
   it('derives unsupported authoring and completed native resources from owner registries', () => {
@@ -94,6 +105,58 @@ describe('localeCapabilities', () => {
         ({ deliveryStatus, ownerIssue }) =>
           deliveryStatus === 'official' && ownerIssue === undefined,
       ),
+    ).toBe(true);
+  });
+
+  it('keeps fallback and unreviewed native reference ownership visible', () => {
+    let isolatedCapabilities: typeof import('@/services/general/localeCapabilities') | undefined;
+
+    jest.doMock('@/services/referenceResources/resolver', () => ({
+      resolveReferenceResource: (resourceId: string, requestedLanguage: string) =>
+        resourceId === 'cpc'
+          ? {
+              status: 'development-base',
+              resourceId,
+              requestedLanguage,
+              resolvedLanguage: 'en',
+              usedFallback: true,
+              ownerIssue: '#634',
+              diagnostic: 'Development fallback fixture.',
+            }
+          : {
+              status: 'native',
+              resourceId,
+              requestedLanguage,
+              resolvedLanguage: requestedLanguage,
+              usedFallback: false,
+              deliveryStatus: 'legacy-unverified',
+            },
+    }));
+
+    try {
+      jest.isolateModules(() => {
+        isolatedCapabilities = require('@/services/general/localeCapabilities');
+      });
+    } finally {
+      jest.dontMock('@/services/referenceResources/resolver');
+      jest.resetModules();
+    }
+
+    const english = isolatedCapabilities?.getLocaleCapability('en-US');
+    expect(english?.referenceResources.find(({ resourceId }) => resourceId === 'cpc')).toEqual(
+      expect.objectContaining({
+        status: 'development-base',
+        deliveryStatus: undefined,
+        ownerIssue: '#634',
+      }),
+    );
+    expect(
+      english?.referenceResources
+        .filter(({ resourceId }) => resourceId !== 'cpc')
+        .every(
+          ({ deliveryStatus, ownerIssue }) =>
+            deliveryStatus === 'legacy-unverified' && ownerIssue === '#634',
+        ),
     ).toBe(true);
   });
 

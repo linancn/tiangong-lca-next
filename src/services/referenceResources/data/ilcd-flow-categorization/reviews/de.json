@@ -1,0 +1,509 @@
+{
+  "locale": "de",
+  "policyVersion": "reference-project-review-v1",
+  "records": [
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen",
+      "key": "category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in Wasser",
+      "key": "category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in Süßwasser",
+      "key": "category[0]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in Meerwasser",
+      "key": "category[0]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in Wasser, nicht spezifiziert",
+      "key": "category[0]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in Wasser, nicht spezifiziert (langfristig)",
+      "key": "category[0]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "candidateLabel": "Emissionen in Boden",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in den Boden",
+      "key": "category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "candidateLabel": "Emissionen in landwirtschaftliche Böden",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in landwirtschaftlich genutzte Böden",
+      "key": "category[0]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "candidateLabel": "Emissionen in nichtlandwirtschaftliche Böden",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in nicht landwirtschaftlich genutzte Böden",
+      "key": "category[0]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "candidateLabel": "Emissionen in Boden, nicht spezifiziert",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in den Boden, nicht spezifiziert",
+      "key": "category[0]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "candidateLabel": "Emissionen in Boden, nicht spezifiziert (langfristig)",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in den Boden, nicht spezifiziert (langfristig)",
+      "key": "category[0]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "candidateLabel": "Emissionen in Luft",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in die Luft",
+      "key": "category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "candidateLabel": "Emissionen in städtische Luft in Bodennähe",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in bodennahe städtische Luft",
+      "key": "category[0]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Emissionen in nichtstädtische Luft oder aus hohen Schornsteinen",
+      "key": "category[0]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "candidateLabel": "Emissionen in untere Stratosphäre und obere Troposphäre",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in die untere Stratosphäre und die obere Troposphäre",
+      "key": "category[0]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "candidateLabel": "Emissionen in Luft, nicht spezifiziert",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in die Luft, nicht spezifiziert",
+      "key": "category[0]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "candidateLabel": "Emissionen in Luft, nicht spezifiziert (langfristig)",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in die Luft, nicht spezifiziert (langfristig)",
+      "key": "category[0]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "candidateLabel": "Emissionen in Innenraumluft",
+      "decision": "corrected",
+      "finalLabel": "Emissionen in die Innenraumluft",
+      "key": "category[0]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ressourcen",
+      "key": "category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ressourcen aus dem Boden",
+      "key": "category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare materielle Ressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Elementressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Energieressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Elementressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Energieressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare materielle Ressourcen aus dem Boden",
+      "key": "category[1]/category[0]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Ressourcen aus dem Boden, nicht spezifiziert",
+      "key": "category[1]/category[0]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.1.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Ressourcen aus dem Boden, nicht spezifiziert",
+      "key": "category[1]/category[0]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ressourcen aus Wasser",
+      "key": "category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare materielle Ressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Elementressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Energieressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Elementressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Energieressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare materielle Ressourcen aus Wasser",
+      "key": "category[1]/category[1]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Ressourcen aus Wasser, nicht spezifiziert",
+      "key": "category[1]/category[1]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.2.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Ressourcen aus Wasser, nicht spezifiziert",
+      "key": "category[1]/category[1]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ressourcen aus Luft",
+      "key": "category[1]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare materielle Ressourcen aus Luft",
+      "key": "category[1]/category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Elementressourcen aus Luft",
+      "key": "category[1]/category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Energieressourcen aus Luft",
+      "key": "category[1]/category[2]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Elementressourcen aus Luft",
+      "key": "category[1]/category[2]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Energieressourcen aus Luft",
+      "key": "category[1]/category[2]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.6"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare materielle Ressourcen aus Luft",
+      "key": "category[1]/category[2]/category[5]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.7"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Ressourcen aus Luft, nicht spezifiziert",
+      "key": "category[1]/category[2]/category[6]"
+    },
+    {
+      "assertion": {
+        "id": "2.3.8"
+      },
+      "decision": "accepted",
+      "finalLabel": "Nicht erneuerbare Ressourcen aus Luft, nicht spezifiziert",
+      "key": "category[1]/category[2]/category[7]"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Ressourcen aus der Biosphäre",
+      "key": "category[1]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.1"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Elementressourcen aus der Biosphäre",
+      "key": "category[1]/category[3]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.2"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Energieressourcen aus der Biosphäre",
+      "key": "category[1]/category[3]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare materielle Ressourcen aus der Biosphäre",
+      "key": "category[1]/category[3]/category[2]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.4"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare genetische Ressourcen aus der Biosphäre",
+      "key": "category[1]/category[3]/category[3]"
+    },
+    {
+      "assertion": {
+        "id": "2.4.5"
+      },
+      "decision": "accepted",
+      "finalLabel": "Erneuerbare Ressourcen aus der Biosphäre, nicht spezifiziert",
+      "key": "category[1]/category[3]/category[4]"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "decision": "accepted",
+      "finalLabel": "Landnutzung",
+      "key": "category[2]"
+    },
+    {
+      "assertion": {
+        "id": "3.1"
+      },
+      "candidateLabel": "Landbelegung",
+      "decision": "corrected",
+      "finalLabel": "Flächenbelegung",
+      "key": "category[2]/category[0]"
+    },
+    {
+      "assertion": {
+        "id": "3.2"
+      },
+      "candidateLabel": "Landumwandlung",
+      "decision": "corrected",
+      "finalLabel": "Flächenumwandlung",
+      "key": "category[2]/category[1]"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "candidateLabel": "Andere elementare Flüsse",
+      "decision": "corrected",
+      "finalLabel": "Sonstige Elementarflüsse",
+      "key": "category[3]"
+    }
+  ],
+  "resourceId": "ilcd-flow-categorization",
+  "reviewKind": "project-translation",
+  "reviewRun": {
+    "correctionsDigest": {
+      "algorithm": "sha256",
+      "identityCount": 14,
+      "scope": "ordered-independent-review-corrections",
+      "value": "a708b036924daf4898dfaddab005f91b3d5a27b66b3635d7570c6e0a810e38d7"
+    },
+    "finalDigest": {
+      "algorithm": "sha256",
+      "identityCount": 56,
+      "scope": "ordered-project-reviewed-final-labels",
+      "value": "dcdb5ba69e9df1af298996d9e8cb229712e0a2b7686cae832cc4bd3915a3d047"
+    },
+    "findingsDigest": {
+      "algorithm": "sha256",
+      "identityCount": 56,
+      "scope": "ordered-independent-review-findings",
+      "value": "6c6eab3ba4d7f3cfef8718dab310030132acb81948b9bb2f6ef42133ddcfa24f"
+    },
+    "inputCandidateDigest": {
+      "algorithm": "sha256",
+      "identityCount": 56,
+      "scope": "ordered-translation-candidate-labels",
+      "value": "0235100ce2229c01d7afa9c8b68ecf218a39c8f57bcf460662fa654d48322c65"
+    },
+    "model": "gpt-5.6-sol",
+    "runId": "reference-review/ilcd-flow-categorization/de/8212526b0354f85e2ac2d60487709352c260af625ac3a55720b313f7ad2bf2fc"
+  },
+  "schemaVersion": 2,
+  "translationRun": {
+    "model": "gpt-5.6-terra",
+    "outputCandidateDigest": {
+      "algorithm": "sha256",
+      "identityCount": 56,
+      "scope": "ordered-translation-candidate-labels",
+      "value": "0235100ce2229c01d7afa9c8b68ecf218a39c8f57bcf460662fa654d48322c65"
+    },
+    "runId": "reference-translation/ilcd-flow-categorization/de/c21c7392e001256f729791bb6c5fd1ee13d957d947fa4298857d85d3aee899b7"
+  }
+}
