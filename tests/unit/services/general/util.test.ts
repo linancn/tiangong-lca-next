@@ -23,7 +23,6 @@ import {
   convertToUTCISOString,
   formatDateTime,
   genClassIdList,
-  genClassificationZH,
   genClassJsonZH,
   genClassStr,
   genLocalizedClassification,
@@ -2092,8 +2091,11 @@ describe('General Utility Functions', () => {
     it('keeps the deprecated Chinese wrapper behavior aligned with the localized helper', () => {
       const classifications = [{ '@level': '0', '#text': 'Category A' }];
       const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
+      const legacyGenClassification = (
+        jest.requireActual('@/services/general/util') as Record<string, (...args: any[]) => unknown>
+      )['genClassificationZH'];
 
-      expect(genClassificationZH(classifications, categoryData)).toEqual([
+      expect(legacyGenClassification(classifications, categoryData)).toEqual([
         { '@level': '0', '#text': '分类 A' },
       ]);
     });

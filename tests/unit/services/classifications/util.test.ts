@@ -26,7 +26,6 @@ import {
   cacheAndDecompressClassificationFile,
   genClass,
   genClassWithLocalizedLabels,
-  genClassZH,
   getCachedClassificationFileData,
   getCachedClassificationFileList,
   getCachedOrFetchClassificationFileData,
@@ -95,8 +94,15 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   });
 
   it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
+    const legacyGenClass = (
+      jest.requireActual('@/services/classifications/util') as Record<
+        string,
+        (...args: any[]) => unknown
+      >
+    )['genClassZH'];
+
     expect(
-      genClassZH([{ '@id': 'root', '@name': 'Root' }], [{ '@id': 'root', '@name': '根' }]),
+      legacyGenClass([{ '@id': 'root', '@name': 'Root' }], [{ '@id': 'root', '@name': '根' }]),
     ).toEqual([{ id: 'root', value: 'Root', label: '根', children: [] }]);
   });
 
