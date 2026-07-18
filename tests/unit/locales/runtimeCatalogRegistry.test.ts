@@ -23,4 +23,39 @@ describe('runtimeCatalogRegistry', () => {
       ).not.toBe('');
     },
   );
+
+  it('uses the reviewed native snapshot when a live locale catalog is damaged', () => {
+    const germanValidatorCatalog = getValidatorMessageCatalog('de-DE') as Record<
+      string,
+      string | undefined
+    >;
+    const messageId = 'validator.langValidation.root';
+    const reviewedMessage = germanValidatorCatalog[messageId];
+
+    germanValidatorCatalog[messageId] = undefined;
+    try {
+      expect(getValidatorMessage('de-DE', messageId)).toBe(reviewedMessage);
+    } finally {
+      germanValidatorCatalog[messageId] = reviewedMessage;
+    }
+  });
+
+  it('falls back to the canonical catalog only for an invalid runtime locale', () => {
+    const invalidLocale = 'es-ES' as 'en-US';
+
+    expect(getTeamMessageCatalog(invalidLocale)).toBe(getTeamMessageCatalog('en-US'));
+    expect(getValidatorMessageCatalog(invalidLocale)).toBe(getValidatorMessageCatalog('en-US'));
+    expect(getTeamMessage(invalidLocale, 'teams.modal.noTeam.title')).toBe(
+      getTeamMessage('en-US', 'teams.modal.noTeam.title'),
+    );
+  });
+
+  it('fails closed when a required message has no reviewed native value', () => {
+    expect(() => getTeamMessage('en-US', 'teams.missing.fixture')).toThrow(
+      'Missing required team runtime message: teams.missing.fixture',
+    );
+    expect(() => getValidatorMessage('fr-FR', 'validator.missing.fixture')).toThrow(
+      'Missing required validator runtime message: validator.missing.fixture',
+    );
+  });
 });

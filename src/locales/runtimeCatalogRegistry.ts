@@ -26,22 +26,30 @@ const VALIDATOR_CATALOGS = {
   'fr-FR': frValidatorMessages,
 } as const satisfies Record<SupportedAppLocale, RuntimeMessageCatalog>;
 
+const snapshotRuntimeCatalogs = (catalogs: Record<SupportedAppLocale, RuntimeMessageCatalog>): Record<SupportedAppLocale, RuntimeMessageCatalog> => Object.fromEntries(Object.entries(catalogs).map(([locale, catalog]) => [locale, Object.freeze({ ...catalog })])) as Record<SupportedAppLocale, RuntimeMessageCatalog>;
+
+// Preserve the reviewed native catalog as the runtime fallback. This avoids a
+// silent cross-language fallback if a mutable catalog object is damaged after
+// startup, while a message absent from the reviewed catalog still fails closed.
+const REVIEWED_TEAM_CATALOGS = snapshotRuntimeCatalogs(TEAM_CATALOGS);
+const REVIEWED_VALIDATOR_CATALOGS = snapshotRuntimeCatalogs(VALIDATOR_CATALOGS);
+
 export const getTeamMessageCatalog = (locale: SupportedAppLocale): RuntimeMessageCatalog => TEAM_CATALOGS[locale] ?? TEAM_CATALOGS[CANONICAL_SOURCE_APP_LOCALE];
 
 export const getValidatorMessageCatalog = (locale: SupportedAppLocale): RuntimeMessageCatalog => VALIDATOR_CATALOGS[locale] ?? VALIDATOR_CATALOGS[CANONICAL_SOURCE_APP_LOCALE];
 
-export const getTeamMessage = (locale: SupportedAppLocale, messageId: string): string => {
-  const message = getTeamMessageCatalog(locale)[messageId] ?? getTeamMessageCatalog(CANONICAL_SOURCE_APP_LOCALE)[messageId];
+const getRuntimeMessage = (catalogs: Record<SupportedAppLocale, RuntimeMessageCatalog>, reviewedCatalogs: Record<SupportedAppLocale, RuntimeMessageCatalog>, locale: SupportedAppLocale, messageId: string, catalogName: 'team' | 'validator'): string => {
+  const catalog = catalogs[locale] ?? catalogs[CANONICAL_SOURCE_APP_LOCALE];
+  const reviewedCatalog = reviewedCatalogs[locale] ?? reviewedCatalogs[CANONICAL_SOURCE_APP_LOCALE];
+  const message = catalog[messageId] ?? reviewedCatalog[messageId];
   if (!message) {
-    throw new Error(`Missing required team runtime message: ${messageId}`);
+    throw new Error(`Missing required ${catalogName} runtime message: ${messageId}`);
   }
   return message;
 };
 
+export const getTeamMessage = (locale: SupportedAppLocale, messageId: string): string => getRuntimeMessage(TEAM_CATALOGS, REVIEWED_TEAM_CATALOGS, locale, messageId, 'team');
+
 export const getValidatorMessage = (locale: SupportedAppLocale, messageId: string): string => {
-  const message = getValidatorMessageCatalog(locale)[messageId] ?? getValidatorMessageCatalog(CANONICAL_SOURCE_APP_LOCALE)[messageId];
-  if (!message) {
-    throw new Error(`Missing required validator runtime message: ${messageId}`);
-  }
-  return message;
+  return getRuntimeMessage(VALIDATOR_CATALOGS, REVIEWED_VALIDATOR_CATALOGS, locale, messageId, 'validator');
 };

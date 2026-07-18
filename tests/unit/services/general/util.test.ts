@@ -1334,7 +1334,7 @@ describe('General Utility Functions', () => {
       expect(message).toBe('Save failed, the following fields are missing English: (root).');
     });
 
-    it('should fall back to built-in English templates when validator locale messages are missing', () => {
+    it('should recover from the reviewed English snapshot when live validator messages are missing', () => {
       const mutableEnMessages = enValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableEnMessages['validator.langValidation.missingEnglish'],
@@ -1384,7 +1384,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should fall back to the Chinese root label when the locale root message is missing', () => {
+    it('should recover the Chinese root label from the reviewed native snapshot', () => {
       const mutableZhMessages = zhValidatorMessages as Record<string, string | undefined>;
       const originalRoot = mutableZhMessages['validator.langValidation.root'];
 
@@ -1403,7 +1403,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should keep German fallback copy when validator locale messages are missing', () => {
+    it('should recover German copy from the reviewed native snapshot when live messages are missing', () => {
       const mutableDeMessages = deValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableDeMessages['validator.langValidation.missingEnglish'],
