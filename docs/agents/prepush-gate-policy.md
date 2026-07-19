@@ -26,8 +26,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Reviewed for Issue #635: kept the full gate unchanged and made every GitHub semantic E2E run credential-free/read-only; authenticated closure is local-operator-only.'
 ---
 

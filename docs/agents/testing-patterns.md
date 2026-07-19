@@ -23,8 +23,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the local-operator-only authenticated production-data pattern.'
 ---
 
@@ -109,6 +109,7 @@ Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - serve the candidate locally with `npm run start:main`; reject a non-loopback Playwright base URL even though the candidate uses the production backend configuration
+- keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
 - run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
 - keep every semantic E2E GitHub Actions event, including `workflow_dispatch`, credential-free and read-only; CI runs only three-browser public semantics/contract, while authenticated production writes are restricted to an explicitly authorized local operator session with `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in

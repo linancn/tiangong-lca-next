@@ -22,8 +22,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Reviewed for Issue #635 and corrected semantic E2E recovery for credential-free GitHub jobs, local operator authorization, and pre-delete row verification.'
 ---
 
@@ -54,6 +54,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
 | Playwright refuses `E2E_BASE_URL` | the browser target is not the local candidate frontend | use a loopback candidate URL and let `playwright.config.ts` start `npm run start:main`; never point the Playwright frontend target at production |
+| a public semantic browser job reports a flaky missing login control after cold startup | the global candidate probe passed, but a new page returned from `domcontentloaded` before its login route mounted | keep `failOnFlakyTests` enabled, make the page use the shared rendered-login readiness helper, move regenerable Umi/MFSU caches aside, and rerun the exact browser scope without a fixed sleep or global timeout increase |
 | authenticated semantic E2E skips or fails before setup | the explicitly authorized local operator session lacks runtime credentials, authenticated mode, one of the two write guards, verified-evidence opt-in, or the production target proof | keep every semantic E2E GitHub Actions run unauthenticated/read-only; run the full closure only in the authorized local session with `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, the exact one-process confirmation token, `E2E_WRITE_VERIFIED_EVIDENCE=true`, and the verified production backend target |
 | semantic evidence remains `failed` or activation rejects it | one of the 49 assertion IDs, registry locales, required browsers, route/test/source digests, or cleanup counts is incomplete or stale | inspect the first mismatched contract field, rerun only the affected browser scope, then run the complete authenticated closure; never edit evidence to simulate execution |
 | teardown refuses cleanup or reports a leaked `codex-e2e` process | the intent ledger is invalid, the production row UUID/owner/five-field registry marker closure does not match, or exact-ID deletion failed | preserve the ignored ledger; inspect only the exact UUID row, restore verifiable ownership/marker evidence or escalate, and never broaden deletion; do not create another record until `created=cleaned` and `leaked=0` |

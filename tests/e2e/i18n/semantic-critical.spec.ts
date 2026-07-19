@@ -7,11 +7,13 @@ import {
   findRouteAssertion,
   readStoredAppLocale,
 } from './contracts';
+import { waitForRenderedLoginControl } from './login-route-readiness';
 
 const loginAssertion = findRouteAssertion('/user/login');
 
 async function openLanguageMenu(page: Page) {
-  await page.getByTestId('login-language-frame').click();
+  const languageControl = await waitForRenderedLoginControl(page);
+  await languageControl.click();
   await expect(page.locator('.ant-dropdown-menu')).toBeVisible();
 }
 

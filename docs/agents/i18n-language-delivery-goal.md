@@ -55,8 +55,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Bound the reusable Goal to credential-free GitHub browser jobs, local-operator-only production data, pre-delete row attestation, and same-document locale race proof.'
 baselineObservedAt: 2026-07-18
 related:
@@ -795,7 +795,7 @@ tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。
 - 匿名登录流程和一个代表性已登录 shared Header browser smoke；匿名访问 `/`、`/welcome`、`/welcome?view=carbon-footprint` 及代表性未匹配/大小写变体路径时，必须逐项证明跳转 canonical login 且未挂载受保护内容；
 - 在有效会话下，对 Welcome overview 与 carbon-footprint guide 验证标题、正文、动作、步骤/schema、modal、媒体 loading/error/fallback、语言切换及带 query 刷新；
 - 对 route-view matrix 发现的其他静态页面执行同级 focused browser proof，不能只验证示例 URL；浏览器矩阵从 registry 遍历全部 active locale，而不是只测本次目标语言；
-- 以 `npm run test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；
+- 以 `npm run test:e2e:i18n` 执行 `playwright.config.ts` 与 `tests/e2e/i18n/**`：Chromium 覆盖全部 49 个稳定 assertion ID，Chromium/Firefox/WebKit 共同覆盖关键登录/selector、team authoring 和 process lifecycle 场景；除全局 candidate rendered probe 外，每个新登录 page/context 必须通过共享 route-ready marker 完成有界等待，保留 `failOnFlakyTests`，禁止 fixed sleep、全局 action timeout 放宽或重跑碰运气；
 - 所有 semantic E2E GitHub Actions event（包括 `workflow_dispatch`）只执行无生产凭据、无写入的三浏览器 public semantics/合同边界矩阵；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；

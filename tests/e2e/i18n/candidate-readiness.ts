@@ -1,6 +1,7 @@
 import type { Browser, BrowserContext, BrowserType } from '@playwright/test';
 
 import { assertCandidateFrontendTarget, PLAYWRIGHT_BROWSER_PROJECTS } from './contracts';
+import { waitForRenderedLoginControl } from './login-route-readiness';
 import { installVerifiedProductionReadOnlyGuard } from './production-backend-target';
 import {
   assertNoBlockedProductionRequests,
@@ -64,10 +65,7 @@ export async function waitForCandidateFrontendReady(
       timeout: timeoutMs,
       waitUntil: 'domcontentloaded',
     });
-    await page.getByTestId('login-language-frame').waitFor({
-      state: 'visible',
-      timeout: timeoutMs,
-    });
+    await waitForRenderedLoginControl(page, timeoutMs);
     dependencies.assertNoBlockedRequests(guard);
   } catch {
     throw new Error(
