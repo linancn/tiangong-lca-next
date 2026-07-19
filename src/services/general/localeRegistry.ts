@@ -1,4 +1,16 @@
+import type { Languages } from '@tiangong-lca/tidas-sdk';
+
 export type LocaleDirection = 'ltr' | 'rtl';
+
+export type LocaleContentCapability =
+  | {
+      status: 'native' | 'declared-fallback';
+      contentLanguage: Languages;
+    }
+  | {
+      status: 'unsupported';
+      contentLanguage?: never;
+    };
 
 export type LocaleDefinition = {
   canonicalLocale: string;
@@ -19,10 +31,19 @@ export type LocaleDefinition = {
     twoItemConjunction: string;
     manyItemConjunction: string;
   };
+  /**
+   * Explicit UI-locale to typed-content boundary. This is intentionally not
+   * inferred from `languageCode`: a future UI locale may use a declared
+   * content fallback or support no typed content at all.
+   */
+  contentCapability: LocaleContentCapability;
   assets: {
     welcomeTidas: {
       light: string;
       dark: string;
+      imageLocale: string;
+      documentationLocale: string;
+      documentationUrl: string;
     };
   };
   fallbacks: {
@@ -63,10 +84,17 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: '和',
       manyItemConjunction: '和',
     },
+    contentCapability: {
+      status: 'native',
+      contentLanguage: 'zh',
+    },
     assets: {
       welcomeTidas: {
         light: '/images/tidas/TIDAS-zh-CN.svg',
         dark: '/images/tidas/TIDAS-zh-CN-dark.svg',
+        imageLocale: 'zh-CN',
+        documentationLocale: 'zh-CN',
+        documentationUrl: 'https://tidas.tiangong.earth/docs/intro',
       },
     },
     fallbacks: {
@@ -98,10 +126,17 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: ' and ',
       manyItemConjunction: ', and ',
     },
+    contentCapability: {
+      status: 'native',
+      contentLanguage: 'en',
+    },
     assets: {
       welcomeTidas: {
         light: '/images/tidas/TIDAS-en.svg',
         dark: '/images/tidas/TIDAS-en-dark.svg',
+        imageLocale: 'en-US',
+        documentationLocale: 'en-US',
+        documentationUrl: 'https://tidas.tiangong.earth/en/docs/intro',
       },
     },
     fallbacks: {
@@ -133,10 +168,17 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: ' und ',
       manyItemConjunction: ' und ',
     },
+    contentCapability: {
+      status: 'native',
+      contentLanguage: 'de',
+    },
     assets: {
       welcomeTidas: {
         light: '/images/tidas/TIDAS-en.svg',
         dark: '/images/tidas/TIDAS-en-dark.svg',
+        imageLocale: 'en-US',
+        documentationLocale: 'en-US',
+        documentationUrl: 'https://tidas.tiangong.earth/en/docs/intro',
       },
     },
     fallbacks: {
@@ -168,10 +210,17 @@ export const LOCALE_REGISTRY = [
       twoItemConjunction: ' et ',
       manyItemConjunction: ' et ',
     },
+    contentCapability: {
+      status: 'native',
+      contentLanguage: 'fr',
+    },
     assets: {
       welcomeTidas: {
         light: '/images/tidas/TIDAS-en.svg',
         dark: '/images/tidas/TIDAS-en-dark.svg',
+        imageLocale: 'en-US',
+        documentationLocale: 'en-US',
+        documentationUrl: 'https://tidas.tiangong.earth/en/docs/intro',
       },
     },
     fallbacks: {
@@ -201,6 +250,16 @@ export function getLocaleDefinition(locale: SupportedAppLocale): LocaleRegistryE
 export function getLocaleDefinition(locale?: string | null): LocaleRegistryEntry | undefined;
 export function getLocaleDefinition(locale?: string | null): LocaleRegistryEntry | undefined {
   return LOCALE_REGISTRY.find(({ canonicalLocale }) => canonicalLocale === locale);
+}
+
+export function getLocaleContentCapability(locale: SupportedAppLocale): LocaleContentCapability;
+export function getLocaleContentCapability(
+  locale?: string | null,
+): LocaleContentCapability | undefined;
+export function getLocaleContentCapability(
+  locale?: string | null,
+): LocaleContentCapability | undefined {
+  return getLocaleDefinition(locale)?.contentCapability as LocaleContentCapability | undefined;
 }
 
 export function getLocaleDefinitionByLanguage(
@@ -280,6 +339,7 @@ export function hasEnglishFallback(locale?: string | null): boolean {
 }
 
 export type LocaleFallbackKind = 'documentationLocale' | 'legalLocale';
+export type WelcomeTidasFallbackKind = 'imageLocale' | 'documentationLocale';
 
 export function getLocaleFallbackDefinition(
   locale: string | null | undefined,
@@ -303,5 +363,26 @@ export function hasLocaleFallback(
     definition &&
     fallbackDefinition &&
     fallbackDefinition.canonicalLocale !== definition.canonicalLocale,
+  );
+}
+
+/** Resolves the declared language of a Welcome TIDAS resource. */
+export function getWelcomeTidasFallbackDefinition(
+  locale: string | null | undefined,
+  kind: WelcomeTidasFallbackKind,
+): LocaleRegistryEntry | undefined {
+  const normalizedLocale = normalizeSupportedAppLocale(locale);
+  const definition = normalizedLocale ? getLocaleDefinition(normalizedLocale) : undefined;
+  return definition ? getLocaleDefinition(definition.assets.welcomeTidas[kind]) : undefined;
+}
+
+export function hasWelcomeTidasFallback(
+  locale: string | null | undefined,
+  kind: WelcomeTidasFallbackKind,
+): boolean {
+  const normalizedLocale = normalizeSupportedAppLocale(locale);
+  const resourceLocale = getWelcomeTidasFallbackDefinition(normalizedLocale, kind);
+  return Boolean(
+    normalizedLocale && resourceLocale && resourceLocale.canonicalLocale !== normalizedLocale,
   );
 }

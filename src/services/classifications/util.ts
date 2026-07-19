@@ -6,10 +6,14 @@ import {
   initIndexedDbStore,
   putCachedJsonEntry,
   setLocalStorageJson,
+  sha256Hex,
 } from '@/services/general/browserResourceCache';
 
 import type { Classification } from '../general/data';
-import type { IlcdCanonicalDataType } from '../referenceResources/manifest';
+import {
+  getReferenceRuntimeAssetCacheIdentity,
+  type IlcdCanonicalDataType,
+} from '../referenceResources/manifest';
 import {
   getResolvedReferenceDataTypeName,
   resolveReferenceResource,
@@ -122,6 +126,22 @@ export const getCachedClassificationFileData = async <T>(filename: string): Prom
   try {
     const db = await initDB();
     const cachedEntry = await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
+    const identity = getReferenceRuntimeAssetCacheIdentity(filename);
+    if (
+      identity &&
+      (identity.scope !== 'classification' ||
+        cachedEntry?.revision !== identity.cacheRevision ||
+        cachedEntry?.sha256 !== identity.jsonSha256)
+    ) {
+      return null;
+    }
+    if (
+      identity &&
+      cachedEntry &&
+      (await sha256Hex(JSON.stringify(cachedEntry.data))) !== identity.jsonSha256
+    ) {
+      return null;
+    }
     return cachedEntry?.data ?? null;
   } catch (error) {
     console.error(`Failed to read classification cached file ${filename}:`, error);
@@ -138,11 +158,29 @@ export const cacheAndDecompressClassificationFile = async (filename: string): Pr
     }
 
     const arrayBuffer = await response.arrayBuffer();
+    const identity = getReferenceRuntimeAssetCacheIdentity(filename);
+    if (identity?.scope !== 'classification') {
+      if (identity) {
+        throw new Error(`Reference asset ${filename} is not a classification asset.`);
+      }
+    } else if ((await sha256Hex(arrayBuffer)) !== identity.gzipSha256) {
+      throw new Error(`Classification gzip digest mismatch for ${filename}.`);
+    }
     const decompressedText = await decompressGzipData(arrayBuffer);
+    if (identity && (await sha256Hex(decompressedText)) !== identity.jsonSha256) {
+      throw new Error(`Classification JSON digest mismatch for ${filename}.`);
+    }
     const data = JSON.parse(decompressedText);
 
     const db = await initDB();
-    await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+    if (identity) {
+      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
+        revision: identity.cacheRevision,
+        sha256: identity.jsonSha256,
+      });
+    } else {
+      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+    }
 
     return true;
   } catch (error) {

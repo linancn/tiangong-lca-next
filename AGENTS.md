@@ -23,12 +23,14 @@ checkPaths:
   - docs/agents/**
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
+  - playwright.config.ts
+  - tests/e2e/i18n/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Reviewed for Issue #633: the repo contract now points to separate UI/content/service/reference language owners and registry-complete platform, hardcoding, and activation gates.'
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635: GitHub browser jobs are credential-free/read-only, while production-data semantic closure is restricted to an explicitly authorized local operator session.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -106,12 +108,15 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; every semantic E2E GitHub Actions invocation, including `workflow_dispatch`, is credential-free and read-only, while the authenticated candidate-local/production-backend closure runs only in an explicitly authorized local operator session
+- the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for normal delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change
 - new npm dependencies require human approval
+- production-writing E2E requires authenticated mode plus two write guards: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 
 ## Minimal Execution Facts
 
@@ -132,6 +137,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - existing-translation correction proof: `npm run i18n:corrections:check`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
+- canonical semantic localization E2E: `npm run test:e2e:i18n` (`@playwright/test` `1.61.1`)
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - app-side Supabase and API access belongs only in `src/services/**`

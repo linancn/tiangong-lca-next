@@ -25,8 +25,8 @@ checkPaths:
   - src/components/ClassificationCacheMonitor/**
   - src/components/LocationCacheMonitor/**
   - src/app.tsx
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: f0a1b4ec9462c6b6f9454a760fbe04f642dafcf4
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
 ---
 
 # Classification And Location Bundle Reference
@@ -89,6 +89,7 @@ Every native locale uses a generated full runtime asset, while the tracked sourc
 - Every native overlay must have exactly one non-blank label for every base identity and zero extra or duplicate keys.
 - A label overlay may localize the typed-group name only through the manifest's complete one-to-one `dataTypeNames` mapping.
 - `project-reviewed` translation evidence uses policy-versioned translation and review runs with distinct run IDs. Accepted records reconstruct their candidate from the final label; corrected records retain the original candidate. The validator recomputes the candidate, findings, corrections, and final-label digests and requires every final reviewed label to equal the runtime overlay label.
+- Every `project-reviewed` locale also requires an explicit `official-unavailable` decision. The decision set must exactly cover the project-reviewed locales and is frozen to the verified resource edition, retrieval date, declared release URL, every digested external source-component scope, and every official secondary mapping ID. Adding a locale, replacing an edition, or changing a secondary mapping without refreshing that decision fails closed.
 - Composite English bases use a separate source-provenance review bound to the frozen official-source audit instead of pretending that project extensions are publisher translations.
 - Any structure drift, assertion mismatch, empty label, stale generated file, missing review entry, or nondeterministic output fails `npm run reference-data:check`.
 
@@ -107,9 +108,19 @@ The classification edition comparison performed for Issue #634 uses the exact cu
 
 Both sources were retrieved on 2026-07-18. Edition verification does not by itself grant redistribution rights.
 
-UNSD-derived CPC/ISIC labels remain `rights-clearance-required` unless an exact redistribution license is verified. EC/JRC components follow the linked European Commission reuse notice only when the EU owns the material; the manifest therefore preserves file-specific ownership confirmation, attribution, and modification-notice requirements instead of claiming an unconditional license.
+On 2026-07-19 the product owner [attested that existing authorization covers the production scope recorded for Issue #634](https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208). This is an operational product-owner attestation, not an invented publisher grant, license number, legal document, or file-ownership determination. Publisher terms remain linked as context.
 
-The generator derives `usageTerms.productionStatus`. Any required resource whose terms are `rights-clearance-required`, `file-specific-owner-confirmation-required`, `pending-verification`, or otherwise not explicitly `production-cleared` remains loadable for development but is rejected by `npm run reference-data:production:check` and reported as an Issue #634 blocker by `i18n:locale:*:production:check`.
+The manifest binds that evidence to the following exact, digest-identified scope:
+
+| Resource | Bound source | Attested production scope |
+| --- | --- | --- |
+| CPC 3.0 | `CPC_Ver_3.0_Structure_30Jun2025.csv` | redistribution, translation and derivative works, and public production deployment |
+| ISIC Rev. 5 | `ISIC_Rev_5_english_structure.csv` | redistribution, translation and derivative works, and public production deployment |
+| EF 3.1 ILCD classification | `stylesheets/ILCDClassification_Reference.xml` | file-level reuse and public production deployment, with source attribution, modification notice, and project extensions separately identified |
+| EF 3.1 ILCD flow categorization | `stylesheets/ILCDFlowCategorization_Reference.xml` | file-level reuse and public production deployment, with source attribution, modification notice, and the TianGong extension separately identified |
+| EF 3.1 ILCD locations plus the EU Vocabularies country-label crosswalk | `stylesheets/ILCDLocations_Reference.xml` and the digest-bound `20260617-0` SPARQL response | file-level reuse and public production deployment, with source attribution, modification notice, and project-modified/project-extension entries separately identified |
+
+The generator derives `usageTerms.productionStatus`, but the string `status: production-cleared` is not sufficient. A cleared resource must also carry schema-versioned `product-owner-attestation` evidence whose date, HTTPS record URL, resource ID, verified edition, digest-bound source component scopes, uses, and conditions exactly match `clearanceRequirements`. The scope list must be an exact set, not a subset: it covers every digested external component that contributes runtime labels. An official secondary mapping must bind its raw-response digest to one of those components and independently declare `usageTerms.productionStatus: ready`; missing, blocked, or merely publisher-described terms are not production approval. Missing, mismatched, non-digest-bound, or unsupported evidence fails closed in provenance validation and `npm run reference-data:production:check`. Other usage-term statuses remain loadable for development but are rejected for production and reported as an Issue #634 blocker by `i18n:locale:*:production:check`.
 
 ## Full Tree vs Partial Path
 

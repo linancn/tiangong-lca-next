@@ -27,6 +27,7 @@ import {
   type SupportedServiceQueryLanguage,
 } from '@/services/general/contentLanguageRegistry';
 import { ListPagination } from '@/services/general/data';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import {
   contributeLifeCycleModel,
@@ -82,8 +83,9 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
-  const routeMode = searchParams.get('mode');
+  const required =
+    resolveRouteViewState('dataset-required', searchParams.get('required')) === 'required';
+  const routeMode = resolveRouteViewState('dataset-drawer-mode', searchParams.get('mode'));
 
   const intl = useIntl();
 

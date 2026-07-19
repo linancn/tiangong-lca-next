@@ -1,0 +1,97 @@
+name: I18n semantic E2E
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/i18n-semantic-e2e.yml'
+      - 'config/routes.ts'
+      - 'docs/plans/i18n/route-view-coverage.json'
+      - 'package-lock.json'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - 'src/**'
+      - 'tests/e2e/i18n/**'
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/i18n-semantic-e2e.yml'
+      - 'config/routes.ts'
+      - 'docs/plans/i18n/route-view-coverage.json'
+      - 'package-lock.json'
+      - 'package.json'
+      - 'playwright.config.ts'
+      - 'src/**'
+      - 'tests/e2e/i18n/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: i18n-semantic-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract:
+    name: Playwright contract discovery
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: List semantic E2E assertions
+        env:
+          E2E_ALLOW_PRODUCTION_DATA: 'false'
+          E2E_AUTHENTICATED: 'false'
+          E2E_BACKEND_TARGET: production
+          E2E_BASE_URL: http://127.0.0.1:8000
+        run: npm run test:e2e:i18n -- --list
+
+  public-browser-semantics:
+    name: Public locale semantics (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser:
+          - chromium
+          - firefox
+          - webkit
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install browser
+        run: npx playwright install --with-deps "${{ matrix.browser }}"
+
+      - name: Run public locale semantics against candidate frontend
+        env:
+          E2E_ALLOW_PRODUCTION_DATA: 'false'
+          E2E_AUTHENTICATED: 'false'
+          E2E_BACKEND_TARGET: production
+          E2E_BASE_URL: http://127.0.0.1:8000
+        run: >-
+          npm run test:e2e:i18n -- tests/e2e/i18n/access-fallback.spec.ts tests/e2e/i18n/semantic-critical.spec.ts tests/e2e/i18n/query-responsive.spec.ts --project="${{ matrix.browser }}"

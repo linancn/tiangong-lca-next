@@ -2,8 +2,8 @@
   "schemaVersion": "tiangong.i18n-locale-activation.v2",
   "locale": "de-DE",
   "source": {
-    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
-    "sourceManifestDigest": "1d8f06f693687334b1ddf19af62ccb3c1bf8bb5b1f66b5fff180a3934401aa8c"
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "71e20902f590905d7a115d9111f056c2a2a5ff36b5dc2ae3caac85b7e2b10d44"
   },
   "registry": {
     "canonicalLocale": "de-DE",
@@ -19,7 +19,7 @@
       "titleKey": "APP_TITLE_DE_DE",
       "loginSubtitleKey": "APP_LOGIN_SUBTITLE_DE_DE"
     },
-    "registryDigest": "cde8bab8af8e558a3a414efd6d97a0d0acfe38c3a0c7ab2f69660381eb47ba6c"
+    "registryDigest": "c04e58fec60280fbdd8e486235da694223573cef72ac9bb855ebbbfa5d190460"
   },
   "languagePlatform": {
     "capability": {
@@ -71,17 +71,17 @@
         }
       ]
     },
-    "contentLanguageRegistryDigest": "c1e4985cf29014f556dabcafac077ec86e2904c8225c413571c02be324b07b6e",
-    "capabilityMatrixDigest": "fde810bfc463df167c94db510ab7596cba9eae2acc407b7c9a330b2b8d267448",
-    "referenceResourceManifestDigest": "ce1770a9e110e77751db3cc7e2a74eb875a136745ea66b41da432045b4fbf625",
+    "contentLanguageRegistryDigest": "2bb1e3395138c0cc4eef6aa2a69dba7a749af94df29760cb5c45d08381205c9e",
+    "capabilityMatrixDigest": "d8903f58f8b5582bb4a491a8724b9ba5b8adf93f5f48dcfc7c908bb4eaa5dcd7",
+    "referenceResourceManifestDigest": "002bf11147f566b701c6365791fab31ffeaac87edd5d810a42417c9f2dfad281",
     "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
-    "hardcodingAllowlistDigest": "1e5be914215cd2b0fd42262c0b7caf75d71bc75ba7b905ff0b7ef70f082f9e39"
+    "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "63af528bf4c4d485c5ba5a243cc686e42473a4e2b15e494551d8c6c8c6d4c039",
-    "qualityDigest": "21c6bfc2375d448e69bd92408180b0a8c7e76b31ab12280abcec6eb0379d9310",
+    "contextDigest": "9e4a20984cbafa2c605ea4a6f386539649e8fd8ebc21372d8ac5e0e26667af38",
+    "qualityDigest": "6463d64c8eb91159c3994c30590a5b8c8ffbdeb49fbf3e169d305da2100b9b91",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
-    "routeViewCoverageDigest": "0c9414433315acb561b29e8884dbb594b377c9e1435829510bc0f9b6979b9050",
+    "routeViewCoverageDigest": "cac8cc45323e1bcd4501bdfed5643fc0918fffbba820030717b27256891e91b6",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -109,114 +109,13 @@
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
-    "referenceResourcesReady": false,
+    "referenceResourcesReady": true,
     "productionActivationReady": false,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
-  "referenceResourceBlockers": [
-    {
-      "resourceId": "cpc",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "rights-clearance-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are rights-clearance-required: UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it."
-    },
-    {
-      "resourceId": "isic",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "rights-clearance-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are rights-clearance-required: UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it."
-    },
-    {
-      "resourceId": "ilcd-classification",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution."
-    },
-    {
-      "resourceId": "ilcd-flow-categorization",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified."
-    },
-    {
-      "resourceId": "ilcd-locations",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated."
-    }
-  ],
+  "referenceResourceBlockers": [],
   "productionActivationBlockers": [
-    {
-      "blockerId": "reference-resource:cpc",
-      "kind": "reference-resource",
-      "resourceId": "cpc",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "rights-clearance-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are rights-clearance-required: UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it."
-    },
-    {
-      "blockerId": "reference-resource:isic",
-      "kind": "reference-resource",
-      "resourceId": "isic",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "rights-clearance-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are rights-clearance-required: UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it."
-    },
-    {
-      "blockerId": "reference-resource:ilcd-classification",
-      "kind": "reference-resource",
-      "resourceId": "ilcd-classification",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution."
-    },
-    {
-      "blockerId": "reference-resource:ilcd-flow-categorization",
-      "kind": "reference-resource",
-      "resourceId": "ilcd-flow-categorization",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified."
-    },
-    {
-      "blockerId": "reference-resource:ilcd-locations",
-      "kind": "reference-resource",
-      "resourceId": "ilcd-locations",
-      "status": "native",
-      "deliveryStatus": "project-reviewed",
-      "usageTermsStatus": "file-specific-owner-confirmation-required",
-      "usageTermsProductionStatus": "blocked",
-      "ownerIssue": "#634",
-      "reason": "usage terms are file-specific-owner-confirmation-required: The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated."
-    },
     {
       "blockerId": "semantic-route-and-e2e-proof",
       "kind": "semantic-route-and-e2e",
@@ -225,5 +124,5 @@
       "ownerIssue": "#635"
     }
   ],
-  "activationDigest": "fe458cf63370017e0a68ac6578cc5ec4d50c425b0f27e19c95a2cf99cd1179a9"
+  "activationDigest": "c651d1d76f1e0655ca222addb12d8b43cc2a49d86f3a2a735eb9d13117238dfb"
 }

@@ -3,6 +3,7 @@
  * Path: src/services/lifeCycleModels/util_calculate.ts
  */
 
+import { AUTHORING_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { genLifeCycleModelProcesses } from '@/services/lifeCycleModels/util_calculate';
 
 jest.mock('@/services/supabase', () => {
@@ -1278,7 +1279,17 @@ describe('genLifeCycleModelProcesses', () => {
 
   it('generates primary and secondary process payloads and reuses existing secondary id', async () => {
     const data = createLifeCycleModelData();
-    mockOr.mockResolvedValue({ data: clone(createSupabaseProcesses()) });
+    data.lifeCycleModelDataSet.lifeCycleModelInformation.dataSetInformation.name.baseName.push(
+      { '@xml:lang': 'de', '#text': 'Referenzprozess' },
+      { '@xml:lang': 'fr', '#text': 'Processus de référence' },
+    );
+    const databaseProcesses = createSupabaseProcesses();
+    const secondaryReferenceFlow = databaseProcesses[2].exchange[1].referenceToFlowDataSet as any;
+    secondaryReferenceFlow['common:shortDescription'].push(
+      { '@xml:lang': 'de', '#text': 'C-Produkt' },
+      { '@xml:lang': 'fr', '#text': 'Produit C' },
+    );
+    mockOr.mockResolvedValue({ data: clone(databaseProcesses) });
 
     mockLCIAResultCalculation
       .mockResolvedValueOnce([{ '@id': 'LCIA_PRIMARY' }])
@@ -1333,6 +1344,17 @@ describe('genLifeCycleModelProcesses', () => {
     expect(secondary?.option).toBe('update');
     expect(secondary?.modelInfo?.id).toBe('existing-secondary');
     expect(secondary?.modelInfo?.finalId?.allocatedExchangeFlowId).toBe('flow-C-final');
+    const secondaryBaseName =
+      secondary?.data?.processDataSet?.processInformation?.dataSetInformation?.name?.baseName;
+    expect(secondaryBaseName.map((item: any) => item['@xml:lang'])).toEqual(
+      AUTHORING_CONTENT_LANGUAGES,
+    );
+    expect(secondaryBaseName).toEqual([
+      { '@xml:lang': 'en', '#text': '[Subproduct: C Product] Reference Process' },
+      { '@xml:lang': 'zh', '#text': '[子产品: C产品] 参考过程' },
+      { '@xml:lang': 'de', '#text': '[Nebenprodukt: C-Produkt] Referenzprozess' },
+      { '@xml:lang': 'fr', '#text': '[Sous-produit : Produit C] Processus de référence' },
+    ]);
     expect(primary?.refProcesses).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

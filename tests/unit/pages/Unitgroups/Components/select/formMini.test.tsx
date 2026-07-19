@@ -8,6 +8,9 @@ let mockFormListFields: any[] = [];
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
 }));
 
 jest.mock('@/contexts/unitContext', () => ({
@@ -314,6 +317,6 @@ describe('UnitGroupFormMini', () => {
       );
     });
 
-    expect(document.querySelectorAll('textarea[placeholder="text"]')).toHaveLength(2);
+    expect(document.querySelectorAll('textarea[placeholder="Text"]')).toHaveLength(2);
   });
 });

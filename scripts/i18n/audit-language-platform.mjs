@@ -51,6 +51,11 @@ const EQUALITY_OPERATORS = new Set([
   ts.SyntaxKind.ExclamationEqualsEqualsToken,
 ]);
 
+// Keep this deliberately narrow: these attributes render user-facing copy.
+// Technical JSX metadata such as id, name, data-testid, and aria-controls must
+// not become language-platform findings merely because their values are static.
+const VISIBLE_LOCALIZED_JSX_ATTRIBUTE_NAMES = new Set(['placeholder']);
+
 const RULE_IDS = new Set([
   'language-array',
   'language-call-argument',
@@ -64,6 +69,7 @@ const RULE_IDS = new Set([
   'language-return-literal',
   'language-switch-case',
   'language-union',
+  'visible-jsx-string-prop',
 ]);
 
 function usage() {
@@ -364,7 +370,6 @@ function auditPlatformStructure(platform, violations) {
   assertUniqueField(locales, 'canonicalLocale', 'LOCALE_REGISTRY', violations);
   assertUniqueField(locales, 'languageCode', 'LOCALE_REGISTRY', violations);
   assertUniqueField(contents, 'languageCode', 'CONTENT_LANGUAGE_REGISTRY', violations);
-  assertUniqueField(contents, 'appLocale', 'CONTENT_LANGUAGE_REGISTRY', violations);
   assertUniqueField(resources, 'resourceId', 'REFERENCE_RESOURCE_MANIFEST', violations);
   assertUniqueField(capabilities, 'appLocale', 'LOCALE_CAPABILITY_MATRIX', violations);
 
@@ -516,15 +521,27 @@ function auditPlatformStructure(platform, violations) {
         );
       }
     }
-    const matchingContent = contents.filter(
-      ({ appLocale, languageCode }) =>
-        appLocale === locale.canonicalLocale && languageCode === locale.languageCode,
-    );
-    if (matchingContent.length !== 1) {
+    const contentCapability = locale.contentCapability;
+    const contentCapabilityStatus = contentCapability?.status;
+    if (!['native', 'declared-fallback', 'unsupported'].includes(contentCapabilityStatus)) {
       addViolation(
         violations,
-        'locale-without-content-language',
-        `${locale.canonicalLocale} must map to exactly one matching content language.`,
+        'invalid-locale-content-capability',
+        `${locale.canonicalLocale} must explicitly declare native, declared-fallback, or unsupported typed content.`,
+      );
+    } else if (contentCapabilityStatus === 'unsupported') {
+      if (contentCapability.contentLanguage !== undefined) {
+        addViolation(
+          violations,
+          'invalid-locale-content-capability',
+          `${locale.canonicalLocale} cannot name a content language when typed content is unsupported.`,
+        );
+      }
+    } else if (!contentLanguages.includes(contentCapability.contentLanguage)) {
+      addViolation(
+        violations,
+        'unknown-locale-content-language',
+        `${locale.canonicalLocale} references unknown content language ${contentCapability.contentLanguage}.`,
       );
     }
   }
@@ -538,13 +555,6 @@ function auditPlatformStructure(platform, violations) {
           `${content.languageCode} must declare ${field}.`,
         );
       }
-    }
-    if (!appLocales.includes(content.appLocale)) {
-      addViolation(
-        violations,
-        'content-language-without-locale',
-        `${content.languageCode} references unknown app locale ${content.appLocale}.`,
-      );
     }
     const priorities = content.reading?.priority;
     const readingIsValid =
@@ -702,19 +712,60 @@ function auditPlatformStructure(platform, violations) {
 
   for (const row of capabilities) {
     const locale = locales.find(({ canonicalLocale }) => canonicalLocale === row.appLocale);
-    const content = contents.find(({ languageCode }) => languageCode === row.contentLanguage);
-    if (!locale || !content || locale.languageCode !== content.languageCode) {
+    const declaredCapability = locale?.contentCapability;
+    if (!locale || !declaredCapability) {
       addViolation(
         violations,
         'invalid-capability-locale-mapping',
-        `${row.appLocale} capability row has no matching locale/content pair.`,
+        `${row.appLocale} capability row has no matching locale declaration.`,
       );
       continue;
     }
+
+    if (declaredCapability.status === 'unsupported') {
+      if (
+        row.uiCatalog !== 'native' ||
+        row.contentLanguage !== undefined ||
+        row.contentReading !== 'unsupported' ||
+        row.contentAuthoring !== 'unsupported' ||
+        row.serviceQuery?.status !== 'unsupported' ||
+        row.serviceQuery?.resolvedLanguage !== undefined ||
+        row.serviceQuery?.disclosure !== 'none' ||
+        !Array.isArray(row.referenceResources) ||
+        row.referenceResources.length !== 0
+      ) {
+        addViolation(
+          violations,
+          'capability-content-or-service-drift',
+          `${row.appLocale} must preserve its explicitly unsupported typed-content boundary.`,
+        );
+      }
+      continue;
+    }
+
+    const content = contents.find(
+      ({ languageCode }) => languageCode === declaredCapability.contentLanguage,
+    );
+    if (!content || row.contentLanguage !== declaredCapability.contentLanguage) {
+      addViolation(
+        violations,
+        'invalid-capability-locale-mapping',
+        `${row.appLocale} capability row does not resolve its declared content language.`,
+      );
+      continue;
+    }
+    const expectedReadingStatus =
+      declaredCapability.status === 'declared-fallback'
+        ? 'declared-fallback'
+        : deriveContentReadingStatus(content);
+    const expectedAuthoringStatus =
+      declaredCapability.status === 'native' && content.authoring.enabled
+        ? 'native'
+        : 'unsupported';
     if (
       row.uiCatalog !== 'native' ||
-      row.contentReading !== deriveContentReadingStatus(content) ||
-      row.contentAuthoring !== (content.authoring.enabled ? 'native' : 'unsupported') ||
+      row.contentReading !== expectedReadingStatus ||
+      row.contentAuthoring !== expectedAuthoringStatus ||
       row.serviceQuery?.status !== content.serviceQuery?.status ||
       row.serviceQuery?.resolvedLanguage !== content.serviceQuery?.resolvedLanguage ||
       row.serviceQuery?.disclosure !== content.serviceQuery?.disclosure
@@ -955,7 +1006,6 @@ function buildKnownLanguageTokens(platform) {
   }
   for (const content of platform?.content?.CONTENT_LANGUAGE_REGISTRY ?? []) {
     tokens.add(content.languageCode);
-    tokens.add(content.appLocale);
   }
   return new Set([...tokens].filter(Boolean).map((value) => String(value).toLowerCase()));
 }
@@ -1153,6 +1203,13 @@ function scanHardcoding(root, platform, violations) {
               : null
           : null;
         if (languageishText(name) && isKnown(value)) addFinding('language-default', node);
+        if (
+          VISIBLE_LOCALIZED_JSX_ATTRIBUTE_NAMES.has(name.toLowerCase()) &&
+          typeof value === 'string' &&
+          value.trim().length > 0
+        ) {
+          addFinding('visible-jsx-string-prop', node);
+        }
       }
 
       if (ts.isReturnStatement(node) && isKnown(staticValue(node.expression))) {

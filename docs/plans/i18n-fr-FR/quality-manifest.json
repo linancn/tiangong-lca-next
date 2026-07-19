@@ -2,13 +2,13 @@
   "schemaVersion": "tiangong.i18n-locale-quality.v1",
   "locale": "fr-FR",
   "source": {
-    "baselineSha": "16747439cd5e224194fe3e04b5fce3f9c0f502dc",
-    "sourceManifestDigest": "1d8f06f693687334b1ddf19af62ccb3c1bf8bb5b1f66b5fff180a3934401aa8c",
-    "contextDigest": "9e2aa20f1d0b3a6a79589e4bcfec9185665e33fc68d3a8876700be3ee63e088a"
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "71e20902f590905d7a115d9111f056c2a2a5ff36b5dc2ae3caac85b7e2b10d44",
+    "contextDigest": "562917fc2e2e26d5da3329c754a5f294e50179f8530c0149dee6f2f84f64da4d"
   },
   "catalog": {
-    "messageCount": 3026,
-    "catalogDigest": "aca5a8d39e2d6c3bc9f2eb48d28a4b86546cb292711d05810098e79b8c862bed",
+    "messageCount": 3030,
+    "catalogDigest": "de7e6d45e12e3df1c0b82faa518afd860fd78bcd2254d64c657281562c454f7e",
     "emptyTranslationCount": 0,
     "acceptedSourceEmptyCount": 1,
     "acceptedSourceEmptyDigest": "182ce2fe247d78a1af1027643331be2239d4e4815d2a32f5795a8f6954367560",
@@ -41,16 +41,16 @@
   },
   "structuralValidation": {
     "path": "docs/plans/i18n-fr-FR/structural-validation.json",
-    "digest": "e84e9408b7169fed021a8439416b07584eb4bdce7bdaf0264bd7d8496b3d2f0a",
-    "validationDigest": "268861b563cf7e56eb060792c54a4da84c1e52a638c0ce2adecc36e09b08e821",
+    "digest": "813665b92612ee83c50183566709c5cc171372d74d4b7a06e48f320bd45af398",
+    "validationDigest": "86852f4c95a2523a8201346326baec35f5594cdb424f8c325502845fc75b0d93",
     "laneCount": 1,
-    "validatedMessageCount": 3026,
+    "validatedMessageCount": 3030,
     "validatedModuleCount": 31,
-    "highRiskMessageCount": 1337,
-    "highRiskMessageDigest": "6bb72e74b65f600e7078ddc3fd232d4a84009050320d178351eb83c2cb88a86b",
+    "highRiskMessageCount": 1340,
+    "highRiskMessageDigest": "aa6abda2399305305585be5393f9f88770ea8d4042bac883a2646c412caa364b",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635",
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "cecff450b10076d625c85e13d0d1cf55c19219616d454a4f0659222190753ec7"
+  "qualityDigest": "b6481df700cfcba9724084596838577e8a330142a81632f6e4641a34f89a8c5b"
 }

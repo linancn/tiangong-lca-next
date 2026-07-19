@@ -19,10 +19,12 @@ checkPaths:
   - docs/agents/testing-patterns.md
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
+  - playwright.config.ts
+  - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Reviewed for Issue #633 and added the shortest recovery path for registry/Manifest, hardcoding, and activation-contract failures.'
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635 and corrected semantic E2E recovery for credential-free GitHub jobs, local operator authorization, and pre-delete row verification.'
 ---
 
 # Testing Troubleshooting
@@ -38,6 +40,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
+| semantic localization E2E | `npm run test:e2e:i18n` |
 
 ## Failure Diagnosis
 
@@ -50,6 +53,12 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
+| Playwright refuses `E2E_BASE_URL` | the browser target is not the local candidate frontend | use a loopback candidate URL and let `playwright.config.ts` start `npm run start:main`; never point the Playwright frontend target at production |
+| authenticated semantic E2E skips or fails before setup | the explicitly authorized local operator session lacks runtime credentials, authenticated mode, one of the two write guards, verified-evidence opt-in, or the production target proof | keep every semantic E2E GitHub Actions run unauthenticated/read-only; run the full closure only in the authorized local session with `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, the exact one-process confirmation token, `E2E_WRITE_VERIFIED_EVIDENCE=true`, and the verified production backend target |
+| semantic evidence remains `failed` or activation rejects it | one of the 49 assertion IDs, registry locales, required browsers, route/test/source digests, or cleanup counts is incomplete or stale | inspect the first mismatched contract field, rerun only the affected browser scope, then run the complete authenticated closure; never edit evidence to simulate execution |
+| teardown refuses cleanup or reports a leaked `codex-e2e` process | the intent ledger is invalid, the production row UUID/owner/five-field registry marker closure does not match, or exact-ID deletion failed | preserve the ignored ledger; inspect only the exact UUID row, restore verifiable ownership/marker evidence or escalate, and never broaden deletion; do not create another record until `created=cleaned` and `leaked=0` |
+| Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
+| Playwright browser executable is missing | the pinned dependency is installed but browser binaries are not | run `npx playwright install chromium firefox webkit` locally, or use the workflow's per-browser `--with-deps` install step |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |

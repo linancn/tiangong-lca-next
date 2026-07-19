@@ -1,9 +1,10 @@
 import {
+  buildLocaleCapabilityRow,
   getContentReadingCapabilityStatus,
   getLocaleCapability,
   LOCALE_CAPABILITY_MATRIX,
 } from '@/services/general/localeCapabilities';
-import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
+import { LOCALE_REGISTRY, SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
 import {
   REFERENCE_RESOURCE_MANIFEST,
   REQUIRED_REFERENCE_RESOURCE_IDS,
@@ -174,7 +175,7 @@ describe('localeCapabilities', () => {
     try {
       jest.isolateModules(() => {
         expect(() => require('@/services/general/localeCapabilities')).toThrow(
-          'has no matching content-language capability.',
+          'references unknown content language',
         );
       });
     } finally {
@@ -185,6 +186,78 @@ describe('localeCapabilities', () => {
 
   it('does not invent a row for an unregistered locale', () => {
     expect(getLocaleCapability('es-ES')).toBeUndefined();
+  });
+
+  it('supports a future UI locale with an explicitly declared content fallback', () => {
+    const futureLocale = {
+      ...LOCALE_REGISTRY[1],
+      canonicalLocale: 'es-ES',
+      languageCode: 'es',
+      contentCapability: {
+        status: 'declared-fallback',
+        contentLanguage: 'en',
+      },
+    } as any;
+
+    expect(buildLocaleCapabilityRow(futureLocale)).toEqual(
+      expect.objectContaining({
+        appLocale: 'es-ES',
+        contentLanguage: 'en',
+        contentReading: 'declared-fallback',
+        contentAuthoring: 'unsupported',
+      }),
+    );
+  });
+
+  it('keeps an explicitly unsupported future content boundary unsupported', () => {
+    const futureLocale = {
+      ...LOCALE_REGISTRY[1],
+      canonicalLocale: 'es-ES',
+      languageCode: 'es',
+      contentCapability: { status: 'unsupported' },
+    } as any;
+
+    expect(buildLocaleCapabilityRow(futureLocale)).toEqual({
+      appLocale: 'es-ES',
+      uiCatalog: 'native',
+      contentReading: 'unsupported',
+      contentAuthoring: 'unsupported',
+      serviceQuery: { status: 'unsupported', disclosure: 'none' },
+      referenceResources: [],
+    });
+  });
+
+  it('fails closed when a future UI locale omits or misdeclares its content capability', () => {
+    const baseFutureLocale = {
+      ...LOCALE_REGISTRY[1],
+      canonicalLocale: 'es-ES',
+      languageCode: 'es',
+    };
+
+    expect(() =>
+      buildLocaleCapabilityRow({
+        ...baseFutureLocale,
+        contentCapability: undefined,
+      } as any),
+    ).toThrow('has no declared content capability');
+    expect(() =>
+      buildLocaleCapabilityRow({
+        ...baseFutureLocale,
+        contentCapability: {
+          status: 'native',
+          contentLanguage: 'es',
+        },
+      } as any),
+    ).toThrow('references unknown content language es');
+    expect(() =>
+      buildLocaleCapabilityRow({
+        ...baseFutureLocale,
+        contentCapability: {
+          status: 'unsupported',
+          contentLanguage: 'en',
+        },
+      } as any),
+    ).toThrow('cannot name a content language when typed content is unsupported');
   });
 
   it.each([

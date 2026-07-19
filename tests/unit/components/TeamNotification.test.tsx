@@ -1,5 +1,6 @@
 import TeamNotification from '@/components/Notification/TeamNotification';
 import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import {
   acceptTeamInvitationApi,
   getTeamInvitationStatusApi,
@@ -161,14 +162,17 @@ describe('TeamNotification Component', () => {
       success: true,
       data: { ...mockInvitationData.data, teamTitle: localizedTitles },
     });
-    mockLocale = CONTENT_LANGUAGE_REGISTRY[0].appLocale;
+    mockLocale = LOCALE_CAPABILITY_MATRIX[0].appLocale;
     const { rerender } = render(
       <ConfigProvider>
         <TeamNotification {...defaultProps} />
       </ConfigProvider>,
     );
 
-    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
+    for (const { appLocale, contentLanguage } of LOCALE_CAPABILITY_MATRIX) {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
       mockLocale = appLocale;
       rerender(
         <ConfigProvider>
@@ -176,7 +180,7 @@ describe('TeamNotification Component', () => {
         </ConfigProvider>,
       );
       await waitFor(() => {
-        expect(screen.getByText(`team-${languageCode}`)).toBeInTheDocument();
+        expect(screen.getByText(`team-${contentLanguage}`)).toBeInTheDocument();
       });
     }
   });

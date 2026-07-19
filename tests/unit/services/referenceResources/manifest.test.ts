@@ -3,6 +3,7 @@ import {
   getReferenceResourceCacheFiles,
   getReferenceResourceCacheVersion,
   getReferenceResourceDefinition,
+  getReferenceRuntimeAssetCacheIdentity,
   REFERENCE_RESOURCE_MANIFEST,
   REQUIRED_REFERENCE_RESOURCE_IDS,
   type ReferenceLocaleAvailability,
@@ -53,6 +54,22 @@ describe('reference resource manifest and resolver', () => {
     expect(getReferenceResourceCacheVersion('location')).toMatch(
       /^2:ilcd-locations@[a-f0-9]{16}$/u,
     );
+  });
+
+  it('binds every managed runtime filename to its exact cache revision and digests', () => {
+    for (const resource of REFERENCE_RESOURCE_MANIFEST) {
+      for (const asset of Object.values(resource.runtimeAssets)) {
+        expect(getReferenceRuntimeAssetCacheIdentity(asset.fileName)).toEqual({
+          cacheRevision: resource.cacheRevision,
+          fileName: asset.fileName,
+          gzipSha256: asset.gzipDigest.value,
+          jsonSha256: asset.jsonDigest.value,
+          resourceId: resource.resourceId,
+          scope: resource.scope,
+        });
+      }
+    }
+    expect(getReferenceRuntimeAssetCacheIdentity('unmanaged.json.gz')).toBeUndefined();
   });
 
   it('resolves bundled Chinese assets and their localized ILCD data type', () => {

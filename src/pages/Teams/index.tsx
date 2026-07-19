@@ -1,6 +1,7 @@
 import LangTextItemForm from '@/components/LangTextItem/form';
 import RequiredMark from '@/components/RequiredMark';
 import { ListPagination } from '@/services/general/data';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
 import {
   createTeamMessage,
   delRoleApi,
@@ -38,6 +39,7 @@ import {
   Button,
   Flex,
   Form,
+  Grid,
   message,
   Modal,
   Spin,
@@ -57,6 +59,7 @@ const DEFAULT_CREATE_TEAM_IS_PUBLIC = false;
 
 const Team = () => {
   const { token } = theme.useToken();
+  const screens = Grid.useBreakpoint();
   const [activeTabKey, setActiveTabKey] = useState('info');
   const [teamId, setTeamId] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -84,7 +87,10 @@ const Team = () => {
   const [rank, setRank] = useState(-1);
   const actionRef = useRef<any>(null);
   const location = useLocation();
-  const action = new URLSearchParams(location.search).get('action');
+  const action = resolveRouteViewState(
+    'team-action',
+    new URLSearchParams(location.search).get('action'),
+  );
 
   const intl = useIntl();
 
@@ -1012,7 +1018,7 @@ const Team = () => {
         activeKey={activeTabKey}
         className='team-page-tabs'
         onChange={onTabChange}
-        tabPosition='left'
+        tabPosition={screens.lg === false ? 'top' : 'left'}
         items={tabs}
       />
     </PageContainer>

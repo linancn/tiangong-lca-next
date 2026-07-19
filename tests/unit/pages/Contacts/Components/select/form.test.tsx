@@ -22,6 +22,9 @@ const mockCapturedRules = new Map<string, any[]>();
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
   useModel: () => ({ initialState: { currentUser: { userid: mockCurrentUserId } } }),
 }));
 
@@ -579,7 +582,7 @@ describe('ContactSelectForm', () => {
     expect(await screen.findByText('err-ref')).toBeInTheDocument();
   });
 
-  it('matches ref-check entries against refData and renders zh/raw short-description language labels', async () => {
+  it('matches ref-check entries against refData and renders localized short-description language labels', async () => {
     setValueAtPath(['reference', '@refObjectId'], 'contact-1');
     setValueAtPath(['reference', '@version'], '1.0.0');
     mockRefCheckContextValue = {
@@ -619,7 +622,7 @@ describe('ContactSelectForm', () => {
       />,
     );
 
-    expect(screen.getByDisplayValue('es')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Spanish')).toBeInTheDocument();
   });
 
   it('uses nested short-description fallbacks when jsonToList returns null', async () => {

@@ -85,6 +85,31 @@ describe('browserResourceCache', () => {
     expect(put.mock.calls[0][0]).not.toHaveProperty('sha256');
   });
 
+  it('persists optional digest and revision metadata together', async () => {
+    const request: any = {};
+    const put = jest.fn(() => request);
+    const db: any = {
+      transaction: jest.fn(() => ({ objectStore: () => ({ put }) })),
+    };
+
+    const promise = putCachedJsonEntry(
+      db,
+      'cache-store',
+      'list.json',
+      { files: [] },
+      {
+        revision: 'revision-2',
+        sha256: 'a'.repeat(64),
+      },
+    );
+    request.onsuccess();
+    await promise;
+
+    expect(put).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: 'revision-2', sha256: 'a'.repeat(64) }),
+    );
+  });
+
   it('surfaces IndexedDB delete errors', async () => {
     const request: any = {};
     const db: any = {

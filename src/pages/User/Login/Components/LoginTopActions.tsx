@@ -1,5 +1,5 @@
 import { DarkMode, SelectLang } from '@/components/RightContent';
-import { hasLocaleFallback } from '@/services/general/localeRegistry';
+import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { getDocumentationUrl, normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { theme } from 'antd';
@@ -23,15 +23,19 @@ const LoginTopActions: React.FC<LoginTopActionsProps> = ({ isDarkMode, onDarkMod
   const langActionRef = useRef<HTMLDivElement>(null);
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const usesEnglishFallback = hasLocaleFallback(locale, 'documentationLocale');
-  const helpLabel = intl.formatMessage({
-    id: usesEnglishFallback
-      ? 'component.globalHeader.help.englishFallback'
-      : 'component.globalHeader.help',
-    defaultMessage: usesEnglishFallback
-      ? 'Open help documentation (English)'
-      : 'Open help documentation',
-  });
+  const usesDocumentationFallback = hasLocaleFallback(locale, 'documentationLocale');
+  const documentationLocale = getLocaleFallbackDefinition(locale, 'documentationLocale');
+  const helpLabel = intl.formatMessage(
+    {
+      id: usesDocumentationFallback
+        ? 'component.globalHeader.help.fallback'
+        : 'component.globalHeader.help',
+      defaultMessage: usesDocumentationFallback
+        ? 'Open help documentation ({language})'
+        : 'Open help documentation',
+    },
+    usesDocumentationFallback ? { language: documentationLocale!.nativeLabel } : undefined,
+  );
 
   const handleOpenDocs = () => {
     window.open(docsUrl);

@@ -8,6 +8,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 const mockGetILCDLocationByValue = jest.fn();
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
 jest.mock('@/services/locations/api', () => ({
   getILCDLocationByValue: (...args: any[]) => mockGetILCDLocationByValue(...args),
 }));
@@ -72,5 +82,47 @@ describe('LocationTextItemDescription', () => {
 
     expect(mockGetILCDLocationByValue).not.toHaveBeenCalled();
     expect(screen.getByTestId('location-spin')).toHaveAttribute('data-spinning', 'false');
+  });
+
+  it('reloads for the new language and ignores the stale response', async () => {
+    const german = deferred<{ data: string }>();
+    const french = deferred<{ data: string }>();
+    mockGetILCDLocationByValue
+      .mockReturnValueOnce(german.promise)
+      .mockReturnValueOnce(french.promise);
+
+    const { rerender } = render(
+      <LocationTextItemDescription lang='de' data='GLO' label='Location' />,
+    );
+    rerender(<LocationTextItemDescription lang='fr' data='GLO' label='Location' />);
+
+    french.resolve({ data: 'Monde' });
+    await waitFor(() => expect(screen.getByText('Monde')).toBeInTheDocument());
+
+    german.resolve({ data: 'Global' });
+    await waitFor(() => expect(screen.queryByText('Global')).not.toBeInTheDocument());
+    expect(mockGetILCDLocationByValue).toHaveBeenNthCalledWith(1, 'de', 'GLO');
+    expect(mockGetILCDLocationByValue).toHaveBeenNthCalledWith(2, 'fr', 'GLO');
+  });
+
+  it('clears a current failed lookup without accepting a stale failure', async () => {
+    const stale = deferred<{ data: string }>();
+    const current = deferred<{ data: string }>();
+    mockGetILCDLocationByValue
+      .mockReturnValueOnce(stale.promise)
+      .mockReturnValueOnce(current.promise);
+
+    const { rerender } = render(
+      <LocationTextItemDescription lang='de' data='DE' label='Location' />,
+    );
+    rerender(<LocationTextItemDescription lang='fr' data='FR' label='Location' />);
+
+    stale.reject(new Error('stale'));
+    current.reject(new Error('current'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('location-spin')).toHaveAttribute('data-spinning', 'false'),
+    );
+    expect(screen.queryByText('stale')).not.toBeInTheDocument();
   });
 });

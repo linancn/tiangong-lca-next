@@ -1,4 +1,8 @@
-import { getLocaleDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
+import {
+  getLocaleDefinition,
+  getLocaleFallbackDefinition,
+  hasLocaleFallback,
+} from '@/services/general/localeRegistry';
 import {
   getDocumentationUrl,
   normalizeRuntimeLocale,
@@ -18,6 +22,8 @@ interface SelectLangProps {
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
   return (
     <UmiSelectLang
+      globalIconClassName='tg-global-language-selector'
+      reload={false}
       style={{
         padding: 4,
         ...style,
@@ -44,13 +50,17 @@ export const Question = () => {
   const intl = useIntl();
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const usesEnglishFallback = hasLocaleFallback(locale, 'documentationLocale');
-  const helpLabel = intl.formatMessage({
-    id: usesEnglishFallback
-      ? 'component.globalHeader.help.englishFallback'
-      : 'component.globalHeader.help',
-    defaultMessage: usesEnglishFallback ? 'Open help documentation (English)' : 'Help',
-  });
+  const usesDocumentationFallback = hasLocaleFallback(locale, 'documentationLocale');
+  const documentationLocale = getLocaleFallbackDefinition(locale, 'documentationLocale');
+  const helpLabel = intl.formatMessage(
+    {
+      id: usesDocumentationFallback
+        ? 'component.globalHeader.help.fallback'
+        : 'component.globalHeader.help',
+      defaultMessage: usesDocumentationFallback ? 'Open help documentation ({language})' : 'Help',
+    },
+    usesDocumentationFallback ? { language: documentationLocale!.nativeLabel } : undefined,
+  );
 
   return (
     <Tooltip title={helpLabel}>

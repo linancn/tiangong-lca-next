@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "tiangong.route-view-state-registry.v1",
+  "registries": [
+    {
+      "id": "welcome-view",
+      "parameter": "view",
+      "defaultVariantId": "overview",
+      "variants": [
+        { "id": "overview", "queryValue": null },
+        { "id": "carbon-footprint-guide", "queryValue": "carbon-footprint" }
+      ]
+    },
+    {
+      "id": "dataset-drawer-mode",
+      "parameter": "mode",
+      "defaultVariantId": "edit",
+      "variants": [
+        { "id": "edit", "queryValue": "edit" },
+        { "id": "view", "queryValue": "view" }
+      ]
+    },
+    {
+      "id": "dataset-required",
+      "parameter": "required",
+      "defaultVariantId": "optional",
+      "variants": [
+        { "id": "optional", "queryValue": null },
+        { "id": "required", "queryValue": "1" }
+      ]
+    },
+    {
+      "id": "team-action",
+      "parameter": "action",
+      "defaultVariantId": "base",
+      "variants": [
+        { "id": "base", "queryValue": null },
+        { "id": "create", "queryValue": "create" },
+        { "id": "edit", "queryValue": "edit" }
+      ]
+    },
+    {
+      "id": "data-processing-tab",
+      "parameter": "tab",
+      "defaultVariantId": "builds",
+      "variants": [
+        { "id": "builds", "queryValue": "builds" },
+        { "id": "preview", "queryValue": "preview" },
+        { "id": "publication", "queryValue": "publication" }
+      ]
+    },
+    {
+      "id": "national-carbon-screen",
+      "parameter": "screen",
+      "defaultVariantId": "overview",
+      "variants": [
+        { "id": "overview", "queryValue": "overview" },
+        { "id": "map_status", "queryValue": "map_status" },
+        { "id": "outcome_metrics", "queryValue": "outcome_metrics" },
+        { "id": "connectivity", "queryValue": "connectivity" },
+        { "id": "flow_topology", "queryValue": "flow_topology" }
+      ]
+    },
+    {
+      "id": "national-carbon-autoplay",
+      "parameter": "autoplay",
+      "defaultVariantId": "enabled",
+      "variants": [
+        { "id": "enabled", "queryValue": "1" },
+        { "id": "disabled", "queryValue": "0" }
+      ]
+    }
+  ]
+}

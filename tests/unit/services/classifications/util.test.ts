@@ -10,6 +10,7 @@ const mockGetLocalStorageJson = jest.fn();
 const mockInitIndexedDbStore = jest.fn();
 const mockPutCachedJsonEntry = jest.fn();
 const mockSetLocalStorageJson = jest.fn();
+const mockSha256Hex = jest.fn();
 
 jest.mock('@/services/general/browserResourceCache', () => ({
   __esModule: true,
@@ -20,6 +21,7 @@ jest.mock('@/services/general/browserResourceCache', () => ({
   initIndexedDbStore: (...args: any[]) => mockInitIndexedDbStore(...args),
   putCachedJsonEntry: (...args: any[]) => mockPutCachedJsonEntry(...args),
   setLocalStorageJson: (...args: any[]) => mockSetLocalStorageJson(...args),
+  sha256Hex: (...args: any[]) => mockSha256Hex(...args),
 }));
 
 import {
@@ -41,6 +43,7 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn() as any;
+    mockSha256Hex.mockResolvedValue('unmanaged-digest');
   });
 
   afterAll(() => {
@@ -211,6 +214,49 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     );
   });
 
+  it('rejects a managed entry from a previous manifest revision', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { stale: true },
+      revision: `${resource.cacheRevision}-previous`,
+      sha256: asset.jsonDigest.value,
+    });
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toBeNull();
+  });
+
+  it('accepts a managed entry only with the exact revision and JSON digest', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { current: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue(asset.jsonDigest.value);
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toEqual({
+      current: true,
+    });
+  });
+
+  it('rejects managed cached JSON that does not match its asserted current digest', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { tampered: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toBeNull();
+  });
+
   it('returns null and logs when reading cached classification file data fails', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     mockInitIndexedDbStore.mockRejectedValue(new Error('db failed'));
@@ -238,6 +284,46 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
         ok: true,
       },
     );
+  });
+
+  it('verifies and persists the exact manifest identity for a managed classification asset', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    const gzipBytes = new ArrayBuffer(8);
+    const json = JSON.stringify({ ok: true });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(gzipBytes),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce(asset.jsonDigest.value);
+    mockDecompressGzipData.mockResolvedValue(json);
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(true);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(
+      'db',
+      'classification_files',
+      asset.fileName,
+      { ok: true },
+      { revision: resource.cacheRevision, sha256: asset.jsonDigest.value },
+    );
+  });
+
+  it('fails closed before parsing when a managed classification gzip digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('returns false when the remote classification file is missing', async () => {

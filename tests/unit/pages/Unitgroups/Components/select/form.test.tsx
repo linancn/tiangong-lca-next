@@ -22,6 +22,9 @@ const mockValueByName = new Map<string, any>();
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
   useModel: () => ({ initialState: { currentUser: { userid: mockCurrentUserId } } }),
 }));
 

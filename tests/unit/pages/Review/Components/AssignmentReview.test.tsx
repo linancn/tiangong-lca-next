@@ -1,6 +1,6 @@
 // @ts-nocheck
 import AssignmentReview from '@/pages/Review/Components/AssignmentReview';
-import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '../../../../helpers/testUtils';
 
@@ -257,7 +257,7 @@ describe('AssignmentReview', () => {
   });
 
   it.each(
-    CONTENT_LANGUAGE_REGISTRY.map(({ appLocale, languageCode }) => [appLocale, languageCode]),
+    LOCALE_CAPABILITY_MATRIX.map(({ appLocale, contentLanguage }) => [appLocale, contentLanguage]),
   )(
     'uses registry content language %s -> %s for review requests',
     async (appLocale, languageCode) => {

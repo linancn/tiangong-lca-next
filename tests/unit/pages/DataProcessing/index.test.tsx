@@ -19,6 +19,7 @@ import DataProcessing, {
   stringifyCommandData,
 } from '@/pages/DataProcessing';
 import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
@@ -46,6 +47,8 @@ const mockListLciaResultPublications = jest.fn();
 const mockRequestWorkerJobsApi = jest.fn();
 const mockFetch = jest.fn();
 let mockLocale: string | undefined = 'en-US';
+let mockLocation = { pathname: '/data-processing', search: '' };
+const mockHistoryReplace = jest.fn();
 
 const mockMessages: Record<string, Record<string, string>> = {
   'zh-CN': {
@@ -118,10 +121,12 @@ const mockLciaMethodList = {
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  history: { replace: (...args: any[]) => mockHistoryReplace(...args) },
   useIntl: () => ({
     formatMessage: mockFormatMessage,
     locale: mockLocale,
   }),
+  useLocation: () => mockLocation,
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -147,6 +152,7 @@ describe('DataProcessing page', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockLocale = 'en-US';
+    mockLocation = { pathname: '/data-processing', search: '' };
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockLciaMethodList,
@@ -241,8 +247,13 @@ describe('DataProcessing page', () => {
       '@xml:lang': languageCode,
       '#text': `label-${languageCode}`,
     }));
-    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
-      expect(resolveLocalizedText(registryLocalizedValue, appLocale)).toBe(`label-${languageCode}`);
+    for (const { appLocale, contentLanguage } of LOCALE_CAPABILITY_MATRIX) {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
+      expect(resolveLocalizedText(registryLocalizedValue, appLocale)).toBe(
+        `label-${contentLanguage}`,
+      );
     }
     expect(
       resolveLocalizedText(
@@ -574,6 +585,22 @@ describe('DataProcessing page', () => {
         publicationId: 'publication-1',
       }),
     );
+  });
+
+  it('hydrates typed hash tabs and preserves other deep-link parameters when tabs change', async () => {
+    mockLocation = {
+      pathname: '/data-processing',
+      search: '?tab=preview&packageId=package-1',
+    };
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('tab-panel-preview')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-publication'));
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: '?tab=publication&packageId=package-1',
+    });
   });
 
   it('summarizes successful build responses without rendering the raw worker payload', async () => {

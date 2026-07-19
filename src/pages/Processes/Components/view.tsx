@@ -1759,6 +1759,12 @@ const ProcessView: FC<Props> = ({
         open={drawerVisible}
         onClose={closeDrawer}
       >
+        <span
+          aria-hidden='true'
+          data-route-mode='view'
+          data-testid='process-deep-link-state'
+          hidden
+        />
         <Spin spinning={spinning}>
           <Card
             style={{ width: '100%' }}

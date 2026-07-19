@@ -10,6 +10,14 @@ const mockInitData = jest.fn();
 
 let mockGraphStoreState: any = {};
 
+const createDeferred = () => {
+  let resolve!: (value: any) => void;
+  const promise = new Promise<any>((promiseResolve) => {
+    resolve = promiseResolve;
+  });
+  return { promise, resolve };
+};
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => <span>{defaultMessage ?? id}</span>,
@@ -395,6 +403,12 @@ describe('ToolbarView', () => {
       }),
     );
     expect(initGraph.nodes[0].ports.items[0].attrs.text.cursor).toBe('move');
+    expect(initGraph.nodes[0].ports.items[0].attrs.text).toEqual(
+      expect.objectContaining({
+        'aria-label': 'Flow label',
+        'data-responsive-label-kind': 'port-label',
+      }),
+    );
     expect(inputTool.args.onClick).toBeUndefined();
     expect(inputTool.args.markup[0].attrs.cursor).toBe('move');
     expect(outputTool.args.onClick).toBeUndefined();
@@ -875,5 +889,90 @@ describe('ToolbarView', () => {
     blankClick();
     expect(mockUpdateNode).toHaveBeenCalledWith('', { selected: false });
     expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
+  });
+
+  it('rebuilds graph-derived labels for the latest language and rejects stale detail responses', async () => {
+    const englishResolution = createDeferred();
+    const frenchResolution = createDeferred();
+    mockGetLifeCycleModelDetail
+      .mockReset()
+      .mockImplementationOnce(() => englishResolution.promise)
+      .mockImplementationOnce(() => frenchResolution.promise);
+    mockGenLifeCycleModelData.mockImplementation((_jsonTg: any, lang: string) => ({
+      nodes: [
+        {
+          id: `node-${lang}`,
+          size: { width: 320 },
+          data: {
+            id: 'proc-1',
+            version: '1.0',
+            label: `Process ${lang}`,
+            quantitativeReference: '1',
+          },
+          ports: {
+            items: [
+              {
+                id: `port-${lang}`,
+                group: 'groupInput',
+                data: {
+                  textLang: `Flow ${lang}`,
+                  quantitativeReference: '0',
+                },
+                attrs: { text: {} },
+              },
+            ],
+          },
+        },
+      ],
+      edges: [],
+    }));
+    mockGetLangText.mockImplementation((_value: any, lang: string) => `Flow label ${lang}`);
+
+    const { rerender } = render(
+      <ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />,
+    );
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledTimes(1));
+
+    rerender(<ToolbarView id='model-1' version='1.0.0' lang='fr' drawerVisible />);
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      frenchResolution.resolve({
+        success: true,
+        data: {
+          json: { lifeCycleModelDataSet: {} },
+          json_tg: { xflow: { nodes: [] } },
+        },
+      });
+    });
+    await waitFor(() => expect(mockInitData).toHaveBeenCalledTimes(1));
+    expect(mockGenLifeCycleModelData).toHaveBeenCalledWith({ xflow: { nodes: [] } }, 'fr');
+    expect(mockInitData.mock.calls[0][0].nodes[0]).toEqual(
+      expect.objectContaining({
+        id: 'node-fr',
+        ports: expect.objectContaining({
+          items: [
+            expect.objectContaining({
+              attrs: expect.objectContaining({
+                text: expect.objectContaining({ title: 'Flow label fr' }),
+              }),
+            }),
+          ],
+        }),
+      }),
+    );
+
+    await act(async () => {
+      englishResolution.resolve({
+        success: true,
+        data: {
+          json: { lifeCycleModelDataSet: {} },
+          json_tg: { xflow: { nodes: [] } },
+        },
+      });
+    });
+
+    expect(mockGenLifeCycleModelData).toHaveBeenCalledTimes(1);
+    expect(mockInitData).toHaveBeenCalledTimes(1);
   });
 });

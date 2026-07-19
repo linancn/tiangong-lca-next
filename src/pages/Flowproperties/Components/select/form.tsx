@@ -10,7 +10,7 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage, useModel } from 'umi';
+import { FormattedMessage, useIntl, useModel } from 'umi';
 import FlowpropertiesEdit from '../edit';
 import FlowpropertyView from '../view';
 import FlowpropertiesSelectDrawer from './drawer';
@@ -94,6 +94,7 @@ const FlowpropertiesSelectForm: FC<Props> = ({
   onData,
   rules = [],
 }) => {
+  const intl = useIntl();
   const [id, setId] = useState<string | undefined>(undefined);
   const [UnitGroupFromMiniKey, setUnitGroupFromMiniKey] = useState<number>(0);
   const [version, setVersion] = useState<string | undefined>(undefined);
@@ -344,7 +345,10 @@ const FlowpropertiesSelectForm: FC<Props> = ({
                   <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder='text'
+                        placeholder={intl.formatMessage({
+                          id: 'pages.lang.text.placeholder',
+                          defaultMessage: 'Text',
+                        })}
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}

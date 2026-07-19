@@ -30,6 +30,8 @@ export default {
   'pages.welcome.overview.tidas.title': 'TIDAS 数据体系架构',
   'pages.welcome.overview.tidas.description': '以模块化数据包、API 与工具链构建的开放生态，支持跨平台协同与可验证的数据交换。',
   'pages.welcome.overview.tidas.readMore': '了解更多',
+  'pages.welcome.overview.tidas.docsFallbackLabel': '了解更多（{language}）',
+  'pages.welcome.overview.tidas.imageFallbackDisclosure': '图示语言：{language}',
   'pages.welcome.overview.tidas.docsUrl': 'https://tidas.tiangong.earth/docs/intro',
   'pages.welcome.overview.tidas.imageAlt': 'TIDAS 数据体系架构图',
   'pages.welcome.carbonFootprintGuide.entryLabel': '数据研制指南',

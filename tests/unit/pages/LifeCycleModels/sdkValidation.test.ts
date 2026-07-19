@@ -3,7 +3,7 @@ import {
   normalizeLifeCycleModelProcessInstanceSdkValidationDetails,
   normalizeLifeCycleModelSdkValidationDetails,
 } from '@/pages/LifeCycleModels/sdkValidation';
-import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 
 describe('LifeCycleModels sdkValidation', () => {
   const {
@@ -15,8 +15,11 @@ describe('LifeCycleModels sdkValidation', () => {
 
   it('covers locale and process-instance helper fallbacks', () => {
     expect(toLocaleLang()).toBe('en');
-    CONTENT_LANGUAGE_REGISTRY.forEach(({ appLocale, languageCode }) => {
-      expect(toLocaleLang(appLocale)).toBe(languageCode);
+    LOCALE_CAPABILITY_MATRIX.forEach(({ appLocale, contentLanguage }) => {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
+      expect(toLocaleLang(appLocale)).toBe(contentLanguage);
     });
     expect(toProcessInstanceList(null)).toEqual([]);
     expect(toProcessInstanceList({ '@dataSetInternalID': 'node-1' })).toEqual([

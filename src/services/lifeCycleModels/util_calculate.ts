@@ -1,9 +1,6 @@
 import { v4 } from 'uuid';
 import { toBigNumberOrZero } from '../general/bignumber';
-import {
-  CANONICAL_CONTENT_LANGUAGE,
-  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
-} from '../general/contentLanguageRegistry';
+import { CONTENT_LANGUAGE_REGISTRY } from '../general/contentLanguageRegistry';
 import {
   // comparePercentDesc,
   jsonToList,
@@ -1637,18 +1634,23 @@ export async function genLifeCycleModelProcesses(
 
       const refExchange = newExchanges.find((e: any) => e?.quantitativeReference);
 
-      const subproductPrefix = [
-        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '子产品: ' },
-        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': 'Subproduct: ' },
-      ];
-      const subproductLeftBracket = [
-        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '[' },
-        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': '[' },
-      ];
-      const subproductRightBracket = [
-        { '@xml:lang': TRANSLATION_SOURCE_CONTENT_LANGUAGE, '#text': '] ' },
-        { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': '] ' },
-      ];
+      const generatedContentLanguages = CONTENT_LANGUAGE_REGISTRY.filter(
+        ({ authoring }) => authoring.enabled,
+      );
+      const subproductPrefix = generatedContentLanguages.map(
+        ({ generatedContent, languageCode }) => ({
+          '@xml:lang': languageCode,
+          '#text': generatedContent.subproductPrefix,
+        }),
+      );
+      const subproductLeftBracket = generatedContentLanguages.map(({ languageCode }) => ({
+        '@xml:lang': languageCode,
+        '#text': '[',
+      }));
+      const subproductRightBracket = generatedContentLanguages.map(({ languageCode }) => ({
+        '@xml:lang': languageCode,
+        '#text': '] ',
+      }));
 
       const baseName =
         type === 'primary'

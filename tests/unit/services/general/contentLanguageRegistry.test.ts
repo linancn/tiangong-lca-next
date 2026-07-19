@@ -33,9 +33,12 @@ describe('contentLanguageRegistry', () => {
       { value: 'fr', label: 'Français' },
     ]);
     expect(getAuthoringLanguageOptions()).toBe(CONTENT_LANGUAGE_OPTIONS);
-    expect(new Set(CONTENT_LANGUAGE_REGISTRY.map(({ appLocale }) => appLocale)).size).toBe(
-      CONTENT_LANGUAGE_REGISTRY.length,
-    );
+    expect(new Set(SUPPORTED_CONTENT_LANGUAGES).size).toBe(SUPPORTED_CONTENT_LANGUAGES.length);
+    expect(
+      CONTENT_LANGUAGE_REGISTRY.filter(({ authoring }) => authoring.enabled).every(
+        ({ generatedContent }) => generatedContent.subproductPrefix.trim().length > 0,
+      ),
+    ).toBe(true);
   });
 
   it.each([
@@ -109,11 +112,11 @@ describe('contentLanguageRegistry', () => {
   it.each(CONTENT_LANGUAGE_REGISTRY)(
     'derives graph formatting for $languageCode from the registry',
     (definition) => {
-      expect(getContentGraphTextWidthDivisor(definition.appLocale)).toBe(
+      expect(getContentGraphTextWidthDivisor(definition.languageCode)).toBe(
         definition.formatting.graphTextWidthDivisor,
       );
       expect(definition.formatting.graphTextWidthDivisor).toBeGreaterThan(0);
-      expect(isTranslationSourceContentLanguage(definition.appLocale)).toBe(
+      expect(isTranslationSourceContentLanguage(definition.languageCode)).toBe(
         definition.languageCode === TRANSLATION_SOURCE_CONTENT_LANGUAGE,
       );
     },

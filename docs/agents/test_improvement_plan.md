@@ -19,10 +19,12 @@ checkPaths:
   - docs/agents/test_todo_list.md
   - docs/agents/repo-validation.md
   - tests/**
+  - playwright.config.ts
+  - .github/workflows/i18n-semantic-e2e.yml
   - package.json
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Reviewed for Issue #633: registry-parameterized capability, hardcoding, and activation tests preserve the existing risk-proportional full-closure strategy.'
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635: retained bounded browser coverage while restricting authenticated production-data proof to an authorized local operator session.'
 ---
 
 # Testing Strategy
@@ -38,6 +40,9 @@ lastReviewedNote: 'Reviewed for Issue #633: registry-parameterized capability, h
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 - localization quality should combine deterministic topology, context, terminology-token, route-view, fallback, correction, and activation gates with a separately produced semantic/route/E2E proof; the deterministic structural artifact must not present itself as independent semantic review, and delivery does not create a human translation-approval state
+- the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and digest-bound evidence that invalidates itself when a locale or covered input changes
+- production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; every semantic E2E GitHub Actions event stays credential-free/read-only, while the local run uses authenticated mode plus the two explicit production-write guards (and a separate verified-evidence opt-in), writes intent before create, verifies UUID/owner/five-field registry markers before delete, and ends with `created=cleaned`, `leaked=0`
+- same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
@@ -50,6 +55,7 @@ lastReviewedNote: 'Reviewed for Issue #633: registry-parameterized capability, h
 - make strategy changes explicit
 - keep focused Umi-generating tests, coverage, and full gates serial; shared generated state makes parallel execution invalid evidence
 - keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
+- keep browser evidence credential-free and non-visual: screenshots, traces, videos, and persisted auth artifacts are disabled; only non-secret assertion results and digests may become tracked proof
 - dead branches should be removed instead of defended by artificial tests
 
 ## Integration Testing North Star

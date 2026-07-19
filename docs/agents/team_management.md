@@ -19,8 +19,8 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 8be153199ce899ccd2a450c2e27cd1fcba9248ed
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
 lastReviewedNote: 'Reviewed #635 locale-driven review-table reloads and canonical English compliance descriptions; team roles and management permissions are unchanged.'
 ---
 

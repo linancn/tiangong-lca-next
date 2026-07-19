@@ -99,6 +99,7 @@ export default {
 
   'pages.version': '版本',
   'pages.lang.select': '请选择语言',
+  'pages.lang.text.placeholder': '文本',
 
   'page.exportData.success': '数据导出成功。',
   'page.exportData.error': '数据导出失败',

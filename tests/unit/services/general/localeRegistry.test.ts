@@ -3,8 +3,10 @@ import {
   getLocaleDefinition,
   getLocaleDefinitionByLanguage,
   getLocaleFallbackDefinition,
+  getWelcomeTidasFallbackDefinition,
   hasEnglishFallback,
   hasLocaleFallback,
+  hasWelcomeTidasFallback,
   LOCALE_REGISTRY,
   normalizeSupportedAppLocale,
   SUPPORTED_APP_LOCALES,
@@ -40,6 +42,10 @@ describe('localeRegistry', () => {
           listSeparator: ', ',
           twoItemConjunction: ' et ',
           manyItemConjunction: ' et ',
+        },
+        contentCapability: {
+          status: 'native',
+          contentLanguage: 'fr',
         },
         fallbacks: {
           documentationLocale: 'en-US',
@@ -101,6 +107,30 @@ describe('localeRegistry', () => {
       );
       expect(definition.assets.welcomeTidas.light).toMatch(/[.]svg$/u);
       expect(definition.assets.welcomeTidas.dark).toMatch(/-dark[.]svg$/u);
+      const tidasImageLocale = getWelcomeTidasFallbackDefinition(
+        definition.canonicalLocale,
+        'imageLocale',
+      );
+      const tidasDocumentationLocale = getWelcomeTidasFallbackDefinition(
+        definition.canonicalLocale,
+        'documentationLocale',
+      );
+      expect(tidasImageLocale?.canonicalLocale).toBe(definition.assets.welcomeTidas.imageLocale);
+      expect(tidasDocumentationLocale?.canonicalLocale).toBe(
+        definition.assets.welcomeTidas.documentationLocale,
+      );
+      expect(hasWelcomeTidasFallback(definition.canonicalLocale, 'imageLocale')).toBe(
+        definition.assets.welcomeTidas.imageLocale !== definition.canonicalLocale,
+      );
+      expect(hasWelcomeTidasFallback(definition.canonicalLocale, 'documentationLocale')).toBe(
+        definition.assets.welcomeTidas.documentationLocale !== definition.canonicalLocale,
+      );
+      expect(definition.assets.welcomeTidas.documentationUrl).toMatch(/^https:\/\//u);
     },
   );
+
+  it('does not invent a TIDAS fallback target for unsupported locales', () => {
+    expect(getWelcomeTidasFallbackDefinition('es-ES', 'imageLocale')).toBeUndefined();
+    expect(hasWelcomeTidasFallback('es-ES', 'documentationLocale')).toBe(false);
+  });
 });

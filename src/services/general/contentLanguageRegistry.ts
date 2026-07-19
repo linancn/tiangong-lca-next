@@ -1,16 +1,15 @@
 import type { Languages } from '@tiangong-lca/tidas-sdk';
 
 import {
+  getLocaleContentCapability,
   getLocaleDefinition,
   normalizeSupportedAppLocale,
-  type SupportedAppLocale,
 } from './localeRegistry';
 
 export type ContentCapabilityStatus = 'native' | 'declared-fallback' | 'unsupported';
 
 export type ContentLanguageDefinition = {
   languageCode: Languages;
-  appLocale: SupportedAppLocale;
   englishName: string;
   nativeLabel: string;
   authoring: {
@@ -23,6 +22,9 @@ export type ContentLanguageDefinition = {
   };
   formatting: {
     graphTextWidthDivisor: number;
+  };
+  generatedContent: {
+    subproductPrefix: string;
   };
   serviceQuery: {
     status: ContentCapabilityStatus;
@@ -42,7 +44,6 @@ export type ContentLanguageDefinition = {
 export const CONTENT_LANGUAGE_REGISTRY = [
   {
     languageCode: 'en',
-    appLocale: 'en-US',
     englishName: 'English',
     nativeLabel: 'English',
     authoring: {
@@ -56,6 +57,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     formatting: {
       graphTextWidthDivisor: 7,
     },
+    generatedContent: {
+      subproductPrefix: 'Subproduct: ',
+    },
     serviceQuery: {
       status: 'native',
       resolvedLanguage: 'en',
@@ -64,7 +68,6 @@ export const CONTENT_LANGUAGE_REGISTRY = [
   },
   {
     languageCode: 'zh',
-    appLocale: 'zh-CN',
     englishName: 'Chinese',
     nativeLabel: '简体中文',
     authoring: {
@@ -78,6 +81,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     formatting: {
       graphTextWidthDivisor: 12,
     },
+    generatedContent: {
+      subproductPrefix: '子产品: ',
+    },
     serviceQuery: {
       status: 'native',
       resolvedLanguage: 'zh',
@@ -86,7 +92,6 @@ export const CONTENT_LANGUAGE_REGISTRY = [
   },
   {
     languageCode: 'de',
-    appLocale: 'de-DE',
     englishName: 'German',
     nativeLabel: 'Deutsch',
     authoring: {
@@ -100,6 +105,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     formatting: {
       graphTextWidthDivisor: 7,
     },
+    generatedContent: {
+      subproductPrefix: 'Nebenprodukt: ',
+    },
     serviceQuery: {
       status: 'declared-fallback',
       resolvedLanguage: 'en',
@@ -108,7 +116,6 @@ export const CONTENT_LANGUAGE_REGISTRY = [
   },
   {
     languageCode: 'fr',
-    appLocale: 'fr-FR',
     englishName: 'French',
     nativeLabel: 'Français',
     authoring: {
@@ -121,6 +128,9 @@ export const CONTENT_LANGUAGE_REGISTRY = [
     },
     formatting: {
       graphTextWidthDivisor: 7,
+    },
+    generatedContent: {
+      subproductPrefix: 'Sous-produit : ',
     },
     serviceQuery: {
       status: 'declared-fallback',
@@ -198,11 +208,30 @@ export function normalizeSupportedContentLanguage(
     return undefined;
   }
 
-  return CONTENT_LANGUAGE_REGISTRY.find(({ appLocale: locale }) => locale === appLocale)
-    ?.languageCode;
+  const capability = getLocaleContentCapability(appLocale);
+  if (capability.status === 'unsupported') {
+    return undefined;
+  }
+
+  return getContentLanguageDefinition(capability.contentLanguage)?.languageCode;
 }
 
 export function resolveContentLanguage(value?: string | null): SupportedContentLanguage {
+  const appLocale = normalizeSupportedAppLocale(value);
+  if (appLocale) {
+    const capability = getLocaleContentCapability(appLocale);
+    if (capability.status === 'unsupported') {
+      throw new Error(`UI locale ${appLocale} declares typed content unsupported.`);
+    }
+    const definition = getContentLanguageDefinition(capability.contentLanguage);
+    if (!definition) {
+      throw new Error(
+        `UI locale ${appLocale} references unknown content language ${capability.contentLanguage}.`,
+      );
+    }
+    return definition.languageCode;
+  }
+
   return normalizeSupportedContentLanguage(value) ?? CANONICAL_CONTENT_LANGUAGE;
 }
 

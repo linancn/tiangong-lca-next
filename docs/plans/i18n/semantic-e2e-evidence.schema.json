@@ -1,0 +1,343 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lca.tiangong.earth/schemas/i18n/semantic-e2e-evidence.v1.json",
+  "title": "TianGong semantic i18n E2E evidence",
+  "description": "Digest-bound, credential-redacted execution evidence for the registry-derived route/view localization contract.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "generatedAt",
+    "runId",
+    "candidate",
+    "target",
+    "locales",
+    "browsers",
+    "routeCoverage",
+    "digests",
+    "assertions",
+    "productionData"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "tiangong.i18n-semantic-e2e-evidence.v1"
+    },
+    "status": {
+      "const": "verified"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "configTreeDigest",
+        "observedHeadCommit",
+        "packageManifestDigest",
+        "sourceTreeDigest",
+        "unitTestTreeDigest"
+      ],
+      "properties": {
+        "configTreeDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "observedHeadCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "packageManifestDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sourceTreeDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "unitTestTreeDigest": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frontend", "backend", "proof"],
+      "properties": {
+        "frontend": {
+          "const": "candidate-local"
+        },
+        "backend": {
+          "const": "production"
+        },
+        "proof": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "backendObservedOriginSha256",
+            "backendObservedPublishableKeySha256",
+            "backendTrackedOriginSha256",
+            "backendTrackedPublishableKeySha256",
+            "candidateEnvironmentSha256",
+            "frontendOriginSha256",
+            "freshPlaywrightServer",
+            "observer",
+            "trackedMainEnvironmentSha256"
+          ],
+          "properties": {
+            "backendObservedOriginSha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "backendObservedPublishableKeySha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "backendTrackedOriginSha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "backendTrackedPublishableKeySha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "candidateEnvironmentSha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "frontendOriginSha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "freshPlaywrightServer": {
+              "const": true
+            },
+            "observer": {
+              "const": "chromium-auth-request"
+            },
+            "trackedMainEnvironmentSha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        }
+      }
+    },
+    "locales": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "browsers": {
+      "type": "array",
+      "prefixItems": [{ "const": "chromium" }, { "const": "firefox" }, { "const": "webkit" }],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "routeCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "contractDigest"],
+      "properties": {
+        "path": {
+          "const": "docs/plans/i18n/route-view-coverage.json"
+        },
+        "contractDigest": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["packageLock", "runtimeAssets", "tests", "sources"],
+      "properties": {
+        "packageLock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {
+              "const": "package-lock.json"
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "runtimeAssets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fileDigest"
+          }
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fileDigest"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fileDigest"
+          }
+        }
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "minItems": 49,
+      "maxItems": 49,
+      "items": {
+        "$ref": "#/$defs/assertion"
+      }
+    },
+    "productionData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["markerPrefix", "created", "cleaned", "leaked"],
+      "properties": {
+        "markerPrefix": {
+          "const": "codex-e2e"
+        },
+        "created": {
+          "type": "integer",
+          "const": 1
+        },
+        "cleaned": {
+          "type": "integer",
+          "const": 1
+        },
+        "leaked": {
+          "const": 0
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fileDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assertionId",
+        "route",
+        "viewState",
+        "result",
+        "proofScope",
+        "locales",
+        "browsers",
+        "scenarios",
+        "scenarioCoverage"
+      ],
+      "properties": {
+        "assertionId": {
+          "type": "string",
+          "pattern": "^rv\\.[a-z0-9][a-z0-9.-]+$"
+        },
+        "route": {
+          "type": "string",
+          "minLength": 1
+        },
+        "viewState": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result": {
+          "const": "passed"
+        },
+        "proofScope": {
+          "enum": [
+            "internal-localization",
+            "access-boundary-observed",
+            "declared-fallback-observed"
+          ]
+        },
+        "locales": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "browsers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["chromium", "firefox", "webkit"]
+          }
+        },
+        "scenarios": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "scenarioCoverage": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/scenarioCoverage"
+          }
+        }
+      }
+    },
+    "scenarioCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario", "locales", "browsers"],
+      "properties": {
+        "scenario": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "locales": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "browsers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["chromium", "firefox", "webkit"]
+          }
+        }
+      }
+    }
+  }
+}

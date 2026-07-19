@@ -21,7 +21,7 @@ import type { ActionType } from '@ant-design/pro-components';
 import { ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Descriptions, Divider, Drawer, Space, Spin, Tooltip } from 'antd';
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { complianceOptions, flowTypeOptions } from './optiondata';
 import PropertyView from './Property/view';
@@ -46,6 +46,7 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   const [initData, setInitData] = useState<FormFlowWithId>();
   const [propertyDataSource, setPropertyDataSource] = useState<FlowPropertyData[]>([]);
   const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
+  const propertyResolutionEpochRef = useRef(0);
 
   const tabList = [
     {
@@ -105,17 +106,25 @@ const FlowsView: FC<Props> = ({ id, version, buttonType, lang }) => {
   };
 
   useEffect(() => {
-    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+    const resolutionEpoch = propertyResolutionEpochRef.current + 1;
+    propertyResolutionEpochRef.current = resolutionEpoch;
+    setDataSource([]);
+
+    void getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
       (res) => {
-        const typedRes = (res ?? []) as FlowpropertyTabTable[];
-        if (typedRes.length) {
-          setDataSource(typedRes);
-        } else {
-          setDataSource([]);
+        if (propertyResolutionEpochRef.current !== resolutionEpoch) {
+          return;
         }
+        setDataSource((res ?? []) as FlowpropertyTabTable[]);
       },
     );
-  }, [propertyDataSource]);
+
+    return () => {
+      if (propertyResolutionEpochRef.current === resolutionEpoch) {
+        propertyResolutionEpochRef.current += 1;
+      }
+    };
+  }, [lang, propertyDataSource]);
 
   const propertyColumns: ProColumns<FlowpropertyTabTable>[] = [
     {

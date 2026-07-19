@@ -18,13 +18,15 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .docpact/config.yaml
   - package.json
+  - playwright.config.ts
+  - tests/e2e/i18n/**
   - jest.config.cjs
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Updated for Issue #633: validation now audits the registry/manifest capability join, exact hardcoding ownership, and every active locale through one activation contract.'
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Updated for Issue #635: all GitHub browser jobs are credential-free/read-only and the digest-bound production-data closure is local-operator-only.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -71,11 +73,29 @@ npm run prepush:gate
 | other static bundles under `public/**` | `npm run lint`; `npm run build` | focused tests near the consuming feature | check both the asset and its readers |
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; focused contract proof for the changed runner or script | final `npm run prepush:gate` through `push:checked` | do not precede the final gate with a duplicate full-suite or coverage run; coverage expectations remain strict |
+| Playwright semantic localization E2E, route/view assertion contract, or evidence schema | `npm run test:e2e:i18n -- --list`; credential-free affected browser project(s); `npm run lint` | explicitly authorized local operator run with runtime credentials, authenticated mode, both production-write guards, and verified-evidence opt-in against the local candidate and production backend | no semantic E2E GitHub Actions event, including `workflow_dispatch`, may receive production credentials or write production; authenticated proof must close all 49 assertion IDs and finish with exact verified-row cleanup plus `created=cleaned`, `leaked=0` |
 | locale bundles, language capabilities, message IDs, or localized runtime copy | `npm run i18n:audit`; `npm run i18n:platform:audit`; `npm run i18n:hardcoding:audit`; `npm run reference-data:check`; for every registry locale run `npm run i18n:locale:audit -- --locale <canonical-locale>`, `npm run i18n:context:check -- --locale <canonical-locale>`, `npm run i18n:locale:quality:check -- --locale <canonical-locale>`, and `npm run i18n:locale:activation:check -- --locale <canonical-locale>`; `npm run i18n:corrections:check`; focused locale/runtime tests; `npm run lint`; `npm run build` | `npm run i18n:locale:all:production:check` for a release candidate; `npm run prepush:gate`; route-view browser smoke for selector, persistence, content-language read/write, framework copy, declared service/reference fallbacks, route/static views under their existing access context, and long-text layout | every registry locale must match the canonical topology/key/ICU and independently declared UI/content/service/reference capability contracts; dynamic IDs require an audited family and unknown fallback; route-view/context manifests must have zero blocked or unowned content and must not grant anonymous access; active commands never read translation confirmation files; the hardcoding allowlist is exact, issue-owned, and fails when stale; production readiness must fail closed while any reference-resource or other activation blocker remains |
 | historical German human-review evidence only | use `i18n:de:pilot`, `i18n:de:review:*`, and `i18n:de:delta:review:*` only to validate the immutable Issue #601/#602/#606 snapshot they own | focused historical checker/renderer tests only when that compatibility implementation changes | these commands are outside active German and full-gate dependency paths; do not regenerate a form for a post-baseline correction, and never commit reviewer data |
 | active German runtime or post-baseline correction | run `npm run i18n:audit`, `npm run i18n:context:check -- --locale de-DE`, `npm run i18n:corrections:check`, `npm run i18n:locale:quality:check -- --locale de-DE`, final `npm run i18n:de:audit`, and focused runtime tests | `npm run build`; applicable route-view/browser smoke; final `npm run prepush:gate` through `push:checked` | baseline `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d` pins the accepted 2,737-message German catalog/runtime state; new source messages use the normal source-context closure, while a changed existing German value requires an exact tracked correction dossier and never a private confirmation |
 | data workflow fixtures or workflow smoke harnesses | `npm run docpact:gate`; `npm run test:data-workflows:unit` | affected live smoke script only when credentials and target environment are part of the task, using `npm run test:workflows -- --<workflow> <workflow-args>`; `npm run test:api:smoke -- <workflow-args>` for broad supported API smoke coverage, then inspect its summary because child workflow failures do not make the command exit non-zero | keep `fixtures/data/**`, `fixtures/result/**`, workflow defaults, and unit path assertions aligned |
 | repo docs only | `scripts/docpact lint --root . --files "<csv>" --mode enforce` | `scripts/docpact validate-config --root . --strict` when `.docpact/config.yaml` changes | still update review metadata and ownership as needed |
+
+## Semantic Localization E2E Contract
+
+The canonical command is `npm run test:e2e:i18n`, implemented with `@playwright/test` `1.61.1`, `playwright.config.ts`, and `tests/e2e/i18n/**`. The candidate frontend is always local (`npm run start:main`, loopback `E2E_BASE_URL`) while its configured backend is production; pointing the Playwright base URL at a production frontend fails closed.
+
+The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is one credential-free trust boundary:
+
+- pull requests, relevant `dev` pushes, and `workflow_dispatch` all use no production credentials and permit no production writes
+- CI runs only contract discovery plus the public semantic/boundary matrix in Chromium, Firefox, and WebKit
+
+The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified tracked evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
+
+The full route/view proof has 49 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
+
+Authenticated setup may create only UUID-scoped `codex-e2e` process data. It writes an ignored intent ledger before attempting create. Before any delete, cleanup reads the production row by UUID and verifies the authenticated owner, the UUID at its exact ILCD path, and language/marker pairs at each of the five exact multilingual field paths; marker strings scattered elsewhere do not attest ownership. Only then may it delete the exact-ID row version. Evidence must prove `created=cleaned` and `leaked=0`. Screenshots, trace, video, stored auth state, and credential-bearing artifacts are disabled. The tracked semantic evidence is accepted only when its schema, 49-ID/required-scenario closure, browser/locale sets, route contract digest, test/source digests, and cleanup counts all match; any drift fails closed.
+
+The shared Header wraps Umi `SelectLang` with `reload={false}`. Browser proof must show that locale switching preserves the current URL and document identity, refreshes locale-bound reference labels in the mounted page, and prevents a delayed response for the old locale from overwriting the current locale.
 
 The local `pre-push` hook always runs `npm run docpact:gate` first, then runs the full `npm run prepush:gate` local test gate on every branch. The docpact gate defaults to `origin/dev` and can be redirected with `DOCPACT_BASE_REF=<ref>` for promote or hotfix branches. For a normal delivery, commit the final controlled tracked change and let that hook own the one authoritative full-gate run; do not manually run the same full gate immediately before pushing. Manual full-gate execution is for a no-push evidence handoff.
 
@@ -116,3 +136,4 @@ Every PR note for this repo must state:
 3. exact environments checked
 4. whether `npm run prepush:gate` ran
 5. whether any required proof lives in another repo
+6. for semantic localization E2E, which browser/trust boundary ran and, for an authenticated run, the non-secret `created/cleaned/leaked` counts

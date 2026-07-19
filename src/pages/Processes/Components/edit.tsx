@@ -2121,6 +2121,13 @@ const ProcessEdit: FC<Props> = ({
           </Space>
         }
       >
+        <span
+          aria-hidden='true'
+          data-auto-check-required={autoCheckRequired ? 'required' : 'optional'}
+          data-route-mode='edit'
+          data-testid='process-deep-link-state'
+          hidden
+        />
         <Spin spinning={spinning}>
           <RefCheckContext.Provider value={refCheckContextValue}>
             {reviewSubmitGateState.status !== 'not_run' && (

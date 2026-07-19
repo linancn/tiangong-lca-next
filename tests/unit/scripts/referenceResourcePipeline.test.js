@@ -142,6 +142,21 @@ describe('reference resource generation pipeline', () => {
                 },
                 usageTerms: {
                   status: 'production-cleared', note: 'Fixture terms.', url: 'https://example.com/terms',
+                  clearanceRequirements: {
+                    profile: 'classification-redistribution-translation',
+                    sourceComponentScopes: ['fixture.raw'], conditions: [],
+                    uses: ['public-production-deployment', 'redistribution', 'translation-and-derivative-works'],
+                  },
+                  evidence: {
+                    schemaVersion: 1, type: 'product-owner-attestation', date: '2026-07-19',
+                    url: 'https://example.com/attestation', resourceId: 'fixture',
+                    edition: 'Fixture edition 1', note: 'Fixture product-owner attestation.',
+                    scope: {
+                      profile: 'classification-redistribution-translation',
+                      sourceComponentScopes: ['fixture.raw'], conditions: [],
+                      uses: ['public-production-deployment', 'redistribution', 'translation-and-derivative-works'],
+                    },
+                  },
                 },
               },
               overlays: {
@@ -337,6 +352,149 @@ describe('reference resource generation pipeline', () => {
           try { pipeline.validateReview(resource, 'de', baseRecords, overlay, invalidReview); }
           catch { failed = true; }
           if (!failed) process.exit(6);
+        }
+      `),
+    ).not.toThrow();
+  });
+
+  it('requires scope-bound product-owner evidence before production clearance', () => {
+    expect(() =>
+      runPipelineModule(`
+        const fs = await import('node:fs');
+        const manifest = JSON.parse(fs.readFileSync('src/services/referenceResources/reference-resource-manifest.json', 'utf8'));
+        const expected = {
+          cpc: {
+            profile: 'classification-redistribution-translation',
+            sourceComponentScopes: ['CPC_Ver_3.0_Structure_30Jun2025.csv'],
+            conditions: [],
+            uses: ['public-production-deployment', 'redistribution', 'translation-and-derivative-works'],
+          },
+          isic: {
+            profile: 'classification-redistribution-translation',
+            sourceComponentScopes: ['ISIC_Rev_5_english_structure.csv'],
+            conditions: [],
+            uses: ['public-production-deployment', 'redistribution', 'translation-and-derivative-works'],
+          },
+          'ilcd-classification': {
+            profile: 'ef-reference-file-reuse',
+            sourceComponentScopes: ['stylesheets/ILCDClassification_Reference.xml'],
+            conditions: ['attribution-required', 'modification-notice-required', 'project-extensions-separately-identified'],
+            uses: ['file-level-reuse', 'public-production-deployment'],
+          },
+          'ilcd-flow-categorization': {
+            profile: 'ef-reference-file-reuse',
+            sourceComponentScopes: ['stylesheets/ILCDFlowCategorization_Reference.xml'],
+            conditions: ['attribution-required', 'modification-notice-required', 'project-extensions-separately-identified'],
+            uses: ['file-level-reuse', 'public-production-deployment'],
+          },
+          'ilcd-locations': {
+            profile: 'ef-reference-file-reuse',
+            sourceComponentScopes: [
+              'cellar-sparql-application-sparql-results-json-response-body',
+              'stylesheets/ILCDLocations_Reference.xml',
+            ],
+            conditions: ['attribution-required', 'modification-notice-required', 'project-extensions-separately-identified'],
+            uses: ['file-level-reuse', 'public-production-deployment'],
+          },
+        };
+        const cleared = manifest.resources.filter(({ structureSource }) =>
+          structureSource.usageTerms.status === 'production-cleared');
+        if (cleared.length !== 5) process.exit(21);
+        for (const resource of cleared) {
+          pipeline.validateProvenance(resource);
+          const evidence = resource.structureSource.usageTerms.evidence;
+          if (evidence.type !== 'product-owner-attestation' || evidence.date !== '2026-07-19') process.exit(22);
+          if (evidence.url !== 'https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208') process.exit(23);
+          if (pipeline.stableJson(evidence.scope) !== pipeline.stableJson(expected[resource.resourceId])) process.exit(24);
+        }
+        const original = cleared[0];
+        const invalid = [
+          { ...original, structureSource: { ...original.structureSource, usageTerms: {
+            ...original.structureSource.usageTerms, evidence: undefined,
+          } } },
+          { ...original, structureSource: { ...original.structureSource, usageTerms: {
+            ...original.structureSource.usageTerms,
+            evidence: { ...original.structureSource.usageTerms.evidence, type: 'license-file' },
+          } } },
+          { ...original, structureSource: { ...original.structureSource, usageTerms: {
+            ...original.structureSource.usageTerms,
+            evidence: { ...original.structureSource.usageTerms.evidence, scope: {
+              ...original.structureSource.usageTerms.evidence.scope,
+              uses: ['public-production-deployment', 'redistribution'],
+            } },
+          } } },
+          { ...original, structureSource: { ...original.structureSource, usageTerms: {
+            ...original.structureSource.usageTerms,
+            clearanceRequirements: {
+              ...original.structureSource.usageTerms.clearanceRequirements,
+              sourceComponentScopes: ['not-a-digested-source'],
+            },
+            evidence: { ...original.structureSource.usageTerms.evidence, scope: {
+              ...original.structureSource.usageTerms.evidence.scope,
+              sourceComponentScopes: ['not-a-digested-source'],
+            } },
+          } } },
+        ];
+        for (const resource of invalid) {
+          let failed = false;
+          try { pipeline.validateProvenance(resource); } catch { failed = true; }
+          if (!failed) process.exit(25);
+        }
+
+        const locations = cleared.find(({ resourceId }) => resourceId === 'ilcd-locations');
+        const omittedSecondarySource = structuredClone(locations);
+        omittedSecondarySource.structureSource.usageTerms.clearanceRequirements.sourceComponentScopes = [
+          'stylesheets/ILCDLocations_Reference.xml',
+        ];
+        omittedSecondarySource.structureSource.usageTerms.evidence.scope.sourceComponentScopes = [
+          'stylesheets/ILCDLocations_Reference.xml',
+        ];
+        const unapprovedSecondaryMapping = structuredClone(locations);
+        unapprovedSecondaryMapping.officialSecondaryMappings[0].usageTerms.productionStatus = 'blocked';
+        for (const resource of [omittedSecondarySource, unapprovedSecondaryMapping]) {
+          let failed = false;
+          try { pipeline.validateProvenance(resource); } catch { failed = true; }
+          if (!failed) process.exit(26);
+        }
+      `),
+    ).not.toThrow();
+  });
+
+  it('requires release-bound official-unavailable decisions for every project-reviewed locale', () => {
+    expect(() =>
+      runPipelineModule(`
+        const fs = await import('node:fs');
+        const manifest = JSON.parse(fs.readFileSync('src/services/referenceResources/reference-resource-manifest.json', 'utf8'));
+        for (const resource of manifest.resources) {
+          pipeline.validateProjectReviewedOfficialAvailability(resource);
+          const reviewedLocales = Object.entries(resource.overlays)
+            .filter(([, overlay]) => overlay.status === 'project-reviewed')
+            .map(([locale]) => locale)
+            .sort();
+          const decisionLocales = Object.keys(resource.officialAvailability.localeDecisions).sort();
+          if (pipeline.stableJson(reviewedLocales) !== pipeline.stableJson(decisionLocales)) process.exit(20);
+          if (resource.officialAvailability.release !== resource.edition.value) process.exit(21);
+          for (const locale of reviewedLocales) {
+            const decision = resource.officialAvailability.localeDecisions[locale];
+            if (decision.locale !== locale || decision.status !== 'official-unavailable') process.exit(22);
+          }
+        }
+
+        const original = manifest.resources.find(({ resourceId }) => resourceId === 'ilcd-locations');
+        const missingLocale = structuredClone(original);
+        delete missingLocale.officialAvailability.localeDecisions.fr;
+        const staleRelease = structuredClone(original);
+        staleRelease.officialAvailability.release = 'older release';
+        const missingSource = structuredClone(original);
+        missingSource.officialAvailability.sourceComponentScopes = [
+          'stylesheets/ILCDLocations_Reference.xml',
+        ];
+        const missingMapping = structuredClone(original);
+        missingMapping.officialAvailability.officialSecondaryMappingIds = [];
+        for (const resource of [missingLocale, staleRelease, missingSource, missingMapping]) {
+          let failed = false;
+          try { pipeline.validateProjectReviewedOfficialAvailability(resource); } catch { failed = true; }
+          if (!failed) process.exit(23);
         }
       `),
     ).not.toThrow();

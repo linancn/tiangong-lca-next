@@ -4,7 +4,17 @@ export interface CachedJsonEntry<T = unknown> {
   size: number;
   cachedAt: number;
   sha256?: string;
+  revision?: string;
 }
+
+export const sha256Hex = async (data: ArrayBuffer | string): Promise<string> => {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error('Web Crypto SHA-256 is not supported in this browser.');
+  }
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+};
 
 export const initIndexedDbStore = (
   dbName: string,
@@ -49,7 +59,7 @@ export const putCachedJsonEntry = async (
   storeName: string,
   filename: string,
   data: unknown,
-  metadata: { sha256?: string } = {},
+  metadata: { revision?: string; sha256?: string } = {},
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([storeName], 'readwrite');
@@ -61,6 +71,7 @@ export const putCachedJsonEntry = async (
       size: JSON.stringify(data).length,
       cachedAt: Date.now(),
       ...(metadata.sha256 ? { sha256: metadata.sha256 } : {}),
+      ...(metadata.revision ? { revision: metadata.revision } : {}),
     };
 
     const request = store.put(cachedEntry);

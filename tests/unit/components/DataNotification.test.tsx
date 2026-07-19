@@ -14,6 +14,7 @@
 
 import DataNotification from '@/components/Notification/DataNotification';
 import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { getNotifyReviews } from '@/services/reviews/api';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
@@ -709,14 +710,17 @@ describe('DataNotification Component', () => {
       data: [{ ...mockReviewData.data[0], name: localizedNames }],
       total: 1,
     });
-    mockIntlLocale = CONTENT_LANGUAGE_REGISTRY[0].appLocale;
+    mockIntlLocale = LOCALE_CAPABILITY_MATRIX[0].appLocale;
     const { rerender } = render(
       <ConfigProvider>
         <DataNotification {...defaultProps} />
       </ConfigProvider>,
     );
 
-    for (const { appLocale, languageCode } of CONTENT_LANGUAGE_REGISTRY) {
+    for (const { appLocale, contentLanguage } of LOCALE_CAPABILITY_MATRIX) {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
       mockIntlLocale = appLocale;
       rerender(
         <ConfigProvider>
@@ -724,7 +728,7 @@ describe('DataNotification Component', () => {
         </ConfigProvider>,
       );
       await waitFor(() => {
-        expect(screen.getByText(`process-${languageCode}`)).toBeInTheDocument();
+        expect(screen.getByText(`process-${contentLanguage}`)).toBeInTheDocument();
       });
     }
   });

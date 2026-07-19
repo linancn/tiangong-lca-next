@@ -104,7 +104,7 @@ jest.mock('antd', () => {
     );
   };
 
-  const FormList = ({ name, children, rules = [] }: any) => {
+  const FormList = ({ name, children, rules = [], initialValue }: any) => {
     const context = React.useContext(FormContext);
     const form = context.form;
     const prefixArray = Array.isArray(context.prefix) ? context.prefix : [];
@@ -124,6 +124,10 @@ jest.mock('antd', () => {
     const [fields, setFields] = React.useState<Array<{ key: number; name: number }>>([]);
 
     React.useEffect(() => {
+      if (form.getFieldValue(path) === undefined && initialValue !== undefined) {
+        form.setFieldValue(path, JSON.parse(JSON.stringify(initialValue)));
+      }
+
       const handleValuesChange = (values: any[]) => {
         const nextFields: Array<{ key: number; name: number }> = Array.isArray(values)
           ? values.map((_: any, index: number) => ({ key: index, name: index }))
@@ -326,7 +330,7 @@ const renderLangTextItemForm = (options: RenderOptions = {}) => {
     fieldErrorMessages,
     listName,
     setRuleErrorState,
-    initialValues = { translations: [] },
+    initialValues = {},
   } = options;
 
   const formRef = createFormRef(initialValues);
@@ -395,7 +399,7 @@ describe('LangTextItemForm', () => {
   it('prevents removing the final required entry', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
-      initialValues: { translations: [] },
+      initialValues: {},
     });
 
     const user = userEvent.setup();
@@ -543,18 +547,22 @@ describe('LangTextItemForm', () => {
     });
   });
 
-  it('keeps grouped required state clear when blank translations should rely on child field validation', async () => {
+  it('repairs an explicit empty required list and rejects an empty submit payload', async () => {
     const setRuleErrorState = jest.fn();
-    const { formRef } = renderLangTextItemForm({
+    renderLangTextItemForm({
       label: 'Treatment, standards, routes',
       rules: [{ required: true }],
       initialValues: { translations: [] },
       setRuleErrorState,
     });
 
-    await act(async () => {
-      formRef.current.setFieldValue(['translations'], [{}]);
+    await waitFor(() => {
+      expect(screen.getAllByRole('combobox')).toHaveLength(1);
     });
+
+    const listRule = listRulesByPath.translations?.[0];
+    await expect(listRule.validator(null, [])).rejects.toThrow('Please input this field');
+    await expect(listRule.validator(null, [{}])).resolves.toBeUndefined();
 
     await waitFor(() => {
       expect(setRuleErrorState).toHaveBeenLastCalledWith(false);
@@ -640,7 +648,7 @@ describe('LangTextItemForm', () => {
   it('runs required child validators for text and language inputs', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
-      initialValues: { translations: [] },
+      initialValues: {},
     });
 
     const [languageSelect] = await screen.findAllByRole('combobox');
@@ -677,7 +685,7 @@ describe('LangTextItemForm', () => {
     expect(message.error).not.toHaveBeenCalled();
   });
 
-  it('normalizes non-array validator input to an empty list before running required checks', async () => {
+  it('normalizes non-array required input to an invalid empty list', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
       setRuleErrorState: jest.fn(),
@@ -685,7 +693,7 @@ describe('LangTextItemForm', () => {
 
     const listRule = listRulesByPath.translations?.[0];
 
-    await expect(listRule.validator(null, undefined)).resolves.toBeUndefined();
+    await expect(listRule.validator(null, undefined)).rejects.toThrow('Please input this field');
     expect(message.error).not.toHaveBeenCalled();
   });
 });
