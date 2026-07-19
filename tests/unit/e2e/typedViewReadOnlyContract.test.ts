@@ -156,4 +156,52 @@ describe('typed Process required-state read-only trap contract', () => {
     expect(source).toContain("await route.abort('blockedbyclient');");
     expect(source).not.toContain('ledgerControlledProcessSaveDraft');
   });
+
+  it('pins one navigation per variant and semantic readiness before locale interaction', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/typed-view-variants.spec.ts'),
+      'utf8',
+    );
+    const requiredCase = source.slice(
+      source.indexOf("test('Process required deep-link state is explicit and reload-stable'"),
+    );
+    const variantLoop = requiredCase.indexOf('for (const { required }');
+    const localeLoop = requiredCase.indexOf('for (const locale of APP_LOCALES)', variantLoop);
+    const variantNavigation = requiredCase.indexOf('await page.goto(', variantLoop);
+
+    expect(variantLoop).toBeGreaterThanOrEqual(0);
+    expect(variantNavigation).toBeGreaterThan(variantLoop);
+    expect(variantNavigation).toBeLessThan(localeLoop);
+    expect(requiredCase.match(/await page[.]goto[(]/gu)).toHaveLength(1);
+    expect(requiredCase).toContain('await expectProcessDeepLinkMountSettled({');
+    expect(requiredCase).toContain('await page.reload({ waitUntil:');
+    expect(requiredCase).toContain(
+      'expect(variantNavigationCount).toBe(PROCESS_REQUIRED_VARIANTS.length);',
+    );
+    expect(requiredCase).toContain(
+      'expect(reloadProofCount).toBe(PROCESS_REQUIRED_VARIANTS.length * APP_LOCALES.length);',
+    );
+  });
+
+  it('defines readiness as authenticated shell, exact deep link, trapped required save, and settled drawer', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/typed-view-variants.spec.ts'),
+      'utf8',
+    );
+    const readinessStart = source.indexOf('async function expectProcessDeepLinkMountSettled');
+    const readinessEnd = source.indexOf("test('Process edit and view deep links", readinessStart);
+    const readiness = source.slice(readinessStart, readinessEnd);
+
+    expect(readinessStart).toBeGreaterThanOrEqual(0);
+    expect(readiness).toContain('await expectSpaLocation(page, expectedLocation);');
+    expect(readiness).toContain("page.locator('.tg-global-header-avatar-trigger')");
+    expect(readiness).toContain("page.locator('.tg-global-language-selector')");
+    expect(readiness).toContain("page.getByTestId('process-deep-link-state')");
+    expect(readiness).toContain("toHaveAttribute('data-auto-check-required', required)");
+    expect(readiness).toContain('.toBeGreaterThan(trappedValidationDraftsBeforeMount);');
+    expect(readiness).toContain("drawer.locator('.ant-spin-spinning')");
+    expect(readiness).toContain(
+      'expect(readTrappedValidationDrafts()).toBe(trappedValidationDraftsBeforeMount);',
+    );
+  });
 });

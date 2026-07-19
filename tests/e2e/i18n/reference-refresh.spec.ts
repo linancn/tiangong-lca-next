@@ -189,23 +189,6 @@ function buildProcessDeepLink(
   return target.toString();
 }
 
-async function gotoCandidateDocument(page: Page, targetUrl: string): Promise<void> {
-  for (let attempt = 1; attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS; attempt += 1) {
-    try {
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-      return;
-    } catch (error) {
-      const isRecoverableFirefoxNavigation =
-        error instanceof Error &&
-        (error.message.includes('NS_ERROR_FAILURE') ||
-          error.message.includes('NS_BINDING_ABORTED'));
-      if (!isRecoverableFirefoxNavigation || attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
-        throw error;
-      }
-    }
-  }
-}
-
 async function expectProcessDeepLink(
   page: Page,
   ledger: ProductionDataLedger,
@@ -234,6 +217,56 @@ async function expectProcessDeepLink(
       outerState: state,
       version: ledger.version,
     });
+}
+
+async function isAuthenticatedWelcomeBootRedirect(page: Page, targetUrl: string): Promise<boolean> {
+  const expectedUrl = new URL(targetUrl);
+  const actualUrl = new URL(page.url());
+  const isSameCandidateDocument =
+    actualUrl.origin === expectedUrl.origin && actualUrl.pathname === expectedUrl.pathname;
+  const hasAllowedCandidateSearch =
+    actualUrl.search === expectedUrl.search || actualUrl.search === '';
+  const isWelcomeRoute = actualUrl.hash === '#/welcome';
+  const hasAuthenticatedShell =
+    (await page.locator('.tg-global-header-avatar-trigger').count()) === 1;
+  return (
+    isSameCandidateDocument && hasAllowedCandidateSearch && isWelcomeRoute && hasAuthenticatedShell
+  );
+}
+
+async function gotoCandidateDocument(
+  page: Page,
+  targetUrl: string,
+  ledger: ProductionDataLedger,
+  state: string,
+  mode: 'edit' | 'view' = 'view',
+): Promise<void> {
+  for (let attempt = 1; attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS; attempt += 1) {
+    try {
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+    } catch (error) {
+      const isRecoverableFirefoxNavigation =
+        error instanceof Error &&
+        (error.message.includes('NS_ERROR_FAILURE') ||
+          error.message.includes('NS_BINDING_ABORTED'));
+      if (!isRecoverableFirefoxNavigation || attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
+        throw error;
+      }
+      continue;
+    }
+
+    try {
+      await expectProcessDeepLink(page, ledger, state, mode);
+      return;
+    } catch (error) {
+      if (attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
+        throw error;
+      }
+      if (!(await isAuthenticatedWelcomeBootRedirect(page, targetUrl))) {
+        throw error;
+      }
+    }
+  }
 }
 
 async function selectLocaleThroughHeader(
@@ -519,8 +552,7 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-          await gotoCandidateDocument(page, targetUrl);
-          await expectProcessDeepLink(page, ledger!, state);
+          await gotoCandidateDocument(page, targetUrl, ledger!, state);
           await expect
             .poll(
               () =>
@@ -656,8 +688,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
       }
       const state = `cache-roundtrip-${definition.languageCode}`;
       const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-      await gotoCandidateDocument(page, targetUrl);
-      await expectProcessDeepLink(page, ledger!, state);
+      await gotoCandidateDocument(page, targetUrl, ledger!, state);
 
       const documentIdentity = await page.evaluate(() => {
         const identity = crypto.randomUUID();
@@ -764,8 +795,13 @@ test('process edit form consumes current classification and location assets in e
         await selectLocaleThroughHeader(page, definition);
       }
       const state = `form-${definition.languageCode}`;
-      await gotoCandidateDocument(page, buildProcessDeepLink(baseURL!, ledger!, state, 'edit'));
-      await expectProcessDeepLink(page, ledger!, state, 'edit');
+      await gotoCandidateDocument(
+        page,
+        buildProcessDeepLink(baseURL!, ledger!, state, 'edit'),
+        ledger!,
+        state,
+        'edit',
+      );
       await expect(
         page.getByText(getLocaleMessage(definition.appLocale, 'pages.process.drawer.title.edit'), {
           exact: true,

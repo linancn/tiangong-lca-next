@@ -371,6 +371,43 @@ async function expectProcessDrawer(
   }
 }
 
+async function expectProcessDeepLinkMountSettled(input: {
+  expectedLocation: SpaLocationTarget;
+  page: Page;
+  readTrappedValidationDrafts: () => number;
+  required: 'optional' | 'required';
+  trappedValidationDraftsBeforeMount: number;
+}): Promise<void> {
+  const {
+    expectedLocation,
+    page,
+    readTrappedValidationDrafts,
+    required,
+    trappedValidationDraftsBeforeMount,
+  } = input;
+  await expectSpaLocation(page, expectedLocation);
+  await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached();
+  await expect(page.locator('.tg-global-language-selector')).toBeVisible();
+
+  const state = page.getByTestId('process-deep-link-state');
+  await expect(state).toBeAttached();
+  await expect(state).toHaveAttribute('data-route-mode', 'edit');
+  await expect(state).toHaveAttribute('data-auto-check-required', required);
+  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  await expect(drawer).toHaveCount(1);
+  await expect(drawer).toBeVisible();
+
+  if (required === 'required') {
+    await expect
+      .poll(readTrappedValidationDrafts)
+      .toBeGreaterThan(trappedValidationDraftsBeforeMount);
+  }
+  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0);
+  if (required === 'optional') {
+    expect(readTrappedValidationDrafts()).toBe(trappedValidationDraftsBeforeMount);
+  }
+}
+
 test('Process edit and view deep links survive locale switches and reloads', async ({
   baseURL,
   browserName,
@@ -446,6 +483,8 @@ test('Process required deep-link state is explicit and reload-stable', async ({
     await route.abort('blockedbyclient');
   });
   const readTrappedValidationDrafts = () => trappedValidationDrafts;
+  let reloadProofCount = 0;
+  let variantNavigationCount = 0;
 
   try {
     for (const { required } of PROCESS_REQUIRED_VARIANTS) {
@@ -458,22 +497,45 @@ test('Process required deep-link state is explicit and reload-stable', async ({
         hashQuery.required = '1';
       }
       const location = { hashPath: '/mydata/processes', hashQuery } satisfies SpaLocationTarget;
+      const trappedValidationDraftsBeforeNavigation = trappedValidationDrafts;
+      await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
+        waitUntil: 'domcontentloaded',
+      });
+      variantNavigationCount += 1;
+      await expectProcessDeepLinkMountSettled({
+        expectedLocation: location,
+        page,
+        readTrappedValidationDrafts,
+        required,
+        trappedValidationDraftsBeforeMount: trappedValidationDraftsBeforeNavigation,
+      });
+
       for (const locale of APP_LOCALES) {
+        // The Playwright steps execute sequentially; these counters intentionally prove each
+        // reload reached a fresh, settled mount before the next locale interaction.
+        // eslint-disable-next-line @typescript-eslint/no-loop-func
         await test.step(`${required} ${locale}`, async () => {
-          await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
-            waitUntil: 'domcontentloaded',
-          });
           await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
           await expectSpaLocation(page, location);
           await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
           await expectProcessDrawer(page, locale, 'edit', required);
 
+          const trappedValidationDraftsBeforeReload = trappedValidationDrafts;
           await page.reload({ waitUntil: 'domcontentloaded' });
-          await expectSpaLocation(page, location);
+          reloadProofCount += 1;
+          await expectProcessDeepLinkMountSettled({
+            expectedLocation: location,
+            page,
+            readTrappedValidationDrafts,
+            required,
+            trappedValidationDraftsBeforeMount: trappedValidationDraftsBeforeReload,
+          });
           await expectProcessDrawer(page, locale, 'edit', required);
         });
       }
     }
+    expect(variantNavigationCount).toBe(PROCESS_REQUIRED_VARIANTS.length);
+    expect(reloadProofCount).toBe(PROCESS_REQUIRED_VARIANTS.length * APP_LOCALES.length);
     await expect.poll(readTrappedValidationDrafts).toBeGreaterThan(0);
   } finally {
     // Stop mounted auto-validation effects while the exact local trap is still active.
