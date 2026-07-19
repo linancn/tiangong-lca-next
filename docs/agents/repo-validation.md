@@ -24,8 +24,8 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: d44bcac8c7839f0c29163485f43c61b71965a3b6
 lastReviewedNote: 'Updated for Issue #635: all GitHub browser jobs are credential-free/read-only and the digest-bound production-data closure is local-operator-only.'
 related:
   - ../AGENTS.md

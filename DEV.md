@@ -23,8 +23,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: d44bcac8c7839f0c29163485f43c61b71965a3b6
 lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the explicitly authorized local production-data operator run.'
 ---
 
