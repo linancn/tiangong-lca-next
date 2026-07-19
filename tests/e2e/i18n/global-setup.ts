@@ -3,6 +3,10 @@ import { mkdir, rm } from 'node:fs/promises';
 import type { FullConfig } from '@playwright/test';
 
 import {
+  resolveCandidateReadinessBrowserName,
+  waitForCandidateFrontendReady,
+} from './candidate-readiness';
+import {
   assertCandidateFrontendTarget,
   E2E_AUTH_STATE_PATH,
   E2E_LEDGER_RESULT_PATH,
@@ -23,6 +27,10 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
     rm(E2E_AUTH_STATE_PATH, { force: true }),
     rm(E2E_LEDGER_RESULT_PATH, { force: true }),
   ]);
+  await waitForCandidateFrontendReady(
+    baseURL,
+    resolveCandidateReadinessBrowserName(process.env.E2E_READINESS_BROWSER),
+  );
 
   if (!isProductionDataRun()) {
     return;
