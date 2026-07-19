@@ -94,7 +94,7 @@ describe('reference refresh semantic E2E contract', () => {
       staleRelease,
     );
     const currentTextVisible = raceSource.indexOf(
-      'expect(page.getByText(currentText, { exact: true })).toBeVisible({',
+      'expect(localizedViewDrawer.getByText(currentText, { exact: true })).toBeVisible({',
       staleRelease,
     );
 
@@ -176,6 +176,47 @@ describe('reference refresh semantic E2E contract', () => {
     expect(formSource).toContain('await selectLocaleThroughHeader(page, definition);');
     expect(formSource).toContain(
       'await selectLocaleThroughHeader(page, definition, { forceTrigger: true });',
+    );
+  });
+
+  it('scopes mounted current-reference text to one localized View Process drawer', () => {
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const raceStart = source.indexOf(
+      "test('delayed old-locale classification and location responses never overwrite the mounted locale'",
+    );
+    const cacheStart = source.indexOf(
+      "test('previous-revision browser caches fail closed and process deep links survive locale reloads'",
+      raceStart,
+    );
+    const cacheEnd = source.indexOf(
+      "test('process edit form consumes current classification and location assets in every readable locale'",
+      cacheStart,
+    );
+    const raceSource = source.slice(raceStart, cacheStart);
+    const cacheSource = source.slice(cacheStart, cacheEnd);
+
+    expect(source).toContain('function getLocalizedProcessViewDrawer(');
+    expect(source).toContain("page.locator('.ant-drawer-content:visible').filter({");
+    expect(source).toContain("getLocaleMessage(locale, 'pages.process.drawer.title.view')");
+    expect(raceSource).toContain('await expect(localizedViewDrawer).toHaveCount(1);');
+    expect(raceSource).toContain('localizedViewDrawer.getByText(currentText, { exact: true })');
+    expect(raceSource).not.toContain('page.getByText(currentText, { exact: true })');
+    expect(
+      cacheSource.match(/await expect\(localizedViewDrawer\)[.]toHaveCount\(1\);/gu),
+    ).toHaveLength(2);
+    expect(cacheSource).toContain(
+      'localizedViewDrawer.getByText(fixture.visibleText(definition), { exact: true })',
+    );
+    expect(cacheSource).not.toContain(
+      'page.getByText(fixture.visibleText(definition), { exact: true })',
+    );
+
+    // Stale content must remain absent from the whole page, not merely from the drawer.
+    expect(raceSource).toContain(
+      'await expect(page.getByText(staleText, { exact: true })).toHaveCount(0);',
+    );
+    expect(cacheSource).toContain(
+      'await expect(page.getByText(`${staleMarker}-${fixture.id}`, { exact: true })).toHaveCount(',
     );
   });
 });

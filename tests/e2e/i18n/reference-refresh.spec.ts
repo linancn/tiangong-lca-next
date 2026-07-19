@@ -243,6 +243,14 @@ async function selectLocaleThroughHeader(
   await expect.poll(() => readStoredAppLocale(page)).toBe(definition.appLocale);
 }
 
+function getLocalizedProcessViewDrawer(page: Page, locale: SupportedAppLocale) {
+  return page.locator('.ant-drawer-content:visible').filter({
+    has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {
+      exact: true,
+    }),
+  });
+}
+
 async function clearBrowserCache(page: Page, descriptor: BrowserCacheDescriptor): Promise<void> {
   await page.evaluate(async ({ databaseName, manifestKey, storeName }) => {
     await new Promise<void>((resolve, reject) => {
@@ -538,6 +546,11 @@ test('delayed old-locale classification and location responses never overwrite t
 
           const currentText = fixture.visibleText(currentDefinition);
           const staleText = fixture.visibleText(staleDefinition);
+          const localizedViewDrawer = getLocalizedProcessViewDrawer(
+            page,
+            currentDefinition.appLocale,
+          );
+          await expect(localizedViewDrawer).toHaveCount(1);
           // A warm memory cache may require no current-locale request, while a localized
           // classification may legitimately depend on the delayed base-language asset. Observe
           // the mounted surface before releasing that response, then use visible localized text
@@ -572,7 +585,7 @@ test('delayed old-locale classification and location responses never overwrite t
             )
             .toBe(true);
           expect(staleResponseErrors).toEqual([]);
-          await expect(page.getByText(currentText, { exact: true })).toBeVisible({
+          await expect(localizedViewDrawer.getByText(currentText, { exact: true })).toBeVisible({
             timeout: REFERENCE_RACE_SETTLE_TIMEOUT_MS,
           });
           await page.evaluate(
@@ -582,7 +595,7 @@ test('delayed old-locale classification and location responses never overwrite t
               }),
           );
 
-          await expect(page.getByText(currentText, { exact: true })).toBeVisible();
+          await expect(localizedViewDrawer.getByText(currentText, { exact: true })).toBeVisible();
           await expect(page.getByText(staleText, { exact: true })).toHaveCount(0);
           const staleTextSeen = await page.evaluate(() => {
             const runtimeWindow = window as typeof window & {
@@ -655,9 +668,11 @@ test('previous-revision browser caches fail closed and process deep links surviv
       await expect
         .poll(() => page.evaluate(() => document.documentElement.dataset.codexE2eDocumentIdentity))
         .toBe(documentIdentity);
+      const localizedViewDrawer = getLocalizedProcessViewDrawer(page, definition.appLocale);
+      await expect(localizedViewDrawer).toHaveCount(1);
       for (const fixture of fixtures) {
         await expect(
-          page.getByText(fixture.visibleText(definition), { exact: true }),
+          localizedViewDrawer.getByText(fixture.visibleText(definition), { exact: true }),
         ).toBeVisible();
       }
 
@@ -690,11 +705,12 @@ test('previous-revision browser caches fail closed and process deep links surviv
             page.evaluate(() => document.documentElement.dataset.codexE2EDocumentIdentity ?? null),
           )
           .not.toBe(documentIdentity);
+        await expect(localizedViewDrawer).toHaveCount(1);
 
         for (const fixture of fixtures) {
           const identity = fixture.cacheIdentity(definition);
           await expect(
-            page.getByText(fixture.visibleText(definition), { exact: true }),
+            localizedViewDrawer.getByText(fixture.visibleText(definition), { exact: true }),
           ).toBeVisible();
           await expect(page.getByText(`${staleMarker}-${fixture.id}`, { exact: true })).toHaveCount(
             0,
