@@ -77,6 +77,14 @@ describe('LevelTextItemDescription', () => {
     expect(screen.getByText('-')).toBeInTheDocument();
     expect(mockGetILCDClassification).not.toHaveBeenCalled();
     expect(mockGetILCDFlowCategorization).not.toHaveBeenCalled();
+    expect(screen.getByTestId('reference-resource-classification')).toHaveAttribute(
+      'data-reference-language',
+      'en',
+    );
+    expect(screen.getByTestId('reference-resource-classification')).toHaveAttribute(
+      'data-reference-pending',
+      'false',
+    );
     expect(screen.getByTestId('level-spin')).toHaveAttribute('data-spinning', 'false');
   });
 

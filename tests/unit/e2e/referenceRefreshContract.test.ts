@@ -62,7 +62,7 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).toContain('expectCurrentReferenceCacheBaseline');
     expect(source).toContain('injectPreviousRevisionEntries');
     expect(source).toContain('expectPreviousRevisionEntriesInjected');
-    expect(source).toContain("mode: 'edit' | 'view'");
+    expect(source).toContain("mode?: 'edit' | 'view'");
     expect(source).toContain("error.message.includes('NS_ERROR_FAILURE')");
     expect(source).toContain(
       'await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);',
@@ -85,6 +85,13 @@ describe('reference refresh semantic E2E contract', () => {
       helperStart,
     );
     const helperSource = source.slice(helperStart, helperEnd);
+    const detailReadyGuard = helperSource.indexOf("if (mode === 'view')");
+    const detailReady = helperSource.indexOf(
+      "toHaveAttribute('data-detail-ready', 'true'",
+      detailReadyGuard,
+    );
+    const idleGuard = helperSource.indexOf('if (waitForDrawerIdle)', detailReady);
+    const nestedIdleWait = helperSource.indexOf("drawer.locator('.ant-spin-spinning')", idleGuard);
 
     expect(helperStart).toBeGreaterThan(-1);
     expect(helperEnd).toBeGreaterThan(helperStart);
@@ -100,6 +107,11 @@ describe('reference refresh semantic E2E contract', () => {
       'expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl)',
     );
     expect(helperSource).toContain('await expectProcessDeepLink(page, ledger, state, mode);');
+    expect(helperSource).toContain("const { mode = 'view', waitForDrawerIdle = true } = options;");
+    expect(detailReadyGuard).toBeGreaterThan(-1);
+    expect(detailReady).toBeGreaterThan(detailReadyGuard);
+    expect(idleGuard).toBeGreaterThan(detailReady);
+    expect(nestedIdleWait).toBeGreaterThan(idleGuard);
     expect(helperSource).toContain("page.locator('.tg-global-header-avatar-trigger')");
     expect(helperSource).toContain("page.locator('.tg-global-language-selector')");
     expect(helperSource).toContain("page.locator('.ant-result-403')");
@@ -125,7 +137,16 @@ describe('reference refresh semantic E2E contract', () => {
       raceStart,
     );
     const raceSource = source.slice(raceStart, raceEnd);
+    const timeoutBudget = raceSource.indexOf('test.setTimeout(');
+    const navigationReady = raceSource.indexOf('await gotoCandidateDocument(');
+    const staleConsumersDefined = raceSource.indexOf('const staleConsumers =', navigationReady);
+    const navigationCall = raceSource.slice(navigationReady, staleConsumersDefined);
+    const staleConsumerPending = raceSource.indexOf('.toBeGreaterThan(0);', staleConsumersDefined);
     const staleRequestStarted = raceSource.indexOf('staleRequestsStarted > 0');
+    const staleResponseHeld = raceSource.indexOf(
+      'expect(staleResponsesFinished).toBe(0);',
+      staleRequestStarted,
+    );
     const observerInstall = raceSource.indexOf('__codexE2EReferenceRaceObserver =');
     const staleRelease = raceSource.indexOf('releaseOldResponseOnce();', observerInstall);
     const staleResponseSettled = raceSource.indexOf(
@@ -139,19 +160,30 @@ describe('reference refresh semantic E2E contract', () => {
 
     expect(raceStart).toBeGreaterThan(-1);
     expect(raceEnd).toBeGreaterThan(raceStart);
-    expect(staleRequestStarted).toBeGreaterThan(-1);
-    expect(observerInstall).toBeGreaterThan(staleRequestStarted);
+    expect(timeoutBudget).toBeGreaterThan(-1);
+    expect(navigationReady).toBeGreaterThan(timeoutBudget);
+    expect(staleConsumersDefined).toBeGreaterThan(navigationReady);
+    expect(navigationCall).toContain('waitForDrawerIdle: false');
+    expect(staleConsumerPending).toBeGreaterThan(staleConsumersDefined);
+    expect(staleRequestStarted).toBeGreaterThan(staleConsumerPending);
+    expect(staleResponseHeld).toBeGreaterThan(staleRequestStarted);
+    expect(observerInstall).toBeGreaterThan(staleResponseHeld);
     expect(staleRelease).toBeGreaterThan(observerInstall);
     expect(staleResponseSettled).toBeGreaterThan(staleRelease);
     expect(currentTextVisible).toBeGreaterThan(staleRelease);
     expect(raceSource).toContain('timeout: REFERENCE_RACE_SETTLE_TIMEOUT_MS');
+    expect(raceSource).toContain(
+      'const referenceRaceStepCount = consumerFixtures.length * localePairs.length;',
+    );
+    expect(raceSource).toContain(
+      'REFERENCE_RACE_BASE_TIMEOUT_MS + referenceRaceStepCount * REFERENCE_RACE_STEP_TIMEOUT_MS',
+    );
+    expect(source).toContain('const REFERENCE_RACE_STEP_TIMEOUT_MS = 90_000;');
     expect(raceSource).toContain('staleRequestsStarted > 0');
+    expect(raceSource).toContain('data-reference-pending="true"');
     expect(raceSource).toContain('expect(staleTextSeen).toBe(false)');
     expect(raceSource).not.toContain('currentRequestsStarted');
     expect(raceSource).not.toContain('currentResponsesFinished');
-    const navigationReady = raceSource.indexOf(
-      'await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);',
-    );
     const localeSwitch = raceSource.indexOf(
       'await selectLocaleThroughHeader(page, currentDefinition, { forceTrigger: true });',
       navigationReady,
@@ -160,8 +192,9 @@ describe('reference refresh semantic E2E contract', () => {
       'await expectProcessDeepLink(page, ledger!, state);',
       localeSwitch,
     );
-    expect(navigationReady).toBeGreaterThan(-1);
+    expect(staleResponseHeld).toBeGreaterThan(navigationReady);
     expect(localeSwitch).toBeGreaterThan(navigationReady);
+    expect(localeSwitch).toBeGreaterThan(staleResponseHeld);
     expect(postLocaleDeepLinkAssertion).toBeGreaterThan(localeSwitch);
   });
 

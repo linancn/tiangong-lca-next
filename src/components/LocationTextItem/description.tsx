@@ -49,13 +49,19 @@ const LocationTextItemDescription: FC<Props> = ({ lang, data, label, styles }) =
   }, [data, lang]);
 
   return (
-    <Spin spinning={spinning}>
-      <Descriptions bordered size={'small'} column={1}>
-        <Descriptions.Item key={0} label={label} styles={styles}>
-          {dataDes}
-        </Descriptions.Item>
-      </Descriptions>
-    </Spin>
+    <div
+      data-testid='reference-resource-location'
+      data-reference-language={lang}
+      data-reference-pending={spinning ? 'true' : 'false'}
+    >
+      <Spin spinning={spinning}>
+        <Descriptions bordered size={'small'} column={1}>
+          <Descriptions.Item key={0} label={label} styles={styles}>
+            {dataDes}
+          </Descriptions.Item>
+        </Descriptions>
+      </Spin>
+    </div>
   );
 };
 

@@ -1807,6 +1807,7 @@ const ProcessView: FC<Props> = ({
       >
         <span
           aria-hidden='true'
+          data-detail-ready={initData.id === id && !spinning ? 'true' : 'false'}
           data-route-mode='view'
           data-testid='process-deep-link-state'
           hidden

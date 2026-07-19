@@ -67,6 +67,14 @@ describe('LocationTextItemDescription', () => {
       expect(screen.getByText('United States')).toBeInTheDocument();
     });
 
+    expect(screen.getByTestId('reference-resource-location')).toHaveAttribute(
+      'data-reference-language',
+      'en',
+    );
+    expect(screen.getByTestId('reference-resource-location')).toHaveAttribute(
+      'data-reference-pending',
+      'false',
+    );
     expect(screen.getByTestId('location-spin')).toHaveAttribute('data-spinning', 'false');
   });
 

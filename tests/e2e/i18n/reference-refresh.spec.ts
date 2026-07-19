@@ -27,6 +27,8 @@ import { loadReferenceFixture, type ReferenceFixture } from './reference-fixture
 const processAssertion = findRouteAssertion('/mydata/processes');
 const REQUEST_BATCH_QUIET_MS = 150;
 const REFERENCE_RACE_SETTLE_TIMEOUT_MS = 60_000;
+const REFERENCE_RACE_BASE_TIMEOUT_MS = 120_000;
+const REFERENCE_RACE_STEP_TIMEOUT_MS = 90_000;
 
 type ReadableLocaleDefinition = {
   appLocale: SupportedAppLocale;
@@ -224,8 +226,9 @@ async function gotoCandidateDocument(
   targetUrl: string,
   ledger: ProductionDataLedger,
   state: string,
-  mode: 'edit' | 'view' = 'view',
+  options: { mode?: 'edit' | 'view'; waitForDrawerIdle?: boolean } = {},
 ): Promise<void> {
+  const { mode = 'view', waitForDrawerIdle = true } = options;
   try {
     await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });
   } catch (error) {
@@ -250,7 +253,12 @@ async function gotoCandidateDocument(
   await expect(deepLinkState).toHaveAttribute('data-route-mode', mode, { timeout: 45_000 });
   const drawer = page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState });
   await expect(drawer).toHaveCount(1, { timeout: 45_000 });
-  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
+  if (mode === 'view') {
+    await expect(deepLinkState).toHaveAttribute('data-detail-ready', 'true', { timeout: 45_000 });
+  }
+  if (waitForDrawerIdle) {
+    await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
+  }
 }
 
 async function selectLocaleThroughHeader(
@@ -486,6 +494,10 @@ test('delayed old-locale classification and location responses never overwrite t
     }
     return { currentDefinition, staleDefinition };
   });
+  const referenceRaceStepCount = consumerFixtures.length * localePairs.length;
+  test.setTimeout(
+    REFERENCE_RACE_BASE_TIMEOUT_MS + referenceRaceStepCount * REFERENCE_RACE_STEP_TIMEOUT_MS,
+  );
 
   await signInViaUi(page);
   for (const [fixtureIndex, fixture] of consumerFixtures.entries()) {
@@ -537,7 +549,13 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-          await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);
+          await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state, {
+            waitForDrawerIdle: false,
+          });
+          const staleConsumers = mountedProcessDrawer.locator(
+            `[data-testid="reference-resource-${fixture.id}"][data-reference-language="${staleDefinition.languageCode}"][data-reference-pending="true"]`,
+          );
+          await expect.poll(() => staleConsumers.count(), { timeout: 15_000 }).toBeGreaterThan(0);
           await expect
             .poll(
               () =>
@@ -546,6 +564,7 @@ test('delayed old-locale classification and location responses never overwrite t
               { timeout: 15_000 },
             )
             .toBe(true);
+          expect(staleResponsesFinished).toBe(0);
 
           const documentIdentity = await page.evaluate(() => {
             const identity = crypto.randomUUID();
@@ -788,7 +807,7 @@ test('process edit form consumes current classification and location assets in e
         buildProcessDeepLink(baseURL!, ledger!, state, 'edit'),
         ledger!,
         state,
-        'edit',
+        { mode: 'edit' },
       );
       await expect(
         page.getByText(getLocaleMessage(definition.appLocale, 'pages.process.drawer.title.edit'), {
