@@ -451,25 +451,34 @@ export async function selectAppLocaleThroughUi(
     name: localeDefinition.nativeLabel,
     exact: true,
   });
-  const target = page.getByRole('menuitem').filter({ has: targetIcon }).filter({ visible: true });
-  await target.waitFor({ state: 'visible' });
+  const activeMenu = page.getByRole('menu').filter({ has: targetIcon }).filter({ visible: true });
+  await waitForLocatorCount(
+    page,
+    activeMenu,
+    1,
+    `Expected one visible locale menu after opening ${localeDefinition.nativeLabel}.`,
+  );
+  const target = activeMenu.getByRole('menuitem').filter({ has: targetIcon });
   await waitForLocatorCount(
     page,
     target,
     1,
-    `Expected one visible ${localeDefinition.nativeLabel} locale menu item after the dropdown animation settled.`,
+    `Expected one ${localeDefinition.nativeLabel} item in the visible locale menu.`,
   );
-  await target.click();
-  await waitForLocatorCount(
-    page,
-    target,
-    0,
-    `Expected the ${localeDefinition.nativeLabel} locale menu item to close after selection.`,
-  );
+  await target.waitFor({ state: 'visible' });
+  // Keyboard activation follows the menu's accessible interaction contract and avoids an
+  // unrelated header tooltip intercepting pointer events in Firefox after locale changes.
+  await target.press('Enter');
   await page.waitForFunction(({ key, value }) => localStorage.getItem(key) === value, {
     key: UMI_LOCALE_STORAGE_KEY,
     value: locale,
   });
+  await waitForLocatorCount(
+    page,
+    activeMenu,
+    0,
+    `Expected the locale menu to close after selecting ${localeDefinition.nativeLabel}.`,
+  );
 }
 
 export function sha256(value: string | Buffer): string {

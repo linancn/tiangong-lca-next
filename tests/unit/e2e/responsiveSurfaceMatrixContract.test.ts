@@ -105,8 +105,17 @@ describe('responsive surface evidence contract', () => {
       'if ((await readStoredAppLocale(page)) === locale)',
     );
     const triggerClick = helperSource.indexOf('await trigger.click(');
+    const activeMenuScope = helperSource.indexOf(".getByRole('menu')");
+    const targetMenuFilter = helperSource.indexOf('.filter({ has: targetIcon })');
+    const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
+    const keyboardActivation = helperSource.indexOf("await target.press('Enter')");
     expect(spinnerWait?.index).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait!.index);
     expect(triggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
+    expect(activeMenuScope).toBeGreaterThan(triggerClick);
+    expect(targetMenuFilter).toBeGreaterThan(activeMenuScope);
+    expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
+    expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
+    expect(helperSource).not.toContain('await target.click(');
   });
 });

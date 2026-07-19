@@ -5,6 +5,7 @@ import { AUTHORING_LANGUAGES, REPOSITORY_ROOT } from '../../e2e/i18n/contracts';
 import type {
   ProductionDataLedger,
   ProductionLedgerState,
+  ProductionSynonymStage,
 } from '../../e2e/i18n/production-data-safety';
 import {
   getCodexE2EProcessSynonym,
@@ -64,7 +65,10 @@ function makeLedgerAtState(state: ProductionLedgerState): ProductionDataLedger {
   }
 }
 
-function makeExactMarkerPayload(ledger: ProductionDataLedger) {
+function makeExactMarkerPayload(
+  ledger: ProductionDataLedger,
+  synonymStage: ProductionSynonymStage = 'after-ui-save',
+) {
   const multilingualField = (field: (typeof PROCESS_FIELDS)[number]) =>
     AUTHORING_LANGUAGES.map((language) => ({
       '#text': `${ledger.marker} ${field} ${language}`,
@@ -82,7 +86,7 @@ function makeExactMarkerPayload(ledger: ProductionDataLedger) {
             functionalUnitFlowProperties: multilingualField('functionalUnitFlowProperties'),
           },
           'common:synonyms': AUTHORING_LANGUAGES.map((language) => ({
-            '#text': getCodexE2EProcessSynonym(ledger, language, 'after-ui-save'),
+            '#text': getCodexE2EProcessSynonym(ledger, language, synonymStage),
             '@xml:lang': language,
           })),
           'common:generalComment': multilingualField('generalComment'),
@@ -115,6 +119,21 @@ function makePersistedRow(ledger: ProductionDataLedger, userId: string) {
     id: ledger.id,
     json: null,
     json_ordered: makeExactMarkerPayload(ledger),
+    user_id: userId,
+    version: ledger.version,
+  };
+}
+
+function makeFullyPersistedRow(
+  ledger: ProductionDataLedger,
+  userId: string,
+  synonymStage: ProductionSynonymStage,
+) {
+  const json = makeExactMarkerPayload(ledger, synonymStage);
+  return {
+    id: ledger.id,
+    json,
+    json_ordered: makeExactMarkerPayload(ledger, synonymStage),
     user_id: userId,
     version: ledger.version,
   };
@@ -323,6 +342,59 @@ describe('production data ledger safety contract', () => {
     ).toThrow(/not an exact owned codex-e2e fixture/u);
   });
 
+  it('accepts exact before-save synonyms in both persisted JSON forms', () => {
+    const ledger = makeLedger();
+    const row = makeFullyPersistedRow(ledger, authenticatedUserId, 'before-ui-save');
+
+    expect(() =>
+      productionDataLedgerSafetyContract.assertPersistedProcessSynonyms(
+        row,
+        ledger,
+        'before-ui-save',
+      ),
+    ).not.toThrow();
+  });
+
+  it.each([
+    [
+      'missing',
+      (payload: ReturnType<typeof makeExactMarkerPayload>) => {
+        payload.processDataSet.processInformation.dataSetInformation['common:synonyms'].pop();
+      },
+    ],
+    [
+      'duplicate',
+      (payload: ReturnType<typeof makeExactMarkerPayload>) => {
+        const synonyms =
+          payload.processDataSet.processInformation.dataSetInformation['common:synonyms'];
+        synonyms.push({ ...synonyms[0] });
+      },
+    ],
+    [
+      'wrong-value',
+      (payload: ReturnType<typeof makeExactMarkerPayload>) => {
+        payload.processDataSet.processInformation.dataSetInformation['common:synonyms'][0][
+          '#text'
+        ] = 'tampered';
+      },
+    ],
+  ])('refuses %s before-save synonyms in either persisted JSON form', (_name, mutate) => {
+    const ledger = makeLedger();
+
+    for (const persistedField of ['json', 'json_ordered'] as const) {
+      const row = makeFullyPersistedRow(ledger, authenticatedUserId, 'before-ui-save');
+      mutate(row[persistedField]);
+
+      expect(() =>
+        productionDataLedgerSafetyContract.assertPersistedProcessSynonyms(
+          row,
+          ledger,
+          'before-ui-save',
+        ),
+      ).toThrow(/exact before-ui-save synonyms in both persisted JSON forms/u);
+    }
+  });
+
   it('requires the fixture UUID at the exact ILCD UUID path', () => {
     const ledger = makeLedger();
     const exactPayload = makeExactMarkerPayload(ledger);
@@ -440,6 +512,22 @@ describe('production data ledger safety contract', () => {
     expect(createBoundary).toBeGreaterThanOrEqual(0);
     expect(authorization).toBeGreaterThan(createBoundary);
     expect(authorization).toBeLessThan(firstLedgerAccess);
+  });
+
+  it('verifies before-save synonyms before transitioning a created fixture ledger', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/production-data-ledger.ts'),
+      'utf8',
+    );
+    const createBoundary = source.indexOf('export async function createCodexE2EProcess');
+    const persistedVerification = source.indexOf(
+      "assertPersistedProcessSynonyms(persistedRow, attemptedLedger, 'before-ui-save');",
+      createBoundary,
+    );
+    const createdTransition = source.indexOf('const createdLedger:', createBoundary);
+
+    expect(persistedVerification).toBeGreaterThan(createBoundary);
+    expect(persistedVerification).toBeLessThan(createdTransition);
   });
 
   it('accepts only the exact ledger-controlled Process save-draft body', () => {

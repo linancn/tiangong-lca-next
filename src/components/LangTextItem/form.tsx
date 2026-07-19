@@ -52,20 +52,14 @@ const LangTextItemForm: FC<Props> = ({
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
 
+  const formValuePath = listName ? [...listName, ...(Array.isArray(name) ? name : [name])] : name;
+  const watchedFormValues = Form.useWatch(formValuePath, form);
+
   const normalizeTextValue = (value: unknown) => {
     return typeof value === 'string' ? value.trim() : '';
   };
 
-  let formValues = [];
-  if (listName) {
-    formValues = form?.getFieldValue([...listName]);
-    const fieldName = name[name.length - 1];
-    if (fieldName) {
-      formValues = formValues?.[0]?.[fieldName];
-    }
-  } else {
-    formValues = form.getFieldValue(name);
-  }
+  const formValues = watchedFormValues ?? form?.getFieldValue(formValuePath) ?? [];
 
   const selectedLangValues = (formValues ?? [])
     .filter((item: any) => item && item['@xml:lang'])
@@ -186,7 +180,12 @@ const LangTextItemForm: FC<Props> = ({
                     : declaredOptions;
 
                 return (
-                  <Row key={subField.key} gutter={[10, 0]} align='top'>
+                  <Row
+                    key={subField.key}
+                    gutter={[10, 0]}
+                    align='top'
+                    data-content-language={currentLang || undefined}
+                  >
                     <Col flex='180px'>
                       <Form.Item
                         name={[subField.name, '@xml:lang']}

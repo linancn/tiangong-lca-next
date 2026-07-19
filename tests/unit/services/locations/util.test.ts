@@ -59,11 +59,13 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('returns cached location file names from IndexedDB', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetAllCachedKeys.mockResolvedValue(['one.json.gz', 'two.json.gz']);
 
     await expect(getCachedLocationFileList()).resolves.toEqual(['one.json.gz', 'two.json.gz']);
-    expect(mockGetAllCachedKeys).toHaveBeenCalledWith('db', 'location_files');
+    expect(mockGetAllCachedKeys).toHaveBeenCalledWith(db, 'location_files');
+    expect(db.close).toHaveBeenCalledTimes(1);
   });
 
   it('returns an empty file list and logs when cache listing fails', async () => {
@@ -76,11 +78,13 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('returns cached location file data when present', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetCachedJsonEntry.mockResolvedValue({ data: { hello: 'world' } });
 
     await expect(getCachedLocationFileData('file.json.gz')).resolves.toEqual({ hello: 'world' });
-    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith('db', 'location_files', 'file.json.gz');
+    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith(db, 'location_files', 'file.json.gz');
+    expect(db.close).toHaveBeenCalledTimes(1);
   });
 
   it('rejects a managed location entry from a previous manifest revision', async () => {
@@ -134,18 +138,62 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('downloads, decompresses, parses, and stores a location file', async () => {
+    const db = { close: jest.fn() };
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
     });
     mockDecompressGzipData.mockResolvedValue(JSON.stringify({ ok: true }));
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockInitIndexedDbStore.mockResolvedValue(db);
 
     await expect(cacheAndDecompressLocationFile('file.json.gz')).resolves.toBe(true);
     expect(global.fetch).toHaveBeenCalledWith('/locations/file.json.gz');
-    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith('db', 'location_files', 'file.json.gz', {
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(db, 'location_files', 'file.json.gz', {
       ok: true,
     });
+    expect(db.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares one location fetch and cache write between concurrent callers', async () => {
+    let releaseFetch!: (response: unknown) => void;
+    const fetchResult = new Promise((resolve) => {
+      releaseFetch = resolve;
+    });
+    (global.fetch as jest.Mock).mockReturnValue(fetchResult);
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ shared: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    const first = cacheAndDecompressLocationFile('shared.json.gz');
+    const second = cacheAndDecompressLocationFile('shared.json.gz');
+
+    expect(second).toBe(first);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    releaseFetch({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a failed location flight so a later caller can retry', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(new Error('network failed'))
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+      });
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ retried: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressLocationFile('retry.json.gz')).resolves.toBe(false);
+    await expect(cacheAndDecompressLocationFile('retry.json.gz')).resolves.toBe(true);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
   });
 
   it('verifies and persists the exact manifest identity for a managed location asset', async () => {

@@ -21,6 +21,7 @@ const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
 let renderedLocales: Array<Record<string, unknown>> = [];
 let selectLangReload: boolean | undefined;
+let selectLangTrigger: readonly string[] | undefined;
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
@@ -41,13 +42,16 @@ jest.mock('@umijs/max', () => ({
     postLocalesData,
     reload,
     style,
+    trigger,
   }: {
     globalIconClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
     reload?: boolean;
     style?: Record<string, unknown>;
+    trigger?: readonly string[];
   }) => {
     selectLangReload = reload;
+    selectLangTrigger = trigger;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
       <button
@@ -94,6 +98,7 @@ afterEach(() => {
   mockLocale = 'zh-CN';
   renderedLocales = [];
   selectLangReload = undefined;
+  selectLangTrigger = undefined;
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -237,6 +242,7 @@ describe('RightContent Components', () => {
     expect(selector).toHaveStyle({ padding: '4px' });
     expect(selector).toHaveClass('tg-global-language-selector');
     expect(selectLangReload).toBe(false);
+    expect(selectLangTrigger).toEqual(['click']);
   });
 
   it('merges custom styles into the language selector', () => {

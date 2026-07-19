@@ -18,6 +18,7 @@ import {
 import {
   assertLedgerScope,
   assertOwnedCodexRow,
+  assertPersistedProcessSynonyms,
   assertProductionDataResult,
   assertProductionDataWriteAuthorization,
   executeVerifiedCodexCleanup,
@@ -355,7 +356,9 @@ export async function createCodexE2EProcess(): Promise<ProductionDataLedger> {
           `codex-e2e process verification failed: ${verification.error?.message ?? 'not found'}`,
         );
       }
-      assertOwnedCodexRow(verification.data as PersistedProcessRow, attemptedLedger, userId);
+      const persistedRow = verification.data as PersistedProcessRow;
+      assertOwnedCodexRow(persistedRow, attemptedLedger, userId);
+      assertPersistedProcessSynonyms(persistedRow, attemptedLedger, 'before-ui-save');
     });
   } catch (createError) {
     try {

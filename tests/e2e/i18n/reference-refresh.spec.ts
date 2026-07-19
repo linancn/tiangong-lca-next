@@ -39,6 +39,16 @@ type BrowserCacheDescriptor = {
   storeName: string;
 };
 
+type BrowserCacheEntryIdentity = { revision?: string; sha256?: string };
+
+type BrowserCacheManifestIdentity = { files: string[]; version?: string };
+
+type InjectedPreviousRevisionEntry = BrowserCacheDescriptor & {
+  filename: string;
+  revision: string;
+  sha256: string;
+};
+
 type ReferenceConsumerFixture = BrowserCacheDescriptor & {
   assetDirectory: 'classifications' | 'locations';
   assetFileName: (definition: ReadableLocaleDefinition) => string;
@@ -62,6 +72,15 @@ const CACHE_DESCRIPTORS: Record<ReferenceResourceScope, BrowserCacheDescriptor> 
     storeName: 'location_files',
   },
 };
+
+function projectBrowserCacheDescriptor(descriptor: BrowserCacheDescriptor): BrowserCacheDescriptor {
+  return {
+    databaseName: descriptor.databaseName,
+    manifestKey: descriptor.manifestKey,
+    scope: descriptor.scope,
+    storeName: descriptor.storeName,
+  };
+}
 
 function getReadableLocaleDefinitions(): ReadableLocaleDefinition[] {
   const readable = LOCALE_CAPABILITY_MATRIX.flatMap((capability) => {
@@ -230,7 +249,7 @@ async function clearBrowserCache(page: Page, descriptor: BrowserCacheDescriptor)
       };
     });
     localStorage.removeItem(manifestKey);
-  }, descriptor);
+  }, projectBrowserCacheDescriptor(descriptor));
 }
 
 async function injectPreviousRevisionEntries(
@@ -238,17 +257,17 @@ async function injectPreviousRevisionEntries(
   fixtures: ReferenceConsumerFixture[],
   definition: ReadableLocaleDefinition,
   marker: string,
-): Promise<void> {
+): Promise<InjectedPreviousRevisionEntry[]> {
   const entries = fixtures.map((fixture) => {
+    const descriptor = projectBrowserCacheDescriptor(fixture);
     const identity = fixture.cacheIdentity(definition);
+    const revision = `${getReferenceResourceCacheVersion(fixture.scope)}-previous`;
     return {
+      ...descriptor,
       data: fixture.staleCacheData(`${marker}-${fixture.id}`, definition),
-      databaseName: fixture.databaseName,
       filename: identity.fileName,
-      manifestKey: fixture.manifestKey,
-      manifestVersion: getReferenceResourceCacheVersion(fixture.scope),
+      revision,
       sha256: `previous-${identity.jsonSha256}`,
-      storeName: fixture.storeName,
     };
   });
 
@@ -270,7 +289,7 @@ async function injectPreviousRevisionEntries(
             cachedAt: Date.now() - 86_400_000,
             data: entry.data,
             filename: entry.filename,
-            revision: `${entry.manifestVersion}-previous`,
+            revision: entry.revision,
             sha256: entry.sha256,
             size: JSON.stringify(entry.data).length,
           });
@@ -287,21 +306,34 @@ async function injectPreviousRevisionEntries(
           cachedAt: Date.now() - 86_400_000,
           decompressed: true,
           files: [entry.filename],
-          version: `${entry.manifestVersion}-previous`,
+          version: entry.revision,
         }),
       );
     }
   }, entries);
+
+  return entries.map(
+    ({ databaseName, filename, manifestKey, revision, scope, sha256, storeName }) => ({
+      databaseName,
+      filename,
+      manifestKey,
+      revision,
+      scope,
+      sha256,
+      storeName,
+    }),
+  );
 }
 
 async function readCacheEntryIdentity(
   page: Page,
-  fixture: ReferenceConsumerFixture,
+  descriptor: BrowserCacheDescriptor,
   filename: string,
-): Promise<{ revision?: string; sha256?: string } | null> {
+): Promise<BrowserCacheEntryIdentity | null> {
+  const projectedDescriptor = projectBrowserCacheDescriptor(descriptor);
   return page.evaluate(
     async ({ databaseName, filename: targetFilename, storeName }) =>
-      new Promise<{ revision?: string; sha256?: string } | null>((resolve, reject) => {
+      new Promise<BrowserCacheEntryIdentity | null>((resolve, reject) => {
         const request = indexedDB.open(databaseName, 1);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
@@ -316,8 +348,63 @@ async function readCacheEntryIdentity(
           };
         };
       }),
-    { databaseName: fixture.databaseName, filename, storeName: fixture.storeName },
+    { ...projectedDescriptor, filename },
   );
+}
+
+async function readCacheManifestIdentity(
+  page: Page,
+  descriptor: BrowserCacheDescriptor,
+): Promise<BrowserCacheManifestIdentity | null> {
+  return page.evaluate(({ manifestKey }) => {
+    const value = localStorage.getItem(manifestKey);
+    if (!value) return null;
+    const manifest = JSON.parse(value) as { files?: string[]; version?: string };
+    return {
+      files: [...(manifest.files ?? [])].sort(),
+      version: manifest.version,
+    };
+  }, projectBrowserCacheDescriptor(descriptor));
+}
+
+async function expectCurrentReferenceCacheBaseline(
+  page: Page,
+  fixtures: ReferenceConsumerFixture[],
+  definitions: ReadableLocaleDefinition[],
+): Promise<void> {
+  for (const fixture of fixtures) {
+    await expect
+      .poll(() => readCacheManifestIdentity(page, fixture), { timeout: 180_000 })
+      .toEqual({
+        files: [...getReferenceResourceCacheFiles(fixture.scope)].sort(),
+        version: getReferenceResourceCacheVersion(fixture.scope),
+      });
+    for (const definition of definitions) {
+      const identity = fixture.cacheIdentity(definition);
+      await expect
+        .poll(() => readCacheEntryIdentity(page, fixture, identity.fileName), {
+          timeout: 180_000,
+        })
+        .toEqual({ revision: identity.cacheRevision, sha256: identity.jsonSha256 });
+    }
+  }
+}
+
+async function expectPreviousRevisionEntriesInjected(
+  page: Page,
+  entries: InjectedPreviousRevisionEntry[],
+): Promise<void> {
+  for (const entry of entries) {
+    await expect
+      .poll(() => readCacheEntryIdentity(page, entry, entry.filename))
+      .toEqual({ revision: entry.revision, sha256: entry.sha256 });
+    await expect
+      .poll(() => readCacheManifestIdentity(page, entry))
+      .toEqual({
+        files: [entry.filename],
+        version: entry.revision,
+      });
+  }
 }
 
 test('delayed old-locale classification and location responses never overwrite the mounted locale', async ({
@@ -517,6 +604,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
   baseURL,
   page,
 }, testInfo) => {
+  test.setTimeout(10 * 60_000);
   test.skip(
     process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
     'Reference cache semantics require the explicit production-data guard and credentials.',
@@ -529,6 +617,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
   const definitions = getReadableLocaleDefinitions();
   const fixtures = getConsumerFixtures(referenceFixture);
   await signInViaUi(page);
+  await expectCurrentReferenceCacheBaseline(page, fixtures, definitions);
 
   for (const [index, definition] of definitions.entries()) {
     await test.step(`${definition.appLocale} reload rejects both stale cache scopes`, async () => {
@@ -569,7 +658,13 @@ test('previous-revision browser caches fail closed and process deep links surviv
       }
 
       try {
-        await injectPreviousRevisionEntries(page, fixtures, definition, staleMarker);
+        const injectedEntries = await injectPreviousRevisionEntries(
+          page,
+          fixtures,
+          definition,
+          staleMarker,
+        );
+        await expectPreviousRevisionEntriesInjected(page, injectedEntries);
         await page.reload({ waitUntil: 'domcontentloaded' });
         expect(page.url()).toBe(targetUrl);
         await expectProcessDeepLink(page, ledger!, state);
@@ -593,19 +688,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
             .poll(() => readCacheEntryIdentity(page, fixture, identity.fileName))
             .toEqual({ revision: identity.cacheRevision, sha256: identity.jsonSha256 });
           await expect
-            .poll(
-              () =>
-                page.evaluate((manifestKey) => {
-                  const value = localStorage.getItem(manifestKey);
-                  if (!value) return null;
-                  const manifest = JSON.parse(value) as { files?: string[]; version?: string };
-                  return {
-                    files: [...(manifest.files ?? [])].sort(),
-                    version: manifest.version,
-                  };
-                }, fixture.manifestKey),
-              { timeout: 30_000 },
-            )
+            .poll(() => readCacheManifestIdentity(page, fixture), { timeout: 180_000 })
             .toEqual({
               files: [...getReferenceResourceCacheFiles(fixture.scope)].sort(),
               version: getReferenceResourceCacheVersion(fixture.scope),
@@ -666,13 +749,22 @@ test('process edit form consumes current classification and location assets in e
       await expect(locationFormItem.locator('.ant-select-selection-item')).toHaveText(
         localizedLocation,
       );
+      const locationCombobox = locationFormItem.getByRole('combobox');
       await locationFormItem.locator('.ant-select-selector').click();
-      await expect(
-        page.getByRole('option', {
-          name: localizedLocation,
-          exact: true,
-        }),
-      ).toBeVisible();
+      const listboxId = await locationCombobox.getAttribute('aria-controls');
+      if (!listboxId) {
+        throw new Error('Location selector did not expose its active listbox identity.');
+      }
+      const locationPopup = page.locator('.ant-select-dropdown:visible').filter({
+        has: page.locator(`[role="listbox"][id="${listboxId}"]`),
+      });
+      await expect(locationPopup).toHaveCount(1);
+      const visibleOptionContent = locationPopup
+        .locator('.ant-select-item-option-content')
+        .filter({ hasText: localizedLocation });
+      await expect(visibleOptionContent).toHaveCount(1);
+      await expect(visibleOptionContent).toHaveText(localizedLocation);
+      await expect(visibleOptionContent).toBeVisible();
       await page.keyboard.press('Escape');
 
       const classificationFormItem = drawer

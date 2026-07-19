@@ -601,6 +601,14 @@ describe('DataProcessing page', () => {
       pathname: '/data-processing',
       search: '?tab=publication&packageId=package-1',
     });
+    await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByTestId('tab-panel-publication')).getByRole('button', {
+          name: 'Refresh publications',
+        }),
+      ).toHaveAttribute('data-loading', 'false'),
+    );
   });
 
   it('summarizes successful build responses without rendering the raw worker payload', async () => {

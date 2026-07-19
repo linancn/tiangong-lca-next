@@ -343,7 +343,11 @@ function payloadHasExactCodexMarker(payload: unknown, ledger: ProductionDataLedg
   );
 }
 
-function payloadHasExactSavedSynonyms(payload: unknown, ledger: ProductionDataLedger): boolean {
+function payloadHasExactProcessSynonyms(
+  payload: unknown,
+  ledger: ProductionDataLedger,
+  stage: ProductionSynonymStage,
+): boolean {
   const dataSetInformation = readDataSetInformation(payload);
   if (!dataSetInformation) {
     return false;
@@ -356,10 +360,26 @@ function payloadHasExactSavedSynonyms(payload: unknown, ledger: ProductionDataLe
     const matchingElements = synonyms.filter((element) => element['@xml:lang'] === languageCode);
     return (
       matchingElements.length === 1 &&
-      matchingElements[0]['#text'] ===
-        getCodexE2EProcessSynonym(ledger, languageCode, 'after-ui-save')
+      matchingElements[0]['#text'] === getCodexE2EProcessSynonym(ledger, languageCode, stage)
     );
   });
+}
+
+export function assertPersistedProcessSynonyms(
+  row: PersistedProcessRow,
+  ledger: ProductionDataLedger,
+  stage: ProductionSynonymStage,
+): void {
+  assertLedgerScope(ledger);
+  const persistedPayloads = [row.json, row.json_ordered];
+  if (
+    persistedPayloads.some((payload) => payload === null || payload === undefined) ||
+    !persistedPayloads.every((payload) => payloadHasExactProcessSynonyms(payload, ledger, stage))
+  ) {
+    throw new Error(
+      `The codex-e2e process does not contain exact ${stage} synonyms in both persisted JSON forms.`,
+    );
+  }
 }
 
 export function isExactLedgerControlledProcessSaveDraftBody(
@@ -388,7 +408,7 @@ export function isExactLedgerControlledProcessSaveDraftBody(
       (body.modelId !== undefined && body.modelId !== null) ||
       (typeof body.ruleVerification !== 'boolean' && body.ruleVerification !== null) ||
       !payloadHasExactCodexMarker(body.jsonOrdered, ledger) ||
-      !payloadHasExactSavedSynonyms(body.jsonOrdered, ledger)
+      !payloadHasExactProcessSynonyms(body.jsonOrdered, ledger, 'after-ui-save')
     ) {
       return false;
     }
@@ -504,6 +524,7 @@ export const productionDataLedgerSafetyContract = {
   assertLocalProductionWriteEnvironment,
   assertProductionDataWriteAuthorization,
   assertOwnedCodexRow,
+  assertPersistedProcessSynonyms,
   assertProductionDataResult,
   executeVerifiedCodexCleanup,
   getCodexE2EProcessSynonym,

@@ -69,8 +69,9 @@ describe('browserResourceCache', () => {
       void entry;
       return request;
     });
+    const transaction: any = { objectStore: () => ({ put }) };
     const db: any = {
-      transaction: jest.fn(() => ({ objectStore: () => ({ put }) })),
+      transaction: jest.fn(() => transaction),
     };
 
     const promise = putCachedJsonEntry(db, 'cache-store', 'list.json', { files: [] });
@@ -88,10 +89,12 @@ describe('browserResourceCache', () => {
   it('persists optional digest and revision metadata together', async () => {
     const request: any = {};
     const put = jest.fn(() => request);
+    const transaction: any = { objectStore: () => ({ put }) };
     const db: any = {
-      transaction: jest.fn(() => ({ objectStore: () => ({ put }) })),
+      transaction: jest.fn(() => transaction),
     };
 
+    let settled = false;
     const promise = putCachedJsonEntry(
       db,
       'cache-store',
@@ -101,13 +104,63 @@ describe('browserResourceCache', () => {
         revision: 'revision-2',
         sha256: 'a'.repeat(64),
       },
-    );
-    request.onsuccess();
+    ).then(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    transaction.oncomplete();
     await promise;
 
+    expect(settled).toBe(true);
     expect(put).toHaveBeenCalledWith(
       expect.objectContaining({ revision: 'revision-2', sha256: 'a'.repeat(64) }),
     );
+  });
+
+  it('rejects when the IndexedDB write transaction aborts', async () => {
+    const request: any = {};
+    const put = jest.fn(() => request);
+    const transaction: any = { objectStore: () => ({ put }) };
+    const db: any = {
+      transaction: jest.fn(() => transaction),
+    };
+    const error = new Error('transaction aborted');
+
+    const promise = putCachedJsonEntry(db, 'cache-store', 'list.json', { files: [] });
+    transaction.error = error;
+    transaction.onabort();
+
+    await expect(promise).rejects.toBe(error);
+  });
+
+  it('uses the request error when a write transaction fails without its own error', async () => {
+    const request: any = { error: new Error('request failed') };
+    const put = jest.fn(() => request);
+    const transaction: any = { objectStore: () => ({ put }) };
+    const db: any = {
+      transaction: jest.fn(() => transaction),
+    };
+
+    const promise = putCachedJsonEntry(db, 'cache-store', 'list.json', { files: [] });
+    transaction.onerror();
+
+    await expect(promise).rejects.toBe(request.error);
+  });
+
+  it('uses a deterministic fallback when an aborted write exposes no IndexedDB error', async () => {
+    const request: any = {};
+    const put = jest.fn(() => request);
+    const transaction: any = { objectStore: () => ({ put }) };
+    const db: any = {
+      transaction: jest.fn(() => transaction),
+    };
+
+    const promise = putCachedJsonEntry(db, 'cache-store', 'list.json', { files: [] });
+    transaction.onabort();
+
+    await expect(promise).rejects.toThrow('Failed to write cache entry list.json.');
   });
 
   it('surfaces IndexedDB delete errors', async () => {

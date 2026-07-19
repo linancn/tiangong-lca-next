@@ -57,19 +57,24 @@ test('one ledger-controlled Process UI save persists every authoring language', 
       })
       .locator('xpath=ancestor::div[contains(@class, "ant-card")][1]');
     await expect(card).toHaveCount(1);
+    await expect(card).toBeVisible();
+    await expect(card.locator('[data-content-language]')).toHaveCount(
+      AUTHORING_LANGUAGE_DEFINITIONS.length,
+      { timeout: 45_000 },
+    );
     return { card, drawer };
   };
 
   for (const locale of APP_LOCALES.filter((candidate) => candidate !== 'de-DE')) {
     const { card, drawer } = await openLocalizedEditor(locale);
     for (const { languageCode, nativeLabel } of AUTHORING_LANGUAGE_DEFINITIONS) {
-      const languageRow = card.locator('.ant-row').filter({
-        has: page
-          .locator('.ant-select-selection-item')
-          .filter({ hasText: new RegExp(`^${nativeLabel}$`, 'u') }),
-      });
+      const languageRow = card.locator(`[data-content-language="${languageCode}"]`);
       await expect(languageRow).toHaveCount(1);
-      await expect(languageRow.locator('textarea')).toHaveValue(
+      await expect(languageRow.getByRole('combobox')).toHaveCount(1);
+      await expect(languageRow.locator('.ant-select-selection-item')).toHaveText(nativeLabel);
+      const textArea = languageRow.locator('textarea');
+      await expect(textArea).toHaveCount(1);
+      await expect(textArea).toHaveValue(
         getCodexE2EProcessSynonym(ledger!, languageCode, 'before-ui-save'),
       );
     }
@@ -85,12 +90,10 @@ test('one ledger-controlled Process UI save persists every authoring language', 
   const { card: synonymsCard, drawer: editDrawer } = await openLocalizedEditor('de-DE');
 
   for (const { languageCode, nativeLabel } of AUTHORING_LANGUAGE_DEFINITIONS) {
-    const languageRow = synonymsCard.locator('.ant-row').filter({
-      has: page
-        .locator('.ant-select-selection-item')
-        .filter({ hasText: new RegExp(`^${nativeLabel}$`, 'u') }),
-    });
+    const languageRow = synonymsCard.locator(`[data-content-language="${languageCode}"]`);
     await expect(languageRow).toHaveCount(1);
+    await expect(languageRow.getByRole('combobox')).toHaveCount(1);
+    await expect(languageRow.locator('.ant-select-selection-item')).toHaveText(nativeLabel);
     const textArea = languageRow.locator('textarea');
     await expect(textArea).toHaveCount(1);
     await expect(textArea).toHaveValue(

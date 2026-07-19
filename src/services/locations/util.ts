@@ -14,6 +14,7 @@ const CACHE_KEY = 'location_cache_manifest';
 const CACHE_DB_NAME = 'location_cache_db';
 const CACHE_DB_VERSION = 1;
 const CACHE_STORE_NAME = 'location_files';
+const cacheWriteFlights = new Map<string, Promise<boolean>>();
 
 export interface LocationCacheManifest {
   version: string;
@@ -26,6 +27,12 @@ const initDB = (): Promise<IDBDatabase> => {
   return initIndexedDbStore(CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_NAME);
 };
 
+const closeDB = (db: IDBDatabase): void => {
+  if (typeof db.close === 'function') {
+    db.close();
+  }
+};
+
 export const getLocationCacheManifest = (): LocationCacheManifest | null => {
   return getLocalStorageJson<LocationCacheManifest>(CACHE_KEY);
 };
@@ -35,18 +42,24 @@ export const setLocationCacheManifest = (manifest: LocationCacheManifest): void 
 };
 
 export const getCachedLocationFileList = async (): Promise<string[]> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     return await getAllCachedKeys(db, CACHE_STORE_NAME);
   } catch (error) {
     console.error('Failed to get location cached file list:', error);
     return [];
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
 export const getCachedLocationFileData = async <T>(filename: string): Promise<T | null> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     const cachedEntry = await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
     const identity = getReferenceRuntimeAssetCacheIdentity(filename);
     if (
@@ -68,10 +81,14 @@ export const getCachedLocationFileData = async <T>(filename: string): Promise<T 
   } catch (error) {
     console.error(`Failed to read location cached file ${filename}:`, error);
     return null;
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
-export const cacheAndDecompressLocationFile = async (filename: string): Promise<boolean> => {
+const cacheAndDecompressLocationFileOnce = async (filename: string): Promise<boolean> => {
   try {
     const response = await fetch(`/locations/${filename}`);
     if (!response.ok) {
@@ -95,13 +112,17 @@ export const cacheAndDecompressLocationFile = async (filename: string): Promise<
     const data = JSON.parse(decompressedText);
 
     const db = await initDB();
-    if (identity) {
-      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
-        revision: identity.cacheRevision,
-        sha256: identity.jsonSha256,
-      });
-    } else {
-      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+    try {
+      if (identity) {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
+          revision: identity.cacheRevision,
+          sha256: identity.jsonSha256,
+        });
+      } else {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+      }
+    } finally {
+      closeDB(db);
     }
 
     return true;
@@ -109,6 +130,22 @@ export const cacheAndDecompressLocationFile = async (filename: string): Promise<
     console.error(`Failed to cache location file ${filename}:`, error);
     return false;
   }
+};
+
+export const cacheAndDecompressLocationFile = (filename: string): Promise<boolean> => {
+  const flightKey = `location:${filename}`;
+  const activeFlight = cacheWriteFlights.get(flightKey);
+  if (activeFlight) {
+    return activeFlight;
+  }
+
+  const flight = cacheAndDecompressLocationFileOnce(filename);
+  cacheWriteFlights.set(flightKey, flight);
+  const clearFlight = () => {
+    cacheWriteFlights.delete(flightKey);
+  };
+  void flight.then(clearFlight, clearFlight);
+  return flight;
 };
 
 export const getCachedOrFetchLocationFileData = async <T>(filename: string): Promise<T | null> => {

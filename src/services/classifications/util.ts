@@ -23,6 +23,7 @@ const CACHE_KEY = 'classification_cache_manifest';
 const CACHE_DB_NAME = 'classification_cache_db';
 const CACHE_DB_VERSION = 1;
 const CACHE_STORE_NAME = 'classification_files';
+const cacheWriteFlights = new Map<string, Promise<boolean>>();
 
 export interface ClassificationCacheManifest {
   version: string;
@@ -104,6 +105,12 @@ const initDB = (): Promise<IDBDatabase> => {
   return initIndexedDbStore(CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_NAME);
 };
 
+const closeDB = (db: IDBDatabase): void => {
+  if (typeof db.close === 'function') {
+    db.close();
+  }
+};
+
 export const getClassificationCacheManifest = (): ClassificationCacheManifest | null => {
   return getLocalStorageJson<ClassificationCacheManifest>(CACHE_KEY);
 };
@@ -113,18 +120,24 @@ export const setClassificationCacheManifest = (manifest: ClassificationCacheMani
 };
 
 export const getCachedClassificationFileList = async (): Promise<string[]> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     return await getAllCachedKeys(db, CACHE_STORE_NAME);
   } catch (error) {
     console.error('Failed to get classification cached file list:', error);
     return [];
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
 export const getCachedClassificationFileData = async <T>(filename: string): Promise<T | null> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     const cachedEntry = await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
     const identity = getReferenceRuntimeAssetCacheIdentity(filename);
     if (
@@ -146,10 +159,14 @@ export const getCachedClassificationFileData = async <T>(filename: string): Prom
   } catch (error) {
     console.error(`Failed to read classification cached file ${filename}:`, error);
     return null;
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
-export const cacheAndDecompressClassificationFile = async (filename: string): Promise<boolean> => {
+const cacheAndDecompressClassificationFileOnce = async (filename: string): Promise<boolean> => {
   try {
     const response = await fetch(`/classifications/${filename}`);
     if (!response.ok) {
@@ -173,13 +190,17 @@ export const cacheAndDecompressClassificationFile = async (filename: string): Pr
     const data = JSON.parse(decompressedText);
 
     const db = await initDB();
-    if (identity) {
-      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
-        revision: identity.cacheRevision,
-        sha256: identity.jsonSha256,
-      });
-    } else {
-      await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+    try {
+      if (identity) {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
+          revision: identity.cacheRevision,
+          sha256: identity.jsonSha256,
+        });
+      } else {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+      }
+    } finally {
+      closeDB(db);
     }
 
     return true;
@@ -187,6 +208,22 @@ export const cacheAndDecompressClassificationFile = async (filename: string): Pr
     console.error(`Failed to cache classification file ${filename}:`, error);
     return false;
   }
+};
+
+export const cacheAndDecompressClassificationFile = (filename: string): Promise<boolean> => {
+  const flightKey = `classification:${filename}`;
+  const activeFlight = cacheWriteFlights.get(flightKey);
+  if (activeFlight) {
+    return activeFlight;
+  }
+
+  const flight = cacheAndDecompressClassificationFileOnce(filename);
+  cacheWriteFlights.set(flightKey, flight);
+  const clearFlight = () => {
+    cacheWriteFlights.delete(flightKey);
+  };
+  void flight.then(clearFlight, clearFlight);
+  return flight;
 };
 
 export const getCachedOrFetchClassificationFileData = async <T>(

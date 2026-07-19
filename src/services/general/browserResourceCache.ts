@@ -75,8 +75,13 @@ export const putCachedJsonEntry = async (
     };
 
     const request = store.put(cachedEntry);
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve();
+    const transactionError = () =>
+      transaction.error ?? request.error ?? new Error(`Failed to write cache entry ${filename}.`);
+
+    request.onerror = () => reject(request.error ?? transactionError());
+    transaction.onerror = () => reject(transactionError());
+    transaction.onabort = () => reject(transactionError());
+    transaction.oncomplete = () => resolve();
   });
 };
 

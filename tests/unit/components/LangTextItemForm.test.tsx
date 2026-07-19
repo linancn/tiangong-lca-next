@@ -42,21 +42,9 @@ jest.mock('antd', () => {
     Array.isArray(path) ? path : path !== undefined ? [path] : [];
 
   const Form = ({ children, formRef }: any) => {
-    const [version, forceUpdate] = React.useReducer((count: number) => count + 1, 0);
-
-    React.useEffect(() => {
-      if (!formRef?.current?.subscribe) {
-        return;
-      }
-      const unsubscribe = formRef.current.subscribe(() => {
-        forceUpdate();
-      });
-      return unsubscribe;
-    }, [formRef]);
-
     const contextValue = React.useMemo(
       () => ({ form: formRef?.current ?? {}, prefix: [] as Path }),
-      [formRef, version],
+      [formRef],
     );
 
     return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>;
@@ -64,8 +52,30 @@ jest.mock('antd', () => {
 
   Form.useFormInstance = () => React.useContext(FormContext).form;
 
+  const useFormSubscription = (form: any) => {
+    const [, forceUpdate] = React.useReducer((count: number) => count + 1, 0);
+
+    React.useEffect(() => {
+      if (!form?.subscribe) {
+        return;
+      }
+
+      return form.subscribe(() => {
+        forceUpdate();
+      });
+    }, [form]);
+  };
+
+  Form.useWatch = (name: any, formInstance?: any) => {
+    const context = React.useContext(FormContext);
+    const form = formInstance ?? context.form;
+    useFormSubscription(form);
+    return form?.getFieldValue(name);
+  };
+
   const FormItem = ({ name, children, style, rules = [], help, validateStatus }: any) => {
     const { form, prefix } = React.useContext(FormContext);
+    useFormSubscription(form);
     const path = [...prefix, ...normalizePath(name)];
 
     if (path.length === 0) {
@@ -220,7 +230,7 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Row = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children, ...props }: any) => <div {...props}>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
 
   const message = {
@@ -467,6 +477,38 @@ describe('LangTextItemForm', () => {
     expect(screen.getByRole('option', { name: 'Japanese' })).toBeDisabled();
   });
 
+  it('exposes the hydrated content-language code on each authoring row', async () => {
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [
+          { '@xml:lang': 'en', '#text': 'English value' },
+          { '@xml:lang': 'de', '#text': 'Deutscher Wert' },
+        ],
+      },
+    });
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="de"]')).toBeInTheDocument();
+    });
+  });
+
+  it('updates the content-language code when an empty row selects a language', async () => {
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [{}],
+      },
+    });
+
+    expect(document.querySelector('[data-content-language]')).not.toBeInTheDocument();
+
+    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'en');
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
+    });
+  });
+
   it('disables selecting duplicate languages across entries', async () => {
     renderLangTextItemForm({ rules: [] });
 
@@ -624,6 +666,56 @@ describe('LangTextItemForm', () => {
 
     await waitFor(() => {
       expect(screen.getByDisplayValue('Review notes')).toBeInTheDocument();
+    });
+  });
+
+  it('subscribes to the correct nested list row when its language changes', async () => {
+    const initialValues = {
+      review: [
+        {
+          'common:otherReviewDetails': [{ '@xml:lang': 'zh', '#text': '首条评论' }],
+        },
+        {
+          'common:otherReviewDetails': [{ '@xml:lang': 'en', '#text': 'Second review' }],
+        },
+      ],
+    };
+
+    const formRef = createFormRef(initialValues);
+
+    const NestedWrapper = () => (
+      <Form {...({ formRef } as any)}>
+        <Form.List name={['review']}>
+          {(fields: Array<{ key: number; name: number }>) => (
+            <>
+              {fields.map((field) => (
+                <LangTextItemForm
+                  key={field.key}
+                  name={[field.name, 'common:otherReviewDetails']}
+                  listName={['review']}
+                  formRef={formRef}
+                  label='Review details'
+                />
+              ))}
+            </>
+          )}
+        </Form.List>
+      </Form>
+    );
+
+    render(<NestedWrapper />);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="zh"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
+    });
+
+    const selects = screen.getAllByRole('combobox');
+    await userEvent.setup().selectOptions(selects[1], 'de');
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="de"]')).toBeInTheDocument();
     });
   });
 

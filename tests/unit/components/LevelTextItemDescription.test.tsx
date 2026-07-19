@@ -5,7 +5,7 @@
 
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const mockGenClassStr = jest.fn();
 const mockGetILCDClassification = jest.fn();
@@ -37,6 +37,11 @@ jest.mock('umi', () => ({
 }));
 
 jest.mock('antd', () => {
+  const Button = ({ children, onClick }: any) => (
+    <button type='button' onClick={onClick}>
+      {children}
+    </button>
+  );
   const Spin = ({ spinning, children }: any) => (
     <div data-testid='level-spin' data-spinning={spinning ? 'true' : 'false'}>
       {children}
@@ -51,7 +56,7 @@ jest.mock('antd', () => {
     </div>
   );
 
-  return { Descriptions, Spin };
+  return { Button, Descriptions, Spin };
 });
 
 describe('LevelTextItemDescription', () => {
@@ -128,6 +133,86 @@ describe('LevelTextItemDescription', () => {
     await waitFor(() => {
       expect(screen.getByText('Process Class > Leaf')).toBeInTheDocument();
     });
+  });
+
+  it('renders an explicit retryable failure without generating raw IDs when success is false', async () => {
+    mockGetILCDClassification.mockResolvedValue({
+      data: [{ id: 'proc', label: 'Process Class' }],
+      success: false,
+    });
+
+    render(
+      <LevelTextItemDescription
+        data={['proc']}
+        lang='en'
+        categoryType='Process'
+        flowType='Product flow'
+      />,
+    );
+
+    expect(await screen.findByText('Failed to load classification.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled();
+    expect(mockGenClassStr).not.toHaveBeenCalled();
+  });
+
+  it('renders an explicit retryable failure without generating raw IDs for empty classifications', async () => {
+    mockGetILCDClassification.mockResolvedValue({ data: [], success: true });
+
+    render(
+      <LevelTextItemDescription
+        data={['proc']}
+        lang='en'
+        categoryType='Process'
+        flowType='Product flow'
+      />,
+    );
+
+    expect(await screen.findByText('Failed to load classification.')).toBeInTheDocument();
+    expect(mockGenClassStr).not.toHaveBeenCalled();
+  });
+
+  it('renders an explicit retryable failure when the classification request rejects', async () => {
+    mockGetILCDClassification.mockRejectedValue(new Error('classification unavailable'));
+
+    render(
+      <LevelTextItemDescription
+        data={['proc']}
+        lang='en'
+        categoryType='Process'
+        flowType='Product flow'
+      />,
+    );
+
+    expect(await screen.findByText('Failed to load classification.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeEnabled();
+    expect(mockGenClassStr).not.toHaveBeenCalled();
+  });
+
+  it('retries the current props and replaces the failure state after a successful response', async () => {
+    mockGetILCDClassification
+      .mockRejectedValueOnce(new Error('classification unavailable'))
+      .mockResolvedValueOnce({
+        data: [{ id: 'proc', label: 'Process Class' }],
+        success: true,
+      });
+    mockGenClassStr.mockReturnValue('Process Class');
+
+    render(
+      <LevelTextItemDescription
+        data={['proc']}
+        lang='de'
+        categoryType='Process'
+        flowType='Product flow'
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Retry' }));
+
+    expect(await screen.findByText('Process Class')).toBeInTheDocument();
+    expect(screen.queryByText('Failed to load classification.')).not.toBeInTheDocument();
+    expect(mockGetILCDClassification).toHaveBeenCalledTimes(2);
+    expect(mockGetILCDClassification).toHaveBeenNthCalledWith(1, 'Process', 'de', ['proc']);
+    expect(mockGetILCDClassification).toHaveBeenNthCalledWith(2, 'Process', 'de', ['proc']);
   });
 
   it('refreshes on parent language/category changes and ignores the stale response', async () => {
@@ -209,7 +294,7 @@ describe('LevelTextItemDescription', () => {
       expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', currentLanguage, [
         'class-id',
       ]);
-      expect(screen.getByText('-')).toBeInTheDocument();
+      expect(screen.getByText('Failed to load classification.')).toBeInTheDocument();
       expect(screen.getByTestId('level-spin')).toHaveAttribute('data-spinning', 'false');
     });
 
@@ -218,7 +303,7 @@ describe('LevelTextItemDescription', () => {
       await staleRequest.promise.catch(() => undefined);
     });
 
-    expect(screen.getByText('-')).toBeInTheDocument();
+    expect(screen.getByText('Failed to load classification.')).toBeInTheDocument();
     expect(screen.queryByText('Initial class')).not.toBeInTheDocument();
   });
 });

@@ -58,9 +58,17 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).toContain("id: 'classification'");
     expect(source).toContain("id: 'location'");
     expect(source).toContain("'reference-refresh-cache'");
+    expect(source).toContain('projectBrowserCacheDescriptor');
+    expect(source).toContain('expectCurrentReferenceCacheBaseline');
     expect(source).toContain('injectPreviousRevisionEntries');
+    expect(source).toContain('expectPreviousRevisionEntriesInjected');
     expect(source).toContain("mode: 'edit' | 'view'");
     expect(source).toContain("page.reload({ waitUntil: 'domcontentloaded' })");
+    expect(source).toContain("locator('.ant-select-dropdown:visible')");
+    expect(source).not.toContain("getByRole('option'");
+    expect(source.indexOf('await expectCurrentReferenceCacheBaseline')).toBeLessThan(
+      source.indexOf('await injectPreviousRevisionEntries'),
+    );
     expect(source).not.toMatch(/page\.screenshot|ariaSnapshot|context\.tracing|recordVideo/gu);
     expect(source).not.toMatch(/updateProcess|insert\(|delete\(|upsert\(/gu);
   });

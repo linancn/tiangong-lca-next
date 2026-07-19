@@ -101,6 +101,8 @@ export default {
   'pages.version': 'Version',
   'pages.lang.select': 'Select a language',
   'pages.lang.text.placeholder': 'Text',
+  'pages.classification.loadFailed': 'Failed to load classification.',
+  'pages.classification.retry': 'Retry',
 
   'page.exportData.success': 'Data exported successfully.',
   'page.exportData.error': 'Export data failed',

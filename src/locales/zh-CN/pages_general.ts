@@ -100,6 +100,8 @@ export default {
   'pages.version': '版本',
   'pages.lang.select': '请选择语言',
   'pages.lang.text.placeholder': '文本',
+  'pages.classification.loadFailed': '分类信息加载失败。',
+  'pages.classification.retry': '重试',
 
   'page.exportData.success': '数据导出成功。',
   'page.exportData.error': '数据导出失败',

@@ -10,6 +10,7 @@ import {
 } from '@/services/general/runtimeLocale';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
+import type { DropdownProps } from 'antd';
 import { ConfigProvider, theme, Tooltip } from 'antd';
 import type React from 'react';
 
@@ -19,9 +20,14 @@ interface SelectLangProps {
   style?: React.CSSProperties;
 }
 
+const SELECT_LANG_DROPDOWN_PROPS = {
+  trigger: ['click'],
+} satisfies Pick<DropdownProps, 'trigger'>;
+
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
   return (
     <UmiSelectLang
+      {...SELECT_LANG_DROPDOWN_PROPS}
       globalIconClassName='tg-global-language-selector'
       reload={false}
       style={{
