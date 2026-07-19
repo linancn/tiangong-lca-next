@@ -6,8 +6,11 @@ import I18nEvidenceReporter, {
   hasCompleteScenarioCoverage,
   hasExactBackendTargetClosure,
   hasExactProductionDataClosure,
+  isIgnoredSemanticEvidenceDirectory,
   routeCoverageContractDigest,
+  semanticEvidenceSourcePaths,
   summarizeScenarioCoverage,
+  verifiedTargetBrowserContextOptions,
 } from '../../e2e/i18n/evidence-reporter';
 
 jest.mock('@playwright/test', () => ({
@@ -193,9 +196,81 @@ describe('i18n evidence reporter', () => {
     );
     expect(source).toContain("context.on('request'");
     expect(source).toContain('await signInViaUi(page)');
+    expect(source).toContain('browser.newContext(verifiedTargetBrowserContextOptions(baseURL))');
     expect(source).toContain('await waitForBackendObservationStability(');
     expect(source).toContain('hasExactBackendTargetClosure(observations, trackedBackend)');
     expect(source).not.toContain("page.on('request'");
     expect(source).not.toContain('waitForTimeout(250)');
+  });
+
+  it('binds the independent target probe to the candidate base URL', () => {
+    expect(verifiedTargetBrowserContextOptions('http://127.0.0.1:8000')).toEqual({
+      baseURL: 'http://127.0.0.1:8000',
+      locale: 'en-US',
+      serviceWorkers: 'block',
+    });
+  });
+
+  it('derives semantic source digests from the route contract without duplicate paths', () => {
+    const coverage = JSON.parse(
+      readFileSync(path.join(REPOSITORY_ROOT, 'docs/plans/i18n/route-view-coverage.json'), 'utf8'),
+    );
+    const copySources = [...coverage.routeFamilies, ...coverage.rows].flatMap(
+      ({ copySources: sources }: any) => sources?.sourcePaths ?? [],
+    );
+    const paths = semanticEvidenceSourcePaths(
+      copySources,
+      coverage.proofPolicy.evidenceContract.digestPolicy.criticalSourcePaths,
+    );
+    expect(paths).toEqual([...new Set(paths)].sort());
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        'public/privacy_notice.html',
+        'public/terms_of_use.html',
+        'src/components/LocationTextItem/description.tsx',
+        'src/components/RightContent/index.tsx',
+        'src/services/general/contentLanguageRegistry.ts',
+        'src/services/general/localeRegistry.ts',
+        'src/services/general/routeViewState.ts',
+        'src/services/general/routeViewStateRegistry.json',
+      ]),
+    );
+  });
+
+  it('keeps runtime output directories outside semantic evidence test inputs', () => {
+    expect(
+      ['.auth', 'playwright-report', 'runtime', 'test-results'].every((directory) =>
+        isIgnoredSemanticEvidenceDirectory(directory),
+      ),
+    ).toBe(true);
+    expect(isIgnoredSemanticEvidenceDirectory('i18n')).toBe(false);
+  });
+
+  it('binds the external credential-selection helpers used by the semantic E2E login', () => {
+    const reporterSource = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
+      'utf8',
+    );
+    expect(reporterSource).toContain("'tests/data-workflows/data-workflow-paths.ts'");
+    expect(reporterSource).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
+  });
+
+  it('captures final evidence inputs after the target probe and reuses that snapshot', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
+      'utf8',
+    );
+    const targetProbeIndex = source.indexOf('const targetProbe = await this.targetProbe');
+    const finalCaptureIndex = source.indexOf(
+      'const finalExecutionInputs = captureExecutionInputs(this.playwrightTestRoot)',
+    );
+    expect(targetProbeIndex).toBeGreaterThan(-1);
+    expect(finalCaptureIndex).toBeGreaterThan(targetProbeIndex);
+    expect(source).toContain('packageLock: finalExecutionInputs.packageLock');
+    expect(source).toContain('runtimeAssets: finalExecutionInputs.runtimeAssets');
+    expect(source).toContain('tests: finalExecutionInputs.tests');
+    expect(source).toContain('sources: finalExecutionInputs.sources');
+    expect(source).toContain('captureExecutionInputs(config.rootDir)');
+    expect(source).toContain('semanticE2ERoot !== path.resolve(playwrightTestRoot)');
   });
 });

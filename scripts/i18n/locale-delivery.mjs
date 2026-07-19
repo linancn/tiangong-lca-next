@@ -88,6 +88,8 @@ const SEMANTIC_E2E_CRITICAL_SOURCE_PATHS = Object.freeze([
 const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
+  'tests/data-workflows/data-workflow-paths.ts',
+  'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
   'tests/unit/components/RightContent.test.tsx',
   'tests/unit/e2e/evidenceReporter.test.ts',
@@ -795,6 +797,34 @@ function playwrightBlocksServiceWorkers(root) {
   return /serviceWorkers\s*:\s*['"]block['"]/u.test(source);
 }
 
+function playwrightTestDirectory(root) {
+  const source = readText(root, 'playwright.config.ts');
+  const sourceFile = ts.createSourceFile(
+    'playwright.config.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const values = [];
+  const visit = (node) => {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ((ts.isIdentifier(node.name) && node.name.text === 'testDir') ||
+        (ts.isStringLiteral(node.name) && node.name.text === 'testDir'))
+    ) {
+      values.push(
+        ts.isStringLiteral(node.initializer) || ts.isNoSubstitutionTemplateLiteral(node.initializer)
+          ? path.resolve(root, node.initializer.text)
+          : null,
+      );
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return values.length === 1 ? values[0] : null;
+}
+
 function routeCoverageContractDigest(coverage) {
   return digestJson({
     schemaVersion: coverage.schemaVersion,
@@ -949,6 +979,19 @@ function validateSemanticEvidenceContract(root, coverage, routeRows) {
     !Array.isArray(contract.digestPolicy?.criticalSourcePaths)
   ) {
     throw new Error('Semantic E2E digest policy is incomplete.');
+  }
+  const semanticE2ERoot = path.resolve(root, contract.digestPolicy.semanticE2ERoot);
+  const relativeSemanticE2ERoot = path.relative(root, semanticE2ERoot);
+  if (
+    playwrightTestDirectory(root) !== semanticE2ERoot ||
+    relativeSemanticE2ERoot === '..' ||
+    relativeSemanticE2ERoot.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeSemanticE2ERoot) ||
+    collectEvidenceFiles(root, contract.digestPolicy.semanticE2ERoot).length === 0
+  ) {
+    throw new Error(
+      'Semantic E2E digest root must be a non-empty repository directory matching Playwright testDir.',
+    );
   }
   if (!fs.existsSync(path.resolve(root, contract.schemaPath))) {
     throw new Error(`Semantic E2E evidence schema is missing: ${contract.schemaPath}.`);

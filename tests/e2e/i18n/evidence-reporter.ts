@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -24,6 +24,7 @@ import {
   ROUTE_COVERAGE_PATH,
   sha256,
   type EvidenceAnnotation,
+  type RouteCoverageContract,
 } from './contracts';
 import { installVerifiedProductionReadOnlyGuard } from './production-backend-target';
 import { readProductionDataResult } from './production-data-ledger';
@@ -53,6 +54,36 @@ type RouteCoverageDigestInput = {
   sourceRouteConfig: string;
   supportedLocales: string[];
   viewStateRegistry: unknown;
+};
+
+type SemanticEvidenceCoverage = RouteCoverageContract & {
+  policy: unknown;
+  proofPolicy: {
+    assertionSemantics: unknown;
+    evidenceContract: {
+      browserCoverage: { criticalAssertionIds: string[] };
+      digestPolicy: {
+        additionalTestPaths: string[];
+        criticalSourcePaths: string[];
+        semanticE2ERoot: string;
+      };
+      productionData: { exactCreated: number };
+    };
+  };
+  schemaVersion: string;
+  sourceRouteConfig: string;
+  supportedLocales: string[];
+};
+
+type FileDigest = { path: string; sha256: string };
+
+type ExecutionInputSnapshot = {
+  coverage: SemanticEvidenceCoverage;
+  packageLock: FileDigest;
+  routeCoverage: FileDigest;
+  runtimeAssets: FileDigest[];
+  sources: FileDigest[];
+  tests: FileDigest[];
 };
 
 export function summarizeScenarioCoverage(runs: readonly AssertionRun[]): ScenarioCoverage[] {
@@ -129,7 +160,7 @@ type CandidateIdentity = {
   unitTestTreeDigest: string;
 };
 
-type TargetProof = {
+export type TargetProof = {
   backendObservedOriginSha256: string;
   backendObservedPublishableKeySha256: string;
   backendTrackedOriginSha256: string;
@@ -141,7 +172,7 @@ type TargetProof = {
   trackedMainEnvironmentSha256: string;
 };
 
-type TargetProbeResult = { ok: true; proof: TargetProof } | { ok: false; reason: string };
+export type TargetProbeResult = { ok: true; proof: TargetProof } | { ok: false; reason: string };
 
 const VERIFIED_EVIDENCE_OPT_IN = 'E2E_WRITE_VERIFIED_EVIDENCE';
 const BACKEND_API_PATH = /^\/(?:auth|functions|realtime|rest|storage)\/v1(?:\/|$)/u;
@@ -157,6 +188,8 @@ const CRITICAL_SOURCE_PATHS = [
 const CRITICAL_TEST_PATHS = [
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
+  'tests/data-workflows/data-workflow-paths.ts',
+  'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
   'tests/unit/components/RightContent.test.tsx',
   'tests/unit/e2e/evidenceReporter.test.ts',
@@ -164,22 +197,53 @@ const CRITICAL_TEST_PATHS = [
   'tests/unit/e2e/productionRequestGuard.test.ts',
   'tests/unit/services/general/routeViewStateRegistry.test.ts',
 ] as const;
+const SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES = new Set([
+  '.auth',
+  'playwright-report',
+  'runtime',
+  'test-results',
+]);
 
-function listFiles(
+export function verifiedTargetBrowserContextOptions(baseURL: string) {
+  return {
+    baseURL,
+    locale: 'en-US',
+    serviceWorkers: 'block' as const,
+  };
+}
+
+export function semanticEvidenceSourcePaths(
+  routeCopySourcePaths: readonly string[],
+  contractCriticalSourcePaths: readonly string[],
+): string[] {
+  return [
+    ...new Set([...routeCopySourcePaths, ...CRITICAL_SOURCE_PATHS, ...contractCriticalSourcePaths]),
+  ].sort();
+}
+
+export function isIgnoredSemanticEvidenceDirectory(directoryName: string): boolean {
+  return SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES.has(directoryName);
+}
+
+function listEvidenceFiles(
   directory: string,
   include: (absolutePath: string) => boolean = () => true,
 ): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      return listFiles(entryPath, include);
-    }
-    return entry.isFile() && include(entryPath) ? [entryPath] : [];
-  });
-}
-
-function listEvidenceFiles(directory: string): string[] {
-  return listFiles(directory);
+  if (!existsSync(directory)) {
+    return [];
+  }
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      if (entry.isDirectory() && isIgnoredSemanticEvidenceDirectory(entry.name)) {
+        return [];
+      }
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        return listEvidenceFiles(entryPath, include);
+      }
+      return entry.isFile() && include(entryPath) ? [entryPath] : [];
+    })
+    .sort();
 }
 
 function digestFiles(paths: readonly string[]) {
@@ -241,28 +305,62 @@ function readCandidateIdentity(): CandidateIdentity {
 
 function runtimeAssetPaths(): string[] {
   const gzipAssets = ['public/classifications', 'public/locations'].flatMap((relativeDirectory) =>
-    listFiles(path.join(REPOSITORY_ROOT, relativeDirectory), (absolutePath) =>
+    listEvidenceFiles(path.join(REPOSITORY_ROOT, relativeDirectory), (absolutePath) =>
       absolutePath.endsWith('.gz'),
     ).map((absolutePath) => path.relative(REPOSITORY_ROOT, absolutePath).split(path.sep).join('/')),
   );
+  if (gzipAssets.length === 0) {
+    throw new Error('Semantic E2E evidence has no classification/location runtime assets.');
+  }
   return [...RUNTIME_ASSET_MANIFESTS, ...gzipAssets].sort();
 }
 
-function executionInputDigest(): string {
-  const e2eTestPaths = listEvidenceFiles(path.join(REPOSITORY_ROOT, 'tests/e2e/i18n')).map(
-    (absolutePath) => path.relative(REPOSITORY_ROOT, absolutePath).split(path.sep).join('/'),
+function captureExecutionInputs(playwrightTestRoot: string): ExecutionInputSnapshot {
+  const routeCoverageBuffer = readFileSync(path.join(REPOSITORY_ROOT, ROUTE_COVERAGE_PATH));
+  const coverage = JSON.parse(routeCoverageBuffer.toString('utf8')) as SemanticEvidenceCoverage;
+  const rows = [...coverage.routeFamilies, ...coverage.rows];
+  const focusedTests = rows.flatMap(({ proof }) => proof?.focusedTests ?? []);
+  const copySources = rows.flatMap(({ copySources: sources }) => sources?.sourcePaths ?? []);
+  const { digestPolicy } = coverage.proofPolicy.evidenceContract;
+  const semanticE2ERoot = path.resolve(REPOSITORY_ROOT, digestPolicy.semanticE2ERoot);
+  if (semanticE2ERoot !== path.resolve(playwrightTestRoot)) {
+    throw new Error('Semantic E2E digest root must match the Playwright test root.');
+  }
+  const semanticE2ETests = listEvidenceFiles(semanticE2ERoot).map((absolutePath) =>
+    path.relative(REPOSITORY_ROOT, absolutePath).split(path.sep).join('/'),
   );
+  if (semanticE2ETests.length === 0) {
+    throw new Error('Semantic E2E digest root must contain executable test inputs.');
+  }
+  return {
+    coverage,
+    packageLock: digestFiles(['package-lock.json'])[0],
+    routeCoverage: {
+      path: ROUTE_COVERAGE_PATH,
+      sha256: sha256(routeCoverageBuffer),
+    },
+    runtimeAssets: digestFiles(runtimeAssetPaths()),
+    tests: digestFiles([
+      ...focusedTests,
+      ...semanticE2ETests,
+      ...CRITICAL_TEST_PATHS,
+      ...digestPolicy.additionalTestPaths,
+    ]),
+    sources: digestFiles(
+      semanticEvidenceSourcePaths(copySources, digestPolicy.criticalSourcePaths),
+    ),
+  };
+}
+
+function executionInputDigest(snapshot: ExecutionInputSnapshot): string {
   return sha256(
-    `${JSON.stringify(
-      digestFiles([
-        ...e2eTestPaths,
-        ...CRITICAL_TEST_PATHS,
-        ...runtimeAssetPaths(),
-        'docs/plans/i18n/route-view-coverage.json',
-        'package-lock.json',
-        'playwright.config.ts',
-      ]),
-    )}\n`,
+    `${JSON.stringify({
+      packageLock: snapshot.packageLock,
+      routeCoverage: snapshot.routeCoverage,
+      runtimeAssets: snapshot.runtimeAssets,
+      sources: snapshot.sources,
+      tests: snapshot.tests,
+    })}\n`,
   );
 }
 
@@ -293,8 +391,9 @@ async function waitForBackendObservationStability(
   throw new Error('backend request observation did not reach a stable authenticated state');
 }
 
-async function probeBrowserTarget(baseURL: string): Promise<TargetProbeResult> {
+export async function probeBrowserTarget(baseURL: string): Promise<TargetProbeResult> {
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  let stage = 'flag-validation';
   try {
     if (
       process.env.E2E_AUTHENTICATED !== 'true' ||
@@ -305,8 +404,11 @@ async function probeBrowserTarget(baseURL: string): Promise<TargetProbeResult> {
     }
 
     const frontendOrigin = new URL(baseURL).origin;
+    stage = 'browser-launch';
     browser = await chromium.launch();
-    const context = await browser.newContext({ locale: 'en-US', serviceWorkers: 'block' });
+    stage = 'context-create';
+    const context = await browser.newContext(verifiedTargetBrowserContextOptions(baseURL));
+    stage = 'production-target-guard';
     const { backendTarget: trackedBackend, guard: productionRequestGuard } =
       await installVerifiedProductionReadOnlyGuard(context);
     const runtimeBackendUrl = process.env.SUPABASE_URL?.trim();
@@ -345,8 +447,11 @@ async function probeBrowserTarget(baseURL: string): Promise<TargetProbeResult> {
       }
     });
 
+    stage = 'login-navigation';
     await signInViaUi(page);
+    stage = 'backend-observation';
     await waitForBackendObservationStability(observations, pendingObservations);
+    stage = 'production-request-closure';
     assertNoBlockedProductionRequests(productionRequestGuard);
     if (!hasExactBackendTargetClosure(observations, trackedBackend)) {
       return { ok: false, reason: 'browser backend differs from tracked production' };
@@ -368,7 +473,7 @@ async function probeBrowserTarget(baseURL: string): Promise<TargetProbeResult> {
       },
     };
   } catch {
-    return { ok: false, reason: 'browser target probe failed' };
+    return { ok: false, reason: `browser target probe failed during ${stage}` };
   } finally {
     await browser?.close();
   }
@@ -422,6 +527,7 @@ export default class I18nEvidenceReporter implements Reporter {
   private finalStatus: FullResult['status'] = 'failed';
   private initialCandidate?: CandidateIdentity;
   private initialExecutionInputDigest?: string;
+  private playwrightTestRoot?: string;
   private readonly runs = new Map<string, AssertionRun[]>();
   private targetProbe?: Promise<TargetProbeResult>;
 
@@ -437,9 +543,12 @@ export default class I18nEvidenceReporter implements Reporter {
       });
       return;
     }
+    this.playwrightTestRoot = config.rootDir;
     try {
       this.initialCandidate = readCandidateIdentity();
-      this.initialExecutionInputDigest = executionInputDigest();
+      this.initialExecutionInputDigest = executionInputDigest(
+        captureExecutionInputs(config.rootDir),
+      );
       this.targetProbe = probeBrowserTarget(baseURL);
     } catch {
       this.targetProbe = Promise.resolve({
@@ -466,51 +575,31 @@ export default class I18nEvidenceReporter implements Reporter {
     if (process.env[VERIFIED_EVIDENCE_OPT_IN] !== 'true') {
       return;
     }
-    if (!this.initialCandidate || !this.initialExecutionInputDigest || !this.targetProbe) {
+    if (
+      !this.initialCandidate ||
+      !this.initialExecutionInputDigest ||
+      !this.playwrightTestRoot ||
+      !this.targetProbe
+    ) {
       throw new Error('Verified i18n evidence requires a captured candidate and target probe.');
-    }
-    const finalCandidate = readCandidateIdentity();
-    if (JSON.stringify(finalCandidate) !== JSON.stringify(this.initialCandidate)) {
-      throw new Error('Candidate source or unit-test snapshot changed during the evidence run.');
-    }
-    if (executionInputDigest() !== this.initialExecutionInputDigest) {
-      throw new Error('Evidence tests, lock, contract, or runtime assets changed during the run.');
     }
     const targetProbe = await this.targetProbe;
     if (!targetProbe.ok) {
       throw new Error(`Verified i18n evidence target proof failed: ${targetProbe.reason}.`);
     }
-
-    const coverage = JSON.parse(
-      readFileSync(path.join(REPOSITORY_ROOT, ROUTE_COVERAGE_PATH), 'utf8'),
-    ) as {
-      schemaVersion: string;
-      supportedLocales: string[];
-      sourceRouteConfig: string;
-      policy: unknown;
-      executableTargets: Record<string, unknown>;
-      executableViewVariants: unknown;
-      viewStateRegistry: unknown;
-      proofPolicy: {
-        assertionSemantics: unknown;
-        evidenceContract: {
-          browserCoverage: { criticalAssertionIds: string[] };
-          productionData: { exactCreated: number };
-        };
-      };
-      routeFamilies: Array<{
-        copySources?: { sourcePaths?: string[] };
-        proof?: { focusedTests?: string[] };
-      }>;
-      rows: Array<{
-        copySources?: { sourcePaths?: string[] };
-        proof?: { focusedTests?: string[] };
-      }>;
-    };
+    const finalCandidate = readCandidateIdentity();
+    const finalExecutionInputs = captureExecutionInputs(this.playwrightTestRoot);
+    if (JSON.stringify(finalCandidate) !== JSON.stringify(this.initialCandidate)) {
+      throw new Error('Candidate source or unit-test snapshot changed during the evidence run.');
+    }
+    if (executionInputDigest(finalExecutionInputs) !== this.initialExecutionInputDigest) {
+      throw new Error('Evidence tests, lock, contract, or runtime assets changed during the run.');
+    }
+    const { coverage } = finalExecutionInputs;
     const criticalAssertionIds = new Set(
       coverage.proofPolicy.evidenceContract.browserCoverage.criticalAssertionIds,
     );
-    const expectedAssertions = flattenExecutableRouteAssertions();
+    const expectedAssertions = flattenExecutableRouteAssertions(coverage);
     const expectedIds = new Set(expectedAssertions.map(({ assertionId }) => assertionId));
     const unexpectedIds = [...this.runs.keys()].filter(
       (assertionId) => !expectedIds.has(assertionId),
@@ -563,15 +652,6 @@ export default class I18nEvidenceReporter implements Reporter {
         scenarioCoverage,
       };
     });
-    const focusedTests = [...coverage.routeFamilies, ...coverage.rows].flatMap(
-      ({ proof }) => proof?.focusedTests ?? [],
-    );
-    const copySources = [...coverage.routeFamilies, ...coverage.rows].flatMap(
-      ({ copySources: sources }) => sources?.sourcePaths ?? [],
-    );
-    const e2eTestPaths = listEvidenceFiles(path.join(REPOSITORY_ROOT, 'tests/e2e/i18n')).map(
-      (absolutePath) => path.relative(REPOSITORY_ROOT, absolutePath).split(path.sep).join('/'),
-    );
     const productionData = await readProductionDataResult();
     const productionDataPassed =
       process.env.E2E_ALLOW_PRODUCTION_DATA === 'true' &&
@@ -617,20 +697,10 @@ export default class I18nEvidenceReporter implements Reporter {
         contractDigest: routeCoverageContractDigest(routeCoverageDigestInput),
       },
       digests: {
-        packageLock: digestFiles(['package-lock.json'])[0],
-        runtimeAssets: digestFiles(runtimeAssetPaths()),
-        tests: digestFiles([
-          ...focusedTests,
-          ...e2eTestPaths,
-          ...CRITICAL_TEST_PATHS,
-          'playwright.config.ts',
-        ]),
-        sources: digestFiles([
-          ...copySources,
-          ...CRITICAL_SOURCE_PATHS,
-          'src/services/general/contentLanguageRegistry.ts',
-          'src/services/general/localeRegistry.ts',
-        ]),
+        packageLock: finalExecutionInputs.packageLock,
+        runtimeAssets: finalExecutionInputs.runtimeAssets,
+        tests: finalExecutionInputs.tests,
+        sources: finalExecutionInputs.sources,
       },
       assertions,
       productionData: {

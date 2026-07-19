@@ -32,6 +32,10 @@ describe('shared locale delivery contracts', () => {
     );
     const coverageRows = [...coverage.rows, ...familyRows];
     const expectedEvidencePath = 'docs/plans/i18n/semantic-e2e-evidence.json';
+    const expectedEvidenceDescriptor = {
+      path: expectedEvidencePath,
+      sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+    };
     const hasVerifiedBrowserProof =
       coverage.proofPolicy.status === 'execution-evidence' &&
       coverage.proofPolicy.browserProof.status === 'verified';
@@ -58,7 +62,7 @@ describe('shared locale delivery contracts', () => {
           ? {
               status: 'verified',
               ownerIssue: '#635',
-              executedEvidence: [expectedEvidencePath],
+              executedEvidence: [expectedEvidenceDescriptor],
             }
           : {
               status: 'planned',
@@ -359,8 +363,11 @@ describe('shared locale delivery contracts', () => {
     expect(reporter).toContain('backendObservedPublishableKeySha256');
     expect(reporter).toContain("packageLock: digestFiles(['package-lock.json'])[0]");
     expect(reporter).toContain('runtimeAssets: digestFiles(runtimeAssetPaths())');
+    expect(reporter).toContain("'tests/data-workflows/data-workflow-paths.ts'");
+    expect(reporter).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
     expect(reporter).toContain("'tests/unit/e2e/productionDataLedger.test.ts'");
-    expect(reporter).toContain('executionInputDigest()');
+    expect(reporter).toContain('captureExecutionInputs(config.rootDir)');
+    expect(reporter).toContain('executionInputDigest(finalExecutionInputs)');
     expect(reporter).toContain('parseEvidenceAnnotations(result.annotations)');
     expect(reporter).toContain('hasCompleteScenarioCoverage(requiredScenarios, scenarioCoverage)');
     expect(reporter).toContain('hasExactProductionDataClosure(');
@@ -370,6 +377,12 @@ describe('shared locale delivery contracts', () => {
     const localeDelivery = fs.readFileSync(DELIVERY_SCRIPT, 'utf8');
     expect(localeDelivery).toContain('executableViewVariants: coverage.executableViewVariants');
     expect(localeDelivery).toContain('viewStateRegistry: coverage.viewStateRegistry');
+    expect(localeDelivery).toContain('playwrightTestDirectory(root) !== semanticE2ERoot');
+    expect(localeDelivery).toContain("'tests/data-workflows/data-workflow-paths.ts'");
+    expect(localeDelivery).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
+    expect(localeDelivery).toContain(
+      'Semantic E2E digest root must be a non-empty repository directory matching Playwright testDir.',
+    );
   });
 
   it.each(SUPPORTED_APP_LOCALES)(
