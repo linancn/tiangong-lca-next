@@ -63,6 +63,9 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).toContain('injectPreviousRevisionEntries');
     expect(source).toContain('expectPreviousRevisionEntriesInjected');
     expect(source).toContain("mode: 'edit' | 'view'");
+    expect(source).toContain('const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;');
+    expect(source).toContain("error.message.includes('NS_ERROR_FAILURE')");
+    expect(source).toContain('await gotoCandidateDocument(page, targetUrl);');
     expect(source).toContain("page.reload({ waitUntil: 'domcontentloaded' })");
     expect(source).toContain("locator('.ant-select-dropdown:visible')");
     expect(source).not.toContain("getByRole('option'");

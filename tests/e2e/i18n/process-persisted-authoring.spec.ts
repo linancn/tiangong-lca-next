@@ -51,11 +51,14 @@ test('one ledger-controlled Process UI save persists every authoring language', 
     });
     await expect(drawer).toHaveCount(1);
     await expect(drawer).toBeVisible();
-    const card = drawer
+    const cardTitle = drawer
+      .locator('.ant-card-head-title')
       .getByText(getLocaleMessage(locale, 'pages.process.view.processInformation.synonyms'), {
         exact: true,
-      })
-      .locator('xpath=ancestor::div[contains(@class, "ant-card")][1]');
+      });
+    const card = cardTitle.locator(
+      'xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " ant-card ")][1]',
+    );
     await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
     await expect(card.locator('[data-content-language]')).toHaveCount(

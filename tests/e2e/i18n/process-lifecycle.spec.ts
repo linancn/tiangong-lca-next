@@ -47,7 +47,7 @@ test('codex-e2e process renders every registry-backed content language', async (
   await page.goto(routeToCandidateUrl(baseURL!, route), { waitUntil: 'domcontentloaded' });
   for (const locale of APP_LOCALES) {
     const scenario = resolveLocaleContentE2EScenario(getLocaleCapability(locale));
-    await selectAppLocaleThroughUi(page, locale);
+    await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
     await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
     await expect(
       page.getByText(getLocaleMessage(locale, 'pages.process.view.processInformation'), {

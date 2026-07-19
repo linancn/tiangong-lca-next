@@ -446,7 +446,14 @@ export async function selectAppLocaleThroughUi(
   if ((await readStoredAppLocale(page)) === locale) {
     return;
   }
-  await trigger.click({ force: options.forceTrigger });
+  if (options.forceTrigger) {
+    // These scenarios intentionally keep a modal drawer mounted while proving that locale
+    // changes preserve the same document and deep-link state. A forced pointer click still
+    // targets the drawer mask by coordinates, so activate the real dropdown trigger directly.
+    await trigger.evaluate((element) => (element as HTMLElement).click());
+  } else {
+    await trigger.click();
+  }
   const targetIcon = page.getByRole('img', {
     name: localeDefinition.nativeLabel,
     exact: true,
@@ -481,6 +488,12 @@ export async function selectAppLocaleThroughUi(
     activeMenu,
     0,
     `Expected the locale menu to close after selecting ${localeDefinition.nativeLabel}.`,
+  );
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      }),
   );
 }
 

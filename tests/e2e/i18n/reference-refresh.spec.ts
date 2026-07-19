@@ -26,6 +26,7 @@ import { loadReferenceFixture, type ReferenceFixture } from './reference-fixture
 
 const processAssertion = findRouteAssertion('/mydata/processes');
 const REQUEST_BATCH_QUIET_MS = 150;
+const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;
 
 type ReadableLocaleDefinition = {
   appLocale: SupportedAppLocale;
@@ -185,6 +186,21 @@ function buildProcessDeepLink(
   const target = new URL(routeToCandidateUrl(baseURL, `/mydata/processes?${hashQuery.toString()}`));
   target.searchParams.set('codexE2EOuterState', state);
   return target.toString();
+}
+
+async function gotoCandidateDocument(page: Page, targetUrl: string): Promise<void> {
+  for (let attempt = 1; attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS; attempt += 1) {
+    try {
+      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+      return;
+    } catch (error) {
+      const isRecoverableFirefoxNavigation =
+        error instanceof Error && error.message.includes('NS_ERROR_FAILURE');
+      if (!isRecoverableFirefoxNavigation || attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
+        throw error;
+      }
+    }
+  }
 }
 
 async function expectProcessDeepLink(
@@ -498,7 +514,7 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-          await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+          await gotoCandidateDocument(page, targetUrl);
           await expectProcessDeepLink(page, ledger!, state);
           await expect
             .poll(
@@ -625,7 +641,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
       await selectLocaleThroughHeader(page, staleDefinition);
       const state = `cache-roundtrip-${definition.languageCode}`;
       const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
+      await gotoCandidateDocument(page, targetUrl);
       await expectProcessDeepLink(page, ledger!, state);
 
       const documentIdentity = await page.evaluate(() => {
@@ -722,9 +738,7 @@ test('process edit form consumes current classification and location assets in e
     await test.step(`${definition.appLocale} process form reference controls`, async () => {
       await selectLocaleThroughHeader(page, definition);
       const state = `form-${definition.languageCode}`;
-      await page.goto(buildProcessDeepLink(baseURL!, ledger!, state, 'edit'), {
-        waitUntil: 'domcontentloaded',
-      });
+      await gotoCandidateDocument(page, buildProcessDeepLink(baseURL!, ledger!, state, 'edit'));
       await expectProcessDeepLink(page, ledger!, state, 'edit');
       await expect(
         page.getByText(getLocaleMessage(definition.appLocale, 'pages.process.drawer.title.edit'), {

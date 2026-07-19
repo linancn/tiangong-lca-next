@@ -104,7 +104,8 @@ describe('responsive surface evidence contract', () => {
     const storedLocaleEarlyReturn = helperSource.indexOf(
       'if ((await readStoredAppLocale(page)) === locale)',
     );
-    const triggerClick = helperSource.indexOf('await trigger.click(');
+    const programmaticTriggerClick = helperSource.indexOf('(element as HTMLElement).click()');
+    const triggerClick = helperSource.indexOf('await trigger.click();');
     const activeMenuScope = helperSource.indexOf(".getByRole('menu')");
     const targetMenuFilter = helperSource.indexOf('.filter({ has: targetIcon })');
     const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
@@ -112,12 +113,35 @@ describe('responsive surface evidence contract', () => {
     const explicitMenuClose = helperSource.indexOf("await page.keyboard.press('Escape')");
     expect(spinnerWait?.index).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait!.index);
+    expect(programmaticTriggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
     expect(triggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
     expect(activeMenuScope).toBeGreaterThan(triggerClick);
     expect(targetMenuFilter).toBeGreaterThan(activeMenuScope);
     expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
     expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
     expect(explicitMenuClose).toBeGreaterThan(keyboardActivation);
+    expect(helperSource).not.toContain('trigger.click({ force:');
     expect(helperSource).not.toContain('await target.click(');
+  });
+
+  it('uses programmatic locale activation only for mounted drawer contracts', () => {
+    const processLifecycleSource = readFileSync(
+      path.resolve(process.cwd(), 'tests/e2e/i18n/process-lifecycle.spec.ts'),
+      'utf8',
+    );
+    expect(processLifecycleSource).toContain(
+      'selectAppLocaleThroughUi(page, locale, { forceTrigger: true })',
+    );
+  });
+
+  it('scopes persisted authoring rows to an exact Ant Card class token', () => {
+    const source = readFileSync(
+      path.resolve(process.cwd(), 'tests/e2e/i18n/process-persisted-authoring.spec.ts'),
+      'utf8',
+    );
+    expect(source).toContain(".locator('.ant-card-head-title')");
+    expect(source).toContain('.getByText(getLocaleMessage(locale,');
+    expect(source).toContain('contains(concat(" ", normalize-space(@class), " "), " ant-card ")');
+    expect(source).not.toContain('contains(@class, "ant-card")');
   });
 });
