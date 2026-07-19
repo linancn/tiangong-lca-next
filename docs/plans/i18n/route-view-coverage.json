@@ -308,7 +308,7 @@
     "blockedContextAllowed": false
   },
   "proofPolicy": {
-    "status": "inventory-only",
+    "status": "execution-evidence",
     "assertionSemantics": "Stable route IDs require a live route scenario plus every target-declared semantic scenario. Focused component tests remain digest-bound state proof; planned assertion prose alone is never execution evidence and cannot activate a locale.",
     "evidenceContract": {
       "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
@@ -348,9 +348,14 @@
       }
     },
     "browserProof": {
-      "status": "planned",
+      "status": "verified",
       "ownerIssue": "#635",
-      "executedEvidence": []
+      "executedEvidence": [
+        {
+          "path": "docs/plans/i18n/semantic-e2e-evidence.json",
+          "sha256": "6d7ddebe7a211289fa8a837e44d273b1fed3af8ad170851332bca8a9f435ec46"
+        }
+      ]
     }
   },
   "executableTargets": {

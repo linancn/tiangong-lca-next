@@ -78,10 +78,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "e88d06d9ea31e3a1ceaa5624ea30422408b69788304187af666ca4a1561a83c1",
-    "qualityDigest": "aa5520cd81ff6e2bf35d92c1b9713b94423d8ce389c35f28f4dc12714a66b0be",
+    "contextDigest": "26b29e28c4aae365d4ab38c199ef9550584d1e7177621595b0faff9d7801d9bb",
+    "qualityDigest": "86389fdbf01a11112ef7424373fc892c638798774b4c03a63c2b88486af57a13",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
-    "routeViewCoverageDigest": "cac8cc45323e1bcd4501bdfed5643fc0918fffbba820030717b27256891e91b6",
+    "routeViewCoverageDigest": "695dc2ab740ef9dd9c11aed6e8211e72291e96758eff32ff3d596a3a11a851c3",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -104,25 +104,17 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": false,
+    "semanticRouteAndE2EReady": true,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": false,
+    "productionActivationReady": true,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [
-    {
-      "blockerId": "semantic-route-and-e2e-proof",
-      "kind": "semantic-route-and-e2e",
-      "status": "pending",
-      "deliveryStatus": null,
-      "ownerIssue": "#635"
-    }
-  ],
-  "activationDigest": "1d71a7834a524bb72dcc6aef6db52052af0ac6b6dafdc1e01ea0325bc5942143"
+  "productionActivationBlockers": [],
+  "activationDigest": "9573e0567e268c74c5110611001b7ade9eea46165fc6b0545743da98c43c7f49"
 }

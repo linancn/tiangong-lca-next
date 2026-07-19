@@ -74,10 +74,10 @@
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "60840347fb27472f4fba0d313105563d5062c5dda2cf056b7cc38cbfb70a9769",
-    "qualityDigest": "ca4cfe572e03ac9dbc5d6be8e7ca890429cf23b9b2d53786592b42e3fec8d979",
+    "contextDigest": "492b2f23d3a2dd9d035f4c2e2e5d869e9af42a21eb5a6188ad15c3345354426d",
+    "qualityDigest": "152733e0e1c7fab8e88a9a1bfa4cb926baa38e0a468c1e2b2f3d35e317684bbe",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
-    "routeViewCoverageDigest": "cac8cc45323e1bcd4501bdfed5643fc0918fffbba820030717b27256891e91b6",
+    "routeViewCoverageDigest": "695dc2ab740ef9dd9c11aed6e8211e72291e96758eff32ff3d596a3a11a851c3",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -100,25 +100,17 @@
     "exactTopology": true,
     "contextComplete": true,
     "structuralQualityPassed": true,
-    "semanticRouteAndE2EReady": false,
+    "semanticRouteAndE2EReady": true,
     "correctionOverlayPassed": true,
     "fallbackContractPassed": true,
     "platformContractValid": true,
     "languageHardcodingPassed": true,
     "referenceResourcesReady": true,
-    "productionActivationReady": false,
+    "productionActivationReady": true,
     "ltrCondition": "single-standard; RTL work not applicable",
     "humanTranslationReviewRequired": false
   },
   "referenceResourceBlockers": [],
-  "productionActivationBlockers": [
-    {
-      "blockerId": "semantic-route-and-e2e-proof",
-      "kind": "semantic-route-and-e2e",
-      "status": "pending",
-      "deliveryStatus": null,
-      "ownerIssue": "#635"
-    }
-  ],
-  "activationDigest": "4221ebe962f59e99817258d2b0c1267b2e14b7442880683f8c85e68bf0b712cf"
+  "productionActivationBlockers": [],
+  "activationDigest": "bfd36408166eb41904d6c40e6c5513a8a157903c368ca844cec90c60b61636ac"
 }

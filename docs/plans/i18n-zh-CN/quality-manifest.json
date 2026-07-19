@@ -4,7 +4,7 @@
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestDigest": "43bf490c0d2b308be7e09c8d1c16fb099f67c4d1249601b7957e9b2bbfafb840",
-    "contextDigest": "60840347fb27472f4fba0d313105563d5062c5dda2cf056b7cc38cbfb70a9769"
+    "contextDigest": "492b2f23d3a2dd9d035f4c2e2e5d869e9af42a21eb5a6188ad15c3345354426d"
   },
   "catalog": {
     "messageCount": 3032,
@@ -34,7 +34,7 @@
     "everyMessageDossierComplete": true,
     "typedContentTopologyComplete": true,
     "allHighRiskMessageStructuresValidated": true,
-    "semanticRouteAndE2EReady": false,
+    "semanticRouteAndE2EReady": true,
     "semanticRouteAndE2EOwnerIssue": "#635",
     "humanTranslationReviewRequired": false,
     "blockedContextCount": 0
@@ -52,5 +52,5 @@
     "blockedItems": 0,
     "semanticReviewPerformed": false
   },
-  "qualityDigest": "ca4cfe572e03ac9dbc5d6be8e7ca890429cf23b9b2d53786592b42e3fec8d979"
+  "qualityDigest": "152733e0e1c7fab8e88a9a1bfa4cb926baa38e0a468c1e2b2f3d35e317684bbe"
 }
