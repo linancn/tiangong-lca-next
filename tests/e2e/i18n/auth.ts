@@ -8,6 +8,7 @@ import {
   pickCredentialByRole,
 } from '../../data-workflows/workflows/workflow-shared';
 import { getLocaleMessage } from './contracts';
+import { waitForRenderedLoginControl } from './login-route-readiness';
 
 const LOGIN_FORM_LOCALE = 'en-US' as const;
 
@@ -37,6 +38,7 @@ export async function loadE2ECredential() {
 export async function signInViaUi(page: Page): Promise<void> {
   const credential = await loadE2ECredential();
   await page.goto('/#/user/login', { waitUntil: 'domcontentloaded' });
+  await waitForRenderedLoginControl(page);
   const loginForm = getLoginFormControls(page);
   await expect(loginForm.email).toBeVisible();
   await loginForm.email.fill(credential.email);

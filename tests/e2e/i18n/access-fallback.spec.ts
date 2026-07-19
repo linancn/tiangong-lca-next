@@ -16,6 +16,7 @@ import {
   routeToCandidateUrl,
   type ExecutableRouteAssertion,
 } from './contracts';
+import { waitForRenderedLoginControl } from './login-route-readiness';
 import { installVerifiedProductionReadOnlyGuard } from './production-backend-target';
 import { assertNoBlockedProductionRequests } from './production-request-guard';
 
@@ -72,12 +73,14 @@ async function expectLocalizedLogin(
   page: Page,
   localeDefinition: LocaleRegistryEntry,
 ): Promise<void> {
+  await waitForRenderedLoginControl(page);
   await expect.poll(() => readStoredAppLocale(page)).toBe(localeDefinition.canonicalLocale);
   await expectLocalizedLoginContent(page, localeDefinition);
 }
 
 async function selectLoginLocale(page: Page, localeDefinition: LocaleRegistryEntry): Promise<void> {
-  await page.getByTestId('login-language-frame').click();
+  const languageControl = await waitForRenderedLoginControl(page);
+  await languageControl.click();
   const menu = page.locator('.ant-dropdown-menu');
   await expect(menu).toBeVisible();
   await menu
