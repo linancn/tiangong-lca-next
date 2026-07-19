@@ -473,6 +473,9 @@ export async function selectAppLocaleThroughUi(
     key: UMI_LOCALE_STORAGE_KEY,
     value: locale,
   });
+  if ((await activeMenu.count()) > 0) {
+    await page.keyboard.press('Escape');
+  }
   await waitForLocatorCount(
     page,
     activeMenu,

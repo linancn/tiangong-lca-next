@@ -109,6 +109,7 @@ describe('responsive surface evidence contract', () => {
     const targetMenuFilter = helperSource.indexOf('.filter({ has: targetIcon })');
     const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
     const keyboardActivation = helperSource.indexOf("await target.press('Enter')");
+    const explicitMenuClose = helperSource.indexOf("await page.keyboard.press('Escape')");
     expect(spinnerWait?.index).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait!.index);
     expect(triggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
@@ -116,6 +117,7 @@ describe('responsive surface evidence contract', () => {
     expect(targetMenuFilter).toBeGreaterThan(activeMenuScope);
     expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
     expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
+    expect(explicitMenuClose).toBeGreaterThan(keyboardActivation);
     expect(helperSource).not.toContain('await target.click(');
   });
 });
