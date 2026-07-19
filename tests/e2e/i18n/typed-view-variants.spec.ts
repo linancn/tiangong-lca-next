@@ -15,6 +15,11 @@ import {
 import { readVerifiedProductionBackendTarget } from './production-backend-target';
 import { readProductionDataLedger } from './production-data-ledger';
 import { assertAuditedSyntheticReadRequest } from './production-request-guard';
+import {
+  assertExactReadOnlyProcessValidationDraft,
+  PROCESS_SAVE_DRAFT_PATH,
+  PROCESS_SAVE_DRAFT_ROUTE_PATTERN,
+} from './typed-view-readonly-fixture';
 
 const dataProcessingAssertion = findRouteAssertion('/data-processing');
 const processAssertion = findRouteAssertion('/mydata/processes');
@@ -425,30 +430,53 @@ test('Process required deep-link state is explicit and reload-stable', async ({
   expect(baseURL).toBeTruthy();
   await signInViaUi(page);
 
-  for (const { required } of PROCESS_REQUIRED_VARIANTS) {
-    const hashQuery: Record<string, string> = {
-      id: ledger!.id,
-      mode: 'edit',
-      version: ledger!.version,
-    };
-    if (required === 'required') {
-      hashQuery.required = '1';
-    }
-    const location = { hashPath: '/mydata/processes', hashQuery } satisfies SpaLocationTarget;
-    for (const locale of APP_LOCALES) {
-      await test.step(`${required} ${locale}`, async () => {
-        await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
-          waitUntil: 'domcontentloaded',
-        });
-        await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
-        await expectSpaLocation(page, location);
-        await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
-        await expectProcessDrawer(page, locale, 'edit', required);
+  let trappedValidationDrafts = 0;
+  await page.route(PROCESS_SAVE_DRAFT_ROUTE_PATTERN, async (route) => {
+    if (await fallbackVerifiedPreflight(route, PROCESS_SAVE_DRAFT_PATH)) return;
+    assertExactReadOnlyProcessValidationDraft({
+      expectedOrigin: productionBackendTarget.origin,
+      expectedPublishableKey: productionBackendTarget.publishableKey,
+      ledger: ledger!,
+      request: route.request(),
+    });
+    trappedValidationDrafts += 1;
+    // `required=1` intentionally invokes the product's save-before-validation flow. This
+    // dedicated test trap proves the exact ledger-controlled request and terminates it locally;
+    // the production mutation allowlist remains unchanged and no request reaches the backend.
+    await route.abort('blockedbyclient');
+  });
+  const readTrappedValidationDrafts = () => trappedValidationDrafts;
 
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        await expectSpaLocation(page, location);
-        await expectProcessDrawer(page, locale, 'edit', required);
-      });
+  try {
+    for (const { required } of PROCESS_REQUIRED_VARIANTS) {
+      const hashQuery: Record<string, string> = {
+        id: ledger!.id,
+        mode: 'edit',
+        version: ledger!.version,
+      };
+      if (required === 'required') {
+        hashQuery.required = '1';
+      }
+      const location = { hashPath: '/mydata/processes', hashQuery } satisfies SpaLocationTarget;
+      for (const locale of APP_LOCALES) {
+        await test.step(`${required} ${locale}`, async () => {
+          await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
+            waitUntil: 'domcontentloaded',
+          });
+          await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
+          await expectSpaLocation(page, location);
+          await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
+          await expectProcessDrawer(page, locale, 'edit', required);
+
+          await page.reload({ waitUntil: 'domcontentloaded' });
+          await expectSpaLocation(page, location);
+          await expectProcessDrawer(page, locale, 'edit', required);
+        });
+      }
     }
+    await expect.poll(readTrappedValidationDrafts).toBeGreaterThan(0);
+  } finally {
+    // Stop mounted auto-validation effects while the exact local trap is still active.
+    await page.close();
   }
 });

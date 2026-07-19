@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, type Locator, test } from './fixtures';
 
 import { CONTENT_LANGUAGE_REGISTRY } from '../../../src/services/general/contentLanguageRegistry';
 import { getLocaleCapability } from '../../../src/services/general/localeCapabilities';
@@ -28,6 +28,16 @@ const MULTILINGUAL_PROCESS_FIELDS = [
   'generalComment',
 ] as const;
 
+async function expectDrawerDescriptionValue(drawer: Locator, expectedValue: string) {
+  const value = drawer.getByText(expectedValue, { exact: true });
+  await expect(value).toHaveCount(1);
+  await expect(value).toBeVisible();
+
+  const row = value.locator('xpath=ancestor::tr[1]');
+  await expect(row).toHaveCount(1);
+  await expect(row.locator('.ant-descriptions-item-content')).toHaveText(expectedValue);
+}
+
 test('codex-e2e process renders every registry-backed content language', async ({
   baseURL,
   page,
@@ -49,8 +59,16 @@ test('codex-e2e process renders every registry-backed content language', async (
     const scenario = resolveLocaleContentE2EScenario(getLocaleCapability(locale));
     await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
     await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
+    const viewDrawer = page
+      .getByRole('dialog', {
+        name: getLocaleMessage(locale, 'pages.process.drawer.title.view'),
+        exact: true,
+      })
+      .filter({ visible: true });
+    await expect(viewDrawer).toHaveCount(1);
+    await expect(viewDrawer).toBeVisible();
     await expect(
-      page.getByText(getLocaleMessage(locale, 'pages.process.view.processInformation'), {
+      viewDrawer.getByText(getLocaleMessage(locale, 'pages.process.view.processInformation'), {
         exact: true,
       }),
     ).toBeVisible();
@@ -59,7 +77,7 @@ test('codex-e2e process renders every registry-backed content language', async (
         for (const field of MULTILINGUAL_PROCESS_FIELDS) {
           for (const { languageCode, nativeLabel } of AUTHORING_LANGUAGE_DEFINITIONS) {
             const marker = `${ledger!.marker} ${field} ${languageCode}`;
-            const markerValue = page.getByText(marker, { exact: true });
+            const markerValue = viewDrawer.getByText(marker, { exact: true });
             await expect(markerValue).toHaveCount(1);
             await expect(markerValue).toBeVisible();
 
@@ -84,16 +102,13 @@ test('codex-e2e process renders every registry-backed content language', async (
         // Only the localized application shell is in contract for this branch.
         continue;
     }
-    await expect(
-      page.getByText(
-        `${referenceFixture.location.code} (${referenceFixture.location.labels[scenario.contentLanguage]})`,
-        { exact: true },
-      ),
-    ).toBeVisible();
-    await expect(
-      page.getByText(referenceFixture.classification.labels[scenario.contentLanguage].join(' > '), {
-        exact: true,
-      }),
-    ).toBeVisible();
+    await expectDrawerDescriptionValue(
+      viewDrawer,
+      `${referenceFixture.location.code} (${referenceFixture.location.labels[scenario.contentLanguage]})`,
+    );
+    await expectDrawerDescriptionValue(
+      viewDrawer,
+      referenceFixture.classification.labels[scenario.contentLanguage].join(' > '),
+    );
   }
 });

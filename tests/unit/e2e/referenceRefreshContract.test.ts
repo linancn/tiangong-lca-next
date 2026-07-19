@@ -75,4 +75,107 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).not.toMatch(/page\.screenshot|ariaSnapshot|context\.tracing|recordVideo/gu);
     expect(source).not.toMatch(/updateProcess|insert\(|delete\(|upsert\(/gu);
   });
+
+  it('settles the delayed-response race through mounted localized text, not a required network miss', () => {
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const raceStart = source.indexOf(
+      "test('delayed old-locale classification and location responses never overwrite the mounted locale'",
+    );
+    const raceEnd = source.indexOf(
+      "test('previous-revision browser caches fail closed and process deep links survive locale reloads'",
+      raceStart,
+    );
+    const raceSource = source.slice(raceStart, raceEnd);
+    const staleRequestStarted = raceSource.indexOf('staleRequestsStarted > 0');
+    const observerInstall = raceSource.indexOf('__codexE2EReferenceRaceObserver =');
+    const staleRelease = raceSource.indexOf('releaseOldResponseOnce();', observerInstall);
+    const staleResponseSettled = raceSource.indexOf(
+      'staleResponsesFinished === staleRequestsStarted',
+      staleRelease,
+    );
+    const currentTextVisible = raceSource.indexOf(
+      'expect(page.getByText(currentText, { exact: true })).toBeVisible({',
+      staleRelease,
+    );
+
+    expect(raceStart).toBeGreaterThan(-1);
+    expect(raceEnd).toBeGreaterThan(raceStart);
+    expect(staleRequestStarted).toBeGreaterThan(-1);
+    expect(observerInstall).toBeGreaterThan(staleRequestStarted);
+    expect(staleRelease).toBeGreaterThan(observerInstall);
+    expect(staleResponseSettled).toBeGreaterThan(staleRelease);
+    expect(currentTextVisible).toBeGreaterThan(staleRelease);
+    expect(raceSource).toContain('timeout: REFERENCE_RACE_SETTLE_TIMEOUT_MS');
+    expect(raceSource).toContain('staleRequestsStarted > 0');
+    expect(raceSource).toContain('expect(staleTextSeen).toBe(false)');
+    expect(raceSource).not.toContain('currentRequestsStarted');
+    expect(raceSource).not.toContain('currentResponsesFinished');
+  });
+
+  it('uses programmatic locale activation only when the previous-revision drawer stays mounted', () => {
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const cacheStart = source.indexOf(
+      "test('previous-revision browser caches fail closed and process deep links survive locale reloads'",
+    );
+    const cacheEnd = source.indexOf(
+      "test('process edit form consumes current classification and location assets in every readable locale'",
+      cacheStart,
+    );
+    const cacheSource = source.slice(cacheStart, cacheEnd);
+    const mountedState = cacheSource.indexOf('const expectsMountedProcessDrawer = index > 0;');
+    const mountedBranch = cacheSource.indexOf('if (expectsMountedProcessDrawer)', mountedState);
+    const mountedDrawerAssertion = cacheSource.indexOf(
+      'await expect(mountedProcessDrawer).toHaveCount(1);',
+      mountedBranch,
+    );
+    const programmaticActivation = cacheSource.indexOf(
+      'await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });',
+      mountedDrawerAssertion,
+    );
+    const realPointerActivation = cacheSource.indexOf(
+      'await selectLocaleThroughHeader(page, staleDefinition);',
+      programmaticActivation,
+    );
+
+    expect(cacheStart).toBeGreaterThan(-1);
+    expect(cacheEnd).toBeGreaterThan(cacheStart);
+    expect(mountedState).toBeGreaterThan(-1);
+    expect(mountedBranch).toBeGreaterThan(mountedState);
+    expect(mountedDrawerAssertion).toBeGreaterThan(mountedBranch);
+    expect(programmaticActivation).toBeGreaterThan(mountedDrawerAssertion);
+    expect(realPointerActivation).toBeGreaterThan(programmaticActivation);
+    expect(cacheSource).not.toMatch(/catch[\s\S]*forceTrigger/gu);
+  });
+
+  it('makes the same mounted-surface choice explicit in the other repeated drawer scenarios', () => {
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const raceStart = source.indexOf(
+      "test('delayed old-locale classification and location responses never overwrite the mounted locale'",
+    );
+    const cacheStart = source.indexOf(
+      "test('previous-revision browser caches fail closed and process deep links survive locale reloads'",
+      raceStart,
+    );
+    const formStart = source.indexOf(
+      "test('process edit form consumes current classification and location assets in every readable locale'",
+      cacheStart,
+    );
+    const raceSource = source.slice(raceStart, cacheStart);
+    const formSource = source.slice(formStart);
+
+    expect(raceSource).toContain(
+      'const expectsMountedProcessDrawer = fixtureIndex > 0 || localePairIndex > 0;',
+    );
+    expect(raceSource).toContain('if (expectsMountedProcessDrawer)');
+    expect(raceSource).toContain('await selectLocaleThroughHeader(page, staleDefinition);');
+    expect(raceSource).toContain(
+      'await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });',
+    );
+    expect(formSource).toContain('const expectsMountedProcessDrawer = index > 0;');
+    expect(formSource).toContain('if (expectsMountedProcessDrawer)');
+    expect(formSource).toContain('await selectLocaleThroughHeader(page, definition);');
+    expect(formSource).toContain(
+      'await selectLocaleThroughHeader(page, definition, { forceTrigger: true });',
+    );
+  });
 });

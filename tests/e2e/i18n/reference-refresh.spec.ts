@@ -26,6 +26,7 @@ import { loadReferenceFixture, type ReferenceFixture } from './reference-fixture
 
 const processAssertion = findRouteAssertion('/mydata/processes');
 const REQUEST_BATCH_QUIET_MS = 150;
+const REFERENCE_RACE_SETTLE_TIMEOUT_MS = 60_000;
 const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;
 
 type ReadableLocaleDefinition = {
@@ -459,10 +460,18 @@ test('delayed old-locale classification and location responses never overwrite t
   });
 
   await signInViaUi(page);
-  for (const fixture of consumerFixtures) {
-    for (const { currentDefinition, staleDefinition } of localePairs) {
+  for (const [fixtureIndex, fixture] of consumerFixtures.entries()) {
+    for (const [localePairIndex, { currentDefinition, staleDefinition }] of localePairs.entries()) {
       await test.step(`${fixture.id}: ${staleDefinition.appLocale} cannot overwrite ${currentDefinition.appLocale}`, async () => {
-        await selectLocaleThroughHeader(page, staleDefinition);
+        const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+        const expectsMountedProcessDrawer = fixtureIndex > 0 || localePairIndex > 0;
+        if (expectsMountedProcessDrawer) {
+          await expect(mountedProcessDrawer).toHaveCount(1);
+          await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });
+        } else {
+          await expect(mountedProcessDrawer).toHaveCount(0);
+          await selectLocaleThroughHeader(page, staleDefinition);
+        }
         await clearBrowserCache(page, fixture);
 
         let releaseOldResponse!: () => void;
@@ -470,14 +479,10 @@ test('delayed old-locale classification and location responses never overwrite t
           releaseOldResponse = resolve;
         });
         const staleAssetPattern = `**/${fixture.assetDirectory}/${fixture.assetFileName(staleDefinition)}`;
-        const currentAssetPattern = `**/${fixture.assetDirectory}/${fixture.assetFileName(currentDefinition)}`;
         const staleResponseErrors: string[] = [];
         let staleRequestsStarted = 0;
         let staleResponsesFinished = 0;
         let staleLastStartedAt = 0;
-        let currentRequestsStarted = 0;
-        let currentResponsesFinished = 0;
-        let currentLastStartedAt = 0;
 
         await page.route(staleAssetPattern, async (route) => {
           staleRequestsStarted += 1;
@@ -490,16 +495,6 @@ test('delayed old-locale classification and location responses never overwrite t
             staleResponseErrors.push(error instanceof Error ? error.message : String(error));
           } finally {
             staleResponsesFinished += 1;
-          }
-        });
-        await page.route(currentAssetPattern, async (route) => {
-          currentRequestsStarted += 1;
-          currentLastStartedAt = Date.now();
-          try {
-            const response = await route.fetch();
-            await route.fulfill({ response });
-          } finally {
-            currentResponsesFinished += 1;
           }
         });
 
@@ -543,17 +538,10 @@ test('delayed old-locale classification and location responses never overwrite t
 
           const currentText = fixture.visibleText(currentDefinition);
           const staleText = fixture.visibleText(staleDefinition);
-          await expect
-            .poll(
-              () =>
-                currentRequestsStarted > 0 &&
-                currentResponsesFinished === currentRequestsStarted &&
-                Date.now() - currentLastStartedAt >= REQUEST_BATCH_QUIET_MS,
-              { timeout: 15_000 },
-            )
-            .toBe(true);
-          await expect(page.getByText(currentText, { exact: true })).toBeVisible();
-
+          // A warm memory cache may require no current-locale request, while a localized
+          // classification may legitimately depend on the delayed base-language asset. Observe
+          // the mounted surface before releasing that response, then use visible localized text
+          // as the completion signal and prove that the stale text never appeared in between.
           await page.evaluate((oldText) => {
             const observedState = { staleTextSeen: document.body.innerText.includes(oldText) };
             const observer = new MutationObserver(() => {
@@ -580,10 +568,13 @@ test('delayed old-locale classification and location responses never overwrite t
               () =>
                 staleResponsesFinished === staleRequestsStarted &&
                 Date.now() - staleLastStartedAt >= REQUEST_BATCH_QUIET_MS,
-              { timeout: 15_000 },
+              { timeout: REFERENCE_RACE_SETTLE_TIMEOUT_MS },
             )
             .toBe(true);
           expect(staleResponseErrors).toEqual([]);
+          await expect(page.getByText(currentText, { exact: true })).toBeVisible({
+            timeout: REFERENCE_RACE_SETTLE_TIMEOUT_MS,
+          });
           await page.evaluate(
             () =>
               new Promise<void>((resolve) => {
@@ -609,7 +600,6 @@ test('delayed old-locale classification and location responses never overwrite t
         } finally {
           releaseOldResponseOnce();
           await page.unroute(staleAssetPattern);
-          await page.unroute(currentAssetPattern);
         }
       });
     }
@@ -638,7 +628,17 @@ test('previous-revision browser caches fail closed and process deep links surviv
   for (const [index, definition] of definitions.entries()) {
     await test.step(`${definition.appLocale} reload rejects both stale cache scopes`, async () => {
       const staleDefinition = definitions[(index + 1) % definitions.length]!;
-      await selectLocaleThroughHeader(page, staleDefinition);
+      const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+      const expectsMountedProcessDrawer = index > 0;
+      if (expectsMountedProcessDrawer) {
+        // Each completed iteration deliberately leaves its deep-linked Process drawer mounted.
+        await expect(mountedProcessDrawer).toHaveCount(1);
+        await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });
+      } else {
+        // The signed-in shell is unobstructed, so retain a real user pointer interaction.
+        await expect(mountedProcessDrawer).toHaveCount(0);
+        await selectLocaleThroughHeader(page, staleDefinition);
+      }
       const state = `cache-roundtrip-${definition.languageCode}`;
       const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
       await gotoCandidateDocument(page, targetUrl);
@@ -734,9 +734,17 @@ test('process edit form consumes current classification and location assets in e
   expect(baseURL).toBeTruthy();
   await signInViaUi(page);
 
-  for (const definition of getReadableLocaleDefinitions()) {
+  for (const [index, definition] of getReadableLocaleDefinitions().entries()) {
     await test.step(`${definition.appLocale} process form reference controls`, async () => {
-      await selectLocaleThroughHeader(page, definition);
+      const mountedProcessDrawer = page.locator('.ant-drawer-content:visible');
+      const expectsMountedProcessDrawer = index > 0;
+      if (expectsMountedProcessDrawer) {
+        await expect(mountedProcessDrawer).toHaveCount(1);
+        await selectLocaleThroughHeader(page, definition, { forceTrigger: true });
+      } else {
+        await expect(mountedProcessDrawer).toHaveCount(0);
+        await selectLocaleThroughHeader(page, definition);
+      }
       const state = `form-${definition.languageCode}`;
       await gotoCandidateDocument(page, buildProcessDeepLink(baseURL!, ledger!, state, 'edit'));
       await expectProcessDeepLink(page, ledger!, state, 'edit');
