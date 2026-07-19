@@ -59,12 +59,11 @@ test('codex-e2e process renders every registry-backed content language', async (
     const scenario = resolveLocaleContentE2EScenario(getLocaleCapability(locale));
     await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
     await expect.poll(() => readStoredAppLocale(page)).toBe(locale);
-    const viewDrawer = page
-      .getByRole('dialog', {
-        name: getLocaleMessage(locale, 'pages.process.drawer.title.view'),
+    const viewDrawer = page.locator('.ant-drawer-content:visible').filter({
+      has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {
         exact: true,
-      })
-      .filter({ visible: true });
+      }),
+    });
     await expect(viewDrawer).toHaveCount(1);
     await expect(viewDrawer).toBeVisible();
     await expect(

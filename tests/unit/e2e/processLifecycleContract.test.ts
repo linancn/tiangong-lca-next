@@ -8,11 +8,18 @@ describe('process lifecycle semantic locator contract', () => {
   );
 
   it('scopes localized content to the mounted View process drawer', () => {
-    expect(source).toMatch(
-      /const viewDrawer = page\s*[.]getByRole\('dialog', \{\s*name: getLocaleMessage\(locale, 'pages[.]process[.]drawer[.]title[.]view'\),\s*exact: true,\s*\}\)\s*[.]filter\(\{ visible: true \}\)/u,
+    expect(source).toContain(
+      "const viewDrawer = page.locator('.ant-drawer-content:visible').filter({",
+    );
+    expect(source).toContain(
+      "has: page.getByText(getLocaleMessage(locale, 'pages.process.drawer.title.view'), {",
     );
     expect(source).toContain('const markerValue = viewDrawer.getByText(marker, { exact: true });');
-    expect(source).not.toContain('page.getByText(');
+    expect(source).toContain(
+      "viewDrawer.getByText(getLocaleMessage(locale, 'pages.process.view.processInformation'), {",
+    );
+    expect(source).not.toContain('const markerValue = page.getByText(');
+    expect(source).not.toContain('await expectDrawerDescriptionValue(\n      page,');
   });
 
   it('proves reference labels in the drawer description row rather than the page table', () => {
