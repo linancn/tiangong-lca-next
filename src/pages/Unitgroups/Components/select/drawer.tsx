@@ -1,7 +1,13 @@
 import { toSuperscript } from '@/components/AlignedNumber';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type ContentLanguageAwareTableParams,
+  type DataTabKey,
+} from '@/services/general/data';
 import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
@@ -39,6 +45,16 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   const myActionRefSelect = useRef<ActionType>();
   // const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
+  const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
+  const myRequestEpochRef = useRef(0);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageAwareTableParams.contentLanguage,
+    [myRequestEpochRef, tgRequestEpochRef, coRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -271,25 +287,40 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             enterButton
           />
         </Card>
-        <ProTable<UnitGroupTable, ListPagination>
+        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (myKeyWord.length > 0) {
-              return getUnitGroupTablePgroongaSearch(params, lang, 'my', myKeyWord, {}, 0);
-            }
-            return getUnitGroupTableAll(params, sort, lang, 'my', [], 0);
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async () => {
+                if (myKeyWord.length > 0) {
+                  return getUnitGroupTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                    0,
+                  );
+                }
+                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'my', [], 0);
+              },
+            )
+          }
           columns={unitGroupColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
@@ -314,25 +345,39 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             enterButton
           />
         </Card>
-        <ProTable<UnitGroupTable, ListPagination>
+        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (tgKeyWord.length > 0) {
-              return getUnitGroupTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
-            }
-            return getUnitGroupTableAll(params, sort, lang, 'tg', []);
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async () => {
+                if (tgKeyWord.length > 0) {
+                  return getUnitGroupTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  );
+                }
+                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'tg', []);
+              },
+            )
+          }
           columns={unitGroupColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
@@ -357,25 +402,39 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
             enterButton
           />
         </Card>
-        <ProTable<UnitGroupTable, ListPagination>
+        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (coKeyWord.length > 0) {
-              return getUnitGroupTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
-            }
-            return getUnitGroupTableAll(params, sort, lang, 'co', []);
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async () => {
+                if (coKeyWord.length > 0) {
+                  return getUnitGroupTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'co',
+                    coKeyWord,
+                    {},
+                  );
+                }
+                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'co', []);
+              },
+            )
+          }
           columns={unitGroupColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{

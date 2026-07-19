@@ -10,7 +10,10 @@ import {
 } from './contracts';
 import { expect, test } from './fixtures';
 import { readProductionDataLedger } from './production-data-ledger';
-import { getCodexE2EProcessSynonym } from './production-data-safety';
+import {
+  assertProductionDataWriteAuthorization,
+  getCodexE2EProcessSynonym,
+} from './production-data-safety';
 
 const processAssertion = findRouteAssertion('/mydata/processes');
 const AUTHORING_LANGUAGE_DEFINITIONS = CONTENT_LANGUAGE_REGISTRY.filter(
@@ -105,6 +108,8 @@ test('one ledger-controlled Process UI save persists every authoring language', 
     await textArea.fill(getCodexE2EProcessSynonym(ledger!, languageCode, 'after-ui-save'));
   }
 
+  // Revalidate the complete local operator envelope at the actual browser mutation boundary.
+  assertProductionDataWriteAuthorization(process.env);
   const saveResponse = page.waitForResponse((response) => {
     const target = new URL(response.url());
     return (

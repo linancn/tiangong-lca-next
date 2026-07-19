@@ -52,9 +52,51 @@ jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 const antdMessageMock = jest.requireMock('antd').message as Record<string, jest.Mock>;
 const getMockAntdMessage = () => antdMessageMock;
 
-jest.mock('@ant-design/pro-components', () =>
-  require('@/tests/mocks/proComponents').createProComponentsMock(),
-);
+jest.mock('@ant-design/pro-components', () => {
+  const React = require('react');
+  const base = require('@/tests/mocks/proComponents').createProComponentsMock();
+  const BaseProTable = base.ProTable;
+
+  const LocaleAwareProTable = ({ request, params = {}, actionRef, ...props }: any) => {
+    const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    const lastSuccessfulDataRef = React.useRef([] as any[]);
+    const previousParamsKeyRef = React.useRef(JSON.stringify(params));
+
+    requestRef.current = request;
+    paramsRef.current = params;
+
+    const localeAwareRequest = React.useCallback(
+      async (pageParams: any = {}, sort: any = {}, filter: any = {}) => {
+        const result = await requestRef.current?.(
+          { ...(pageParams ?? {}), ...paramsRef.current },
+          sort,
+          filter,
+        );
+        if (result?.success === false) {
+          return { ...result, data: lastSuccessfulDataRef.current };
+        }
+        lastSuccessfulDataRef.current = result?.data ?? [];
+        return result;
+      },
+      [],
+    );
+
+    React.useEffect(() => {
+      const paramsKey = JSON.stringify(params);
+      if (previousParamsKeyRef.current !== paramsKey) {
+        previousParamsKeyRef.current = paramsKey;
+        void actionRef?.current?.reload?.();
+      }
+    }, [actionRef, params]);
+
+    return (
+      <BaseProTable {...props} actionRef={actionRef} params={params} request={localeAwareRequest} />
+    );
+  };
+
+  return { ...base, ProTable: LocaleAwareProTable };
+});
 
 jest.mock('@/components/ToolBarButton', () => ({
   __esModule: true,
@@ -231,6 +273,7 @@ jest.mock('@/services/general/util', () => ({
 }));
 
 jest.mock('@/services/general/data', () => ({
+  ...jest.requireActual('@/services/general/data'),
   __esModule: true,
   initVersion: '01.00.000',
 }));

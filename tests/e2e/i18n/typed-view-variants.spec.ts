@@ -449,45 +449,45 @@ test('Process edit and view deep links survive locale switches and reloads', asy
   }
 });
 
-test('Process required deep-link state is explicit and reload-stable', async ({
-  baseURL,
-  browserName,
-  page,
-}, testInfo) => {
-  test.skip(
-    browserName !== PLAYWRIGHT_BROWSER_PROJECTS[0] ||
-      process.env.E2E_AUTHENTICATED !== 'true' ||
-      process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
-    'Process required-state variants require the exact read-only global production ledger.',
-  );
-  test.setTimeout(10 * 60_000);
-  annotateEvidence(testInfo, processAssertion, 'typed-process-required-state');
-  const ledger = await readProductionDataLedger();
-  expect(ledger).toBeTruthy();
-  expect(baseURL).toBeTruthy();
-  await signInViaUi(page);
+PROCESS_REQUIRED_VARIANTS.forEach(({ assertionId, required }) => {
+  test(`Process ${required} deep-link state is explicit and reload-stable`, async ({
+    baseURL,
+    browserName,
+    page,
+  }, testInfo) => {
+    test.skip(
+      browserName !== PLAYWRIGHT_BROWSER_PROJECTS[0] ||
+        process.env.E2E_AUTHENTICATED !== 'true' ||
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+      'Process required-state variants require the exact read-only global production ledger.',
+    );
+    test.setTimeout(10 * 60_000);
+    annotateEvidence(testInfo, processAssertion, 'typed-process-required-state');
+    const ledger = await readProductionDataLedger();
+    expect(ledger).toBeTruthy();
+    expect(baseURL).toBeTruthy();
+    await signInViaUi(page);
 
-  let trappedValidationDrafts = 0;
-  await page.route(PROCESS_SAVE_DRAFT_ROUTE_PATTERN, async (route) => {
-    if (await fallbackVerifiedPreflight(route, PROCESS_SAVE_DRAFT_PATH)) return;
-    assertExactReadOnlyProcessValidationDraft({
-      expectedOrigin: productionBackendTarget.origin,
-      expectedPublishableKey: productionBackendTarget.publishableKey,
-      ledger: ledger!,
-      request: route.request(),
+    let trappedValidationDrafts = 0;
+    await page.route(PROCESS_SAVE_DRAFT_ROUTE_PATTERN, async (route) => {
+      if (await fallbackVerifiedPreflight(route, PROCESS_SAVE_DRAFT_PATH)) return;
+      assertExactReadOnlyProcessValidationDraft({
+        expectedOrigin: productionBackendTarget.origin,
+        expectedPublishableKey: productionBackendTarget.publishableKey,
+        ledger: ledger!,
+        request: route.request(),
+      });
+      trappedValidationDrafts += 1;
+      // `required=1` intentionally invokes the product's save-before-validation flow. This
+      // dedicated test trap proves the exact ledger-controlled request and terminates it locally;
+      // the production mutation allowlist remains unchanged and no request reaches the backend.
+      await route.abort('blockedbyclient');
     });
-    trappedValidationDrafts += 1;
-    // `required=1` intentionally invokes the product's save-before-validation flow. This
-    // dedicated test trap proves the exact ledger-controlled request and terminates it locally;
-    // the production mutation allowlist remains unchanged and no request reaches the backend.
-    await route.abort('blockedbyclient');
-  });
-  const readTrappedValidationDrafts = () => trappedValidationDrafts;
-  let reloadProofCount = 0;
-  let variantNavigationCount = 0;
+    const readTrappedValidationDrafts = () => trappedValidationDrafts;
+    let initialNavigationCount = 0;
+    let reloadProofCount = 0;
 
-  try {
-    for (const { required } of PROCESS_REQUIRED_VARIANTS) {
+    try {
       const hashQuery: Record<string, string> = {
         id: ledger!.id,
         mode: 'edit',
@@ -498,17 +498,24 @@ test('Process required deep-link state is explicit and reload-stable', async ({
       }
       const location = { hashPath: '/mydata/processes', hashQuery } satisfies SpaLocationTarget;
       const trappedValidationDraftsBeforeNavigation = trappedValidationDrafts;
-      await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
-        waitUntil: 'domcontentloaded',
-      });
-      variantNavigationCount += 1;
-      await expectProcessDeepLinkMountSettled({
-        expectedLocation: location,
-        page,
-        readTrappedValidationDrafts,
-        required,
-        trappedValidationDraftsBeforeMount: trappedValidationDraftsBeforeNavigation,
-      });
+      await test.step(
+        `${assertionId} initial mount`,
+        async () => {
+          await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
+            timeout: 45_000,
+            waitUntil: 'domcontentloaded',
+          });
+          initialNavigationCount += 1;
+          await expectProcessDeepLinkMountSettled({
+            expectedLocation: location,
+            page,
+            readTrappedValidationDrafts,
+            required,
+            trappedValidationDraftsBeforeMount: trappedValidationDraftsBeforeNavigation,
+          });
+        },
+        { timeout: 90_000 },
+      );
 
       for (const locale of APP_LOCALES) {
         // The Playwright steps execute sequentially; these counters intentionally prove each
@@ -533,12 +540,14 @@ test('Process required deep-link state is explicit and reload-stable', async ({
           await expectProcessDrawer(page, locale, 'edit', required);
         });
       }
+
+      expect(initialNavigationCount).toBe(1);
+      expect(reloadProofCount).toBe(APP_LOCALES.length);
+      const expectedTrappedValidationDrafts = required === 'required' ? APP_LOCALES.length + 1 : 0;
+      expect(trappedValidationDrafts).toBe(expectedTrappedValidationDrafts);
+    } finally {
+      // Stop mounted auto-validation effects while the exact local trap is still active.
+      await page.close();
     }
-    expect(variantNavigationCount).toBe(PROCESS_REQUIRED_VARIANTS.length);
-    expect(reloadProofCount).toBe(PROCESS_REQUIRED_VARIANTS.length * APP_LOCALES.length);
-    await expect.poll(readTrappedValidationDrafts).toBeGreaterThan(0);
-  } finally {
-    // Stop mounted auto-validation effects while the exact local trap is still active.
-    await page.close();
-  }
+  });
 });

@@ -351,9 +351,12 @@ jest.mock('@ant-design/pro-components', () => {
     headerTitle,
     optionsRender,
     rowKey,
+    params,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    paramsRef.current = params;
 
     React.useEffect(() => {
       requestRef.current = request;
@@ -361,12 +364,15 @@ jest.mock('@ant-design/pro-components', () => {
     }, [request]);
 
     const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
+      const result = await requestRef.current?.(
+        { pageSize: 10, current: 1, ...paramsRef.current },
+        {},
+      );
       setRows(result?.data ?? []);
       return result;
     });
     const reloadAndRest = jest.fn(async () =>
-      requestRef.current?.({ pageSize: 10, current: 1 }, {}),
+      requestRef.current?.({ pageSize: 10, current: 1, ...paramsRef.current }, {}),
     );
 
     React.useEffect(() => {

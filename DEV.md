@@ -124,6 +124,7 @@ After explicit user authorization, an operator with credentials already supplied
 E2E_AUTHENTICATED=true \
 E2E_ALLOW_PRODUCTION_DATA=true \
 E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS \
+E2E_RECOVERY_LEDGER_PATH=/tmp/tiangong-lca-next-codex-e2e-recovery.json \
 E2E_WRITE_VERIFIED_EVIDENCE=true \
 E2E_BACKEND_TARGET=production \
 npm run test:e2e:i18n

@@ -1,7 +1,15 @@
 // @ts-nocheck
 import IoPortView from '@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortView';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '../../../../../../helpers/testUtils';
+import { act, render, screen, waitFor } from '../../../../../../helpers/testUtils';
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
 
 const mockGetProcessDetail = jest.fn();
 const mockGetProcessExchange = jest.fn();
@@ -255,6 +263,64 @@ describe('LifeCycleModelIoPortView', () => {
 
     expect(mockGetProcessDetail).not.toHaveBeenCalled();
     expect(mockGetProcessExchange).not.toHaveBeenCalled();
+  });
+
+  it('ignores a slower detail response after the node, version, and direction change', async () => {
+    const requestA = deferred<any>();
+    const requestB = deferred<any>();
+    mockGetProcessDetail.mockImplementation((processId: string) =>
+      processId === 'process-a' ? requestA.promise : requestB.promise,
+    );
+    mockGenProcessFromData.mockImplementation((data: any) => ({
+      exchanges: { exchange: [{ marker: data.marker }] },
+    }));
+
+    const commonProps = {
+      lang: 'en',
+      drawerVisible: true,
+      onDrawerVisible: jest.fn(),
+    };
+    const { rerender } = render(
+      <IoPortView
+        {...commonProps}
+        node={{
+          data: { id: 'process-a', version: '1.0.0' },
+          ports: { items: [{ id: 'INPUT:flow-A' }] },
+        }}
+        direction='Input'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-a', '1.0.0'));
+
+    rerender(
+      <IoPortView
+        {...commonProps}
+        node={{
+          data: { id: 'process-b', version: '2.0.0' },
+          ports: { items: [{ id: 'OUTPUT:flow-B' }] },
+        }}
+        direction='Output'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-b', '2.0.0'));
+
+    await act(async () => {
+      requestB.resolve({ data: { json: { processDataSet: { marker: 'B' } } } });
+      await requestB.promise;
+    });
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalledWith({ marker: 'B' }));
+    expect(screen.getByTestId('selected-keys')).toHaveTextContent('["OUTPUT:flow-B"]');
+
+    const acceptedDetailCount = mockGenProcessFromData.mock.calls.length;
+    await act(async () => {
+      requestA.resolve({ data: { json: { processDataSet: { marker: 'A' } } } });
+      await requestA.promise;
+    });
+
+    expect(mockGenProcessFromData).not.toHaveBeenCalledWith({ marker: 'A' });
+    expect(mockGenProcessFromData).toHaveBeenCalledTimes(acceptedDetailCount);
   });
 
   it('falls back to empty ids, empty exchange payloads, and default type labels', async () => {

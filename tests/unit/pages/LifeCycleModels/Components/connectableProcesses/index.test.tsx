@@ -1,9 +1,11 @@
 // @ts-nocheck
 import ConnectableProcesses from '@/pages/LifeCycleModels/Components/connectableProcesses';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import userEvent from '@testing-library/user-event';
 import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let latestProTableProps: any = null;
+let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
@@ -106,22 +108,27 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const { toText } = require('../../../../../helpers/nodeToText');
 
-  const ProTable = ({ actionRef, request, rowSelection, columns = [] }: any) => {
+  const ProTable = ({ actionRef, params, request, rowSelection, columns = [], loading }: any) => {
     const requestRef = React.useRef(request);
-    const initializedRef = React.useRef(false);
+    const paramsRef = React.useRef(params);
+    const hasObservedInitialParamsRef = React.useRef(false);
     const [rows, setRows] = React.useState<any[]>([]);
+    const serializedParams = JSON.stringify(params ?? {});
 
     React.useEffect(() => {
       requestRef.current = request;
     }, [request]);
+    paramsRef.current = params;
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, request, rowSelection };
-    }, [actionRef, request, rowSelection]);
+      latestProTableProps = { actionRef, params, request, rowSelection, loading };
+    }, [actionRef, loading, params, request, rowSelection]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
-        const result = await requestRef.current({ pageSize: 10, current: 1 }, {});
+        const requestParams = { pageSize: 10, current: 1, ...paramsRef.current };
+        mockLatestProTableRequestParams = requestParams;
+        const result = await requestRef.current(requestParams, {});
         setRows(result?.data ?? []);
       }
     }, []);
@@ -133,11 +140,15 @@ jest.mock('@ant-design/pro-components', () => {
           setPageInfo: jest.fn(),
         };
       }
-      if (!initializedRef.current) {
-        initializedRef.current = true;
-        void reload();
-      }
     }, [actionRef, reload]);
+
+    React.useEffect(() => {
+      if (!hasObservedInitialParamsRef.current) {
+        hasObservedInitialParamsRef.current = true;
+        return;
+      }
+      void reload();
+    }, [reload, serializedParams]);
 
     return (
       <div data-testid='pro-table'>
@@ -166,6 +177,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 beforeEach(() => {
   latestProTableProps = null;
+  mockLatestProTableRequestParams = null;
   mockGetConnectableProcessesTable.mockReset().mockResolvedValue({
     data: [
       {
@@ -204,7 +216,7 @@ describe('ConnectableProcesses', () => {
 
     await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
     expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
-      { pageSize: 10, current: 1 },
+      expect.objectContaining({ pageSize: 10, current: 1 }),
       {},
       'en',
       'tg',
@@ -212,6 +224,106 @@ describe('ConnectableProcesses', () => {
       'input:flow-1',
       '1.0',
     );
+  });
+
+  it('refetches the active tab from params for every supported content language without clearing selection', async () => {
+    const { rerender } = render(<ConnectableProcesses {...baseProps} />);
+    await waitFor(() => expect(mockGetConnectableProcessesTable).toHaveBeenCalled());
+
+    await act(async () => {
+      latestProTableProps?.rowSelection?.onChange?.(['process-1'], []);
+    });
+    await waitFor(() => {
+      expect(latestProTableProps?.rowSelection?.selectedRowKeys).toEqual(['process-1']);
+    });
+
+    for (const contentLanguage of SUPPORTED_CONTENT_LANGUAGES.filter(
+      (candidate) => candidate !== baseProps.lang,
+    )) {
+      const previousCallCount = mockGetConnectableProcessesTable.mock.calls.length;
+      rerender(<ConnectableProcesses {...baseProps} lang={contentLanguage} />);
+
+      await waitFor(() => {
+        expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThan(
+          previousCallCount,
+        );
+        expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            current: 1,
+            pageSize: 10,
+          }),
+          {},
+          contentLanguage,
+          'tg',
+          '',
+          'input:flow-1',
+          '1.0',
+        );
+      });
+      expect(mockLatestProTableRequestParams).toEqual(
+        expect.objectContaining({ contentLanguage, current: 1, pageSize: 10 }),
+      );
+      expect(latestProTableProps?.rowSelection?.selectedRowKeys).toEqual(['process-1']);
+    }
+  });
+
+  it('keeps loading owned by the latest request on the active tab', async () => {
+    const resolvers: Array<(result: { data: never[]; success: boolean }) => void> = [];
+    mockGetConnectableProcessesTable.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+
+    render(<ConnectableProcesses {...baseProps} />);
+    await waitFor(() => expect(resolvers).toHaveLength(1));
+    await waitFor(() => expect(latestProTableProps?.loading).toBe(true));
+
+    await act(async () => {
+      void latestProTableProps?.actionRef?.current?.reload?.();
+    });
+    await waitFor(() => expect(resolvers).toHaveLength(2));
+
+    await act(async () => {
+      resolvers[0]({ data: [], success: true });
+      await Promise.resolve();
+    });
+    expect(latestProTableProps?.loading).toBe(true);
+
+    await act(async () => {
+      resolvers[1]({ data: [], success: true });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(latestProTableProps?.loading).toBe(false));
+  });
+
+  it('does not let the previous tab clear loading for the newly active tab', async () => {
+    const resolvers: Array<(result: { data: never[]; success: boolean }) => void> = [];
+    mockGetConnectableProcessesTable.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+
+    render(<ConnectableProcesses {...baseProps} />);
+    await waitFor(() => expect(resolvers).toHaveLength(1));
+    await userEvent.click(screen.getByRole('button', { name: 'Business Data' }));
+    await waitFor(() => expect(resolvers).toHaveLength(2));
+    await waitFor(() => expect(latestProTableProps?.loading).toBe(true));
+
+    await act(async () => {
+      resolvers[0]({ data: [], success: true });
+      await Promise.resolve();
+    });
+    expect(latestProTableProps?.loading).toBe(true);
+
+    await act(async () => {
+      resolvers[1]({ data: [], success: true });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(latestProTableProps?.loading).toBe(false));
   });
 
   it('skips loading when the drawer is closed and falls back to default callbacks', async () => {
@@ -256,7 +368,7 @@ describe('ConnectableProcesses', () => {
       expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThanOrEqual(2),
     );
     expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      expect.objectContaining({ pageSize: 10, current: 1 }),
       {},
       'en',
       'my',
@@ -276,7 +388,7 @@ describe('ConnectableProcesses', () => {
       expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThanOrEqual(2),
     );
     expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      expect.objectContaining({ pageSize: 10, current: 1 }),
       {},
       'en',
       'co',
@@ -296,7 +408,7 @@ describe('ConnectableProcesses', () => {
       expect(mockGetConnectableProcessesTable.mock.calls.length).toBeGreaterThanOrEqual(2),
     );
     expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
-      { pageSize: 10, current: 1 },
+      expect.objectContaining({ pageSize: 10, current: 1 }),
       {},
       'en',
       'te',

@@ -6,6 +6,7 @@ import {
 import {
   getDocumentationUrl,
   normalizeRuntimeLocale,
+  publishRuntimeIntlChange,
   SUPPORTED_APP_LOCALES,
 } from '@/services/general/runtimeLocale';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
@@ -13,6 +14,7 @@ import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
 import type { DropdownProps } from 'antd';
 import { ConfigProvider, theme, Tooltip } from 'antd';
 import type React from 'react';
+import { useEffect } from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -25,6 +27,12 @@ const SELECT_LANG_DROPDOWN_PROPS = {
 } satisfies Pick<DropdownProps, 'trigger'>;
 
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
+  const intl = useIntl();
+
+  useEffect(() => {
+    publishRuntimeIntlChange(intl);
+  }, [intl]);
+
   return (
     <UmiSelectLang
       {...SELECT_LANG_DROPDOWN_PROPS}

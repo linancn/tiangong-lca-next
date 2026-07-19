@@ -331,6 +331,7 @@ export async function createCodexE2EProcess(): Promise<ProductionDataLedger> {
         state: 'create-attempted',
       };
       await writeProductionLedger(attemptedLedger);
+      assertProductionDataWriteAuthorization(process.env);
       const createResult = await client.functions.invoke('app_dataset_create', {
         body: {
           id,
@@ -397,6 +398,9 @@ export async function cleanupCodexE2EProcess(): Promise<ProductionDataResult> {
     await writeJson(E2E_LEDGER_RESULT_PATH, emptyResult);
     return emptyResult;
   }
+  // Cleanup is a production mutation too, including recovery after a prior interrupted run.
+  // Require the same explicit local operator envelope before reading or deleting the exact row.
+  assertProductionDataWriteAuthorization(process.env);
   assertLedgerScope(ledger);
   // A prior crash may have left the recovery copy one adjacent state ahead of the primary copy.
   // Heal that split before beginning the next state transition so another crash can never create
@@ -421,6 +425,7 @@ export async function cleanupCodexE2EProcess(): Promise<ProductionDataResult> {
         await writeProductionLedger(preparedLedger);
       },
       deleteExactVersion: async () => {
+        assertProductionDataWriteAuthorization(process.env);
         const deleteResult = await client.functions.invoke('app_dataset_delete', {
           body: { id: ledger.id, table: ledger.table, version: ledger.version },
           headers: { Authorization: `Bearer ${accessToken}` },

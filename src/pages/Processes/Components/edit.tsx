@@ -1516,14 +1516,16 @@ const ProcessEdit: FC<Props> = ({
         intl,
         issues: validationIssuesWithOwner,
         onNavigate: handleValidationIssueNavigate,
-        title: intl.formatMessage({
-          id:
-            from === 'review'
-              ? 'pages.validationIssues.modal.reviewTitle'
-              : 'pages.validationIssues.modal.checkDataTitle',
-          defaultMessage:
-            from === 'review' ? 'Review submission blocked' : 'Data validation issues',
-        }),
+        title:
+          from === 'review'
+            ? {
+                id: 'pages.validationIssues.modal.reviewTitle',
+                defaultMessage: 'Review submission blocked',
+              }
+            : {
+                id: 'pages.validationIssues.modal.checkDataTitle',
+                defaultMessage: 'Data validation issues',
+              },
       });
     } else if (!silent) {
       message.error(validationHint);

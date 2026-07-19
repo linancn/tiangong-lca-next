@@ -42,9 +42,9 @@ export async function signInViaUi(page: Page): Promise<void> {
   await loginForm.email.fill(credential.email);
   await loginForm.password.fill(credential.password);
   await loginForm.submit.click();
-  await page.waitForFunction(() => !window.location.hash.startsWith('#/user/login'), undefined, {
-    timeout: 45_000,
-  });
+  // Login first pushes `/`, whose configured redirect settles asynchronously on `/welcome`.
+  // Waiting for merely "not login" lets that pending redirect overwrite the next hash deep link.
+  await expect.poll(() => new URL(page.url()).hash, { timeout: 45_000 }).toBe('#/welcome');
   await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
   await expect(page.locator('.tg-global-language-selector')).toBeAttached({ timeout: 45_000 });
 }

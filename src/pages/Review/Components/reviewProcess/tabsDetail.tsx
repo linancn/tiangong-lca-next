@@ -6,7 +6,10 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+} from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import { getProcessExchange } from '@/services/processes/api';
 import { ProcessExchangeTable } from '@/services/processes/data';
@@ -14,7 +17,7 @@ import { genProcessExchangeTableData } from '@/services/processes/util';
 import { getUserDetail } from '@/services/users/api';
 import { ActionType, ProColumns, ProFormInstance, ProTable } from '@ant-design/pro-components';
 import { Card, Collapse, Descriptions, Divider, Space, Tooltip } from 'antd';
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useMemo, useRef, type FC } from 'react';
 import { FormattedMessage } from 'umi';
 import ComplianceItemForm from '../Compliance/form';
 import ComplianceItemView from '../Compliance/view';
@@ -103,6 +106,11 @@ export const TabsDetail: FC<Props> = ({
 }) => {
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const inputExchangeRequestEpochRef = useRef(0);
+  const outputExchangeRequestEpochRef = useRef(0);
+  const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
+  const currentExchangeContentLanguageRef = useRef(exchangeTableParams.contentLanguage);
+  currentExchangeContentLanguageRef.current = exchangeTableParams.contentLanguage;
 
   useEffect(() => {
     if (activeTabKey === 'validation' && type === 'edit') {
@@ -1541,16 +1549,22 @@ export const TabsDetail: FC<Props> = ({
               key: '1',
               label: <FormattedMessage id='pages.process.exchange.input' defaultMessage='Input' />,
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
                   actionRef={actionRefExchangeTableInput}
+                  params={exchangeTableParams}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = inputExchangeRequestEpochRef.current + 1;
+                    inputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Input',
                       params,
                     ).then((res: any) => {
@@ -1561,8 +1575,19 @@ export const TabsDetail: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
                           ({ error, data: flowsResp }: any) => {
+                            if (
+                              inputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...res,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
                             if (!error) {
                               unitRes.forEach((item: any) => {
                                 const flow = flowsResp.find(
@@ -1601,16 +1626,22 @@ export const TabsDetail: FC<Props> = ({
                 <FormattedMessage id='pages.process.exchange.output' defaultMessage='Output' />
               ),
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
                   actionRef={actionRefExchangeTableOutput}
+                  params={exchangeTableParams}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = outputExchangeRequestEpochRef.current + 1;
+                    outputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Output',
                       params,
                     ).then((res: any) => {
@@ -1621,8 +1652,19 @@ export const TabsDetail: FC<Props> = ({
                             version: item?.referenceToFlowDataSet?.['@version'],
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then(
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
                           ({ error, data: flowsResp }: any) => {
+                            if (
+                              outputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...res,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
                             if (!error) {
                               unitRes.forEach((item: any) => {
                                 const flow = flowsResp.find(

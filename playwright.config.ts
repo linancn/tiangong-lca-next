@@ -29,6 +29,7 @@ if (
 export default defineConfig({
   testDir: './tests/e2e/i18n',
   outputDir: `${E2E_RUNTIME_DIR}/test-results`,
+  failOnFlakyTests: Boolean(process.env.CI),
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,

@@ -1,6 +1,7 @@
 import {
   buildEditorNodeTools,
   buildEmptyCreateInfoData,
+  buildLocalizedGraphNodeVisualUpdate,
   buildPortSelectionUpdate,
   buildProcessNodesFromDetails,
   buildSavePayload,
@@ -10,6 +11,7 @@ import {
   normalizePastedReferenceCells,
   resolveDeleteSelection,
 } from '@/pages/LifeCycleModels/Components/toolbar/utils/editGraph';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 
 const mockGetLangText = jest.fn();
 const mockGenPortLabel = jest.fn();
@@ -162,6 +164,95 @@ describe('toolbar/utils/editGraph', () => {
     expect(referenceNode.addTools).toHaveBeenCalledWith(['normalized-tools'], { reset: true });
     expect(nonReferenceNode.setData).not.toHaveBeenCalled();
     expect(nonReferenceNode.addTools).not.toHaveBeenCalled();
+  });
+
+  it('rebuilds registry-language visuals without returning topology or editor state', () => {
+    const processLabels = {
+      en: 'Process',
+      zh: '过程',
+      de: 'Prozess',
+      fr: 'Procédé',
+    } as const;
+    const portLabels = {
+      en: 'Electricity',
+      zh: '电力',
+      de: 'Strom',
+      fr: 'Électricité',
+    } as const;
+    const asLocalizedText = (labels: Record<string, string>) =>
+      Object.entries(labels).map(([language, text]) => ({
+        '#text': text,
+        '@xml:lang': language,
+      }));
+    mockGetLangText.mockImplementation((value: any[], language: string) => {
+      return value.find((item) => item['@xml:lang'] === language)?.['#text'];
+    });
+    mockGenProcessName.mockImplementation((value: any[], language: string) => {
+      return value.find((item) => item['@xml:lang'] === language)?.['#text'];
+    });
+    const node = {
+      id: 'node-localized',
+      x: 42,
+      y: 84,
+      selected: true,
+      data: {
+        label: asLocalizedText(processLabels),
+        quantitativeReference: '1',
+      },
+      ports: {
+        groups: { groupOutput: { position: 'absolute' } },
+        items: [
+          {
+            id: 'OUTPUT:electricity',
+            group: 'groupOutput',
+            attrs: { text: { text: 'stale-label' } },
+            data: { textLang: asLocalizedText(portLabels) },
+          },
+        ],
+      },
+      size: { width: 320, height: 100 },
+    } as any;
+
+    SUPPORTED_CONTENT_LANGUAGES.forEach((language) => {
+      const visualUpdate = buildLocalizedGraphNodeVisualUpdate({
+        node,
+        refTool,
+        nonRefTool,
+        inputFlowTool,
+        outputFlowTool,
+        token,
+        lang: language,
+        nodeTemplateWidth: 350,
+      });
+
+      expect(visualUpdate).toEqual({
+        ports: expect.objectContaining({
+          groups: node.ports.groups,
+          items: [
+            expect.objectContaining({
+              attrs: expect.objectContaining({
+                text: expect.objectContaining({
+                  text: `PORT:OUTPUT:-:${portLabels[language]}:${language}:320`,
+                }),
+              }),
+            }),
+          ],
+        }),
+        tools: [
+          refTool,
+          expect.objectContaining({ title: processLabels[language], width: 320 }),
+          inputFlowTool,
+          outputFlowTool,
+        ],
+      });
+      expect(visualUpdate).not.toHaveProperty('data');
+      expect(visualUpdate).not.toHaveProperty('selected');
+      expect(visualUpdate).not.toHaveProperty('x');
+      expect(visualUpdate).not.toHaveProperty('y');
+    });
+
+    expect(node).toEqual(expect.objectContaining({ x: 42, y: 84, selected: true }));
+    expect(node.ports.items[0].attrs.text.text).toBe('stale-label');
   });
 
   it('resolves selected node and edge deletions, including connected edges', () => {

@@ -63,9 +63,10 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).toContain('injectPreviousRevisionEntries');
     expect(source).toContain('expectPreviousRevisionEntriesInjected');
     expect(source).toContain("mode: 'edit' | 'view'");
-    expect(source).toContain('const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;');
     expect(source).toContain("error.message.includes('NS_ERROR_FAILURE')");
-    expect(source).toContain('await gotoCandidateDocument(page, targetUrl, ledger!, state);');
+    expect(source).toContain(
+      'await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);',
+    );
     expect(source).toContain("page.reload({ waitUntil: 'domcontentloaded' })");
     expect(source).toContain("locator('.ant-select-dropdown:visible')");
     expect(source).not.toContain("getByRole('option'");
@@ -76,7 +77,7 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).not.toMatch(/updateProcess|insert\(|delete\(|upsert\(/gu);
   });
 
-  it('retries only the two known Firefox navigation cancellation codes and remains bounded', () => {
+  it('uses one candidate navigation and accepts Firefox cancellation only after exact mount readiness', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
     const helperStart = source.indexOf('async function gotoCandidateDocument(');
     const helperEnd = source.indexOf(
@@ -87,47 +88,28 @@ describe('reference refresh semantic E2E contract', () => {
 
     expect(helperStart).toBeGreaterThan(-1);
     expect(helperEnd).toBeGreaterThan(helperStart);
-    expect(source).toContain('const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;');
+    expect(helperSource).toContain("browserName === 'firefox'");
     expect(helperSource).toContain("error.message.includes('NS_ERROR_FAILURE')");
     expect(helperSource).toContain("error.message.includes('NS_BINDING_ABORTED')");
-    expect(helperSource).toContain('attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
-    expect(helperSource).toContain('attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
-    expect(helperSource).toContain('if (!isRecoverableFirefoxNavigation ||');
     expect(helperSource).toContain('throw error;');
     expect(helperSource).toContain(
-      "await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });",
+      "await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });",
     );
-    expect(helperSource).toContain('await expectProcessDeepLink(page, ledger, state, mode);');
-  });
-
-  it('retries route readiness only for an authenticated same-document welcome boot redirect with exact or fully dropped search', () => {
-    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
-    const guardStart = source.indexOf('async function isAuthenticatedWelcomeBootRedirect(');
-    const guardEnd = source.indexOf('\n}\n\nasync function gotoCandidateDocument(', guardStart);
-    const guardSource = source.slice(guardStart, guardEnd);
-    const helperStart = source.indexOf('async function gotoCandidateDocument(', guardEnd);
-    const helperEnd = source.indexOf(
-      '\n}\n\nasync function selectLocaleThroughHeader(',
-      helperStart,
-    );
-    const helperSource = source.slice(helperStart, helperEnd);
-
-    expect(guardStart).toBeGreaterThan(-1);
-    expect(guardEnd).toBeGreaterThan(guardStart);
-    expect(guardSource).toContain('actualUrl.origin === expectedUrl.origin');
-    expect(guardSource).toContain('actualUrl.pathname === expectedUrl.pathname');
-    expect(guardSource).toContain('actualUrl.search === expectedUrl.search');
-    expect(guardSource).toContain("actualUrl.search === ''");
-    expect(guardSource).toContain(
-      "actualUrl.search === expectedUrl.search || actualUrl.search === ''",
-    );
-    expect(guardSource).toContain("actualUrl.hash === '#/welcome'");
-    expect(guardSource).toContain("page.locator('.tg-global-header-avatar-trigger').count()");
-    expect(helperSource).toContain('await expectProcessDeepLink(page, ledger, state, mode);');
-    expect(helperSource).toContain('if (attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS)');
+    expect(helperSource.match(/page[.]goto[(]/gu)).toHaveLength(1);
     expect(helperSource).toContain(
-      'if (!(await isAuthenticatedWelcomeBootRedirect(page, targetUrl)))',
+      'expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl)',
     );
+    expect(helperSource).toContain('await expectProcessDeepLink(page, ledger, state, mode);');
+    expect(helperSource).toContain("page.locator('.tg-global-header-avatar-trigger')");
+    expect(helperSource).toContain("page.locator('.tg-global-language-selector')");
+    expect(helperSource).toContain("page.locator('.ant-result-403')");
+    expect(helperSource).toContain("page.getByTestId('process-deep-link-state')");
+    expect(helperSource).toContain("toHaveAttribute('data-route-mode', mode");
+    expect(helperSource).toContain(
+      "page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState })",
+    );
+    expect(source).not.toContain('isAuthenticatedWelcomeBootRedirect');
+    expect(source).not.toContain('MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
     expect(helperSource).not.toContain('selectLocaleThroughHeader');
     expect(helperSource).not.toContain('staleRequestsStarted');
     expect(helperSource).not.toContain('releaseOldResponseOnce');
@@ -168,7 +150,7 @@ describe('reference refresh semantic E2E contract', () => {
     expect(raceSource).not.toContain('currentRequestsStarted');
     expect(raceSource).not.toContain('currentResponsesFinished');
     const navigationReady = raceSource.indexOf(
-      'await gotoCandidateDocument(page, targetUrl, ledger!, state);',
+      'await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);',
     );
     const localeSwitch = raceSource.indexOf(
       'await selectLocaleThroughHeader(page, currentDefinition, { forceTrigger: true });',

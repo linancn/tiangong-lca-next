@@ -1,4 +1,4 @@
-import { expect, type Locator, test } from './fixtures';
+import { expect, type Locator, type Page, test } from './fixtures';
 
 import { CONTENT_LANGUAGE_REGISTRY } from '../../../src/services/general/contentLanguageRegistry';
 import { getLocaleCapability } from '../../../src/services/general/localeCapabilities';
@@ -38,10 +38,45 @@ async function expectDrawerDescriptionValue(drawer: Locator, expectedValue: stri
   await expect(row.locator('.ant-descriptions-item-content')).toHaveText(expectedValue);
 }
 
+async function gotoProcessViewReady(
+  page: Page,
+  browserName: string,
+  targetUrl: string,
+): Promise<void> {
+  try {
+    await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });
+  } catch (error) {
+    const isCommittedFirefoxCancellation =
+      browserName === 'firefox' &&
+      error instanceof Error &&
+      (error.message.includes('NS_ERROR_FAILURE') || error.message.includes('NS_BINDING_ABORTED'));
+    if (!isCommittedFirefoxCancellation) {
+      throw error;
+    }
+  }
+
+  // A known Firefox cancellation is acceptable only when the exact candidate route and its
+  // authenticated Process drawer nevertheless committed. Welcome, login, access-denied, and
+  // wrong-query states all fail these assertions without another navigation attempt.
+  await expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl);
+  await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
+  await expect(page.locator('.tg-global-language-selector')).toBeVisible({ timeout: 45_000 });
+  await expect(page.locator('.ant-result-403')).toHaveCount(0, { timeout: 45_000 });
+  const state = page.getByTestId('process-deep-link-state');
+  await expect(state).toBeAttached({ timeout: 45_000 });
+  await expect(state).toHaveAttribute('data-route-mode', 'view', { timeout: 45_000 });
+  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  await expect(drawer).toHaveCount(1, { timeout: 45_000 });
+  await expect(drawer).toBeVisible({ timeout: 45_000 });
+  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
+}
+
 test('codex-e2e process renders every registry-backed content language', async ({
   baseURL,
+  browserName,
   page,
 }, testInfo) => {
+  test.setTimeout(6 * 60_000);
   test.skip(
     process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
     'Process lifecycle semantics require the explicit production-data guard and credentials.',
@@ -54,7 +89,7 @@ test('codex-e2e process renders every registry-backed content language', async (
   await signInViaUi(page);
 
   const route = `/mydata/processes?id=${ledger!.id}&version=${ledger!.version}&mode=view`;
-  await page.goto(routeToCandidateUrl(baseURL!, route), { waitUntil: 'domcontentloaded' });
+  await gotoProcessViewReady(page, browserName, routeToCandidateUrl(baseURL!, route));
   for (const locale of APP_LOCALES) {
     const scenario = resolveLocaleContentE2EScenario(getLocaleCapability(locale));
     await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });

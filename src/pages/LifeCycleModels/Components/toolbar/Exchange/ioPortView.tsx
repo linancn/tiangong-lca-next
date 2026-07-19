@@ -2,7 +2,10 @@ import QuantitativeReferenceIcon from '@/components/QuantitativeReferenceIcon';
 import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AlignedNumber from '@/components/AlignedNumber';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+} from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import type { LifeCycleModelGraphNode } from '@/services/lifeCycleModels/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -16,7 +19,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import { getFolwypeOfDataSetOptions } from './ioPortSelect';
 
@@ -34,6 +37,28 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
 
   const [dataLoading, setDataLoading] = useState(false);
   const actionRefSelect = useRef<ActionType>();
+  const detailRequestEpochRef = useRef(0);
+  const detailRequestSnapshotRef = useRef<{
+    processId: string;
+    processVersion: string;
+    direction: string;
+  } | null>(null);
+  const exchangeRequestEpochRef = useRef(0);
+  const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
+  const currentContentLanguageRef = useRef(exchangeTableParams.contentLanguage);
+  currentContentLanguageRef.current = exchangeTableParams.contentLanguage;
+  const processId = node?.data?.id ?? '';
+  const processVersion = node?.data?.version ?? '';
+  const processPortItems = node?.ports?.items;
+  const currentDetailRequestSnapshot = detailRequestSnapshotRef.current;
+  if (
+    currentDetailRequestSnapshot === null ||
+    currentDetailRequestSnapshot.processId !== processId ||
+    currentDetailRequestSnapshot.processVersion !== processVersion ||
+    currentDetailRequestSnapshot.direction !== direction
+  ) {
+    detailRequestSnapshotRef.current = { processId, processVersion, direction };
+  }
 
   const processExchangeColumns: ProColumns<ProcessExchangeTable>[] = [
     {
@@ -176,10 +201,24 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
 
   useEffect(() => {
     if (!drawerVisible) return;
+
+    const requestEpoch = detailRequestEpochRef.current + 1;
+    const requestSnapshot = detailRequestSnapshotRef.current!;
+    detailRequestEpochRef.current = requestEpoch;
+    exchangeRequestEpochRef.current += 1;
     setDataLoading(true);
-    setSelectedRowKeys(node?.ports?.items?.map((item) => item?.id ?? '') ?? []);
-    getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
-      async (result: ProcessDetailResponse) => {
+    setExchangeDataSource([]);
+    setSelectedRowKeys(processPortItems?.map((item) => item?.id ?? '') ?? []);
+
+    void getProcessDetail(requestSnapshot.processId, requestSnapshot.processVersion).then(
+      (result: ProcessDetailResponse) => {
+        if (
+          detailRequestEpochRef.current !== requestEpoch ||
+          detailRequestSnapshotRef.current !== requestSnapshot
+        ) {
+          return;
+        }
+
         setExchangeDataSource([
           ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
             []),
@@ -187,7 +226,20 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
         actionRefSelect.current?.reload();
       },
     );
-  }, [drawerVisible]);
+
+    return () => {
+      if (detailRequestEpochRef.current === requestEpoch) {
+        detailRequestEpochRef.current += 1;
+      }
+      exchangeRequestEpochRef.current += 1;
+    };
+  }, [direction, drawerVisible, processId, processPortItems, processVersion]);
+
+  useEffect(() => {
+    if (drawerVisible) {
+      setDataLoading(true);
+    }
+  }, [drawerVisible, exchangeTableParams.contentLanguage]);
 
   return (
     <>
@@ -207,39 +259,55 @@ const IoPortSelector: FC<Props> = ({ node, lang, direction, drawerVisible, onDra
         onClose={onDrawerClose}
         footer={false}
       >
-        <ProTable<ProcessExchangeTable, ListPagination>
+        <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
           actionRef={actionRefSelect}
+          params={exchangeTableParams}
           loading={dataLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
-          request={async (params: { pageSize: number; current: number }) => {
-            return getProcessExchange(
-              genProcessExchangeTableData(exchangeDataSource, lang),
-              direction,
-              params,
-            ).then(
-              (res: {
-                data: ProcessExchangeTable[];
-                page: number;
-                success: boolean;
-                total: number;
-              }) => {
-                return getUnitData('flow', res?.data)
-                  .then((unitRes) => {
-                    return {
-                      ...res,
-                      data: (unitRes ?? []) as ProcessExchangeTable[],
-                      success: true,
-                    };
-                  })
-                  .finally(() => {
-                    setDataLoading(false);
-                  });
-              },
-            );
+          request={async (params) => {
+            const requestEpoch = exchangeRequestEpochRef.current + 1;
+            exchangeRequestEpochRef.current = requestEpoch;
+            const detailSnapshot = detailRequestSnapshotRef.current;
+            const contentLanguage = params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
+            try {
+              const res = await getProcessExchange(
+                genProcessExchangeTableData(exchangeDataSource, contentLanguage),
+                direction,
+                params,
+              );
+              const unitRes = await getUnitData('flow', res?.data);
+
+              if (
+                exchangeRequestEpochRef.current !== requestEpoch ||
+                detailRequestSnapshotRef.current !== detailSnapshot ||
+                currentContentLanguageRef.current !== contentLanguage
+              ) {
+                return {
+                  ...res,
+                  data: [],
+                  success: false,
+                };
+              }
+
+              return {
+                ...res,
+                data: (unitRes ?? []) as ProcessExchangeTable[],
+                success: true,
+              };
+            } finally {
+              if (
+                exchangeRequestEpochRef.current === requestEpoch &&
+                detailRequestSnapshotRef.current === detailSnapshot &&
+                currentContentLanguageRef.current === contentLanguage
+              ) {
+                setDataLoading(false);
+              }
+            }
           }}
           columns={processExchangeColumns}
           tableAlertRender={false}

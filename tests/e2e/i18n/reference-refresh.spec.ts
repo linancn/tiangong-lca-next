@@ -27,7 +27,6 @@ import { loadReferenceFixture, type ReferenceFixture } from './reference-fixture
 const processAssertion = findRouteAssertion('/mydata/processes');
 const REQUEST_BATCH_QUIET_MS = 150;
 const REFERENCE_RACE_SETTLE_TIMEOUT_MS = 60_000;
-const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;
 
 type ReadableLocaleDefinition = {
   appLocale: SupportedAppLocale;
@@ -219,54 +218,39 @@ async function expectProcessDeepLink(
     });
 }
 
-async function isAuthenticatedWelcomeBootRedirect(page: Page, targetUrl: string): Promise<boolean> {
-  const expectedUrl = new URL(targetUrl);
-  const actualUrl = new URL(page.url());
-  const isSameCandidateDocument =
-    actualUrl.origin === expectedUrl.origin && actualUrl.pathname === expectedUrl.pathname;
-  const hasAllowedCandidateSearch =
-    actualUrl.search === expectedUrl.search || actualUrl.search === '';
-  const isWelcomeRoute = actualUrl.hash === '#/welcome';
-  const hasAuthenticatedShell =
-    (await page.locator('.tg-global-header-avatar-trigger').count()) === 1;
-  return (
-    isSameCandidateDocument && hasAllowedCandidateSearch && isWelcomeRoute && hasAuthenticatedShell
-  );
-}
-
 async function gotoCandidateDocument(
   page: Page,
+  browserName: string,
   targetUrl: string,
   ledger: ProductionDataLedger,
   state: string,
   mode: 'edit' | 'view' = 'view',
 ): Promise<void> {
-  for (let attempt = 1; attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS; attempt += 1) {
-    try {
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });
-    } catch (error) {
-      const isRecoverableFirefoxNavigation =
-        error instanceof Error &&
-        (error.message.includes('NS_ERROR_FAILURE') ||
-          error.message.includes('NS_BINDING_ABORTED'));
-      if (!isRecoverableFirefoxNavigation || attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
-        throw error;
-      }
-      continue;
-    }
-
-    try {
-      await expectProcessDeepLink(page, ledger, state, mode);
-      return;
-    } catch (error) {
-      if (attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
-        throw error;
-      }
-      if (!(await isAuthenticatedWelcomeBootRedirect(page, targetUrl))) {
-        throw error;
-      }
+  try {
+    await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });
+  } catch (error) {
+    const isCommittedFirefoxCancellation =
+      browserName === 'firefox' &&
+      error instanceof Error &&
+      (error.message.includes('NS_ERROR_FAILURE') || error.message.includes('NS_BINDING_ABORTED'));
+    if (!isCommittedFirefoxCancellation) {
+      throw error;
     }
   }
+
+  // Known Firefox cancellations are accepted only when the exact authenticated Process mount
+  // committed. No second navigation may hide a Welcome/login redirect or wrong query state.
+  await expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl);
+  await expectProcessDeepLink(page, ledger, state, mode);
+  await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
+  await expect(page.locator('.tg-global-language-selector')).toBeVisible({ timeout: 45_000 });
+  await expect(page.locator('.ant-result-403')).toHaveCount(0, { timeout: 45_000 });
+  const deepLinkState = page.getByTestId('process-deep-link-state');
+  await expect(deepLinkState).toBeAttached({ timeout: 45_000 });
+  await expect(deepLinkState).toHaveAttribute('data-route-mode', mode, { timeout: 45_000 });
+  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState });
+  await expect(drawer).toHaveCount(1, { timeout: 45_000 });
+  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0, { timeout: 45_000 });
 }
 
 async function selectLocaleThroughHeader(
@@ -469,6 +453,7 @@ async function expectPreviousRevisionEntriesInjected(
 
 test('delayed old-locale classification and location responses never overwrite the mounted locale', async ({
   baseURL,
+  browserName,
   page,
 }, testInfo) => {
   test.skip(
@@ -552,7 +537,7 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-          await gotoCandidateDocument(page, targetUrl, ledger!, state);
+          await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);
           await expect
             .poll(
               () =>
@@ -655,6 +640,7 @@ test('delayed old-locale classification and location responses never overwrite t
 
 test('previous-revision browser caches fail closed and process deep links survive locale reloads', async ({
   baseURL,
+  browserName,
   page,
 }, testInfo) => {
   test.setTimeout(10 * 60_000);
@@ -688,7 +674,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
       }
       const state = `cache-roundtrip-${definition.languageCode}`;
       const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-      await gotoCandidateDocument(page, targetUrl, ledger!, state);
+      await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);
 
       const documentIdentity = await page.evaluate(() => {
         const identity = crypto.randomUUID();
@@ -770,6 +756,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
 
 test('process edit form consumes current classification and location assets in every readable locale', async ({
   baseURL,
+  browserName,
   page,
 }, testInfo) => {
   test.skip(
@@ -797,6 +784,7 @@ test('process edit form consumes current classification and location assets in e
       const state = `form-${definition.languageCode}`;
       await gotoCandidateDocument(
         page,
+        browserName,
         buildProcessDeepLink(baseURL!, ledger!, state, 'edit'),
         ledger!,
         state,

@@ -47,6 +47,9 @@ const LocationCodeSelect: FC<LocationCodeSelectProps> = ({
 
   useEffect(() => {
     let cancelled = false;
+    // Do not retain labels materialized for the previous language while the
+    // replacement request is pending or if it fails.
+    setLocationOptions([]);
     setLoading(true);
 
     getILCDLocationAll(lang)
@@ -62,6 +65,11 @@ const LocationCodeSelect: FC<LocationCodeSelectProps> = ({
           .filter((option): option is LocationCodeOption => Boolean(option));
 
         setLocationOptions(nextOptions);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLocationOptions([]);
+        }
       })
       .finally(() => {
         if (!cancelled) {

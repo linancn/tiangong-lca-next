@@ -6,7 +6,13 @@ import ProcessView from '@/pages/Processes/Components/view';
 import SourceView from '@/pages/Sources/Components/view';
 import UnitGroupView from '@/pages/Unitgroups/Components/view';
 import { getAllVersions } from '@/services/general/api';
-import { ListPagination, VersionedDataRow } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  VersionedDataRow,
+} from '@/services/general/data';
 import { getDataSource } from '@/services/general/util';
 import { getNextDataSetVersionFromRows } from '@/services/general/version';
 import { BarsOutlined, CloseOutlined } from '@ant-design/icons';
@@ -62,6 +68,14 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
   const dataSource = dataSourceOverride ?? getDataSource(location.pathname);
   const tableDataRef = useRef<VersionedDataRow[]>([]);
   const selectable = Boolean(onSelectVersion);
+  const contentLanguageParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageParams.contentLanguage,
+    [tableRequestEpochRef],
+  );
 
   useEffect(() => {
     if (!showAllVersionsModal) {
@@ -191,9 +205,10 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
         maskClosable={false}
       >
         <Card>
-          <ProTable<any, ListPagination>
+          <ProTable<any, ContentLanguageAwareTableParams>
             rowKey='version'
             actionRef={actionRef}
+            params={contentLanguageParams}
             search={false}
             options={{ fullScreen: true }}
             scroll={{ x: 'max-content' }}
@@ -226,18 +241,39 @@ const AllVersionsList: FC<AllVersionsListProps> = ({
                 </ConfigProvider>,
               ];
             }}
-            request={async (params: { pageSize: number; current: number }, sort) => {
-              const result = await getAllVersions(
-                searchColume,
-                searchTableName,
-                id,
-                params,
-                sort,
-                lang,
-                dataSource,
-                stateCode,
+            request={async (
+              params: ContentLanguageAwareTableParams & {
+                pageSize?: number;
+                current?: number;
+              },
+              sort,
+            ) => {
+              const {
+                contentLanguage = contentLanguageParams.contentLanguage,
+                pageSize = 10,
+                current = 1,
+                ...restParams
+              } = params;
+              const requestParams = { ...restParams, pageSize, current };
+              const result = await guardLocaleMaterializedTableRequest(
+                contentLanguage,
+                () => currentContentLanguageRef.current,
+                tableRequestEpochRef,
+                () =>
+                  getAllVersions(
+                    searchColume,
+                    searchTableName,
+                    id,
+                    requestParams,
+                    sort,
+                    contentLanguage,
+                    dataSource,
+                    stateCode,
+                  ),
               );
-              tableDataRef.current = result.data ?? [];
+              if (result.success !== false) {
+                tableDataRef.current = result.data ?? [];
+              }
               return result;
             }}
             columns={allVersionsColumns}

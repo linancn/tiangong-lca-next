@@ -157,29 +157,36 @@ describe('typed Process required-state read-only trap contract', () => {
     expect(source).not.toContain('ledgerControlledProcessSaveDraft');
   });
 
-  it('pins one navigation per variant and semantic readiness before locale interaction', () => {
+  it('generates one isolated test and one bounded initial navigation per required-state variant', () => {
     const source = readFileSync(
       path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/typed-view-variants.spec.ts'),
       'utf8',
     );
-    const requiredCase = source.slice(
-      source.indexOf("test('Process required deep-link state is explicit and reload-stable'"),
-    );
-    const variantLoop = requiredCase.indexOf('for (const { required }');
-    const localeLoop = requiredCase.indexOf('for (const locale of APP_LOCALES)', variantLoop);
-    const variantNavigation = requiredCase.indexOf('await page.goto(', variantLoop);
+    const generatedCasesStart = source.indexOf('PROCESS_REQUIRED_VARIANTS.forEach(');
+    const generatedCases = source.slice(generatedCasesStart);
+    const initialStep = generatedCases.indexOf('`${assertionId} initial mount`');
+    const variantNavigation = generatedCases.indexOf('await page.goto(', initialStep);
+    const localeLoop = generatedCases.indexOf('for (const locale of APP_LOCALES)', initialStep);
 
-    expect(variantLoop).toBeGreaterThanOrEqual(0);
-    expect(variantNavigation).toBeGreaterThan(variantLoop);
-    expect(variantNavigation).toBeLessThan(localeLoop);
-    expect(requiredCase.match(/await page[.]goto[(]/gu)).toHaveLength(1);
-    expect(requiredCase).toContain('await expectProcessDeepLinkMountSettled({');
-    expect(requiredCase).toContain('await page.reload({ waitUntil:');
-    expect(requiredCase).toContain(
-      'expect(variantNavigationCount).toBe(PROCESS_REQUIRED_VARIANTS.length);',
+    expect(generatedCasesStart).toBeGreaterThanOrEqual(0);
+    expect(generatedCases).toContain('test(`Process ${required} deep-link state');
+    expect(generatedCases).toContain('test.setTimeout(10 * 60_000);');
+    expect(generatedCases).toContain(
+      "annotateEvidence(testInfo, processAssertion, 'typed-process-required-state')",
     );
-    expect(requiredCase).toContain(
-      'expect(reloadProofCount).toBe(PROCESS_REQUIRED_VARIANTS.length * APP_LOCALES.length);',
+    expect(initialStep).toBeGreaterThanOrEqual(0);
+    expect(variantNavigation).toBeGreaterThan(initialStep);
+    expect(variantNavigation).toBeLessThan(localeLoop);
+    expect(generatedCases.match(/await page[.]goto[(]/gu)).toHaveLength(1);
+    expect(generatedCases).toContain('timeout: 45_000');
+    expect(generatedCases).toContain('{ timeout: 90_000 }');
+    expect(generatedCases).toContain('await expectProcessDeepLinkMountSettled({');
+    expect(generatedCases).toContain('await page.reload({ waitUntil:');
+    expect(generatedCases).toContain('expect(initialNavigationCount).toBe(1);');
+    expect(generatedCases).toContain('expect(reloadProofCount).toBe(APP_LOCALES.length);');
+    expect(generatedCases).toContain("required === 'required' ? APP_LOCALES.length + 1 : 0");
+    expect(generatedCases).toContain(
+      'expect(trappedValidationDrafts).toBe(expectedTrappedValidationDrafts);',
     );
   });
 

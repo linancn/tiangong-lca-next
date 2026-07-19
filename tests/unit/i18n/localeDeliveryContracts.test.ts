@@ -347,6 +347,7 @@ describe('shared locale delivery contracts', () => {
     expect(playwrightConfig).not.toMatch(/reuseExistingServer:\s*!process\.env\.CI/u);
     expect(playwrightConfig).toContain("process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1'");
     expect(playwrightConfig).toMatch(/serviceWorkers:\s*'block'/u);
+    expect(playwrightConfig).toContain('failOnFlakyTests: Boolean(process.env.CI)');
 
     const reporter = fs.readFileSync(
       path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),

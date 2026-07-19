@@ -5,7 +5,15 @@ import {
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import { attachStateCodesToRows } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText, getUnitData } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { TeamTable } from '@/services/teams/data';
@@ -73,7 +81,11 @@ const TableList: FC = () => {
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
   const shouldShowFlowpropertyTip = dataSource === 'my' || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
@@ -344,7 +356,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<FlowpropertyTable, ListPagination>
+      <ProTable<FlowpropertyTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -375,6 +387,7 @@ const TableList: FC = () => {
           </Space>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -399,63 +412,73 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          if (referenceLookup) {
-            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-            if (!referenceLookupUuid) {
-              return attachRefUnitData(getReferenceLookupEmptyResult(params.current));
-            }
-            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              const currentKeyWord = keyWordRef.current || keyWord;
+              const currentStateCode = stateCodeRef.current;
+              if (referenceLookup) {
+                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (!referenceLookupUuid) {
+                  return attachRefUnitData(getReferenceLookupEmptyResult(requestParams.current));
+                }
+                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-            const result = await getFlowpropertyTableUuidMentionSearch(
-              params,
-              lang,
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            );
-            const noticeKey = [
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            ].join(':');
-            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-              referenceLookupLimitNoticeRef.current = noticeKey;
-              showReferenceLookupLimitMessage(intl);
-            }
-            return attachRefUnitData(result);
-          }
-          if (currentKeyWord.length > 0) {
-            return attachRefUnitData(
-              await getFlowpropertyTablePgroongaSearch(
-                params,
-                lang,
-                dataSource,
-                currentKeyWord,
-                {},
-                currentStateCode,
-                tid ?? '',
-              ),
-            );
-          }
-          return attachRefUnitData(
-            await getFlowpropertyTableAll(
-              params,
-              sort,
-              lang,
-              dataSource,
-              tid ?? '',
-              currentStateCode,
-            ),
+                const result = await getFlowpropertyTableUuidMentionSearch(
+                  requestParams,
+                  lang,
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                );
+                const noticeKey = [
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                  requestedLocale,
+                ].join(':');
+                if (
+                  isCurrentRequest() &&
+                  result.capped &&
+                  referenceLookupLimitNoticeRef.current !== noticeKey
+                ) {
+                  referenceLookupLimitNoticeRef.current = noticeKey;
+                  showReferenceLookupLimitMessage(intl);
+                }
+                return attachRefUnitData(result);
+              }
+              if (currentKeyWord.length > 0) {
+                return attachRefUnitData(
+                  await getFlowpropertyTablePgroongaSearch(
+                    requestParams,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    tid ?? '',
+                  ),
+                );
+              }
+              return attachRefUnitData(
+                await getFlowpropertyTableAll(
+                  requestParams,
+                  sort,
+                  lang,
+                  dataSource,
+                  tid ?? '',
+                  currentStateCode,
+                ),
+              );
+            },
           );
         }}
         columns={flowpropertiesColumns}

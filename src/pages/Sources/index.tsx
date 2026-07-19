@@ -32,8 +32,16 @@ import {
   useResponsiveDataListMobile,
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
-import { ListPagination } from '@/services/general/data';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
 import { resolveRouteViewState } from '@/services/general/routeViewState';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { SourceImportData, SourceTable } from '@/services/sources/data';
 import { getTeamById } from '@/services/teams/api';
@@ -78,7 +86,11 @@ const TableList: FC = () => {
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType>();
   const stateCodeRef = useRef<string | number>('all');
@@ -364,7 +376,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<SourceTable, ListPagination>
+      <ProTable<SourceTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -374,6 +386,7 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -408,56 +421,73 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          if (referenceLookup) {
-            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-            if (!referenceLookupUuid) {
-              return attachReviewState(getReferenceLookupEmptyResult(params.current));
-            }
-            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              const currentKeyWord = keyWordRef.current || keyWord;
+              const currentStateCode = stateCodeRef.current;
+              if (referenceLookup) {
+                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (!referenceLookupUuid) {
+                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
+                }
+                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-            const result = await getSourceTableUuidMentionSearch(
-              params,
-              lang,
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            );
-            const noticeKey = [
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            ].join(':');
-            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-              referenceLookupLimitNoticeRef.current = noticeKey;
-              showReferenceLookupLimitMessage(intl);
-            }
-            return attachReviewState(result);
-          }
-          if (currentKeyWord.length > 0) {
-            return attachReviewState(
-              await getSourceTablePgroongaSearch(
-                params,
-                lang,
-                dataSource,
-                currentKeyWord,
-                {},
-                currentStateCode,
-                tid ?? '',
-              ),
-            );
-          }
-          return attachReviewState(
-            await getSourceTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
+                const result = await getSourceTableUuidMentionSearch(
+                  requestParams,
+                  lang,
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                );
+                const noticeKey = [
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                  requestedLocale,
+                ].join(':');
+                if (
+                  isCurrentRequest() &&
+                  result.capped &&
+                  referenceLookupLimitNoticeRef.current !== noticeKey
+                ) {
+                  referenceLookupLimitNoticeRef.current = noticeKey;
+                  showReferenceLookupLimitMessage(intl);
+                }
+                return attachReviewState(result);
+              }
+              if (currentKeyWord.length > 0) {
+                return attachReviewState(
+                  await getSourceTablePgroongaSearch(
+                    requestParams,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    tid ?? '',
+                  ),
+                );
+              }
+              return attachReviewState(
+                await getSourceTableAll(
+                  requestParams,
+                  sort,
+                  lang,
+                  dataSource,
+                  tid ?? '',
+                  currentStateCode,
+                ),
+              );
+            },
           );
         }}
         columns={sourceColumns}

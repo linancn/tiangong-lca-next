@@ -3,7 +3,13 @@ import { renderTableSelectionClearAction } from '@/components/TableSelectionAler
 import ProcessCreate from '@/pages/Processes/Components/create';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes/index';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  DataTabKey,
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+} from '@/services/general/data';
 import {
   getProcessTableAll,
   getProcessTablePgroongaSearch,
@@ -44,6 +50,17 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
   const coActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const contentLanguageParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  const myRequestEpochRef = useRef(0);
+  const teRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageParams.contentLanguage,
+    [tgRequestEpochRef, coRequestEpochRef, myRequestEpochRef, teRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -293,30 +310,52 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Col>
           </Row>
         </Card>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            let result;
-            if (tgKeyWord.length > 0) {
-              if (openAI) {
-                return process_hybrid_search(params, lang, 'tg', tgKeyWord, {});
-              }
-              result = await getProcessTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
-            } else {
-              result = await getProcessTableAll(params, sort, lang, 'tg', []);
-            }
-            return result || { data: [], success: false };
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async () => {
+                let result;
+                if (tgKeyWord.length > 0) {
+                  if (openAI) {
+                    return process_hybrid_search(
+                      requestParams,
+                      contentLanguage,
+                      'tg',
+                      tgKeyWord,
+                      {},
+                    );
+                  }
+                  result = await getProcessTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  );
+                } else {
+                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'tg', []);
+                }
+                return result || { data: [], success: false };
+              },
+            );
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -359,30 +398,52 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Col>
           </Row>
         </Card>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            let result;
-            if (coKeyWord.length > 0) {
-              if (openAI) {
-                return process_hybrid_search(params, lang, 'co', coKeyWord, {});
-              }
-              result = await getProcessTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
-            } else {
-              result = await getProcessTableAll(params, sort, lang, 'co', []);
-            }
-            return result || { data: [], success: false };
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async () => {
+                let result;
+                if (coKeyWord.length > 0) {
+                  if (openAI) {
+                    return process_hybrid_search(
+                      requestParams,
+                      contentLanguage,
+                      'co',
+                      coKeyWord,
+                      {},
+                    );
+                  }
+                  result = await getProcessTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'co',
+                    coKeyWord,
+                    {},
+                  );
+                } else {
+                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'co', []);
+                }
+                return result || { data: [], success: false };
+              },
+            );
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -421,8 +482,9 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Col>
           </Row>
         </Card>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -432,22 +494,43 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             return [<ProcessCreate key={0} lang={lang} actionRef={myActionRefSelect} />];
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            let result;
-            if (myKeyWord.length > 0) {
-              if (openAI) {
-                return process_hybrid_search(params, lang, 'my', myKeyWord, {});
-              }
-              result = await getProcessTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-            } else {
-              result = await getProcessTableAll(params, sort, lang, 'my', []);
-            }
-            return result || { data: [], success: false };
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async () => {
+                let result;
+                if (myKeyWord.length > 0) {
+                  if (openAI) {
+                    return process_hybrid_search(
+                      requestParams,
+                      contentLanguage,
+                      'my',
+                      myKeyWord,
+                      {},
+                    );
+                  }
+                  result = await getProcessTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                  );
+                } else {
+                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'my', []);
+                }
+                return result || { data: [], success: false };
+              },
+            );
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -486,30 +569,52 @@ const ModelToolbarAdd: FC<Props> = ({ buttonType, lang, onData }) => {
             </Col>
           </Row>
         </Card>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={teActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            let result;
-            if (teKeyWord.length > 0) {
-              if (openAI) {
-                return process_hybrid_search(params, lang, 'te', teKeyWord, {});
-              }
-              result = await getProcessTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
-            } else {
-              result = await getProcessTableAll(params, sort, lang, 'te', []);
-            }
-            return result || { data: [], success: false };
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              teRequestEpochRef,
+              async () => {
+                let result;
+                if (teKeyWord.length > 0) {
+                  if (openAI) {
+                    return process_hybrid_search(
+                      requestParams,
+                      contentLanguage,
+                      'te',
+                      teKeyWord,
+                      {},
+                    );
+                  }
+                  result = await getProcessTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'te',
+                    teKeyWord,
+                    {},
+                  );
+                } else {
+                  result = await getProcessTableAll(requestParams, sort, contentLanguage, 'te', []);
+                }
+                return result || { data: [], success: false };
+              },
+            );
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}

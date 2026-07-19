@@ -6,7 +6,10 @@ import ContactSelectDescription from '@/pages/Contacts/Components/select/descrip
 import SourceSelectDescription from '@/pages/Sources/Components/select/description';
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+} from '@/services/general/data';
 import { getUnitData, jsonToList } from '@/services/general/util';
 import type { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessDetail, getProcessExchange } from '@/services/processes/api';
@@ -36,7 +39,7 @@ import {
 } from 'antd';
 import type { ButtonType } from 'antd/es/button';
 import type { FC, ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useLocation } from 'umi';
 import ComplianceItemView from './Compliance/view';
 import ProcessExchangeView from './Exchange/view';
@@ -160,6 +163,11 @@ const ProcessView: FC<Props> = ({
   // const [footerButtons, setFooterButtons] = useState<JSX.Element>();
   const [activeTabKey, setActiveTabKey] = useState<string>('processInformation');
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
+  const inputExchangeRequestEpochRef = useRef(0);
+  const outputExchangeRequestEpochRef = useRef(0);
+  const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
+  const currentExchangeContentLanguageRef = useRef(exchangeTableParams.contentLanguage);
+  currentExchangeContentLanguageRef.current = exchangeTableParams.contentLanguage;
   const [spinning, setSpinning] = useState(false);
   const [initData, setInitData] = useState<Partial<ProcessFormWithId>>({});
   const processClassification =
@@ -1493,16 +1501,22 @@ const ProcessView: FC<Props> = ({
               key: '1',
               label: <FormattedMessage id='pages.process.exchange.input' defaultMessage='Input' />,
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
+                  params={exchangeTableParams}
                   search={false}
                   scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = inputExchangeRequestEpochRef.current + 1;
+                    inputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Input',
                       params,
                     ).then((res) => {
@@ -1516,27 +1530,40 @@ const ProcessView: FC<Props> = ({
                             version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
-                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
-                          if (!error) {
-                            normalizedUnitRes.forEach((item) => {
-                              const flow = flowsResp.find(
-                                (flowItem) =>
-                                  flowItem.id === item?.referenceToFlowDataSetId &&
-                                  flowItem.version === item?.referenceToFlowDataSetVersion,
-                              );
-                              if (flow) {
-                                item.stateCode = flow.stateCode;
-                                item['classification'] = flow.classification ?? '';
-                              }
-                            });
-                          }
-                          return {
-                            ...processExchangeRes,
-                            data: normalizedUnitRes,
-                            success: true,
-                          };
-                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
+                          (flowRes) => {
+                            if (
+                              inputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...processExchangeRes,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
+                            const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                            if (!error) {
+                              normalizedUnitRes.forEach((item) => {
+                                const flow = flowsResp.find(
+                                  (flowItem) =>
+                                    flowItem.id === item?.referenceToFlowDataSetId &&
+                                    flowItem.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification ?? '';
+                                }
+                              });
+                            }
+                            return {
+                              ...processExchangeRes,
+                              data: normalizedUnitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
@@ -1555,16 +1582,22 @@ const ProcessView: FC<Props> = ({
                 <FormattedMessage id='pages.process.exchange.output' defaultMessage='Output' />
               ),
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
+                  params={exchangeTableParams}
                   search={false}
                   scroll={PROCESS_EXCHANGE_TABLE_SCROLL}
                   pagination={{
                     showSizeChanger: false,
                     pageSize: 10,
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = outputExchangeRequestEpochRef.current + 1;
+                    outputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Output',
                       params,
                     ).then((res) => {
@@ -1578,27 +1611,40 @@ const ProcessView: FC<Props> = ({
                             version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
-                          const { error, data: flowsResp } = flowRes;
-                          if (!error) {
-                            normalizedUnitRes.forEach((item) => {
-                              const flow = flowsResp.find(
-                                (flowItem) =>
-                                  flowItem.id === item?.referenceToFlowDataSetId &&
-                                  flowItem.version === item?.referenceToFlowDataSetVersion,
-                              );
-                              if (flow) {
-                                item.stateCode = flow.stateCode;
-                                item['classification'] = flow.classification ?? '';
-                              }
-                            });
-                          }
-                          return {
-                            ...processExchangeRes,
-                            data: normalizedUnitRes,
-                            success: true,
-                          };
-                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
+                          (flowRes) => {
+                            if (
+                              outputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...processExchangeRes,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
+                            const { error, data: flowsResp } = flowRes;
+                            if (!error) {
+                              normalizedUnitRes.forEach((item) => {
+                                const flow = flowsResp.find(
+                                  (flowItem) =>
+                                    flowItem.id === item?.referenceToFlowDataSetId &&
+                                    flowItem.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification ?? '';
+                                }
+                              });
+                            }
+                            return {
+                              ...processExchangeRes,
+                              data: normalizedUnitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}

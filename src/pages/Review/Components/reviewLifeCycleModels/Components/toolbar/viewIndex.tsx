@@ -1,6 +1,8 @@
 import { GraphEdge, GraphNode, useGraphEvent, useGraphStore } from '@/contexts/graphContext';
+import { buildLocalizedGraphNodeVisualUpdate } from '@/pages/LifeCycleModels/Components/toolbar/utils/editGraph';
 import ProcessView from '@/pages/Processes/Components/view';
 import { getCommentApi } from '@/services/comments/api';
+import { resolveContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
@@ -52,6 +54,7 @@ const ToolbarView: FC<Props> = ({
   const modelData = useGraphStore((state) => state.initData);
   const updateNode = useGraphStore((state) => state.updateNode);
   const intl = useIntl();
+  const contentLanguage = resolveContentLanguage(lang);
 
   const nodes: GraphNode[] = useGraphStore((state) => state.nodes);
   const edges: GraphEdge[] = useGraphStore((state) => state.edges);
@@ -561,15 +564,22 @@ const ToolbarView: FC<Props> = ({
 
   useEffect(() => {
     nodes.forEach((node) => {
-      updateNode(node.id ?? '', {
-        tools: buildReadOnlyNodeTools(
-          node?.size?.width ?? node?.width ?? 350,
-          node?.data?.label,
-          node?.data?.quantitativeReference === '1',
-        ),
-      });
+      updateNode(
+        node.id ?? '',
+        buildLocalizedGraphNodeVisualUpdate({
+          node,
+          refTool,
+          nonRefTool: '',
+          inputFlowTool,
+          outputFlowTool,
+          token,
+          lang: contentLanguage,
+          nodeTemplateWidth: 350,
+        }),
+        VISUAL_ONLY_MUTATION_OPTIONS,
+      );
     });
-  }, [nodeCount]);
+  }, [contentLanguage, intl.locale, nodeCount]);
 
   useEffect(
     () => () => {

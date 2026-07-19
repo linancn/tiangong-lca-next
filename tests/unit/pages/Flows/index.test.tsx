@@ -308,52 +308,73 @@ jest.mock('@ant-design/pro-components', () => {
     </div>
   );
 
-  const ProTable = ({ actionRef, request, toolBarRender, headerTitle, columns, rowKey }: any) => {
-    const requestRef = React.useRef(request);
+  const ProTable = ({
+    actionRef,
+    request,
+    params = {},
+    toolBarRender,
+    headerTitle,
+    columns,
+    rowKey,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const headerTitleText = toText(headerTitle);
     const [pageInfo, setPageInfoState] = React.useState({ pageSize: 10, current: 1 });
-
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
+    const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
+    const latestPageInfoRef = React.useRef(pageInfo);
+    latestRequestRef.current = request;
+    latestParamsRef.current = params;
+    latestPageInfoRef.current = pageInfo;
 
     const runRequest = React.useCallback(
       async (
         sort: Record<string, string> = {},
         filter: Record<string, any> = {},
-        params = pageInfo,
+        requestParams = latestPageInfoRef.current,
       ) => {
-        const result = await requestRef.current?.(params, sort, filter);
+        const result = await latestRequestRef.current?.(
+          { ...latestParamsRef.current, ...requestParams },
+          sort,
+          filter,
+        );
         setRows(result?.data ?? []);
         return result;
       },
-      [pageInfo],
+      [],
     );
 
-    const reload = jest.fn(async () => runRequest());
-    const requestWith = jest.fn(
-      async (sort: Record<string, string> = {}, filter: Record<string, any> = {}) =>
-        runRequest(sort, filter),
+    const api = React.useMemo(
+      () => ({
+        reload: jest.fn(async () => runRequest()),
+        setPageInfo: jest.fn((nextPageInfo: any) => {
+          latestPageInfoRef.current = { ...latestPageInfoRef.current, ...nextPageInfo };
+          setPageInfoState(latestPageInfoRef.current);
+        }),
+      }),
+      [runRequest],
+    );
+    const requestWith = React.useMemo(
+      () =>
+        jest.fn(async (sort: Record<string, string> = {}, filter: Record<string, any> = {}) =>
+          runRequest(sort, filter),
+        ),
+      [runRequest],
     );
 
     React.useEffect(() => {
       if (actionRef) {
-        actionRef.current = {
-          reload,
-          setPageInfo: jest.fn((nextPageInfo: any) => {
-            setPageInfoState((prev: any) => ({ ...prev, ...nextPageInfo }));
-          }),
-        };
+        actionRef.current = api;
       }
-      void reload();
-    }, [actionRef, reload]);
+      void api.reload();
+    }, [actionRef, api, headerTitleText, params.locale]);
 
     const classificationFilters =
       columns?.find((column: any) => column.dataIndex === 'classification')?.filters ?? [];
 
     return (
       <section data-testid='pro-table'>
-        <div>{toText(headerTitle)}</div>
+        <div>{headerTitleText}</div>
         <div>{toolBarRender?.()}</div>
         <div data-testid='classification-filters'>{JSON.stringify(classificationFilters)}</div>
         <button

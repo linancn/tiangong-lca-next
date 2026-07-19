@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { FlowForm } from '@/pages/Flows/Components/form';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -49,7 +50,11 @@ jest.mock('@ant-design/pro-components', () => {
     const rowClass = props.rowClassName ? props.rowClassName(props.dataSource?.[0] || {}) : '';
     const toolbar = props.toolBarRender ? props.toolBarRender() : null;
     return (
-      <div data-testid='pro-table' data-row-class={rowClass}>
+      <div
+        data-testid='pro-table'
+        data-row-class={rowClass}
+        data-materialized-language={props.dataSource?.[0]?.materializedLanguage ?? ''}
+      >
         <div data-testid='pro-table-toolbar'>{toolbar}</div>
         {(props.columns || []).map((col: any, idx: number) =>
           typeof col.render === 'function' ? (
@@ -473,5 +478,51 @@ describe('FlowForm (src/pages/Flows/Components/form.tsx)', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('Please select flow properties');
     expect(alert.children).toHaveLength(0);
+  });
+
+  it('rematerializes every registry language and rejects a delayed stale language response', async () => {
+    const deferredResolutions = new Map<string, () => void>();
+    mockGenFlowPropertyTabTableData.mockImplementation((data: any[], language: string) =>
+      data.map((row) => ({ ...row, materializedLanguage: language })),
+    );
+    mockGetUnitData.mockImplementation((_type: string, rows: any[]) => {
+      const language = rows[0]?.materializedLanguage;
+      return new Promise((resolve) => {
+        deferredResolutions.set(language, () => resolve(rows));
+      });
+    });
+
+    const props = { ...baseProps(), lang: SUPPORTED_CONTENT_LANGUAGES[0] };
+    const { rerender } = render(<FlowForm {...props} />);
+    const table = screen.getByTestId('pro-table');
+
+    await waitFor(() => expect(deferredResolutions.has(SUPPORTED_CONTENT_LANGUAGES[0])).toBe(true));
+
+    for (const language of SUPPORTED_CONTENT_LANGUAGES.slice(1)) {
+      rerender(<FlowForm {...props} lang={language} />);
+
+      expect(table).toHaveAttribute('data-materialized-language', '');
+      await waitFor(() => expect(deferredResolutions.has(language)).toBe(true));
+      await act(async () => {
+        deferredResolutions.get(language)?.();
+        await Promise.resolve();
+      });
+      await waitFor(() => expect(table).toHaveAttribute('data-materialized-language', language));
+    }
+
+    await act(async () => {
+      deferredResolutions.get(SUPPORTED_CONTENT_LANGUAGES[0])?.();
+      await Promise.resolve();
+    });
+
+    expect(table).toHaveAttribute(
+      'data-materialized-language',
+      SUPPORTED_CONTENT_LANGUAGES[SUPPORTED_CONTENT_LANGUAGES.length - 1],
+    );
+    expect(
+      SUPPORTED_CONTENT_LANGUAGES.every((language) =>
+        mockGenFlowPropertyTabTableData.mock.calls.some((call) => call[1] === language),
+      ),
+    ).toBe(true);
   });
 });

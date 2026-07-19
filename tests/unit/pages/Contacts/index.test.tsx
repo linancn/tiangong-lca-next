@@ -316,38 +316,45 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     request,
+    params = {},
     columns = [],
     toolBarRender,
     headerTitle,
     rowKey,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
-    const requestRef = React.useRef(request);
+    const headerTitleText = toText(headerTitle);
+    const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
+    latestRequestRef.current = request;
+    latestParamsRef.current = params;
+
+    const api = React.useMemo(
+      () => ({
+        reload: jest.fn(async () => {
+          const result = await latestRequestRef.current?.(
+            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            {},
+          );
+          setRows(result?.data ?? []);
+          return result;
+        }),
+        setPageInfo: jest.fn(),
+      }),
+      [],
+    );
 
     React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
-
-    React.useEffect(() => {
-      latestReloadMock = reload;
+      latestReloadMock = api.reload;
       if (actionRef) {
-        actionRef.current = {
-          reload,
-          setPageInfo: jest.fn(),
-        };
+        actionRef.current = api;
       }
-      void reload();
-    }, [actionRef, reload]);
+      void api.reload();
+    }, [actionRef, api, headerTitleText, params.locale]);
 
     return (
       <section data-testid='pro-table'>
-        <div>{toText(headerTitle)}</div>
+        <div>{headerTitleText}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row: any, rowIndex: number) => (
           <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>

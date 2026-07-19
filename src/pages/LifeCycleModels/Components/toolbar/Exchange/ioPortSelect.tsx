@@ -4,7 +4,10 @@ import ProcessExchangeView from '@/pages/Processes/Components/Exchange/view';
 import AlignedNumber from '@/components/AlignedNumber';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { flowTypeOptions, myFlowTypeOptions } from '@/pages/Flows/Components/optiondata';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+} from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import type {
   LifeCycleModelGraphNode,
@@ -22,7 +25,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Drawer, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 
 export const getFolwypeOfDataSetOptions = (value: string) => {
@@ -51,6 +54,28 @@ const IoPortSelect: FC<Props> = ({
 
   const [dataLoading, setDataLoading] = useState(false);
   const actionRefSelect = useRef<ActionType>();
+  const detailRequestEpochRef = useRef(0);
+  const detailRequestSnapshotRef = useRef<{
+    processId: string;
+    processVersion: string;
+    direction: string;
+  } | null>(null);
+  const exchangeRequestEpochRef = useRef(0);
+  const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
+  const currentContentLanguageRef = useRef(exchangeTableParams.contentLanguage);
+  currentContentLanguageRef.current = exchangeTableParams.contentLanguage;
+  const processId = node?.data?.id ?? '';
+  const processVersion = node?.data?.version ?? '';
+  const processPortItems = node?.ports?.items;
+  const currentDetailRequestSnapshot = detailRequestSnapshotRef.current;
+  if (
+    currentDetailRequestSnapshot === null ||
+    currentDetailRequestSnapshot.processId !== processId ||
+    currentDetailRequestSnapshot.processVersion !== processVersion ||
+    currentDetailRequestSnapshot.direction !== direction
+  ) {
+    detailRequestSnapshotRef.current = { processId, processVersion, direction };
+  }
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -202,21 +227,40 @@ const IoPortSelect: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) return;
-    setDataLoading(true);
 
-    getProcessDetail(node?.data?.id ?? '', node?.data?.version ?? '').then(
-      async (result: ProcessDetailResponse) => {
+    const requestEpoch = detailRequestEpochRef.current + 1;
+    const requestSnapshot = detailRequestSnapshotRef.current!;
+    detailRequestEpochRef.current = requestEpoch;
+    exchangeRequestEpochRef.current += 1;
+    setDataLoading(true);
+    setExchangeDataSource([]);
+
+    void getProcessDetail(requestSnapshot.processId, requestSnapshot.processVersion).then(
+      (result: ProcessDetailResponse) => {
+        if (
+          detailRequestEpochRef.current !== requestEpoch ||
+          detailRequestSnapshotRef.current !== requestSnapshot
+        ) {
+          return;
+        }
+
         setExchangeDataSource([
           ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
             []),
         ]);
         const selectedRowKeys: Key[] = [];
-        node?.ports?.items?.forEach((item) => {
+        processPortItems?.forEach((item) => {
           const ids = item.id.split(':');
-          if (ids.length === 2 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+          if (
+            ids.length === 2 &&
+            ids[0]?.toUpperCase() === requestSnapshot.direction.toUpperCase()
+          ) {
             selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[1]}`);
           }
-          if (ids.length === 3 && ids[0]?.toUpperCase() === direction?.toUpperCase()) {
+          if (
+            ids.length === 3 &&
+            ids[0]?.toUpperCase() === requestSnapshot.direction.toUpperCase()
+          ) {
             selectedRowKeys.push(`${ids[0]?.toUpperCase()}:${ids[2]}`);
           }
         });
@@ -225,7 +269,20 @@ const IoPortSelect: FC<Props> = ({
         // setDataLoading(false);
       },
     );
-  }, [drawerVisible]);
+
+    return () => {
+      if (detailRequestEpochRef.current === requestEpoch) {
+        detailRequestEpochRef.current += 1;
+      }
+      exchangeRequestEpochRef.current += 1;
+    };
+  }, [direction, drawerVisible, processId, processPortItems, processVersion]);
+
+  useEffect(() => {
+    if (drawerVisible) {
+      setDataLoading(true);
+    }
+  }, [drawerVisible, exchangeTableParams.contentLanguage]);
 
   return (
     <>
@@ -276,39 +333,55 @@ const IoPortSelect: FC<Props> = ({
           </Space>
         }
       >
-        <ProTable<ProcessExchangeTable, ListPagination>
+        <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
           actionRef={actionRefSelect}
+          params={exchangeTableParams}
           loading={dataLoading}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
-          request={async (params: { pageSize: number; current: number }) => {
-            return getProcessExchange(
-              genProcessExchangeTableData(exchangeDataSource, lang),
-              direction,
-              params,
-            ).then(
-              (res: {
-                data: ProcessExchangeTable[];
-                page: number;
-                success: boolean;
-                total: number;
-              }) => {
-                return getUnitData('flow', res?.data)
-                  .then((unitRes) => {
-                    return {
-                      ...res,
-                      data: (unitRes ?? []) as ProcessExchangeTable[],
-                      success: true,
-                    };
-                  })
-                  .finally(() => {
-                    setDataLoading(false);
-                  });
-              },
-            );
+          request={async (params) => {
+            const requestEpoch = exchangeRequestEpochRef.current + 1;
+            exchangeRequestEpochRef.current = requestEpoch;
+            const detailSnapshot = detailRequestSnapshotRef.current;
+            const contentLanguage = params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
+            try {
+              const res = await getProcessExchange(
+                genProcessExchangeTableData(exchangeDataSource, contentLanguage),
+                direction,
+                params,
+              );
+              const unitRes = await getUnitData('flow', res?.data);
+
+              if (
+                exchangeRequestEpochRef.current !== requestEpoch ||
+                detailRequestSnapshotRef.current !== detailSnapshot ||
+                currentContentLanguageRef.current !== contentLanguage
+              ) {
+                return {
+                  ...res,
+                  data: [],
+                  success: false,
+                };
+              }
+
+              return {
+                ...res,
+                data: (unitRes ?? []) as ProcessExchangeTable[],
+                success: true,
+              };
+            } finally {
+              if (
+                exchangeRequestEpochRef.current === requestEpoch &&
+                detailRequestSnapshotRef.current === detailSnapshot &&
+                currentContentLanguageRef.current === contentLanguage
+              ) {
+                setDataLoading(false);
+              }
+            }
           }}
           columns={processExchangeColumns}
           tableAlertOptionRender={tableAlertOptionRender}

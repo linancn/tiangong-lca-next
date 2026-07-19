@@ -17,7 +17,15 @@ import {
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { attachStateCodesToRows } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText } from '@/services/general/util';
 import { getRoleByUserId } from '@/services/roles/api';
 import { getTeamById } from '@/services/teams/api';
@@ -71,7 +79,11 @@ const TableList: FC = () => {
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
   const shouldShowUnitGroupTip = dataSource === 'my' || dataSource === 'te';
 
   const actionRef = useRef<ActionType>();
@@ -330,7 +342,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<UnitGroupTable, ListPagination>
+      <ProTable<UnitGroupTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -361,6 +373,7 @@ const TableList: FC = () => {
           </Space>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -385,56 +398,73 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          if (referenceLookup) {
-            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-            if (!referenceLookupUuid) {
-              return attachReviewState(getReferenceLookupEmptyResult(params.current));
-            }
-            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              const currentKeyWord = keyWordRef.current || keyWord;
+              const currentStateCode = stateCodeRef.current;
+              if (referenceLookup) {
+                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (!referenceLookupUuid) {
+                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
+                }
+                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-            const result = await getUnitGroupTableUuidMentionSearch(
-              params,
-              lang,
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            );
-            const noticeKey = [
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            ].join(':');
-            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-              referenceLookupLimitNoticeRef.current = noticeKey;
-              showReferenceLookupLimitMessage(intl);
-            }
-            return attachReviewState(result);
-          }
-          if (currentKeyWord.length > 0) {
-            return attachReviewState(
-              await getUnitGroupTablePgroongaSearch(
-                params,
-                lang,
-                dataSource,
-                currentKeyWord,
-                {},
-                currentStateCode,
-                tid ?? '',
-              ),
-            );
-          }
-          return attachReviewState(
-            await getUnitGroupTableAll(params, sort, lang, dataSource, tid ?? '', currentStateCode),
+                const result = await getUnitGroupTableUuidMentionSearch(
+                  requestParams,
+                  lang,
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                );
+                const noticeKey = [
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                  requestedLocale,
+                ].join(':');
+                if (
+                  isCurrentRequest() &&
+                  result.capped &&
+                  referenceLookupLimitNoticeRef.current !== noticeKey
+                ) {
+                  referenceLookupLimitNoticeRef.current = noticeKey;
+                  showReferenceLookupLimitMessage(intl);
+                }
+                return attachReviewState(result);
+              }
+              if (currentKeyWord.length > 0) {
+                return attachReviewState(
+                  await getUnitGroupTablePgroongaSearch(
+                    requestParams,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    tid ?? '',
+                  ),
+                );
+              }
+              return attachReviewState(
+                await getUnitGroupTableAll(
+                  requestParams,
+                  sort,
+                  lang,
+                  dataSource,
+                  tid ?? '',
+                  currentStateCode,
+                ),
+              );
+            },
           );
         }}
         columns={unitGroupColumns}

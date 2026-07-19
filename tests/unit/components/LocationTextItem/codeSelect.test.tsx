@@ -174,6 +174,58 @@ describe('LocationCodeSelect', () => {
     expect(screen.queryByText('CN (China)')).not.toBeInTheDocument();
   });
 
+  it('clears prior-language options while a replacement locale request is pending', async () => {
+    const pendingGerman: {
+      resolve?: (value: unknown) => void;
+      promise: Promise<unknown>;
+    } = {
+      promise: Promise.resolve(),
+    };
+    pendingGerman.promise = new Promise((resolve) => {
+      pendingGerman.resolve = resolve;
+    });
+
+    const { rerender } = render(<LocationCodeSelect lang='en' data-testid='loc' />);
+    await waitFor(() => {
+      expect(screen.getByText('CN (China)')).toBeInTheDocument();
+    });
+
+    mockGetILCDLocationAll.mockReturnValueOnce(pendingGerman.promise);
+    rerender(<LocationCodeSelect lang='de' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('CN (China)')).not.toBeInTheDocument();
+      expect(screen.getByTestId('loc')).toHaveAttribute('data-loading', 'true');
+    });
+
+    pendingGerman.resolve?.({
+      data: [{ location: [{ '@value': 'DE', '#text': 'Deutschland' }] }],
+      success: true,
+    });
+    await waitFor(() => {
+      expect(screen.getByText('DE (Deutschland)')).toBeInTheDocument();
+      expect(screen.getByTestId('loc')).toHaveAttribute('data-loading', 'false');
+    });
+  });
+
+  it.each([
+    ['an unsuccessful response', () => Promise.resolve({ success: false })],
+    ['a rejected request', () => Promise.reject(new Error('location lookup failed'))],
+  ])('keeps prior-language options cleared after %s', async (_label, nextResponse) => {
+    const { rerender } = render(<LocationCodeSelect lang='en' data-testid='loc' />);
+    await waitFor(() => {
+      expect(screen.getByText('CN (China)')).toBeInTheDocument();
+    });
+
+    mockGetILCDLocationAll.mockImplementationOnce(nextResponse);
+    rerender(<LocationCodeSelect lang='fr' data-testid='loc' />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loc')).toHaveAttribute('data-loading', 'false');
+    });
+    expect(screen.queryByText('CN (China)')).not.toBeInTheDocument();
+  });
+
   it('filters by search text, label, value, and empty option fallbacks', async () => {
     render(<LocationCodeSelect lang='en' data-testid='loc' />);
 

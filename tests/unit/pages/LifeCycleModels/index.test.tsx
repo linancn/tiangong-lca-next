@@ -317,30 +317,37 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     request,
+    params = {},
     columns = [],
     toolBarRender,
     headerTitle,
     rowKey,
   }: any) => {
     const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
     const [rows, setRows] = React.useState<any[]>([]);
-    const [pageInfo, setPageInfoState] = React.useState({ pageSize: 10, current: 1 });
 
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
+    requestRef.current = request;
+    paramsRef.current = params;
 
     const runRequest = React.useCallback(
-      async (sort: Record<string, string> = {}, params = pageInfo) => {
-        const result = await requestRef.current?.(params, sort);
-        setRows(result?.data ?? []);
+      async (sort: Record<string, string> = {}, requestParams = pageInfoRef.current) => {
+        const result = await requestRef.current?.({ ...requestParams, ...paramsRef.current }, sort);
+        if (result?.success !== false) {
+          setRows(result?.data ?? []);
+        }
         return result;
       },
-      [pageInfo],
+      [],
     );
 
-    const reload = jest.fn(async () => runRequest());
-    const requestWith = jest.fn(async (sort: Record<string, string> = {}) => runRequest(sort));
+    const reload = React.useMemo(() => jest.fn(async () => runRequest()), [runRequest]);
+    const requestWith = React.useMemo(
+      () => jest.fn(async (sort: Record<string, string> = {}) => runRequest(sort)),
+      [runRequest],
+    );
+    const paramsKey = JSON.stringify(params);
 
     React.useEffect(() => {
       latestReloadMock = reload;
@@ -348,12 +355,12 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = {
           reload,
           setPageInfo: jest.fn((nextPageInfo: any) => {
-            setPageInfoState((prev: any) => ({ ...prev, ...nextPageInfo }));
+            pageInfoRef.current = { ...pageInfoRef.current, ...nextPageInfo };
           }),
         };
       }
       void reload();
-    }, [actionRef, reload]);
+    }, [actionRef, paramsKey, reload]);
 
     return (
       <section data-testid='pro-table'>

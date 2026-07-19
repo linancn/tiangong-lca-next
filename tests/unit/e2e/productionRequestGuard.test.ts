@@ -33,6 +33,44 @@ const classify = (method: string, pathname: string, postData?: string | null) =>
     EXPECTED_PUBLISHABLE_KEY,
   );
 
+async function withAuthorizedProductionWriteEnvironment(
+  action: () => Promise<void>,
+): Promise<void> {
+  const originalEnvironment = process.env;
+  process.env = {
+    ...originalEnvironment,
+    CI: '',
+    E2E_ALLOW_PRODUCTION_DATA: 'true',
+    E2E_AUTHENTICATED: 'true',
+    E2E_BACKEND_TARGET: 'production',
+    E2E_PRODUCTION_WRITE_CONFIRMATION: 'I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS',
+    GITHUB_ACTIONS: '',
+  };
+  try {
+    await action();
+  } finally {
+    process.env = originalEnvironment;
+  }
+}
+
+async function withoutProductionWriteAuthorization(action: () => Promise<void>): Promise<void> {
+  const originalEnvironment = process.env;
+  process.env = {
+    ...originalEnvironment,
+    CI: '',
+    E2E_ALLOW_PRODUCTION_DATA: '',
+    E2E_AUTHENTICATED: '',
+    E2E_BACKEND_TARGET: 'production',
+    E2E_PRODUCTION_WRITE_CONFIRMATION: '',
+    GITHUB_ACTIONS: '',
+  };
+  try {
+    await action();
+  } finally {
+    process.env = originalEnvironment;
+  }
+}
+
 const PROCESS_FIELDS = [
   'baseName',
   'treatmentStandardsRoutes',
@@ -541,12 +579,44 @@ describe('production browser request guard', () => {
         headers: () => ({ apikey: 'wrong-key' }),
         method: () => 'POST',
         postData: () => makeExactSaveDraftPostData(ledger),
-        url: () => backend('/functions/v1/app_dataset_save_draft'),
+        url: () => backend('/functions/v1/app_dataset_save_draft?forceFunctionRegion=us-east-1'),
       }),
     });
 
     expect(abort).toHaveBeenCalledWith('blockedbyclient');
     expect(guard.allowedLedgerControlledSaveDraftRequests).toBe(0);
+  });
+
+  it.each([
+    ['missing', ''],
+    ['wrong', '?forceFunctionRegion=eu-central-1'],
+    ['additional', '?forceFunctionRegion=us-east-1&unreviewed=true'],
+    ['repeated', '?forceFunctionRegion=us-east-1&forceFunctionRegion=us-east-1'],
+  ])('keeps a ledger-matching save-draft blocked with a %s query', async (_name, query) => {
+    const ledger = makeLedger();
+    const { guard, routeHandler } = await makeInstalledGuard({
+      ledgerControlledProcessSaveDraft: ledger,
+    });
+    const abort = jest.fn(async () => undefined);
+    const fallback = jest.fn(async () => undefined);
+
+    await withAuthorizedProductionWriteEnvironment(async () => {
+      await routeHandler()({
+        abort,
+        fallback,
+        request: () => ({
+          headers: () => ({ apikey: EXPECTED_PUBLISHABLE_KEY }),
+          method: () => 'POST',
+          postData: () => makeExactSaveDraftPostData(ledger),
+          url: () => backend(`/functions/v1/app_dataset_save_draft${query}`),
+        }),
+      });
+    });
+
+    expect(abort).toHaveBeenCalledWith('blockedbyclient');
+    expect(fallback).not.toHaveBeenCalled();
+    expect(guard.allowedLedgerControlledSaveDraftRequests).toBe(0);
+    expect(guard.blockedRequests).toEqual(['POST /functions/v1/app_dataset_save_draft']);
   });
 
   it('allows one exact opted-in save-draft and blocks a repeated request', async () => {
@@ -560,13 +630,15 @@ describe('production browser request guard', () => {
       headers: () => ({ apikey: EXPECTED_PUBLISHABLE_KEY }),
       method: () => 'POST',
       postData: () => makeExactSaveDraftPostData(ledger),
-      url: () => backend('/functions/v1/app_dataset_save_draft'),
+      url: () => backend('/functions/v1/app_dataset_save_draft?forceFunctionRegion=us-east-1'),
     });
 
-    await routeHandler()({
-      abort: jest.fn(async () => undefined),
-      fallback: firstFallback,
-      request,
+    await withAuthorizedProductionWriteEnvironment(async () => {
+      await routeHandler()({
+        abort: jest.fn(async () => undefined),
+        fallback: firstFallback,
+        request,
+      });
     });
     expect(firstFallback).toHaveBeenCalledTimes(1);
     expect(guard.allowedLedgerControlledSaveDraftRequests).toBe(1);
@@ -580,6 +652,33 @@ describe('production browser request guard', () => {
     expect(repeatAbort).toHaveBeenCalledWith('blockedbyclient');
     expect(guard.allowedLedgerControlledSaveDraftRequests).toBe(1);
     expect(guard.blockedRequests).toEqual(['POST /functions/v1/app_dataset_save_draft']);
+  });
+
+  it('fails closed at the network boundary when write authorization is no longer present', async () => {
+    const ledger = makeLedger();
+    const { guard, routeHandler } = await makeInstalledGuard({
+      ledgerControlledProcessSaveDraft: ledger,
+    });
+    const fallback = jest.fn(async () => undefined);
+
+    await withoutProductionWriteAuthorization(async () => {
+      await expect(
+        routeHandler()({
+          abort: jest.fn(async () => undefined),
+          fallback,
+          request: () => ({
+            headers: () => ({ apikey: EXPECTED_PUBLISHABLE_KEY }),
+            method: () => 'POST',
+            postData: () => makeExactSaveDraftPostData(ledger),
+            url: () =>
+              backend('/functions/v1/app_dataset_save_draft?forceFunctionRegion=us-east-1'),
+          }),
+        }),
+      ).rejects.toThrow(/Production-data E2E/u);
+    });
+
+    expect(fallback).not.toHaveBeenCalled();
+    expect(guard.allowedLedgerControlledSaveDraftRequests).toBe(0);
   });
 
   it('requires the opted-in save-draft request to occur exactly once', async () => {

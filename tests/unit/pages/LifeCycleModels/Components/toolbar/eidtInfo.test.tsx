@@ -1628,8 +1628,20 @@ describe('ToolbarEditInfo', () => {
   });
 
   it.each([
-    ['checkData', 'Data validation issues'],
-    ['review', 'Review submission blocked'],
+    [
+      'checkData',
+      {
+        id: 'pages.validationIssues.modal.checkDataTitle',
+        defaultMessage: 'Data validation issues',
+      },
+    ],
+    [
+      'review',
+      {
+        id: 'pages.validationIssues.modal.reviewTitle',
+        defaultMessage: 'Review submission blocked',
+      },
+    ],
   ])('shows the validation issue modal for %s checks', async (from, expectedTitle) => {
     const ref = React.createRef<any>();
     const validationIssues = [{ issueCode: 'MISSING_REQUIRED_FIELD', datasetType: 'model' }];

@@ -324,6 +324,7 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     request,
+    params = {},
     columns = [],
     toolBarRender,
     headerTitle,
@@ -331,26 +332,39 @@ jest.mock('@ant-design/pro-components', () => {
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
 
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
+    requestRef.current = request;
+    paramsRef.current = params;
 
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
+    const reload = React.useMemo(
+      () =>
+        jest.fn(async () => {
+          const result = await requestRef.current?.(
+            { ...pageInfoRef.current, ...paramsRef.current },
+            {},
+          );
+          if (result?.success !== false) {
+            setRows(result?.data ?? []);
+          }
+          return result;
+        }),
+      [],
+    );
+    const paramsKey = JSON.stringify(params);
 
     React.useEffect(() => {
       if (actionRef) {
         actionRef.current = {
           reload,
-          setPageInfo: jest.fn(),
+          setPageInfo: jest.fn((nextPageInfo: any) => {
+            pageInfoRef.current = { ...pageInfoRef.current, ...nextPageInfo };
+          }),
         };
       }
       void reload();
-    }, [actionRef, reload]);
+    }, [actionRef, paramsKey, reload]);
 
     return (
       <section data-testid='pro-table'>

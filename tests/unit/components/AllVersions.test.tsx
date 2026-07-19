@@ -15,9 +15,12 @@ import AllVersionsList, {
   getCreateVersionPopupContainer,
 } from '@/components/AllVersions';
 import { getAllVersions } from '@/services/general/api';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { getDataSource } from '@/services/general/util';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
+
+let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({
@@ -113,6 +116,7 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     columns = [],
+    params,
     request,
     rowKey = 'id',
     rowSelection,
@@ -120,11 +124,19 @@ jest.mock('@ant-design/pro-components', () => {
   }: any) => {
     const [rows, setRows] = React.useState([] as any[]);
     const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
+    const hasObservedInitialParamsRef = React.useRef(false);
     latestRequestRef.current = request;
+    latestParamsRef.current = params;
+    const serializedParams = JSON.stringify(params ?? {});
 
     const loadRows = React.useCallback(async () => {
-      const result = await latestRequestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
+      const requestParams = { pageSize: 10, current: 1, ...latestParamsRef.current };
+      mockLatestProTableRequestParams = requestParams;
+      const result = await latestRequestRef.current?.(requestParams, {});
+      if (result?.success !== false) {
+        setRows(result?.data ?? []);
+      }
       return result;
     }, []);
 
@@ -137,6 +149,14 @@ jest.mock('@ant-design/pro-components', () => {
         actionRef.current = api;
       }
     }, [actionRef, loadRows]);
+
+    React.useEffect(() => {
+      if (!hasObservedInitialParamsRef.current) {
+        hasObservedInitialParamsRef.current = true;
+        return;
+      }
+      void loadRows();
+    }, [loadRows, serializedParams]);
 
     return (
       <div data-testid='pro-table'>
@@ -261,6 +281,7 @@ describe('AllVersionsList Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockLatestProTableRequestParams = null;
     mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
@@ -584,6 +605,114 @@ describe('AllVersionsList Component', () => {
         'test-datasource',
         undefined,
       );
+    });
+  });
+
+  it('refetches open rows from params for every supported content language without clearing selection', async () => {
+    const onSelectVersion = jest.fn();
+    const { rerender } = render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} onSelectVersion={onSelectVersion} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(screen.getByLabelText('select-version-1.0.0')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('select-version-1.0.0'));
+    expect(screen.getByLabelText('select-version-1.0.0')).toBeChecked();
+
+    for (const contentLanguage of SUPPORTED_CONTENT_LANGUAGES.filter(
+      (candidate) => candidate !== defaultProps.lang,
+    )) {
+      const previousCallCount = mockGetAllVersions.mock.calls.length;
+      rerender(
+        <ConfigProvider>
+          <AllVersionsList
+            {...defaultProps}
+            lang={contentLanguage}
+            onSelectVersion={onSelectVersion}
+          />
+        </ConfigProvider>,
+      );
+
+      await waitFor(() => {
+        expect(mockGetAllVersions.mock.calls.length).toBeGreaterThan(previousCallCount);
+        expect(mockGetAllVersions).toHaveBeenLastCalledWith(
+          'id',
+          'processes',
+          'test-id',
+          expect.objectContaining({
+            current: 1,
+            pageSize: 10,
+          }),
+          expect.any(Object),
+          contentLanguage,
+          'test-datasource',
+          undefined,
+        );
+      });
+      expect(mockLatestProTableRequestParams).toEqual(
+        expect.objectContaining({ contentLanguage, current: 1, pageSize: 10 }),
+      );
+      expect(screen.getByLabelText('select-version-1.0.0')).toBeChecked();
+    }
+  });
+
+  it('keeps the newest locale rows when an older locale request resolves last', async () => {
+    let resolveEnglish!: (value: {
+      data: Array<{ id: string; version: string; name: string }>;
+      success: boolean;
+      total: number;
+    }) => void;
+    let resolveFrench!: typeof resolveEnglish;
+
+    mockGetAllVersions.mockImplementation((...args: unknown[]) => {
+      const contentLanguage = args[5];
+      return new Promise((resolve) => {
+        if (contentLanguage === 'fr') {
+          resolveFrench = resolve;
+          return;
+        }
+        resolveEnglish = resolve;
+      });
+    });
+
+    const { rerender } = render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(resolveEnglish).toBeDefined());
+
+    rerender(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} lang='fr' />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(resolveFrench).toBeDefined());
+
+    await act(async () => {
+      resolveFrench({
+        data: [{ id: 'fr-current', version: '2.0.0', name: 'French current row' }],
+        success: true,
+        total: 1,
+      });
+    });
+    expect(await screen.findByText('French current row')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveEnglish({
+        data: [{ id: 'en-stale', version: '1.0.0', name: 'English stale row' }],
+        success: true,
+        total: 1,
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('French current row')).toBeInTheDocument();
+      expect(screen.queryByText('English stale row')).not.toBeInTheDocument();
     });
   });
 

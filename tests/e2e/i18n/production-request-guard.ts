@@ -1,6 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
 import {
+  assertProductionDataWriteAuthorization,
   isExactLedgerControlledProcessSaveDraftBody,
   type ProductionDataLedger,
 } from './production-data-safety';
@@ -12,6 +13,7 @@ const AUDITED_PREFLIGHT_PATH = /^\/(?:auth|functions|rest|storage)\/v1(?:\/|$)/u
 const PUBLIC_AUTH_READ_PATHS = new Set(['/auth/v1/.well-known/jwks.json']);
 const AUTHENTICATED_AUTH_READ_PATHS = new Set(['/auth/v1/user']);
 const AUTH_TOKEN_GRANT_TYPES = new Set(['password', 'refresh_token']);
+const LEDGER_CONTROLLED_SAVE_DRAFT_SEARCH_ENTRIES = [['forceFunctionRegion', 'us-east-1']] as const;
 const STATIC_STORAGE_READ_PATH =
   /^\/storage\/v1\/(?:object|render\/image)\/(?:public|sign)\/[^/]+\/.+/u;
 const AUTHENTICATED_STORAGE_READ_PATH =
@@ -387,12 +389,17 @@ export async function installReadOnlyProductionGuard(
       isExactSaveDraftTarget &&
       options.ledgerControlledProcessSaveDraft &&
       guard.allowedLedgerControlledSaveDraftRequests === 0 &&
+      hasExactSearchEntries(requestTarget, LEDGER_CONTROLLED_SAVE_DRAFT_SEARCH_ENTRIES) &&
       hasExactPublishableKey(request.headers(), options.expectedPublishableKey) &&
       isExactLedgerControlledProcessSaveDraftBody(
         request.postData(),
         options.ledgerControlledProcessSaveDraft,
       )
     ) {
+      // This is the browser guard's sole production mutation escape hatch. Revalidate the
+      // complete local operator envelope at the final network boundary, immediately before the
+      // request is released; fixture setup and UI-click checks are intentionally not substitutes.
+      assertProductionDataWriteAuthorization(process.env);
       guard.allowedLedgerControlledSaveDraftRequests += 1;
       await route.fallback();
       return;

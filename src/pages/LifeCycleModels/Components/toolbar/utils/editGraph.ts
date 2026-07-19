@@ -110,6 +110,33 @@ export const buildEditorNodeTools = ({
   outputFlowTool,
 ];
 
+/**
+ * Rebuilds only locale-dependent node visuals from the multilingual payload
+ * already stored on the graph node. The returned patch deliberately excludes
+ * identity, position, size, selection and edge/topology data so a locale
+ * switch cannot overwrite an in-progress editor session.
+ */
+export const buildLocalizedGraphNodeVisualUpdate = ({
+  node,
+  ...toolContext
+}: ToolbarToolContext & { node: LifeCycleModelGraphNode }) => {
+  const nodeWidth = getNodeWidth(node, toolContext.nodeTemplateWidth);
+  return {
+    ports: {
+      ...node.ports,
+      items: node.ports?.items?.map((item) =>
+        buildDisplayPortItem(item, nodeWidth, toolContext.lang, toolContext.token),
+      ),
+    },
+    tools: buildEditorNodeTools({
+      ...toolContext,
+      isReference: node.data?.quantitativeReference === '1',
+      nodeLabel: node.data?.label,
+      nodeWidth,
+    }),
+  };
+};
+
 const buildProcessNodeTools = ({
   isReference,
   nodeLabel,
