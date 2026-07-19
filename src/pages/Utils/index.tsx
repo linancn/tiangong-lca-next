@@ -1,6 +1,8 @@
 import { ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { FormattedMessage } from 'umi';
 
+import { getLanguageDisplayName } from '@/services/general/contentLanguageRegistry';
+
 export function getDataTitle(dataSource: string) {
   if (dataSource === 'my') {
     return <FormattedMessage id='menu.mydata' defaultMessage='My Data' />;
@@ -71,7 +73,7 @@ export const validateRefObjectId = (
 };
 
 export const getLocalValueProps = (value: string) => ({
-  value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
+  value: getLanguageDisplayName(value),
 });
 
 export const getClassificationValues = (value: unknown): string[] | undefined => {

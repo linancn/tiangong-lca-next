@@ -38,7 +38,16 @@ import {
   getServiceQueryLanguage,
   type SupportedServiceQueryLanguage,
 } from '@/services/general/contentLanguageRegistry';
-import { ListPagination } from '@/services/general/data';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
@@ -88,11 +97,16 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
+  const required =
+    resolveRouteViewState('dataset-required', searchParams.get('required')) === 'required';
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
   const keyWordRef = useRef<string>('');
   const stateCodeRef = useRef<string | number>('all');
   const referenceLookupLimitNoticeRef = useRef<string>('');
@@ -489,7 +503,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<FlowTable, ListPagination>
+      <ProTable<FlowTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -499,6 +513,7 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -534,118 +549,130 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
           filter,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
-          const classificationFilter = parseClassificationFilter(filter?.classification);
-          const searchFilters = {
-            flowType: flowTypeFilter,
-            ...(classificationFilter.length > 0 ? { classification: classificationFilter } : {}),
-          };
-          if (referenceLookup) {
-            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-            if (!referenceLookupUuid) {
-              return attachReviewState(getReferenceLookupEmptyResult(params.current));
-            }
-            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
-
-            const result = await getFlowTableUuidMentionSearch(
-              params,
-              lang,
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            );
-            const noticeKey = [
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              JSON.stringify(searchFilters),
-              referenceLookupTeamId,
-            ].join(':');
-            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-              referenceLookupLimitNoticeRef.current = noticeKey;
-              showReferenceLookupLimitMessage(intl);
-            }
-            return attachReviewState(result);
-          }
-          if (currentKeyWord.length > 0) {
-            let orderBy:
-              | {
-                  key: 'common:class' | 'baseName';
-                  lang?: SupportedServiceQueryLanguage;
-                  order: 'asc' | 'desc';
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              const currentKeyWord = keyWordRef.current || keyWord;
+              const currentStateCode = stateCodeRef.current;
+              const flowTypeFilter = filter?.flowType ? filter.flowType.join(',') : '';
+              const classificationFilter = parseClassificationFilter(filter?.classification);
+              const searchFilters = {
+                flowType: flowTypeFilter,
+                ...(classificationFilter.length > 0
+                  ? { classification: classificationFilter }
+                  : {}),
+              };
+              if (referenceLookup) {
+                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (!referenceLookupUuid) {
+                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
                 }
-              | undefined;
-            if (sort && Object.keys(sort).length > 0) {
-              const field = Object.keys(sort)[0];
-              const order = sort[field];
-              if (field === 'name') {
-                orderBy = {
-                  key: 'baseName',
-                  lang: getServiceQueryLanguage(lang),
-                  order: order === 'ascend' ? 'asc' : 'desc',
-                };
-              }
-            }
-            if (openAI) {
-              return attachReviewState(
-                await flow_hybrid_search(
-                  params,
+                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+
+                const result = await getFlowTableUuidMentionSearch(
+                  requestParams,
                   lang,
                   dataSource,
-                  currentKeyWord,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                );
+                const noticeKey = [
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  JSON.stringify(searchFilters),
+                  referenceLookupTeamId,
+                  requestedLocale,
+                ].join(':');
+                if (
+                  isCurrentRequest() &&
+                  result.capped &&
+                  referenceLookupLimitNoticeRef.current !== noticeKey
+                ) {
+                  referenceLookupLimitNoticeRef.current = noticeKey;
+                  showReferenceLookupLimitMessage(intl);
+                }
+                return attachReviewState(result);
+              }
+              if (currentKeyWord.length > 0) {
+                let orderBy:
+                  | {
+                      key: 'common:class' | 'baseName';
+                      lang?: SupportedServiceQueryLanguage;
+                      order: 'asc' | 'desc';
+                    }
+                  | undefined;
+                if (sort && Object.keys(sort).length > 0) {
+                  const field = Object.keys(sort)[0];
+                  const order = sort[field];
+                  if (field === 'name') {
+                    orderBy = {
+                      key: 'baseName',
+                      lang: getServiceQueryLanguage(lang),
+                      order: order === 'ascend' ? 'asc' : 'desc',
+                    };
+                  }
+                }
+                if (openAI) {
+                  return attachReviewState(
+                    await flow_hybrid_search(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      searchFilters,
+                      currentStateCode,
+                    ),
+                  );
+                }
+                return attachReviewState(
+                  await getFlowTablePgroongaSearch(
+                    requestParams,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    searchFilters,
+                    currentStateCode,
+                    orderBy,
+                    tid ?? '',
+                  ),
+                );
+              }
+
+              const sortFields: Record<string, string> = {
+                name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
+              };
+
+              const convertedSort: Record<string, SortOrder> = {};
+              if (sort && Object.keys(sort).length > 0) {
+                const field = Object.keys(sort)[0];
+                if (sortFields[field]) {
+                  convertedSort[sortFields[field]] = sort[field];
+                } else {
+                  convertedSort[field] = sort[field];
+                }
+              }
+
+              return attachReviewState(
+                await getFlowTableAll(
+                  requestParams,
+                  convertedSort,
+                  lang,
+                  dataSource,
+                  tid ?? '',
                   searchFilters,
                   currentStateCode,
                 ),
               );
-            }
-            return attachReviewState(
-              await getFlowTablePgroongaSearch(
-                params,
-                lang,
-                dataSource,
-                currentKeyWord,
-                searchFilters,
-                currentStateCode,
-                orderBy,
-                tid ?? '',
-              ),
-            );
-          }
-
-          const sortFields: Record<string, string> = {
-            name: 'json->flowDataSet->flowInformation->dataSetInformation->name',
-          };
-
-          const convertedSort: Record<string, SortOrder> = {};
-          if (sort && Object.keys(sort).length > 0) {
-            const field = Object.keys(sort)[0];
-            if (sortFields[field]) {
-              convertedSort[sortFields[field]] = sort[field];
-            } else {
-              convertedSort[field] = sort[field];
-            }
-          }
-
-          return attachReviewState(
-            await getFlowTableAll(
-              params,
-              convertedSort,
-              lang,
-              dataSource,
-              tid ?? '',
-              searchFilters,
-              currentStateCode,
-            ),
+            },
           );
         }}
         columns={flowsColumns}

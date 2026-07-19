@@ -27,7 +27,25 @@ export type IlcdCanonicalDataType = (typeof ILCD_CANONICAL_DATA_TYPES)[number];
 export type ReferenceRuntimeAsset = {
   readonly language: SupportedContentLanguage;
   readonly fileName: string;
+  readonly jsonDigest: {
+    readonly algorithm: 'sha256';
+    readonly value: string;
+  };
+  readonly gzipDigest: {
+    readonly algorithm: 'sha256';
+    readonly value: string;
+  };
+  readonly byteLength: number;
   readonly dataTypeNames?: Readonly<Partial<Record<IlcdCanonicalDataType, string>>>;
+};
+
+export type ReferenceRuntimeAssetCacheIdentity = {
+  readonly cacheRevision: string;
+  readonly fileName: string;
+  readonly gzipSha256: string;
+  readonly jsonSha256: string;
+  readonly resourceId: ReferenceResourceId;
+  readonly scope: ReferenceResourceScope;
 };
 
 export type ReferenceLocaleAvailability =
@@ -114,4 +132,30 @@ export function getReferenceResourceCacheVersion(scope: ReferenceResourceScope):
     .map(({ cacheRevision, resourceId }) => `${resourceId}@${cacheRevision}`)
     .sort();
   return `${REFERENCE_RESOURCE_MANIFEST_VERSION}:${revisions.join(',')}`;
+}
+
+/**
+ * Resolves the immutable manifest identity for a browser-cache filename.
+ * Managed reference files must carry this identity in IndexedDB; entries from
+ * older manifests (or entries without integrity metadata) are never consumed.
+ */
+export function getReferenceRuntimeAssetCacheIdentity(
+  fileName: string,
+): ReferenceRuntimeAssetCacheIdentity | undefined {
+  for (const resource of REFERENCE_RESOURCE_MANIFEST) {
+    const asset = Object.values(resource.runtimeAssets).find(
+      (candidate) => candidate?.fileName === fileName,
+    );
+    if (asset) {
+      return {
+        cacheRevision: resource.cacheRevision,
+        fileName,
+        gzipSha256: asset.gzipDigest.value,
+        jsonSha256: asset.jsonDigest.value,
+        resourceId: resource.resourceId,
+        scope: resource.scope,
+      };
+    }
+  }
+  return undefined;
 }

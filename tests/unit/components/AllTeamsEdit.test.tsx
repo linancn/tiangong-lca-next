@@ -1,3 +1,4 @@
+import { REQUIRED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -242,7 +243,7 @@ jest.mock('@/services/teams/api', () => ({
   getTeamMessageApi: jest.fn(),
 }));
 
-import TeamEdit from '@/components/AllTeams/edit';
+import TeamEdit, { hasRequiredTeamText } from '@/components/AllTeams/edit';
 import { isImage, removeLogoApi, uploadLogoApi } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import { message } from 'antd';
@@ -293,6 +294,10 @@ describe('TeamEdit component', () => {
     mockEditTeamMessage.mockResolvedValue({ data: { id: 'team-1' }, error: null });
     mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded/path.png' }, error: null });
     mockIsImage.mockReturnValue(true);
+  });
+
+  it('does not treat an unlabeled team text entry as a required locale', () => {
+    expect(hasRequiredTeamText([{ '#text': 'Unlabeled team name' }])).toBe(false);
   });
 
   it('does not open from the icon trigger when disabled', async () => {
@@ -353,14 +358,12 @@ describe('TeamEdit component', () => {
 
     await waitFor(() => {
       const values = JSON.parse(screen.getByTestId('form-values-json').textContent || '{}');
-      expect(values.title).toEqual([
-        { '#text': '', '@xml:lang': 'zh' },
-        { '#text': '', '@xml:lang': 'en' },
-      ]);
-      expect(values.description).toEqual([
-        { '#text': '', '@xml:lang': 'zh' },
-        { '#text': '', '@xml:lang': 'en' },
-      ]);
+      const expectedEmptyValues = REQUIRED_CONTENT_LANGUAGES.map((languageCode) => ({
+        '#text': '',
+        '@xml:lang': languageCode,
+      }));
+      expect(values.title).toEqual(expectedEmptyValues);
+      expect(values.description).toEqual(expectedEmptyValues);
     });
   });
 
@@ -646,7 +649,7 @@ describe('TeamEdit component', () => {
     consoleError.mockRestore();
   });
 
-  it('falls back to an empty object when the form ref returns undefined values', async () => {
+  it('rejects submission when the form ref returns no required language values', async () => {
     const user = userEvent.setup();
     const actionRef = { current: { reload: jest.fn() } };
     mockForceUndefinedFormValues = true;
@@ -660,17 +663,72 @@ describe('TeamEdit component', () => {
     await user.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
-      expect(mockEditTeamMessage).toHaveBeenCalled();
+      expect(getMessageMock().error).toHaveBeenCalledWith('Please input team name!');
     });
-    expect(mockEditTeamMessage).toHaveBeenLastCalledWith(
-      'team-1',
-      {
-        lightLogo: 'existing/light.png',
-        darkLogo: 'existing/dark.png',
-      },
-      undefined,
-      true,
-    );
+    expect(mockEditTeamMessage).not.toHaveBeenCalled();
+  });
+
+  it('rejects submission when English title text is blank even if another language is present', async () => {
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'team-1',
+          is_public: true,
+          json: {
+            title: [
+              { '#text': '   ', '@xml:lang': 'en' },
+              { '#text': '团队中文', '@xml:lang': 'zh' },
+            ],
+            description: [{ '#text': 'English description', '@xml:lang': 'en' }],
+            lightLogo: 'existing/light.png',
+            darkLogo: 'existing/dark.png',
+          },
+        },
+      ],
+    });
+
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    render(<TeamEdit id='team-1' buttonType='icon' actionRef={actionRef as any} />);
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => {
+      expect(getMessageMock().error).toHaveBeenCalledWith('Please input team name!');
+    });
+    expect(mockEditTeamMessage).not.toHaveBeenCalled();
+  });
+
+  it('rejects submission when the required English description is missing', async () => {
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'team-1',
+          is_public: true,
+          json: {
+            title: [{ '#text': 'English team name', '@xml:lang': 'en' }],
+            description: [{ '#text': '仅中文描述', '@xml:lang': 'zh' }],
+            lightLogo: 'existing/light.png',
+            darkLogo: 'existing/dark.png',
+          },
+        },
+      ],
+    });
+
+    const user = userEvent.setup();
+    const actionRef = { current: { reload: jest.fn() } };
+    render(<TeamEdit id='team-1' buttonType='icon' actionRef={actionRef as any} />);
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await screen.findByRole('dialog');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => {
+      expect(getMessageMock().error).toHaveBeenCalledWith('Please input team description!');
+    });
+    expect(mockEditTeamMessage).not.toHaveBeenCalled();
   });
 
   it('aborts saving when the dark logo upload fails after the light logo succeeds', async () => {

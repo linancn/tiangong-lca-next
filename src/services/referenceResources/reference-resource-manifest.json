@@ -24,6 +24,31 @@
         "verificationStatus": "verified"
       },
       "identityStrategy": "tree-index-path-with-id-assertion",
+      "officialAvailability": {
+        "localeDecisions": {
+          "de": {
+            "locale": "de",
+            "note": "The frozen CPC 3.0 release provides no complete same-edition official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "fr": {
+            "locale": "fr",
+            "note": "The frozen CPC 3.0 release provides no complete same-edition official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "zh": {
+            "locale": "zh",
+            "note": "The frozen CPC 3.0 release provides no complete same-edition official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          }
+        },
+        "officialSecondaryMappingIds": [],
+        "release": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+        "retrievedAt": "2026-07-18",
+        "schemaVersion": 1,
+        "sourceComponentScopes": ["CPC_Ver_3.0_Structure_30Jun2025.csv"],
+        "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv"
+      },
       "overlays": {
         "de": {
           "coverage": {
@@ -299,11 +324,40 @@
         },
         "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv",
         "usageTerms": {
-          "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-          "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-          "ownerIssue": "#634",
-          "productionStatus": "blocked",
-          "status": "rights-clearance-required",
+          "blockerReason": null,
+          "clearanceRequirements": {
+            "conditions": [],
+            "profile": "classification-redistribution-translation",
+            "sourceComponentScopes": ["CPC_Ver_3.0_Structure_30Jun2025.csv"],
+            "uses": [
+              "public-production-deployment",
+              "redistribution",
+              "translation-and-derivative-works"
+            ]
+          },
+          "evidence": {
+            "date": "2026-07-19",
+            "edition": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+            "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+            "resourceId": "cpc",
+            "schemaVersion": 1,
+            "scope": {
+              "conditions": [],
+              "profile": "classification-redistribution-translation",
+              "sourceComponentScopes": ["CPC_Ver_3.0_Structure_30Jun2025.csv"],
+              "uses": [
+                "public-production-deployment",
+                "redistribution",
+                "translation-and-derivative-works"
+              ]
+            },
+            "type": "product-owner-attestation",
+            "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+          },
+          "note": "The product owner attested existing authorization for redistribution, translation and derivative works, and public production deployment of the exact digest-bound CPC 3.0 source. Publisher terms remain linked for context; no grantor, license number, legal document, or file ownership is inferred.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
+          "status": "production-cleared",
           "url": "https://shop.un.org/rights-permissions"
         },
         "verificationStatus": "verified"
@@ -318,6 +372,31 @@
         "verificationStatus": "verified"
       },
       "identityStrategy": "tree-index-path-with-id-assertion",
+      "officialAvailability": {
+        "localeDecisions": {
+          "de": {
+            "locale": "de",
+            "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "fr": {
+            "locale": "fr",
+            "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "zh": {
+            "locale": "zh",
+            "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          }
+        },
+        "officialSecondaryMappingIds": [],
+        "release": "UNSD International Standard Industrial Classification Revision 5",
+        "retrievedAt": "2026-07-18",
+        "schemaVersion": 1,
+        "sourceComponentScopes": ["ISIC_Rev_5_english_structure.csv"],
+        "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv"
+      },
       "overlays": {
         "de": {
           "coverage": {
@@ -593,11 +672,40 @@
         },
         "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv",
         "usageTerms": {
-          "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-          "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-          "ownerIssue": "#634",
-          "productionStatus": "blocked",
-          "status": "rights-clearance-required",
+          "blockerReason": null,
+          "clearanceRequirements": {
+            "conditions": [],
+            "profile": "classification-redistribution-translation",
+            "sourceComponentScopes": ["ISIC_Rev_5_english_structure.csv"],
+            "uses": [
+              "public-production-deployment",
+              "redistribution",
+              "translation-and-derivative-works"
+            ]
+          },
+          "evidence": {
+            "date": "2026-07-19",
+            "edition": "UNSD International Standard Industrial Classification Revision 5",
+            "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+            "resourceId": "isic",
+            "schemaVersion": 1,
+            "scope": {
+              "conditions": [],
+              "profile": "classification-redistribution-translation",
+              "sourceComponentScopes": ["ISIC_Rev_5_english_structure.csv"],
+              "uses": [
+                "public-production-deployment",
+                "redistribution",
+                "translation-and-derivative-works"
+              ]
+            },
+            "type": "product-owner-attestation",
+            "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+          },
+          "note": "The product owner attested existing authorization for redistribution, translation and derivative works, and public production deployment of the exact digest-bound ISIC Rev. 5 source. Publisher terms remain linked for context; no grantor, license number, legal document, or file ownership is inferred.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
+          "status": "production-cleared",
           "url": "https://shop.un.org/rights-permissions"
         },
         "verificationStatus": "verified"
@@ -612,6 +720,31 @@
         "verificationStatus": "verified"
       },
       "identityStrategy": "data-type-index-path-occurrence-with-id-assertion",
+      "officialAvailability": {
+        "localeDecisions": {
+          "de": {
+            "locale": "de",
+            "note": "The frozen EF 3.1 classification release contains no complete official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "fr": {
+            "locale": "fr",
+            "note": "The frozen EF 3.1 classification release contains no complete official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "zh": {
+            "locale": "zh",
+            "note": "The frozen EF 3.1 classification release contains no complete official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          }
+        },
+        "officialSecondaryMappingIds": [],
+        "release": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+        "retrievedAt": "2026-07-18",
+        "schemaVersion": 1,
+        "sourceComponentScopes": ["stylesheets/ILCDClassification_Reference.xml"],
+        "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+      },
       "overlays": {
         "de": {
           "coverage": {
@@ -885,11 +1018,40 @@
         },
         "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
         "usageTerms": {
-          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
-          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
-          "ownerIssue": "#634",
-          "productionStatus": "blocked",
-          "status": "file-specific-owner-confirmation-required",
+          "blockerReason": null,
+          "clearanceRequirements": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": ["stylesheets/ILCDClassification_Reference.xml"],
+            "uses": ["file-level-reuse", "public-production-deployment"]
+          },
+          "evidence": {
+            "date": "2026-07-19",
+            "edition": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+            "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+            "resourceId": "ilcd-classification",
+            "schemaVersion": 1,
+            "scope": {
+              "conditions": [
+                "attribution-required",
+                "modification-notice-required",
+                "project-extensions-separately-identified"
+              ],
+              "profile": "ef-reference-file-reuse",
+              "sourceComponentScopes": ["stylesheets/ILCDClassification_Reference.xml"],
+              "uses": ["file-level-reuse", "public-production-deployment"]
+            },
+            "type": "product-owner-attestation",
+            "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+          },
+          "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 classification file. Source attribution, a modification notice, and separate identification of project extensions remain required; no grantor, license number, legal document, or file ownership is inferred.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
+          "status": "production-cleared",
           "url": "https://commission.europa.eu/legal-notice_en"
         },
         "verificationStatus": "verified"
@@ -904,6 +1066,36 @@
         "verificationStatus": "verified"
       },
       "identityStrategy": "tree-index-path-with-id-assertion",
+      "officialAvailability": {
+        "localeDecisions": {
+          "de": {
+            "locale": "de",
+            "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in German; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "en": {
+            "locale": "en",
+            "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in English; the runtime base therefore requires project provenance review for its extension.",
+            "status": "official-unavailable"
+          },
+          "fr": {
+            "locale": "fr",
+            "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in French; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          },
+          "zh": {
+            "locale": "zh",
+            "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in Chinese; the runtime locale therefore requires the project-reviewed overlay.",
+            "status": "official-unavailable"
+          }
+        },
+        "officialSecondaryMappingIds": [],
+        "release": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
+        "retrievedAt": "2026-07-18",
+        "schemaVersion": 1,
+        "sourceComponentScopes": ["stylesheets/ILCDFlowCategorization_Reference.xml"],
+        "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+      },
       "overlays": {
         "de": {
           "coverage": {
@@ -1173,11 +1365,40 @@
         },
         "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
         "usageTerms": {
-          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
-          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
-          "ownerIssue": "#634",
-          "productionStatus": "blocked",
-          "status": "file-specific-owner-confirmation-required",
+          "blockerReason": null,
+          "clearanceRequirements": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": ["stylesheets/ILCDFlowCategorization_Reference.xml"],
+            "uses": ["file-level-reuse", "public-production-deployment"]
+          },
+          "evidence": {
+            "date": "2026-07-19",
+            "edition": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
+            "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+            "resourceId": "ilcd-flow-categorization",
+            "schemaVersion": 1,
+            "scope": {
+              "conditions": [
+                "attribution-required",
+                "modification-notice-required",
+                "project-extensions-separately-identified"
+              ],
+              "profile": "ef-reference-file-reuse",
+              "sourceComponentScopes": ["stylesheets/ILCDFlowCategorization_Reference.xml"],
+              "uses": ["file-level-reuse", "public-production-deployment"]
+            },
+            "type": "product-owner-attestation",
+            "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+          },
+          "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 flow-categorization file. Source attribution, a modification notice, and separate identification of the TianGong extension remain required; no grantor, license number, legal document, or file ownership is inferred.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
+          "status": "production-cleared",
           "url": "https://commission.europa.eu/legal-notice_en"
         },
         "verificationStatus": "verified"
@@ -1192,6 +1413,39 @@
         "verificationStatus": "verified"
       },
       "identityStrategy": "location-code",
+      "officialAvailability": {
+        "localeDecisions": {
+          "de": {
+            "locale": "de",
+            "note": "No official release provides the complete project-held location catalog in German; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+            "status": "official-unavailable"
+          },
+          "en": {
+            "locale": "en",
+            "note": "No official release provides the complete project-held location catalog in English because it includes project-modified and project-extension entries.",
+            "status": "official-unavailable"
+          },
+          "fr": {
+            "locale": "fr",
+            "note": "No official release provides the complete project-held location catalog in French; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+            "status": "official-unavailable"
+          },
+          "zh": {
+            "locale": "zh",
+            "note": "No official release provides the complete project-held location catalog in Chinese; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+            "status": "official-unavailable"
+          }
+        },
+        "officialSecondaryMappingIds": ["eu-vocab-country-20260617-0-iso-alpha2"],
+        "release": "composite project-held ILCD-compatible location catalog",
+        "retrievedAt": "2026-07-18",
+        "schemaVersion": 1,
+        "sourceComponentScopes": [
+          "cellar-sparql-application-sparql-results-json-response-body",
+          "stylesheets/ILCDLocations_Reference.xml"
+        ],
+        "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+      },
       "officialSecondaryMappings": [
         {
           "datasetUrl": "http://publications.europa.eu/resource/dataset/country",
@@ -1215,7 +1469,10 @@
           "sourceUrl": "https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/country&version=20260617-0",
           "status": "official-secondary-mapping",
           "usageTerms": {
+            "blockerReason": null,
             "note": "Reuse is subject to the European Commission reuse policy, including source attribution and indication of changes; third-party material is excluded. This per-entry terminology crosswalk is not an official ILCD translation.",
+            "ownerIssue": null,
+            "productionStatus": "ready",
             "status": "european-commission-reuse-notice",
             "url": "https://commission.europa.eu/legal-notice_en"
           }
@@ -1505,11 +1762,46 @@
         },
         "sourceUrl": null,
         "usageTerms": {
-          "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
-          "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
-          "ownerIssue": "#634",
-          "productionStatus": "blocked",
-          "status": "file-specific-owner-confirmation-required",
+          "blockerReason": null,
+          "clearanceRequirements": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": [
+              "cellar-sparql-application-sparql-results-json-response-body",
+              "stylesheets/ILCDLocations_Reference.xml"
+            ],
+            "uses": ["file-level-reuse", "public-production-deployment"]
+          },
+          "evidence": {
+            "date": "2026-07-19",
+            "edition": "composite project-held ILCD-compatible location catalog",
+            "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+            "resourceId": "ilcd-locations",
+            "schemaVersion": 1,
+            "scope": {
+              "conditions": [
+                "attribution-required",
+                "modification-notice-required",
+                "project-extensions-separately-identified"
+              ],
+              "profile": "ef-reference-file-reuse",
+              "sourceComponentScopes": [
+                "cellar-sparql-application-sparql-results-json-response-body",
+                "stylesheets/ILCDLocations_Reference.xml"
+              ],
+              "uses": ["file-level-reuse", "public-production-deployment"]
+            },
+            "type": "product-owner-attestation",
+            "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+          },
+          "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 locations file and EU Vocabularies secondary terminology response used by the runtime overlays. Source attribution, a modification notice, and separate identification of project-modified and project-extension entries remain required; no grantor, license number, legal document, or file ownership is inferred.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
+          "status": "production-cleared",
           "url": "https://commission.europa.eu/legal-notice_en"
         },
         "verificationStatus": "verified"

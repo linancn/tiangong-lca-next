@@ -10,6 +10,7 @@ const mockGetLocalStorageJson = jest.fn();
 const mockInitIndexedDbStore = jest.fn();
 const mockPutCachedJsonEntry = jest.fn();
 const mockSetLocalStorageJson = jest.fn();
+const mockSha256Hex = jest.fn();
 
 jest.mock('@/services/general/browserResourceCache', () => ({
   __esModule: true,
@@ -20,6 +21,7 @@ jest.mock('@/services/general/browserResourceCache', () => ({
   initIndexedDbStore: (...args: any[]) => mockInitIndexedDbStore(...args),
   putCachedJsonEntry: (...args: any[]) => mockPutCachedJsonEntry(...args),
   setLocalStorageJson: (...args: any[]) => mockSetLocalStorageJson(...args),
+  sha256Hex: (...args: any[]) => mockSha256Hex(...args),
 }));
 
 import {
@@ -30,6 +32,7 @@ import {
   getLocationCacheManifest,
   setLocationCacheManifest,
 } from '@/services/locations/util';
+import { getReferenceResourceDefinition } from '@/services/referenceResources/manifest';
 
 describe('Locations Util (src/services/locations/util.ts)', () => {
   const originalFetch = global.fetch;
@@ -37,6 +40,7 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn() as any;
+    mockSha256Hex.mockResolvedValue('unmanaged-digest');
   });
 
   afterAll(() => {
@@ -55,11 +59,13 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('returns cached location file names from IndexedDB', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetAllCachedKeys.mockResolvedValue(['one.json.gz', 'two.json.gz']);
 
     await expect(getCachedLocationFileList()).resolves.toEqual(['one.json.gz', 'two.json.gz']);
-    expect(mockGetAllCachedKeys).toHaveBeenCalledWith('db', 'location_files');
+    expect(mockGetAllCachedKeys).toHaveBeenCalledWith(db, 'location_files');
+    expect(db.close).toHaveBeenCalledTimes(1);
   });
 
   it('returns an empty file list and logs when cache listing fails', async () => {
@@ -72,11 +78,54 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('returns cached location file data when present', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetCachedJsonEntry.mockResolvedValue({ data: { hello: 'world' } });
 
     await expect(getCachedLocationFileData('file.json.gz')).resolves.toEqual({ hello: 'world' });
-    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith('db', 'location_files', 'file.json.gz');
+    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith(db, 'location_files', 'file.json.gz');
+    expect(db.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a managed location entry from a previous manifest revision', async () => {
+    const resource = getReferenceResourceDefinition('ilcd-locations');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { stale: true },
+      revision: `${resource.cacheRevision}-previous`,
+      sha256: asset.jsonDigest.value,
+    });
+
+    await expect(getCachedLocationFileData(asset.fileName)).resolves.toBeNull();
+  });
+
+  it('accepts a managed location entry only with the exact revision and JSON digest', async () => {
+    const resource = getReferenceResourceDefinition('ilcd-locations');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { current: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue(asset.jsonDigest.value);
+
+    await expect(getCachedLocationFileData(asset.fileName)).resolves.toEqual({ current: true });
+  });
+
+  it('rejects managed cached JSON that does not match its asserted current digest', async () => {
+    const resource = getReferenceResourceDefinition('ilcd-locations');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { tampered: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(getCachedLocationFileData(asset.fileName)).resolves.toBeNull();
   });
 
   it('returns null and logs when reading cached location file data fails', async () => {
@@ -89,18 +138,144 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
   });
 
   it('downloads, decompresses, parses, and stores a location file', async () => {
+    const db = { close: jest.fn() };
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
     });
     mockDecompressGzipData.mockResolvedValue(JSON.stringify({ ok: true }));
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockInitIndexedDbStore.mockResolvedValue(db);
 
     await expect(cacheAndDecompressLocationFile('file.json.gz')).resolves.toBe(true);
     expect(global.fetch).toHaveBeenCalledWith('/locations/file.json.gz');
-    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith('db', 'location_files', 'file.json.gz', {
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(db, 'location_files', 'file.json.gz', {
       ok: true,
     });
+    expect(db.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares one location fetch and cache write between concurrent callers', async () => {
+    let releaseFetch!: (response: unknown) => void;
+    const fetchResult = new Promise((resolve) => {
+      releaseFetch = resolve;
+    });
+    (global.fetch as jest.Mock).mockReturnValue(fetchResult);
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ shared: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    const first = cacheAndDecompressLocationFile('shared.json.gz');
+    const second = cacheAndDecompressLocationFile('shared.json.gz');
+
+    expect(second).toBe(first);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    releaseFetch({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a failed location flight so a later caller can retry', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(new Error('network failed'))
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+      });
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ retried: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressLocationFile('retry.json.gz')).resolves.toBe(false);
+    await expect(cacheAndDecompressLocationFile('retry.json.gz')).resolves.toBe(true);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('verifies and persists the exact manifest identity for a managed location asset', async () => {
+    const resource = getReferenceResourceDefinition('ilcd-locations');
+    const asset = resource.runtimeAssets.en!;
+    const gzipBytes = new ArrayBuffer(8);
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(gzipBytes),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce(asset.jsonDigest.value);
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ ok: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressLocationFile(asset.fileName)).resolves.toBe(true);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(
+      'db',
+      'location_files',
+      asset.fileName,
+      { ok: true },
+      { revision: resource.cacheRevision, sha256: asset.jsonDigest.value },
+    );
+  });
+
+  it('rejects a managed reference asset from the wrong cache scope', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const classificationAsset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(cacheAndDecompressLocationFile(classificationAsset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache location file ${classificationAsset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('is not a location asset'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('rejects a managed location asset whose decompressed JSON digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce('0'.repeat(64));
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ tampered: true }));
+
+    await expect(cacheAndDecompressLocationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache location file ${asset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('Location JSON digest mismatch'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('fails closed before parsing when a managed location gzip digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(cacheAndDecompressLocationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('returns false when the remote location file is missing', async () => {

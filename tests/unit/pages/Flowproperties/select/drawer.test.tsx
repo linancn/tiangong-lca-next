@@ -131,14 +131,14 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ request, rowSelection, toolBarRender, actionRef }: any) => {
+  const ProTable = ({ request, params = {}, rowSelection, toolBarRender, actionRef }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
 
     const loadRows = React.useCallback(async () => {
-      const result = await request?.({ current: 1, pageSize: 10 }, {}, {});
+      const result = await request?.({ ...params, current: 1, pageSize: 10 }, {}, {});
       setRows(result?.data ?? []);
       return result;
-    }, [request]);
+    }, [params, request]);
 
     React.useEffect(() => {
       if (actionRef) {

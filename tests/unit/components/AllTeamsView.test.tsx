@@ -5,6 +5,11 @@ jest.mock('umi', () => ({
   FormattedMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) => (
     <span>{defaultMessage || id}</span>
   ),
+  useIntl: () => ({
+    formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
+      defaultMessage || id,
+    locale: 'en-US',
+  }),
 }));
 
 jest.mock('antd', () => {
@@ -118,6 +123,7 @@ jest.mock('@/services/supabase/storage', () => ({
 }));
 
 import TeamView from '@/components/AllTeams/view';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
 import { getThumbFileUrls } from '@/services/supabase/storage';
 import { getTeamMessageApi } from '@/services/teams/api';
 
@@ -286,5 +292,37 @@ describe('TeamView component', () => {
 
     const placeholders = await screen.findAllByText('-');
     expect(placeholders.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('renders every authoring language with registry-owned display names', async () => {
+    const user = userEvent.setup();
+    mockGetTeamMessageApi.mockResolvedValueOnce({
+      data: [
+        {
+          ...teamResponse.data[0],
+          json: {
+            ...teamResponse.data[0].json,
+            title: CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+              '#text': `title-${languageCode}`,
+              '@xml:lang': languageCode,
+            })),
+            description: CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+              '#text': `description-${languageCode}`,
+              '@xml:lang': languageCode,
+            })),
+          },
+        },
+      ],
+    });
+
+    render(<TeamView id='team-all-languages' buttonType='icon' />);
+    await user.click(screen.getByRole('button', { name: /view/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    for (const { languageCode, nativeLabel } of CONTENT_LANGUAGE_REGISTRY) {
+      expect(screen.getAllByText(nativeLabel)).toHaveLength(2);
+      expect(screen.getByText(`title-${languageCode}`)).toBeInTheDocument();
+      expect(screen.getByText(`description-${languageCode}`)).toBeInTheDocument();
+    }
   });
 });

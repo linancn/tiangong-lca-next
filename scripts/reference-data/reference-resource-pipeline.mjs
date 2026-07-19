@@ -29,6 +29,25 @@ const DELIVERY_STATUSES = new Set([
 ]);
 const NON_NATIVE_STATUSES = new Set(['development-base', 'missing']);
 
+const PRODUCTION_CLEARANCE_SCOPE_PROFILES = Object.freeze({
+  'classification-redistribution-translation': Object.freeze({
+    conditions: Object.freeze([]),
+    uses: Object.freeze([
+      'public-production-deployment',
+      'redistribution',
+      'translation-and-derivative-works',
+    ]),
+  }),
+  'ef-reference-file-reuse': Object.freeze({
+    conditions: Object.freeze([
+      'attribution-required',
+      'modification-notice-required',
+      'project-extensions-separately-identified',
+    ]),
+    uses: Object.freeze(['file-level-reuse', 'public-production-deployment']),
+  }),
+});
+
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
 export const deterministicGzip = (value) => {
@@ -67,6 +86,206 @@ const requireNonBlank = (value, description) => {
     throw new Error(`${description} must be a non-blank string.`);
   }
   return value;
+};
+
+const validateOrderedUniqueStrings = (value, description, { allowEmpty = false } = {}) => {
+  if (!Array.isArray(value) || (!allowEmpty && value.length === 0)) {
+    throw new Error(`${description} must be ${allowEmpty ? 'an' : 'a non-empty'} array.`);
+  }
+  value.forEach((item, index) => requireNonBlank(item, `${description}[${index}]`));
+  const canonical = [...new Set(value)].sort();
+  if (stableJson(value) !== stableJson(canonical)) {
+    throw new Error(`${description} must contain unique strings in sorted order.`);
+  }
+  return value;
+};
+
+const getDigestedExternalSourceComponents = (resource) =>
+  asArray(resource?.structureSource?.sourceComponents).filter(
+    ({ digest }) => digest !== null && digest !== undefined,
+  );
+
+const getDigestedExternalSourceScopes = (resource) =>
+  getDigestedExternalSourceComponents(resource)
+    .map(({ digest }) => digest?.scope)
+    .sort();
+
+const getOfficialSecondaryMappingIds = (resource) =>
+  asArray(resource?.officialSecondaryMappings)
+    .map(({ mappingId }) => mappingId)
+    .sort();
+
+const validateOfficialSecondaryMappingProductionClearance = (resource, requirementSourceScopes) => {
+  const externalComponents = getDigestedExternalSourceComponents(resource);
+  const seenMappingIds = new Set();
+  for (const mapping of asArray(resource?.officialSecondaryMappings)) {
+    const description = `${resource.resourceId}/${mapping?.mappingId ?? 'secondary-mapping'} production clearance`;
+    const mappingId = requireNonBlank(mapping?.mappingId, `${description} mappingId`);
+    if (seenMappingIds.has(mappingId)) {
+      throw new Error(
+        `${resource.resourceId} has duplicate official secondary mapping ${mappingId}.`,
+      );
+    }
+    seenMappingIds.add(mappingId);
+
+    const rawResponseDigest = mapping?.rawResponseDigest;
+    const matchingComponents = externalComponents.filter(
+      ({ digest }) => stableJson(digest) === stableJson(rawResponseDigest),
+    );
+    if (matchingComponents.length !== 1) {
+      throw new Error(
+        `${description} rawResponseDigest must exactly match one digested external source component.`,
+      );
+    }
+    if (!requirementSourceScopes.includes(rawResponseDigest.scope)) {
+      throw new Error(
+        `${description} raw response scope ${rawResponseDigest.scope} is not covered by clearanceRequirements.`,
+      );
+    }
+    if (mapping?.usageTerms?.productionStatus !== 'ready') {
+      throw new Error(
+        `${description} usage terms are not explicitly approved for production (${mapping?.usageTerms?.productionStatus ?? 'missing'}).`,
+      );
+    }
+  }
+};
+
+export const validateProjectReviewedOfficialAvailability = (resource) => {
+  const projectReviewedLocales = Object.entries(resource?.overlays ?? {})
+    .filter(([, overlay]) => overlay?.status === 'project-reviewed')
+    .map(([locale]) => locale)
+    .sort();
+  if (projectReviewedLocales.length === 0) {
+    return;
+  }
+
+  const description = `${resource.resourceId} project-reviewed official availability`;
+  const availability = resource?.officialAvailability;
+  if (availability?.schemaVersion !== 1) {
+    throw new Error(`${description} schemaVersion must be 1.`);
+  }
+  if (availability?.release !== resource?.edition?.value) {
+    throw new Error(`${description} release must match the verified resource edition.`);
+  }
+  if (availability?.retrievedAt !== resource?.structureSource?.retrievedAt) {
+    throw new Error(`${description} retrievedAt must match the frozen structure-source audit.`);
+  }
+  const sourceUrl = requireNonBlank(availability?.sourceUrl, `${description} sourceUrl`);
+  const allowedSourceUrls = new Set([
+    ...asArray(resource?.structureSource?.sourceComponents).map(({ sourceUrl: value }) => value),
+    ...asArray(resource?.officialSecondaryMappings).map(({ sourceUrl: value }) => value),
+  ]);
+  if (!/^https:\/\//u.test(sourceUrl) || !allowedSourceUrls.has(sourceUrl)) {
+    throw new Error(`${description} sourceUrl must name a declared HTTPS release source.`);
+  }
+
+  const expectedSourceScopes = getDigestedExternalSourceScopes(resource);
+  const actualSourceScopes = validateOrderedUniqueStrings(
+    availability?.sourceComponentScopes,
+    `${description} sourceComponentScopes`,
+  );
+  if (stableJson(actualSourceScopes) !== stableJson(expectedSourceScopes)) {
+    throw new Error(
+      `${description} sourceComponentScopes must exactly bind every digested external source component.`,
+    );
+  }
+
+  const expectedMappingIds = getOfficialSecondaryMappingIds(resource);
+  const actualMappingIds = validateOrderedUniqueStrings(
+    availability?.officialSecondaryMappingIds,
+    `${description} officialSecondaryMappingIds`,
+    { allowEmpty: true },
+  );
+  if (stableJson(actualMappingIds) !== stableJson(expectedMappingIds)) {
+    throw new Error(
+      `${description} officialSecondaryMappingIds must exactly bind every secondary mapping.`,
+    );
+  }
+
+  const actualDecisionLocales = Object.keys(availability?.localeDecisions ?? {}).sort();
+  if (stableJson(actualDecisionLocales) !== stableJson(projectReviewedLocales)) {
+    throw new Error(
+      `${description} localeDecisions must exactly cover project-reviewed locales ${projectReviewedLocales.join(', ')}.`,
+    );
+  }
+  for (const locale of projectReviewedLocales) {
+    const decision = availability.localeDecisions[locale];
+    if (decision?.locale !== locale || decision?.status !== 'official-unavailable') {
+      throw new Error(
+        `${description} ${locale} must be an explicit locale-bound official-unavailable decision.`,
+      );
+    }
+    requireNonBlank(decision?.note, `${description} ${locale} note`);
+  }
+};
+
+export const validateProductionClearanceEvidence = (resource) => {
+  const usageTerms = resource?.structureSource?.usageTerms;
+  if (usageTerms?.status !== 'production-cleared') {
+    return;
+  }
+
+  const description = `${resource.resourceId} production clearance`;
+  const requirements = usageTerms.clearanceRequirements;
+  const profile = PRODUCTION_CLEARANCE_SCOPE_PROFILES[requirements?.profile];
+  if (!profile) {
+    throw new Error(`${description} must name a supported clearanceRequirements.profile.`);
+  }
+  const requirementSourceScopes = validateOrderedUniqueStrings(
+    requirements?.sourceComponentScopes,
+    `${description} clearanceRequirements.sourceComponentScopes`,
+  );
+  validateOrderedUniqueStrings(requirements?.uses, `${description} clearanceRequirements.uses`);
+  validateOrderedUniqueStrings(
+    requirements?.conditions,
+    `${description} clearanceRequirements.conditions`,
+    { allowEmpty: true },
+  );
+  if (
+    stableJson(requirements.uses) !== stableJson(profile.uses) ||
+    stableJson(requirements.conditions) !== stableJson(profile.conditions)
+  ) {
+    throw new Error(
+      `${description} clearanceRequirements must exactly implement profile ${requirements.profile}.`,
+    );
+  }
+
+  const digestedSourceScopes = getDigestedExternalSourceScopes(resource);
+  validateOrderedUniqueStrings(
+    digestedSourceScopes,
+    `${description} digested external source component scopes`,
+  );
+  if (stableJson(requirementSourceScopes) !== stableJson(digestedSourceScopes)) {
+    throw new Error(
+      `${description} clearanceRequirements.sourceComponentScopes must exactly cover every digested external source component.`,
+    );
+  }
+  validateOfficialSecondaryMappingProductionClearance(resource, requirementSourceScopes);
+
+  const evidence = usageTerms.evidence;
+  if (evidence?.schemaVersion !== 1) {
+    throw new Error(`${description} evidence.schemaVersion must be 1.`);
+  }
+  if (evidence?.type !== 'product-owner-attestation') {
+    throw new Error(`${description} evidence.type must be product-owner-attestation.`);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(evidence?.date ?? '')) {
+    throw new Error(`${description} evidence.date must be an ISO date.`);
+  }
+  const evidenceUrl = requireNonBlank(evidence?.url, `${description} evidence.url`);
+  if (!/^https:\/\//u.test(evidenceUrl)) {
+    throw new Error(`${description} evidence.url must be an HTTPS URL.`);
+  }
+  if (evidence?.resourceId !== resource.resourceId) {
+    throw new Error(`${description} evidence.resourceId must match the resource.`);
+  }
+  if (evidence?.edition !== resource.edition?.value) {
+    throw new Error(`${description} evidence.edition must match the verified edition.`);
+  }
+  requireNonBlank(evidence?.note, `${description} evidence.note`);
+  if (stableJson(evidence?.scope) !== stableJson(requirements)) {
+    throw new Error(`${description} evidence.scope must exactly match clearanceRequirements.`);
+  }
 };
 
 const labelRecord = (key, assertion, node, property) => ({
@@ -338,6 +557,8 @@ export const validateProvenance = (resource) => {
   requireNonBlank(source?.usageTerms?.status, `${resource.resourceId} usageTerms.status`);
   requireNonBlank(source?.usageTerms?.note, `${resource.resourceId} usageTerms.note`);
   requireNonBlank(source?.usageTerms?.url, `${resource.resourceId} usageTerms.url`);
+  validateProductionClearanceEvidence(resource);
+  validateProjectReviewedOfficialAvailability(resource);
 };
 
 const validateOverlayEnvelope = (resource, locale, overlay, overlayData) => {
@@ -1146,6 +1367,9 @@ const renderGeneratedManifest = (manifest) => {
         {
           language: locale,
           fileName: asset.fileName,
+          jsonDigest: asset.jsonDigest,
+          gzipDigest: asset.gzipDigest,
+          byteLength: asset.byteLength,
           dataTypeNames: asset.dataTypeNames,
         },
       ]),
@@ -1257,6 +1481,7 @@ export async function buildReferenceResources({ repoRoot, mode, supportedLanguag
     const canonicalBase = stableJson(baseDocument);
     const structure = canonicalStructure(baseRecords);
     const usageTerms = resource.structureSource?.usageTerms;
+    validateProductionClearanceEvidence(resource);
     usageTerms.productionStatus = usageTerms.status === 'production-cleared' ? 'ready' : 'blocked';
     usageTerms.ownerIssue = usageTerms.productionStatus === 'blocked' ? '#634' : null;
     usageTerms.blockerReason = usageTerms.productionStatus === 'blocked' ? usageTerms.note : null;
@@ -1453,16 +1678,39 @@ export const getReferenceResourceProductionBlockers = (manifest, supportedLangua
 
     const blockers = [];
     const usageTerms = resource.structureSource?.usageTerms;
-    if (usageTerms?.productionStatus !== 'ready') {
+    let clearanceEvidenceError = null;
+    try {
+      validateProductionClearanceEvidence(resource);
+    } catch (error) {
+      clearanceEvidenceError = error instanceof Error ? error.message : String(error);
+    }
+    if (
+      usageTerms?.status !== 'production-cleared' ||
+      usageTerms?.productionStatus !== 'ready' ||
+      clearanceEvidenceError
+    ) {
       blockers.push({
         resourceId: resource.resourceId,
         locale: null,
         ownerIssue: usageTerms?.ownerIssue ?? '#634',
-        reason: `usage terms are ${usageTerms?.status ?? 'missing or unverified'}: ${
-          usageTerms?.blockerReason ??
-          usageTerms?.note ??
-          'production clearance evidence is missing'
-        }`,
+        reason: clearanceEvidenceError
+          ? `production-clearance evidence is invalid: ${clearanceEvidenceError}`
+          : `usage terms are ${usageTerms?.status ?? 'missing or unverified'}: ${
+              usageTerms?.blockerReason ??
+              usageTerms?.note ??
+              'production clearance evidence is missing'
+            }`,
+      });
+    }
+
+    try {
+      validateProjectReviewedOfficialAvailability(resource);
+    } catch (error) {
+      blockers.push({
+        resourceId: resource.resourceId,
+        locale: null,
+        ownerIssue: '#634',
+        reason: `project-reviewed official-availability evidence is invalid: ${error instanceof Error ? error.message : String(error)}`,
       });
     }
 

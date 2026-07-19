@@ -1,3 +1,4 @@
+import { resolveContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLangText } from '@/services/general/util';
 import type {
   LcaUncharacterizedEvidenceArtifactV1,
@@ -152,7 +153,7 @@ export default function LcaCalculationEvidenceNotice({
       })
     : null;
   const methodDescriptionById = useMemo(() => {
-    const language = typeof intl.locale === 'string' && intl.locale.startsWith('zh') ? 'zh' : 'en';
+    const language = resolveContentLanguage(intl.locale);
     return new Map(
       STATIC_LCIA_METHOD_LIST.files.map((method) => [
         method.id,

@@ -1,20 +1,1653 @@
 {
-  "schemaVersion": "tiangong.i18n-route-view-coverage.v3",
+  "schemaVersion": "tiangong.i18n-route-view-coverage.v4",
   "supportedLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
   "sourceRouteConfig": "config/routes.ts",
+  "viewStateRegistry": {
+    "sourcePath": "src/services/general/routeViewStateRegistry.json",
+    "schemaVersion": "tiangong.route-view-state-registry.v1",
+    "usages": [
+      {
+        "registryId": "welcome-view",
+        "sourcePaths": ["src/pages/Welcome.tsx"],
+        "variantIds": ["overview", "carbon-footprint-guide"],
+        "proof": {
+          "kind": "browser",
+          "variantAssertionIds": ["vv.welcome.overview", "vv.welcome.carbon-footprint-guide"]
+        }
+      },
+      {
+        "registryId": "dataset-drawer-mode",
+        "sourcePaths": ["src/pages/LifeCycleModels/index.tsx", "src/pages/Processes/index.tsx"],
+        "variantIds": ["edit", "view"],
+        "proof": {
+          "kind": "browser",
+          "variantAssertionIds": ["vv.process.drawer-edit", "vv.process.drawer-view"],
+          "supplementalFocusedTestPaths": [
+            "tests/unit/pages/LifeCycleModels/index.test.tsx",
+            "tests/unit/pages/Processes/index.test.tsx"
+          ]
+        }
+      },
+      {
+        "registryId": "dataset-required",
+        "sourcePaths": [
+          "src/pages/LifeCycleModels/index.tsx",
+          "src/pages/Processes/index.tsx",
+          "src/pages/Flows/index.tsx",
+          "src/pages/Sources/index.tsx",
+          "src/pages/Contacts/index.tsx"
+        ],
+        "variantIds": ["optional", "required"],
+        "proof": {
+          "kind": "browser",
+          "variantAssertionIds": ["vv.process.required-optional", "vv.process.required-enabled"],
+          "supplementalFocusedTestPaths": [
+            "tests/unit/pages/LifeCycleModels/index.test.tsx",
+            "tests/unit/pages/Processes/index.test.tsx",
+            "tests/unit/pages/Flows/index.test.tsx",
+            "tests/unit/pages/Sources/index.test.tsx",
+            "tests/unit/pages/Contacts/index.test.tsx"
+          ]
+        }
+      },
+      {
+        "registryId": "team-action",
+        "sourcePaths": ["src/pages/Teams/index.tsx"],
+        "variantIds": ["base", "create", "edit"],
+        "proof": {
+          "kind": "browser",
+          "variantAssertionIds": ["vv.team.base", "vv.team.create", "vv.team.edit"]
+        }
+      },
+      {
+        "registryId": "data-processing-tab",
+        "sourcePaths": ["src/pages/DataProcessing/index.tsx"],
+        "variantIds": ["builds", "preview", "publication"],
+        "proof": {
+          "kind": "browser",
+          "variantAssertionIds": [
+            "vv.data-processing.builds",
+            "vv.data-processing.preview",
+            "vv.data-processing.publication"
+          ],
+          "supplementalFocusedTestPaths": ["tests/unit/pages/DataProcessing/index.test.tsx"]
+        }
+      },
+      {
+        "registryId": "national-carbon-screen",
+        "sourcePaths": ["src/pages/NationalCarbonDashboard/index.tsx"],
+        "variantIds": [
+          "overview",
+          "map_status",
+          "outcome_metrics",
+          "connectivity",
+          "flow_topology"
+        ],
+        "proof": {
+          "kind": "focused-tests",
+          "testPaths": ["tests/unit/pages/NationalCarbonDashboard/index.test.tsx"]
+        }
+      },
+      {
+        "registryId": "national-carbon-autoplay",
+        "sourcePaths": ["src/pages/NationalCarbonDashboard/index.tsx"],
+        "variantIds": ["enabled", "disabled"],
+        "proof": {
+          "kind": "focused-tests",
+          "testPaths": ["tests/unit/pages/NationalCarbonDashboard/index.test.tsx"]
+        }
+      }
+    ]
+  },
+  "executableViewVariants": [
+    {
+      "assertionId": "vv.welcome.overview",
+      "registryId": "welcome-view",
+      "variantId": "overview",
+      "routeAssertionId": "rv.welcome.overview",
+      "scenario": "typed-view-variants",
+      "target": {
+        "navigate": { "hashPath": "/welcome", "hashQuery": {} },
+        "expected": { "hashPath": "/welcome", "hashQuery": {} },
+        "visibleMessageIds": ["pages.welcome.overview.metrics.unitProcessesAndInventories"]
+      }
+    },
+    {
+      "assertionId": "vv.welcome.carbon-footprint-guide",
+      "registryId": "welcome-view",
+      "variantId": "carbon-footprint-guide",
+      "routeAssertionId": "rv.welcome.carbon-footprint-guide",
+      "scenario": "typed-view-variants",
+      "target": {
+        "navigate": {
+          "hashPath": "/welcome",
+          "hashQuery": { "view": "carbon-footprint" }
+        },
+        "expected": {
+          "hashPath": "/welcome",
+          "hashQuery": { "view": "carbon-footprint" }
+        },
+        "visibleMessageIds": ["pages.welcome.carbonFootprintGuide.title"]
+      }
+    },
+    {
+      "assertionId": "vv.team.base",
+      "registryId": "team-action",
+      "variantId": "base",
+      "routeAssertionId": "rv.team.team-membership",
+      "scenario": "typed-action-variants",
+      "target": {
+        "navigate": { "hashPath": "/team", "hashQuery": {} },
+        "expected": { "hashPath": "/team", "hashQuery": {} },
+        "visibleMessageIds": ["pages.team.tabs.info"]
+      }
+    },
+    {
+      "assertionId": "vv.team.create",
+      "registryId": "team-action",
+      "variantId": "create",
+      "routeAssertionId": "rv.team.team-membership",
+      "scenario": "typed-action-variants",
+      "target": {
+        "navigate": { "hashPath": "/team", "hashQuery": { "action": "create" } },
+        "expected": { "hashPath": "/team", "hashQuery": { "action": "create" } },
+        "visibleMessageIds": ["pages.team.tabs.info", "pages.team.info.title"]
+      }
+    },
+    {
+      "assertionId": "vv.team.edit",
+      "registryId": "team-action",
+      "variantId": "edit",
+      "routeAssertionId": "rv.team.team-membership",
+      "scenario": "typed-action-variants",
+      "target": {
+        "navigate": { "hashPath": "/team", "hashQuery": { "action": "edit" } },
+        "expected": { "hashPath": "/team", "hashQuery": { "action": "edit" } },
+        "visibleMessageIds": ["pages.team.tabs.info"]
+      }
+    },
+    {
+      "assertionId": "vv.process.drawer-edit",
+      "registryId": "dataset-drawer-mode",
+      "variantId": "edit",
+      "routeAssertionId": "rv.process-lists.mydata",
+      "scenario": "typed-process-drawer-mode",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "edit" } },
+        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "edit" } },
+        "runtimeFixture": {
+          "kind": "production-process-ledger",
+          "hashQuery": { "id": "ledger.id", "version": "ledger.version" }
+        },
+        "visibleMessageIds": ["pages.process.drawer.title.edit"]
+      }
+    },
+    {
+      "assertionId": "vv.process.drawer-view",
+      "registryId": "dataset-drawer-mode",
+      "variantId": "view",
+      "routeAssertionId": "rv.process-lists.mydata",
+      "scenario": "typed-process-drawer-mode",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "view" } },
+        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "mode": "view" } },
+        "runtimeFixture": {
+          "kind": "production-process-ledger",
+          "hashQuery": { "id": "ledger.id", "version": "ledger.version" }
+        },
+        "visibleMessageIds": ["pages.process.drawer.title.view"]
+      }
+    },
+    {
+      "assertionId": "vv.process.required-optional",
+      "registryId": "dataset-required",
+      "variantId": "optional",
+      "routeAssertionId": "rv.process-lists.mydata",
+      "scenario": "typed-process-required-state",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/mydata/processes", "hashQuery": {} },
+        "expected": { "hashPath": "/mydata/processes", "hashQuery": {} },
+        "runtimeFixture": {
+          "kind": "production-process-ledger",
+          "hashQuery": { "id": "ledger.id", "mode": "edit", "version": "ledger.version" }
+        },
+        "visibleMessageIds": ["pages.process.drawer.title.edit"]
+      }
+    },
+    {
+      "assertionId": "vv.process.required-enabled",
+      "registryId": "dataset-required",
+      "variantId": "required",
+      "routeAssertionId": "rv.process-lists.mydata",
+      "scenario": "typed-process-required-state",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/mydata/processes", "hashQuery": { "required": "1" } },
+        "expected": { "hashPath": "/mydata/processes", "hashQuery": { "required": "1" } },
+        "runtimeFixture": {
+          "kind": "production-process-ledger",
+          "hashQuery": { "id": "ledger.id", "mode": "edit", "version": "ledger.version" }
+        },
+        "visibleMessageIds": ["pages.process.drawer.title.edit"]
+      }
+    },
+    {
+      "assertionId": "vv.data-processing.builds",
+      "registryId": "data-processing-tab",
+      "variantId": "builds",
+      "routeAssertionId": "rv.data-processing.build-preview-publication-tabs",
+      "scenario": "typed-data-processing-tabs",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/data-processing", "hashQuery": { "tab": "builds" } },
+        "expected": { "hashPath": "/data-processing", "hashQuery": { "tab": "builds" } },
+        "visibleMessageIds": ["pages.dataProcessing.form.packageName"]
+      }
+    },
+    {
+      "assertionId": "vv.data-processing.preview",
+      "registryId": "data-processing-tab",
+      "variantId": "preview",
+      "routeAssertionId": "rv.data-processing.build-preview-publication-tabs",
+      "scenario": "typed-data-processing-tabs",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": { "hashPath": "/data-processing", "hashQuery": { "tab": "preview" } },
+        "expected": { "hashPath": "/data-processing", "hashQuery": { "tab": "preview" } },
+        "visibleMessageIds": ["pages.dataProcessing.form.previewPackageId"]
+      }
+    },
+    {
+      "assertionId": "vv.data-processing.publication",
+      "registryId": "data-processing-tab",
+      "variantId": "publication",
+      "routeAssertionId": "rv.data-processing.build-preview-publication-tabs",
+      "scenario": "typed-data-processing-tabs",
+      "execution": {
+        "kind": "dedicated-spec",
+        "specPath": "tests/e2e/i18n/typed-view-variants.spec.ts"
+      },
+      "target": {
+        "navigate": {
+          "hashPath": "/data-processing",
+          "hashQuery": { "tab": "publication" }
+        },
+        "expected": {
+          "hashPath": "/data-processing",
+          "hashQuery": { "tab": "publication" }
+        },
+        "visibleMessageIds": ["pages.dataProcessing.form.publishPackageId"]
+      }
+    }
+  ],
   "policy": {
     "catalogOwnership": "Every reachable static string belongs to the shared locale catalog or to an explicitly declared fallback row.",
     "queryPersistence": "Locale switching, root redirect, and refresh preserve the route query and selected view.",
     "authenticationBoundary": "This localization artifact records the existing access context but never grants or expands anonymous access. Anonymous SPA access is limited by the runtime policy to the login and account-recovery flow; all other configured and unmatched routes require an authenticated session.",
     "blockedContextAllowed": false
   },
+  "proofPolicy": {
+    "status": "execution-evidence",
+    "assertionSemantics": "Stable route IDs require a live route scenario plus every target-declared semantic scenario. Focused component tests remain digest-bound state proof; planned assertion prose alone is never execution evidence and cannot activate a locale.",
+    "evidenceContract": {
+      "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
+      "schemaPath": "docs/plans/i18n/semantic-e2e-evidence.schema.json",
+      "evidencePath": "docs/plans/i18n/semantic-e2e-evidence.json",
+      "requiredAssertionCount": 49,
+      "requiredLocales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "requiredBrowsers": ["chromium", "firefox", "webkit"],
+      "browserCoverage": {
+        "fullRouteViewBrowser": "chromium",
+        "criticalBrowsers": ["chromium", "firefox", "webkit"],
+        "criticalAssertionIds": [
+          "rv.login.login-and-register",
+          "rv.process-lists.mydata",
+          "rv.team.team-membership"
+        ]
+      },
+      "target": {
+        "frontend": "candidate-local",
+        "backend": "production"
+      },
+      "productionData": {
+        "markerPrefix": "codex-e2e",
+        "exactCreated": 1,
+        "requireCreatedAndCleaned": true,
+        "maximumLeaked": 0
+      },
+      "digestPolicy": {
+        "semanticE2ERoot": "tests/e2e/i18n",
+        "additionalTestPaths": ["playwright.config.ts"],
+        "criticalSourcePaths": [
+          "src/services/general/localeRegistry.ts",
+          "src/services/general/contentLanguageRegistry.ts",
+          "src/services/general/routeViewStateRegistry.json",
+          "src/services/general/routeViewState.ts"
+        ]
+      }
+    },
+    "browserProof": {
+      "status": "verified",
+      "ownerIssue": "#635",
+      "executedEvidence": [
+        {
+          "path": "docs/plans/i18n/semantic-e2e-evidence.json",
+          "sha256": "8a5c6692f83c16c01fb0f00970889a6c907904eeeacf5641ac3ad72bfd3166d7"
+        }
+      ]
+    }
+  },
+  "executableTargets": {
+    "rv.section-redirects.tgdata": {
+      "kind": "configured-redirect",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.models"]
+      }
+    },
+    "rv.section-redirects.codata": {
+      "kind": "configured-redirect",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.models"]
+      }
+    },
+    "rv.section-redirects.mydata": {
+      "kind": "configured-redirect",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.models"]
+      }
+    },
+    "rv.section-redirects.tedata": {
+      "kind": "configured-redirect",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.models"]
+      }
+    },
+    "rv.section-redirects.user": {
+      "kind": "configured-redirect",
+      "session": "anonymous",
+      "navigate": { "hashPath": "/user", "hashQuery": {} },
+      "expected": { "hashPath": "/user/login", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.login.login.tab"]
+      }
+    },
+    "rv.manage-system.team-management": {
+      "kind": "role-boundary",
+      "requiredScenarios": ["route"],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/manageSystem", "hashQuery": {} },
+      "expected": { "hashPath": "/manageSystem", "hashQuery": {} },
+      "boundary": {
+        "selector": "[data-testid='access-denied']",
+        "messageIds": ["pages.accessDenied.message"]
+      }
+    },
+    "rv.review.review-workbench": {
+      "kind": "role-boundary",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/review", "hashQuery": {} },
+      "expected": { "hashPath": "/review", "hashQuery": {} },
+      "boundary": {
+        "selector": "[data-testid='access-denied']",
+        "messageIds": ["pages.accessDenied.message"]
+      }
+    },
+    "rv.lifecycle-model-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/models", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.models"]
+      }
+    },
+    "rv.lifecycle-model-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/models", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.models"]
+      }
+    },
+    "rv.lifecycle-model-lists.mydata": {
+      "kind": "localized-view",
+      "requiredScenarios": ["route", "responsive-surface-matrix"],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/models", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.models"]
+      }
+    },
+    "rv.lifecycle-model-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/models", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/models", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.models"]
+      }
+    },
+    "rv.process-analysis.process-analysis": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/processes/analysis", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/processes/analysis", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.process.lca.page.title"]
+      }
+    },
+    "rv.process-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/processes", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/processes", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.processes"]
+      }
+    },
+    "rv.process-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/processes", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/processes", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.processes"]
+      }
+    },
+    "rv.process-lists.mydata": {
+      "kind": "localized-view",
+      "requiredScenarios": [
+        "route",
+        "persisted-multilingual-content",
+        "persisted-multilingual-authoring",
+        "reference-refresh",
+        "reference-refresh-cache",
+        "responsive-surface-matrix"
+      ],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/processes", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/processes", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.processes"]
+      }
+    },
+    "rv.process-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/processes", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/processes", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.processes"]
+      }
+    },
+    "rv.flow-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/flows", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/flows", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.flows"]
+      }
+    },
+    "rv.flow-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/flows", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/flows", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.flows"]
+      }
+    },
+    "rv.flow-lists.mydata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/flows", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/flows", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.flows"]
+      }
+    },
+    "rv.flow-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/flows", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/flows", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.flows"]
+      }
+    },
+    "rv.flow-property-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/flowproperties", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/flowproperties", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.flowproperties"]
+      }
+    },
+    "rv.flow-property-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/flowproperties", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/flowproperties", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.flowproperties"]
+      }
+    },
+    "rv.flow-property-lists.mydata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/flowproperties", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/flowproperties", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.flowproperties"]
+      }
+    },
+    "rv.flow-property-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/flowproperties", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/flowproperties", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.flowproperties"]
+      }
+    },
+    "rv.unit-group-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/unitgroups", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/unitgroups", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.unitgroups"]
+      }
+    },
+    "rv.unit-group-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/unitgroups", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/unitgroups", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.unitgroups"]
+      }
+    },
+    "rv.unit-group-lists.mydata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/unitgroups", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/unitgroups", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.unitgroups"]
+      }
+    },
+    "rv.unit-group-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/unitgroups", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/unitgroups", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.unitgroups"]
+      }
+    },
+    "rv.source-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/sources", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/sources", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.sources"]
+      }
+    },
+    "rv.source-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/sources", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/sources", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.sources"]
+      }
+    },
+    "rv.source-lists.mydata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/sources", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/sources", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.sources"]
+      }
+    },
+    "rv.source-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/sources", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/sources", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.sources"]
+      }
+    },
+    "rv.contact-lists.tgdata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tgdata/contacts", "hashQuery": {} },
+      "expected": { "hashPath": "/tgdata/contacts", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tgdata", "menu.tgdata.contacts"]
+      }
+    },
+    "rv.contact-lists.codata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codata/contacts", "hashQuery": {} },
+      "expected": { "hashPath": "/codata/contacts", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.codata", "menu.tgdata.contacts"]
+      }
+    },
+    "rv.contact-lists.mydata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/mydata/contacts", "hashQuery": {} },
+      "expected": { "hashPath": "/mydata/contacts", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.mydata", "menu.tgdata.contacts"]
+      }
+    },
+    "rv.contact-lists.tedata": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/tedata/contacts", "hashQuery": {} },
+      "expected": { "hashPath": "/tedata/contacts", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.tedata", "menu.tgdata.contacts"]
+      }
+    },
+    "rv.data-processing.build-preview-publication-tabs": {
+      "kind": "role-boundary",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/data-processing", "hashQuery": {} },
+      "expected": { "hashPath": "/data-processing", "hashQuery": {} },
+      "boundary": {
+        "selector": "[data-testid='access-denied']",
+        "messageIds": ["pages.accessDenied.message"]
+      }
+    },
+    "rv.account.account-profile": {
+      "kind": "localized-view",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/account", "hashQuery": {} },
+      "expected": { "hashPath": "/account", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.account.profile", "pages.account.profile.email"]
+      }
+    },
+    "rv.team.team-membership": {
+      "kind": "localized-view",
+      "requiredScenarios": [
+        "route",
+        "authoring-options",
+        "responsive-layout",
+        "responsive-surface-matrix"
+      ],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/team", "hashQuery": {} },
+      "expected": { "hashPath": "/team", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["menu.account.team"]
+      }
+    },
+    "rv.root.redirect-to-welcome": {
+      "kind": "configured-redirect",
+      "requiredScenarios": ["route"],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/", "hashQuery": { "view": "carbon-footprint" } },
+      "expected": {
+        "hashPath": "/welcome",
+        "hashQuery": { "view": "carbon-footprint" }
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.welcome.carbonFootprintGuide.title"]
+      }
+    },
+    "rv.welcome.overview": {
+      "kind": "localized-view",
+      "requiredScenarios": ["route", "modal-state-machine", "responsive-surface-matrix"],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/welcome", "hashQuery": {} },
+      "expected": { "hashPath": "/welcome", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.welcome.overview.metrics.unitProcessesAndInventories"]
+      }
+    },
+    "rv.welcome.carbon-footprint-guide": {
+      "kind": "localized-view",
+      "requiredScenarios": ["route", "carbon-guide-state-machine"],
+      "session": "authenticated",
+      "navigate": {
+        "hashPath": "/welcome",
+        "hashQuery": { "view": "carbon-footprint" }
+      },
+      "expected": {
+        "hashPath": "/welcome",
+        "hashQuery": { "view": "carbon-footprint" }
+      },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.welcome.carbonFootprintGuide.title"]
+      }
+    },
+    "rv.login.login-and-register": {
+      "kind": "localized-view",
+      "requiredScenarios": [
+        "route",
+        "registry-selector",
+        "query-responsive",
+        "locale-fallback-refresh"
+      ],
+      "session": "anonymous",
+      "navigate": { "hashPath": "/user/login", "hashQuery": {} },
+      "expected": { "hashPath": "/user/login", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.login.login.tab"]
+      }
+    },
+    "rv.login.password-forgot": {
+      "kind": "localized-view",
+      "session": "anonymous",
+      "navigate": { "hashPath": "/user/login/password_forgot", "hashQuery": {} },
+      "expected": { "hashPath": "/user/login/password_forgot", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.login.passwordForgot.tab"]
+      }
+    },
+    "rv.login.password-reset": {
+      "kind": "localized-view",
+      "session": "anonymous",
+      "navigate": { "hashPath": "/user/login/password_reset", "hashQuery": {} },
+      "expected": { "hashPath": "/user/login/password_reset", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.login.passwordReset.requestNewLink"]
+      }
+    },
+    "rv.dashboard.national-carbon": {
+      "kind": "role-boundary",
+      "localeTransition": "storage-reload",
+      "session": "authenticated",
+      "navigate": { "hashPath": "/dashboard/national-carbon", "hashQuery": {} },
+      "expected": { "hashPath": "/dashboard/national-carbon", "hashQuery": {} },
+      "boundary": {
+        "selector": "[data-testid='access-denied']",
+        "messageIds": ["pages.accessDenied.message"]
+      }
+    },
+    "rv.legal.terms-of-use-fallback": {
+      "kind": "declared-static-fallback",
+      "expectedPathname": "/terms_of_use.html",
+      "exactVisibleText": "TERMS OF USE"
+    },
+    "rv.legal.privacy-notice-fallback": {
+      "kind": "declared-static-fallback",
+      "expectedPathname": "/privacy_notice.html",
+      "exactVisibleText": "PRIVACY NOTICE"
+    },
+    "rv.not-found.localized": {
+      "kind": "localized-view",
+      "localeTransition": "storage-reload",
+      "requiredScenarios": ["route"],
+      "session": "authenticated",
+      "navigate": { "hashPath": "/codex-e2e-not-found", "hashQuery": {} },
+      "expected": { "hashPath": "/codex-e2e-not-found", "hashQuery": {} },
+      "visible": {
+        "kind": "locale-messages",
+        "messageIds": ["pages.404.subTitle", "pages.404.buttonText"]
+      }
+    }
+  },
+  "routeFamilies": [
+    {
+      "id": "section-redirects",
+      "routes": ["/tgdata", "/codata", "/mydata", "/tedata"],
+      "executableAssertionIds": {
+        "/tgdata": "rv.section-redirects.tgdata",
+        "/codata": "rv.section-redirects.codata",
+        "/mydata": "rv.section-redirects.mydata",
+        "/tedata": "rv.section-redirects.tedata"
+      },
+      "viewState": "configured-redirect",
+      "pageOwnedMessageIds": ["pages.table.title.index"],
+      "trigger": "Open an authenticated data-section root and resolve its exact configured model-list child.",
+      "component": "config/routes.ts redirect",
+      "accessContext": "authenticated-session-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/LifeCycleModels/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": ["authenticated-redirect", "localized-destination"],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "route configuration and destination-page locale catalog",
+        "structureAudit": "exact configured-path closure and redirect ownership",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": ["tests/unit/i18n/localeDeliveryContracts.test.ts"],
+        "plannedBrowserAssertions": [
+          "each authenticated data-section root resolves to its exact model-list child and localized scope/title"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "user-redirect",
+      "routes": ["/user"],
+      "executableAssertionIds": {
+        "/user": "rv.section-redirects.user"
+      },
+      "viewState": "anonymous-login-flow-redirect",
+      "trigger": "Open the anonymous user root and resolve the exact login-flow child.",
+      "component": "config/routes.ts redirect",
+      "accessContext": "anonymous login-flow boundary",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/User/Login/index.tsx"],
+        "localeMessageIds": ["pages.login.login.tab"],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": ["anonymous-login-flow-redirect", "localized-login-target"],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "route configuration and login-page locale catalog",
+        "structureAudit": "exact redirect target and anonymous login boundary",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "access-boundary-observed",
+        "focusedTests": ["tests/unit/i18n/localeDeliveryContracts.test.ts"],
+        "plannedBrowserAssertions": [
+          "the anonymous /user root resolves only to the localized /user/login boundary"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "manage-system",
+      "routes": ["/manageSystem"],
+      "executableAssertionIds": {
+        "/manageSystem": "rv.manage-system.team-management"
+      },
+      "viewState": "team-management",
+      "trigger": "Open the management page and traverse team, member, drawer, loading, empty, error, and action states.",
+      "component": "src/pages/ManageSystem/index.tsx",
+      "accessContext": "authenticated standard-user role boundary; admin-role-required for the internal page",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/ManageSystem/index.tsx",
+          "src/components/AccessDenied/index.tsx"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content-language labels",
+        "structureAudit": "exact topology, language-switch, modal, drawer, status, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "access-boundary-observed",
+        "focusedTests": [
+          "tests/unit/components/AccessDenied.test.tsx",
+          "tests/unit/pages/ManageSystem/index.test.tsx",
+          "tests/unit/components/AllTeamsEdit.test.tsx",
+          "tests/unit/components/AllTeamsView.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "the supplied standard user reaches the localized access-denied boundary without claiming admin-page localization"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "review",
+      "routes": ["/review"],
+      "executableAssertionIds": {
+        "/review": "rv.review.review-workbench"
+      },
+      "viewState": "review-workbench",
+      "trigger": "Open the review workbench and traverse assignment, expansion, detail, reject, loading, empty, error, and action states.",
+      "component": "src/pages/Review/index.tsx",
+      "accessContext": "authenticated standard-user role boundary; review-role-required for the internal workbench",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/pages/Review/index.tsx",
+          "src/components/AccessDenied/index.tsx"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer",
+        "expanded-row"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content language",
+        "structureAudit": "exact topology, status, detail, modal, drawer, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "access-boundary-observed",
+        "focusedTests": [
+          "tests/unit/components/AccessDenied.test.tsx",
+          "tests/unit/pages/Review/index.test.tsx",
+          "tests/unit/pages/Review/Components/AssignmentReview.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "the supplied standard user reaches the localized access-denied boundary without claiming workbench localization"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "lifecycle-model-lists",
+      "routes": ["/tgdata/models", "/codata/models", "/mydata/models", "/tedata/models"],
+      "executableAssertionIds": {
+        "/tgdata/models": "rv.lifecycle-model-lists.tgdata",
+        "/codata/models": "rv.lifecycle-model-lists.codata",
+        "/mydata/models": "rv.lifecycle-model-lists.mydata",
+        "/tedata/models": "rv.lifecycle-model-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the model list directly or with tid/id/version/required/mode URL state and traverse list, empty, loading, view, edit, and validation drawers.",
+      "component": "src/pages/LifeCycleModels/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/LifeCycleModels/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required",
+        "query-mode"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, URL-state, table, empty, validation, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": ["tests/unit/pages/LifeCycleModels/index.test.tsx"],
+        "plannedBrowserAssertions": [
+          "every configured model scope preserves URL state while locale copy changes"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "process-analysis",
+      "routes": ["/mydata/processes/analysis"],
+      "executableAssertionIds": {
+        "/mydata/processes/analysis": "rv.process-analysis.process-analysis"
+      },
+      "viewState": "process-analysis",
+      "pageOwnedMessageIds": ["pages.process.lca.page.title"],
+      "trigger": "Open process analysis and traverse selection, calculation, loading, empty, error, result, chart, table, and control states.",
+      "component": "src/pages/Processes/Analysis/index.tsx",
+      "accessContext": "authenticated-session-required with existing process permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Processes/Analysis/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "chart",
+        "table"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, calculation, result, chart, table, modal, and error coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": ["tests/unit/pages/Processes/Analysis/index.test.tsx"],
+        "plannedBrowserAssertions": [
+          "analysis controls, progress, failures, and results render in every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "process-lists",
+      "routes": [
+        "/tgdata/processes",
+        "/codata/processes",
+        "/mydata/processes",
+        "/tedata/processes"
+      ],
+      "executableAssertionIds": {
+        "/tgdata/processes": "rv.process-lists.tgdata",
+        "/codata/processes": "rv.process-lists.codata",
+        "/mydata/processes": "rv.process-lists.mydata",
+        "/tedata/processes": "rv.process-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the process list directly or with tid/id/version/required/mode URL state and traverse list, exchange, view, edit, validation, and review states.",
+      "component": "src/pages/Processes/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Processes/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required",
+        "query-mode"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and localized exchange enumerations",
+        "structureAudit": "exact topology, URL-state, exchange, validation, modal, drawer, and review coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Processes/index.test.tsx",
+          "tests/unit/pages/Processes/Components/Exchange/create.test.tsx",
+          "tests/unit/pages/Processes/Components/Exchange/edit.test.tsx",
+          "tests/unit/e2e/referenceRefreshContract.test.ts"
+        ],
+        "plannedBrowserAssertions": [
+          "every configured process scope localizes exchange and uncertainty labels for every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "flow-lists",
+      "routes": ["/tgdata/flows", "/codata/flows", "/mydata/flows", "/tedata/flows"],
+      "executableAssertionIds": {
+        "/tgdata/flows": "rv.flow-lists.tgdata",
+        "/codata/flows": "rv.flow-lists.codata",
+        "/mydata/flows": "rv.flow-lists.mydata",
+        "/tedata/flows": "rv.flow-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the flow list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Flows/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Flows/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification/location labels",
+        "structureAudit": "exact topology, URL-state, table, classification, location, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Flows/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx",
+          "tests/unit/components/LocationTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "flow classification and location controls refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "flow-property-lists",
+      "routes": [
+        "/tgdata/flowproperties",
+        "/codata/flowproperties",
+        "/mydata/flowproperties",
+        "/tedata/flowproperties"
+      ],
+      "executableAssertionIds": {
+        "/tgdata/flowproperties": "rv.flow-property-lists.tgdata",
+        "/codata/flowproperties": "rv.flow-property-lists.codata",
+        "/mydata/flowproperties": "rv.flow-property-lists.mydata",
+        "/tedata/flowproperties": "rv.flow-property-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the flow-property list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Flowproperties/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Flowproperties/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Flowproperties/index.test.tsx",
+          "tests/unit/components/LevelTextItemDescription.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "flow-property classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "unit-group-lists",
+      "routes": [
+        "/tgdata/unitgroups",
+        "/codata/unitgroups",
+        "/mydata/unitgroups",
+        "/tedata/unitgroups"
+      ],
+      "executableAssertionIds": {
+        "/tgdata/unitgroups": "rv.unit-group-lists.tgdata",
+        "/codata/unitgroups": "rv.unit-group-lists.codata",
+        "/mydata/unitgroups": "rv.unit-group-lists.mydata",
+        "/tedata/unitgroups": "rv.unit-group-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the unit-group list directly or with tid/id/version URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Unitgroups/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Unitgroups/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Unitgroups/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "unit-group classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "source-lists",
+      "routes": ["/tgdata/sources", "/codata/sources", "/mydata/sources", "/tedata/sources"],
+      "executableAssertionIds": {
+        "/tgdata/sources": "rv.source-lists.tgdata",
+        "/codata/sources": "rv.source-lists.codata",
+        "/mydata/sources": "rv.source-lists.mydata",
+        "/tedata/sources": "rv.source-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the source list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Sources/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Sources/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Sources/index.test.tsx",
+          "tests/unit/components/LevelTextItemDescription.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "source classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "contact-lists",
+      "routes": ["/tgdata/contacts", "/codata/contacts", "/mydata/contacts", "/tedata/contacts"],
+      "executableAssertionIds": {
+        "/tgdata/contacts": "rv.contact-lists.tgdata",
+        "/codata/contacts": "rv.contact-lists.codata",
+        "/mydata/contacts": "rv.contact-lists.mydata",
+        "/tedata/contacts": "rv.contact-lists.tedata"
+      },
+      "viewState": "dataset-list-and-drawers",
+      "pageOwnedMessageIds": ["pages.table.title.index", "pages.table.title.name"],
+      "trigger": "Open the contact list directly or with tid/id/version/required URL state and traverse list, empty, loading, view, edit, and validation states.",
+      "component": "src/pages/Contacts/index.tsx",
+      "accessContext": "authenticated-session-required with existing dataset-scope permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Contacts/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-tid",
+        "query-id",
+        "query-version",
+        "query-required"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-backed classification labels",
+        "structureAudit": "exact topology, URL-state, table, classification, modal, and drawer coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Contacts/index.test.tsx",
+          "tests/unit/components/LevelTextItemForm.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "contact classification labels refresh for every registry content language"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "data-processing",
+      "routes": ["/data-processing"],
+      "executableAssertionIds": {
+        "/data-processing": "rv.data-processing.build-preview-publication-tabs"
+      },
+      "viewState": "build-preview-publication-tabs",
+      "trigger": "Open Data Processing directly or with tab/packageId/processId/processVersion state and traverse build, preview, publication, loading, empty, success, failure, retry, and modal states.",
+      "component": "src/pages/DataProcessing/index.tsx",
+      "accessContext": "authenticated standard-user route-access boundary; data-product-manager-role-required for the internal page",
+      "copySources": {
+        "sourcePaths": [
+          "config/routes.ts",
+          "src/app.tsx",
+          "src/pages/DataProcessing/index.tsx",
+          "src/components/AccessDenied/index.tsx"
+        ],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "retry",
+        "modal",
+        "drawer",
+        "query-tab",
+        "query-packageId",
+        "query-processId",
+        "query-processVersion"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived localized payload resolution",
+        "structureAudit": "exact topology, URL-state, tab, job, preview, publication, status, and modal coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "access-boundary-observed",
+        "focusedTests": [
+          "tests/unit/app.test.tsx",
+          "tests/unit/components/AccessDenied.test.tsx",
+          "tests/unit/pages/DataProcessing/index.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "the supplied standard user reaches the route-access boundary without claiming internal data-processing localization"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "account",
+      "routes": ["/account"],
+      "executableAssertionIds": {
+        "/account": "rv.account.account-profile"
+      },
+      "viewState": "account-profile",
+      "pageOwnedMessageIds": ["pages.account.profile.email"],
+      "trigger": "Open the account page and traverse profile, loading, validation, success, and error states.",
+      "component": "src/pages/Account/index.tsx",
+      "accessContext": "authenticated-session-required",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Account/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "modal",
+        "drawer"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog",
+        "structureAudit": "exact topology, profile, validation, status, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": ["tests/unit/pages/Account/ProfilePage.test.tsx"],
+        "plannedBrowserAssertions": [
+          "profile labels, validation, and status copy switch for every registry locale"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    },
+    {
+      "id": "team",
+      "routes": ["/team"],
+      "executableAssertionIds": {
+        "/team": "rv.team.team-membership"
+      },
+      "viewState": "team-membership",
+      "pageOwnedMessageIds": ["pages.team.tabs.info"],
+      "trigger": "Open the team page or its action URL state and traverse members, invitations, role, loading, empty, success, error, modal, and drawer states.",
+      "component": "src/pages/Teams/index.tsx",
+      "accessContext": "authenticated-session-required with existing team membership permissions",
+      "copySources": {
+        "sourcePaths": ["config/routes.ts", "src/pages/Teams/index.tsx"],
+        "localeMessageIds": [],
+        "localeMessageIdPrefixes": [],
+        "declaredFallbacks": []
+      },
+      "visibleStates": [
+        "default",
+        "loading",
+        "ready",
+        "empty",
+        "error",
+        "success",
+        "unavailable",
+        "modal",
+        "drawer",
+        "query-action"
+      ],
+      "targetCoverage": {
+        "localeScope": "all-registry-locales",
+        "ownership": "shared locale catalog and registry-derived content-language labels",
+        "structureAudit": "exact topology, URL-state, members, invitation, role, modal, drawer, and action coverage",
+        "missingContent": 0
+      },
+      "proof": {
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Teams/TeamPage.test.tsx",
+          "tests/unit/components/TeamNotification.test.tsx"
+        ],
+        "plannedBrowserAssertions": [
+          "team names and actions follow every registry locale and its declared fallback chain"
+        ]
+      },
+      "unownedStaticContent": 0,
+      "blockedContext": 0
+    }
+  ],
   "rows": [
     {
       "route": "/",
       "viewState": "redirect-to-welcome",
-      "trigger": "Open / or /?view=carbon-footprint; the route redirects to /welcome and keeps the query.",
+      "executableAssertionId": "rv.root.redirect-to-welcome",
+      "trigger": "Open /?view=carbon-footprint with an authenticated session; the route redirects to /welcome and keeps the exact query.",
       "component": "config/routes.ts redirect -> src/pages/Welcome.tsx",
-      "accessContext": "authenticated-session-required; anonymous access redirects to /user/login before protected content renders",
+      "accessContext": "authenticated-session-required for localized redirect-destination evidence",
       "copySources": {
         "sourcePaths": [
           "config/routes.ts",
@@ -27,25 +1660,21 @@
         "localeMessageIdPrefixes": ["pages.welcome.overview."],
         "declaredFallbacks": []
       },
-      "visibleStates": [
-        "anonymous-login-redirect",
-        "authenticated-redirect",
-        "query-preserving-redirect"
-      ],
+      "visibleStates": ["authenticated-redirect", "query-preserving-redirect"],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog after redirect",
         "structureAudit": "exact topology, key, ICU, and route ownership",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": [
           "tests/unit/app.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": [
-          "anonymous / reaches /user/login without rendering Welcome",
-          "authenticated / reaches /welcome while preserving the query"
+        "plannedBrowserAssertions": [
+          "authenticated /?view=carbon-footprint reaches the localized /welcome guide while preserving the exact query"
         ]
       },
       "unownedStaticContent": 0,
@@ -54,6 +1683,7 @@
     {
       "route": "/welcome",
       "viewState": "overview",
+      "executableAssertionId": "rv.welcome.overview",
       "trigger": "Open /welcome directly or select the overview navigation action.",
       "component": "src/pages/Welcome.tsx",
       "accessContext": "authenticated-session-required; localization proof for protected content runs with a valid session",
@@ -77,15 +1707,17 @@
         "refresh"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog; component-local en/zh maps removed",
         "structureAudit": "exact topology, key, ICU, media alt, ARIA, and fallback coverage",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
-        "browserAssertions": [
-          "French overview title, sections, metrics, actions, TIDAS modal, and team modal states"
+        "plannedBrowserAssertions": [
+          "all registry locales render the live overview destination and preserve the selected locale",
+          "all registry locales drive the data-team modal through loading, empty, error, retry, and recovered-empty states"
         ]
       },
       "unownedStaticContent": 0,
@@ -94,6 +1726,7 @@
     {
       "route": "/welcome?view=carbon-footprint",
       "viewState": "carbon-footprint-guide",
+      "executableAssertionId": "rv.welcome.carbon-footprint-guide",
       "trigger": "Open the exact query URL, follow the carbon-footprint action, switch locale, or refresh.",
       "component": "src/pages/Welcome.tsx",
       "accessContext": "authenticated-session-required; anonymous direct access redirects to /user/login while authenticated access preserves the query view",
@@ -117,15 +1750,22 @@
         "refresh-preserves-query"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, schema, media, ARIA, and query-state coverage",
         "missingContent": 0
       },
       "proof": {
-        "focusedTests": ["tests/unit/pages/Welcome.test.tsx", "tests/unit/app.test.tsx"],
-        "browserAssertions": [
-          "French guide title, body, steps, schema, media states, actions, query switch, and refresh"
+        "requiredEvidenceScope": "internal-localization",
+        "focusedTests": [
+          "tests/unit/pages/Welcome.test.tsx",
+          "tests/unit/app.test.tsx",
+          "tests/unit/e2e/carbonFootprintGuideContract.test.ts"
+        ],
+        "plannedBrowserAssertions": [
+          "all registry locales render the guide title, body, preparation, workflow, schema, and enabled navigation actions",
+          "all registry locales drive exact signed-URL loading, media rendering, media failure, and retry states without a production write",
+          "mounted locale switching and refresh preserve the outer query, carbon-footprint view query, and registry locale"
         ]
       },
       "unownedStaticContent": 0,
@@ -134,6 +1774,7 @@
     {
       "route": "/user/login",
       "viewState": "login-and-register",
+      "executableAssertionId": "rv.login.login-and-register",
       "trigger": "Open /user/login, switch tabs, submit invalid data, or open top actions.",
       "component": "src/pages/User/Login/index.tsx + src/pages/User/Login/Components/LoginTopActions.tsx",
       "accessContext": "anonymous-login-flow",
@@ -151,7 +1792,7 @@
           "src/locales/en-US/globalHeader.ts"
         ],
         "localeMessageIds": [
-          "pages.login.accountLogin.tab",
+          "pages.login.login.tab",
           "pages.login.terms",
           "pages.theme.toggleDarkMode",
           "pages.lang.select"
@@ -173,12 +1814,13 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog plus declared English legal/docs fallback",
         "structureAudit": "exact topology, key, ICU, ARIA, selector, service error, and fallback coverage",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": [
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/pages/User/Login/Components/LoginTopActions.test.tsx",
@@ -186,7 +1828,7 @@
           "tests/unit/components/RightContent.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French selector, legal/docs disclosure, and dark-mode action"
         ]
       },
@@ -196,6 +1838,7 @@
     {
       "route": "/user/login/password_forgot",
       "viewState": "password-forgot",
+      "executableAssertionId": "rv.login.password-forgot",
       "trigger": "Open the forgot-password link and submit empty, invalid, successful, or failing requests.",
       "component": "src/pages/User/Login/password_forgot.tsx",
       "accessContext": "anonymous-login-flow",
@@ -224,17 +1867,18 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": [
           "tests/unit/pages/User/Login/password_forgot.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French form and validation state",
           "rejected session prefill stops loading and leaves the form usable"
         ]
@@ -245,6 +1889,7 @@
     {
       "route": "/user/login/password_reset",
       "viewState": "password-reset",
+      "executableAssertionId": "rv.login.password-reset",
       "trigger": "Open the reset URL and submit empty, invalid, successful, or failing requests.",
       "component": "src/pages/User/Login/password_reset.tsx",
       "accessContext": "anonymous-login-flow",
@@ -274,17 +1919,18 @@
         "keyboard-actions"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "exact topology, key, ICU, validation, and service state coverage",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": [
           "tests/unit/pages/User/Login/password_reset.test.tsx",
           "tests/unit/wrappers/LoginFlowGuard.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous French form and validation state",
           "missing or rejected reset session exposes a localized recovery action"
         ]
@@ -295,12 +1941,15 @@
     {
       "route": "/dashboard/national-carbon",
       "viewState": "national-carbon-dashboard",
+      "executableAssertionId": "rv.dashboard.national-carbon",
       "trigger": "Open as an admin and traverse screen, status, map, matrix, and flow-topology controls.",
       "component": "src/pages/NationalCarbonDashboard/index.tsx + ProcessFlowGraphPanel.tsx",
-      "accessContext": "authenticated-session-and-role-required",
+      "accessContext": "authenticated standard-user route-access boundary; admin-role-required for the dashboard",
       "copySources": {
         "sourcePaths": [
           "config/routes.ts",
+          "src/app.tsx",
+          "src/components/AccessDenied/index.tsx",
           "src/wrappers/AuthGuard.tsx",
           "src/pages/NationalCarbonDashboard/index.tsx",
           "src/pages/NationalCarbonDashboard/i18n.ts",
@@ -330,21 +1979,24 @@
         "South-China-Sea-map-label"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog plus typed source-data adapters",
         "structureAudit": "exact topology, key, ICU, token, formatting, map, loading, error, and empty coverage",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "access-boundary-observed",
         "focusedTests": [
+          "tests/unit/app.test.tsx",
+          "tests/unit/components/AccessDenied.test.tsx",
           "tests/unit/config/routes.test.ts",
           "tests/unit/wrappers/AuthGuard.test.tsx",
           "tests/unit/pages/NationalCarbonDashboard/index.test.tsx",
           "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
           "tests/unit/pages/NationalCarbonDashboard/processFlowGraphPanel.test.tsx"
         ],
-        "browserAssertions": [
-          "representative authenticated French shared-header and dashboard state"
+        "plannedBrowserAssertions": [
+          "the supplied standard user reaches the route-access boundary without claiming internal dashboard localization"
         ]
       },
       "unownedStaticContent": 0,
@@ -353,6 +2005,7 @@
     {
       "route": "/terms_of_use.html",
       "viewState": "static-legal-English-fallback",
+      "executableAssertionId": "rv.legal.terms-of-use-fallback",
       "trigger": "Open the terms link from registration.",
       "component": "public/terms_of_use.html",
       "accessContext": "anonymous-static-login-flow-dependency; outside the SPA route policy",
@@ -364,17 +2017,18 @@
       },
       "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "declared English legal fallback",
         "structureAudit": "fixed URL, hrefLang, and localized disclosure",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "declared-fallback-observed",
         "focusedTests": [
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": ["French disclosure opens the existing English terms URL"]
+        "plannedBrowserAssertions": ["French disclosure opens the existing English terms URL"]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0
@@ -382,6 +2036,7 @@
     {
       "route": "/privacy_notice.html",
       "viewState": "static-legal-English-fallback",
+      "executableAssertionId": "rv.legal.privacy-notice-fallback",
       "trigger": "Open the privacy link from registration.",
       "component": "public/privacy_notice.html",
       "accessContext": "anonymous-static-login-flow-dependency; outside the SPA route policy",
@@ -393,17 +2048,18 @@
       },
       "visibleStates": ["new-tab-static-document", "French-English-fallback-label"],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "declared English legal fallback",
         "structureAudit": "fixed URL, hrefLang, and localized disclosure",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "declared-fallback-observed",
         "focusedTests": [
           "tests/unit/pages/User/Login/index.test.tsx",
           "tests/unit/services/general/publicRoutePolicy.test.ts"
         ],
-        "browserAssertions": ["French disclosure opens the existing English privacy URL"]
+        "plannedBrowserAssertions": ["French disclosure opens the existing English privacy URL"]
       },
       "unownedStaticContent": 0,
       "blockedContext": 0
@@ -411,6 +2067,7 @@
     {
       "route": "*",
       "viewState": "not-found",
+      "executableAssertionId": "rv.not-found.localized",
       "trigger": "Open any pathname not matched by a configured application route.",
       "component": "src/pages/404.tsx",
       "accessContext": "authenticated-session-required; anonymous unknown paths redirect to /user/login before the localized 404 can render",
@@ -433,12 +2090,13 @@
         "back-home-action"
       ],
       "targetCoverage": {
-        "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+        "localeScope": "all-registry-locales",
         "ownership": "shared locale catalog",
         "structureAudit": "fail-closed anonymous-route policy plus authenticated localized wildcard rendering",
         "missingContent": 0
       },
       "proof": {
+        "requiredEvidenceScope": "internal-localization",
         "focusedTests": [
           "tests/unit/app.test.tsx",
           "tests/unit/config/routes.test.ts",
@@ -446,7 +2104,7 @@
           "tests/unit/wrappers/AuthGuard.test.tsx",
           "tests/unit/pages/404.test.tsx"
         ],
-        "browserAssertions": [
+        "plannedBrowserAssertions": [
           "anonymous unknown pathname reaches /user/login without rendering the 404",
           "authenticated unknown pathname renders the localized 404 and Back Home action"
         ]

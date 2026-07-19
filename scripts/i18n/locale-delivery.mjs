@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
+import { parseEnv } from 'node:util';
 import { getImportReportContentAuditDescriptor } from '../../src/components/ImportTidasPackage/reportContent.ts';
 import { TRANSLATION_SOURCE_CONTENT_LANGUAGE } from '../../src/services/general/contentLanguageRegistry.ts';
 import { getLocaleCapability } from '../../src/services/general/localeCapabilities.ts';
@@ -16,6 +17,10 @@ import {
   SUPPORTED_APP_LOCALES,
 } from '../../src/services/general/localeRegistry.ts';
 import { REFERENCE_RESOURCE_MANIFEST as REFERENCE_RESOURCES } from '../../src/services/referenceResources/manifest.ts';
+import {
+  resolveLocaleArtifactSharedAuditMode,
+  resolveLocaleArtifactTargets,
+} from './locale-artifact-targets.ts';
 
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
@@ -58,6 +63,42 @@ const REQUIRED_FALLBACK_SURFACES = [
   'TIDAS-import-report',
   'environment-branding',
 ];
+const SEMANTIC_E2E_BROWSERS = Object.freeze(['chromium', 'firefox', 'webkit']);
+const SEMANTIC_E2E_EVIDENCE_SCHEMA = 'tiangong.i18n-semantic-e2e-evidence.v1';
+const SEMANTIC_E2E_PROOF_SCOPES = new Set([
+  'internal-localization',
+  'access-boundary-observed',
+  'declared-fallback-observed',
+]);
+const SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES = new Set([
+  '.auth',
+  'playwright-report',
+  'runtime',
+  'test-results',
+]);
+const SEMANTIC_E2E_RUNTIME_ASSET_MANIFESTS = Object.freeze([
+  'src/services/referenceResources/generatedManifest.ts',
+  'src/services/referenceResources/manifest.ts',
+  'src/services/referenceResources/reference-resource-manifest.json',
+]);
+const SEMANTIC_E2E_CRITICAL_SOURCE_PATHS = Object.freeze([
+  'src/components/LocationTextItem/description.tsx',
+  'src/components/RightContent/index.tsx',
+]);
+const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
+  'docs/plans/i18n/semantic-e2e-evidence.schema.json',
+  'scripts/i18n/locale-delivery.mjs',
+  'tests/data-workflows/data-workflow-paths.ts',
+  'tests/data-workflows/workflows/workflow-shared.ts',
+  'tests/unit/components/LocationTextItemDescription.test.tsx',
+  'tests/unit/components/RightContent.test.tsx',
+  'tests/unit/e2e/evidenceReporter.test.ts',
+  'tests/unit/e2e/productionDataLedger.test.ts',
+  'tests/unit/e2e/productionRequestGuard.test.ts',
+  'tests/unit/services/general/routeViewStateRegistry.test.ts',
+]);
+const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
+const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
 
 const ACTIONS = new Set([
   'audit',
@@ -81,12 +122,15 @@ Actions:
   quality       write or check the compact automated quality manifest
   corrections   check the tracked existing-translation correction overlay
   activation    write or check the compact runtime activation manifest
-  artifacts     write context, quality, and activation manifests in dependency order
+  artifacts     write context, structural validation, quality, and activation manifests
+                in dependency order
   all           check context, quality, and activation for every registry locale
   dossier       print one reproducible full message dossier without writing it
 
 Options:
-  --locale <locale>  canonical locale from the typed registry
+  --locale <locale>  canonical locale from the typed registry; required for per-locale
+                     actions, optional legacy compatibility for the shared manifest,
+                     and an artifacts target override (all registry locales when omitted)
   --message <id>     exact message ID (required for dossier)
   --root <path>      repository root (default: current working directory)
   --write            write the selected deterministic artifact
@@ -131,8 +175,15 @@ function parseArgs(argv) {
   if (!options.write && !options.check) options.check = true;
   options.root = path.resolve(options.root);
 
-  if (action !== 'corrections' && action !== 'all') {
+  if (
+    action !== 'corrections' &&
+    action !== 'all' &&
+    action !== 'artifacts' &&
+    action !== 'manifest'
+  ) {
     if (!options.locale) throw new Error('--locale is required for this action');
+  }
+  if (options.locale && action !== 'corrections' && action !== 'all') {
     const definition = getLocaleDefinition(options.locale);
     if (!definition || definition.canonicalLocale !== options.locale) {
       throw new Error(
@@ -601,6 +652,703 @@ function stateSignalCovered(signal, visibleStates) {
   return aliases[signal].some((alias) => normalized.includes(alias));
 }
 
+function assertRecordShape(value, requiredKeys, optionalKeys, label) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  const allowedKeys = new Set([...requiredKeys, ...optionalKeys]);
+  const missingKeys = requiredKeys.filter((key) => !Object.hasOwn(value, key));
+  const unknownKeys = Object.keys(value).filter((key) => !allowedKeys.has(key));
+  if (missingKeys.length > 0 || unknownKeys.length > 0) {
+    throw new Error(
+      `${label} has an invalid shape (missing: ${missingKeys.join(', ') || 'none'}; unknown: ${unknownKeys.join(', ') || 'none'}).`,
+    );
+  }
+}
+
+function assertExactSequence(actual, expected, label) {
+  if (!Array.isArray(actual) || JSON.stringify(actual) !== JSON.stringify(expected)) {
+    throw new Error(`${label} must exactly match ${expected.join(', ')}.`);
+  }
+}
+
+function collectEvidenceFiles(root, relativeDirectory, include = () => true) {
+  const absoluteDirectory = path.resolve(root, relativeDirectory);
+  if (!fs.existsSync(absoluteDirectory)) return [];
+  const files = [];
+  const visit = (absolutePath) => {
+    for (const entry of fs.readdirSync(absolutePath, { withFileTypes: true })) {
+      if (entry.isDirectory() && SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES.has(entry.name)) {
+        continue;
+      }
+      const entryPath = path.join(absolutePath, entry.name);
+      if (entry.isDirectory()) visit(entryPath);
+      else if (entry.isFile() && include(entryPath)) {
+        files.push(path.relative(root, entryPath).split(path.sep).join('/'));
+      }
+    }
+  };
+  visit(absoluteDirectory);
+  return files.sort();
+}
+
+function digestTree(root, relativeDirectory) {
+  const paths = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '--', relativeDirectory],
+    { cwd: root, encoding: 'utf8' },
+  )
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .filter((relativeFile) => {
+      try {
+        return fs.statSync(path.resolve(root, relativeFile)).isFile();
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+  if (paths.length === 0) {
+    throw new Error(`Semantic E2E candidate snapshot is empty: ${relativeDirectory}.`);
+  }
+  return digestJson(
+    paths.map((relativeFile) => ({
+      path: relativeFile,
+      sha256: fileDigest(root, relativeFile),
+    })),
+  );
+}
+
+function semanticRuntimeAssetPaths(root) {
+  const gzipAssets = ['public/classifications', 'public/locations'].flatMap((directory) =>
+    collectEvidenceFiles(root, directory, (absolutePath) => absolutePath.endsWith('.gz')),
+  );
+  const paths = [...new Set([...SEMANTIC_E2E_RUNTIME_ASSET_MANIFESTS, ...gzipAssets])].sort();
+  if (gzipAssets.length === 0) {
+    throw new Error('Semantic E2E evidence has no classification/location runtime assets.');
+  }
+  return paths;
+}
+
+function trackedBackendTarget(root) {
+  const candidateEnvironment = readText(root, SEMANTIC_E2E_TRACKED_ENVIRONMENT);
+  const trackedMainEnvironment = gitText(root, 'origin/main', SEMANTIC_E2E_TRACKED_ENVIRONMENT);
+  const parseBackend = (environment) => {
+    const values = parseEnv(environment);
+    const url = values.SUPABASE_URL?.trim();
+    const publishableKey = values.SUPABASE_PUBLISHABLE_KEY?.trim();
+    if (!url || !publishableKey) {
+      throw new Error('Environment does not define a complete production backend target.');
+    }
+    try {
+      return { origin: new URL(url).origin, publishableKey };
+    } catch {
+      throw new Error('Environment has an invalid production backend target.');
+    }
+  };
+  const candidate = parseBackend(candidateEnvironment);
+  const trackedMain = parseBackend(trackedMainEnvironment);
+  if (
+    candidate.origin !== trackedMain.origin ||
+    candidate.publishableKey !== trackedMain.publishableKey
+  ) {
+    throw new Error('Candidate backend target differs from tracked main production.');
+  }
+  return {
+    candidateEnvironmentDigest: sha256(candidateEnvironment),
+    originDigest: sha256(trackedMain.origin),
+    publishableKeyDigest: sha256(trackedMain.publishableKey),
+    trackedMainEnvironmentDigest: sha256(trackedMainEnvironment),
+  };
+}
+
+function playwrightRequiresFreshServer(root) {
+  const source = readText(root, 'playwright.config.ts');
+  const sourceFile = ts.createSourceFile(
+    'playwright.config.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const values = [];
+  const visit = (node) => {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ((ts.isIdentifier(node.name) && node.name.text === 'reuseExistingServer') ||
+        (ts.isStringLiteral(node.name) && node.name.text === 'reuseExistingServer'))
+    ) {
+      values.push(node.initializer.kind);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return values.length === 1 && values[0] === ts.SyntaxKind.FalseKeyword;
+}
+
+function playwrightDisablesFailurePageSnapshots(root) {
+  const source = readText(root, 'playwright.config.ts');
+  return /process\.env\.PLAYWRIGHT_NO_COPY_PROMPT\s*=\s*['"]1['"]/u.test(source);
+}
+
+function playwrightBlocksServiceWorkers(root) {
+  const source = readText(root, 'playwright.config.ts');
+  return /serviceWorkers\s*:\s*['"]block['"]/u.test(source);
+}
+
+function playwrightTestDirectory(root) {
+  const source = readText(root, 'playwright.config.ts');
+  const sourceFile = ts.createSourceFile(
+    'playwright.config.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const values = [];
+  const visit = (node) => {
+    if (
+      ts.isPropertyAssignment(node) &&
+      ((ts.isIdentifier(node.name) && node.name.text === 'testDir') ||
+        (ts.isStringLiteral(node.name) && node.name.text === 'testDir'))
+    ) {
+      values.push(
+        ts.isStringLiteral(node.initializer) || ts.isNoSubstitutionTemplateLiteral(node.initializer)
+          ? path.resolve(root, node.initializer.text)
+          : null,
+      );
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return values.length === 1 ? values[0] : null;
+}
+
+function routeCoverageContractDigest(coverage) {
+  return digestJson({
+    schemaVersion: coverage.schemaVersion,
+    supportedLocales: coverage.supportedLocales,
+    sourceRouteConfig: coverage.sourceRouteConfig,
+    policy: coverage.policy,
+    executableTargets: coverage.executableTargets,
+    executableViewVariants: coverage.executableViewVariants,
+    viewStateRegistry: coverage.viewStateRegistry,
+    assertionSemantics: coverage.proofPolicy?.assertionSemantics,
+    evidenceContract: coverage.proofPolicy?.evidenceContract,
+    routeFamilies: coverage.routeFamilies,
+    rows: coverage.rows,
+  });
+}
+
+function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
+  const focusedTestPaths = routeRows.flatMap((row) => row.proof.focusedTests ?? []);
+  const semanticE2EPaths = collectEvidenceFiles(
+    root,
+    evidenceContract.digestPolicy.semanticE2ERoot,
+  );
+  const testPaths = [
+    ...new Set([
+      ...focusedTestPaths,
+      ...semanticE2EPaths,
+      ...SEMANTIC_E2E_CRITICAL_TEST_PATHS,
+      ...evidenceContract.digestPolicy.additionalTestPaths,
+    ]),
+  ].sort();
+  const sourcePaths = [
+    ...new Set([
+      ...routeRows.flatMap((row) => row.copySources.sourcePaths ?? []),
+      ...SEMANTIC_E2E_CRITICAL_SOURCE_PATHS,
+      ...evidenceContract.digestPolicy.criticalSourcePaths,
+    ]),
+  ].sort();
+  for (const relativeFile of [...testPaths, ...sourcePaths]) {
+    if (!fs.existsSync(path.resolve(root, relativeFile))) {
+      throw new Error(`Semantic E2E evidence requires missing digest source ${relativeFile}.`);
+    }
+  }
+  const toDigests = (relativeFiles) =>
+    relativeFiles.map((relativeFile) => ({
+      path: relativeFile,
+      sha256: fileDigest(root, relativeFile),
+    }));
+  const runtimeAssetPaths = semanticRuntimeAssetPaths(root);
+  return {
+    packageLock: toDigests([SEMANTIC_E2E_PACKAGE_LOCK])[0],
+    runtimeAssets: toDigests(runtimeAssetPaths),
+    tests: toDigests(testPaths),
+    sources: toDigests(sourcePaths),
+  };
+}
+
+function assertExactFileDigests(actual, expected, label) {
+  if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
+  if (
+    JSON.stringify(actual.map((entry) => entry?.path)) !==
+    JSON.stringify(expected.map((entry) => entry.path))
+  ) {
+    throw new Error(`${label} paths do not exactly close the required file set.`);
+  }
+  for (let index = 0; index < expected.length; index += 1) {
+    const actualEntry = actual[index];
+    const expectedEntry = expected[index];
+    assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
+    if (
+      !/^[0-9a-f]{64}$/u.test(actualEntry.sha256) ||
+      actualEntry.sha256 !== expectedEntry.sha256
+    ) {
+      throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
+    }
+  }
+}
+
+function validateSemanticEvidenceContract(root, coverage, routeRows) {
+  const contract = coverage.proofPolicy?.evidenceContract;
+  if (!contract) throw new Error('Route-view coverage has no semantic E2E evidence contract.');
+  assertRecordShape(
+    contract,
+    [
+      'schemaVersion',
+      'schemaPath',
+      'evidencePath',
+      'requiredAssertionCount',
+      'requiredLocales',
+      'requiredBrowsers',
+      'browserCoverage',
+      'target',
+      'productionData',
+      'digestPolicy',
+    ],
+    [],
+    'Semantic E2E evidence contract',
+  );
+  if (contract.schemaVersion !== SEMANTIC_E2E_EVIDENCE_SCHEMA) {
+    throw new Error('Semantic E2E evidence contract uses an unsupported schema.');
+  }
+  if (contract.requiredAssertionCount !== routeRows.length) {
+    throw new Error('Semantic E2E evidence assertion count differs from route/view coverage.');
+  }
+  assertExactSequence(
+    contract.requiredLocales,
+    SUPPORTED_APP_LOCALES,
+    'Semantic E2E contract locales',
+  );
+  assertExactSequence(
+    contract.requiredBrowsers,
+    SEMANTIC_E2E_BROWSERS,
+    'Semantic E2E contract browsers',
+  );
+  if (
+    contract.target?.frontend !== 'candidate-local' ||
+    contract.target?.backend !== 'production'
+  ) {
+    throw new Error(
+      'Semantic E2E evidence must target a candidate-local frontend and production backend.',
+    );
+  }
+  if (
+    contract.productionData?.markerPrefix !== 'codex-e2e' ||
+    contract.productionData?.exactCreated !== 1 ||
+    contract.productionData?.requireCreatedAndCleaned !== true ||
+    contract.productionData?.maximumLeaked !== 0
+  ) {
+    throw new Error('Semantic E2E production-data policy must require exact codex-e2e cleanup.');
+  }
+  if (
+    contract.browserCoverage?.fullRouteViewBrowser !== 'chromium' ||
+    JSON.stringify(contract.browserCoverage?.criticalBrowsers) !==
+      JSON.stringify(SEMANTIC_E2E_BROWSERS) ||
+    !Array.isArray(contract.browserCoverage?.criticalAssertionIds)
+  ) {
+    throw new Error('Semantic E2E browser coverage policy is incomplete.');
+  }
+  const requiredAssertionIds = new Set(routeRows.map((row) => row.executableAssertionId));
+  if (
+    contract.browserCoverage.criticalAssertionIds.length === 0 ||
+    new Set(contract.browserCoverage.criticalAssertionIds).size !==
+      contract.browserCoverage.criticalAssertionIds.length ||
+    contract.browserCoverage.criticalAssertionIds.some(
+      (assertionId) => !requiredAssertionIds.has(assertionId),
+    )
+  ) {
+    throw new Error('Semantic E2E critical browser assertions differ from route/view coverage.');
+  }
+  if (
+    typeof contract.digestPolicy?.semanticE2ERoot !== 'string' ||
+    !Array.isArray(contract.digestPolicy?.additionalTestPaths) ||
+    !Array.isArray(contract.digestPolicy?.criticalSourcePaths)
+  ) {
+    throw new Error('Semantic E2E digest policy is incomplete.');
+  }
+  const semanticE2ERoot = path.resolve(root, contract.digestPolicy.semanticE2ERoot);
+  const relativeSemanticE2ERoot = path.relative(root, semanticE2ERoot);
+  if (
+    playwrightTestDirectory(root) !== semanticE2ERoot ||
+    relativeSemanticE2ERoot === '..' ||
+    relativeSemanticE2ERoot.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeSemanticE2ERoot) ||
+    collectEvidenceFiles(root, contract.digestPolicy.semanticE2ERoot).length === 0
+  ) {
+    throw new Error(
+      'Semantic E2E digest root must be a non-empty repository directory matching Playwright testDir.',
+    );
+  }
+  if (!fs.existsSync(path.resolve(root, contract.schemaPath))) {
+    throw new Error(`Semantic E2E evidence schema is missing: ${contract.schemaPath}.`);
+  }
+  const schema = readJson(root, contract.schemaPath);
+  if (
+    schema?.properties?.schemaVersion?.const !== SEMANTIC_E2E_EVIDENCE_SCHEMA ||
+    schema?.properties?.target?.properties?.frontend?.const !== 'candidate-local' ||
+    schema?.properties?.target?.properties?.backend?.const !== 'production' ||
+    schema?.properties?.target?.properties?.proof?.properties?.observer?.const !==
+      'chromium-auth-request' ||
+    !schema?.required?.includes('candidate') ||
+    !schema?.properties?.digests?.required?.includes('packageLock') ||
+    !schema?.properties?.digests?.required?.includes('runtimeAssets')
+  ) {
+    throw new Error('Semantic E2E evidence schema differs from the executable contract.');
+  }
+  if (!playwrightRequiresFreshServer(root)) {
+    throw new Error('Semantic E2E evidence runs must never reuse a local frontend server.');
+  }
+  if (!playwrightDisablesFailurePageSnapshots(root)) {
+    throw new Error('Authenticated semantic E2E runs must not persist automatic page snapshots.');
+  }
+  if (!playwrightBlocksServiceWorkers(root)) {
+    throw new Error('Semantic E2E request guards require service workers to be blocked.');
+  }
+  return contract;
+}
+
+function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evidenceContract) {
+  if (
+    !descriptor?.path ||
+    descriptor.path !== evidenceContract.evidencePath ||
+    !/^[0-9a-f]{64}$/u.test(descriptor.sha256 ?? '') ||
+    !fs.existsSync(path.resolve(root, descriptor.path)) ||
+    fileDigest(root, descriptor.path) !== descriptor.sha256
+  ) {
+    throw new Error('Semantic browser proof contains missing or digest-mismatched evidence.');
+  }
+  const evidence = readJson(root, descriptor.path);
+  assertRecordShape(
+    evidence,
+    [
+      'schemaVersion',
+      'status',
+      'generatedAt',
+      'runId',
+      'candidate',
+      'target',
+      'locales',
+      'browsers',
+      'routeCoverage',
+      'digests',
+      'assertions',
+      'productionData',
+    ],
+    [],
+    'Semantic E2E evidence',
+  );
+  if (evidence.schemaVersion !== SEMANTIC_E2E_EVIDENCE_SCHEMA || evidence.status !== 'verified') {
+    throw new Error('Semantic E2E evidence is not a verified v1 execution record.');
+  }
+  if (
+    typeof evidence.generatedAt !== 'string' ||
+    !Number.isFinite(Date.parse(evidence.generatedAt)) ||
+    typeof evidence.runId !== 'string' ||
+    !/^(?:github-[0-9]+-[0-9]+|local-[0-9a-f-]{36})$/u.test(evidence.runId)
+  ) {
+    throw new Error('Semantic E2E evidence has no valid run identity.');
+  }
+  assertRecordShape(
+    evidence.candidate,
+    [
+      'configTreeDigest',
+      'observedHeadCommit',
+      'packageManifestDigest',
+      'sourceTreeDigest',
+      'unitTestTreeDigest',
+    ],
+    [],
+    'Semantic E2E candidate identity',
+  );
+  if (
+    !/^[0-9a-f]{40}$/u.test(evidence.candidate.observedHeadCommit ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.candidate.configTreeDigest ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.candidate.packageManifestDigest ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.candidate.sourceTreeDigest ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.candidate.unitTestTreeDigest ?? '') ||
+    evidence.candidate.configTreeDigest !== digestTree(root, 'config') ||
+    evidence.candidate.packageManifestDigest !== fileDigest(root, 'package.json') ||
+    evidence.candidate.sourceTreeDigest !== digestTree(root, 'src') ||
+    evidence.candidate.unitTestTreeDigest !== digestTree(root, 'tests/unit')
+  ) {
+    throw new Error('Semantic E2E evidence is not bound to the current source/test snapshot.');
+  }
+  assertRecordShape(evidence.target, ['frontend', 'backend', 'proof'], [], 'Semantic E2E target');
+  if (
+    evidence.target.frontend !== evidenceContract.target.frontend ||
+    evidence.target.backend !== evidenceContract.target.backend
+  ) {
+    throw new Error('Semantic E2E evidence did not execute candidate-local against production.');
+  }
+  assertRecordShape(
+    evidence.target.proof,
+    [
+      'backendObservedOriginSha256',
+      'backendObservedPublishableKeySha256',
+      'backendTrackedOriginSha256',
+      'backendTrackedPublishableKeySha256',
+      'candidateEnvironmentSha256',
+      'frontendOriginSha256',
+      'freshPlaywrightServer',
+      'observer',
+      'trackedMainEnvironmentSha256',
+    ],
+    [],
+    'Semantic E2E target proof',
+  );
+  const trackedBackend = trackedBackendTarget(root);
+  if (
+    evidence.target.proof.backendObservedOriginSha256 !== trackedBackend.originDigest ||
+    evidence.target.proof.backendTrackedOriginSha256 !== trackedBackend.originDigest ||
+    evidence.target.proof.backendObservedPublishableKeySha256 !==
+      trackedBackend.publishableKeyDigest ||
+    evidence.target.proof.backendTrackedPublishableKeySha256 !==
+      trackedBackend.publishableKeyDigest ||
+    evidence.target.proof.candidateEnvironmentSha256 !==
+      trackedBackend.candidateEnvironmentDigest ||
+    evidence.target.proof.trackedMainEnvironmentSha256 !==
+      trackedBackend.trackedMainEnvironmentDigest ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.frontendOriginSha256 ?? '') ||
+    evidence.target.proof.frontendOriginSha256 === trackedBackend.originDigest ||
+    evidence.target.proof.freshPlaywrightServer !== true ||
+    evidence.target.proof.observer !== 'chromium-auth-request' ||
+    !playwrightRequiresFreshServer(root) ||
+    !playwrightDisablesFailurePageSnapshots(root) ||
+    !playwrightBlocksServiceWorkers(root)
+  ) {
+    throw new Error(
+      'Semantic E2E target proof does not bind a fresh local candidate to the tracked production backend.',
+    );
+  }
+  assertExactSequence(evidence.locales, SUPPORTED_APP_LOCALES, 'Semantic E2E evidence locales');
+  assertExactSequence(evidence.browsers, SEMANTIC_E2E_BROWSERS, 'Semantic E2E evidence browsers');
+  assertRecordShape(
+    evidence.routeCoverage,
+    ['path', 'contractDigest'],
+    [],
+    'Semantic E2E route coverage binding',
+  );
+  const contractDigest = routeCoverageContractDigest(coverage);
+  if (
+    evidence.routeCoverage.path !== ROUTE_VIEW_COVERAGE ||
+    evidence.routeCoverage.contractDigest !== contractDigest
+  ) {
+    throw new Error('Semantic E2E evidence is not bound to the current route/view contract.');
+  }
+  assertRecordShape(
+    evidence.digests,
+    ['packageLock', 'runtimeAssets', 'tests', 'sources'],
+    [],
+    'Semantic E2E digests',
+  );
+  const expectedDigests = expectedSemanticEvidenceDigests(root, routeRows, evidenceContract);
+  assertRecordShape(
+    evidence.digests.packageLock,
+    ['path', 'sha256'],
+    [],
+    'Semantic E2E package-lock digest',
+  );
+  if (
+    evidence.digests.packageLock.path !== expectedDigests.packageLock.path ||
+    evidence.digests.packageLock.sha256 !== expectedDigests.packageLock.sha256
+  ) {
+    throw new Error('Semantic E2E evidence is not bound to the current package lock.');
+  }
+  assertExactFileDigests(
+    evidence.digests.runtimeAssets,
+    expectedDigests.runtimeAssets,
+    'Semantic E2E runtime-asset digests',
+  );
+  assertExactFileDigests(
+    evidence.digests.tests,
+    expectedDigests.tests,
+    'Semantic E2E test digests',
+  );
+  assertExactFileDigests(
+    evidence.digests.sources,
+    expectedDigests.sources,
+    'Semantic E2E source digests',
+  );
+
+  if (!Array.isArray(evidence.assertions)) {
+    throw new Error('Semantic E2E evidence assertions must be an array.');
+  }
+  const assertionsById = new Map();
+  for (const [index, assertion] of evidence.assertions.entries()) {
+    assertRecordShape(
+      assertion,
+      [
+        'assertionId',
+        'route',
+        'viewState',
+        'result',
+        'proofScope',
+        'locales',
+        'browsers',
+        'scenarios',
+        'scenarioCoverage',
+      ],
+      [],
+      `Semantic E2E assertion[${index}]`,
+    );
+    if (assertionsById.has(assertion.assertionId)) {
+      throw new Error(`Semantic E2E evidence duplicates assertion ${assertion.assertionId}.`);
+    }
+    assertionsById.set(assertion.assertionId, assertion);
+  }
+  if (assertionsById.size !== routeRows.length) {
+    throw new Error('Semantic E2E evidence does not close every required route/view assertion.');
+  }
+  const criticalAssertionIds = new Set(evidenceContract.browserCoverage.criticalAssertionIds);
+  for (const row of routeRows) {
+    const assertion = assertionsById.get(row.executableAssertionId);
+    if (!assertion) {
+      throw new Error(`Semantic E2E evidence is missing ${row.executableAssertionId}.`);
+    }
+    if (
+      assertion.route !== row.route ||
+      assertion.viewState !== row.viewState ||
+      assertion.result !== 'passed' ||
+      assertion.proofScope !== row.proof.requiredEvidenceScope
+    ) {
+      throw new Error(
+        `Semantic E2E assertion ${row.executableAssertionId} differs from its route contract.`,
+      );
+    }
+    assertExactSequence(
+      assertion.locales,
+      SUPPORTED_APP_LOCALES,
+      `Semantic E2E assertion ${row.executableAssertionId} locales`,
+    );
+    const requiredScenarios = requiredSemanticScenarios(
+      coverage.executableTargets[row.executableAssertionId],
+      coverage,
+      row.executableAssertionId,
+    );
+    assertExactSequence(
+      assertion.scenarios,
+      [...requiredScenarios].sort(),
+      `Semantic E2E assertion ${row.executableAssertionId} scenarios`,
+    );
+    if (
+      !Array.isArray(assertion.scenarioCoverage) ||
+      assertion.scenarioCoverage.length !== assertion.scenarios.length
+    ) {
+      throw new Error(
+        `Semantic E2E assertion ${row.executableAssertionId} has incomplete scenario coverage.`,
+      );
+    }
+    for (const [scenarioIndex, scenarioCoverage] of assertion.scenarioCoverage.entries()) {
+      assertRecordShape(
+        scenarioCoverage,
+        ['scenario', 'locales', 'browsers'],
+        [],
+        `Semantic E2E assertion ${row.executableAssertionId} scenarioCoverage[${scenarioIndex}]`,
+      );
+      if (scenarioCoverage.scenario !== assertion.scenarios[scenarioIndex]) {
+        throw new Error(
+          `Semantic E2E assertion ${row.executableAssertionId} scenario coverage order differs from its contract.`,
+        );
+      }
+      assertExactSequence(
+        scenarioCoverage.locales,
+        SUPPORTED_APP_LOCALES,
+        `Semantic E2E assertion ${row.executableAssertionId} ${scenarioCoverage.scenario} locales`,
+      );
+      if (
+        !Array.isArray(scenarioCoverage.browsers) ||
+        new Set(scenarioCoverage.browsers).size !== scenarioCoverage.browsers.length ||
+        JSON.stringify(scenarioCoverage.browsers) !==
+          JSON.stringify(
+            SEMANTIC_E2E_BROWSERS.filter((browser) => scenarioCoverage.browsers.includes(browser)),
+          ) ||
+        !scenarioCoverage.browsers.includes(evidenceContract.browserCoverage.fullRouteViewBrowser)
+      ) {
+        throw new Error(
+          `Semantic E2E assertion ${row.executableAssertionId} ${scenarioCoverage.scenario} has invalid browser coverage.`,
+        );
+      }
+    }
+    if (
+      !Array.isArray(assertion.browsers) ||
+      new Set(assertion.browsers).size !== assertion.browsers.length ||
+      JSON.stringify(assertion.browsers) !==
+        JSON.stringify(
+          SEMANTIC_E2E_BROWSERS.filter((browser) => assertion.browsers.includes(browser)),
+        ) ||
+      !assertion.browsers.includes(evidenceContract.browserCoverage.fullRouteViewBrowser)
+    ) {
+      throw new Error(
+        `Semantic E2E assertion ${row.executableAssertionId} has invalid browser coverage.`,
+      );
+    }
+    if (
+      criticalAssertionIds.has(row.executableAssertionId) &&
+      JSON.stringify(assertion.browsers) !== JSON.stringify(SEMANTIC_E2E_BROWSERS)
+    ) {
+      throw new Error(
+        `Semantic E2E critical assertion ${row.executableAssertionId} must pass all browsers.`,
+      );
+    }
+    if (
+      assertion.proofScope === 'access-boundary-observed' &&
+      row.proof.requiredEvidenceScope !== 'access-boundary-observed'
+    ) {
+      throw new Error(
+        `Access-boundary evidence cannot prove internal localization for ${row.executableAssertionId}.`,
+      );
+    }
+  }
+
+  assertRecordShape(
+    evidence.productionData,
+    ['markerPrefix', 'created', 'cleaned', 'leaked'],
+    [],
+    'Semantic E2E production data ledger',
+  );
+  if (
+    evidence.productionData.markerPrefix !== evidenceContract.productionData.markerPrefix ||
+    !Number.isInteger(evidence.productionData.created) ||
+    evidence.productionData.created !== evidenceContract.productionData.exactCreated ||
+    evidence.productionData.cleaned !== evidenceContract.productionData.exactCreated ||
+    evidence.productionData.leaked !== evidenceContract.productionData.maximumLeaked
+  ) {
+    throw new Error('Semantic E2E codex-e2e data was not created and cleaned without leaks.');
+  }
+  return {
+    path: descriptor.path,
+    sha256: descriptor.sha256,
+    contractDigest,
+    assertionCount: assertionsById.size,
+    internalLocalizationAssertionCount: routeRows.filter(
+      (row) => row.proof.requiredEvidenceScope === 'internal-localization',
+    ).length,
+    accessBoundaryAssertionCount: routeRows.filter(
+      (row) => row.proof.requiredEvidenceScope === 'access-boundary-observed',
+    ).length,
+    declaredFallbackAssertionCount: routeRows.filter(
+      (row) => row.proof.requiredEvidenceScope === 'declared-fallback-observed',
+    ).length,
+    createdDataCount: evidence.productionData.created,
+    cleanedDataCount: evidence.productionData.cleaned,
+    leakedDataCount: evidence.productionData.leaked,
+  };
+}
+
 function validateTypedContentSources(locale) {
   const descriptor = getImportReportContentAuditDescriptor();
   const expectedAdapters = SUPPORTED_APP_LOCALES.map(
@@ -669,26 +1417,382 @@ function validateTypedContentSources(locale) {
   };
 }
 
+function requiredSemanticScenarios(target, coverage, routeAssertionId) {
+  const declared = target.requiredScenarios ?? ['route'];
+  const viewVariantScenarios = (coverage?.executableViewVariants ?? [])
+    .filter((variant) => variant.routeAssertionId === routeAssertionId)
+    .map(({ scenario }) => scenario);
+  return [
+    ...new Set([
+      'route',
+      ...(target.kind !== 'declared-static-fallback' && target.session === 'authenticated'
+        ? ['anonymous-protection']
+        : []),
+      ...declared.filter((scenario) => scenario !== 'route' && scenario !== 'anonymous-protection'),
+      ...viewVariantScenarios,
+    ]),
+  ];
+}
+
+function validateViewStateRegistry(root, coverage, routeRows, manifest) {
+  const descriptor = coverage.viewStateRegistry;
+  if (
+    !descriptor ||
+    descriptor.sourcePath !== 'src/services/general/routeViewStateRegistry.json' ||
+    !Array.isArray(descriptor.usages)
+  ) {
+    throw new Error('Route-view coverage must identify its typed view-state registry and usages.');
+  }
+  const registryDocument = readJson(root, descriptor.sourcePath);
+  if (
+    registryDocument.schemaVersion !== descriptor.schemaVersion ||
+    !Array.isArray(registryDocument.registries) ||
+    registryDocument.registries.length === 0
+  ) {
+    throw new Error('Typed view-state registry schema differs from route-view coverage.');
+  }
+  const registriesById = new Map();
+  for (const registry of registryDocument.registries) {
+    if (
+      typeof registry.id !== 'string' ||
+      typeof registry.parameter !== 'string' ||
+      typeof registry.defaultVariantId !== 'string' ||
+      !Array.isArray(registry.variants) ||
+      registry.variants.length === 0 ||
+      registriesById.has(registry.id)
+    ) {
+      throw new Error('Typed view-state registries must have unique IDs and finite variants.');
+    }
+    const variantIds = registry.variants.map(({ id }) => id);
+    const queryValues = registry.variants.map(({ queryValue }) => queryValue);
+    if (
+      variantIds.some(
+        (variantId) =>
+          typeof variantId !== 'string' || !/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/u.test(variantId),
+      ) ||
+      new Set(variantIds).size !== variantIds.length ||
+      new Set(queryValues.map((value) => JSON.stringify(value))).size !== queryValues.length ||
+      !variantIds.includes(registry.defaultVariantId) ||
+      registry.variants.some(
+        ({ queryValue }) => queryValue !== null && typeof queryValue !== 'string',
+      )
+    ) {
+      throw new Error(`${registry.id} has invalid or duplicate typed view-state variants.`);
+    }
+    registriesById.set(registry.id, registry);
+  }
+  const usageIds = descriptor.usages.map(({ registryId }) => registryId);
+  if (
+    JSON.stringify([...usageIds].sort()) !== JSON.stringify([...registriesById.keys()].sort()) ||
+    new Set(usageIds).size !== usageIds.length
+  ) {
+    throw new Error('Typed view-state usages must exactly close every source registry.');
+  }
+  const executableVariants = coverage.executableViewVariants;
+  if (!Array.isArray(executableVariants)) {
+    throw new Error('Route-view coverage must declare executable typed view variants.');
+  }
+  const executableAssertionIds = executableVariants.map(({ assertionId }) => assertionId);
+  if (
+    executableAssertionIds.some(
+      (assertionId) =>
+        typeof assertionId !== 'string' || !/^vv\.[a-z0-9][a-z0-9.-]+$/u.test(assertionId),
+    ) ||
+    new Set(executableAssertionIds).size !== executableAssertionIds.length
+  ) {
+    throw new Error('Executable view variants must have unique stable assertion IDs.');
+  }
+  const routeAssertionIds = new Set(
+    routeRows.map(({ executableAssertionId }) => executableAssertionId),
+  );
+  const messageIds = new Set(manifest.messages.map(({ id }) => id));
+  const variantsByAssertionId = new Map(
+    executableVariants.map((variant) => [variant.assertionId, variant]),
+  );
+  for (const usage of descriptor.usages) {
+    const registry = registriesById.get(usage.registryId);
+    const registryVariantIds = registry.variants.map(({ id }) => id);
+    if (
+      !Array.isArray(usage.sourcePaths) ||
+      usage.sourcePaths.length === 0 ||
+      new Set(usage.sourcePaths).size !== usage.sourcePaths.length ||
+      JSON.stringify(usage.variantIds) !== JSON.stringify(registryVariantIds)
+    ) {
+      throw new Error(`${usage.registryId} usage does not exactly close its registry variants.`);
+    }
+    for (const sourcePath of usage.sourcePaths) {
+      if (!fs.existsSync(path.resolve(root, sourcePath))) {
+        throw new Error(`${usage.registryId} references missing source ${sourcePath}.`);
+      }
+      const source = readText(root, sourcePath);
+      const resolverPattern = new RegExp(
+        `resolveRouteViewState\\(\\s*['\"]${usage.registryId}['\"]`,
+        'u',
+      );
+      if (!resolverPattern.test(source)) {
+        throw new Error(
+          `${sourcePath} must resolve ${registry.parameter} through ${usage.registryId}.`,
+        );
+      }
+    }
+    if (usage.proof?.kind === 'focused-tests') {
+      if (
+        !Array.isArray(usage.proof.testPaths) ||
+        usage.proof.testPaths.length === 0 ||
+        executableVariants.some(({ registryId }) => registryId === usage.registryId)
+      ) {
+        throw new Error(`${usage.registryId} has an invalid focused-test proof declaration.`);
+      }
+      for (const testPath of usage.proof.testPaths) {
+        if (!fs.existsSync(path.resolve(root, testPath))) {
+          throw new Error(`${usage.registryId} references missing focused test ${testPath}.`);
+        }
+      }
+      continue;
+    }
+    if (
+      usage.proof?.kind !== 'browser' ||
+      !Array.isArray(usage.proof.variantAssertionIds) ||
+      usage.proof.variantAssertionIds.length !== registry.variants.length
+    ) {
+      throw new Error(`${usage.registryId} has no exact browser variant proof.`);
+    }
+    const proofVariants = usage.proof.variantAssertionIds.map((assertionId) =>
+      variantsByAssertionId.get(assertionId),
+    );
+    if (
+      proofVariants.some((variant) => !variant || variant.registryId !== usage.registryId) ||
+      JSON.stringify(proofVariants.map(({ variantId }) => variantId)) !==
+        JSON.stringify(registryVariantIds)
+    ) {
+      throw new Error(`${usage.registryId} browser variants differ from its finite registry.`);
+    }
+    for (const testPath of usage.proof.supplementalFocusedTestPaths ?? []) {
+      if (!fs.existsSync(path.resolve(root, testPath))) {
+        throw new Error(`${usage.registryId} references missing supplemental test ${testPath}.`);
+      }
+    }
+  }
+  const usageByRegistryId = new Map(descriptor.usages.map((usage) => [usage.registryId, usage]));
+  for (const variant of executableVariants) {
+    const usage = usageByRegistryId.get(variant.registryId);
+    const registry = registriesById.get(variant.registryId);
+    const registryVariant = registry?.variants.find(({ id }) => id === variant.variantId);
+    if (
+      !usage ||
+      usage.proof?.kind !== 'browser' ||
+      !registryVariant ||
+      !routeAssertionIds.has(variant.routeAssertionId) ||
+      typeof variant.scenario !== 'string' ||
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(variant.scenario) ||
+      !variant.target ||
+      !Array.isArray(variant.target.visibleMessageIds) ||
+      variant.target.visibleMessageIds.length === 0 ||
+      variant.target.visibleMessageIds.some((messageId) => !messageIds.has(messageId))
+    ) {
+      throw new Error(`${variant.assertionId} has an invalid executable view target.`);
+    }
+    if (variant.execution?.kind === 'dedicated-spec') {
+      const specPath = variant.execution.specPath;
+      if (typeof specPath !== 'string' || !fs.existsSync(path.resolve(root, specPath))) {
+        throw new Error(`${variant.assertionId} references a missing dedicated browser spec.`);
+      }
+      const specSource = readText(root, specPath);
+      if (!specSource.includes(variant.assertionId) || !specSource.includes(variant.scenario)) {
+        throw new Error(
+          `${variant.assertionId} dedicated browser spec does not bind its assertion and scenario.`,
+        );
+      }
+    } else if (variant.execution && variant.execution.kind !== 'route-inventory') {
+      throw new Error(`${variant.assertionId} has an unknown browser execution kind.`);
+    }
+    const parameter = registry.parameter;
+    const navigateHasParameter = Object.hasOwn(variant.target.navigate?.hashQuery ?? {}, parameter);
+    const expectedHasParameter = Object.hasOwn(variant.target.expected?.hashQuery ?? {}, parameter);
+    const navigateValue = navigateHasParameter
+      ? variant.target.navigate.hashQuery[parameter]
+      : null;
+    const expectedValue = expectedHasParameter
+      ? variant.target.expected.hashQuery[parameter]
+      : null;
+    if (
+      navigateValue !== registryVariant.queryValue ||
+      expectedValue !== registryVariant.queryValue
+    ) {
+      throw new Error(
+        `${variant.assertionId} query target differs from ${variant.registryId}/${variant.variantId}.`,
+      );
+    }
+  }
+  return {
+    schemaVersion: registryDocument.schemaVersion,
+    sourcePath: descriptor.sourcePath,
+    sourceDigest: fileDigest(root, descriptor.sourcePath),
+    registryCount: registryDocument.registries.length,
+    executableVariantCount: executableVariants.length,
+    focusedVariantCount: descriptor.usages
+      .filter(({ proof }) => proof.kind === 'focused-tests')
+      .reduce((sum, usage) => sum + usage.variantIds.length, 0),
+  };
+}
+
 function validateRouteCoverage(root, manifest) {
   const coverage = readJson(root, ROUTE_VIEW_COVERAGE);
   if (coverage.sourceRouteConfig !== 'config/routes.ts') {
     throw new Error('Route-view coverage must identify config/routes.ts as its route source.');
   }
   const requiredPaths = new Set(['/', '/welcome', '/welcome?view=carbon-footprint']);
-  const observedPaths = new Set(coverage.rows.map(({ route }) => route));
+  if (!Array.isArray(coverage.routeFamilies)) {
+    throw new Error('Route-view coverage must declare its config-derived route families.');
+  }
+  const familyRows = coverage.routeFamilies.flatMap((family) => {
+    if (
+      !family.id ||
+      !Array.isArray(family.routes) ||
+      family.routes.length === 0 ||
+      !family.executableAssertionIds ||
+      typeof family.executableAssertionIds !== 'object' ||
+      Array.isArray(family.executableAssertionIds)
+    ) {
+      throw new Error(
+        'Every route-view family must have an id, routes, and executable assertion IDs.',
+      );
+    }
+    if (
+      JSON.stringify(Object.keys(family.executableAssertionIds)) !== JSON.stringify(family.routes)
+    ) {
+      throw new Error(`${family.id} executable assertion IDs must exactly match its routes.`);
+    }
+    return family.routes.map((route) => ({
+      ...family,
+      route,
+      executableAssertionId: family.executableAssertionIds[route],
+    }));
+  });
+  const routeRows = [...coverage.rows, ...familyRows];
+  const observedPaths = new Set(routeRows.map(({ route }) => route));
   for (const route of requiredPaths) {
     if (!observedPaths.has(route)) throw new Error(`Route-view coverage is missing ${route}.`);
   }
   if (JSON.stringify(coverage.supportedLocales) !== JSON.stringify(SUPPORTED_APP_LOCALES)) {
     throw new Error('Route-view coverage locale order differs from the typed registry.');
   }
-  const routeKeys = coverage.rows.map(({ route, viewState }) => `${route}\0${viewState}`);
+  const assertionIds = routeRows.map(({ executableAssertionId }) => executableAssertionId);
+  if (
+    assertionIds.some(
+      (assertionId) =>
+        typeof assertionId !== 'string' || !/^rv\.[a-z0-9][a-z0-9.-]+$/u.test(assertionId),
+    ) ||
+    new Set(assertionIds).size !== assertionIds.length
+  ) {
+    throw new Error('Every route/view row must have one unique stable executable assertion ID.');
+  }
+  if (
+    !coverage.executableTargets ||
+    typeof coverage.executableTargets !== 'object' ||
+    Array.isArray(coverage.executableTargets) ||
+    JSON.stringify(Object.keys(coverage.executableTargets).sort()) !==
+      JSON.stringify([...assertionIds].sort()) ||
+    Object.values(coverage.executableTargets).some(
+      (target) => !target || typeof target !== 'object' || Array.isArray(target),
+    )
+  ) {
+    throw new Error(
+      'Route-view executable targets must exactly match every stable assertion identity.',
+    );
+  }
+  for (const row of routeRows) {
+    const target = coverage.executableTargets[row.executableAssertionId];
+    const declaredScenarios = target.requiredScenarios ?? ['route'];
+    if (
+      !Array.isArray(declaredScenarios) ||
+      declaredScenarios.length === 0 ||
+      !declaredScenarios.includes('route') ||
+      new Set(declaredScenarios).size !== declaredScenarios.length ||
+      declaredScenarios.some(
+        (scenario) => typeof scenario !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(scenario),
+      )
+    ) {
+      throw new Error(`${row.executableAssertionId} has invalid required semantic scenarios.`);
+    }
+    if (declaredScenarios.includes('anonymous-protection')) {
+      throw new Error(
+        `${row.executableAssertionId} must derive anonymous-protection from its authenticated session instead of declaring it manually.`,
+      );
+    }
+    if (!SEMANTIC_E2E_PROOF_SCOPES.has(row.proof?.requiredEvidenceScope)) {
+      throw new Error(`${row.executableAssertionId} has no valid executable evidence scope.`);
+    }
+    if (
+      row.proof.requiredEvidenceScope === 'access-boundary-observed' &&
+      !/redirect|boundary/iu.test(`${row.viewState} ${row.accessContext}`)
+    ) {
+      throw new Error(
+        `${row.executableAssertionId} cannot use access-boundary evidence for internal localization.`,
+      );
+    }
+    if (
+      row.proof.requiredEvidenceScope === 'declared-fallback-observed' &&
+      (!Array.isArray(row.copySources?.declaredFallbacks) ||
+        row.copySources.declaredFallbacks.length === 0)
+    ) {
+      throw new Error(`${row.executableAssertionId} has no declared fallback to observe.`);
+    }
+  }
+  const viewStateRegistryEvidence = validateViewStateRegistry(root, coverage, routeRows, manifest);
+  const evidenceContract = validateSemanticEvidenceContract(root, coverage, routeRows);
+  const browserProof = coverage.proofPolicy?.browserProof;
+  const plannedBrowserInventory =
+    coverage.proofPolicy?.status === 'inventory-only' &&
+    browserProof?.status === 'planned' &&
+    Array.isArray(browserProof?.executedEvidence) &&
+    browserProof.executedEvidence.length === 0;
+  const declaredVerifiedBrowserEvidence =
+    coverage.proofPolicy?.status === 'execution-evidence' &&
+    browserProof?.status === 'verified' &&
+    Array.isArray(browserProof?.executedEvidence) &&
+    browserProof.executedEvidence.length === 1;
+  if (
+    browserProof?.ownerIssue !== '#635' ||
+    (!plannedBrowserInventory && !declaredVerifiedBrowserEvidence)
+  ) {
+    throw new Error(
+      'Route-view coverage must keep planned browser assertions inventory-only until executable semantic E2E evidence is recorded.',
+    );
+  }
+  const semanticExecutionEvidence = declaredVerifiedBrowserEvidence
+    ? validateSemanticE2EEvidence(
+        root,
+        coverage,
+        routeRows,
+        browserProof.executedEvidence[0],
+        evidenceContract,
+      )
+    : null;
+  const verifiedBrowserEvidence = semanticExecutionEvidence !== null;
+  const routeKeys = routeRows.map(({ route, viewState }) => `${route}\0${viewState}`);
   if (new Set(routeKeys).size !== routeKeys.length) {
     throw new Error('Route-view coverage contains duplicate route/view-state rows.');
   }
   const routeConfig = collectRouteConfigEvidence(root, coverage.sourceRouteConfig);
   const anonymousRoutePolicy = collectAnonymousRoutePolicyEvidence(root);
   const configuredPaths = new Set(routeConfig.configuredPaths);
+  const coveredConfiguredPaths = new Set(
+    routeRows
+      .map(({ route }) => route.split(/[?#]/u)[0])
+      .filter((routePath) => configuredPaths.has(routePath)),
+  );
+  const missingConfiguredPaths = [...configuredPaths].filter(
+    (routePath) => !coveredConfiguredPaths.has(routePath),
+  );
+  const unknownFamilyPaths = familyRows
+    .map(({ route }) => route.split(/[?#]/u)[0])
+    .filter((routePath) => !configuredPaths.has(routePath));
+  if (missingConfiguredPaths.length > 0 || unknownFamilyPaths.length > 0) {
+    throw new Error(
+      `Route-view coverage differs from config/routes.ts (missing: ${missingConfiguredPaths.join(', ') || 'none'}; unknown family routes: ${unknownFamilyPaths.join(', ') || 'none'}).`,
+    );
+  }
   const messageIds = new Set(manifest.messages.map(({ id }) => id));
   const messagesBySource = new Map();
   for (const message of manifest.messages) {
@@ -699,7 +1803,7 @@ function validateRouteCoverage(root, manifest) {
     }
   }
   const derivationsBySource = new Map();
-  for (const sourcePath of new Set(coverage.rows.flatMap((row) => row.copySources.sourcePaths))) {
+  for (const sourcePath of new Set(routeRows.flatMap((row) => row.copySources.sourcePaths))) {
     if (!fs.existsSync(path.resolve(root, sourcePath))) {
       throw new Error(`Route-view coverage references missing source ${sourcePath}.`);
     }
@@ -713,7 +1817,7 @@ function validateRouteCoverage(root, manifest) {
     throw new Error('The root route must derive a query-preserving redirect to /welcome.');
   }
   const rowEvidence = [];
-  for (const row of coverage.rows) {
+  for (const row of routeRows) {
     if (
       !row.route ||
       !row.viewState ||
@@ -739,12 +1843,13 @@ function validateRouteCoverage(root, manifest) {
       throw new Error(`${row.route}/${row.viewState} has no target coverage or proof contract.`);
     }
     if (
-      JSON.stringify(row.targetCoverage.locales) !== JSON.stringify(SUPPORTED_APP_LOCALES) ||
+      row.targetCoverage.localeScope !== 'all-registry-locales' ||
       row.targetCoverage.missingContent !== 0 ||
       !Array.isArray(row.proof.focusedTests) ||
       row.proof.focusedTests.length === 0 ||
-      !Array.isArray(row.proof.browserAssertions) ||
-      row.proof.browserAssertions.length === 0
+      !Array.isArray(row.proof.plannedBrowserAssertions) ||
+      row.proof.plannedBrowserAssertions.length === 0 ||
+      Object.hasOwn(row.proof, 'browserAssertions')
     ) {
       throw new Error(`${row.route}/${row.viewState} has incomplete target or proof coverage.`);
     }
@@ -764,6 +1869,41 @@ function validateRouteCoverage(root, manifest) {
     for (const messageId of copySources.localeMessageIds ?? []) {
       if (!messageIds.has(messageId)) {
         throw new Error(`${row.route}/${row.viewState} references unknown message ${messageId}.`);
+      }
+    }
+    const executableTarget = coverage.executableTargets[row.executableAssertionId];
+    const targetDefaultPageOwnedMessageIds =
+      executableTarget.kind === 'declared-static-fallback'
+        ? []
+        : executableTarget.kind === 'role-boundary'
+          ? executableTarget.boundary.messageIds
+          : executableTarget.visible.messageIds.filter(
+              (messageId) => !messageId.startsWith('menu.'),
+            );
+    const pageOwnedMessageIds = row.pageOwnedMessageIds ?? targetDefaultPageOwnedMessageIds;
+    if (
+      !Array.isArray(pageOwnedMessageIds) ||
+      new Set(pageOwnedMessageIds).size !== pageOwnedMessageIds.length ||
+      (row.proof.requiredEvidenceScope === 'internal-localization' &&
+        pageOwnedMessageIds.length === 0)
+    ) {
+      throw new Error(
+        `${row.executableAssertionId} must declare unique page-owned visible message markers for internal localization.`,
+      );
+    }
+    for (const messageId of pageOwnedMessageIds) {
+      const message = manifest.messages.find(({ id }) => id === messageId);
+      if (!message) {
+        throw new Error(
+          `${row.executableAssertionId} references unknown page marker ${messageId}.`,
+        );
+      }
+      if (
+        !message.references.some((reference) => copySources.sourcePaths.includes(reference.path))
+      ) {
+        throw new Error(
+          `${row.executableAssertionId} page marker ${messageId} is not owned by one of its copy sources.`,
+        );
       }
     }
     for (const prefix of copySources.localeMessageIdPrefixes ?? []) {
@@ -793,12 +1933,16 @@ function validateRouteCoverage(root, manifest) {
       routeRowMatchesMessage(row, message),
     );
     rowEvidence.push({
+      executableAssertionId: row.executableAssertionId,
       route: row.route,
       viewState: row.viewState,
+      requiredEvidenceScope: row.proof.requiredEvidenceScope,
       sourceDigest: digestJson(sourceEvidence),
       focusedTestDigest: digestJson(
         row.proof.focusedTests.map((testPath) => [testPath, fileDigest(root, testPath)]),
       ),
+      plannedBrowserAssertionCount: row.proof.plannedBrowserAssertions.length,
+      plannedBrowserAssertionDigest: digestJson(row.proof.plannedBrowserAssertions),
       derivedMessageCount: derivedMessages.length,
       derivedMessageDigest: digestJson(derivedMessages.map(({ id }) => id)),
       stateSignals: [
@@ -821,9 +1965,7 @@ function validateRouteCoverage(root, manifest) {
     });
   }
   for (const [sourcePath, derivation] of derivationsBySource) {
-    const relatedRows = coverage.rows.filter((row) =>
-      row.copySources.sourcePaths.includes(sourcePath),
-    );
+    const relatedRows = routeRows.filter((row) => row.copySources.sourcePaths.includes(sourcePath));
     const visibleStates = relatedRows.flatMap((row) => row.visibleStates);
     for (const signal of derivation.stateSignals) {
       if (!stateSignalCovered(signal, visibleStates)) {
@@ -855,7 +1997,20 @@ function validateRouteCoverage(root, manifest) {
     sourceRouteConfig: coverage.sourceRouteConfig,
     routeConfigDigest: routeConfig.digest,
     configuredRouteCount: routeConfig.configuredPaths.length,
+    coveredConfiguredRouteCount: coveredConfiguredPaths.size,
+    browserProof: {
+      status: browserProof.status,
+      ownerIssue: browserProof.ownerIssue,
+      inventoryOnly: coverage.proofPolicy.status === 'inventory-only',
+      executedEvidenceCount: browserProof.executedEvidence.length,
+      evidenceSchemaVersion: evidenceContract.schemaVersion,
+      routeCoverageContractDigest: routeCoverageContractDigest(coverage),
+      requiredAssertionCount: routeRows.length,
+      executionEvidence: semanticExecutionEvidence,
+      ready: verifiedBrowserEvidence,
+    },
     anonymousRoutePolicy,
+    viewStateRegistry: viewStateRegistryEvidence,
     sourceFileCount: derivationsBySource.size,
     sourceEvidenceDigest: digestJson([...derivationsBySource.values()]),
     rowEvidence,
@@ -1247,7 +2402,9 @@ function buildContextManifest(root, locale, manifest, prebuiltEvidence) {
       leafModuleCount: manifest.localeTopology[locale].leafModules.length,
       dynamicFamilyCount: manifest.summary.dynamicFamilyCount,
       dynamicCallsiteCount: manifest.summary.dynamicCallsiteCount,
-      routeViewRowCount: coverage.rows.length,
+      routeViewRowCount: coverage.derivedEvidence.rowEvidence.length,
+      configuredRouteCount: coverage.derivedEvidence.configuredRouteCount,
+      coveredConfiguredRouteCount: coverage.derivedEvidence.coveredConfiguredRouteCount,
       typedContentUnitCount: typedContent.targetContentUnitCount,
       blockedContextCount,
       unownedStaticContentCount:
@@ -1675,7 +2832,7 @@ function buildQualityManifest(root, locale, manifest, context) {
       typedContentTopologyComplete: context.typedContentDossiers.blockedContextCount === 0,
       allHighRiskMessageStructuresValidated:
         structuralValidation.highRiskMessageCount === context.messageDossiers.highRiskMessageCount,
-      semanticRouteAndE2EReady: false,
+      semanticRouteAndE2EReady: context.routeViewCoverage.derivedEvidence.browserProof.ready,
       semanticRouteAndE2EOwnerIssue: '#635',
       humanTranslationReviewRequired: false,
       blockedContextCount: context.inventory.blockedContextCount,
@@ -2189,6 +3346,49 @@ async function loadCheckedArtifact(root, relativeFile, builder, options) {
   return { value, status };
 }
 
+async function writeOrCheckLocaleArtifacts(root, locale, manifest, correctionSummary, options) {
+  const paths = localePaths(locale);
+  const context = await loadCheckedArtifact(
+    root,
+    paths.context,
+    () => buildContextManifest(root, locale, manifest),
+    options,
+  );
+  const structuralValidation = await loadCheckedArtifact(
+    root,
+    paths.structuralValidation,
+    () => buildStructuralValidation(root, locale, manifest, context.value),
+    options,
+  );
+  const quality = await loadCheckedArtifact(
+    root,
+    paths.quality,
+    () => buildQualityManifest(root, locale, manifest, context.value),
+    options,
+  );
+  const activation = await loadCheckedArtifact(
+    root,
+    paths.activation,
+    () =>
+      buildActivationManifest(
+        root,
+        locale,
+        manifest,
+        context.value,
+        quality.value,
+        correctionSummary,
+      ),
+    options,
+  );
+  return {
+    locale,
+    context: context.status,
+    structuralValidation: structuralValidation.status,
+    quality: quality.status,
+    activation: activation.status,
+  };
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const { action, locale, root } = options;
@@ -2219,11 +3419,14 @@ async function main() {
     return;
   }
 
-  const manifest = readJson(root, CANONICAL_MANIFEST);
   if (['activation', 'artifacts', 'all'].includes(action)) {
-    runSharedAudit(root, 'check');
+    runSharedAudit(
+      root,
+      action === 'artifacts' ? resolveLocaleArtifactSharedAuditMode(options.write) : 'check',
+    );
     runLanguagePlatformAudit(root);
   }
+  const manifest = readJson(root, CANONICAL_MANIFEST);
   const correctionSummary = validateCorrectionLedger(root, manifest);
   if (action === 'corrections') {
     process.stdout.write(`${JSON.stringify({ action, ...correctionSummary }, null, 2)}\n`);
@@ -2285,6 +3488,31 @@ async function main() {
     return;
   }
 
+  if (action === 'artifacts') {
+    const targetLocales = resolveLocaleArtifactTargets(locale, SUPPORTED_APP_LOCALES);
+    const locales = [];
+    for (const targetLocale of targetLocales) {
+      locales.push(
+        await writeOrCheckLocaleArtifacts(root, targetLocale, manifest, correctionSummary, options),
+      );
+    }
+    process.stdout.write(
+      `${JSON.stringify(
+        locale
+          ? { action, ...locales[0], privateConfirmationDependencies: [] }
+          : {
+              action,
+              registryLocaleCount: SUPPORTED_APP_LOCALES.length,
+              locales,
+              privateConfirmationDependencies: [],
+            },
+        null,
+        2,
+      )}\n`,
+    );
+    return;
+  }
+
   const paths = localePaths(locale);
   if (action === 'dossier') {
     const evidence = buildContextEvidence(root, locale, manifest);
@@ -2311,9 +3539,7 @@ async function main() {
     root,
     paths.context,
     () => buildContextManifest(root, locale, manifest),
-    action === 'context' || action === 'artifacts'
-      ? options
-      : { ...options, write: false, check: true },
+    action === 'context' ? options : { ...options, write: false, check: true },
   );
   if (action === 'context') {
     process.stdout.write(
@@ -2322,23 +3548,11 @@ async function main() {
     return;
   }
 
-  const structuralValidationResult =
-    action === 'artifacts'
-      ? await loadCheckedArtifact(
-          root,
-          paths.structuralValidation,
-          () => buildStructuralValidation(root, locale, manifest, contextResult.value),
-          options,
-        )
-      : null;
-
   const qualityResult = await loadCheckedArtifact(
     root,
     paths.quality,
     () => buildQualityManifest(root, locale, manifest, contextResult.value),
-    action === 'quality' || action === 'artifacts'
-      ? options
-      : { ...options, write: false, check: true },
+    action === 'quality' ? options : { ...options, write: false, check: true },
   );
   if (action === 'quality') {
     process.stdout.write(
@@ -2359,9 +3573,7 @@ async function main() {
         qualityResult.value,
         correctionSummary,
       ),
-    action === 'activation' || action === 'artifacts'
-      ? options
-      : { ...options, write: false, check: true },
+    action === 'activation' ? options : { ...options, write: false, check: true },
   );
   if (options.requireProductionReady) {
     assertProductionActivationReady(activationResult.value);
@@ -2372,9 +3584,6 @@ async function main() {
         action,
         locale,
         context: contextResult.status,
-        ...(structuralValidationResult
-          ? { structuralValidation: structuralValidationResult.status }
-          : {}),
         quality: qualityResult.status,
         activation: activationResult.status,
         privateConfirmationDependencies: [],

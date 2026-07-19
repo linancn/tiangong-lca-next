@@ -1,6 +1,12 @@
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getProcesstypeOfDataSetOptions } from '@/pages/Processes';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  DataTabKey,
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+} from '@/services/general/data';
 import { getConnectableProcessesTable } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import styles from '@/style/custom.less';
@@ -30,6 +36,17 @@ const ConnectableProcesses: FC<Props> = ({
   onData = () => {},
   readOnly = false,
 }) => {
+  const contentLanguageParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  const myRequestEpochRef = useRef(0);
+  const teRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageParams.contentLanguage,
+    [tgRequestEpochRef, coRequestEpochRef, myRequestEpochRef, teRequestEpochRef],
+  );
   const searchParams = new URLSearchParams(location.search);
   const tid = searchParams.get('tid');
   const tgActionRefSelect = useRef<ActionType>(null);
@@ -39,6 +56,8 @@ const ConnectableProcesses: FC<Props> = ({
   const myActionRefSelect = useRef<ActionType>(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
+  const activeTabKeyRef = useRef(activeTabKey);
+  activeTabKeyRef.current = activeTabKey;
   const [tableLoading, setTableLoading] = useState<boolean>(false);
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
@@ -154,8 +173,9 @@ const ConnectableProcesses: FC<Props> = ({
   const databaseList: Record<DataTabKey, React.ReactNode> = {
     tg: (
       <>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageParams}
           loading={tableLoading}
           search={false}
           pagination={{
@@ -163,24 +183,37 @@ const ConnectableProcesses: FC<Props> = ({
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
             setTableLoading(true);
-            const data = await getConnectableProcessesTable(
-              params,
-              sort,
-              lang,
-              'tg',
-              tid ?? '',
-              portId,
-              flowVersion,
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async ({ isCurrentRequest }) => {
+                try {
+                  return await getConnectableProcessesTable(
+                    requestParams,
+                    sort,
+                    contentLanguage,
+                    'tg',
+                    tid ?? '',
+                    portId,
+                    flowVersion,
+                  );
+                } finally {
+                  if (isCurrentRequest() && activeTabKeyRef.current === 'tg') {
+                    setTableLoading(false);
+                  }
+                }
+              },
             );
-            setTableLoading(false);
-            return data;
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -197,8 +230,9 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     co: (
       <>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageParams}
           loading={tableLoading}
           search={false}
           pagination={{
@@ -206,24 +240,37 @@ const ConnectableProcesses: FC<Props> = ({
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
             setTableLoading(true);
-            const data = await getConnectableProcessesTable(
-              params,
-              sort,
-              lang,
-              'co',
-              tid ?? '',
-              portId,
-              flowVersion,
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async ({ isCurrentRequest }) => {
+                try {
+                  return await getConnectableProcessesTable(
+                    requestParams,
+                    sort,
+                    contentLanguage,
+                    'co',
+                    tid ?? '',
+                    portId,
+                    flowVersion,
+                  );
+                } finally {
+                  if (isCurrentRequest() && activeTabKeyRef.current === 'co') {
+                    setTableLoading(false);
+                  }
+                }
+              },
             );
-            setTableLoading(false);
-            return data;
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -240,8 +287,9 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     my: (
       <>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageParams}
           loading={tableLoading}
           search={false}
           pagination={{
@@ -249,24 +297,37 @@ const ConnectableProcesses: FC<Props> = ({
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
             setTableLoading(true);
-            const data = await getConnectableProcessesTable(
-              params,
-              sort,
-              lang,
-              'my',
-              tid ?? '',
-              portId,
-              flowVersion,
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async ({ isCurrentRequest }) => {
+                try {
+                  return await getConnectableProcessesTable(
+                    requestParams,
+                    sort,
+                    contentLanguage,
+                    'my',
+                    tid ?? '',
+                    portId,
+                    flowVersion,
+                  );
+                } finally {
+                  if (isCurrentRequest() && activeTabKeyRef.current === 'my') {
+                    setTableLoading(false);
+                  }
+                }
+              },
             );
-            setTableLoading(false);
-            return data;
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -283,8 +344,9 @@ const ConnectableProcesses: FC<Props> = ({
     ),
     te: (
       <>
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           actionRef={teActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           loading={tableLoading}
           pagination={{
@@ -292,24 +354,37 @@ const ConnectableProcesses: FC<Props> = ({
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
             setTableLoading(true);
-            const data = await getConnectableProcessesTable(
-              params,
-              sort,
-              lang,
-              'te',
-              tid ?? '',
-              portId,
-              flowVersion,
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              teRequestEpochRef,
+              async ({ isCurrentRequest }) => {
+                try {
+                  return await getConnectableProcessesTable(
+                    requestParams,
+                    sort,
+                    contentLanguage,
+                    'te',
+                    tid ?? '',
+                    portId,
+                    flowVersion,
+                  );
+                } finally {
+                  if (isCurrentRequest() && activeTabKeyRef.current === 'te') {
+                    setTableLoading(false);
+                  }
+                }
+              },
             );
-            setTableLoading(false);
-            return data;
           }}
           columns={processColumns}
           tableAlertOptionRender={tableAlertOptionRender}

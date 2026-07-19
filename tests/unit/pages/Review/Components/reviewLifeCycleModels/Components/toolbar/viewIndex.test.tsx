@@ -652,6 +652,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       expect(mockUpdateNode).toHaveBeenCalledWith(
         '',
         expect.objectContaining({ tools: expect.any(Array) }),
+        { ignoreHistory: true },
       ),
     );
   });
@@ -812,10 +813,57 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       expect(mockUpdateNode).toHaveBeenCalledWith(
         'node-1',
         expect.objectContaining({ tools: expect.any(Array) }),
+        { ignoreHistory: true },
       ),
     );
 
     const toolUpdate = mockUpdateNode.mock.calls.find(([nodeId]: any[]) => nodeId === 'node-1');
     expect(toolUpdate?.[1]?.tools?.[1]?.args?.markup?.[1]?.textContent).toBe('');
+  });
+
+  it('rehydrates review graph visuals without refetching or replacing graph state', async () => {
+    const { rerender } = render(
+      <ToolbarView
+        type='view'
+        id='model-1'
+        version='1.0.0'
+        lang='en'
+        reviewId='review-1'
+        tabType='assigned'
+        drawerVisible={false}
+      />,
+    );
+    mockUpdateNode.mockClear();
+    mockInitData.mockClear();
+    mockGetLifeCycleModelDetail.mockClear();
+
+    rerender(
+      <ToolbarView
+        type='view'
+        id='model-1'
+        version='1.0.0'
+        lang='fr'
+        reviewId='review-1'
+        tabType='assigned'
+        drawerVisible={false}
+      />,
+    );
+
+    await waitFor(() => expect(mockUpdateNode).toHaveBeenCalledTimes(2));
+    mockUpdateNode.mock.calls.forEach(([, visualUpdate, options]: [string, any, any]) => {
+      expect(visualUpdate).toEqual(
+        expect.objectContaining({
+          ports: expect.any(Object),
+          tools: expect.any(Array),
+        }),
+      );
+      expect(visualUpdate).not.toHaveProperty('data');
+      expect(visualUpdate).not.toHaveProperty('selected');
+      expect(visualUpdate).not.toHaveProperty('x');
+      expect(visualUpdate).not.toHaveProperty('y');
+      expect(options).toEqual({ ignoreHistory: true });
+    });
+    expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled();
+    expect(mockInitData).not.toHaveBeenCalled();
   });
 });

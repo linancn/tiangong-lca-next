@@ -17,6 +17,14 @@ const mockGetFlowDetail = jest.fn();
 const mockGenFlowFromData = jest.fn();
 const mockGetUnitData = jest.fn();
 
+const createDeferred = () => {
+  let resolve!: (value: any) => void;
+  const promise = new Promise<any>((promiseResolve) => {
+    resolve = promiseResolve;
+  });
+  return { promise, resolve };
+};
+
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
@@ -308,5 +316,55 @@ describe('FlowsView (src/pages/Flows/Components/view.tsx)', () => {
       fireEvent.click(screen.getByText('Flow property'));
     });
     expect(screen.getByTestId('property-view')).toBeInTheDocument();
+  });
+
+  it('re-resolves derived property rows for a new language and ignores an older response', async () => {
+    const { rerender } = render(
+      <FlowsView id='flow-1' version='1.0' lang='en' buttonType='icon' />,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('icon-profile').parentElement as HTMLElement);
+    });
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalledTimes(2));
+    await act(async () => {
+      fireEvent.click(screen.getByText('Flow property'));
+    });
+
+    const germanResolution = createDeferred();
+    const frenchResolution = createDeferred();
+    mockGetUnitData.mockReset();
+    mockGetUnitData
+      .mockImplementationOnce(() => germanResolution.promise)
+      .mockImplementationOnce(() => frenchResolution.promise);
+
+    rerender(<FlowsView id='flow-1' version='1.0' lang='de' buttonType='icon' />);
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalledTimes(1));
+    rerender(<FlowsView id='flow-1' version='1.0' lang='fr' buttonType='icon' />);
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      frenchResolution.resolve([
+        {
+          dataSetInternalID: 'p1',
+          quantitativeReference: true,
+          refUnitRes: { name: 'unit', refUnitGeneralComment: 'fr', refUnitName: 'FR' },
+        },
+      ]);
+    });
+    await waitFor(() => expect(screen.getByText(/FR/u)).toBeInTheDocument());
+
+    await act(async () => {
+      germanResolution.resolve([
+        {
+          dataSetInternalID: 'p1',
+          quantitativeReference: true,
+          refUnitRes: { name: 'unit', refUnitGeneralComment: 'de', refUnitName: 'DE' },
+        },
+      ]);
+    });
+
+    expect(screen.getByText(/FR/u)).toBeInTheDocument();
+    expect(screen.queryByText(/DE/u)).not.toBeInTheDocument();
   });
 });

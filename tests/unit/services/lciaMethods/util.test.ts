@@ -49,12 +49,19 @@ class MockIDBRequest {
   error: any = null;
   onsuccess: ((event: any) => void) | null = null;
   onerror: ((event: any) => void) | null = null;
+  private transaction: MockIDBTransaction | null = null;
+
+  bindTransaction(transaction: MockIDBTransaction) {
+    this.transaction = transaction;
+    return this;
+  }
 
   succeed(result: any) {
     this.result = result;
     if (this.onsuccess) {
       this.onsuccess({ target: this });
     }
+    this.transaction?.complete();
   }
 
   fail(error: any) {
@@ -62,6 +69,7 @@ class MockIDBRequest {
     if (this.onerror) {
       this.onerror({ target: this });
     }
+    this.transaction?.fail(error);
   }
 }
 
@@ -200,11 +208,38 @@ class MockIDBObjectStore {
 }
 
 class MockIDBTransaction {
+  error: any = null;
+  oncomplete: ((event: any) => void) | null = null;
+  onerror: ((event: any) => void) | null = null;
+  onabort: ((event: any) => void) | null = null;
+  private finished = false;
+
   constructor(private store: MockIDBObjectStore) {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   objectStore(_name: string): MockIDBObjectStore {
-    return this.store;
+    return new Proxy(this.store, {
+      get: (target, property, receiver) => {
+        if (property === 'put') {
+          return (value: any) => target.put(value).bindTransaction(this);
+        }
+        const value = Reflect.get(target, property, receiver);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+  }
+
+  complete() {
+    if (this.finished) return;
+    this.finished = true;
+    this.oncomplete?.({ target: this });
+  }
+
+  fail(error: any) {
+    if (this.finished) return;
+    this.finished = true;
+    this.error = error;
+    this.onerror?.({ target: this });
   }
 }
 

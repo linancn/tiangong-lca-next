@@ -4,8 +4,10 @@ import {
   CONTENT_LANGUAGE_OPTIONS,
   CONTENT_LANGUAGE_REGISTRY,
   getAuthoringLanguageOptions,
+  getContentGraphTextWidthDivisor,
   getLanguageDisplayName,
   getServiceQueryLanguage,
+  isTranslationSourceContentLanguage,
   normalizeSupportedContentLanguage,
   PRIMARY_REQUIRED_CONTENT_LANGUAGE,
   reportServiceQueryLanguageResolution,
@@ -15,7 +17,9 @@ import {
   resolveContentLanguages,
   resolveServiceQueryLanguage,
   SUPPORTED_CONTENT_LANGUAGES,
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from '@/services/general/contentLanguageRegistry';
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 
 describe('contentLanguageRegistry', () => {
   it('derives supported, authoring, required, and option lists from one registry', () => {
@@ -30,9 +34,12 @@ describe('contentLanguageRegistry', () => {
       { value: 'fr', label: 'Français' },
     ]);
     expect(getAuthoringLanguageOptions()).toBe(CONTENT_LANGUAGE_OPTIONS);
-    expect(new Set(CONTENT_LANGUAGE_REGISTRY.map(({ appLocale }) => appLocale)).size).toBe(
-      CONTENT_LANGUAGE_REGISTRY.length,
-    );
+    expect(new Set(SUPPORTED_CONTENT_LANGUAGES).size).toBe(SUPPORTED_CONTENT_LANGUAGES.length);
+    expect(
+      CONTENT_LANGUAGE_REGISTRY.filter(({ authoring }) => authoring.enabled).every(
+        ({ generatedContent }) => generatedContent.subproductPrefix.trim().length > 0,
+      ),
+    ).toBe(true);
   });
 
   it.each([
@@ -51,6 +58,29 @@ describe('contentLanguageRegistry', () => {
     expect(normalizeSupportedContentLanguage(null)).toBeUndefined();
     expect(normalizeSupportedContentLanguage('es-ES')).toBeUndefined();
     expect(resolveContentLanguage('es-ES')).toBe('en');
+  });
+
+  it('fails closed for registry-declared unsupported and unknown content capabilities', () => {
+    const localeDefinition = getLocaleDefinition('de-DE');
+    const mutableDefinition = localeDefinition as unknown as {
+      contentCapability: { status: string; contentLanguage?: string };
+    };
+    const originalCapability = mutableDefinition.contentCapability;
+
+    try {
+      mutableDefinition.contentCapability = { status: 'unsupported' };
+      expect(normalizeSupportedContentLanguage('de-DE')).toBeUndefined();
+      expect(() => resolveContentLanguage('de-DE')).toThrow(
+        'UI locale de-DE declares typed content unsupported.',
+      );
+
+      mutableDefinition.contentCapability = { status: 'native', contentLanguage: 'es' };
+      expect(() => resolveContentLanguage('de-DE')).toThrow(
+        'UI locale de-DE references unknown content language es.',
+      );
+    } finally {
+      mutableDefinition.contentCapability = originalCapability;
+    }
   });
 
   it('uses canonical English when no language is marked as required', () => {
@@ -102,6 +132,19 @@ describe('contentLanguageRegistry', () => {
     expect(resolveContentLanguages('zh-CN')).toEqual(['zh', 'en']);
     expect(resolveContentLanguages('en-US')).toEqual(['en']);
   });
+
+  it.each(CONTENT_LANGUAGE_REGISTRY)(
+    'derives graph formatting for $languageCode from the registry',
+    (definition) => {
+      expect(getContentGraphTextWidthDivisor(definition.languageCode)).toBe(
+        definition.formatting.graphTextWidthDivisor,
+      );
+      expect(definition.formatting.graphTextWidthDivisor).toBeGreaterThan(0);
+      expect(isTranslationSourceContentLanguage(definition.languageCode)).toBe(
+        definition.languageCode === TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+      );
+    },
+  );
 
   it('declares backend query fallback independently from content reading', () => {
     expect(resolveServiceQueryLanguage('de-DE')).toEqual({

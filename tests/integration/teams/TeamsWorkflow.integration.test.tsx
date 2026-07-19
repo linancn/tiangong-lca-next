@@ -430,6 +430,9 @@ jest.mock('antd', () => {
   const theme = {
     useToken: () => ({ token: { colorPrimary: '#1677ff' } }),
   };
+  const Grid = {
+    useBreakpoint: () => ({ lg: true }),
+  };
 
   const ConfigProvider = ({ children }: any) => <>{children}</>;
 
@@ -439,6 +442,7 @@ jest.mock('antd', () => {
     ConfigProvider,
     Flex,
     Form,
+    Grid,
     Input,
     Modal: Object.assign(ModalComponent, { confirm: modalConfirm }),
     Spin,

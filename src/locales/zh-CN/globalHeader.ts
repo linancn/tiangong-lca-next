@@ -5,6 +5,7 @@ export default {
   'component.globalHeader.search.example3': '搜索提示三',
   'component.globalHeader.help': '使用文档',
   'component.globalHeader.help.englishFallback': '帮助文档（英文）',
+  'component.globalHeader.help.fallback': '帮助文档（{language}）',
   'component.globalHeader.openapiDocumentation': 'OpenAPI 文档',
   'component.request.responseStatus': '响应状态：{status}',
   'component.request.noResponse': '未收到响应，请重试。',

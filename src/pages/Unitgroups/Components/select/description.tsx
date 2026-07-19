@@ -3,9 +3,10 @@ import LangTextItemDescription from '@/components/LangTextItem/description';
 import { listToJson } from '@/services/general/util';
 import { getReferenceUnit } from '@/services/unitgroups/api';
 import { UnitGroupRefObject, UnitReferenceData } from '@/services/unitgroups/data';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage, getLocale } from 'umi';
+import { FormattedMessage } from 'umi';
 import UnitGroupView from '../view';
 
 type Props = {
@@ -16,7 +17,6 @@ type Props = {
 
 const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
   const [refUnit, setRefUnit] = useState<UnitReferenceData | null>(null);
-  const locale = getLocale();
   const normalizedData = listToJson(data);
   const refData = normalizedData as UnitGroupRefObject;
   useEffect(() => {
@@ -39,7 +39,7 @@ const UnitGroupSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage='Reference unit group data set identifier'
               />
             }
-            styles={{ label: { width: locale === 'zh-CN' ? '210px' : '230px' } }}
+            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
           >
             {refData?.['@refObjectId'] ?? '-'}
           </Descriptions.Item>

@@ -21,9 +21,11 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Updated for Issue #633: UI locale, content language, service-query language, and reference-resource availability now have separate typed owners and derived capability gates.'
+  - playwright.config.ts
+  - tests/e2e/i18n/**
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635: semantic localization proof remains a test-only boundary around the existing frontend/service/static-resource architecture.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -52,6 +54,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
+| `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `icons/**` | packaged app icons and release assets |
 | `docker/**` | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |
@@ -79,6 +82,7 @@ Rules:
 - language options, labels, resolver priorities, service-query adapters, static resource files, and cache revisions are derived from their owning registry or manifest. `npm run i18n:platform:audit` verifies exact registry joins and `npm run i18n:hardcoding:audit` fails closed on unowned language literals outside a narrow, issue-owned adapter allowlist
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
+- semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Its direct Supabase client is a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
 
 ### Process Review-Submit Gate
 

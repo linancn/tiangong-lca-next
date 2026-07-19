@@ -1,3 +1,14 @@
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  getLocaleDefinition,
+  getWelcomeTidasFallbackDefinition,
+  hasWelcomeTidasFallback,
+} from '@/services/general/localeRegistry';
+import {
+  getRouteViewStateQueryValue,
+  resolveRouteViewState,
+} from '@/services/general/routeViewState';
+import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { getLang, getLangText } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import {
@@ -41,7 +52,6 @@ import { PageContainer } from '@ant-design/pro-components';
 import CountUp from 'react-countup';
 import { FormattedMessage, history, useIntl, useLocation } from 'umi';
 
-const CARBON_FOOTPRINT_VIEW = 'carbon-footprint';
 const CARBON_FOOTPRINT_GUIDE_VIDEO_URI =
   '../sys-files/video/platform_usage_process_first_matched.mp4';
 
@@ -103,10 +113,15 @@ const Welcome: React.FC = () => {
 
   const { formatMessage, locale } = useIntl();
   const lang = getLang(locale);
+  const appLocale = normalizeRuntimeLocale(locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const localeDefinition = getLocaleDefinition(appLocale);
   const primaryColor = `var(--ant-color-primary, ${token.colorPrimary})`;
   const activeViewFromLocation: WelcomeView = useMemo(() => {
     const searchParams = new URLSearchParams(location.search ?? '');
-    return searchParams.get('view') === CARBON_FOOTPRINT_VIEW ? 'carbonFootprintGuide' : 'overview';
+    return resolveRouteViewState('welcome-view', searchParams.get('view')) ===
+      'carbon-footprint-guide'
+      ? 'carbonFootprintGuide'
+      : 'overview';
   }, [location.search]);
   const [carbonFootprintGuideVideoUrl, setCarbonFootprintGuideVideoUrl] = useState('');
   const [carbonFootprintGuideVideoStatus, setCarbonFootprintGuideVideoStatus] =
@@ -179,7 +194,9 @@ const Welcome: React.FC = () => {
     setIsDataModalOpen(false);
     setIsTidasModalOpen(false);
     setActiveWelcomeView('carbonFootprintGuide');
-    history.push(`/welcome?view=${CARBON_FOOTPRINT_VIEW}`);
+    history.push(
+      `/welcome?view=${getRouteViewStateQueryValue('welcome-view', 'carbon-footprint-guide')}`,
+    );
   }, []);
 
   const loadTeams = React.useCallback(async () => {
@@ -410,23 +427,46 @@ const Welcome: React.FC = () => {
   });
   const tidasTitle = formatMessage({ id: 'pages.welcome.overview.tidas.title' });
   const tidasDescription = formatMessage({ id: 'pages.welcome.overview.tidas.description' });
-  const tidasDocUrl = formatMessage({ id: 'pages.welcome.overview.tidas.docsUrl' });
-  const tidasReadMoreLabel = formatMessage({ id: 'pages.welcome.overview.tidas.readMore' });
-  const tidasImageSrc =
-    lang === 'zh'
-      ? isDarkMode
-        ? '/images/tidas/TIDAS-zh-CN-dark.svg'
-        : '/images/tidas/TIDAS-zh-CN.svg'
-      : isDarkMode
-        ? '/images/tidas/TIDAS-en-dark.svg'
-        : '/images/tidas/TIDAS-en.svg';
+  const tidasImageLocale = getWelcomeTidasFallbackDefinition(appLocale, 'imageLocale');
+  const tidasDocumentationLocale = getWelcomeTidasFallbackDefinition(
+    appLocale,
+    'documentationLocale',
+  );
+  const hasTidasImageFallback = hasWelcomeTidasFallback(appLocale, 'imageLocale');
+  const hasTidasDocumentationFallback = hasWelcomeTidasFallback(appLocale, 'documentationLocale');
+  const tidasDocUrl = localeDefinition.assets.welcomeTidas.documentationUrl;
+  const tidasReadMoreLabel = formatMessage(
+    {
+      id: hasTidasDocumentationFallback
+        ? 'pages.welcome.overview.tidas.docsFallbackLabel'
+        : 'pages.welcome.overview.tidas.readMore',
+      defaultMessage: hasTidasDocumentationFallback ? 'Learn more ({language})' : 'Learn more',
+    },
+    hasTidasDocumentationFallback ? { language: tidasDocumentationLocale!.nativeLabel } : undefined,
+  );
+  const tidasImageSrc = isDarkMode
+    ? localeDefinition.assets.welcomeTidas.dark
+    : localeDefinition.assets.welcomeTidas.light;
   const tidasImageAlt = formatMessage({ id: 'pages.welcome.overview.tidas.imageAlt' });
 
   const WELCOME_RADIUS = 8;
 
   const cardBorderRadiusStyle = useMemo(() => ({ borderRadius: WELCOME_RADIUS }), []);
 
-  const modalStyles = useMemo(() => ({ content: { borderRadius: WELCOME_RADIUS } }), []);
+  const modalStyles = useMemo(
+    () => ({
+      body: { minHeight: 0, overflowY: 'auto' as const },
+      content: {
+        borderRadius: WELCOME_RADIUS,
+        display: 'flex',
+        flexDirection: 'column' as const,
+        maxHeight: 'calc(100dvh - 32px)',
+        overflow: 'hidden',
+      },
+    }),
+    [],
+  );
+  const modalPositionStyle = useMemo(() => ({ margin: '0 auto', paddingBottom: 0, top: 16 }), []);
   const guidePanelStyle = useMemo<React.CSSProperties>(
     () => ({
       height: '100%',
@@ -505,10 +545,15 @@ const Welcome: React.FC = () => {
                 ))}
               </Row>
               <Space wrap>
-                <Button icon={<FolderOpenOutlined />} onClick={() => history.push('/tgdata/flows')}>
+                <Button
+                  aria-label={currentGuideContent.actions.browsePublicData}
+                  icon={<FolderOpenOutlined />}
+                  onClick={() => history.push('/tgdata/flows')}
+                >
                   {currentGuideContent.actions.browsePublicData}
                 </Button>
                 <Button
+                  aria-label={currentGuideContent.actions.enterMyData}
                   type='primary'
                   icon={<UserOutlined />}
                   onClick={() => history.push('/mydata/processes')}
@@ -751,6 +796,7 @@ const Welcome: React.FC = () => {
         footer={null}
         width={modalWidth}
         destroyOnHidden
+        style={modalPositionStyle}
         styles={modalStyles}
         title={
           <FormattedMessage id='pages.dataEcosystem' defaultMessage='Data Ecosystem (A-Z Order)' />
@@ -848,6 +894,7 @@ const Welcome: React.FC = () => {
         footer={null}
         width={modalWidth}
         destroyOnHidden
+        style={modalPositionStyle}
         styles={modalStyles}
         title={tidasTitle}
       >
@@ -863,8 +910,28 @@ const Welcome: React.FC = () => {
               {tidasReadMoreLabel}
             </Typography.Link>
           </Typography.Paragraph>
+          {hasTidasImageFallback && (
+            <Typography.Text
+              id='welcome-tidas-image-language'
+              type='secondary'
+              data-testid='welcome-tidas-image-language'
+            >
+              {formatMessage(
+                {
+                  id: 'pages.welcome.overview.tidas.imageFallbackDisclosure',
+                  defaultMessage: 'Diagram language: {language}',
+                },
+                { language: tidasImageLocale!.nativeLabel },
+              )}
+            </Typography.Text>
+          )}
           {isTidasModalOpen && (
-            <img src={tidasImageSrc} alt={tidasImageAlt} style={{ width: '100%' }} />
+            <img
+              src={tidasImageSrc}
+              alt={tidasImageAlt}
+              aria-describedby={hasTidasImageFallback ? 'welcome-tidas-image-language' : undefined}
+              style={{ width: '100%' }}
+            />
           )}
         </Space>
       </Modal>

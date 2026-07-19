@@ -26,6 +26,33 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "verificationStatus": "verified"
     },
     "identityStrategy": "tree-index-path-with-id-assertion",
+    "officialAvailability": {
+      "localeDecisions": {
+        "de": {
+          "locale": "de",
+          "note": "The frozen CPC 3.0 release provides no complete same-edition official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "fr": {
+          "locale": "fr",
+          "note": "The frozen CPC 3.0 release provides no complete same-edition official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "zh": {
+          "locale": "zh",
+          "note": "The frozen CPC 3.0 release provides no complete same-edition official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        }
+      },
+      "officialSecondaryMappingIds": [],
+      "release": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+      "retrievedAt": "2026-07-18",
+      "schemaVersion": 1,
+      "sourceComponentScopes": [
+        "CPC_Ver_3.0_Structure_30Jun2025.csv"
+      ],
+      "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv"
+    },
     "overlays": {
       "de": {
         "coverage": {
@@ -309,11 +336,44 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       },
       "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv",
       "usageTerms": {
-        "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-        "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-        "ownerIssue": "#634",
-        "productionStatus": "blocked",
-        "status": "rights-clearance-required",
+        "blockerReason": null,
+        "clearanceRequirements": {
+          "conditions": [],
+          "profile": "classification-redistribution-translation",
+          "sourceComponentScopes": [
+            "CPC_Ver_3.0_Structure_30Jun2025.csv"
+          ],
+          "uses": [
+            "public-production-deployment",
+            "redistribution",
+            "translation-and-derivative-works"
+          ]
+        },
+        "evidence": {
+          "date": "2026-07-19",
+          "edition": "UNSD CPC Version 3.0, structure dated 30 June 2025",
+          "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+          "resourceId": "cpc",
+          "schemaVersion": 1,
+          "scope": {
+            "conditions": [],
+            "profile": "classification-redistribution-translation",
+            "sourceComponentScopes": [
+              "CPC_Ver_3.0_Structure_30Jun2025.csv"
+            ],
+            "uses": [
+              "public-production-deployment",
+              "redistribution",
+              "translation-and-derivative-works"
+            ]
+          },
+          "type": "product-owner-attestation",
+          "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+        },
+        "note": "The product owner attested existing authorization for redistribution, translation and derivative works, and public production deployment of the exact digest-bound CPC 3.0 source. Publisher terms remain linked for context; no grantor, license number, legal document, or file ownership is inferred.",
+        "ownerIssue": null,
+        "productionStatus": "ready",
+        "status": "production-cleared",
         "url": "https://shop.un.org/rights-permissions"
       },
       "verificationStatus": "verified"
@@ -324,7 +384,7 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "edition": "UNSD CPC Version 3.0, structure dated 30 June 2025",
       "publisher": "United Nations Statistics Division (UNSD)",
       "officialUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_3.0_Structure_30Jun2025.csv",
-      "license": "rights-clearance-required",
+      "license": "production-cleared",
       "retrievedAt": "2026-07-18",
       "ownerIssue": "#634"
     },
@@ -332,6 +392,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "de": {
         "language": "de",
         "fileName": "CPCClassification.623e9b86917a5f7d_de.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "623e9b86917a5f7df356fd72efdbff9add15e4b6092492c2e65a301089654fc9"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "95b4a7eaee598b90f3eefa2c3235a58e1fbaca413417321fcdb70ab35221438e"
+        },
+        "byteLength": 78391,
         "dataTypeNames": {
           "Contact": "Kontakt",
           "Flow": "Fluss",
@@ -346,6 +415,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "en": {
         "language": "en",
         "fileName": "CPCClassification.ed784ea38b85fc5b.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "ed784ea38b85fc5b416fa5984e02481eadf0e877e8b46bd36d1c0db35bfe6851"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "9c88b6c9c00902d4295e97532c2450a90e56ae8adb5df13cb5199f0a5b8beb36"
+        },
+        "byteLength": 72262,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flow",
@@ -360,6 +438,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "fr": {
         "language": "fr",
         "fileName": "CPCClassification.9d45ad0a5395f2dd_fr.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "9d45ad0a5395f2dde4fbd13986a8d98855af3c6c7c8efb048ac86c75d42b9437"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "0bebcf43d2340416b634372ad35d1dd92fff1870738aea1e779f931923fb5091"
+        },
+        "byteLength": 77716,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flux",
@@ -374,6 +461,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "zh": {
         "language": "zh",
         "fileName": "CPCClassification.27c6fd06261f6e06_zh.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "27c6fd06261f6e06c99507de38fb5cbbb6a6f69a2f3343eb90150d2fe3b9776b"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "fe672f7a88d1636a5f2eadce531effd0c7dbd91f265c9dff39f12cba7c895bc9"
+        },
+        "byteLength": 71239,
         "dataTypeNames": {
           "Contact": "联系信息",
           "Flow": "流",
@@ -418,6 +514,33 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "verificationStatus": "verified"
     },
     "identityStrategy": "tree-index-path-with-id-assertion",
+    "officialAvailability": {
+      "localeDecisions": {
+        "de": {
+          "locale": "de",
+          "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "fr": {
+          "locale": "fr",
+          "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "zh": {
+          "locale": "zh",
+          "note": "The frozen ISIC Rev. 5 release provides no complete same-edition official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        }
+      },
+      "officialSecondaryMappingIds": [],
+      "release": "UNSD International Standard Industrial Classification Revision 5",
+      "retrievedAt": "2026-07-18",
+      "schemaVersion": 1,
+      "sourceComponentScopes": [
+        "ISIC_Rev_5_english_structure.csv"
+      ],
+      "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv"
+    },
     "overlays": {
       "de": {
         "coverage": {
@@ -701,11 +824,44 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       },
       "sourceUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv",
       "usageTerms": {
-        "blockerReason": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-        "note": "UNSD provides no material-specific open redistribution or derivative-work license for this structure. United Nations Rights & Permissions requires permission to reuse statistical database content and to translate or republish it.",
-        "ownerIssue": "#634",
-        "productionStatus": "blocked",
-        "status": "rights-clearance-required",
+        "blockerReason": null,
+        "clearanceRequirements": {
+          "conditions": [],
+          "profile": "classification-redistribution-translation",
+          "sourceComponentScopes": [
+            "ISIC_Rev_5_english_structure.csv"
+          ],
+          "uses": [
+            "public-production-deployment",
+            "redistribution",
+            "translation-and-derivative-works"
+          ]
+        },
+        "evidence": {
+          "date": "2026-07-19",
+          "edition": "UNSD International Standard Industrial Classification Revision 5",
+          "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+          "resourceId": "isic",
+          "schemaVersion": 1,
+          "scope": {
+            "conditions": [],
+            "profile": "classification-redistribution-translation",
+            "sourceComponentScopes": [
+              "ISIC_Rev_5_english_structure.csv"
+            ],
+            "uses": [
+              "public-production-deployment",
+              "redistribution",
+              "translation-and-derivative-works"
+            ]
+          },
+          "type": "product-owner-attestation",
+          "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+        },
+        "note": "The product owner attested existing authorization for redistribution, translation and derivative works, and public production deployment of the exact digest-bound ISIC Rev. 5 source. Publisher terms remain linked for context; no grantor, license number, legal document, or file ownership is inferred.",
+        "ownerIssue": null,
+        "productionStatus": "ready",
+        "status": "production-cleared",
         "url": "https://shop.un.org/rights-permissions"
       },
       "verificationStatus": "verified"
@@ -716,7 +872,7 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "edition": "UNSD International Standard Industrial Classification Revision 5",
       "publisher": "United Nations Statistics Division (UNSD)",
       "officialUrl": "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/ISIC_Rev_5_english_structure.csv",
-      "license": "rights-clearance-required",
+      "license": "production-cleared",
       "retrievedAt": "2026-07-18",
       "ownerIssue": "#634"
     },
@@ -724,6 +880,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "de": {
         "language": "de",
         "fileName": "ISICClassification.c87a6025d12803b1_de.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "c87a6025d12803b1380da0ba511717442aef89e7e381f44e37d9b9a3d261bdd2"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "9518fd0397e095a47a2c3f2fc04434de6ac98d0e4b4e10bb4b65007c5daaf12e"
+        },
+        "byteLength": 11387,
         "dataTypeNames": {
           "Contact": "Kontakt",
           "Flow": "Fluss",
@@ -738,6 +903,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "en": {
         "language": "en",
         "fileName": "ISICClassification.852053b3e1692408.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "852053b3e16924083891e85d6d30af4a0fb681b6718291cf21bb5d37ce894ffb"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "19f60846d7658d21cf0993ebe94993588dfc686953840f15a658a39a74084aa1"
+        },
+        "byteLength": 10392,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flow",
@@ -752,6 +926,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "fr": {
         "language": "fr",
         "fileName": "ISICClassification.5d9f08d11bb7028a_fr.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "5d9f08d11bb7028a97fb28b2517d976b4300cfac29dc8ba1a6454dd77da5c880"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "483e91296284e075010ab8407562e0235686518492a31d5cb341eb6f8bd4d278"
+        },
+        "byteLength": 11318,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flux",
@@ -766,6 +949,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "zh": {
         "language": "zh",
         "fileName": "ISICClassification.6455c8b1a0747aed_zh.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "6455c8b1a0747aed6bfc27d87ac3171167d55f8a5e22bc8b7c341da6cfa3e861"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "86be671105200aa7a6afcbf2e3f9560142b52b74c82b6dbe3e2c45ddb49a4807"
+        },
+        "byteLength": 10251,
         "dataTypeNames": {
           "Contact": "联系信息",
           "Flow": "流",
@@ -810,6 +1002,33 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "verificationStatus": "verified"
     },
     "identityStrategy": "data-type-index-path-occurrence-with-id-assertion",
+    "officialAvailability": {
+      "localeDecisions": {
+        "de": {
+          "locale": "de",
+          "note": "The frozen EF 3.1 classification release contains no complete official German label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "fr": {
+          "locale": "fr",
+          "note": "The frozen EF 3.1 classification release contains no complete official French label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "zh": {
+          "locale": "zh",
+          "note": "The frozen EF 3.1 classification release contains no complete official Chinese label set; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        }
+      },
+      "officialSecondaryMappingIds": [],
+      "release": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+      "retrievedAt": "2026-07-18",
+      "schemaVersion": 1,
+      "sourceComponentScopes": [
+        "stylesheets/ILCDClassification_Reference.xml"
+      ],
+      "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+    },
     "overlays": {
       "de": {
         "coverage": {
@@ -1091,11 +1310,50 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       },
       "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
       "usageTerms": {
-        "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
-        "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required, and file-specific ownership must be confirmed before redistribution.",
-        "ownerIssue": "#634",
-        "productionStatus": "blocked",
-        "status": "file-specific-owner-confirmation-required",
+        "blockerReason": null,
+        "clearanceRequirements": {
+          "conditions": [
+            "attribution-required",
+            "modification-notice-required",
+            "project-extensions-separately-identified"
+          ],
+          "profile": "ef-reference-file-reuse",
+          "sourceComponentScopes": [
+            "stylesheets/ILCDClassification_Reference.xml"
+          ],
+          "uses": [
+            "file-level-reuse",
+            "public-production-deployment"
+          ]
+        },
+        "evidence": {
+          "date": "2026-07-19",
+          "edition": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+          "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+          "resourceId": "ilcd-classification",
+          "schemaVersion": 1,
+          "scope": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": [
+              "stylesheets/ILCDClassification_Reference.xml"
+            ],
+            "uses": [
+              "file-level-reuse",
+              "public-production-deployment"
+            ]
+          },
+          "type": "product-owner-attestation",
+          "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+        },
+        "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 classification file. Source attribution, a modification notice, and separate identification of project extensions remain required; no grantor, license number, legal document, or file ownership is inferred.",
+        "ownerIssue": null,
+        "productionStatus": "ready",
+        "status": "production-cleared",
         "url": "https://commission.europa.eu/legal-notice_en"
       },
       "verificationStatus": "verified"
@@ -1106,7 +1364,7 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "edition": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
       "publisher": "European Commission DG JRC",
       "officialUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
-      "license": "file-specific-owner-confirmation-required",
+      "license": "production-cleared",
       "retrievedAt": "2026-07-18",
       "ownerIssue": "#634"
     },
@@ -1114,6 +1372,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "de": {
         "language": "de",
         "fileName": "ILCDClassification.a0ebc4f03bdd49cc_de.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "a0ebc4f03bdd49cc39055222fe24093f5db254ce4a8b8408815707da463d9343"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "0cc8c5526b8b89ed4638fccfd289ca3725fefec997e74472efc621ca4d60ab06"
+        },
+        "byteLength": 2669,
         "dataTypeNames": {
           "Contact": "Kontakt",
           "Flow": "Fluss",
@@ -1128,6 +1395,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "en": {
         "language": "en",
         "fileName": "ILCDClassification.5c74d092637aa320.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "5c74d092637aa32021319111d71092c9534edb76fd154a86a104419b923c6ef4"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "329ff554769d26d2e39168d221a5854c4f8f30833ef3316b1ff73c8884c9c52a"
+        },
+        "byteLength": 2376,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flow",
@@ -1142,6 +1418,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "fr": {
         "language": "fr",
         "fileName": "ILCDClassification.66a7df47fc937089_fr.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "66a7df47fc93708958e13cb13ee4e4ea0a50ccbe579ed28ea5b9d5cc5fefc00f"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "cb411444ead23418a50d20c18accf3724f9e4e141cbf917c680dc278b74160f0"
+        },
+        "byteLength": 2717,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flux",
@@ -1156,6 +1441,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "zh": {
         "language": "zh",
         "fileName": "ILCDClassification.e30a3e90520a915f_zh.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "e30a3e90520a915f9139157f932eb97fb872c27d22095699250d067256e144e6"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "df8f76376eec7162760329f521e2d5e3a35a22879610b76ac9e3a58b404acffd"
+        },
+        "byteLength": 2448,
         "dataTypeNames": {
           "Contact": "联系信息",
           "Flow": "流",
@@ -1200,6 +1494,38 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "verificationStatus": "verified"
     },
     "identityStrategy": "tree-index-path-with-id-assertion",
+    "officialAvailability": {
+      "localeDecisions": {
+        "de": {
+          "locale": "de",
+          "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in German; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "en": {
+          "locale": "en",
+          "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in English; the runtime base therefore requires project provenance review for its extension.",
+          "status": "official-unavailable"
+        },
+        "fr": {
+          "locale": "fr",
+          "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in French; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        },
+        "zh": {
+          "locale": "zh",
+          "note": "No frozen EF 3.1 release provides the complete project-extended flow categorization in Chinese; the runtime locale therefore requires the project-reviewed overlay.",
+          "status": "official-unavailable"
+        }
+      },
+      "officialSecondaryMappingIds": [],
+      "release": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
+      "retrievedAt": "2026-07-18",
+      "schemaVersion": 1,
+      "sourceComponentScopes": [
+        "stylesheets/ILCDFlowCategorization_Reference.xml"
+      ],
+      "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+    },
     "overlays": {
       "de": {
         "coverage": {
@@ -1479,11 +1805,50 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       },
       "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
       "usageTerms": {
-        "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
-        "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership still needs confirmation, and the TianGong extension remains separately identified.",
-        "ownerIssue": "#634",
-        "productionStatus": "blocked",
-        "status": "file-specific-owner-confirmation-required",
+        "blockerReason": null,
+        "clearanceRequirements": {
+          "conditions": [
+            "attribution-required",
+            "modification-notice-required",
+            "project-extensions-separately-identified"
+          ],
+          "profile": "ef-reference-file-reuse",
+          "sourceComponentScopes": [
+            "stylesheets/ILCDFlowCategorization_Reference.xml"
+          ],
+          "uses": [
+            "file-level-reuse",
+            "public-production-deployment"
+          ]
+        },
+        "evidence": {
+          "date": "2026-07-19",
+          "edition": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
+          "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+          "resourceId": "ilcd-flow-categorization",
+          "schemaVersion": 1,
+          "scope": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": [
+              "stylesheets/ILCDFlowCategorization_Reference.xml"
+            ],
+            "uses": [
+              "file-level-reuse",
+              "public-production-deployment"
+            ]
+          },
+          "type": "product-owner-attestation",
+          "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+        },
+        "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 flow-categorization file. Source attribution, a modification notice, and separate identification of the TianGong extension remain required; no grantor, license number, legal document, or file ownership is inferred.",
+        "ownerIssue": null,
+        "productionStatus": "ready",
+        "status": "production-cleared",
         "url": "https://commission.europa.eu/legal-notice_en"
       },
       "verificationStatus": "verified"
@@ -1494,7 +1859,7 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "edition": "ILCD Format 1.1 / EF reference package 3.1 plus project extension",
       "publisher": "European Commission DG JRC and TianGong LCA",
       "officialUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip",
-      "license": "file-specific-owner-confirmation-required",
+      "license": "production-cleared",
       "retrievedAt": "2026-07-18",
       "ownerIssue": "#634"
     },
@@ -1502,6 +1867,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "de": {
         "language": "de",
         "fileName": "ILCDFlowCategorization.ae503754e77e5b19_de.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "ae503754e77e5b194abe65196edb7ccb8a58bbc957e2842f9b3ac220551acb11"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "833498ff140db4a3536356b12f7f4de7a4df9389038895f5b3a838604dfb51f0"
+        },
+        "byteLength": 794,
         "dataTypeNames": {
           "Contact": "Kontakt",
           "Flow": "Fluss",
@@ -1516,6 +1890,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "en": {
         "language": "en",
         "fileName": "ILCDFlowCategorization.519b7ec408131c56.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "519b7ec408131c5620a4b0c29cc195786698c2d045b459d302fe5cdcd06565c9"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "18609273d614dad632aa4b23a582d14193aa1726d4a7d6f53acf2b09fdfafa87"
+        },
+        "byteLength": 718,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flow",
@@ -1530,6 +1913,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "fr": {
         "language": "fr",
         "fileName": "ILCDFlowCategorization.cf2bf4be7fc6ab91_fr.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "cf2bf4be7fc6ab918e1215233147157c03cb2e6eb3bfbe941646967583ebfab9"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "3a1b6a81504692c69c4af6b0564c358c020f6c28e0e37ee3ca71320465c584be"
+        },
+        "byteLength": 772,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flux",
@@ -1544,6 +1936,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "zh": {
         "language": "zh",
         "fileName": "ILCDFlowCategorization.dbc4de4506d39a2e_zh.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "dbc4de4506d39a2ea8aecce78fab6fb0a0b7c87b8b2d69d8d4d799c2c39dbd5d"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "db1f8c6f634e9b37990f1c452034e9b25c5392162b0f883c6a2fedcaab04e539"
+        },
+        "byteLength": 762,
         "dataTypeNames": {
           "Contact": "联系信息",
           "Flow": "流",
@@ -1588,6 +1989,41 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "verificationStatus": "verified"
     },
     "identityStrategy": "location-code",
+    "officialAvailability": {
+      "localeDecisions": {
+        "de": {
+          "locale": "de",
+          "note": "No official release provides the complete project-held location catalog in German; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+          "status": "official-unavailable"
+        },
+        "en": {
+          "locale": "en",
+          "note": "No official release provides the complete project-held location catalog in English because it includes project-modified and project-extension entries.",
+          "status": "official-unavailable"
+        },
+        "fr": {
+          "locale": "fr",
+          "note": "No official release provides the complete project-held location catalog in French; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+          "status": "official-unavailable"
+        },
+        "zh": {
+          "locale": "zh",
+          "note": "No official release provides the complete project-held location catalog in Chinese; the bound EU Vocabularies mapping supplies only the exact country/territory subset.",
+          "status": "official-unavailable"
+        }
+      },
+      "officialSecondaryMappingIds": [
+        "eu-vocab-country-20260617-0-iso-alpha2"
+      ],
+      "release": "composite project-held ILCD-compatible location catalog",
+      "retrievedAt": "2026-07-18",
+      "schemaVersion": 1,
+      "sourceComponentScopes": [
+        "cellar-sparql-application-sparql-results-json-response-body",
+        "stylesheets/ILCDLocations_Reference.xml"
+      ],
+      "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+    },
     "officialSecondaryMappings": [
       {
         "datasetUrl": "http://publications.europa.eu/resource/dataset/country",
@@ -1611,7 +2047,10 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
         "sourceUrl": "https://op.europa.eu/en/web/eu-vocabularies/dataset/-/resource?uri=http://publications.europa.eu/resource/dataset/country&version=20260617-0",
         "status": "official-secondary-mapping",
         "usageTerms": {
+          "blockerReason": null,
           "note": "Reuse is subject to the European Commission reuse policy, including source attribution and indication of changes; third-party material is excluded. This per-entry terminology crosswalk is not an official ILCD translation.",
+          "ownerIssue": null,
+          "productionStatus": "ready",
           "status": "european-commission-reuse-notice",
           "url": "https://commission.europa.eu/legal-notice_en"
         }
@@ -1909,11 +2348,52 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       },
       "sourceUrl": null,
       "usageTerms": {
-        "blockerReason": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
-        "note": "The general EC reuse policy is CC BY 4.0 only where the EU owns the material; attribution and a modification notice are required. File-specific ownership must be confirmed, while project-modified and extended entries stay explicitly separated.",
-        "ownerIssue": "#634",
-        "productionStatus": "blocked",
-        "status": "file-specific-owner-confirmation-required",
+        "blockerReason": null,
+        "clearanceRequirements": {
+          "conditions": [
+            "attribution-required",
+            "modification-notice-required",
+            "project-extensions-separately-identified"
+          ],
+          "profile": "ef-reference-file-reuse",
+          "sourceComponentScopes": [
+            "cellar-sparql-application-sparql-results-json-response-body",
+            "stylesheets/ILCDLocations_Reference.xml"
+          ],
+          "uses": [
+            "file-level-reuse",
+            "public-production-deployment"
+          ]
+        },
+        "evidence": {
+          "date": "2026-07-19",
+          "edition": "composite project-held ILCD-compatible location catalog",
+          "note": "The product owner attested existing authorization for this exact scope. This record does not identify or infer a grantor, license number, legal document, or file owner.",
+          "resourceId": "ilcd-locations",
+          "schemaVersion": 1,
+          "scope": {
+            "conditions": [
+              "attribution-required",
+              "modification-notice-required",
+              "project-extensions-separately-identified"
+            ],
+            "profile": "ef-reference-file-reuse",
+            "sourceComponentScopes": [
+              "cellar-sparql-application-sparql-results-json-response-body",
+              "stylesheets/ILCDLocations_Reference.xml"
+            ],
+            "uses": [
+              "file-level-reuse",
+              "public-production-deployment"
+            ]
+          },
+          "type": "product-owner-attestation",
+          "url": "https://github.com/linancn/tiangong-lca-next/issues/634#issuecomment-5012071208"
+        },
+        "note": "The product owner attested existing authorization for file-level reuse and public production deployment of the exact digest-bound EF 3.1 locations file and EU Vocabularies secondary terminology response used by the runtime overlays. Source attribution, a modification notice, and separate identification of project-modified and project-extension entries remain required; no grantor, license number, legal document, or file ownership is inferred.",
+        "ownerIssue": null,
+        "productionStatus": "ready",
+        "status": "production-cleared",
         "url": "https://commission.europa.eu/legal-notice_en"
       },
       "verificationStatus": "verified"
@@ -1924,7 +2404,7 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "edition": "composite project-held ILCD-compatible location catalog",
       "publisher": "Composite project catalog",
       "officialUrl": null,
-      "license": "file-specific-owner-confirmation-required",
+      "license": "production-cleared",
       "retrievedAt": "2026-07-18",
       "ownerIssue": "#634"
     },
@@ -1932,6 +2412,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "de": {
         "language": "de",
         "fileName": "ILCDLocations.7048b701b1dfacb4_de.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "7048b701b1dfacb4d06d6d779fdf1135ad0c8e8bb1e92f09d64e7ada303d44cb"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "77479039e4dbd7484b39c3ef31eaf9df404258bb34b576c66674e5cc718cb0c6"
+        },
+        "byteLength": 6868,
         "dataTypeNames": {
           "Contact": "Kontakt",
           "Flow": "Fluss",
@@ -1946,6 +2435,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "en": {
         "language": "en",
         "fileName": "ILCDLocations.b65e8d45de515726.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "b65e8d45de515726c86deffd794d719e6c4f7e16af4864bff80a6b20168a3417"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "e47cb3299abb9e56ae1ef54d8f3906144975da99ef20a7ebb809a6423ac27e85"
+        },
+        "byteLength": 6688,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flow",
@@ -1960,6 +2458,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "fr": {
         "language": "fr",
         "fileName": "ILCDLocations.3fdd552e27dca310_fr.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "3fdd552e27dca31048fba2ea4586cafe464c6612bc222f2682803386f6c429a8"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "ed69e79b8aaa1600609dfa308dff59c856f263e023a1709dc6ab6d0098cdd27a"
+        },
+        "byteLength": 6750,
         "dataTypeNames": {
           "Contact": "Contact",
           "Flow": "Flux",
@@ -1974,6 +2481,15 @@ export const GENERATED_REFERENCE_RESOURCE_MANIFEST = [
       "zh": {
         "language": "zh",
         "fileName": "ILCDLocations.c406f6ae5aa30ef1_zh.min.json.gz",
+        "jsonDigest": {
+          "algorithm": "sha256",
+          "value": "c406f6ae5aa30ef18c705c9ff63432be929725d178c00b7e098070d8533d86a3"
+        },
+        "gzipDigest": {
+          "algorithm": "sha256",
+          "value": "e2d92a822bc3c97f8d45f6b55b6734aea8e2f86ba047c450be3dec1bc8913208"
+        },
+        "byteLength": 7568,
         "dataTypeNames": {
           "Contact": "联系信息",
           "Flow": "流",

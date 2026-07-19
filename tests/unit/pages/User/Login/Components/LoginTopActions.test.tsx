@@ -12,12 +12,12 @@ jest.mock('umi', () => ({
   __esModule: true,
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage, id }: any) => {
-      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
-        return 'Englische Hilfedokumentation öffnen';
+    formatMessage: ({ defaultMessage, id }: any, values?: Record<string, string>) => {
+      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.fallback') {
+        return `Hilfedokumentation (${values?.language})`;
       }
-      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.englishFallback') {
-        return 'Ouvrir la documentation d’aide (en anglais)';
+      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.fallback') {
+        return `Documentation d’aide (${values?.language})`;
       }
       if (mockLocale === 'fr-FR' && id === 'pages.theme.toggleDarkMode') {
         return 'Activer ou désactiver le mode sombre';
@@ -174,9 +174,9 @@ describe('LoginTopActions', () => {
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
 
     const helpAction = screen.getByRole('button', {
-      name: 'Englische Hilfedokumentation öffnen',
+      name: 'Hilfedokumentation (English)',
     });
-    expect(helpAction).toHaveAttribute('title', 'Englische Hilfedokumentation öffnen');
+    expect(helpAction).toHaveAttribute('title', 'Hilfedokumentation (English)');
     await userEvent.click(helpAction);
 
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
@@ -188,12 +188,12 @@ describe('LoginTopActions', () => {
     renderWithProviders(<LoginTopActions isDarkMode={false} onDarkModeToggle={jest.fn()} />);
 
     const helpAction = screen.getByRole('button', {
-      name: 'Ouvrir la documentation d’aide (en anglais)',
+      name: 'Documentation d’aide (English)',
     });
     expect(
       screen.getByRole('button', { name: 'Activer ou désactiver le mode sombre' }),
     ).toBeInTheDocument();
-    expect(helpAction).toHaveAttribute('title', 'Ouvrir la documentation d’aide (en anglais)');
+    expect(helpAction).toHaveAttribute('title', 'Documentation d’aide (English)');
     await userEvent.click(helpAction);
 
     expect(window.open).toHaveBeenCalledWith('https://docs.tiangong.earth/en');

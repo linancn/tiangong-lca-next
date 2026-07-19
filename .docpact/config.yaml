@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-18"
-lastReviewedCommit: "16747439cd5e224194fe3e04b5fce3f9c0f502dc"
-lastReviewedNote: 'Reviewed for Issue #633 and added the implemented content-language registry, derived capability matrix, reference-resource owner, and fallback-contract routes.'
+lastReviewedAt: '2026-07-19'
+lastReviewedCommit: 'a3c63306da7f6e4665158aeb0744f578c0e32050'
+lastReviewedNote: 'Reviewed for Issue #635 and governed credential-free GitHub browser jobs, the explicitly authorized local production-data operator run, and digest-bound evidence.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -42,19 +42,21 @@ ownership:
           - docs/agents/**
           - docs/plans/i18n/**
           - docs/plans/i18n-*/**
+          - docs/plans/i18n/semantic-e2e-evidence.schema.json
+          - docs/plans/i18n/semantic-e2e-evidence.json
           - .github/PULL_REQUEST_TEMPLATE/*.md
       ownerRepo: next
     - id: repo-testing-and-quality-gates
       paths:
         include:
           - tests/**
+          - tests/e2e/**
+          - playwright.config.ts
           - package.json
           - .nvmrc
           - jest.config.cjs
           - .husky/pre-push
-          - .github/workflows/ci.yml
-          - .github/workflows/build.yml
-          - .github/workflows/ai-doc-lint.yml
+          - .github/workflows/**
           - scripts/docpact
           - scripts/docpact-gate.js
           - scripts/test-runner.cjs
@@ -98,13 +100,13 @@ coverage:
     - electron/**
     - icons/**
     - tests/**
+    - tests/e2e/**
+    - playwright.config.ts
     - package.json
     - .nvmrc
     - jest.config.cjs
     - .husky/pre-push
-    - .github/workflows/ai-doc-lint.yml
-    - .github/workflows/build.yml
-    - .github/workflows/ci.yml
+    - .github/workflows/**
     - scripts/docpact
     - scripts/docpact-gate.js
     - scripts/test-runner.cjs
@@ -153,12 +155,11 @@ routing:
     testing-gates:
       paths:
         - package.json
+        - playwright.config.ts
         - .nvmrc
         - jest.config.cjs
         - .husky/pre-push
-        - .github/workflows/ci.yml
-        - .github/workflows/build.yml
-        - .github/workflows/ai-doc-lint.yml
+        - .github/workflows/**
         - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/test-runner.cjs
@@ -168,6 +169,19 @@ routing:
         - scripts/i18n/**
         - scripts/reference-data/**
         - tests/**
+        - tests/e2e/**
+        - docs/plans/i18n/semantic-e2e-evidence.schema.json
+        - docs/plans/i18n/semantic-e2e-evidence.json
+    i18n-semantic-e2e:
+      paths:
+        - playwright.config.ts
+        - tests/e2e/i18n/**
+        - .github/workflows/i18n-semantic-e2e.yml
+        - docs/plans/i18n/route-view-coverage.json
+        - docs/plans/i18n/semantic-e2e-evidence.schema.json
+        - docs/plans/i18n/semantic-e2e-evidence.json
+        - src/services/general/localeRegistry.ts
+        - src/services/general/contentLanguageRegistry.ts
     repo-docs:
       paths:
         - AGENTS.md
@@ -197,20 +211,23 @@ routing:
     proof:
       paths:
         - package.json
+        - playwright.config.ts
         - .nvmrc
         - jest.config.cjs
         - .husky/pre-push
-        - .github/workflows/ci.yml
-        - .github/workflows/build.yml
+        - .github/workflows/**
         - scripts/docpact
         - scripts/docpact-gate.js
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - scripts/reference-data/**
         - tests/**
+        - tests/e2e/**
         - docs/agents/i18n-language-delivery-goal.md
         - docs/plans/i18n/**
         - docs/plans/i18n-*/**
+        - docs/plans/i18n/semantic-e2e-evidence.schema.json
+        - docs/plans/i18n/semantic-e2e-evidence.json
         - docs/agents/test_todo_list.md
         - docs/agents/testing-patterns.md
         - docs/agents/testing-troubleshooting.md
@@ -394,10 +411,20 @@ rules:
         kind: reference-resource-generation
       - path: docs/plans/i18n/fallback-contract.json
         kind: locale-fallback-contract
+      - path: playwright.config.ts
+        kind: semantic-e2e-config
+      - path: tests/e2e/i18n/**
+        kind: semantic-e2e-proof
+      - path: .github/workflows/i18n-semantic-e2e.yml
+        kind: semantic-e2e-workflow
+      - path: docs/plans/i18n/semantic-e2e-evidence.schema.json
+        kind: semantic-e2e-evidence-schema
+      - path: docs/plans/i18n/semantic-e2e-evidence.json
+        kind: semantic-e2e-evidence
     requiredDocs:
       - path: docs/agents/i18n-language-delivery-goal.md
         mode: review_or_update
-    reason: Shared locale, content-language, reference-resource, cache, runtime, and audit changes must keep the reusable language delivery Goal aligned with shipped behavior and all-active-locale capability requirements.
+    reason: Shared locale, content-language, reference-resource, cache, runtime, and semantic E2E changes must keep the reusable Goal aligned with shipped behavior, all-active-locale capabilities, credential-free GitHub jobs, and the local-only production-data safety contract.
   - id: next-frontend-runtime-contract
     scope: repo
     repo: next
@@ -524,6 +551,8 @@ rules:
     triggers:
       - path: package.json
         kind: runtime-config
+      - path: playwright.config.ts
+        kind: semantic-e2e-config
       - path: .nvmrc
         kind: runtime-config
       - path: docs/agents/test_todo_list.md
@@ -540,9 +569,7 @@ rules:
         kind: test-gate
       - path: .husky/pre-push
         kind: test-gate
-      - path: .github/workflows/ci.yml
-        kind: ci
-      - path: .github/workflows/build.yml
+      - path: .github/workflows/**
         kind: ci
       - path: scripts/docpact
         kind: local-automation
@@ -564,8 +591,14 @@ rules:
         kind: test-baseline
       - path: docs/plans/i18n-*/**
         kind: test-baseline
+      - path: docs/plans/i18n/semantic-e2e-evidence.schema.json
+        kind: semantic-e2e-evidence-schema
+      - path: docs/plans/i18n/semantic-e2e-evidence.json
+        kind: semantic-e2e-evidence
       - path: tests/data-workflows/test-api-smoke.cjs
         kind: repo-test
+      - path: tests/e2e/**
+        kind: browser-semantic-e2e
       - path: tests/**
         kind: repo-test
     requiredDocs:
@@ -583,7 +616,7 @@ rules:
         mode: review_or_update
       - path: docs/agents/test_improvement_plan.md
         mode: review_or_update
-    reason: Coverage, testing workflow, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
+    reason: Coverage, testing workflow, browser trust boundaries, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
   - id: next-static-resource-contract
     scope: repo
     repo: next

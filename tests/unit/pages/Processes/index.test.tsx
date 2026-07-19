@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/processes',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetProcessTableAll = jest.fn();
@@ -39,7 +40,7 @@ jest.mock('umi', () => ({
     push: jest.fn(),
   },
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -351,9 +352,12 @@ jest.mock('@ant-design/pro-components', () => {
     headerTitle,
     optionsRender,
     rowKey,
+    params,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    paramsRef.current = params;
 
     React.useEffect(() => {
       requestRef.current = request;
@@ -361,12 +365,15 @@ jest.mock('@ant-design/pro-components', () => {
     }, [request]);
 
     const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
+      const result = await requestRef.current?.(
+        { pageSize: 10, current: 1, ...paramsRef.current },
+        {},
+      );
       setRows(result?.data ?? []);
       return result;
     });
     const reloadAndRest = jest.fn(async () =>
-      requestRef.current?.({ pageSize: 10, current: 1 }, {}),
+      requestRef.current?.({ pageSize: 10, current: 1, ...paramsRef.current }, {}),
     );
 
     React.useEffect(() => {
@@ -433,6 +440,7 @@ describe('ProcessesPage', () => {
       pathname: '/mydata/processes',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockContributeProcess.mockResolvedValue({ error: null });
@@ -463,6 +471,14 @@ describe('ProcessesPage', () => {
     mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
     message.success.mockReset();
     message.error.mockReset();
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('maps known process dataset types and falls back to dash for unknown ones', () => {

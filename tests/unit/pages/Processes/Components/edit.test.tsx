@@ -2478,7 +2478,10 @@ describe('ProcessEdit component', () => {
       expect(showValidationIssueModal).toHaveBeenCalledWith(
         expect.objectContaining({
           issues: validationIssues,
-          title: 'Data validation issues',
+          title: {
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
+          },
         }),
       ),
     );
@@ -2517,7 +2520,10 @@ describe('ProcessEdit component', () => {
       expect(showValidationIssueModal).toHaveBeenCalledWith(
         expect.objectContaining({
           issues: validationIssues,
-          title: 'Data validation issues',
+          title: {
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
+          },
         }),
       ),
     );
@@ -2565,7 +2571,10 @@ describe('ProcessEdit component', () => {
       expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
         expect.objectContaining({
           issues: validationIssues,
-          title: 'Data validation issues',
+          title: {
+            id: 'pages.validationIssues.modal.checkDataTitle',
+            defaultMessage: 'Data validation issues',
+          },
         }),
       ),
     );
@@ -2789,7 +2798,10 @@ describe('ProcessEdit component', () => {
       expect(mockShowValidationIssueModal).toHaveBeenCalledWith(
         expect.objectContaining({
           issues: [{ id: 'sdk-issue' }],
-          title: 'Review submission blocked',
+          title: {
+            id: 'pages.validationIssues.modal.reviewTitle',
+            defaultMessage: 'Review submission blocked',
+          },
         }),
       ),
     );

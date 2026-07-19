@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let latestProTableProps: any = null;
+let mockOmitContentLanguageRequestParam = false;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -207,21 +208,26 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, columns }: any) => {
+  const ProTable = ({ actionRef, params, request, rowSelection, columns }: any) => {
     const requestRef = React.useRef(request);
-    const initializedRef = React.useRef(false);
+    const paramsRef = React.useRef(params);
+    const serializedParams = JSON.stringify(params ?? {});
 
     React.useEffect(() => {
       requestRef.current = request;
     }, [request]);
+    paramsRef.current = params;
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, request, rowSelection, columns };
-    }, [actionRef, request, rowSelection, columns]);
+      latestProTableProps = { actionRef, params, request, rowSelection, columns };
+    }, [actionRef, params, request, rowSelection, columns]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
-        await requestRef.current({ pageSize: 10, current: 1 }, {});
+        const requestParams = mockOmitContentLanguageRequestParam
+          ? { pageSize: 10, current: 1 }
+          : { pageSize: 10, current: 1, ...paramsRef.current };
+        await requestRef.current(requestParams, {});
       }
     }, []);
 
@@ -232,11 +238,11 @@ jest.mock('@ant-design/pro-components', () => {
           setPageInfo: jest.fn(),
         };
       }
-      if (!initializedRef.current) {
-        initializedRef.current = true;
-        void reload();
-      }
     }, [actionRef, reload]);
+
+    React.useEffect(() => {
+      void reload();
+    }, [reload, serializedParams]);
 
     return <div data-testid='pro-table' />;
   };
@@ -249,6 +255,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 beforeEach(() => {
   latestProTableProps = null;
+  mockOmitContentLanguageRequestParam = false;
   mockGetFlowTableAll.mockReset();
   mockGetFlowTablePgroongaSearch.mockReset();
   mockFlowHybridSearch.mockReset();
@@ -270,6 +277,35 @@ describe('ModelToolbarAddThroughFlow', () => {
       'en',
       'tg',
       [],
+    );
+  });
+
+  it('defaults the content language for both data tabs when ProTable omits it', async () => {
+    mockOmitContentLanguageRequestParam = true;
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'my',
+        [],
+      ),
     );
   });
 

@@ -30,6 +30,8 @@ export default {
   'pages.welcome.overview.tidas.title': 'TIDAS Architecture',
   'pages.welcome.overview.tidas.description': 'An open ecosystem of modular data packs, APIs, and toolkits enabling collaborative, verifiable exchanges.',
   'pages.welcome.overview.tidas.readMore': 'Learn more',
+  'pages.welcome.overview.tidas.docsFallbackLabel': 'Learn more ({language})',
+  'pages.welcome.overview.tidas.imageFallbackDisclosure': 'Diagram language: {language}',
   'pages.welcome.overview.tidas.docsUrl': 'https://tidas.tiangong.earth/en/docs/intro',
   'pages.welcome.overview.tidas.imageAlt': 'TIDAS data system architecture diagram',
   'pages.welcome.carbonFootprintGuide.entryLabel': 'Data Development Guide',

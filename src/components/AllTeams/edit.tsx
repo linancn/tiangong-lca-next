@@ -1,3 +1,4 @@
+import { REQUIRED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { FileType, isImage, removeLogoApi, uploadLogoApi } from '@/services/supabase/storage';
 import { editTeamMessage, getTeamMessageApi } from '@/services/teams/api';
 import styles from '@/style/custom.less';
@@ -10,6 +11,27 @@ import { FormattedMessage, useIntl } from 'umi';
 import TeamForm from './form';
 
 const getDrawerContainer = () => document.body;
+
+const emptyRequiredText = () =>
+  REQUIRED_CONTENT_LANGUAGES.map((languageCode) => ({
+    '#text': '',
+    '@xml:lang': languageCode,
+  }));
+
+export const hasRequiredTeamText = (value: unknown) =>
+  Array.isArray(value) &&
+  REQUIRED_CONTENT_LANGUAGES.every((requiredLanguage) =>
+    value.some(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        String((item as Record<string, unknown>)['@xml:lang'] ?? '')
+          .trim()
+          .toLowerCase() === requiredLanguage &&
+        typeof (item as Record<string, unknown>)['#text'] === 'string' &&
+        String((item as Record<string, unknown>)['#text']).trim().length > 0,
+    ),
+  );
 
 type Props = {
   id: string;
@@ -101,14 +123,8 @@ const TeamEdit: FC<Props> = ({
     if (result.data && result.data.length > 0) {
       const teamData = result.data[0];
       const formValues = {
-        title: teamData.json?.title || [
-          { '#text': '', '@xml:lang': 'zh' },
-          { '#text': '', '@xml:lang': 'en' },
-        ],
-        description: teamData.json?.description || [
-          { '#text': '', '@xml:lang': 'zh' },
-          { '#text': '', '@xml:lang': 'en' },
-        ],
+        title: teamData.json?.title || emptyRequiredText(),
+        description: teamData.json?.description || emptyRequiredText(),
         lightLogo: teamData.json?.lightLogo,
         darkLogo: teamData.json?.darkLogo,
       };
@@ -190,6 +206,26 @@ const TeamEdit: FC<Props> = ({
             onFinish={async () => {
               setSpinning(true);
               const formValues = formRefEdit.current?.getFieldsValue() ?? {};
+              if (!hasRequiredTeamText(formValues.title)) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'component.allTeams.form.title.required',
+                    defaultMessage: 'Please input team name!',
+                  }),
+                );
+                setSpinning(false);
+                return false;
+              }
+              if (!hasRequiredTeamText(formValues.description)) {
+                message.error(
+                  intl.formatMessage({
+                    id: 'component.allTeams.form.description.required',
+                    defaultMessage: 'Please input team description!',
+                  }),
+                );
+                setSpinning(false);
+                return false;
+              }
               if (!lightLogo?.length) {
                 handleRemoveLogo('lightLogo');
                 formValues.lightLogo = null;

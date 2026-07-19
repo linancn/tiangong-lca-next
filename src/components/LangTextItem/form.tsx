@@ -5,7 +5,7 @@ import {
 } from '@/services/general/contentLanguageRegistry';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, Col, Form, Input, message, Row, Select } from 'antd';
-import { FC, ReactNode, useRef } from 'react';
+import { FC, ReactNode, useEffect } from 'react';
 import { FormattedMessage, useIntl } from 'umi';
 
 const { TextArea } = Input;
@@ -21,6 +21,22 @@ type Props = {
   listName?: string[];
 };
 
+type RequiredListEntryGuardProps = {
+  add: () => void;
+  enabled: boolean;
+  itemCount: number;
+};
+
+const RequiredListEntryGuard: FC<RequiredListEntryGuardProps> = ({ add, enabled, itemCount }) => {
+  useEffect(() => {
+    if (enabled && itemCount === 0) {
+      add();
+    }
+  }, [add, enabled, itemCount]);
+
+  return null;
+};
+
 const LangTextItemForm: FC<Props> = ({
   name,
   label,
@@ -32,27 +48,20 @@ const LangTextItemForm: FC<Props> = ({
 }) => {
   const intl = useIntl();
   const isRequired = rules?.some((rule) => rule.required);
-  const initialRenderRef = useRef(true);
 
   const formContext = Form.useFormInstance();
   const form = formRef?.current || formContext;
+
+  const formValuePath = listName ? [...listName, ...(Array.isArray(name) ? name : [name])] : name;
+  const watchedFormValues = Form.useWatch(formValuePath, form);
 
   const normalizeTextValue = (value: unknown) => {
     return typeof value === 'string' ? value.trim() : '';
   };
 
-  let formValues = [];
-  if (listName) {
-    formValues = form?.getFieldValue([...listName]);
-    const fieldName = name[name.length - 1];
-    if (fieldName) {
-      formValues = formValues?.[0]?.[fieldName];
-    }
-  } else {
-    formValues = form.getFieldValue(name);
-  }
+  const formValues = watchedFormValues ?? form?.getFieldValue(formValuePath) ?? [];
 
-  const selectedLangValues = (formValues ?? [])
+  const selectedLangValues = formValues
     .filter((item: any) => item && item['@xml:lang'])
     .map((item: any) => item['@xml:lang']);
 
@@ -60,6 +69,7 @@ const LangTextItemForm: FC<Props> = ({
     <Form.Item>
       <Form.List
         name={name}
+        initialValue={isRequired ? [{}] : undefined}
         rules={
           isRequired
             ? [
@@ -73,6 +83,18 @@ const LangTextItemForm: FC<Props> = ({
                         (!!item['@xml:lang'] || normalizeTextValue(item['#text']).length > 0)
                       );
                     });
+
+                    if (normalizedValue.length === 0) {
+                      if (setRuleErrorState) setRuleErrorState(false);
+                      return Promise.reject(
+                        new Error(
+                          intl.formatMessage({
+                            id: 'validator.lang.text.required',
+                            defaultMessage: 'Please input this field',
+                          }),
+                        ),
+                      );
+                    }
 
                     if (!hasAnyMeaningfulValue) {
                       if (setRuleErrorState) setRuleErrorState(false);
@@ -108,15 +130,13 @@ const LangTextItemForm: FC<Props> = ({
         }
       >
         {(subFields, subOpt) => {
-          if (isRequired && subFields.length === 0 && initialRenderRef.current) {
-            initialRenderRef.current = false;
-            requestAnimationFrame(() => {
-              subOpt.add();
-            });
-          }
-
           return (
             <div style={{ display: 'flex', flexDirection: 'column', rowGap: 16 }}>
+              <RequiredListEntryGuard
+                add={subOpt.add}
+                enabled={isRequired}
+                itemCount={subFields.length}
+              />
               {subFields.map((subField) => {
                 const currentLang = formValues?.[subField.name]?.['@xml:lang'];
                 const fieldErrors = fieldErrorMessages?.[subField.name] ?? [];
@@ -160,7 +180,12 @@ const LangTextItemForm: FC<Props> = ({
                     : declaredOptions;
 
                 return (
-                  <Row key={subField.key} gutter={[10, 0]} align='top'>
+                  <Row
+                    key={subField.key}
+                    gutter={[10, 0]}
+                    align='top'
+                    data-content-language={currentLang || undefined}
+                  >
                     <Col flex='180px'>
                       <Form.Item
                         name={[subField.name, '@xml:lang']}
@@ -203,6 +228,7 @@ const LangTextItemForm: FC<Props> = ({
                           }
                           optionFilterProp='label'
                           options={optionsWithDisabled}
+                          virtual={false}
                         />
                       </Form.Item>
                     </Col>

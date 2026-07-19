@@ -59,13 +59,14 @@ const LifeCycleModelView: FC<Props> = ({
 
   const layoutStyle = {
     borderRadius: 8,
+    flex: '1 1 auto',
     overflow: 'hidden',
-    width: 'calc(100%)',
-    minWidth: 'calc(100%)',
-    maxWidth: 'calc(100%)',
-    height: 'calc(100%)',
-    minHeight: 'calc(100%)',
-    maxHeight: 'calc(100%)',
+    width: '100%',
+    minWidth: 0,
+    maxWidth: '100%',
+    height: 'auto',
+    minHeight: 0,
+    maxHeight: '100%',
   };
 
   return (
@@ -123,17 +124,31 @@ const LifeCycleModelView: FC<Props> = ({
         title={
           <FormattedMessage id='pages.flow.model.drawer.title.view' defaultMessage='View Model' />
         }
-        width='100%'
+        width='100vw'
         closable={false}
         extra={<Button icon={<CloseOutlined />} style={{ border: 0 }} onClick={closeDrawer} />}
         maskClosable={true}
         open={drawerVisible}
         onClose={closeDrawer}
+        rootStyle={{ maxWidth: '100vw', overflow: 'hidden' }}
+        styles={{
+          body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
+          content: { minWidth: 0, overflow: 'hidden', width: '100%' },
+          wrapper: { maxWidth: '100vw', overflow: 'hidden', width: '100vw' },
+        }}
       >
         <GraphProvider>
           <Layout style={layoutStyle}>
-            <Layout>
-              <Content>
+            <Layout style={{ height: '100%', minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
+              <Content
+                style={{
+                  height: '100%',
+                  minHeight: 0,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
                 <X6GraphComponent
                   selectOptions={{
                     enabled: true,

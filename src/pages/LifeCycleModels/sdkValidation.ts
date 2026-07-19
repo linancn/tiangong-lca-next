@@ -3,6 +3,7 @@ import {
   normalizeSimpleDatasetSdkValidationDetails,
   toPathArray,
 } from '@/pages/Utils/validation/sdkDetails';
+import { resolveContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLangText } from '@/services/general/util';
 
 const LIFECYCLEMODEL_REQUIRED_LANG_TEXT_FIELDS = new Set<string>([
@@ -54,13 +55,7 @@ const LIFECYCLEMODEL_PROCESS_INSTANCE_PATH_PREFIX = [
 const normalizeString = (value?: string | null) =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
-const toLocaleLang = (locale?: string) => {
-  if (typeof locale !== 'string') {
-    return 'en';
-  }
-
-  return locale.startsWith('zh') ? 'zh' : 'en';
-};
+const toLocaleLang = (locale?: string) => resolveContentLanguage(locale);
 
 const toProcessInstanceList = (value: any) => {
   if (Array.isArray(value)) {

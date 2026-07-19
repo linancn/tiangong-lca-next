@@ -2,7 +2,13 @@ import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
 import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type ContentLanguageAwareTableParams,
+  type DataTabKey,
+} from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -44,6 +50,17 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
   const teamActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  const myRequestEpochRef = useRef(0);
+  const teamRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageAwareTableParams.contentLanguage,
+    [tgRequestEpochRef, coRequestEpochRef, myRequestEpochRef, teamRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -289,24 +306,38 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             enterButton
           />
         </Card>
-        <ProTable<ContactTable, ListPagination>
+        <ProTable<ContactTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (tgKeyWord.length > 0) {
-              return getContactTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
-            }
-            return getContactTableAll(params, sort, lang, 'tg', []);
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async () => {
+                if (tgKeyWord.length > 0) {
+                  return getContactTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  );
+                }
+                return getContactTableAll(params, sort, params.contentLanguage, 'tg', []);
+              },
+            );
           }}
           columns={contactColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -332,24 +363,38 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             enterButton
           />
         </Card>
-        <ProTable<ContactTable, ListPagination>
+        <ProTable<ContactTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (coKeyWord.length > 0) {
-              return getContactTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
-            }
-            return getContactTableAll(params, sort, lang, 'co', []);
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async () => {
+                if (coKeyWord.length > 0) {
+                  return getContactTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'co',
+                    coKeyWord,
+                    {},
+                  );
+                }
+                return getContactTableAll(params, sort, params.contentLanguage, 'co', []);
+              },
+            );
           }}
           columns={contactColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -375,24 +420,38 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             enterButton
           />
         </Card>
-        <ProTable<ContactTable, ListPagination>
+        <ProTable<ContactTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (myKeyWord.length > 0) {
-              return getContactTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-            }
-            return getContactTableAll(params, sort, lang, 'my', []);
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async () => {
+                if (myKeyWord.length > 0) {
+                  return getContactTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                  );
+                }
+                return getContactTableAll(params, sort, params.contentLanguage, 'my', []);
+              },
+            );
           }}
           toolBarRender={() => {
             return [<ContactCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
@@ -421,24 +480,38 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
             enterButton
           />
         </Card>
-        <ProTable<ContactTable, ListPagination>
+        <ProTable<ContactTable, ContentLanguageAwareTableParams>
           actionRef={teamActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (teamKeyWord.length > 0) {
-              return getContactTablePgroongaSearch(params, lang, 'te', teamKeyWord, {});
-            }
-            return getContactTableAll(params, sort, lang, 'te', '');
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              teamRequestEpochRef,
+              async () => {
+                if (teamKeyWord.length > 0) {
+                  return getContactTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'te',
+                    teamKeyWord,
+                    {},
+                  );
+                }
+                return getContactTableAll(params, sort, params.contentLanguage, 'te', '');
+              },
+            );
           }}
           columns={contactColumns}
           tableAlertOptionRender={tableAlertOptionRender}

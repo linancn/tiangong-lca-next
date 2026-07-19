@@ -28,6 +28,9 @@ let mockFormListFields = [{ key: 0, name: 0 }];
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
   useModel: () => ({ initialState: { currentUser: { userid: mockCurrentUserId } } }),
 }));
 

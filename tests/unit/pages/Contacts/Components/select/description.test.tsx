@@ -12,12 +12,9 @@ const toText = (node: any): string => {
   return '';
 };
 
-const mockGetLocale = jest.fn(() => 'en-US');
-
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => mockGetLocale(),
 }));
 
 jest.mock('@/components/LangTextItem/description', () => ({
@@ -56,10 +53,6 @@ describe('ContactSelectDescription', () => {
   const ContactSelectDescription =
     require('@/pages/Contacts/Components/select/description').default;
 
-  beforeEach(() => {
-    mockGetLocale.mockReturnValue('en-US');
-  });
-
   it('renders fallback content when no contact reference is provided', () => {
     renderWithProviders(<ContactSelectDescription title='Contact' lang='en' />);
 
@@ -86,9 +79,7 @@ describe('ContactSelectDescription', () => {
     expect(screen.getByText('Contact short desc')).toBeInTheDocument();
   });
 
-  it('renders zh locale layout and falls back to an empty version for object references', () => {
-    mockGetLocale.mockReturnValue('zh-CN');
-
+  it('renders translated content and falls back to an empty version for object references', () => {
     renderWithProviders(
       <ContactSelectDescription
         title='Contact'

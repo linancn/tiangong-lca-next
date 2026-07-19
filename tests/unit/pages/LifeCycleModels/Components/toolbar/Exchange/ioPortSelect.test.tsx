@@ -3,7 +3,15 @@ import IoPortSelect, {
   getFolwypeOfDataSetOptions,
 } from '@/pages/LifeCycleModels/Components/toolbar/Exchange/ioPortSelect';
 import userEvent from '@testing-library/user-event';
-import { render, screen, waitFor } from '../../../../../../helpers/testUtils';
+import { act, render, screen, waitFor } from '../../../../../../helpers/testUtils';
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
 
 const mockGetProcessDetail = jest.fn();
 const mockGetProcessExchange = jest.fn();
@@ -311,6 +319,73 @@ describe('LifeCycleModelIoPortSelect', () => {
     expect(mockGetProcessExchange).not.toHaveBeenCalled();
   });
 
+  it('ignores a slower detail response after the node, version, and direction change', async () => {
+    const requestA = deferred<any>();
+    const requestB = deferred<any>();
+    mockGetProcessDetail.mockImplementation((processId: string) =>
+      processId === 'process-a' ? requestA.promise : requestB.promise,
+    );
+    mockGenProcessFromData.mockImplementation((data: any) => ({
+      exchanges: {
+        exchange: [
+          {
+            marker: data.marker,
+            exchangeDirection: data.marker === 'B' ? 'output' : 'input',
+            referenceToFlowDataSet: { '@refObjectId': `flow-${data.marker}` },
+          },
+        ],
+      },
+    }));
+
+    const commonProps = {
+      lang: 'en',
+      drawerVisible: true,
+      onData: jest.fn(),
+      onDrawerVisible: jest.fn(),
+    };
+    const { rerender } = render(
+      <IoPortSelect
+        {...commonProps}
+        node={{
+          data: { id: 'process-a', version: '1.0.0' },
+          ports: { items: [{ id: 'INPUT:flow-A' }] },
+        }}
+        direction='Input'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-a', '1.0.0'));
+
+    rerender(
+      <IoPortSelect
+        {...commonProps}
+        node={{
+          data: { id: 'process-b', version: '2.0.0' },
+          ports: { items: [{ id: 'OUTPUT:flow-B' }] },
+        }}
+        direction='Output'
+      />,
+    );
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledWith('process-b', '2.0.0'));
+
+    await act(async () => {
+      requestB.resolve({ data: { json: { processDataSet: { marker: 'B' } } } });
+      await requestB.promise;
+    });
+    await waitFor(() => expect(mockGenProcessFromData).toHaveBeenCalledWith({ marker: 'B' }));
+    expect(screen.getByTestId('selected-keys')).toHaveTextContent('["OUTPUT:flow-B"]');
+
+    const acceptedDetailCount = mockGenProcessFromData.mock.calls.length;
+    await act(async () => {
+      requestA.resolve({ data: { json: { processDataSet: { marker: 'A' } } } });
+      await requestA.promise;
+    });
+
+    expect(mockGenProcessFromData).not.toHaveBeenCalledWith({ marker: 'A' });
+    expect(mockGenProcessFromData).toHaveBeenCalledTimes(acceptedDetailCount);
+  });
+
   it('falls back to empty process payloads and missing port ids', async () => {
     const onData = jest.fn();
 
@@ -407,5 +482,30 @@ describe('LifeCycleModelIoPortSelect', () => {
     expect(
       screen.queryByRole('button', { name: 'select:INPUT:flow-single' }),
     ).not.toBeInTheDocument();
+  });
+
+  it('rejects a table response that finishes after the drawer is unmounted', async () => {
+    const pendingUnits = deferred<any>();
+    mockGetUnitData.mockReturnValueOnce(pendingUnits.promise);
+
+    const { unmount } = render(
+      <IoPortSelect
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Input'
+        drawerVisible
+        onData={jest.fn()}
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalled());
+    unmount();
+
+    await act(async () => {
+      pendingUnits.resolve([{ dataSetInternalID: 'stale-exchange' }]);
+      await pendingUnits.promise;
+      await Promise.resolve();
+    });
   });
 });

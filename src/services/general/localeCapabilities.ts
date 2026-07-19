@@ -13,11 +13,7 @@ import {
   type ContentLanguageDefinition,
   type SupportedContentLanguage,
 } from './contentLanguageRegistry';
-import {
-  getLocaleDefinition,
-  SUPPORTED_APP_LOCALES,
-  type SupportedAppLocale,
-} from './localeRegistry';
+import { LOCALE_REGISTRY, type LocaleDefinition, type SupportedAppLocale } from './localeRegistry';
 
 export type ReferenceResourceCapability = {
   resourceId: ReferenceResourceId;
@@ -28,9 +24,40 @@ export type ReferenceResourceCapability = {
   ownerIssue?: string;
 };
 
-export type LocaleCapabilityRow = {
+type LocaleCapabilityBase = {
   appLocale: SupportedAppLocale;
+  uiCatalog: 'native';
+};
+
+export type AvailableLocaleCapabilityRow = LocaleCapabilityBase & {
   contentLanguage: SupportedContentLanguage;
+  contentReading: 'native' | 'declared-fallback';
+  contentAuthoring: 'native' | 'unsupported';
+  serviceQuery: {
+    status: ContentCapabilityStatus;
+    resolvedLanguage?: SupportedContentLanguage;
+    disclosure: 'diagnostic' | 'user-visible' | 'none';
+  };
+  referenceResources: readonly ReferenceResourceCapability[];
+};
+
+export type UnsupportedLocaleCapabilityRow = LocaleCapabilityBase & {
+  contentLanguage?: undefined;
+  contentReading: 'unsupported';
+  contentAuthoring: 'unsupported';
+  serviceQuery: {
+    status: 'unsupported';
+    resolvedLanguage?: undefined;
+    disclosure: 'none';
+  };
+  referenceResources: readonly [];
+};
+
+export type LocaleCapabilityRow = AvailableLocaleCapabilityRow | UnsupportedLocaleCapabilityRow;
+
+export type LocaleCapabilitySnapshot = {
+  appLocale: string;
+  contentLanguage?: SupportedContentLanguage;
   uiCatalog: 'native';
   contentReading: ContentCapabilityStatus;
   contentAuthoring: 'native' | 'unsupported';
@@ -51,11 +78,39 @@ export const getContentReadingCapabilityStatus = (
   return content.reading.priority[0] === content.languageCode ? 'native' : 'declared-fallback';
 };
 
-const buildLocaleCapabilityRow = (appLocale: SupportedAppLocale): LocaleCapabilityRow => {
-  const locale = getLocaleDefinition(appLocale);
-  const content = getContentLanguageDefinition(locale.languageCode);
-  if (!content || content.appLocale !== appLocale) {
-    throw new Error(`UI locale ${appLocale} has no matching content-language capability.`);
+export const buildLocaleCapabilityRow = (locale: LocaleDefinition): LocaleCapabilitySnapshot => {
+  const appLocale = locale.canonicalLocale;
+  const declaredCapability = locale.contentCapability;
+  if (
+    !declaredCapability ||
+    !['native', 'declared-fallback', 'unsupported'].includes(declaredCapability.status)
+  ) {
+    throw new Error(`UI locale ${appLocale} has no declared content capability.`);
+  }
+  if (declaredCapability.status === 'unsupported') {
+    if (declaredCapability.contentLanguage !== undefined) {
+      throw new Error(
+        `UI locale ${appLocale} cannot name a content language when typed content is unsupported.`,
+      );
+    }
+    return {
+      appLocale,
+      uiCatalog: 'native',
+      contentReading: 'unsupported',
+      contentAuthoring: 'unsupported',
+      serviceQuery: {
+        status: 'unsupported',
+        disclosure: 'none',
+      },
+      referenceResources: [],
+    };
+  }
+
+  const content = getContentLanguageDefinition(declaredCapability.contentLanguage);
+  if (!content) {
+    throw new Error(
+      `UI locale ${appLocale} references unknown content language ${declaredCapability.contentLanguage}.`,
+    );
   }
 
   const serviceQuery = resolveServiceQueryLanguage(content.languageCode);
@@ -85,8 +140,14 @@ const buildLocaleCapabilityRow = (appLocale: SupportedAppLocale): LocaleCapabili
     appLocale,
     contentLanguage: content.languageCode,
     uiCatalog: 'native',
-    contentReading: getContentReadingCapabilityStatus(content),
-    contentAuthoring: content.authoring.enabled ? 'native' : 'unsupported',
+    contentReading:
+      declaredCapability.status === 'declared-fallback'
+        ? 'declared-fallback'
+        : getContentReadingCapabilityStatus(content),
+    contentAuthoring:
+      declaredCapability.status === 'native' && content.authoring.enabled
+        ? 'native'
+        : 'unsupported',
     serviceQuery: {
       status: serviceQuery.status,
       resolvedLanguage: serviceQuery.resolvedLanguage,
@@ -97,8 +158,9 @@ const buildLocaleCapabilityRow = (appLocale: SupportedAppLocale): LocaleCapabili
 };
 
 /** Derived view over the three owner registries; never edit rows directly. */
-export const LOCALE_CAPABILITY_MATRIX: readonly LocaleCapabilityRow[] =
-  SUPPORTED_APP_LOCALES.map(buildLocaleCapabilityRow);
+export const LOCALE_CAPABILITY_MATRIX: readonly LocaleCapabilityRow[] = LOCALE_REGISTRY.map(
+  (locale) => buildLocaleCapabilityRow(locale) as LocaleCapabilityRow,
+);
 
 export function getLocaleCapability(appLocale: SupportedAppLocale): LocaleCapabilityRow;
 export function getLocaleCapability(appLocale?: string | null): LocaleCapabilityRow | undefined;

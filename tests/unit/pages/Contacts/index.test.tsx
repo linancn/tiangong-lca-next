@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/contacts',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
@@ -45,7 +46,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -316,38 +317,45 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     request,
+    params = {},
     columns = [],
     toolBarRender,
     headerTitle,
     rowKey,
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
-    const requestRef = React.useRef(request);
+    const headerTitleText = toText(headerTitle);
+    const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
+    latestRequestRef.current = request;
+    latestParamsRef.current = params;
+
+    const api = React.useMemo(
+      () => ({
+        reload: jest.fn(async () => {
+          const result = await latestRequestRef.current?.(
+            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            {},
+          );
+          setRows(result?.data ?? []);
+          return result;
+        }),
+        setPageInfo: jest.fn(),
+      }),
+      [],
+    );
 
     React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
-
-    React.useEffect(() => {
-      latestReloadMock = reload;
+      latestReloadMock = api.reload;
       if (actionRef) {
-        actionRef.current = {
-          reload,
-          setPageInfo: jest.fn(),
-        };
+        actionRef.current = api;
       }
-      void reload();
-    }, [actionRef, reload]);
+      void api.reload();
+    }, [actionRef, api, headerTitleText, params.locale]);
 
     return (
       <section data-testid='pro-table'>
-        <div>{toText(headerTitle)}</div>
+        <div>{headerTitleText}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row: any, rowIndex: number) => (
           <div key={rowKey?.(row) ?? `${row.id}-${rowIndex}`}>
@@ -378,6 +386,7 @@ describe('ContactsPage', () => {
       pathname: '/mydata/contacts',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
@@ -389,6 +398,14 @@ describe('ContactsPage', () => {
     mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<ContactsPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads the default table and row actions', async () => {
@@ -497,6 +514,25 @@ describe('ContactsPage', () => {
         {},
         '20',
         'team-1',
+      ),
+    );
+  });
+
+  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/contacts', search: '' };
+
+    renderWithProviders(<ContactsPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        'all',
+        '',
       ),
     );
   });

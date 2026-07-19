@@ -100,6 +100,9 @@ export default {
 
   'pages.version': 'Datensatzversion',
   'pages.lang.select': 'Sprache auswählen',
+  'pages.lang.text.placeholder': 'Text',
+  'pages.classification.loadFailed': 'Die Klassifikation konnte nicht geladen werden.',
+  'pages.classification.retry': 'Erneut versuchen',
 
   'page.exportData.success': 'Die Daten wurden erfolgreich exportiert.',
   'page.exportData.error': 'Der Datenexport ist fehlgeschlagen.',

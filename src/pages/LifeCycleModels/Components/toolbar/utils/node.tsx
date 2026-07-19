@@ -76,6 +76,8 @@ export const nodeTitleTool = (
           textContent: genNodeLabel(title, lang, width),
           selector: 'text',
           attrs: {
+            'aria-label': title,
+            'data-responsive-label-kind': 'node-title',
             fill: 'white',
             'font-size': 14,
             'text-anchor': 'middle',

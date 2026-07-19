@@ -2,6 +2,8 @@ import { useGraphEvent, useGraphStore } from '@/contexts/graphContext';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { initVersion } from '@/services/general/data';
+import { DEFAULT_BROWSER_APP_LOCALE } from '@/services/general/localeRegistry';
+import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { formatDateTime, getLangText } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
 import type {
@@ -95,6 +97,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
 
   const [nodeCount, setNodeCount] = useState(0);
   const resizeToolRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modelResolutionEpochRef = useRef(0);
 
   const { token } = theme.useToken();
 
@@ -416,7 +419,9 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     }, 0);
   });
 
-  const getProcessInstances = async (jsonTg: LifeCycleModelJsonTg) => {
+  const getProcessInstances = async (
+    jsonTg: LifeCycleModelJsonTg,
+  ): Promise<LifeCycleModelProcessInstance[]> => {
     const params: { id: string; version: string }[] = [];
     jsonTg?.xflow?.nodes?.forEach((node) => {
       const nodeId = node?.data?.id;
@@ -430,127 +435,159 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     });
     if (params.length > 0) {
       const procresses = await getProcessesByIdAndVersion(params);
-      setProcessInstances((procresses.data ?? []) as LifeCycleModelProcessInstance[]);
+      return (procresses.data ?? []) as LifeCycleModelProcessInstance[];
     }
+    return [];
   };
 
+  const canonicalAppLocale =
+    normalizeRuntimeLocale(intl.locale) ??
+    normalizeRuntimeLocale(lang) ??
+    DEFAULT_BROWSER_APP_LOCALE;
+
   useEffect(() => {
+    const resolutionEpoch = modelResolutionEpochRef.current + 1;
+    modelResolutionEpochRef.current = resolutionEpoch;
+    const isCurrentResolution = () => modelResolutionEpochRef.current === resolutionEpoch;
+
     if (!drawerVisible) {
       setJsonTg({});
-      return;
+      setProcessInstances([]);
+      setSpinning(false);
+      return () => {
+        if (isCurrentResolution()) {
+          modelResolutionEpochRef.current += 1;
+        }
+      };
     }
     if (id && version) {
       setSpinning(true);
-      getLifeCycleModelDetail(id, version).then(async (result) => {
-        if (!result.success) {
-          message.error(
-            intl.formatMessage({
-              id: 'pages.lifecyclemodel.notPublic',
-              defaultMessage: 'Model is not public',
-            }),
+      setProcessInstances([]);
+      void getLifeCycleModelDetail(id, version)
+        .then(async (result) => {
+          if (!isCurrentResolution()) {
+            return;
+          }
+          if (!result.success) {
+            message.error(
+              intl.formatMessage({
+                id: 'pages.lifecyclemodel.notPublic',
+                defaultMessage: 'Model is not public',
+              }),
+            );
+            return;
+          }
+          const fromData = genLifeCycleModelInfoFromData(
+            result.data?.json?.lifeCycleModelDataSet ?? {},
           );
-          return;
-        }
-        const fromData = genLifeCycleModelInfoFromData(
-          result.data?.json?.lifeCycleModelDataSet ?? {},
-        );
-        setInfoData({ ...fromData, id: id });
-        setJsonTg(result.data?.json_tg ?? {});
-        const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
-        const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
-          return {
-            ...node,
-            selected: false,
-            attrs: {
-              ...nodeAttrs,
-              label: {
-                ...nodeAttrs.label,
-                text: '',
+          const nextJsonTg = result.data?.json_tg ?? {};
+          setInfoData({ ...fromData, id: id });
+          setJsonTg(nextJsonTg);
+          const model = genLifeCycleModelData(nextJsonTg, lang);
+          const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
+            return {
+              ...node,
+              selected: false,
+              attrs: {
+                ...nodeAttrs,
+                label: {
+                  ...nodeAttrs.label,
+                  text: '',
+                },
               },
-            },
-            ports: {
-              ...node.ports,
-              groups: ports.groups,
-              items: node?.ports?.items?.map((item: LifeCycleModelPortItem) => {
-                const itemText = getLangText(item?.data?.textLang, lang);
-                const itemTextWithAllocation = getPortLabelWithAllocation(
-                  itemText ?? '',
-                  item?.data?.allocations,
-                  item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
+              ports: {
+                ...node.ports,
+                groups: ports.groups,
+                items: node?.ports?.items?.map((item: LifeCycleModelPortItem) => {
+                  const itemText = getLangText(item?.data?.textLang, lang);
+                  const itemTextWithAllocation = getPortLabelWithAllocation(
+                    itemText ?? '',
+                    item?.data?.allocations,
+                    item?.group === 'groupOutput' ? 'OUTPUT' : 'INPUT',
+                  );
+                  return {
+                    ...item,
+                    attrs: {
+                      ...item?.attrs,
+                      text: {
+                        ...item?.attrs?.text,
+                        'aria-label': itemTextWithAllocation,
+                        'data-responsive-label-kind': 'port-label',
+                        text: `${genPortLabel(
+                          itemTextWithAllocation ?? '',
+                          lang,
+                          node?.size?.width ?? node?.width ?? 350,
+                        )}`,
+                        title: itemTextWithAllocation,
+                        fill: getPortTextColor(
+                          item?.data?.quantitativeReference,
+                          item?.data?.allocations,
+                          token,
+                        ),
+                        'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
+                        cursor: readOnlyCursor,
+                      },
+                    },
+                  };
+                }),
+              },
+              tools: buildReadOnlyNodeTools(
+                node?.size?.width ?? node?.width ?? 350,
+                node?.data?.label,
+                node?.data?.quantitativeReference === '1',
+              ),
+            };
+          });
+
+          const initEdges =
+            model?.edges?.map((edge: LifeCycleModelGraphEdge) => {
+              if (edge.target) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
+                const label = getEdgeLabel(
+                  token,
+                  edge?.data?.connection?.unbalancedAmount as number,
+                  edge?.data?.connection?.exchangeAmount as number,
+                  edgeLabelText,
                 );
                 return {
-                  ...item,
+                  ...edge,
+                  selected: false,
                   attrs: {
-                    ...item?.attrs,
-                    text: {
-                      ...item?.attrs?.text,
-                      text: `${genPortLabel(
-                        itemTextWithAllocation ?? '',
-                        lang,
-                        node?.size?.width ?? node?.width ?? 350,
-                      )}`,
-                      title: itemTextWithAllocation,
-                      fill: getPortTextColor(
-                        item?.data?.quantitativeReference,
-                        item?.data?.allocations,
-                        token,
-                      ),
-                      'font-weight': getPortTextStyle(item?.data?.quantitativeReference),
-                      cursor: readOnlyCursor,
+                    line: {
+                      stroke: token.colorPrimary,
+                      strokeWidth: 1,
                     },
                   },
+                  labels: [label],
+                  target: targetRest,
                 };
-              }),
-            },
-            tools: buildReadOnlyNodeTools(
-              node?.size?.width ?? node?.width ?? 350,
-              node?.data?.label,
-              node?.data?.quantitativeReference === '1',
-            ),
-          };
-        });
-
-        const initEdges =
-          model?.edges?.map((edge: LifeCycleModelGraphEdge) => {
-            if (edge.target) {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { x, y, ...targetRest } = edge.target as { [key: string]: unknown };
-              const label = getEdgeLabel(
-                token,
-                edge?.data?.connection?.unbalancedAmount as number,
-                edge?.data?.connection?.exchangeAmount as number,
-                edgeLabelText,
-              );
+              }
               return {
                 ...edge,
                 selected: false,
-                attrs: {
-                  line: {
-                    stroke: token.colorPrimary,
-                    strokeWidth: 1,
-                  },
-                },
-                labels: [label],
-                target: targetRest,
               };
-            }
-            return {
-              ...edge,
-              selected: false,
-            };
-          }) ?? [];
-        await modelData({
-          nodes: initNodes,
-          edges: initEdges,
-        });
+            }) ?? [];
 
-        setNodeCount(initNodes.length);
-        getProcessInstances(result.data?.json_tg)
-          .then(() => {})
-          .finally(() => {
-            setSpinning(false);
+          if (!isCurrentResolution()) {
+            return;
+          }
+          modelData({
+            nodes: initNodes,
+            edges: initEdges,
           });
-      });
+          setNodeCount(initNodes.length);
+
+          const nextProcessInstances = await getProcessInstances(nextJsonTg);
+          if (isCurrentResolution()) {
+            setProcessInstances(nextProcessInstances);
+          }
+        })
+        .finally(() => {
+          if (isCurrentResolution()) {
+            setSpinning(false);
+          }
+        });
     } else {
       const currentDateTime = formatDateTime(new Date());
       const newData = {
@@ -564,8 +601,17 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
         },
       };
       setInfoData({ ...newData, id: id });
+      setJsonTg({});
+      setProcessInstances([]);
+      setSpinning(false);
     }
-  }, [drawerVisible]);
+
+    return () => {
+      if (isCurrentResolution()) {
+        modelResolutionEpochRef.current += 1;
+      }
+    };
+  }, [canonicalAppLocale, drawerVisible, id, lang, version]);
 
   useEffect(() => {
     nodes.forEach((node) => {

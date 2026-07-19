@@ -1,3 +1,4 @@
+import { isTranslationSourceContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { getLocale, useIntl } from '@umijs/max';
 
 export type DashboardIntl = Pick<ReturnType<typeof useIntl>, 'formatMessage' | 'locale'>;
@@ -55,7 +56,7 @@ export function formatDashboardDate(value: string): string {
 }
 
 export function isChineseDashboardLocale(locale: string): boolean {
-  return locale.toLowerCase().replace('_', '-').startsWith('zh');
+  return isTranslationSourceContentLanguage(locale);
 }
 
 export function getDashboardScreenLabel(intl: DashboardIntl, screen: string): string {

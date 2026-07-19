@@ -95,6 +95,7 @@ export const FlowForm: FC<Props> = ({
   const { token } = theme.useToken();
   const intl = useIntl();
   const [dataSource, setDataSource] = useState<FlowpropertyTabTable[]>([]);
+  const propertyResolutionEpochRef = useRef(0);
   const [baseNameError, setBaseNameError] = useState(false);
   const [treatmentStandardsRoutesError, setTreatmentStandardsRoutesError] = useState(false);
   const [mixAndLocationTypesError, setMixAndLocationTypesError] = useState(false);
@@ -272,17 +273,26 @@ export const FlowForm: FC<Props> = ({
   };
 
   useEffect(() => {
-    getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
+    const resolutionEpoch = propertyResolutionEpochRef.current + 1;
+    propertyResolutionEpochRef.current = resolutionEpoch;
+    setDataSource([]);
+
+    void getUnitData('flowproperty', genFlowPropertyTabTableData(propertyDataSource, lang)).then(
       (res) => {
-        const typedRes = (res ?? []) as FlowpropertyTabTable[];
-        if (typedRes.length) {
-          setDataSource(typedRes);
-        } else {
-          setDataSource([]);
+        if (propertyResolutionEpochRef.current !== resolutionEpoch) {
+          return;
         }
+
+        setDataSource((res ?? []) as FlowpropertyTabTable[]);
       },
     );
-  }, [propertyDataSource]);
+
+    return () => {
+      if (propertyResolutionEpochRef.current === resolutionEpoch) {
+        propertyResolutionEpochRef.current += 1;
+      }
+    };
+  }, [lang, propertyDataSource]);
 
   const tabList = [
     {

@@ -1,6 +1,15 @@
 // @ts-nocheck
 import ExchangeSelect from '@/pages/Processes/Components/Exchange/select';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
 
 const toText = (node: any): string => {
   if (node === null || node === undefined) return '';
@@ -28,6 +37,7 @@ jest.mock('@/pages/Processes/Components/Exchange/view', () => ({
 }));
 
 const mockGetProcessDetail = jest.fn();
+const mockButtonProps: any[] = [];
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
@@ -35,33 +45,39 @@ jest.mock('@/services/processes/api', () => ({
 }));
 
 const mockGenProcessFromData = jest.fn();
+const mockGenProcessExchangeTableData = jest.fn((data: any[], language: string) =>
+  data.map((item) => ({
+    dataSetInternalID: item['@dataSetInternalID'],
+    referenceToFlowDataSet: item.referenceToFlowDataSet
+      ? `${item.referenceToFlowDataSet}-${language}`
+      : undefined,
+  })),
+);
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
   genProcessFromData: (...args: any[]) => mockGenProcessFromData(...args),
-  genProcessExchangeTableData: jest.fn((data: any[]) =>
-    data.map((item) => ({
-      dataSetInternalID: item['@dataSetInternalID'],
-      referenceToFlowDataSet: item.referenceToFlowDataSet,
-    })),
-  ),
+  genProcessExchangeTableData: (...args: any[]) => mockGenProcessExchangeTableData(...args),
 }));
 
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => (
-    <button
-      type='button'
-      data-button-type={type}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
-      {...rest}
-    >
-      {icon ? <span data-testid='button-icon'>{icon}</span> : null}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => {
+    mockButtonProps.push({ children, disabled, icon, onClick, type });
+    return (
+      <button
+        type='button'
+        data-button-type={type}
+        disabled={disabled}
+        onClick={disabled ? undefined : onClick}
+        {...rest}
+      >
+        {icon ? <span data-testid='button-icon'>{icon}</span> : null}
+        {toText(children)}
+      </button>
+    );
+  };
 
   const Tooltip = ({ title, children }: any) => {
     const label = toText(title);
@@ -188,6 +204,7 @@ describe('ExchangeSelect', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockButtonProps.length = 0;
 
     mockGetProcessDetail.mockReset();
     mockGenProcessFromData.mockReset();
@@ -234,6 +251,7 @@ describe('ExchangeSelect', () => {
     fireEvent.click(screen.getByRole('button'));
 
     await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled());
 
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
 
@@ -300,6 +318,144 @@ describe('ExchangeSelect', () => {
     expect(submitButton).toBeDisabled();
   });
 
+  it('keeps the submit callback guarded when invoked with unresolved selections', async () => {
+    const onData = jest.fn();
+    render(<ExchangeSelect {...baseProps} sourceRowKeys={[]} targetRowKeys={[]} onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    const guardedSubmit = [...mockButtonProps]
+      .reverse()
+      .find((props) => toText(props.children) === 'Submit' && props.disabled);
+    expect(guardedSubmit).toBeDefined();
+
+    act(() => guardedSubmit.onClick());
+    expect(onData).not.toHaveBeenCalled();
+  });
+
+  it('keeps submit disabled while either process is refetching', async () => {
+    const sourceRefresh = deferred<any>();
+    const targetRefresh = deferred<any>();
+    const onData = jest.fn();
+    const { rerender } = render(<ExchangeSelect {...baseProps} onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled());
+
+    mockGetProcessDetail.mockImplementation((processId: string) => {
+      if (processId === 'source-id-b') return sourceRefresh.promise;
+      if (processId === 'target-id-b') return targetRefresh.promise;
+      throw new Error(`Unexpected process id: ${processId}`);
+    });
+
+    rerender(
+      <ExchangeSelect
+        {...baseProps}
+        sourceProcessId='source-id-b'
+        sourceProcessVersion='v3'
+        targetProcessId='target-id-b'
+        targetProcessVersion='v4'
+        onData={onData}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+
+    await act(async () => {
+      sourceRefresh.resolve({
+        data: { json: { processDataSet: { type: 'source' } } },
+      });
+      await sourceRefresh.promise;
+    });
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+
+    await act(async () => {
+      targetRefresh.resolve({
+        data: { json: { processDataSet: { type: 'target' } } },
+      });
+      await targetRefresh.promise;
+    });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onData).toHaveBeenCalledWith({
+      id: 'edge-1',
+      selectedSource: sourceExchange,
+      selectedTarget: targetExchange,
+    });
+  });
+
+  it('ignores both source and target detail responses from an obsolete process snapshot', async () => {
+    const sourceA = deferred<any>();
+    const targetA = deferred<any>();
+    const sourceB = deferred<any>();
+    const targetB = deferred<any>();
+    const requests: Record<string, any> = {
+      'source-a': sourceA,
+      'target-a': targetA,
+      'source-b': sourceB,
+      'target-b': targetB,
+    };
+    mockGetProcessDetail.mockImplementation((processId: string) => requests[processId].promise);
+
+    const { rerender } = render(
+      <ExchangeSelect {...baseProps} sourceProcessId='source-a' targetProcessId='target-a' />,
+    );
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    rerender(
+      <ExchangeSelect
+        {...baseProps}
+        sourceProcessId='source-b'
+        sourceProcessVersion='v3'
+        targetProcessId='target-b'
+        targetProcessVersion='v4'
+      />,
+    );
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(4));
+
+    await act(async () => {
+      sourceB.resolve({ data: { json: { processDataSet: { type: 'source' } } } });
+      targetB.resolve({ data: { json: { processDataSet: { type: 'target' } } } });
+      await Promise.all([sourceB.promise, targetB.promise]);
+    });
+    await waitFor(() => expect(screen.getByText('Source Flow-en')).toBeInTheDocument());
+    expect(screen.getByText('Target Flow-en')).toBeInTheDocument();
+
+    const acceptedDetails = mockGenProcessFromData.mock.calls.length;
+    await act(async () => {
+      sourceA.resolve({ data: { json: { processDataSet: { type: 'stale-source' } } } });
+      targetA.resolve({ data: { json: { processDataSet: { type: 'stale-target' } } } });
+      await Promise.all([sourceA.promise, targetA.promise]);
+    });
+
+    expect(mockGenProcessFromData).toHaveBeenCalledTimes(acceptedDetails);
+  });
+
+  it('never submits non-empty selection keys that are absent from refreshed rows', async () => {
+    const onData = jest.fn();
+    render(
+      <ExchangeSelect
+        {...baseProps}
+        sourceRowKeys={['missing-source']}
+        targetRowKeys={['missing-target']}
+        onData={onData}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    const submitButton = screen.getByRole('button', { name: 'Submit' });
+    await waitFor(() => expect(submitButton).toBeDisabled());
+    fireEvent.click(submitButton);
+
+    expect(onData).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: 'Create Exchange Relation' })).toBeInTheDocument();
+  });
+
   it('renders the edit trigger, filters rows by exchange direction, and closes on cancel', async () => {
     const sourceInput = {
       '@dataSetInternalID': 'source-input',
@@ -330,9 +486,9 @@ describe('ExchangeSelect', () => {
       expect(screen.getByRole('dialog', { name: 'Edit Exchange Relation' })).toBeInTheDocument(),
     );
 
-    expect(screen.getByText('Source Flow')).toBeInTheDocument();
+    expect(screen.getByText('Source Flow-en')).toBeInTheDocument();
     expect(screen.queryByText('Hidden Source Input')).not.toBeInTheDocument();
-    expect(screen.getByText('Target Flow')).toBeInTheDocument();
+    expect(screen.getByText('Target Flow-en')).toBeInTheDocument();
     expect(screen.queryByText('Hidden Target Output')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -412,5 +568,35 @@ describe('ExchangeSelect', () => {
     await waitFor(() =>
       expect(screen.getByRole('dialog', { name: 'Edit Exchange Relation' })).toBeInTheDocument(),
     );
+  });
+
+  it('recomputes open source and target rows for every registry content language', async () => {
+    const onData = jest.fn();
+    const { rerender } = render(
+      <ExchangeSelect {...baseProps} lang={SUPPORTED_CONTENT_LANGUAGES[0]} onData={onData} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    for (const language of SUPPORTED_CONTENT_LANGUAGES) {
+      rerender(<ExchangeSelect {...baseProps} lang={language} onData={onData} />);
+
+      expect(await screen.findByText(`Source Flow-${language}`)).toBeInTheDocument();
+      expect(await screen.findByText(`Target Flow-${language}`)).toBeInTheDocument();
+    }
+
+    expect(
+      SUPPORTED_CONTENT_LANGUAGES.every((language) =>
+        mockGenProcessExchangeTableData.mock.calls.some((call) => call[1] === language),
+      ),
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    expect(onData).toHaveBeenCalledWith({
+      id: 'edge-1',
+      selectedSource: sourceExchange,
+      selectedTarget: targetExchange,
+    });
   });
 });

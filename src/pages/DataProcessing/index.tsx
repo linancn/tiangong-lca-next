@@ -8,6 +8,8 @@ import {
   unpublishLciaResultPublication,
   type LciaResultPublication,
 } from '@/services/dataProducts';
+import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { requestWorkerJobsApi, type WorkerJobResult } from '@/services/workerJobs/api';
 import {
@@ -21,7 +23,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import { useIntl } from '@umijs/max';
+import { history, useIntl, useLocation } from '@umijs/max';
 import {
   Alert,
   Button,
@@ -94,9 +96,8 @@ export function parseDataProcessingDeepLink(search: string): {
   processVersion?: string;
 } {
   const params = new URLSearchParams(search);
-  const requestedTab = params.get('tab');
-  const activeTabKey =
-    requestedTab === 'preview' || requestedTab === 'publication' ? requestedTab : 'builds';
+  const activeTabKey = resolveRouteViewState('data-processing-tab', params.get('tab')) as
+    'builds' | 'preview' | 'publication';
   const value = (name: string) => params.get(name)?.trim() || undefined;
   return {
     activeTabKey,
@@ -577,29 +578,29 @@ export function mergeSubmittedBuildJobs(
 }
 
 export function resolveLocalizedText(value: unknown, locale: string): string {
-  const targetLang = locale.toLowerCase().startsWith('zh') ? 'zh' : 'en';
-
   if (typeof value === 'string') {
     return value;
   }
 
   if (Array.isArray(value)) {
-    const exact = value.find(
-      (item) =>
-        item &&
-        typeof item === 'object' &&
-        String((item as Record<string, unknown>)['@xml:lang'] ?? '').toLowerCase() === targetLang,
+    const entries = value.filter(
+      (item): item is Record<string, unknown> => item !== null && typeof item === 'object',
     );
-    const english = value.find(
-      (item) =>
-        item &&
-        typeof item === 'object' &&
-        String((item as Record<string, unknown>)['@xml:lang'] ?? '').toLowerCase() === 'en',
-    );
-    const fallback = exact ?? english ?? value[0];
-    return fallback && typeof fallback === 'object'
-      ? String((fallback as Record<string, unknown>)['#text'] ?? '')
-      : '';
+    const hasText = (item: Record<string, unknown>) =>
+      String(item['#text'] ?? '').trim().length > 0;
+    const fallback =
+      resolveContentLanguages(locale)
+        .map((languageCode) =>
+          entries.find(
+            (item) =>
+              String(item['@xml:lang'] ?? '')
+                .trim()
+                .toLowerCase() === languageCode && hasText(item),
+          ),
+        )
+        .find((item): item is Record<string, unknown> => item !== undefined) ??
+      entries.find(hasText);
+    return fallback ? String(fallback['#text']) : '';
   }
 
   if (value && typeof value === 'object') {
@@ -631,7 +632,8 @@ export function buildImpactCategoryOptions(
 
 const DataProcessing = () => {
   const intl = useIntl();
-  const deepLink = useMemo(() => parseDataProcessingDeepLink(window.location.search), []);
+  const location = useLocation();
+  const deepLink = useMemo(() => parseDataProcessingDeepLink(location.search), [location.search]);
   const locale = intl.locale ?? 'en-US';
   const t = useCallback(
     (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage }),
@@ -660,6 +662,10 @@ const DataProcessing = () => {
   const [buildForm] = Form.useForm();
   const [previewForm] = Form.useForm();
   const [publishForm] = Form.useForm();
+
+  useEffect(() => {
+    setActiveTabKey(deepLink.activeTabKey);
+  }, [deepLink.activeTabKey]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1030,6 +1036,13 @@ const DataProcessing = () => {
   const handleTabChange = (key: string) => {
     setActiveTabKey(key);
     setCommandStatus(null);
+    const queryValue = resolveRouteViewState('data-processing-tab', key);
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('tab', queryValue);
+    history.replace({
+      pathname: location.pathname,
+      search: `?${searchParams.toString()}`,
+    });
   };
 
   const renderCommandStatus = () =>

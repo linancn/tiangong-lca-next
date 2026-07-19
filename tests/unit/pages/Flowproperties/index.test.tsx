@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/flowproperties',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 let mockFlowpropertyViewCalls: any[] = [];
 
@@ -44,7 +45,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -323,33 +324,47 @@ jest.mock('@ant-design/pro-components', () => {
     </div>
   );
 
-  const ProTable = ({ actionRef, request, toolBarRender, headerTitle, columns, rowKey }: any) => {
-    const requestRef = React.useRef(request);
+  const ProTable = ({
+    actionRef,
+    request,
+    params = {},
+    toolBarRender,
+    headerTitle,
+    columns,
+    rowKey,
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const headerTitleText = toText(headerTitle);
+    const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
+    latestRequestRef.current = request;
+    latestParamsRef.current = params;
 
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
-
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
+    const api = React.useMemo(
+      () => ({
+        reload: jest.fn(async () => {
+          const result = await latestRequestRef.current?.(
+            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            {},
+          );
+          setRows(result?.data ?? []);
+          return result;
+        }),
+        setPageInfo: jest.fn(),
+      }),
+      [],
+    );
 
     React.useEffect(() => {
       if (actionRef) {
-        actionRef.current = {
-          reload,
-          setPageInfo: jest.fn(),
-        };
+        actionRef.current = api;
       }
-      void reload();
-    }, [actionRef, reload]);
+      void api.reload();
+    }, [actionRef, api, headerTitleText, params.locale]);
 
     return (
       <section data-testid='pro-table'>
-        <div>{toText(headerTitle)}</div>
+        <div>{headerTitleText}</div>
         <div>{toolBarRender?.()}</div>
         {rows.map((row: any, rowIndex: number) => (
           <div
@@ -386,6 +401,7 @@ describe('FlowpropertiesPage', () => {
       pathname: '/mydata/flowproperties',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockFlowpropertyViewCalls = [];
     mockGetDataSource.mockReturnValue('my');
@@ -421,6 +437,14 @@ describe('FlowpropertiesPage', () => {
       total: 0,
     });
     mockGetUnitData.mockImplementation(async (_table: string, rows: any[]) => rows ?? []);
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<FlowpropertiesPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads existing my-data flow properties as read-only for non-admin users', async () => {

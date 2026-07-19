@@ -1,13 +1,20 @@
-import { getLocaleDefinition } from '@/services/general/localeRegistry';
+import {
+  getLocaleDefinition,
+  getLocaleFallbackDefinition,
+  hasLocaleFallback,
+} from '@/services/general/localeRegistry';
 import {
   getDocumentationUrl,
   normalizeRuntimeLocale,
+  publishRuntimeIntlChange,
   SUPPORTED_APP_LOCALES,
 } from '@/services/general/runtimeLocale';
 import { MoonOutlined, QuestionCircleOutlined, SunFilled } from '@ant-design/icons';
 import { SelectLang as UmiSelectLang, useIntl } from '@umijs/max';
+import type { DropdownProps } from 'antd';
 import { ConfigProvider, theme, Tooltip } from 'antd';
 import type React from 'react';
+import { useEffect } from 'react';
 
 const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -15,9 +22,22 @@ interface SelectLangProps {
   style?: React.CSSProperties;
 }
 
+const SELECT_LANG_DROPDOWN_PROPS = {
+  trigger: ['click'],
+} satisfies Pick<DropdownProps, 'trigger'>;
+
 export const SelectLang: React.FC<SelectLangProps> = ({ style }) => {
+  const intl = useIntl();
+
+  useEffect(() => {
+    publishRuntimeIntlChange(intl);
+  }, [intl]);
+
   return (
     <UmiSelectLang
+      {...SELECT_LANG_DROPDOWN_PROPS}
+      globalIconClassName='tg-global-language-selector'
+      reload={false}
       style={{
         padding: 4,
         ...style,
@@ -44,18 +64,17 @@ export const Question = () => {
   const intl = useIntl();
   const locale = normalizeRuntimeLocale(intl?.locale);
   const docsUrl = getDocumentationUrl(locale);
-  const localeDefinition = locale ? getLocaleDefinition(locale) : undefined;
-  const usesEnglishFallback = Boolean(
-    localeDefinition &&
-    localeDefinition.fallbacks.documentationLocale === 'en-US' &&
-    localeDefinition.fallbacks.documentationLocale !== localeDefinition.canonicalLocale,
+  const usesDocumentationFallback = hasLocaleFallback(locale, 'documentationLocale');
+  const documentationLocale = getLocaleFallbackDefinition(locale, 'documentationLocale');
+  const helpLabel = intl.formatMessage(
+    {
+      id: usesDocumentationFallback
+        ? 'component.globalHeader.help.fallback'
+        : 'component.globalHeader.help',
+      defaultMessage: usesDocumentationFallback ? 'Open help documentation ({language})' : 'Help',
+    },
+    usesDocumentationFallback ? { language: documentationLocale!.nativeLabel } : undefined,
   );
-  const helpLabel = intl.formatMessage({
-    id: usesEnglishFallback
-      ? 'component.globalHeader.help.englishFallback'
-      : 'component.globalHeader.help',
-    defaultMessage: usesEnglishFallback ? 'Open help documentation (English)' : 'Help',
-  });
 
   return (
     <Tooltip title={helpLabel}>

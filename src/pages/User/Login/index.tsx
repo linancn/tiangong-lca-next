@@ -12,7 +12,7 @@ import React, { useState } from 'react';
 import { Helmet, history, useIntl, useLocation, useModel } from 'umi';
 
 import { Footer } from '@/components';
-import { getLocaleDefinition } from '@/services/general/localeRegistry';
+import { getLocaleFallbackDefinition, hasLocaleFallback } from '@/services/general/localeRegistry';
 import { normalizeRuntimeLocale } from '@/services/general/runtimeLocale';
 import { FormattedMessage, Link } from '@umijs/max';
 import { Typography } from 'antd';
@@ -163,12 +163,8 @@ const Login: React.FC = () => {
     getLocalizedLoginSubtitle(intl.locale) ??
     intl.formatMessage({ id: 'pages.login.subTitle', defaultMessage: defaultLoginSubtitle });
   const normalizedLocale = normalizeRuntimeLocale(intl.locale);
-  const localeDefinition = normalizedLocale ? getLocaleDefinition(normalizedLocale) : undefined;
-  const usesEnglishLegalFallback = Boolean(
-    localeDefinition &&
-    localeDefinition.fallbacks.legalLocale === 'en-US' &&
-    localeDefinition.fallbacks.legalLocale !== localeDefinition.canonicalLocale,
-  );
+  const legalFallbackDefinition = getLocaleFallbackDefinition(normalizedLocale, 'legalLocale');
+  const usesEnglishLegalFallback = hasLocaleFallback(normalizedLocale, 'legalLocale');
   const termsOfServiceLabel = intl.formatMessage({
     id: usesEnglishLegalFallback
       ? 'pages.login.termsOfUse.englishFallbackLabel'
@@ -184,7 +180,7 @@ const Login: React.FC = () => {
   const termsOfServiceLink = (
     <TypographyLink
       href='/terms_of_use.html'
-      hrefLang='en'
+      hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
       title={usesEnglishLegalFallback ? termsOfServiceLabel : undefined}
@@ -195,7 +191,7 @@ const Login: React.FC = () => {
   const privacyPolicyLink = (
     <TypographyLink
       href='/privacy_notice.html'
-      hrefLang='en'
+      hrefLang={legalFallbackDefinition?.languageCode}
       target='_blank'
       rel='noopener noreferrer'
       title={usesEnglishLegalFallback ? privacyPolicyLabel : undefined}

@@ -11,6 +11,7 @@ import {
   saveReviewCommentDraftApi,
   submitReviewCommentApi,
 } from '@/services/comments/api';
+import { CANONICAL_CONTENT_LANGUAGE } from '@/services/general/contentLanguageRegistry';
 import { jsonToList } from '@/services/general/util';
 import { getProcessDetail } from '@/services/processes/api';
 import { genProcessFromData } from '@/services/processes/util';
@@ -45,7 +46,7 @@ const DEFAULT_REVIEW_COMPLIANCES = [
       '@version': '20.20.002',
       'common:shortDescription': [
         {
-          '@xml:lang': 'en',
+          '@xml:lang': CANONICAL_CONTENT_LANGUAGE,
           '#text':
             'ISO 14040 Environmental Management – Life Cycle Assessment – Principles and Framework, 2006',
         },
@@ -72,7 +73,7 @@ const DEFAULT_REVIEW_COMPLIANCES = [
       '@version': '20.20.002',
       'common:shortDescription': [
         {
-          '@xml:lang': 'en',
+          '@xml:lang': CANONICAL_CONTENT_LANGUAGE,
           '#text':
             'ISO 14044:2006. Environmental Management – Life Cycle Assessment – Requirements and guidelines.',
         },
@@ -93,7 +94,7 @@ const DEFAULT_REVIEW_COMPLIANCES = [
       '@version': '20.20.002',
       'common:shortDescription': [
         {
-          '@xml:lang': 'en',
+          '@xml:lang': CANONICAL_CONTENT_LANGUAGE,
           '#text': 'ILCD Data Network - Entry-level',
         },
       ],
@@ -113,7 +114,7 @@ const DEFAULT_REVIEW_COMPLIANCES = [
       '@version': '00.00.001',
       'common:shortDescription': [
         {
-          '@xml:lang': 'en',
+          '@xml:lang': CANONICAL_CONTENT_LANGUAGE,
           '#text': 'Environmental Footprint (EF) 3.1',
         },
       ],
@@ -133,7 +134,7 @@ const DEFAULT_REVIEW_COMPLIANCES = [
       '@version': '01.00.000',
       'common:shortDescription': [
         {
-          '@xml:lang': 'en',
+          '@xml:lang': CANONICAL_CONTENT_LANGUAGE,
           '#text':
             'Commission Recommendation (EU) 2021/2279. (Annex I. Product Environmental Footprint Method)',
         },

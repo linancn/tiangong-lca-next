@@ -11,6 +11,7 @@ import {
   Question,
   SelectLang,
 } from '@/components';
+import AccessDenied from '@/components/AccessDenied';
 import LCIACacheMonitor from '@/components/LCIACacheMonitor';
 import { Link, getIntl, history } from '@umijs/max';
 
@@ -230,8 +231,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         ]
       : [],
     menuHeaderRender: undefined,
-    // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
+    // Route-level access checks must use the same catalog-backed boundary as page-level checks.
+    unAccessible: <AccessDenied />,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
       // 初始渲染兜底：onPageChange 只在路由变化时触发，首次进入需要再判断一次

@@ -19,10 +19,13 @@ checkPaths:
   - AGENTS.md
   - .docpact/config.yaml
   - package.json
+  - playwright.config.ts
+  - tests/e2e/i18n/**
+  - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 16747439cd5e224194fe3e04b5fce3f9c0f502dc
-lastReviewedNote: 'Reviewed for Issue #633 and added the registry/Manifest, hardcoding, and all-active-locale checks to the canonical localization command surface.'
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the explicitly authorized local production-data operator run.'
 ---
 
 # Development Bootstrap
@@ -57,6 +60,12 @@ npm ci
 
 `npm ci` installs the exact dependency tree from the committed `package-lock.json`. Use `npm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
+The semantic localization browser harness uses `@playwright/test` `1.61.1`. Install its browser engines only when running that harness locally:
+
+```bash
+npx playwright install chromium firefox webkit
+```
+
 ## Default Work Loop
 
 1. `nvm use 24`
@@ -79,6 +88,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
+| semantic localization E2E | `npm run test:e2e:i18n` |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
 | data workflow unit proof | `npm run test:data-workflows:unit` |
 | focused live data workflow | `npm run test:workflows -- --<workflow> <workflow-args>` |
@@ -108,10 +118,31 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
+After explicit user authorization, an operator with credentials already supplied through the local runtime environment runs the authenticated closure only from that local session:
+
+```bash
+E2E_AUTHENTICATED=true \
+E2E_ALLOW_PRODUCTION_DATA=true \
+E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS \
+E2E_RECOVERY_LEDGER_PATH=/tmp/tiangong-lca-next-codex-e2e-recovery.json \
+E2E_WRITE_VERIFIED_EVIDENCE=true \
+E2E_BACKEND_TARGET=production \
+npm run test:e2e:i18n
+```
+
+This command shape is forbidden in semantic E2E GitHub Actions; CI uses the same canonical script with authenticated/write/evidence opt-ins absent or false.
+
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
+- semantic localization E2E is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and always serves the local candidate with `npm run start:main` against the production backend; `E2E_BASE_URL` must remain a loopback URL
+- every semantic E2E GitHub Actions invocation, including `workflow_dispatch`, is credential-free and read-only; CI runs only contract discovery plus the three-browser public semantic/boundary matrix
+- the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; production write requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
+- before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
+- teardown deletes only the verified exact-ID rows, records created/cleaned counts, and must prove `created=cleaned` and `leaked=0`
+- shared Header language switching uses Umi `SelectLang` with `reload={false}`; semantic proof must retain the same document identity while refreshing locale-dependent state and reject a delayed old-locale reference response
+- never persist or upload credentials, auth state, screenshots, traces, or video; the digest-bound semantic evidence contains assertions and non-secret digests only
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero

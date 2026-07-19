@@ -1,7 +1,4 @@
-import deTeamMessages from '@/locales/de-DE/pages_teams';
-import enTeamMessages from '@/locales/en-US/pages_teams';
-import frTeamMessages from '@/locales/fr-FR/pages_teams';
-import zhTeamMessages from '@/locales/zh-CN/pages_teams';
+import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
@@ -25,24 +22,13 @@ import {
   CANONICAL_CONTENT_LANGUAGE,
   TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from './contentLanguageRegistry';
-import type { SupportedAppLocale } from './localeRegistry';
 import { getRuntimeLocale } from './runtimeLocale';
 import { sortDataSetVersionRows } from './version';
 
 const NO_TEAM_MESSAGE_ID = 'teams.modal.noTeam.title';
-const noTeamMessages = {
-  'zh-CN': zhTeamMessages,
-  'en-US': enTeamMessages,
-  'de-DE': deTeamMessages,
-  'fr-FR': frTeamMessages,
-} as const satisfies Record<SupportedAppLocale, Record<string, string>>;
-
 const getNoTeamMessage = () => {
   const locale = getRuntimeLocale();
-  return (
-    (noTeamMessages[locale] as Record<string, string>)[NO_TEAM_MESSAGE_ID] ??
-    enTeamMessages[NO_TEAM_MESSAGE_ID]
-  );
+  return getTeamMessage(locale, NO_TEAM_MESSAGE_ID);
 };
 
 type InvokeErrorBody = {

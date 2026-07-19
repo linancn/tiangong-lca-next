@@ -1,4 +1,5 @@
 import { toBigNumberOrNaN, toBigNumberOrZero } from '@/services/general/bignumber';
+import { CANONICAL_CONTENT_LANGUAGE } from '@/services/general/contentLanguageRegistry';
 import type { ProcessExchangeData } from '@/services/processes/data';
 import type BigNumber from 'bignumber.js';
 import type {
@@ -340,7 +341,7 @@ export async function calculateStaticLcia(
         '@uri': `../lciamethods/${method.artifact_locator_id}.xml`,
         '@version': method.method_version,
         'common:shortDescription': metadata?.description ?? [
-          { '@xml:lang': 'en', '#text': method.method_id },
+          { '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': method.method_id },
         ],
       },
       meanAmount: value.toString(),

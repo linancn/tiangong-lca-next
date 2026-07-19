@@ -13,8 +13,10 @@
  */
 
 import DataNotification from '@/components/Notification/DataNotification';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { getNotifyReviews } from '@/services/reviews/api';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { ConfigProvider } from 'antd';
 
 // Mock dependencies
@@ -698,6 +700,90 @@ describe('DataNotification Component', () => {
     });
   });
 
+  it('resolves names for every registry locale and refreshes after a locale switch', async () => {
+    const localizedNames = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+      '@xml:lang': languageCode,
+      '#text': `process-${languageCode}`,
+    }));
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [{ ...mockReviewData.data[0], name: localizedNames }],
+      total: 1,
+    });
+    mockIntlLocale = LOCALE_CAPABILITY_MATRIX[0].appLocale;
+    const { rerender } = render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    for (const { appLocale, contentLanguage } of LOCALE_CAPABILITY_MATRIX) {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
+      mockIntlLocale = appLocale;
+      rerender(
+        <ConfigProvider>
+          <DataNotification {...defaultProps} />
+        </ConfigProvider>,
+      );
+      await waitFor(() => {
+        expect(screen.getByText(`process-${contentLanguage}`)).toBeInTheDocument();
+      });
+    }
+  });
+
+  it('ignores an older locale request that resolves after the latest locale response', async () => {
+    let resolveEnglish: (value: any) => void = () => undefined;
+    let resolveFrench: (value: any) => void = () => undefined;
+    const englishRequest = new Promise((resolve) => {
+      resolveEnglish = resolve;
+    });
+    const frenchRequest = new Promise((resolve) => {
+      resolveFrench = resolve;
+    });
+    mockGetNotifyReviews
+      .mockImplementationOnce(() => englishRequest)
+      .mockImplementationOnce(() => frenchRequest);
+
+    mockIntlLocale = 'en-US';
+    const { rerender } = render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetNotifyReviews).toHaveBeenCalledTimes(1));
+
+    mockIntlLocale = 'fr-FR';
+    rerender(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+    await waitFor(() => expect(mockGetNotifyReviews).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveFrench({
+        success: true,
+        data: [{ ...mockReviewData.data[0], name: 'Latest French result' }],
+        total: 1,
+      });
+    });
+    expect(await screen.findByText('Latest French result')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveEnglish({
+        success: true,
+        data: [{ ...mockReviewData.data[0], name: 'Stale English result' }],
+        total: 1,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Latest French result')).toBeInTheDocument();
+      expect(screen.queryByText('Stale English result')).not.toBeInTheDocument();
+    });
+  });
+
   it('should render zh names when locale is zh-CN and fall back to the first entry when zh is missing', async () => {
     mockIntlLocale = 'zh-CN';
     const zhPreferredData = {
@@ -757,6 +843,31 @@ describe('DataNotification Component', () => {
       expect(screen.getByText('Only Chinese Name')).toBeInTheDocument();
       expect(screen.getByText('Approved')).toBeInTheDocument();
     });
+  });
+
+  it('should render a dash when the localized name and first entry are both missing', async () => {
+    mockGetNotifyReviews.mockResolvedValue({
+      ...mockReviewData,
+      data: [
+        {
+          ...mockReviewData.data[0],
+          name: [],
+          teamName: 'Missing-name team',
+        },
+      ],
+      page: 1,
+    });
+
+    render(
+      <ConfigProvider>
+        <DataNotification {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    const teamCell = await screen.findByText('Missing-name team');
+    const row = teamCell.closest('tr');
+    expect(row).not.toBeNull();
+    expect(within(row as HTMLTableRowElement).getAllByRole('cell')[0]).toHaveTextContent('-');
   });
 
   it('does not call onDataLoaded when only pagination changes', async () => {

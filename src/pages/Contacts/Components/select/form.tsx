@@ -5,12 +5,13 @@ import { getContactDetail } from '@/services/contacts/api';
 import { ContactDetailData, ContactDetailResponse } from '@/services/contacts/data';
 import { genContactFromData } from '@/services/contacts/util';
 import { getRefData } from '@/services/general/api';
+import { getLanguageDisplayName } from '@/services/general/contentLanguageRegistry';
 import { jsonToList } from '@/services/general/util';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage, useModel } from 'umi';
+import { FormattedMessage, useIntl, useModel } from 'umi';
 import ContactEdit from '../edit';
 import ContactView from '../view';
 import ContactSelectDrawer from './drawer';
@@ -44,6 +45,7 @@ const ContactSelectForm: FC<Props> = ({
   showRequiredLabel = false,
   disabled = false,
 }) => {
+  const intl = useIntl();
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
@@ -307,9 +309,7 @@ const ContactSelectForm: FC<Props> = ({
                     <Form.Item
                       noStyle
                       name={[subField.name, '@xml:lang']}
-                      getValueProps={(value) => ({
-                        value: value === 'en' ? 'English' : value === 'zh' ? '简体中文' : value,
-                      })}
+                      getValueProps={(value) => ({ value: getLanguageDisplayName(value) })}
                     >
                       <Input
                         disabled={true}
@@ -320,7 +320,10 @@ const ContactSelectForm: FC<Props> = ({
                   <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder='text'
+                        placeholder={intl.formatMessage({
+                          id: 'pages.lang.text.placeholder',
+                          defaultMessage: 'Text',
+                        })}
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}

@@ -274,9 +274,50 @@ jest.mock('@/services/unitgroups/api', () => ({
 
 jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
-jest.mock('@ant-design/pro-components', () =>
-  require('@/tests/mocks/proComponents').createProComponentsMock(),
-);
+jest.mock('@ant-design/pro-components', () => {
+  const React = require('react');
+  const proComponents = require('@/tests/mocks/proComponents').createProComponentsMock();
+  const BaseProTable = proComponents.ProTable;
+
+  const ProTable = ({ request, params = {}, actionRef, ...props }: any) => {
+    const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    const successfulRowsRef = React.useRef([] as any[]);
+    const previousParamsKeyRef = React.useRef(JSON.stringify(params));
+
+    requestRef.current = request;
+    paramsRef.current = params;
+
+    const localeAwareRequest = React.useMemo(
+      () => async (pageParams: any, sort: any) => {
+        const result = await requestRef.current?.({ ...pageParams, ...paramsRef.current }, sort);
+        if (result?.success === false) {
+          return { ...result, data: successfulRowsRef.current };
+        }
+        successfulRowsRef.current = result?.data ?? [];
+        return result;
+      },
+      [],
+    );
+
+    React.useEffect(() => {
+      const paramsKey = JSON.stringify(params);
+      if (previousParamsKeyRef.current !== paramsKey) {
+        previousParamsKeyRef.current = paramsKey;
+        void actionRef?.current?.reload?.();
+      }
+    }, [actionRef, params]);
+
+    return React.createElement(BaseProTable, {
+      ...props,
+      actionRef,
+      params,
+      request: localeAwareRequest,
+    });
+  };
+
+  return { ...proComponents, ProTable };
+});
 
 const { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } = jest.requireMock(
   '@/services/unitgroups/api',

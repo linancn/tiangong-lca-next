@@ -1,6 +1,12 @@
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type ContentLanguageAwareTableParams,
+  type DataTabKey,
+} from '@/services/general/data';
 import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
@@ -41,6 +47,17 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
   const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
+  const myRequestEpochRef = useRef(0);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  const teRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageAwareTableParams.contentLanguage,
+    [myRequestEpochRef, tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -271,8 +288,9 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             enterButton
           />
         </Card>
-        <ProTable<SourceTable, ListPagination>
+        <ProTable<SourceTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -282,24 +300,37 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             return [<SourceCreate lang={lang} key={0} actionRef={myActionRefSelect} />];
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (myKeyWord.length > 0) {
-              return getSourceTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-            }
-            return getSourceTableAll(
-              params,
-              sort,
-              lang,
-              'my',
-              [],
-              type === 'reviewReport' ? 0 : undefined,
-            );
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async () => {
+                if (myKeyWord.length > 0) {
+                  return getSourceTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                  );
+                }
+                return getSourceTableAll(
+                  params,
+                  sort,
+                  params.contentLanguage,
+                  'my',
+                  [],
+                  type === 'reviewReport' ? 0 : undefined,
+                );
+              },
+            )
+          }
           columns={sourceColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
@@ -324,25 +355,39 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             enterButton
           />
         </Card>
-        <ProTable<SourceTable, ListPagination>
+        <ProTable<SourceTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (tgKeyWord.length > 0) {
-              return getSourceTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
-            }
-            return getSourceTableAll(params, sort, lang, 'tg', []);
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async () => {
+                if (tgKeyWord.length > 0) {
+                  return getSourceTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  );
+                }
+                return getSourceTableAll(params, sort, params.contentLanguage, 'tg', []);
+              },
+            )
+          }
           columns={sourceColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
@@ -367,25 +412,39 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             enterButton
           />
         </Card>
-        <ProTable<SourceTable, ListPagination>
+        <ProTable<SourceTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (coKeyWord.length > 0) {
-              return getSourceTablePgroongaSearch(params, lang, 'co', coKeyWord, {});
-            }
-            return getSourceTableAll(params, sort, lang, 'co', []);
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async () => {
+                if (coKeyWord.length > 0) {
+                  return getSourceTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'co',
+                    coKeyWord,
+                    {},
+                  );
+                }
+                return getSourceTableAll(params, sort, params.contentLanguage, 'co', []);
+              },
+            )
+          }
           columns={sourceColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{
@@ -410,32 +469,46 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
             enterButton
           />
         </Card>
-        <ProTable<SourceTable, ListPagination>
+        <ProTable<SourceTable, ContentLanguageAwareTableParams>
           actionRef={teActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
-          ) => {
-            if (teKeyWord.length > 0) {
-              return getSourceTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
-            }
-            return getSourceTableAll(
-              params,
-              sort,
-              lang,
-              'te',
-              [],
-              type === 'reviewReport' ? 0 : undefined,
-            );
-          }}
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              teRequestEpochRef,
+              async () => {
+                if (teKeyWord.length > 0) {
+                  return getSourceTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'te',
+                    teKeyWord,
+                    {},
+                  );
+                }
+                return getSourceTableAll(
+                  params,
+                  sort,
+                  params.contentLanguage,
+                  'te',
+                  [],
+                  type === 'reviewReport' ? 0 : undefined,
+                );
+              },
+            )
+          }
           columns={sourceColumns}
           tableAlertOptionRender={tableAlertOptionRender}
           rowSelection={{

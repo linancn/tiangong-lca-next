@@ -1,6 +1,11 @@
 import ProcessEdit from '@/pages/Processes/Components/edit';
 import ProcessView from '@/pages/Processes/Components/view';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+} from '@/services/general/data';
 import { getProcessesByIdAndVersion } from '@/services/processes/api';
 import { ProcessTable } from '@/services/processes/data';
 import { CloseOutlined, ProductOutlined } from '@ant-design/icons';
@@ -22,6 +27,15 @@ type Props = {
 };
 
 const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, actionType }) => {
+  const contentLanguageParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
+  const mainProductRequestEpochRef = useRef(0);
+  const subProductRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageParams.contentLanguage,
+    [mainProductRequestEpochRef, subProductRequestEpochRef],
+  );
   const [drawerVisible, setDrawerVisible] = useState(false);
   const subProcuctTableRef = useRef<ActionType>();
   const mainProcuctTableRef = useRef<ActionType>();
@@ -132,26 +146,43 @@ const ModelResult: FC<Props> = ({ submodels, modelId, modelVersion, lang, action
         open={drawerVisible}
         onClose={() => setDrawerVisible(false)}
       >
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           search={false}
+          params={contentLanguageParams}
           pagination={false}
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.mainProduct' />}
           actionRef={mainProcuctTableRef}
-          request={async () => {
-            return getProcessesByIdAndVersion([{ id: modelId, version: modelVersion }], lang);
+          request={async (params) => {
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              mainProductRequestEpochRef,
+              () =>
+                getProcessesByIdAndVersion(
+                  [{ id: modelId, version: modelVersion }],
+                  params.contentLanguage,
+                ),
+            );
           }}
           columns={columns}
         />
-        <ProTable<ProcessTable, ListPagination>
+        <ProTable<ProcessTable, ContentLanguageAwareTableParams>
           search={false}
+          params={contentLanguageParams}
           pagination={false}
           headerTitle={<FormattedMessage id='pages.lifeCycleModel.modelResults.subProduct' />}
           actionRef={subProcuctTableRef}
-          request={async () => {
+          request={async (params) => {
             const subProducts = submodels.filter((e) => e.id !== modelId);
-            return getProcessesByIdAndVersion(
-              subProducts.map((e) => ({ id: e.id, version: modelVersion })),
-              lang,
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              subProductRequestEpochRef,
+              () =>
+                getProcessesByIdAndVersion(
+                  subProducts.map((e) => ({ id: e.id, version: modelVersion })),
+                  params.contentLanguage,
+                ),
             );
           }}
           columns={columns}

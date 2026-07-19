@@ -25,7 +25,7 @@ const writeFixtureFile = (root: string, relativePath: string, content: string) =
 };
 
 const platformModuleSources = (includeOrphanLocale = false) => {
-  const localeRows = [
+  const localeRows: Array<Record<string, any>> = [
     {
       canonicalLocale: 'en-US',
       languageCode: 'en',
@@ -40,6 +40,7 @@ const platformModuleSources = (includeOrphanLocale = false) => {
         twoItemConjunction: ' and ',
         manyItemConjunction: ', and ',
       },
+      contentCapability: { status: 'native', contentLanguage: 'en' },
       fallbacks: { documentationLocale: 'en-US', documentationUrl: '/en', legalLocale: 'en-US' },
       environment: { titleKey: 'TITLE_EN', loginSubtitleKey: 'LOGIN_EN' },
     },
@@ -53,6 +54,7 @@ const platformModuleSources = (includeOrphanLocale = false) => {
       direction: 'ltr',
       adapters: { antDesign: 'zh_CN', dayjs: 'zh-cn', intl: 'zh-CN', report: 'zh_CN' },
       formatting: { listSeparator: '、', twoItemConjunction: '和', manyItemConjunction: '和' },
+      contentCapability: { status: 'native', contentLanguage: 'zh' },
       fallbacks: { documentationLocale: 'zh-CN', documentationUrl: '/', legalLocale: 'en-US' },
       environment: { titleKey: 'TITLE_ZH', loginSubtitleKey: 'LOGIN_ZH' },
     },
@@ -68,6 +70,7 @@ const platformModuleSources = (includeOrphanLocale = false) => {
       direction: 'ltr',
       adapters: { antDesign: 'fr_FR', dayjs: 'fr', intl: 'fr-FR', report: 'fr_FR' },
       formatting: { listSeparator: ', ', twoItemConjunction: ' et ', manyItemConjunction: ' et ' },
+      contentCapability: undefined,
       fallbacks: { documentationLocale: 'en-US', documentationUrl: '/en', legalLocale: 'en-US' },
       environment: { titleKey: 'TITLE_FR', loginSubtitleKey: 'LOGIN_FR' },
     });
@@ -76,7 +79,6 @@ const platformModuleSources = (includeOrphanLocale = false) => {
   const contentRows = [
     {
       languageCode: 'en',
-      appLocale: 'en-US',
       englishName: 'English',
       nativeLabel: 'English',
       authoring: { enabled: true, requiredForSave: true },
@@ -85,7 +87,6 @@ const platformModuleSources = (includeOrphanLocale = false) => {
     },
     {
       languageCode: 'zh',
-      appLocale: 'zh-CN',
       englishName: 'Chinese',
       nativeLabel: '简体中文',
       authoring: { enabled: true, requiredForSave: false },
@@ -114,23 +115,30 @@ const platformModuleSources = (includeOrphanLocale = false) => {
     },
   ];
 
-  const capabilities = contentRows.map((content) => ({
-    appLocale: content.appLocale,
-    contentLanguage: content.languageCode,
-    uiCatalog: 'native',
-    contentReading: 'native',
-    contentAuthoring: 'native',
-    serviceQuery: content.serviceQuery,
-    referenceResources: [
-      {
-        resourceId: 'fixture-resource',
-        status: 'native',
-        requestedLanguage: content.languageCode,
-        resolvedLanguage: content.languageCode,
-        deliveryStatus: 'project-reviewed',
-      },
-    ],
-  }));
+  const capabilities = localeRows
+    .filter(({ contentCapability }) => contentCapability?.contentLanguage)
+    .map((locale) => {
+      const content = contentRows.find(
+        ({ languageCode }) => languageCode === locale.contentCapability?.contentLanguage,
+      )!;
+      return {
+        appLocale: locale.canonicalLocale,
+        contentLanguage: locale.contentCapability?.contentLanguage,
+        uiCatalog: 'native',
+        contentReading: 'native',
+        contentAuthoring: 'native',
+        serviceQuery: content.serviceQuery,
+        referenceResources: [
+          {
+            resourceId: 'fixture-resource',
+            status: 'native',
+            requestedLanguage: content.languageCode,
+            resolvedLanguage: content.languageCode,
+            deliveryStatus: 'project-reviewed',
+          },
+        ],
+      };
+    });
 
   return {
     'src/services/general/localeRegistry.ts': `
@@ -197,7 +205,7 @@ describe('language platform audit', () => {
       const report = JSON.parse(result.stdout) as AuditReport;
       expect(result.status).toBe(1);
       expect(report.violations.map(({ code }) => code)).toEqual(
-        expect.arrayContaining(['locale-without-content-language', 'capability-locale-coverage']),
+        expect.arrayContaining(['invalid-locale-content-capability', 'capability-locale-coverage']),
       );
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
@@ -219,7 +227,6 @@ describe('language platform audit', () => {
           .readFileSync(capabilityPath, 'utf8')
           .replace('"contentReading":"native"', '"contentReading":"declared-fallback"'),
       );
-
       const result = runAudit(root, ['--scope', 'structure', '--check']);
       expect(result.status).toBe(0);
       expect((JSON.parse(result.stdout) as AuditReport).ok).toBe(true);
@@ -318,6 +325,60 @@ describe('language platform audit', () => {
         ]),
       );
       expect(report.violations.map(({ code }) => code)).toContain('unapproved-language-hardcoding');
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  it('reports visible JSX placeholder strings without flagging technical string attributes', () => {
+    const root = initializeFixture();
+    try {
+      writeFixtureFile(
+        root,
+        'src/feature.tsx',
+        [
+          'export const Feature = () => (',
+          '  <input',
+          "    placeholder='Enter text'",
+          "    data-testid='codex-e2e-input'",
+          "    id='process-name'",
+          "    name='processName'",
+          "    aria-controls='process-name-options'",
+          '  />',
+          ');',
+          '',
+        ].join('\n'),
+      );
+
+      const result = runAudit(root, ['--scope', 'hardcoding', '--mode', 'report']);
+      const report = JSON.parse(result.stdout) as AuditReport;
+      expect(result.status).toBe(0);
+      expect(report.findings).toEqual([
+        expect.objectContaining({
+          path: 'src/feature.tsx',
+          ruleId: 'visible-jsx-string-prop',
+        }),
+      ]);
+      expect(report.violations.map(({ code }) => code)).toContain('unapproved-language-hardcoding');
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  it('accepts a catalog-backed JSX placeholder expression', () => {
+    const root = initializeFixture();
+    try {
+      writeFixtureFile(
+        root,
+        'src/feature.tsx',
+        "export const Feature = ({ placeholder }: { placeholder: string }) => <input placeholder={placeholder} data-testid='input' />;\n",
+      );
+
+      const result = runAudit(root, ['--scope', 'hardcoding', '--check']);
+      const report = JSON.parse(result.stdout) as AuditReport;
+      expect(result.status).toBe(0);
+      expect(report.findings).toEqual([]);
+      expect(report.ok).toBe(true);
     } finally {
       fs.rmSync(root, { force: true, recursive: true });
     }
