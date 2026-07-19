@@ -483,4 +483,29 @@ describe('LifeCycleModelIoPortSelect', () => {
       screen.queryByRole('button', { name: 'select:INPUT:flow-single' }),
     ).not.toBeInTheDocument();
   });
+
+  it('rejects a table response that finishes after the drawer is unmounted', async () => {
+    const pendingUnits = deferred<any>();
+    mockGetUnitData.mockReturnValueOnce(pendingUnits.promise);
+
+    const { unmount } = render(
+      <IoPortSelect
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Input'
+        drawerVisible
+        onData={jest.fn()}
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalled());
+    unmount();
+
+    await act(async () => {
+      pendingUnits.resolve([{ dataSetInternalID: 'stale-exchange' }]);
+      await pendingUnits.promise;
+      await Promise.resolve();
+    });
+  });
 });

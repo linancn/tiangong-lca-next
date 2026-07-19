@@ -61,7 +61,7 @@ const LangTextItemForm: FC<Props> = ({
 
   const formValues = watchedFormValues ?? form?.getFieldValue(formValuePath) ?? [];
 
-  const selectedLangValues = (formValues ?? [])
+  const selectedLangValues = formValues
     .filter((item: any) => item && item['@xml:lang'])
     .map((item: any) => item['@xml:lang']);
 

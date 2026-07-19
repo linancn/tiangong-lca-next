@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/contacts',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
@@ -45,7 +46,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -385,6 +386,7 @@ describe('ContactsPage', () => {
       pathname: '/mydata/contacts',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
@@ -396,6 +398,14 @@ describe('ContactsPage', () => {
     mockGetContactTablePgroongaSearch.mockResolvedValue({ data: [baseContactRow], success: true });
     mockGetContactTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<ContactsPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads the default table and row actions', async () => {
@@ -504,6 +514,25 @@ describe('ContactsPage', () => {
         {},
         '20',
         'team-1',
+      ),
+    );
+  });
+
+  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/contacts', search: '' };
+
+    renderWithProviders(<ContactsPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetContactTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'alice',
+        {},
+        'all',
+        '',
       ),
     );
   });

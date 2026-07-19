@@ -3,11 +3,45 @@ import {
   deleteCachedJsonEntry,
   getAllCachedKeys,
   putCachedJsonEntry,
+  sha256Hex,
 } from '@/services/general/browserResourceCache';
 
 describe('browserResourceCache', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  it('hashes text and binary payloads and fails closed without Web Crypto', async () => {
+    const cryptoDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    const digest = jest.fn().mockResolvedValue(new Uint8Array([0, 15, 255]).buffer);
+
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      value: { subtle: { digest } },
+    });
+
+    try {
+      await expect(sha256Hex('cache-text')).resolves.toBe('000fff');
+      expect(digest).toHaveBeenLastCalledWith('SHA-256', new TextEncoder().encode('cache-text'));
+
+      const binaryPayload = new Uint8Array([1, 2, 3]).buffer;
+      await expect(sha256Hex(binaryPayload)).resolves.toBe('000fff');
+      expect(digest).toHaveBeenLastCalledWith('SHA-256', new Uint8Array(binaryPayload));
+
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        value: undefined,
+      });
+      await expect(sha256Hex('unsupported')).rejects.toThrow(
+        'Web Crypto SHA-256 is not supported in this browser.',
+      );
+    } finally {
+      if (cryptoDescriptor) {
+        Object.defineProperty(globalThis, 'crypto', cryptoDescriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, 'crypto');
+      }
+    }
   });
 
   it('fails explicitly when the browser cannot decompress gzip data', async () => {
@@ -84,6 +118,24 @@ describe('browserResourceCache', () => {
       expect.objectContaining({ filename: 'list.json', data: { files: [] } }),
     );
     expect(put.mock.calls[0][0]).not.toHaveProperty('sha256');
+  });
+
+  it('falls back to the transaction error when a request error is absent', async () => {
+    const request: any = {};
+    const put = jest.fn(() => request);
+    const transactionError = new Error('transaction failed');
+    const transaction: any = {
+      error: transactionError,
+      objectStore: () => ({ put }),
+    };
+    const db: any = {
+      transaction: jest.fn(() => transaction),
+    };
+
+    const promise = putCachedJsonEntry(db, 'cache-store', 'list.json', { files: [] });
+    request.onerror();
+
+    await expect(promise).rejects.toBe(transactionError);
   });
 
   it('persists optional digest and revision metadata together', async () => {

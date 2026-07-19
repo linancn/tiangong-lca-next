@@ -220,6 +220,49 @@ describe('Locations Util (src/services/locations/util.ts)', () => {
     );
   });
 
+  it('rejects a managed reference asset from the wrong cache scope', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const classificationAsset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(cacheAndDecompressLocationFile(classificationAsset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache location file ${classificationAsset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('is not a location asset'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('rejects a managed location asset whose decompressed JSON digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce('0'.repeat(64));
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ tampered: true }));
+
+    await expect(cacheAndDecompressLocationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache location file ${asset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('Location JSON digest mismatch'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
   it('fails closed before parsing when a managed location gzip digest differs', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const asset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;

@@ -21,6 +21,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ConfigProvider } from 'antd';
 
 let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
+let mockOmitProTableRequestParams = false;
 
 // Mock dependencies
 jest.mock('@/services/general/api', () => ({
@@ -131,7 +132,9 @@ jest.mock('@ant-design/pro-components', () => {
     const serializedParams = JSON.stringify(params ?? {});
 
     const loadRows = React.useCallback(async () => {
-      const requestParams = { pageSize: 10, current: 1, ...latestParamsRef.current };
+      const requestParams = mockOmitProTableRequestParams
+        ? {}
+        : { pageSize: 10, current: 1, ...latestParamsRef.current };
       mockLatestProTableRequestParams = requestParams;
       const result = await latestRequestRef.current?.(requestParams, {});
       if (result?.success !== false) {
@@ -282,6 +285,7 @@ describe('AllVersionsList Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLatestProTableRequestParams = null;
+    mockOmitProTableRequestParams = false;
     mockAddVersionComponent.mockClear();
     mockGetDataSource.mockReturnValue('test-datasource');
     mockGetAllVersions.mockResolvedValue({
@@ -606,6 +610,32 @@ describe('AllVersionsList Component', () => {
         undefined,
       );
     });
+  });
+
+  it('uses content-language and pagination defaults when ProTable omits its request params', async () => {
+    mockOmitProTableRequestParams = true;
+
+    render(
+      <ConfigProvider>
+        <AllVersionsList {...defaultProps} />
+      </ConfigProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => {
+      expect(mockGetAllVersions).toHaveBeenCalledWith(
+        'id',
+        'processes',
+        'test-id',
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'test-datasource',
+        undefined,
+      );
+    });
+    expect(mockLatestProTableRequestParams).toEqual({});
   });
 
   it('refetches open rows from params for every supported content language without clearing selection', async () => {

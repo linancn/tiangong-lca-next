@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/processes',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetProcessTableAll = jest.fn();
@@ -39,7 +40,7 @@ jest.mock('umi', () => ({
     push: jest.fn(),
   },
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -439,6 +440,7 @@ describe('ProcessesPage', () => {
       pathname: '/mydata/processes',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockContributeProcess.mockResolvedValue({ error: null });
@@ -469,6 +471,14 @@ describe('ProcessesPage', () => {
     mockProcessHybridSearch.mockResolvedValue({ data: [], success: true });
     message.success.mockReset();
     message.error.mockReset();
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<ProcessesPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('maps known process dataset types and falls back to dash for unknown ones', () => {

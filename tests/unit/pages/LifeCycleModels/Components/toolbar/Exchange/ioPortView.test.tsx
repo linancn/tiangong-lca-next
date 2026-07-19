@@ -385,4 +385,28 @@ describe('LifeCycleModelIoPortView', () => {
     expect(screen.getByTestId('selected-keys')).toHaveTextContent('[]');
     expect(screen.queryByText('exchange-view:exchange-1:en:icon')).not.toBeInTheDocument();
   });
+
+  it('rejects a table response that finishes after the drawer is unmounted', async () => {
+    const pendingUnits = deferred<any>();
+    mockGetUnitData.mockReturnValueOnce(pendingUnits.promise);
+
+    const { unmount } = render(
+      <IoPortView
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Output'
+        drawerVisible
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalled());
+    unmount();
+
+    await act(async () => {
+      pendingUnits.resolve([{ dataSetInternalID: 'stale-exchange' }]);
+      await pendingUnits.promise;
+      await Promise.resolve();
+    });
+  });
 });

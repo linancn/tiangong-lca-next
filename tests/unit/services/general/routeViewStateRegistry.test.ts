@@ -45,4 +45,10 @@ describe('route view state registry', () => {
       'Unknown team-action route-view variant',
     );
   });
+
+  it('rejects registry identifiers outside the finite contract', () => {
+    expect(() => resolveRouteViewState('unknown-registry' as never, null)).toThrow(
+      'Unknown route-view state registry: unknown-registry',
+    );
+  });
 });

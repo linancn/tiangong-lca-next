@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/flows',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
@@ -64,7 +65,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -444,6 +445,7 @@ describe('FlowsPage', () => {
       pathname: '/mydata/flows',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetTeamById.mockResolvedValue({
@@ -466,6 +468,14 @@ describe('FlowsPage', () => {
     mockGetFlowTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockFlowHybridSearch.mockResolvedValue({ data: [], success: true });
     mockContributeSource.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<FlowsPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads the default table, row renders, classification filters, and import/create interactions', async () => {

@@ -102,6 +102,24 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     ]);
   });
 
+  it('matches localized labels by duplicate-id occurrence order', () => {
+    expect(
+      genClassWithLocalizedLabels(
+        [
+          { '@id': 'duplicate', '@name': 'First' },
+          { '@id': 'duplicate', '@name': 'Second' },
+        ],
+        [
+          { '@id': 'duplicate', '@name': 'Premier' },
+          { '@id': 'duplicate', '@name': 'Deuxième' },
+        ],
+      ),
+    ).toEqual([
+      { id: 'duplicate', value: 'First', label: 'Premier', children: [] },
+      { id: 'duplicate', value: 'Second', label: 'Deuxième', children: [] },
+    ]);
+  });
+
   it('fails closed instead of silently using a base label for a partial localized tree', () => {
     expect(() =>
       genClassWithLocalizedLabels(
@@ -353,6 +371,49 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
       { ok: true },
       { revision: resource.cacheRevision, sha256: asset.jsonDigest.value },
     );
+  });
+
+  it('rejects a managed reference asset from the wrong cache scope', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const locationAsset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(cacheAndDecompressClassificationFile(locationAsset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache classification file ${locationAsset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('is not a classification asset'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('rejects a managed classification asset whose decompressed JSON digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce('0'.repeat(64));
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ tampered: true }));
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache classification file ${asset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('Classification JSON digest mismatch'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
   });
 
   it('fails closed before parsing when a managed classification gzip digest differs', async () => {

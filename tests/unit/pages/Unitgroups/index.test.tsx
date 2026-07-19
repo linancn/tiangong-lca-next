@@ -17,6 +17,7 @@ let mockLocation = {
   pathname: '/mydata/unitgroups',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 let mockUnitGroupCreateCalls: any[] = [];
 let mockUnitGroupEditCalls: any[] = [];
@@ -39,7 +40,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -406,6 +407,7 @@ describe('UnitgroupsPage', () => {
       pathname: '/mydata/unitgroups',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
@@ -455,6 +457,15 @@ describe('UnitgroupsPage', () => {
       total: 0,
     });
     mockContributeSource.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+    mockGetRoleByUserId.mockResolvedValue([]);
+
+    renderWithProviders(<UnitgroupsPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads existing my-data unit groups as read-only for non-admin users', async () => {

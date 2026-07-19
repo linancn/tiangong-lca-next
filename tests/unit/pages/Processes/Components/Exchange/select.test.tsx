@@ -37,6 +37,7 @@ jest.mock('@/pages/Processes/Components/Exchange/view', () => ({
 }));
 
 const mockGetProcessDetail = jest.fn();
+const mockButtonProps: any[] = [];
 
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
@@ -62,18 +63,21 @@ jest.mock('@/services/processes/util', () => ({
 jest.mock('antd', () => {
   const React = require('react');
 
-  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => (
-    <button
-      type='button'
-      data-button-type={type}
-      disabled={disabled}
-      onClick={disabled ? undefined : onClick}
-      {...rest}
-    >
-      {icon ? <span data-testid='button-icon'>{icon}</span> : null}
-      {toText(children)}
-    </button>
-  );
+  const Button = ({ children, onClick, disabled, icon, type, ...rest }: any) => {
+    mockButtonProps.push({ children, disabled, icon, onClick, type });
+    return (
+      <button
+        type='button'
+        data-button-type={type}
+        disabled={disabled}
+        onClick={disabled ? undefined : onClick}
+        {...rest}
+      >
+        {icon ? <span data-testid='button-icon'>{icon}</span> : null}
+        {toText(children)}
+      </button>
+    );
+  };
 
   const Tooltip = ({ title, children }: any) => {
     const label = toText(title);
@@ -200,6 +204,7 @@ describe('ExchangeSelect', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockButtonProps.length = 0;
 
     mockGetProcessDetail.mockReset();
     mockGenProcessFromData.mockReset();
@@ -313,6 +318,22 @@ describe('ExchangeSelect', () => {
     expect(submitButton).toBeDisabled();
   });
 
+  it('keeps the submit callback guarded when invoked with unresolved selections', async () => {
+    const onData = jest.fn();
+    render(<ExchangeSelect {...baseProps} sourceRowKeys={[]} targetRowKeys={[]} onData={onData} />);
+
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    const guardedSubmit = [...mockButtonProps]
+      .reverse()
+      .find((props) => toText(props.children) === 'Submit' && props.disabled);
+    expect(guardedSubmit).toBeDefined();
+
+    act(() => guardedSubmit.onClick());
+    expect(onData).not.toHaveBeenCalled();
+  });
+
   it('keeps submit disabled while either process is refetching', async () => {
     const sourceRefresh = deferred<any>();
     const targetRefresh = deferred<any>();
@@ -363,6 +384,54 @@ describe('ExchangeSelect', () => {
       selectedSource: sourceExchange,
       selectedTarget: targetExchange,
     });
+  });
+
+  it('ignores both source and target detail responses from an obsolete process snapshot', async () => {
+    const sourceA = deferred<any>();
+    const targetA = deferred<any>();
+    const sourceB = deferred<any>();
+    const targetB = deferred<any>();
+    const requests: Record<string, any> = {
+      'source-a': sourceA,
+      'target-a': targetA,
+      'source-b': sourceB,
+      'target-b': targetB,
+    };
+    mockGetProcessDetail.mockImplementation((processId: string) => requests[processId].promise);
+
+    const { rerender } = render(
+      <ExchangeSelect {...baseProps} sourceProcessId='source-a' targetProcessId='target-a' />,
+    );
+    fireEvent.click(screen.getByRole('button'));
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(2));
+
+    rerender(
+      <ExchangeSelect
+        {...baseProps}
+        sourceProcessId='source-b'
+        sourceProcessVersion='v3'
+        targetProcessId='target-b'
+        targetProcessVersion='v4'
+      />,
+    );
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalledTimes(4));
+
+    await act(async () => {
+      sourceB.resolve({ data: { json: { processDataSet: { type: 'source' } } } });
+      targetB.resolve({ data: { json: { processDataSet: { type: 'target' } } } });
+      await Promise.all([sourceB.promise, targetB.promise]);
+    });
+    await waitFor(() => expect(screen.getByText('Source Flow-en')).toBeInTheDocument());
+    expect(screen.getByText('Target Flow-en')).toBeInTheDocument();
+
+    const acceptedDetails = mockGenProcessFromData.mock.calls.length;
+    await act(async () => {
+      sourceA.resolve({ data: { json: { processDataSet: { type: 'stale-source' } } } });
+      targetA.resolve({ data: { json: { processDataSet: { type: 'stale-target' } } } });
+      await Promise.all([sourceA.promise, targetA.promise]);
+    });
+
+    expect(mockGenProcessFromData).toHaveBeenCalledTimes(acceptedDetails);
   });
 
   it('never submits non-empty selection keys that are absent from refreshed rows', async () => {

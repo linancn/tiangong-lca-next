@@ -975,4 +975,42 @@ describe('ToolbarView', () => {
     expect(mockGenLifeCycleModelData).toHaveBeenCalledTimes(1);
     expect(mockInitData).toHaveBeenCalledTimes(1);
   });
+
+  it('uses the browser locale fallback when neither runtime locale is supported', () => {
+    render(
+      <ToolbarView id='model-1' version='1.0.0' lang='unsupported-locale' drawerVisible={false} />,
+    );
+
+    expect(mockGetLifeCycleModelDetail).not.toHaveBeenCalled();
+  });
+
+  it('abandons graph materialization when unmount invalidates the resolution mid-transform', async () => {
+    const detailResolution = createDeferred();
+    mockGetLifeCycleModelDetail.mockReturnValueOnce(detailResolution.promise);
+
+    let unmountView = () => {};
+    mockGenLifeCycleModelData.mockImplementationOnce(() => {
+      unmountView();
+      return { nodes: [], edges: [] };
+    });
+
+    const rendered = render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+    unmountView = rendered.unmount;
+
+    await waitFor(() => expect(mockGetLifeCycleModelDetail).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      detailResolution.resolve({
+        success: true,
+        data: {
+          json: { lifeCycleModelDataSet: {} },
+          json_tg: { xflow: { nodes: [] } },
+        },
+      });
+      await detailResolution.promise;
+      await Promise.resolve();
+    });
+
+    expect(mockGenLifeCycleModelData).toHaveBeenCalledTimes(1);
+    expect(mockInitData).not.toHaveBeenCalled();
+  });
 });

@@ -19,6 +19,7 @@ import {
   SUPPORTED_CONTENT_LANGUAGES,
   TRANSLATION_SOURCE_CONTENT_LANGUAGE,
 } from '@/services/general/contentLanguageRegistry';
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 
 describe('contentLanguageRegistry', () => {
   it('derives supported, authoring, required, and option lists from one registry', () => {
@@ -57,6 +58,29 @@ describe('contentLanguageRegistry', () => {
     expect(normalizeSupportedContentLanguage(null)).toBeUndefined();
     expect(normalizeSupportedContentLanguage('es-ES')).toBeUndefined();
     expect(resolveContentLanguage('es-ES')).toBe('en');
+  });
+
+  it('fails closed for registry-declared unsupported and unknown content capabilities', () => {
+    const localeDefinition = getLocaleDefinition('de-DE');
+    const mutableDefinition = localeDefinition as unknown as {
+      contentCapability: { status: string; contentLanguage?: string };
+    };
+    const originalCapability = mutableDefinition.contentCapability;
+
+    try {
+      mutableDefinition.contentCapability = { status: 'unsupported' };
+      expect(normalizeSupportedContentLanguage('de-DE')).toBeUndefined();
+      expect(() => resolveContentLanguage('de-DE')).toThrow(
+        'UI locale de-DE declares typed content unsupported.',
+      );
+
+      mutableDefinition.contentCapability = { status: 'native', contentLanguage: 'es' };
+      expect(() => resolveContentLanguage('de-DE')).toThrow(
+        'UI locale de-DE references unknown content language es.',
+      );
+    } finally {
+      mutableDefinition.contentCapability = originalCapability;
+    }
   });
 
   it('uses canonical English when no language is marked as required', () => {

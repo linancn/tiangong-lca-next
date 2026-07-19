@@ -6,6 +6,7 @@ import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let latestProTableProps: any = null;
 let mockLatestProTableRequestParams: Record<string, unknown> | null = null;
+let mockOmitContentLanguageRequestParam = false;
 
 jest.mock('@ant-design/icons', () => ({
   __esModule: true,
@@ -126,7 +127,9 @@ jest.mock('@ant-design/pro-components', () => {
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
-        const requestParams = { pageSize: 10, current: 1, ...paramsRef.current };
+        const requestParams = mockOmitContentLanguageRequestParam
+          ? { pageSize: 10, current: 1 }
+          : { pageSize: 10, current: 1, ...paramsRef.current };
         mockLatestProTableRequestParams = requestParams;
         const result = await requestRef.current(requestParams, {});
         setRows(result?.data ?? []);
@@ -178,6 +181,7 @@ jest.mock('@ant-design/pro-components', () => {
 beforeEach(() => {
   latestProTableProps = null;
   mockLatestProTableRequestParams = null;
+  mockOmitContentLanguageRequestParam = false;
   mockGetConnectableProcessesTable.mockReset().mockResolvedValue({
     data: [
       {
@@ -224,6 +228,43 @@ describe('ConnectableProcesses', () => {
       'input:flow-1',
       '1.0',
     );
+  });
+
+  it('defaults the content language for every data tab when ProTable omits it', async () => {
+    mockOmitContentLanguageRequestParam = true;
+
+    render(<ConnectableProcesses {...baseProps} />);
+
+    await waitFor(() =>
+      expect(mockGetConnectableProcessesTable).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        '',
+        'input:flow-1',
+        '1.0',
+      ),
+    );
+
+    for (const [tabName, dataSource] of [
+      ['My Data', 'my'],
+      ['Business Data', 'co'],
+      ['Team Data', 'te'],
+    ] as const) {
+      await userEvent.click(screen.getByRole('button', { name: tabName }));
+      await waitFor(() =>
+        expect(mockGetConnectableProcessesTable).toHaveBeenLastCalledWith(
+          { pageSize: 10, current: 1 },
+          {},
+          'en',
+          dataSource,
+          '',
+          'input:flow-1',
+          '1.0',
+        ),
+      );
+    }
   });
 
   it('refetches the active tab from params for every supported content language without clearing selection', async () => {

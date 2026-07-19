@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 let mockUmiLocation = { pathname: '/', search: '' };
+let mockScreens = { lg: true };
 
 jest.mock('@ant-design/icons', () => {
   const React = require('react');
@@ -362,8 +363,8 @@ jest.mock('antd', () => {
   });
   Button.displayName = 'MockButton';
 
-  const Tabs = ({ items = [], activeKey, onChange }: any) => (
-    <div data-testid='tabs'>
+  const Tabs = ({ items = [], activeKey, onChange, tabPosition }: any) => (
+    <div data-testid='tabs' data-tab-position={tabPosition}>
       {items.map((item: any) => (
         <div key={item.key}>
           <button type='button' onClick={() => onChange?.(item.key)}>
@@ -397,7 +398,7 @@ jest.mock('antd', () => {
   };
 
   const Grid = {
-    useBreakpoint: () => ({ lg: true }),
+    useBreakpoint: () => mockScreens,
   };
 
   const ConfigProvider = ({ children }: any) => <>{children}</>;
@@ -623,6 +624,7 @@ describe('Team page validations', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUmiLocation = { pathname: '/', search: '' };
+    mockScreens = { lg: true };
     resetMessages();
     mockUploadFileName = 'logo.png';
     mockGetTeamMembersApi.mockResolvedValue({
@@ -638,6 +640,15 @@ describe('Team page validations', () => {
     mockUploadLogoApi.mockResolvedValue({ data: { path: 'uploaded-logo.png' } } as any);
     mockRemoveLogoApi.mockResolvedValue(null as any);
     mockModalConfirm.mockReset();
+  });
+
+  it('moves team tabs above the form on narrow screens', () => {
+    setWindowLocation('?action=create');
+    mockScreens = { lg: false };
+
+    renderWithProviders(<Team />);
+
+    expect(screen.getByTestId('tabs')).toHaveAttribute('data-tab-position', 'top');
   });
 
   it('prevents submission when rank requires logos but none are provided', async () => {

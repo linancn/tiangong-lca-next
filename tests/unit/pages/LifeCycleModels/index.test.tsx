@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/lifecyclemodels',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockGetDataSource = jest.fn(() => 'my');
@@ -57,7 +58,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -415,6 +416,7 @@ describe('LifeCycleModelsPage', () => {
       pathname: '/mydata/lifecyclemodels',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
@@ -446,6 +448,14 @@ describe('LifeCycleModelsPage', () => {
       success: true,
     });
     mockContributeLifeCycleModel.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<LifeCycleModelsPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads the default table, row actions, version actions, and import reset workflow', async () => {

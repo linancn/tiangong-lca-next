@@ -669,6 +669,23 @@ describe('LangTextItemForm', () => {
     });
   });
 
+  it('resolves a scalar field name with an explicitly declared list path', async () => {
+    const formRef = createFormRef({
+      details: [{ '@xml:lang': 'fr', '#text': 'Notes de revue' }],
+    });
+
+    render(
+      <Form {...({ formRef } as any)}>
+        <LangTextItemForm name='details' listName={[]} formRef={formRef} label='Review details' />
+      </Form>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Notes de revue')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="fr"]')).toBeInTheDocument();
+    });
+  });
+
   it('subscribes to the correct nested list row when its language changes', async () => {
     const initialValues = {
       review: [

@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { act, render, screen, waitFor } from '../../../../../helpers/testUtils';
 
 let latestProTableProps: any = null;
+let mockOmitContentLanguageRequestParam = false;
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -223,7 +224,10 @@ jest.mock('@ant-design/pro-components', () => {
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
-        await requestRef.current({ pageSize: 10, current: 1, ...paramsRef.current }, {});
+        const requestParams = mockOmitContentLanguageRequestParam
+          ? { pageSize: 10, current: 1 }
+          : { pageSize: 10, current: 1, ...paramsRef.current };
+        await requestRef.current(requestParams, {});
       }
     }, []);
 
@@ -251,6 +255,7 @@ jest.mock('@ant-design/pro-components', () => {
 
 beforeEach(() => {
   latestProTableProps = null;
+  mockOmitContentLanguageRequestParam = false;
   mockGetFlowTableAll.mockReset();
   mockGetFlowTablePgroongaSearch.mockReset();
   mockFlowHybridSearch.mockReset();
@@ -272,6 +277,35 @@ describe('ModelToolbarAddThroughFlow', () => {
       'en',
       'tg',
       [],
+    );
+  });
+
+  it('defaults the content language for both data tabs when ProTable omits it', async () => {
+    mockOmitContentLanguageRequestParam = true;
+    mockGetFlowTableAll.mockResolvedValue({ data: [], success: true });
+
+    render(<ModelToolbarAddThroughFlow buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add node' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'tg',
+        [],
+      ),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'My Data' }));
+    await waitFor(() =>
+      expect(mockGetFlowTableAll).toHaveBeenLastCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'en',
+        'my',
+        [],
+      ),
     );
   });
 

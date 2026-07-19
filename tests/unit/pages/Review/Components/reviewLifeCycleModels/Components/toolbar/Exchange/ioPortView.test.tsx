@@ -355,4 +355,45 @@ describe('ReviewLifeCycleModelIoPortView', () => {
     expect(screen.getByTestId('selected-keys')).toHaveTextContent('[[]]');
     expect(screen.getByText('quantitative-no')).toBeInTheDocument();
   });
+
+  it('falls back to an empty table when review unit enrichment returns no rows', async () => {
+    mockGetUnitData.mockResolvedValueOnce(undefined);
+
+    render(
+      <IoPortView
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Output'
+        drawerVisible
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalled());
+    expect(screen.queryByText('exchange-view:exchange-1:en:icon')).not.toBeInTheDocument();
+  });
+
+  it('rejects a review table response that finishes after the drawer is unmounted', async () => {
+    const pendingUnits = deferred<any>();
+    mockGetUnitData.mockReturnValueOnce(pendingUnits.promise);
+
+    const { unmount } = render(
+      <IoPortView
+        node={{ data: { id: 'process-1', version: '1.0.0' }, ports: { items: [] } } as any}
+        lang='en'
+        direction='Output'
+        drawerVisible
+        onDrawerVisible={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => expect(mockGetUnitData).toHaveBeenCalled());
+    unmount();
+
+    await act(async () => {
+      pendingUnits.resolve([{ dataSetInternalID: 'stale-exchange' }]);
+      await pendingUnits.promise;
+      await Promise.resolve();
+    });
+  });
 });

@@ -7,7 +7,10 @@ import {
   getDocumentationUrl,
   getRuntimeLocale,
   normalizeRuntimeLocale,
+  publishRuntimeIntlChange,
   resolveBrowserRuntimeLocale,
+  RUNTIME_INTL_CHANGE_EVENT,
+  subscribeRuntimeIntlChange,
   UMI_LOCALE_STORAGE_KEY,
 } from '@/services/general/runtimeLocale';
 
@@ -69,6 +72,69 @@ describe('runtimeLocale', () => {
         Object.defineProperty(Intl, 'getCanonicalLocales', canonicalLocalesDescriptor);
       } else {
         Reflect.deleteProperty(Intl, 'getCanonicalLocales');
+      }
+    }
+  });
+
+  it('publishes only valid registry-backed intl changes and removes subscriptions', () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeRuntimeIntlChange(listener);
+    const validIntl = {
+      locale: 'fr-FR',
+      formatMessage: ({ id }: { id: string }) => id,
+    };
+
+    window.dispatchEvent(new CustomEvent(RUNTIME_INTL_CHANGE_EVENT));
+    window.dispatchEvent(
+      new CustomEvent(RUNTIME_INTL_CHANGE_EVENT, {
+        detail: { intl: { locale: 'fr-FR' } },
+      }),
+    );
+    window.dispatchEvent(
+      new CustomEvent(RUNTIME_INTL_CHANGE_EVENT, {
+        detail: {
+          intl: {
+            locale: 'es-ES',
+            formatMessage: ({ id }: { id: string }) => id,
+          },
+        },
+      }),
+    );
+    publishRuntimeIntlChange({ ...validIntl, locale: 'es-ES' });
+    expect(listener).not.toHaveBeenCalled();
+
+    publishRuntimeIntlChange(validIntl);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith(validIntl);
+
+    unsubscribe();
+    publishRuntimeIntlChange(validIntl);
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps detached intl publication and subscription safe without a browser window', () => {
+    const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: undefined,
+    });
+    const listener = jest.fn();
+
+    try {
+      expect(() =>
+        publishRuntimeIntlChange({
+          locale: 'en-US',
+          formatMessage: ({ id }) => id,
+        }),
+      ).not.toThrow();
+      const unsubscribe = subscribeRuntimeIntlChange(listener);
+      expect(() => unsubscribe()).not.toThrow();
+      expect(listener).not.toHaveBeenCalled();
+    } finally {
+      if (windowDescriptor) {
+        Object.defineProperty(globalThis, 'window', windowDescriptor);
+      } else {
+        Reflect.deleteProperty(globalThis, 'window');
       }
     }
   });
@@ -311,6 +377,7 @@ describe('runtimeLocale', () => {
   });
 
   it('routes German, French, and English app locales to English docs without fake routes', () => {
+    expect(getDocumentationUrl()).toBe('https://docs.tiangong.earth');
     expect(getDocumentationUrl('de-DE')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('de-CH')).toBe('https://docs.tiangong.earth/en');
     expect(getDocumentationUrl('en-US')).toBe('https://docs.tiangong.earth/en');
