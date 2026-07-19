@@ -196,7 +196,9 @@ async function gotoCandidateDocument(page: Page, targetUrl: string): Promise<voi
       return;
     } catch (error) {
       const isRecoverableFirefoxNavigation =
-        error instanceof Error && error.message.includes('NS_ERROR_FAILURE');
+        error instanceof Error &&
+        (error.message.includes('NS_ERROR_FAILURE') ||
+          error.message.includes('NS_BINDING_ABORTED'));
       if (!isRecoverableFirefoxNavigation || attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS) {
         throw error;
       }

@@ -76,6 +76,26 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).not.toMatch(/updateProcess|insert\(|delete\(|upsert\(/gu);
   });
 
+  it('retries only the two known Firefox navigation cancellation codes and remains bounded', () => {
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const helperStart = source.indexOf('async function gotoCandidateDocument(');
+    const helperEnd = source.indexOf('\n}\n\nasync function expectProcessDeepLink(', helperStart);
+    const helperSource = source.slice(helperStart, helperEnd);
+
+    expect(helperStart).toBeGreaterThan(-1);
+    expect(helperEnd).toBeGreaterThan(helperStart);
+    expect(source).toContain('const MAX_CANDIDATE_NAVIGATION_ATTEMPTS = 2;');
+    expect(helperSource).toContain("error.message.includes('NS_ERROR_FAILURE')");
+    expect(helperSource).toContain("error.message.includes('NS_BINDING_ABORTED')");
+    expect(helperSource).toContain('attempt <= MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
+    expect(helperSource).toContain('attempt === MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
+    expect(helperSource).toContain('if (!isRecoverableFirefoxNavigation ||');
+    expect(helperSource).toContain('throw error;');
+    expect(helperSource).toContain(
+      "await page.goto(targetUrl, { waitUntil: 'domcontentloaded' });",
+    );
+  });
+
   it('settles the delayed-response race through mounted localized text, not a required network miss', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
     const raceStart = source.indexOf(
