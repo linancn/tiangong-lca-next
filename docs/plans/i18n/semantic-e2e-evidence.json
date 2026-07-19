@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-19T15:46:51.227Z",
-  "runId": "local-d12cd186-1e0f-4a3d-8a34-83c05f18dd29",
+  "generatedAt": "2026-07-19T16:53:13.372Z",
+  "runId": "local-81b2218a-4d3f-4bc8-a9d0-85fe60018b88",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "3e40d5d63f5815b00dd041d2879c18922d2fc46d",
+    "observedHeadCommit": "91973faef33baa3534490e47688f7a538dd41861",
     "packageManifestDigest": "f80ad3c2d30abe3f9c03bbc4cb17915b110d539a7f3ecd637696723706117009",
     "sourceTreeDigest": "6d57f0320172a30374bd304a22ab627da1a19a48955bc130f33f4d31f016433d",
-    "unitTestTreeDigest": "56822f6edcab006a9a8604dc8d91691bda8ffc4c431e5614336e49dde18d41d8"
+    "unitTestTreeDigest": "91f3e7ffe38c075794d8e851813eaeadc672a993766514d307894c8a5fb46ec1"
   },
   "target": {
     "frontend": "candidate-local",
@@ -153,15 +153,15 @@
       },
       {
         "path": "tests/e2e/i18n/access-fallback.spec.ts",
-        "sha256": "494be03b58f399a3836b8b379c1e72426433eca39323f8a027af0a4d9d0a23d1"
+        "sha256": "709bac7281a50150bcf5e15c19b6b6b934d84ca1f3eb4e401d5cebe090695bc3"
       },
       {
         "path": "tests/e2e/i18n/auth.ts",
-        "sha256": "88208e7ab23f08dbc2527eccb87eb1c098e15ad036533f374f878a21cda490eb"
+        "sha256": "65b5528396835894644c9b80992edf1b62ccd00eca9a8ef7a236ec06f4b33349"
       },
       {
         "path": "tests/e2e/i18n/candidate-readiness.ts",
-        "sha256": "3e9de40d7e95cfe58bf77c3f5222601d834c7ee99c1c9c7ed9bdf7a34593df4b"
+        "sha256": "3c3caa4860092ef012301c6a2a099b32f17c071c8e9f1606521a6545ebc1b5f5"
       },
       {
         "path": "tests/e2e/i18n/carbon-footprint-guide.spec.ts",
@@ -200,6 +200,10 @@
         "sha256": "dcae1c20525749afd1ced26697540c6ceaba660291754c00d5e6e51036615f34"
       },
       {
+        "path": "tests/e2e/i18n/login-route-readiness.ts",
+        "sha256": "f7bc0e138d2801d8f1a0178cc4d1a43298822d604da7c19d09ef2e119a0b3e32"
+      },
+      {
         "path": "tests/e2e/i18n/process-lifecycle.spec.ts",
         "sha256": "2dbdcaa8d8690b9995200457fffccc2569205d98cc3a91c7a7910fcdbeb1daf4"
       },
@@ -225,7 +229,7 @@
       },
       {
         "path": "tests/e2e/i18n/query-responsive.spec.ts",
-        "sha256": "d2e7ca935cd174b2d8e13c54b8b2d3d8917928f505554b432f07879acce4ae66"
+        "sha256": "b5d8d0e504de3233c729df92741abb72c6f2d4e3aaca2c52ee14256cccc9f92c"
       },
       {
         "path": "tests/e2e/i18n/reference-fixture.ts",
@@ -253,7 +257,7 @@
       },
       {
         "path": "tests/e2e/i18n/semantic-critical.spec.ts",
-        "sha256": "e16867250b68c12e6bf99b12d73798ea03e262b5083531ae214251d9ab8be2cc"
+        "sha256": "0c77f45a2415fc3fcb72f3fcb90763f59c0eca1fc71d1183bf2e4b42574e7ca5"
       },
       {
         "path": "tests/e2e/i18n/state-semantics.spec.ts",

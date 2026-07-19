@@ -27,7 +27,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: d44bcac8c7839f0c29163485f43c61b71965a3b6
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Reviewed for Issue #635: kept the full gate unchanged and made every GitHub semantic E2E run credential-free/read-only; authenticated closure is local-operator-only.'
 ---
 

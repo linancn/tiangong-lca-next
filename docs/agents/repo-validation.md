@@ -25,7 +25,7 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: d44bcac8c7839f0c29163485f43c61b71965a3b6
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Updated for Issue #635: all GitHub browser jobs are credential-free/read-only and the digest-bound production-data closure is local-operator-only.'
 related:
   - ../AGENTS.md

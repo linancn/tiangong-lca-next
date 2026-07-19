@@ -23,7 +23,7 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: d44bcac8c7839f0c29163485f43c61b71965a3b6
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
 lastReviewedNote: 'Reviewed for Issue #635: retained bounded browser coverage while restricting authenticated production-data proof to an authorized local operator session.'
 ---
 
