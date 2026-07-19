@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-19T14:48:58.288Z",
-  "runId": "local-b3ef848f-68f5-485f-8a05-c79e72b9e844",
+  "generatedAt": "2026-07-19T15:46:51.227Z",
+  "runId": "local-d12cd186-1e0f-4a3d-8a34-83c05f18dd29",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "c648b713082660e05276fd7abd3519e6504a26ac",
+    "observedHeadCommit": "3e40d5d63f5815b00dd041d2879c18922d2fc46d",
     "packageManifestDigest": "f80ad3c2d30abe3f9c03bbc4cb17915b110d539a7f3ecd637696723706117009",
     "sourceTreeDigest": "6d57f0320172a30374bd304a22ab627da1a19a48955bc130f33f4d31f016433d",
-    "unitTestTreeDigest": "1298a414e930f59acccec63d4fca99374ee9638555195e1b31d65679027b6f19"
+    "unitTestTreeDigest": "56822f6edcab006a9a8604dc8d91691bda8ffc4c431e5614336e49dde18d41d8"
   },
   "target": {
     "frontend": "candidate-local",
@@ -160,6 +160,10 @@
         "sha256": "88208e7ab23f08dbc2527eccb87eb1c098e15ad036533f374f878a21cda490eb"
       },
       {
+        "path": "tests/e2e/i18n/candidate-readiness.ts",
+        "sha256": "3e9de40d7e95cfe58bf77c3f5222601d834c7ee99c1c9c7ed9bdf7a34593df4b"
+      },
+      {
         "path": "tests/e2e/i18n/carbon-footprint-guide.spec.ts",
         "sha256": "eb87ab43ead7f945bde9ee390c1ce118848183f14b878abd9f0b9b0f33aa0296"
       },
@@ -181,7 +185,7 @@
       },
       {
         "path": "tests/e2e/i18n/global-setup.ts",
-        "sha256": "0202f82ad790024b4e3fb1538fd6b9d6bd7fc67a86622fdd26fd452ea1d7bb0e"
+        "sha256": "7b60fe66b1b2c228ea324e1b99c1ceeaa00ec2aef884533092a4d3be3cf2e8b9"
       },
       {
         "path": "tests/e2e/i18n/global-teardown.ts",
