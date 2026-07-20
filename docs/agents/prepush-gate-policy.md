@@ -27,8 +27,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Reviewed for Issue #633: the full gate and local-operator-only semantic E2E boundary remain unchanged after the locale-hardcoding audit repair.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; pre-push and release-gate behavior is unchanged.'
 ---
 
 # Pre-Push Gate Policy

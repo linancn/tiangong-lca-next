@@ -29,8 +29,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Reviewed for Issue #635: GitHub browser jobs are credential-free/read-only, while production-data semantic closure is restricted to an explicitly authorized local operator session.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; repo, branch, delivery, and workspace-integration contracts are unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
