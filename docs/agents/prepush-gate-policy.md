@@ -27,8 +27,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
-lastReviewedNote: 'Reviewed for Issue #635: kept the full gate unchanged and made every GitHub semantic E2E run credential-free/read-only; authenticated closure is local-operator-only.'
+lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
+lastReviewedNote: 'Reviewed for Issue #633: the full gate and local-operator-only semantic E2E boundary remain unchanged after the locale-hardcoding audit repair.'
 ---
 
 # Pre-Push Gate Policy

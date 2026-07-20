@@ -330,6 +330,74 @@ describe('language platform audit', () => {
     }
   });
 
+  it('finds logical locale fallbacks and static language metadata in exported HTML documents', () => {
+    const root = initializeFixture();
+    try {
+      writeFixtureFile(
+        root,
+        'src/feature.ts',
+        [
+          'export const buildReport = (runtimeLocale?: string, runtimeDirection?: string) => {',
+          "  const locale = runtimeLocale || 'ja-JP';",
+          "  const language = runtimeLocale ?? 'it-IT';",
+          '  const staticLanguageDocument = `<!DOCTYPE html><html lang=it-IT dir="${runtimeDirection}"><body>${locale}</body></html>`;',
+          '  const staticDirectionDocument = `<!DOCTYPE html><html lang="${runtimeLocale}" dir=rtl><body>${language}</body></html>`;',
+          "  const concatenatedDocument = '<html lang=\"en-US\">' + runtimeLocale + '</html>';",
+          '  return `${staticLanguageDocument}${staticDirectionDocument}${concatenatedDocument}`;',
+          '};',
+          '',
+        ].join('\n'),
+      );
+
+      const result = runAudit(root, ['--scope', 'hardcoding', '--mode', 'report']);
+      const report = JSON.parse(result.stdout) as AuditReport;
+      expect(result.status).toBe(0);
+      expect(report.findings.map(({ path, ruleId }) => ({ path, ruleId }))).toEqual([
+        { path: 'src/feature.ts', ruleId: 'language-default' },
+        { path: 'src/feature.ts', ruleId: 'language-default' },
+        { path: 'src/feature.ts', ruleId: 'embedded-html-language-attribute' },
+        { path: 'src/feature.ts', ruleId: 'embedded-html-language-attribute' },
+        { path: 'src/feature.ts', ruleId: 'embedded-html-language-attribute' },
+      ]);
+      expect(report.violations.map(({ code }) => code)).toContain('unapproved-language-hardcoding');
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  it('accepts registry-derived HTML metadata and ignores business strings and HTML fragments', () => {
+    const root = initializeFixture();
+    try {
+      writeFixtureFile(
+        root,
+        'src/feature.ts',
+        [
+          'export const buildReport = (runtimeLocale?: string, businessValue?: string) => {',
+          '  const locale = runtimeLocale ?? DEFAULT_SERVICE_APP_LOCALE;',
+          "  const browserPreference = runtimeLocale ?? 'Use browser preference';",
+          "  const translatedValue = translations?.[runtimeLocale] ?? '';",
+          "  const missingTranslation = translations?.[runtimeLocale] ?? 'unknown';",
+          "  const country = businessValue ?? 'fr';",
+          '  const definition = getLocaleDefinition(locale);',
+          '  const fragment = \'<div lang="en-US" dir="ltr">English</div>\';',
+          "  const prose = 'Use the fr business code for France.';",
+          '  const document = `<!DOCTYPE html><html lang="${definition.canonicalLocale}" dir="${definition.direction}"><body>${fragment}:${prose}:${country}</body></html>`;',
+          '  return `${document}:${browserPreference}:${translatedValue}:${missingTranslation}`;',
+          '};',
+          '',
+        ].join('\n'),
+      );
+
+      const result = runAudit(root, ['--scope', 'hardcoding', '--check']);
+      const report = JSON.parse(result.stdout) as AuditReport;
+      expect(result.status).toBe(0);
+      expect(report.findings).toEqual([]);
+      expect(report.ok).toBe(true);
+    } finally {
+      fs.rmSync(root, { force: true, recursive: true });
+    }
+  });
+
   it('reports visible JSX placeholder strings without flagging technical string attributes', () => {
     const root = initializeFixture();
     try {

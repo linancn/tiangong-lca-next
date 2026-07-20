@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-20'
-lastReviewedCommit: '91973faef33baa3534490e47688f7a538dd41861'
+lastReviewedAt: "2026-07-20"
+lastReviewedCommit: "9156b4baf8bfacb85d935ca45ed943654bd3e3f3"
 lastReviewedNote: 'Reviewed for Issue #635 and governed credential-free GitHub browser jobs, the explicitly authorized local production-data operator run, and digest-bound evidence.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

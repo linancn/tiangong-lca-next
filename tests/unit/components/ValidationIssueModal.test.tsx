@@ -1328,6 +1328,7 @@ describe('ValidationIssueModal', () => {
       reader.readAsText(blob);
     });
 
+    expect(html).toContain('<html lang="zh-CN" dir="ltr">');
     expect(html).toContain('<th>数据拥有者</th>');
     expect(html).toContain('<th>操作</th>');
     expect(html).not.toContain('<th>链接</th>');

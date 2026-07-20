@@ -25,8 +25,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
-lastReviewedNote: 'Updated for Issue #635: all GitHub browser jobs are credential-free/read-only and the digest-bound production-data closure is local-operator-only.'
+lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
+lastReviewedNote: 'Updated for Issue #633: hardcoding proof now covers logical/nullish locale defaults, exported full-document lang/dir metadata, and intentional fail-closed language snapshot tests.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -117,7 +117,9 @@ Treat dataset-validation work under `src/pages/*/sdkValidation.ts`, `src/pages/U
 
 `CalculationBundlePanel` and `LcaReleaseReadPanel` are framework-heavy read-orchestration wrappers excluded from statement instrumentation, matching the existing wrapper policy. Their shipped behavior is still proved by focused component tests covering persisted refresh, directional LCI/LCIA rendering, legacy and authorization empty states, oversized-result protection, source-Process identity resolution, validation evidence, short-lived signed-link retry, and download actions. The underlying `src/services/lcaReleases/api.ts` transport, integrity, error, and decompression contracts remain inside the 100% coverage gate.
 
-Treat `npm run i18n:audit` as the deterministic structural proof for locale ownership and runtime message references. Pair it with `npm run i18n:platform:audit` for registry/manifest/capability closure and `npm run i18n:hardcoding:audit` for business-layer language-literal ownership, then run the registry-driven context, quality, correction, route-view, and activation checks for every active locale. These tracked gates prove the configured automated quality and language-capability model without creating a human translation-approval state.
+Treat `npm run i18n:audit` as the deterministic structural proof for locale ownership and runtime message references. Pair it with `npm run i18n:platform:audit` for registry/manifest/capability closure and `npm run i18n:hardcoding:audit` for business-layer language-literal ownership, then run the registry-driven context, quality, correction, route-view, and activation checks for every active locale. The hardcoding audit must cover equality/ternary branches, logical-or and nullish defaults such as `locale || 'en-US'` and `locale ?? 'zh-CN'`, and fixed root `lang` metadata embedded in an exported complete HTML document. Runtime defaults and exported root `lang`/`dir` must instead derive from the typed locale registry/runtime policy. These tracked gates prove the configured automated quality and language-capability model without creating a human translation-approval state.
+
+Locale tests normally derive their iteration set from the registry. A fixed supported-language array may remain only when the adjacent test text or comment identifies it as an intentional fail-closed product snapshot gate: adding or removing a product language must then fail until the expected product contract is reviewed. Such a snapshot is validation-only, must not feed business behavior, and is not a substitute for registry-parameterized capability coverage.
 
 Canonical-manifest `--check` reuses the checked-in `source.baseRef` and immutable `source.baseCommit` unless `--base-ref` is explicitly supplied. Advancing an ambient branch such as `origin/dev` without changing audited locale/callsite inputs therefore does not stale a release checkout; `--write` and an explicit `--base-ref` still resolve and record the requested current commit.
 

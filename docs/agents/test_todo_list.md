@@ -24,8 +24,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
-lastReviewedNote: 'Reviewed for Issue #635: recorded the local-operator-only authenticated closure and credential-free/read-only GitHub browser matrix.'
+lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
+lastReviewedNote: 'Reviewed for Issue #633: no coverage queue reopened; the locale-hardcoding repair reuses and refreshes the existing authenticated evidence contract.'
 ---
 
 # Testing Execution State

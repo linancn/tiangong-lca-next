@@ -10,6 +10,10 @@ import {
 } from '@/services/dataProducts';
 import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
 import { resolveRouteViewState } from '@/services/general/routeViewState';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
 import { requestWorkerJobsApi, type WorkerJobResult } from '@/services/workerJobs/api';
 import {
@@ -634,7 +638,7 @@ const DataProcessing = () => {
   const intl = useIntl();
   const location = useLocation();
   const deepLink = useMemo(() => parseDataProcessingDeepLink(location.search), [location.search]);
-  const locale = intl.locale ?? 'en-US';
+  const locale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
   const t = useCallback(
     (id: string, defaultMessage: string) => intl.formatMessage({ id, defaultMessage }),
     [intl],
