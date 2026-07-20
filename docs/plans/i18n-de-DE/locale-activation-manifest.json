@@ -3,7 +3,7 @@
   "locale": "de-DE",
   "source": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "sourceManifestDigest": "43bf490c0d2b308be7e09c8d1c16fb099f67c4d1249601b7957e9b2bbfafb840"
+    "sourceManifestDigest": "0ba964026db9c377e8c0ff9b281f2434c61879b671997b101a866855740ae92f"
   },
   "registry": {
     "canonicalLocale": "de-DE",
@@ -71,17 +71,17 @@
         }
       ]
     },
-    "contentLanguageRegistryDigest": "2bb1e3395138c0cc4eef6aa2a69dba7a749af94df29760cb5c45d08381205c9e",
+    "contentLanguageRegistryDigest": "c5e1ef5afbad36dfce86d327801390e0347707c1ad8126c45064e913fbf406a4",
     "capabilityMatrixDigest": "d8903f58f8b5582bb4a491a8724b9ba5b8adf93f5f48dcfc7c908bb4eaa5dcd7",
     "referenceResourceManifestDigest": "002bf11147f566b701c6365791fab31ffeaac87edd5d810a42417c9f2dfad281",
     "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
     "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
   },
   "evidence": {
-    "contextDigest": "5f4eec2630011e7c586db2c00d690922058cc24bcc4527d353b861e56f49a33d",
-    "qualityDigest": "2d91357a88edca3176148c71d25bdd2670da76a871f81bec1a7dc5f95a96f235",
+    "contextDigest": "e81d11bf3b5ccf3f6f9b297ffd435e28a1269c697d76d65141bb1eca4de925f7",
+    "qualityDigest": "67fa1a26045bd1ba0ccb6e6756c3093cb5340bcabf581afd060c07f27e7bd556",
     "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
-    "routeViewCoverageDigest": "ea2cca1e196561ad60eba3217e219ad797599820562f83a0b45e94a3029f7652",
+    "routeViewCoverageDigest": "0404ec6b2a4c6c83f97f2a56154c980b82317d41bafaa8d10dec72474cf27a13",
     "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "localeFallbackRowCount": 10
   },
@@ -116,5 +116,5 @@
   },
   "referenceResourceBlockers": [],
   "productionActivationBlockers": [],
-  "activationDigest": "78c6c0f7b01d0d190d543f6131f1c2db1536a5661e7fc02ab0321a4d488ff52b"
+  "activationDigest": "498c1c454711516b5efeffd0d4401d71ab5599cfe60b5f01df6bba7f1108872c"
 }

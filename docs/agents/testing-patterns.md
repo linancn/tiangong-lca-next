@@ -24,8 +24,8 @@ checkPaths:
   - playwright.config.ts
   - package.json
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
-lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the local-operator-only authenticated production-data pattern.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; reusable test-selection and structure patterns are unchanged.'
 ---
 
 # Testing Patterns Reference
@@ -102,7 +102,7 @@ Special cases:
 10. validate each edit with the narrowest proof that covers its risk; accumulate coherent locale work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
-13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding
+13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; the tracked evidence must close all 49 IDs and match its route, test, source, locale, browser, and cleanup digests
 
 Browser semantic E2E pattern:

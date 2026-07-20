@@ -1,6 +1,7 @@
 import type { Languages } from '@tiangong-lca/tidas-sdk';
 
 import {
+  DEFAULT_SERVICE_APP_LOCALE,
   getLocaleContentCapability,
   getLocaleDefinition,
   normalizeSupportedAppLocale,
@@ -335,7 +336,7 @@ export function getLanguageDisplayName(
   }
 
   try {
-    const locale = normalizeSupportedAppLocale(displayLocale) ?? 'en-US';
+    const locale = normalizeSupportedAppLocale(displayLocale) ?? DEFAULT_SERVICE_APP_LOCALE;
     const displayName = new Intl.DisplayNames([getLocaleDefinition(locale).adapters.intl], {
       type: 'language',
     }).of(normalizedCode);

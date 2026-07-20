@@ -21,9 +21,9 @@ checkPaths:
   - docker/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
-lastReviewedNote: 'Reviewed for Issue #635: the guarded candidate-local semantic E2E uses the existing main backend and a user-scoped exact-ID cleanup path without changing schema or Edge ownership.'
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
+lastReviewedNote: 'Reviewed for Issue #633: the final authorized candidate-local production-backend E2E preserved user-scoped exact-UUID cleanup, dual-ledger recovery, and existing schema/Edge ownership boundaries.'
 ---
 
 # Supabase Environment And Database Workflow

@@ -1,4 +1,8 @@
 import { isTranslationSourceContentLanguage } from '@/services/general/contentLanguageRegistry';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getLocale, useIntl } from '@umijs/max';
 
 export type DashboardIntl = Pick<ReturnType<typeof useIntl>, 'formatMessage' | 'locale'>;
@@ -7,8 +11,8 @@ const numberFormatters = new Map<string, Intl.NumberFormat>();
 const exchangeAmountFormatters = new Map<string, Intl.NumberFormat>();
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
-function getCanonicalRuntimeLocale(): string {
-  return (getLocale() || 'en-US').replace('_', '-');
+export function getCanonicalRuntimeLocale(): string {
+  return normalizeRuntimeLocale(getLocale()) ?? DEFAULT_BROWSER_APP_LOCALE;
 }
 
 export function formatDashboardNumber(value: number): string {

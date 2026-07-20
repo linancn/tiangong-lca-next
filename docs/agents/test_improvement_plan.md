@@ -23,8 +23,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
-lastReviewedNote: 'Reviewed for Issue #635: retained bounded browser coverage while restricting authenticated production-data proof to an authorized local operator session.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; the maintained testing strategy needs no change.'
 ---
 
 # Testing Strategy

@@ -2,7 +2,10 @@
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
+import { getLocaleDefinition } from '@/services/general/localeRegistry';
 import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
   subscribeRuntimeIntlChange,
   type RuntimeIntlShapeLike,
 } from '@/services/general/runtimeLocale';
@@ -517,6 +520,8 @@ const buildValidationIssueHtml = (
   title: string,
 ) => {
   const brandTheme = getValidationIssueBrandTheme();
+  const reportLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const reportLocaleDefinition = getLocaleDefinition(reportLocale);
   const tableRows = groupValidationIssues(issues)
     .map((groupedIssue) => {
       const typeLabel = getDatasetTypeLabel(intl, groupedIssue.ref['@type']);
@@ -546,7 +551,9 @@ const buildValidationIssueHtml = (
     .join('\n');
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(reportLocaleDefinition.canonicalLocale)}" dir="${escapeHtml(
+    reportLocaleDefinition.direction,
+  )}">
   <head>
     <meta charset="utf-8" />
     <title>${escapeHtml(title)}</title>
@@ -555,7 +562,7 @@ const buildValidationIssueHtml = (
       h1 { font-size: 20px; margin-bottom: 8px; }
       p { color: #595959; margin-bottom: 16px; }
       table { border-collapse: collapse; width: 100%; }
-      th, td { border: 1px solid #d9d9d9; padding: 8px 10px; text-align: left; vertical-align: top; }
+      th, td { border: 1px solid #d9d9d9; padding: 8px 10px; text-align: start; vertical-align: top; }
       th { background: #fafafa; }
       .action-link { color: ${escapeHtml(brandTheme.colorPrimary)}; font-weight: 600; text-decoration: none; }
       .action-link-disabled { color: #bfbfbf; cursor: not-allowed; }

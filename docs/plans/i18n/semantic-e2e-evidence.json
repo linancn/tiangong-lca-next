@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-19T16:53:13.372Z",
-  "runId": "local-81b2218a-4d3f-4bc8-a9d0-85fe60018b88",
+  "generatedAt": "2026-07-20T08:15:36.565Z",
+  "runId": "local-77a53ac7-7125-42ae-9440-9252c707a6ac",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "91973faef33baa3534490e47688f7a538dd41861",
-    "packageManifestDigest": "f80ad3c2d30abe3f9c03bbc4cb17915b110d539a7f3ecd637696723706117009",
-    "sourceTreeDigest": "6d57f0320172a30374bd304a22ab627da1a19a48955bc130f33f4d31f016433d",
-    "unitTestTreeDigest": "91f3e7ffe38c075794d8e851813eaeadc672a993766514d307894c8a5fb46ec1"
+    "observedHeadCommit": "9b5bdeb11794f280b639212248b9816338923dd7",
+    "packageManifestDigest": "4910623de8b46e2cc3efb74c665a6fb047fa4315759de0e22819535e7f72ac11",
+    "sourceTreeDigest": "b4d9690cc7845351b1ea6ee338f4e5f3e13c937806652b01c43f1225e20118eb",
+    "unitTestTreeDigest": "3c93914f11fb952cc1ba593d3bdd832518e4a68b9d62bf013dd03d21fc3782a1"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "d909770f35048f325093cad75d93da86e3a9ff2521973e4373fac6007b1c051c"
+      "sha256": "c4ae4cce664d94a18b3618df3e0a33363d9dc9c29834e1a44fde8599f0fd90b0"
     },
     "runtimeAssets": [
       {
@@ -373,7 +373,7 @@
       },
       {
         "path": "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
-        "sha256": "455d6f4f9bb4324c427124086edaf05adfb66977aa80d6801d2902cdba6ed3bf"
+        "sha256": "e74b4f11f10b88ccee462ba18dfeb5644106e60a50c5cec3e514ed1eef368551"
       },
       {
         "path": "tests/unit/pages/NationalCarbonDashboard/index.test.tsx",
@@ -519,7 +519,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "a6a23127f49c417287d220a7d974315b73004aa2bb58bf2f03b78d9af89e9896"
+        "sha256": "f25daf25d3629e150bd56d48143d3c14f9a1bc220bb897729608f0ddf84d0390"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",
@@ -543,7 +543,7 @@
       },
       {
         "path": "src/pages/NationalCarbonDashboard/i18n.ts",
-        "sha256": "49fea3a5eacec70e731ba664a96b68146e91d3fdaa90ab3eb14a87e5af8f7b8f"
+        "sha256": "e1334c131c25349b0d125e2bc52915e65dbcc65073e6ce0423b17b6a25b04cb8"
       },
       {
         "path": "src/pages/NationalCarbonDashboard/index.tsx",
@@ -599,7 +599,7 @@
       },
       {
         "path": "src/services/general/contentLanguageRegistry.ts",
-        "sha256": "2bb1e3395138c0cc4eef6aa2a69dba7a749af94df29760cb5c45d08381205c9e"
+        "sha256": "c5e1ef5afbad36dfce86d327801390e0347707c1ad8126c45064e913fbf406a4"
       },
       {
         "path": "src/services/general/localeRegistry.ts",

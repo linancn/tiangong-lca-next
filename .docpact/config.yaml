@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-20'
-lastReviewedCommit: '91973faef33baa3534490e47688f7a538dd41861'
-lastReviewedNote: 'Reviewed for Issue #635 and governed credential-free GitHub browser jobs, the explicitly authorized local production-data operator run, and digest-bound evidence.'
+lastReviewedAt: "2026-07-20"
+lastReviewedCommit: "9b5bdeb11794f280b639212248b9816338923dd7"
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; routing, ownership, and testing-gate contracts are unchanged.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
