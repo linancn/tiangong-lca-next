@@ -96,7 +96,7 @@ const formatConflicts = (
 const getValidationIssues = (response: ImportTidasPackageResponse) =>
   response.validation_issues ?? [];
 
-const getDocsUrl = (locale: string) =>
+const getDocsUrl = (locale?: string | null) =>
   `${getDocumentationUrl(locale)}${TIDAS_PACKAGE_IMPORT_DOCS_PATH}`;
 
 const formatValidationIssues = (
@@ -147,7 +147,7 @@ const ImportTidasPackage: FC<Props> = ({ onImported = () => {} }) => {
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const intl = useIntl();
   const { token } = theme.useToken();
-  const docsUrl = getDocsUrl(intl.locale || 'zh-CN');
+  const docsUrl = getDocsUrl(intl.locale);
 
   const handleImport = async () => {
     if (fileList.length === 0) {

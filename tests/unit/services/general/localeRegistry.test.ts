@@ -13,7 +13,8 @@ import {
 } from '@/services/general/localeRegistry';
 
 describe('localeRegistry', () => {
-  it('defines one canonical product locale per language in selector order', () => {
+  it('locks the fail-closed product-locale release snapshot and selector order', () => {
+    // Deliberately explicit: adding a product locale must force a release-contract review here.
     expect(CANONICAL_SOURCE_APP_LOCALE).toBe('en-US');
     expect(SUPPORTED_APP_LOCALES).toEqual(['zh-CN', 'en-US', 'de-DE', 'fr-FR']);
     expect(new Set(SUPPORTED_APP_LOCALES).size).toBe(SUPPORTED_APP_LOCALES.length);

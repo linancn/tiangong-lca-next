@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "6b6ff4fceff4836bd9b48d6229227208a7d14b9fd3d73162eab700bc1ba6c728",
+    "auditedInputDigest": "dbd7e52e372f1a21e4c646202447442d5e79198fcdea3afea44b82f411d5dffa",
     "validatedMessageCount": 3032,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1341,
     "highRiskMessageDigest": "3ce9911e5333fd9b7c85174693a78c7c8cf37e92835241c23e4f820a4c7b558e",
     "catalogDigest": "fe762b9712f0e81eab9a0befa1fd0f820986ef430556ff6491148c6a2f30e6a2",
-    "dossierDigest": "b2d5b92f63cd8734746677ab6762e4ea2640eb4c47e53652d3e0f8f6601273fc",
+    "dossierDigest": "ac02d8db021b9065707961a6b95fd7d63ad4262fce413c0bc51067f0f8ff7741",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "e7e43bff302dec99320e80e1dba6680771ffb1e6eec7f7502755b6729dfd67ed",
+    "routeEvidenceDigest": "894c2c3339f1cae01a22ae35b683bbb665db4b97202b511b1a768e6dad6d7452",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "5ef93647a266ce23461d659b85cd8d1f1c8ccf437a689b159c423155d210580c",
         "highRiskMessageCount": 1341,
         "highRiskMessageDigest": "3ce9911e5333fd9b7c85174693a78c7c8cf37e92835241c23e4f820a4c7b558e",
-        "dossierDigest": "b2d5b92f63cd8734746677ab6762e4ea2640eb4c47e53652d3e0f8f6601273fc",
+        "dossierDigest": "ac02d8db021b9065707961a6b95fd7d63ad4262fce413c0bc51067f0f8ff7741",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "5031d9bd387b4fbb0b67a55203df8f6723f15f35cabefe6bee5465f1a332a195"
+  "validationDigest": "4f2e80026c56706449642aad7d3f806e7f0041452ee01dac8ea4f865f1eed708"
 }

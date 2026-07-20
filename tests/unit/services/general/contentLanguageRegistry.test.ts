@@ -22,7 +22,8 @@ import {
 import { getLocaleDefinition } from '@/services/general/localeRegistry';
 
 describe('contentLanguageRegistry', () => {
-  it('derives supported, authoring, required, and option lists from one registry', () => {
+  it('locks the fail-closed authoring-language release snapshot derived from one registry', () => {
+    // Deliberately explicit: adding an authoring language must force label/order review here.
     expect(CANONICAL_CONTENT_LANGUAGE).toBe('en');
     expect(SUPPORTED_CONTENT_LANGUAGES).toEqual(['en', 'zh', 'de', 'fr']);
     expect(AUTHORING_CONTENT_LANGUAGES).toEqual(SUPPORTED_CONTENT_LANGUAGES);
@@ -221,6 +222,7 @@ describe('contentLanguageRegistry', () => {
   it('uses native labels for declared languages and a non-dash label for unknown codes', () => {
     expect(getLanguageDisplayName('de')).toBe('Deutsch');
     expect(getLanguageDisplayName('fr')).toBe('Français');
+    expect(getLanguageDisplayName('ja')).toBe('Japanese');
     expect(getLanguageDisplayName('ja', 'en-US')).toBe('Japanese');
     expect(getLanguageDisplayName('ja', 'es-ES')).toBe('Japanese');
     expect(getLanguageDisplayName('not_a_language', 'en-US')).toBe('not_a_language');

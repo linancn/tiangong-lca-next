@@ -51,12 +51,18 @@ const EQUALITY_OPERATORS = new Set([
   ts.SyntaxKind.ExclamationEqualsEqualsToken,
 ]);
 
+const LOGICAL_FALLBACK_OPERATORS = new Set([
+  ts.SyntaxKind.BarBarToken,
+  ts.SyntaxKind.QuestionQuestionToken,
+]);
+
 // Keep this deliberately narrow: these attributes render user-facing copy.
 // Technical JSX metadata such as id, name, data-testid, and aria-controls must
 // not become language-platform findings merely because their values are static.
 const VISIBLE_LOCALIZED_JSX_ATTRIBUTE_NAMES = new Set(['placeholder']);
 
 const RULE_IDS = new Set([
+  'embedded-html-language-attribute',
   'language-array',
   'language-call-argument',
   'language-default',
@@ -986,12 +992,51 @@ function languageishExpression(node, sourceFile) {
   );
 }
 
+function looksLikeLocaleFallbackLiteral(value) {
+  if (typeof value !== 'string') return false;
+  const candidate = value.trim();
+  if (candidate === '' || /^(?:ltr|rtl)$/iu.test(candidate)) return false;
+
+  // Recognise registry-external BCP 47 and POSIX-style locale literals so a
+  // newly introduced language cannot bypass the audit merely because its
+  // token has not been added to the registry yet. The language-like LHS check
+  // remains the semantic guard against ordinary two-letter business values.
+  return /^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*(?:\.[A-Za-z0-9_-]+)?(?:@[A-Za-z0-9_-]+)?$/u.test(
+    candidate,
+  );
+}
+
 function normalizedNodeText(node, sourceFile) {
   return node.getText(sourceFile).replace(/\s+/gu, ' ').trim();
 }
 
 function digestNodeText(text) {
   return createHash('sha256').update(text).digest('hex');
+}
+
+function embeddedHtmlRootHasStaticLanguageAttribute(node, sourceFile) {
+  const current = unwrap(node);
+  const documentText = ts.isStringLiteralLike(current)
+    ? current.text
+    : ts.isTemplateExpression(current)
+      ? current.getText(sourceFile)
+      : null;
+  if (!documentText) return false;
+
+  const rootTagMatch = documentText.match(/<html\b[^>]*>/iu);
+  if (!rootTagMatch) return false;
+
+  const rootTag = rootTagMatch[0];
+  const languageMatch = rootTag.match(
+    /\slang\s*=\s*(?:"([^"$<>{}]+)"|'([^'$<>{}]+)'|([^\s"'=<>${}]+))/iu,
+  );
+  const directionMatch = rootTag.match(
+    /\sdir\s*=\s*(?:"(ltr|rtl)"|'(ltr|rtl)'|(ltr|rtl)(?=\s|>))/iu,
+  );
+  const language = languageMatch?.[1] ?? languageMatch?.[2] ?? languageMatch?.[3];
+  const direction = directionMatch?.[1] ?? directionMatch?.[2] ?? directionMatch?.[3];
+
+  return (language !== undefined && language.trim() !== '') || direction !== undefined;
 }
 
 function buildKnownLanguageTokens(platform) {
@@ -1067,6 +1112,23 @@ function scanHardcoding(root, platform, violations) {
         ) {
           addFinding('language-equality', node);
         }
+      }
+
+      if (
+        ts.isBinaryExpression(node) &&
+        LOGICAL_FALLBACK_OPERATORS.has(node.operatorToken.kind) &&
+        languageishExpression(node.left, sourceFile) &&
+        (isKnown(staticValue(node.right)) ||
+          looksLikeLocaleFallbackLiteral(staticValue(node.right)))
+      ) {
+        addFinding('language-default', node);
+      }
+
+      if (
+        (ts.isStringLiteralLike(node) || ts.isTemplateExpression(node)) &&
+        embeddedHtmlRootHasStaticLanguageAttribute(node, sourceFile)
+      ) {
+        addFinding('embedded-html-language-attribute', node);
       }
 
       if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {

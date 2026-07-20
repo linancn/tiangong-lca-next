@@ -2,6 +2,7 @@ import {
   formatDashboardDate,
   formatDashboardExchangeAmount,
   formatDashboardNumber,
+  getCanonicalRuntimeLocale,
   getDashboardMapPathLabel,
   getDashboardRegionLabel,
   getDashboardScreenLabel,
@@ -22,7 +23,7 @@ import {
   isChineseDashboardLocale,
 } from '@/pages/NationalCarbonDashboard/i18n';
 import { isTranslationSourceContentLanguage } from '@/services/general/contentLanguageRegistry';
-import { LOCALE_REGISTRY } from '@/services/general/localeRegistry';
+import { DEFAULT_BROWSER_APP_LOCALE, LOCALE_REGISTRY } from '@/services/general/localeRegistry';
 
 let mockLocale = 'fr-FR';
 
@@ -59,6 +60,17 @@ describe('NationalCarbonDashboard i18n token adapters', () => {
 
     mockLocale = '';
     expect(formatDashboardNumber(12)).toBe('12');
+  });
+
+  it('normalizes runtime aliases and derives missing-locale fallback from the registry', () => {
+    mockLocale = 'fr_CA';
+    expect(getCanonicalRuntimeLocale()).toBe('fr-FR');
+
+    mockLocale = '';
+    expect(getCanonicalRuntimeLocale()).toBe(DEFAULT_BROWSER_APP_LOCALE);
+
+    mockLocale = 'unsupported-locale';
+    expect(getCanonicalRuntimeLocale()).toBe(DEFAULT_BROWSER_APP_LOCALE);
   });
 
   it('recognizes the registry-owned translation-source locale aliases', () => {
