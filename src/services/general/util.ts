@@ -1,16 +1,16 @@
-import deValidatorMessages from '@/locales/de-DE/validator';
-import enValidatorMessages from '@/locales/en-US/validator';
-import frValidatorMessages from '@/locales/fr-FR/validator';
-import zhValidatorMessages from '@/locales/zh-CN/validator';
+import { getValidatorMessage } from '@/locales/runtimeCatalogRegistry';
 import { getReferenceUnitGroups } from '@/services/flowproperties/api';
 import { getFlowProperties } from '@/services/flows/api';
 import { getReferenceUnits } from '@/services/unitgroups/api';
-import { Classification } from './data';
 import {
-  getLocaleDefinition,
-  normalizeSupportedAppLocale,
-  type SupportedAppLocale,
-} from './localeRegistry';
+  CANONICAL_CONTENT_LANGUAGE,
+  normalizeSupportedContentLanguage,
+  resolveContentLanguage,
+  resolveContentLanguages,
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+} from './contentLanguageRegistry';
+import { Classification } from './data';
+import { CANONICAL_SOURCE_APP_LOCALE, normalizeSupportedAppLocale } from './localeRegistry';
 
 export type RefVersionItem = {
   key: string;
@@ -389,9 +389,13 @@ export function genClassIdList(
 
 export function genClassJsonZH(data: any[], index: number, classification: any[]): any {
   const d = data?.find((i) => i?.['@level'] === index.toString());
-  const c = classification?.find((i) => i?.value === d?.['#text']);
+  const sourceId = d?.['@classId'] ?? d?.['@catId'];
+  const c = classification?.find((item) =>
+    sourceId ? item?.id === sourceId : item?.value === d?.['#text'],
+  );
   if (c) {
     const newC = {
+      ...d,
       '@level': index.toString(),
       '#text': c?.label ?? c?.['#text'],
     };
@@ -402,6 +406,7 @@ export function genClassJsonZH(data: any[], index: number, classification: any[]
   } else {
     if (d) {
       const newD = {
+        ...d,
         '@level': index.toString(),
         '#text': d?.['#text'],
       };
@@ -413,27 +418,65 @@ export function genClassJsonZH(data: any[], index: number, classification: any[]
 }
 
 export function getLang(locale: string) {
-  const normalizedLocale = normalizeSupportedAppLocale(locale);
-  return normalizedLocale ? getLocaleDefinition(normalizedLocale).fallbacks.dataLanguage : 'en';
+  return resolveContentLanguage(locale);
+}
+
+const getUsableLangTextValue = (item: any) => {
+  const value = item?.['#text'];
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value === 'string' && (!value.trim() || value.trim() === '-')) {
+    return undefined;
+  }
+  return value;
+};
+
+const normalizeExactContentLanguage = (lang: unknown) => {
+  if (typeof lang !== 'string') {
+    return '';
+  }
+
+  return (
+    normalizeSupportedContentLanguage(lang) ??
+    lang.trim().toLowerCase().replace('_', '-').split('-')[0]
+  );
+};
+
+export function getExactLangText(langTexts: any, lang: string) {
+  if (Array.isArray(langTexts)) {
+    const normalizedLanguage = normalizeExactContentLanguage(lang);
+    const candidate = langTexts.find(
+      (item) =>
+        String(item?.['@xml:lang'] ?? '')
+          .trim()
+          .toLowerCase() === normalizedLanguage && getUsableLangTextValue(item) !== undefined,
+    );
+    return getUsableLangTextValue(candidate) ?? '-';
+  }
+
+  if (langTexts && typeof langTexts === 'object') {
+    const itemLanguage = String(langTexts['@xml:lang'] ?? '')
+      .trim()
+      .toLowerCase();
+    if (itemLanguage && itemLanguage !== normalizeExactContentLanguage(lang)) {
+      return '-';
+    }
+    return getUsableLangTextValue(langTexts) ?? '-';
+  }
+
+  return '-';
 }
 
 export function getLangText(langTexts: any, lang: string) {
   let text = '-';
   try {
-    if (Array.isArray(langTexts)) {
-      const filterList = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === lang);
-      if (filterList.length > 0) {
-        text = filterList[0]['#text'] ?? '-';
-      } else {
-        const filterList = langTexts.filter((i) => i && i['@xml:lang'] && i['@xml:lang'] === 'en');
-        if (filterList.length > 0) {
-          text = filterList[0]['#text'] ?? '-';
-        } else {
-          text = langTexts[0]?.['#text'] ?? '-';
-        }
+    for (const language of resolveContentLanguages(lang)) {
+      const candidateText = getExactLangText(langTexts, language);
+      if (candidateText !== '-') {
+        text = candidateText;
+        return text;
       }
-    } else {
-      text = langTexts?.['#text'] ?? '-';
     }
   } catch (e) {
     console.log(e);
@@ -510,10 +553,11 @@ const normalizeLangCode = (lang: unknown): string => {
   return lang.trim().toLowerCase();
 };
 
-const isEnglishLangCode = (langCode: string): boolean => langCode === 'en';
+const isEnglishLangCode = (langCode: string): boolean => langCode === CANONICAL_CONTENT_LANGUAGE;
 
 const isChineseLangCode = (langCode: string): boolean =>
-  langCode === 'zh' || langCode.startsWith('zh-');
+  langCode === TRANSLATION_SOURCE_CONTENT_LANGUAGE ||
+  langCode.startsWith(`${TRANSLATION_SOURCE_CONTENT_LANGUAGE}-`);
 
 const normalizeLangTextValue = (text: unknown): string => {
   if (typeof text === 'string') return text.trim();
@@ -615,21 +659,24 @@ async function normalizeLangEntries(
   if (!englishEntry) {
     const translatedEnglish = await getValidEnglishTranslation(chineseEntry?.[TEXT_KEY]);
     if (translatedEnglish) {
-      normalizedList = [{ [LANG_KEY]: 'en', [TEXT_KEY]: translatedEnglish }, ...normalizedList];
+      normalizedList = [
+        { [LANG_KEY]: CANONICAL_CONTENT_LANGUAGE, [TEXT_KEY]: translatedEnglish },
+        ...normalizedList,
+      ];
       pushUniquePath(metadata.translatedPaths, path);
     } else if (shouldSupplementEnglishPlaceholder) {
       const placeholderEntry: NormalizedLangEntry = {
-        [LANG_KEY]: 'en',
+        [LANG_KEY]: CANONICAL_CONTENT_LANGUAGE,
         [TEXT_KEY]: undefined,
       };
-      if (!rawLangCodes.includes('en')) {
+      if (!rawLangCodes.includes(CANONICAL_CONTENT_LANGUAGE)) {
         normalizedList = [...normalizedList, placeholderEntry];
       } else {
         const entriesByLang = new Map<string, NormalizedLangEntry>();
         normalizedList.forEach((entry) => {
           entriesByLang.set(String(entry[LANG_KEY]), entry);
         });
-        entriesByLang.set('en', placeholderEntry);
+        entriesByLang.set(CANONICAL_CONTENT_LANGUAGE, placeholderEntry);
         const nextList: NormalizedLangEntry[] = [];
         const consumedLangs = new Set<string>();
         rawLangCodes.forEach((langCode) => {
@@ -766,53 +813,19 @@ export async function normalizeLangPayloadBeforeSave(
 }
 
 const getLangValidationLocaleMessages = (locale: string) => {
-  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? 'en-US';
-  const messagesByLocale = {
-    'zh-CN': zhValidatorMessages,
-    'en-US': enValidatorMessages,
-    'de-DE': deValidatorMessages,
-    'fr-FR': frValidatorMessages,
-  } as const satisfies Record<SupportedAppLocale, Record<string, string>>;
-  const fallbackMessages = {
-    'zh-CN': {
-      missingEnglish: '保存失败，以下字段缺少英文：{fields}.',
-      missingEnglishMore:
-        '保存失败，以下字段缺少英文：{fields}，另有 {count, plural, other {# 个字段}}。',
-      root: '根节点',
-    },
-    'en-US': {
-      missingEnglish: 'Save failed, the following fields are missing English: {fields}.',
-      missingEnglishMore:
-        'Save failed, the following fields are missing English: {fields}, plus {count, plural, one {# more field} other {# more fields}}.',
-      root: '(root)',
-    },
-    'de-DE': {
-      missingEnglish:
-        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}.',
-      missingEnglishMore:
-        'Speichern fehlgeschlagen. In folgenden Feldern fehlt die englische Fassung: {fields}; außerdem {count, plural, one {# weiteres Feld} other {# weitere Felder}}.',
-      root: '(Stammebene)',
-    },
-    'fr-FR': {
-      missingEnglish:
-        'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : {fields}.',
-      missingEnglishMore:
-        'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : {fields}, plus {count, plural, one {# champ supplémentaire} other {# champs supplémentaires}}.',
-      root: '(racine)',
-    },
-  } as const satisfies Record<
-    SupportedAppLocale,
-    { missingEnglish: string; missingEnglishMore: string; root: string }
-  >;
-  const messages = messagesByLocale[normalizedLocale] as Record<string, string>;
-  const fallback = fallbackMessages[normalizedLocale];
+  const normalizedLocale = normalizeSupportedAppLocale(locale) ?? CANONICAL_SOURCE_APP_LOCALE;
 
   return {
     locale: normalizedLocale,
-    missingEnglish: messages['validator.langValidation.missingEnglish'] ?? fallback.missingEnglish,
-    missingEnglishMore:
-      messages['validator.langValidation.missingEnglishMore'] ?? fallback.missingEnglishMore,
-    root: messages['validator.langValidation.root'] ?? fallback.root,
+    missingEnglish: getValidatorMessage(
+      normalizedLocale,
+      'validator.langValidation.missingEnglish',
+    ),
+    missingEnglishMore: getValidatorMessage(
+      normalizedLocale,
+      'validator.langValidation.missingEnglishMore',
+    ),
+    root: getValidatorMessage(normalizedLocale, 'validator.langValidation.root'),
   };
 };
 
@@ -856,7 +869,7 @@ const getLangValidationFieldName = (path: string, rootLabel: string) => {
 export function getLangValidationErrorMessage(
   issues: LangValidationIssue[],
   maxPathCount = 5,
-  locale = 'en-US',
+  locale: string = CANONICAL_SOURCE_APP_LOCALE,
 ) {
   if (!issues || issues.length === 0) {
     return '';
@@ -1081,13 +1094,17 @@ export function classificationToJsonList(classifications: any, elementaryFlow: b
 //   return removeEmptyObjects(common_class);
 // }
 
-export function genClassificationZH(classifications: any[], categoryData: any[]) {
-  if (classifications.length > 0) {
-    const classificationsZH = genClassJsonZH(classifications, 0, categoryData);
-    return classificationsZH;
+export function genLocalizedClassification(classifications: any[], categoryData: any[]) {
+  if (classifications.length > 0 && Array.isArray(categoryData)) {
+    return genClassJsonZH(classifications, 0, categoryData);
   } else {
-    return [];
+    return classifications;
   }
+}
+
+/** @deprecated Use genLocalizedClassification. */
+export function genClassificationZH(classifications: any[], categoryData: any[]) {
+  return genLocalizedClassification(classifications, categoryData);
 }
 
 export function isValidURL(url: string): boolean {

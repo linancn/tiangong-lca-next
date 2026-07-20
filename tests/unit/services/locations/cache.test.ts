@@ -4,17 +4,34 @@
  */
 
 const mockGetILCDLocationEntries = jest.fn();
+const mockResolveReferenceResource = jest.fn();
 
 jest.mock('@/services/locations/api', () => ({
   getILCDLocationEntries: (...args: any[]) => mockGetILCDLocationEntries(...args),
 }));
+
+jest.mock('@/services/referenceResources/resolver', () => {
+  const actual = jest.requireActual('@/services/referenceResources/resolver');
+  return {
+    __esModule: true,
+    ...actual,
+    resolveReferenceResource: (...args: any[]) => mockResolveReferenceResource(...args),
+  };
+});
 
 import { getCachedLocationData, locationCache } from '@/services/locations/cache';
 
 describe('Locations Cache (src/services/locations/cache.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    const actual = jest.requireActual('@/services/referenceResources/resolver');
+    mockResolveReferenceResource.mockReset();
+    mockResolveReferenceResource.mockImplementation(actual.resolveReferenceResource);
     locationCache.clear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('supports direct get/set/clear operations on the shared cache instance', () => {
@@ -59,6 +76,57 @@ describe('Locations Cache (src/services/locations/cache.ts)', () => {
     expect(first).toEqual(second);
     expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(1);
     expect(mockGetILCDLocationEntries).toHaveBeenCalledWith('en', ['CN', 'US']);
+  });
+
+  it('keeps cache entries separate when languages resolve to different location assets', async () => {
+    mockGetILCDLocationEntries.mockResolvedValue([{ '@value': 'CN', '#text': 'China' }]);
+
+    const english = await locationCache.getILCDLocationByValues('en', ['CN']);
+    const chinese = await locationCache.getILCDLocationByValues('zh', ['CN']);
+
+    expect(chinese).toEqual(english);
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(2);
+    expect(mockGetILCDLocationEntries).toHaveBeenNthCalledWith(1, 'en', ['CN']);
+    expect(mockGetILCDLocationEntries).toHaveBeenNthCalledWith(2, 'zh', ['CN']);
+  });
+
+  it('uses the base location asset in the cache identity when localization is missing', async () => {
+    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    mockResolveReferenceResource.mockReturnValue({
+      status: 'missing',
+      resourceId: 'ilcd-locations',
+      requestedLanguage: 'en',
+      usedFallback: false,
+      ownerIssue: '#634',
+      diagnostic: 'ILCD English location labels are unavailable.',
+      baseAsset: {
+        language: 'en',
+        fileName: 'ILCDLocations.min.json.gz',
+      },
+    });
+    mockGetILCDLocationEntries.mockResolvedValue([{ '@value': 'CN', '#text': 'China' }]);
+
+    const first = await locationCache.getILCDLocationByValues('en', ['CN']);
+    const second = await locationCache.getILCDLocationByValues('en', ['CN']);
+
+    expect(second).toEqual(first);
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(1);
+    expect(consoleWarnSpy).toHaveBeenCalled();
+  });
+
+  it('returns an empty label set on lookup errors without caching the transient failure', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockGetILCDLocationEntries.mockRejectedValue(new Error('location unavailable'));
+
+    await expect(locationCache.getILCDLocationByValues('en', ['CN'])).resolves.toEqual([]);
+    await expect(locationCache.getILCDLocationByValues('en', ['CN'])).resolves.toEqual([]);
+
+    expect(mockGetILCDLocationEntries).toHaveBeenCalledTimes(2);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('preserving raw location codes'),
+      expect.any(Error),
+    );
+    consoleErrorSpy.mockRestore();
   });
 
   it('normalizes null API responses to an empty cached array', async () => {

@@ -2,6 +2,10 @@
 import type { ValidationIssue, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getSdkSuggestedFixMessage } from '@/pages/Utils/validation/messages';
 import { formatDatasetTabLabel } from '@/pages/Utils/validation/tabMessages';
+import {
+  subscribeRuntimeIntlChange,
+  type RuntimeIntlShapeLike,
+} from '@/services/general/runtimeLocale';
 import { formatLocaleList, getLocaleListSeparator } from '@/utils/localeFormatting';
 import { CloseOutlined } from '@ant-design/icons';
 import { Button, ConfigProvider, Modal, Space, Table, message, theme } from 'antd';
@@ -11,15 +15,54 @@ import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { getBrandTheme } from '../../../config/branding';
 
-type IntlShapeLike = {
-  locale?: string;
-  formatMessage: (
-    descriptor: {
-      defaultMessage?: string;
-      id: string;
-    },
-    values?: Record<string, string | number | undefined>,
-  ) => string;
+type IntlShapeLike = RuntimeIntlShapeLike;
+
+export type ValidationIssueModalTitleDescriptor =
+  | {
+      defaultMessage?: 'Validation issues';
+      id: 'pages.validationIssues.modal.title';
+    }
+  | {
+      defaultMessage?: 'Data validation issues';
+      id: 'pages.validationIssues.modal.checkDataTitle';
+    }
+  | {
+      defaultMessage?: 'Review submission blocked';
+      id: 'pages.validationIssues.modal.reviewTitle';
+    };
+
+export type ValidationIssueModalTitleInput =
+  string | ValidationIssueModalTitleDescriptor | ((intl: RuntimeIntlShapeLike) => string);
+
+const resolveValidationIssueModalTitle = (
+  intl: IntlShapeLike,
+  title?: ValidationIssueModalTitleInput,
+): string => {
+  if (typeof title === 'function') {
+    return title(intl);
+  }
+  if (typeof title === 'string') {
+    return title;
+  }
+
+  switch (title?.id) {
+    case 'pages.validationIssues.modal.checkDataTitle':
+      return intl.formatMessage({
+        id: 'pages.validationIssues.modal.checkDataTitle',
+        defaultMessage: 'Data validation issues',
+      });
+    case 'pages.validationIssues.modal.reviewTitle':
+      return intl.formatMessage({
+        id: 'pages.validationIssues.modal.reviewTitle',
+        defaultMessage: 'Review submission blocked',
+      });
+    case 'pages.validationIssues.modal.title':
+    default:
+      return intl.formatMessage({
+        id: 'pages.validationIssues.modal.title',
+        defaultMessage: 'Validation issues',
+      });
+  }
 };
 
 const escapeHtml = (value: string) =>
@@ -995,14 +1038,20 @@ const ValidationIssueModalRenderer = ({
   issues: ValidationIssue[];
   onNavigate?: ValidationIssueNavigateHandler;
   onDestroy: () => void;
-  title: string;
+  title?: ValidationIssueModalTitleInput;
 }) => {
   const [open, setOpen] = useState(true);
+  const [activeIntl, setActiveIntl] = useState(intl);
   const brandTheme = useMemo(() => getValidationIssueBrandTheme(), []);
   const { token } = theme.useToken();
   const modalZIndex = (token as typeof token & { zIndexPopupBase?: number }).zIndexPopupBase
     ? ((token as typeof token & { zIndexPopupBase?: number }).zIndexPopupBase ?? 1000) + 1000
     : 2000;
+
+  useEffect(() => {
+    setActiveIntl(intl);
+    return subscribeRuntimeIntlChange(setActiveIntl);
+  }, [intl]);
 
   useEffect(() => {
     if (!open) {
@@ -1020,6 +1069,7 @@ const ValidationIssueModalRenderer = ({
     onNavigate?.(target);
     setOpen(false);
   };
+  const resolvedTitle = resolveValidationIssueModalTitle(activeIntl, title);
 
   return (
     <ConfigProvider
@@ -1036,20 +1086,20 @@ const ValidationIssueModalRenderer = ({
         destroyOnHidden
         footer={
           <ValidationIssueFooter
-            intl={intl}
+            intl={activeIntl}
             issues={issues}
             onConfirm={() => setOpen(false)}
-            title={title}
+            title={resolvedTitle}
           />
         }
         open={open}
-        title={<ValidationIssueModalTitle title={title} />}
+        title={<ValidationIssueModalTitle title={resolvedTitle} />}
         width={1000}
         zIndex={modalZIndex}
         onCancel={() => setOpen(false)}
       >
         <ValidationIssueModalContent
-          intl={intl}
+          intl={activeIntl}
           issues={issues}
           onNavigate={onNavigate ? handleNavigate : undefined}
         />
@@ -1067,18 +1117,11 @@ export const showValidationIssueModal = ({
   intl: IntlShapeLike;
   issues: ValidationIssue[];
   onNavigate?: ValidationIssueNavigateHandler;
-  title?: string;
+  title?: ValidationIssueModalTitleInput;
 }) => {
   if (!issues.length) {
     return null;
   }
-
-  const resolvedTitle =
-    title ||
-    intl.formatMessage({
-      id: 'pages.validationIssues.modal.title',
-      defaultMessage: 'Validation issues',
-    });
 
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -1102,7 +1145,7 @@ export const showValidationIssueModal = ({
       issues={issues}
       onNavigate={onNavigate}
       onDestroy={destroy}
-      title={resolvedTitle}
+      title={title}
     />,
   );
 

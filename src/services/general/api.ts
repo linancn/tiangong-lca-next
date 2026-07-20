@@ -1,7 +1,4 @@
-import deTeamMessages from '@/locales/de-DE/pages_teams';
-import enTeamMessages from '@/locales/en-US/pages_teams';
-import frTeamMessages from '@/locales/fr-FR/pages_teams';
-import zhTeamMessages from '@/locales/zh-CN/pages_teams';
+import { getTeamMessage } from '@/locales/runtimeCatalogRegistry';
 import { supabase } from '@/services/supabase';
 import type { SupabaseError, SupabaseMutationResult } from '@/services/supabase/data';
 import { normalizeTidasPackageExportErrorMessage } from '@/services/tidasPackage/exportErrors';
@@ -12,7 +9,7 @@ import { getILCDClassification, getILCDFlowCategorizationAll } from '../classifi
 import { genFlowName } from '../flows/util';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   getLangValidationErrorMessage,
   jsonToList,
@@ -21,24 +18,17 @@ import {
 } from '../general/util';
 import { getILCDLocationByValues } from '../locations/api';
 import { genProcessName } from '../processes/util';
-import type { SupportedAppLocale } from './localeRegistry';
+import {
+  CANONICAL_CONTENT_LANGUAGE,
+  TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+} from './contentLanguageRegistry';
 import { getRuntimeLocale } from './runtimeLocale';
 import { sortDataSetVersionRows } from './version';
 
 const NO_TEAM_MESSAGE_ID = 'teams.modal.noTeam.title';
-const noTeamMessages = {
-  'zh-CN': zhTeamMessages,
-  'en-US': enTeamMessages,
-  'de-DE': deTeamMessages,
-  'fr-FR': frTeamMessages,
-} as const satisfies Record<SupportedAppLocale, Record<string, string>>;
-
 const getNoTeamMessage = () => {
   const locale = getRuntimeLocale();
-  return (
-    (noTeamMessages[locale] as Record<string, string>)[NO_TEAM_MESSAGE_ID] ??
-    enTeamMessages[NO_TEAM_MESSAGE_ID]
-  );
+  return getTeamMessage(locale, NO_TEAM_MESSAGE_ID);
 };
 
 type InvokeErrorBody = {
@@ -1306,14 +1296,17 @@ export async function getAllVersions(
           data = result.data.map((i: any) => {
             try {
               const classifications = jsonToList(i?.['common:class']);
-              const classificationZH = genClassificationZH(classifications, res?.data);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
 
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 shortName: getLangText(i?.['common:shortName'], lang),
                 name: getLangText(i?.['common:name'], lang),
-                classification: classificationToString(classificationZH),
+                classification: classificationToString(localizedClassification),
                 email: i?.email ?? '-',
                 version: i.version,
                 modifiedAt: new Date(i?.modified_at),
@@ -1331,41 +1324,19 @@ export async function getAllVersions(
         break;
       }
       case 'sources':
-        if (lang === 'zh') {
-          await getILCDClassification('Source', lang, ['all']).then((res) => {
-            data = result?.data?.map((i: any) => {
-              try {
-                const classifications = jsonToList(i['common:class']);
-                const classificationZH = genClassificationZH(classifications, res?.data);
-                return {
-                  key: i.id + ':' + i.version,
-                  id: i.id,
-                  shortName: getLangText(i['common:shortName'], lang),
-                  classification: classificationToString(classificationZH),
-                  sourceCitation: i.sourceCitation ?? '-',
-                  publicationType: i.publicationType ?? '-',
-                  version: i.version,
-                  modifiedAt: new Date(i.modified_at),
-                  teamId: i.team_id,
-                  stateCode: i.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDClassification('Source', lang, ['all']).then((res) => {
           data = result?.data?.map((i: any) => {
             try {
               const classifications = jsonToList(i['common:class']);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 shortName: getLangText(i?.['common:shortName'], lang),
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification),
                 sourceCitation: i?.sourceCitation ?? '-',
                 publicationType: i?.publicationType ?? '-',
                 version: i.version,
@@ -1380,47 +1351,18 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
         break;
 
       case 'unitgroups':
-        if (lang === 'zh') {
-          await getILCDClassification('UnitGroup', lang, ['all']).then((res) => {
-            data = result.data.map((i: any) => {
-              try {
-                const unitList = jsonToList(i?.unit);
-                const refUnit = unitList.find(
-                  (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
-                );
-
-                const classifications = jsonToList(i?.['common:class']);
-                const classificationZH = genClassificationZH(classifications, res?.data);
-
-                return {
-                  key: i.id + ':' + i.version,
-                  id: i.id,
-                  name: getLangText(i?.['common:name'], lang),
-                  classification: classificationToString(classificationZH),
-                  refUnitId: i?.referenceToReferenceUnit ?? '-',
-                  refUnitName: refUnit?.name ?? '-',
-                  refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
-                  version: i.version,
-                  modifiedAt: new Date(i?.modified_at),
-                  teamId: i?.team_id,
-                  stateCode: i?.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDClassification('UnitGroup', lang, ['all']).then((res) => {
           data = result.data.map((i: any) => {
             try {
               const classifications = jsonToList(i?.['common:class']);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
               const unitList = jsonToList(i?.unit);
               const refUnit = unitList.find(
                 (item) => item?.['@dataSetInternalID'] === i?.referenceToReferenceUnit,
@@ -1429,7 +1371,7 @@ export async function getAllVersions(
                 key: i.id + ':' + i.version,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification),
                 refUnitId: i?.referenceToReferenceUnit ?? '-',
                 refUnitName: refUnit?.name ?? '-',
                 refUnitGeneralComment: getLangText(refUnit?.generalComment, lang),
@@ -1445,47 +1387,23 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
         break;
 
       case 'flowproperties':
-        if (lang === 'zh') {
-          await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
-            data = result.data.map((i: any) => {
-              try {
-                const classifications = jsonToList(i?.['common:class']);
-                const classificationZH = genClassificationZH(classifications, res?.data);
-
-                return {
-                  key: i.id + ':' + i.version,
-                  id: i.id,
-                  name: getLangText(i?.['common:name'], lang),
-                  classification: classificationToString(classificationZH),
-                  generalComment: getLangText(i?.['common:generalComment'], lang),
-                  refUnitGroupId: i?.['@refObjectId'] ?? '-',
-                  refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
-                  version: i.version,
-                  modifiedAt: new Date(i?.modified_at),
-                  teamId: i?.team_id,
-                  stateCode: i?.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDClassification('FlowProperty', lang, ['all']).then((res) => {
           data = result.data.map((i: any) => {
             try {
               const classifications = jsonToList(i?.['common:class']);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 name: getLangText(i?.['common:name'], lang),
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification),
                 generalComment: getLangText(i?.['common:generalComment'], lang),
                 refUnitGroupId: i?.['@refObjectId'] ?? '-',
                 refUnitGroup: getLangText(i?.['common:shortDescription'], lang),
@@ -1501,7 +1419,7 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
         break;
 
       case 'flows': {
@@ -1513,59 +1431,7 @@ export async function getAllVersions(
           locationData = res.data;
         });
 
-        if (lang === 'zh') {
-          await getILCDFlowCategorizationAll(lang).then((res) => {
-            data = result.data.map((i: any) => {
-              try {
-                let classificationData: any = {};
-                let thisClass: any[] = [];
-                if (i?.typeOfDataSet === 'Elementary flow') {
-                  classificationData =
-                    i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                      'common:category'
-                    ];
-                  thisClass = res?.data?.categoryElementaryFlow;
-                } else {
-                  classificationData =
-                    i?.classificationInformation?.['common:classification']?.['common:class'];
-                  thisClass = res?.data?.category;
-                }
-
-                const classifications = jsonToList(classificationData);
-                const classificationZH = genClassificationZH(classifications, thisClass);
-
-                const thisLocation = locationData.find(
-                  (l) => l['@value'] === i['locationOfSupply'],
-                );
-                let locationOfSupply = i['locationOfSupply'];
-                if (thisLocation?.['#text']) {
-                  locationOfSupply = thisLocation['#text'];
-                }
-
-                return {
-                  key: i.id + ':' + i.version,
-                  id: i.id,
-                  name: genFlowName(i?.name ?? {}, lang),
-                  flowType: i?.typeOfDataSet ?? '-',
-                  classification: classificationToString(classificationZH),
-                  synonyms: getLangText(i?.['common:synonyms'], lang),
-                  CASNumber: i?.CASNumber ?? '-',
-                  refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-                  locationOfSupply: locationOfSupply ?? '-',
-                  version: i.version,
-                  modifiedAt: new Date(i?.modified_at),
-                  teamId: i?.team_id,
-                  stateCode: i?.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDFlowCategorizationAll(lang).then((res) => {
           data = result.data.map((i: any) => {
             try {
               const thisLocation = locationData.find((l) => l['@value'] === i['locationOfSupply']);
@@ -1575,27 +1441,34 @@ export async function getAllVersions(
               }
 
               let classificationData: any = {};
+              let localizedCategory: any[] = [];
               if (i?.typeOfDataSet === 'Elementary flow') {
                 classificationData =
                   i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
                     'common:category'
                   ];
+                localizedCategory = res?.data?.categoryElementaryFlow;
               } else {
                 classificationData =
                   i?.classificationInformation?.['common:classification']?.['common:class'];
+                localizedCategory = res?.data?.category;
               }
               const classifications = jsonToList(classificationData);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                localizedCategory,
+              );
 
               return {
                 key: i.id + ':' + i.version,
                 id: i.id,
                 name: genFlowName(i?.name ?? {}, lang),
                 flowType: i.typeOfDataSet ?? '-',
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification),
                 synonyms: getLangText(i['common:synonyms'], lang),
                 CASNumber: i.CASNumber ?? '-',
                 refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-                locationOfSupply: locationOfSupply,
+                locationOfSupply: locationOfSupply ?? '-',
                 version: i.version,
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
@@ -1608,7 +1481,7 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
         break;
       }
 
@@ -1620,47 +1493,14 @@ export async function getAllVersions(
         await getILCDLocationByValues(lang, locations).then((res) => {
           locationData = res.data;
         });
-        if (lang === 'zh') {
-          await getILCDClassification('Process', lang, ['all']).then((res) => {
-            data = result?.data.map((i: any) => {
-              try {
-                const classifications = jsonToList(i['common:class']);
-                const classificationZH = genClassificationZH(classifications, res?.data);
-
-                const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-                let location = i['@location'];
-                if (thisLocation?.['#text']) {
-                  location = thisLocation['#text'];
-                }
-
-                return {
-                  key: i.id + ':' + i.version,
-                  id: i.id,
-                  version: i.version,
-                  lang: lang,
-                  name: genProcessName(i.name ?? {}, lang),
-                  generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-                  classification: classificationToString(classificationZH ?? {}),
-                  typeOfDataSet: i.typeOfDataSet ?? '-',
-                  referenceYear: i['common:referenceYear'] ?? '-',
-                  location: location ?? '-',
-                  modifiedAt: new Date(i.modified_at),
-                  teamId: i?.team_id,
-                  modelId: i?.model_id,
-                  stateCode: i?.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDClassification('Process', lang, ['all']).then((res) => {
           data = result?.data?.map((i: any) => {
             try {
               const classifications = jsonToList(i['common:class']);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
               const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
               let location = i['@location'];
               if (thisLocation?.['#text']) {
@@ -1673,10 +1513,10 @@ export async function getAllVersions(
                 lang: lang,
                 name: genProcessName(i.name ?? {}, lang),
                 generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification ?? {}),
                 typeOfDataSet: i.typeOfDataSet ?? '-',
                 referenceYear: i['common:referenceYear'] ?? '-',
-                location: location,
+                location: location ?? '-',
                 modifiedAt: new Date(i.modified_at),
                 teamId: i?.team_id,
                 modelId: i?.model_id,
@@ -1689,47 +1529,25 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
         break;
       }
 
       case 'lifecyclemodels': {
-        if (lang === 'zh') {
-          await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
-            data = result.data.map((i: any) => {
-              try {
-                const classifications = jsonToList(i['common:class']);
-                const classificationZH = genClassificationZH(classifications, res?.data);
-
-                return {
-                  key: i.id,
-                  id: i.id,
-                  name: genProcessName(i.name ?? {}, lang),
-                  generalComment: getLangText(i?.['common:generalComment'], lang),
-                  classification: classificationToString(classificationZH ?? {}),
-                  version: i?.version,
-                  modifiedAt: new Date(i?.modified_at),
-                  teamId: i?.team_id,
-                  stateCode: i?.state_code,
-                };
-              } catch (e) {
-                console.error(e);
-                return {
-                  id: i.id,
-                };
-              }
-            });
-          });
-        } else {
+        await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
           data = result.data.map((i: any) => {
             try {
               const classifications = jsonToList(i['common:class']);
+              const localizedClassification = genLocalizedClassification(
+                classifications,
+                res?.data,
+              );
               return {
                 key: i.id,
                 id: i.id,
                 name: genProcessName(i.name ?? {}, lang),
                 generalComment: getLangText(i?.['common:generalComment'], lang),
-                classification: classificationToString(classifications),
+                classification: classificationToString(localizedClassification ?? {}),
                 version: i?.version,
                 modifiedAt: new Date(i?.modified_at),
                 teamId: i?.team_id,
@@ -1742,7 +1560,7 @@ export async function getAllVersions(
               };
             }
           });
-        }
+        });
 
         break;
       }
@@ -1881,8 +1699,8 @@ export async function translateZhTextToEnglish(text: string): Promise<string | u
       },
       body: {
         texts: [sourceText],
-        sourceLang: 'zh',
-        targetLang: 'en',
+        sourceLang: TRANSLATION_SOURCE_CONTENT_LANGUAGE,
+        targetLang: CANONICAL_CONTENT_LANGUAGE,
       },
       region: FunctionRegion.UsEast1,
     });

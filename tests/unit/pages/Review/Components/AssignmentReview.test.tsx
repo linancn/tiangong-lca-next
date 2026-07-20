@@ -1,5 +1,6 @@
 // @ts-nocheck
 import AssignmentReview from '@/pages/Review/Components/AssignmentReview';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import userEvent from '@testing-library/user-event';
 import { render, screen, waitFor } from '../../../../helpers/testUtils';
 
@@ -253,6 +254,82 @@ describe('AssignmentReview', () => {
       ],
       total: 1,
     });
+  });
+
+  it.each(
+    LOCALE_CAPABILITY_MATRIX.map(({ appLocale, contentLanguage }) => [appLocale, contentLanguage]),
+  )(
+    'uses registry content language %s -> %s for review requests',
+    async (appLocale, languageCode) => {
+      mockLocale = appLocale;
+      render(
+        <AssignmentReview
+          userData={{ user_id: 'admin-1', role: 'review-admin' }}
+          tableType='unassigned'
+          actionRef={{ current: { reload: jest.fn() } }}
+        />,
+      );
+
+      await waitFor(() =>
+        expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
+          { pageSize: 10, current: 1 },
+          {},
+          'unassigned',
+          languageCode,
+        ),
+      );
+    },
+  );
+
+  it('reloads the same table instance and lifecycle sub-table preload after locale changes', async () => {
+    const actionRef = { current: undefined };
+    const { rerender } = render(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={actionRef}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'unassigned',
+        'en',
+      ),
+    );
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
+        [{ reviewId: 'review-1', modelData: { id: 'model-1', version: '1.0.0' } }],
+        'en',
+      ),
+    );
+
+    mockLocale = 'de-DE';
+    rerender(
+      <AssignmentReview
+        userData={{ user_id: 'admin-1', role: 'review-admin' }}
+        tableType='unassigned'
+        actionRef={actionRef}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(mockGetReviewsTableDataOfReviewAdmin).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        {},
+        'unassigned',
+        'de',
+      ),
+    );
+    await waitFor(() =>
+      expect(mockGetLifeCycleModelSubTableDataBatch).toHaveBeenCalledWith(
+        [{ reviewId: 'review-1', modelData: { id: 'model-1', version: '1.0.0' } }],
+        'de',
+      ),
+    );
+    expect(screen.getAllByTestId('protable')).toHaveLength(1);
   });
 
   it('loads unassigned admin data, shows reviewer selection toolbar, and expands preloaded sub tables', async () => {

@@ -16,6 +16,14 @@ const toText = (node: any): string => {
   return '';
 };
 
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
+
 const getDescriptionItemValue = (label: string) => {
   const labelNode = screen.getByText(label);
   const item = labelNode.closest('[data-testid="description-item"]');
@@ -516,6 +524,39 @@ describe('ProcessView component', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('spin')).toHaveAttribute('data-spinning', 'false');
+    });
+  });
+
+  it('rejects older input and output exchange requests after a language rerender', async () => {
+    const pendingInputFlowState = deferred<any>();
+    const pendingOutputFlowState = deferred<any>();
+    const exchangeRow = {
+      referenceToFlowDataSetId: 'flow-1',
+      referenceToFlowDataSetVersion: '1.0',
+    };
+
+    mockGetProcessExchange.mockResolvedValue({ data: [exchangeRow], success: true });
+    mockGetUnitData.mockResolvedValue([exchangeRow]);
+    mockGetFlowStateCode
+      .mockReset()
+      .mockReturnValueOnce(pendingInputFlowState.promise)
+      .mockReturnValueOnce(pendingOutputFlowState.promise)
+      .mockResolvedValue({ error: null, data: [] });
+
+    const { rerender } = render(<ProcessView {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button'));
+
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+    fireEvent.click(screen.getByRole('button', { name: 'Inputs and Outputs' }));
+    await waitFor(() => expect(mockGetFlowStateCode).toHaveBeenCalledTimes(2));
+    rerender(<ProcessView {...defaultProps} lang='fr' />);
+    await waitFor(() => expect(mockGetFlowStateCode.mock.calls.length).toBeGreaterThanOrEqual(4));
+
+    await act(async () => {
+      pendingInputFlowState.resolve({ error: null, data: [] });
+      pendingOutputFlowState.resolve({ error: null, data: [] });
+      await Promise.all([pendingInputFlowState.promise, pendingOutputFlowState.promise]);
+      await Promise.resolve();
     });
   });
 

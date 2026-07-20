@@ -72,6 +72,10 @@ describe('toolbar/utils/node', () => {
             expect.objectContaining({
               tagName: 'text',
               textContent: 'Process A:en:180',
+              attrs: expect.objectContaining({
+                'aria-label': 'Process A',
+                'data-responsive-label-kind': 'node-title',
+              }),
             }),
             expect.objectContaining({
               tagName: 'title',

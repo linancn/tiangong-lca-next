@@ -7,7 +7,12 @@ import {
   getFlowTablePgroongaSearch,
 } from '@/services/flows/api';
 import { FlowTable } from '@/services/flows/data';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+} from '@/services/general/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
@@ -39,6 +44,15 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
   const myActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const contentLanguageParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageParams.contentLanguage);
+  const inputRequestEpochRef = useRef(0);
+  const outputRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageParams.contentLanguage,
+    [inputRequestEpochRef, outputRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -242,8 +256,9 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             </Col>
           </Row>
         </Card>
-        <ProTable<FlowTable, ListPagination>
+        <ProTable<FlowTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
@@ -251,19 +266,34 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
           }}
           // dataSource={dataSource}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (tgKeyWord.length > 0) {
-              if (openAI) {
-                return flow_hybrid_search(params, lang, 'tg', tgKeyWord, {});
-              }
-              return getFlowTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {});
-            }
-            return getFlowTableAll(params, sort, lang, 'tg', []);
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              inputRequestEpochRef,
+              async () => {
+                if (tgKeyWord.length > 0) {
+                  if (openAI) {
+                    return flow_hybrid_search(requestParams, contentLanguage, 'tg', tgKeyWord, {});
+                  }
+                  return getFlowTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  );
+                }
+                return getFlowTableAll(requestParams, sort, contentLanguage, 'tg', []);
+              },
+            );
           }}
           columns={FlowsColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -289,24 +319,40 @@ const ModelToolbarAddThroughFlow: FC<Props> = ({ buttonType, lang, onData }) => 
             enterButton
           />
         </Card>
-        <ProTable<FlowTable, ListPagination>
+        <ProTable<FlowTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (myKeyWord.length > 0) {
-              return getFlowTablePgroongaSearch(params, lang, 'my', myKeyWord, {});
-            }
-            return getFlowTableAll(params, sort, lang, 'my', []);
+            const { contentLanguage = contentLanguageParams.contentLanguage, ...requestParams } =
+              params;
+            return guardLocaleMaterializedTableRequest(
+              contentLanguage,
+              () => currentContentLanguageRef.current,
+              outputRequestEpochRef,
+              async () => {
+                if (myKeyWord.length > 0) {
+                  return getFlowTablePgroongaSearch(
+                    requestParams,
+                    contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                  );
+                }
+                return getFlowTableAll(requestParams, sort, contentLanguage, 'my', []);
+              },
+            );
           }}
           columns={FlowsColumns}
           tableAlertOptionRender={tableAlertOptionRender}

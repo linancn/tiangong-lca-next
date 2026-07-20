@@ -18,6 +18,7 @@ let mockLocation = {
   pathname: '/mydata/sources',
   search: '?tid=team-1',
 };
+let mockIntlLocale = 'en-US';
 let mockBreakpointScreens: Record<string, boolean | undefined> = {};
 
 const mockContributeSource = jest.fn();
@@ -44,7 +45,7 @@ jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   useIntl: () => ({
-    locale: 'en-US',
+    locale: mockIntlLocale,
     formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
   }),
   useLocation: () => mockLocation,
@@ -321,6 +322,7 @@ jest.mock('@ant-design/pro-components', () => {
   const ProTable = ({
     actionRef,
     request,
+    params = {},
     columns = [],
     toolBarRender,
     headerTitle,
@@ -328,27 +330,40 @@ jest.mock('@ant-design/pro-components', () => {
   }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    const pageInfoRef = React.useRef({ pageSize: 10, current: 1 });
 
-    React.useEffect(() => {
-      requestRef.current = request;
-    }, [request]);
+    requestRef.current = request;
+    paramsRef.current = params;
 
-    const reload = jest.fn(async () => {
-      const result = await requestRef.current?.({ pageSize: 10, current: 1 }, {});
-      setRows(result?.data ?? []);
-      return result;
-    });
+    const reload = React.useMemo(
+      () =>
+        jest.fn(async () => {
+          const result = await requestRef.current?.(
+            { ...pageInfoRef.current, ...paramsRef.current },
+            {},
+          );
+          if (result?.success !== false) {
+            setRows(result?.data ?? []);
+          }
+          return result;
+        }),
+      [],
+    );
+    const paramsKey = JSON.stringify(params);
 
     React.useEffect(() => {
       latestReloadMock = reload;
       if (actionRef) {
         actionRef.current = {
           reload,
-          setPageInfo: jest.fn(),
+          setPageInfo: jest.fn((nextPageInfo: any) => {
+            pageInfoRef.current = { ...pageInfoRef.current, ...nextPageInfo };
+          }),
         };
       }
       void reload();
-    }, [actionRef, reload]);
+    }, [actionRef, paramsKey, reload]);
 
     return (
       <section data-testid='pro-table'>
@@ -383,6 +398,7 @@ describe('SourcesPage', () => {
       pathname: '/mydata/sources',
       search: '?tid=team-1',
     };
+    mockIntlLocale = 'en-US';
     mockBreakpointScreens = {};
     mockGetDataSource.mockReturnValue('my');
     mockGetLang.mockReturnValue('en');
@@ -394,6 +410,14 @@ describe('SourcesPage', () => {
     mockGetSourceTablePgroongaSearch.mockResolvedValue({ data: [baseSourceRow], success: true });
     mockGetSourceTableUuidMentionSearch.mockResolvedValue({ data: [], success: true, total: 0 });
     mockContributeSource.mockResolvedValue({ error: null });
+  });
+
+  it('falls back to the default browser locale when the runtime locale is unsupported', async () => {
+    mockIntlLocale = 'unsupported-locale';
+
+    renderWithProviders(<SourcesPage />);
+
+    await waitFor(() => expect(mockGetLang).toHaveBeenCalledWith('zh-CN'));
   });
 
   it('loads the default table and row actions', async () => {
@@ -502,6 +526,25 @@ describe('SourcesPage', () => {
         {},
         '20',
         'team-1',
+      ),
+    );
+  });
+
+  it('uses an empty team id for pgroonga search when the route omits tid', async () => {
+    mockLocation = { pathname: '/mydata/sources', search: '' };
+
+    renderWithProviders(<SourcesPage />);
+
+    await userEvent.click(screen.getByRole('button', { name: /search/i }));
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        { pageSize: 10, current: 1 },
+        'en',
+        'my',
+        'iso',
+        {},
+        'all',
+        '',
       ),
     );
   });

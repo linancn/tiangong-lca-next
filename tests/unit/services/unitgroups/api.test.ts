@@ -33,14 +33,14 @@ const { genUnitGroupJsonOrdered: mockGenUnitGroupJsonOrdered } = jest.requireMoc
 
 jest.mock('@/services/general/util', () => ({
   classificationToString: jest.fn(),
-  genClassificationZH: jest.fn(),
+  genLocalizedClassification: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
 }));
 
 const {
   classificationToString: mockClassificationToString,
-  genClassificationZH: mockGenClassificationZH,
+  genLocalizedClassification: mockGenLocalizedClassification,
   getLangText: mockGetLangText,
   jsonToList: mockJsonToList,
 } = jest.requireMock('@/services/general/util');
@@ -185,7 +185,7 @@ beforeEach(() => {
       .filter(Boolean)
       .join(' / '),
   );
-  mockGenClassificationZH.mockImplementation((classifications: any[], dictionary: any[]) => {
+  mockGenLocalizedClassification.mockImplementation((classifications: any[], dictionary: any[]) => {
     if (!classifications) return [];
     return classifications.map((item: any) => {
       const match = dictionary?.find((entry: any) => entry?.['@value'] === item?.['@value']);
@@ -559,6 +559,8 @@ describe('getUnitGroupTableAll', () => {
       success: true,
       total: 7,
     });
+    expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', 'en', ['all']);
+    expect(mockGenLocalizedClassification).toHaveBeenCalled();
   });
 
   it('translates classification for Chinese locale', async () => {
@@ -619,6 +621,84 @@ describe('getUnitGroupTableAll', () => {
       }),
     );
   });
+
+  it.each([
+    ['de', 'Deutsche Einheitengruppe', 'Deutsche Klasse', 'Referenzeinheit'],
+    ['fr', 'Groupe d’unités français', 'Classe française', 'Unité de référence'],
+  ])(
+    'keeps %s unit-group text while resolving classification labels through the manifest cache',
+    async (lang, localizedName, localizedClassification, localizedComment) => {
+      const names = [
+        { '@xml:lang': 'en', '#text': 'Unit group' },
+        { '@xml:lang': lang, '#text': localizedName },
+      ];
+      const comments = [
+        { '@xml:lang': 'en', '#text': 'Reference unit' },
+        { '@xml:lang': lang, '#text': localizedComment },
+      ];
+      const classifications = [{ '@level': '0', '#text': 'Technical unit groups' }];
+      const classificationData = [
+        {
+          id: 'technical-unit-groups',
+          value: 'Technical unit groups',
+          label: localizedClassification,
+          children: [],
+        },
+      ];
+      const localizedPath = [{ '@level': '0', '#text': localizedClassification }];
+      mockRpc.mockResolvedValueOnce({
+        data: [
+          latestUnitGroupRow({
+            json: {
+              unitGroupDataSet: {
+                unitGroupInformation: {
+                  dataSetInformation: {
+                    'common:name': names,
+                    classificationInformation: {
+                      'common:classification': { 'common:class': classifications },
+                    },
+                  },
+                  quantitativeReference: { referenceToReferenceUnit: 'unit-1' },
+                },
+                units: {
+                  unit: [
+                    {
+                      '@dataSetInternalID': 'unit-1',
+                      name: 'kg',
+                      generalComment: comments,
+                    },
+                  ],
+                },
+              },
+            },
+          }),
+        ],
+        error: null,
+      } as any);
+      mockGetCachedClassificationData.mockResolvedValueOnce(classificationData);
+      mockJsonToList
+        .mockReturnValueOnce(classifications)
+        .mockReturnValueOnce([
+          { '@dataSetInternalID': 'unit-1', name: 'kg', generalComment: comments },
+        ]);
+      mockGenLocalizedClassification.mockReturnValueOnce(localizedPath);
+
+      const result = await getUnitGroupTableAll({}, {}, lang, 'tg', '');
+
+      expect(mockGetCachedClassificationData).toHaveBeenCalledWith('UnitGroup', lang, ['all']);
+      expect(mockGenLocalizedClassification).toHaveBeenCalledWith(
+        classifications,
+        classificationData,
+      );
+      expect(mockGetLangText).toHaveBeenCalledWith(names, lang);
+      expect(mockGetLangText).toHaveBeenCalledWith(comments, lang);
+      expect(result.data[0]).toMatchObject({
+        name: localizedName,
+        classification: localizedClassification,
+        refUnitGeneralComment: localizedComment,
+      });
+    },
+  );
 
   it('returns failure for personal dataset when no session is available', async () => {
     mockAuthGetSession.mockResolvedValueOnce({ data: { session: null } });

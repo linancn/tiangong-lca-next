@@ -18,8 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: 3b716e00577a5fc4e235b65d71f9a0c15082a034
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed #635 locale-driven review-table reloads and canonical English compliance descriptions; audit state codes and transitions are unchanged.'
 ---
 
 # Audit Status Reference

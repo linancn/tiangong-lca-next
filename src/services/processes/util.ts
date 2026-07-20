@@ -1,12 +1,17 @@
 import { FormProcess } from '@/services/processes/data';
 import { createProcess as createTidasProcess } from '@tiangong-lca/tidas-sdk/core';
 import {
+  CANONICAL_CONTENT_LANGUAGE,
+  normalizeSupportedContentLanguage,
+} from '../general/contentLanguageRegistry';
+import {
   capitalize,
   classificationToJsonList,
   classificationToStringList,
   convertCopyrightToBoolean,
   convertToUTCISOString,
   formatDateTime,
+  getExactLangText,
   getLangJson,
   getLangList,
   getLangText,
@@ -16,6 +21,7 @@ import {
   toAmountNumber,
 } from '../general/util';
 import {
+  ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX,
   deriveAnnualSupplyVolumeSuffix,
   normalizeAnnualSupplyVolumeMultiLang,
 } from './annualSupplyOrProductionVolume';
@@ -62,11 +68,25 @@ export function genProcessJsonOrdered(id: string, data: any) {
   let quantitativeReference = {};
   const exchangeList = jsonToList(data?.exchanges?.exchange);
   const normalizeAnnualSupplyOrProductionVolume = (value: unknown) =>
-    normalizeAnnualSupplyVolumeMultiLang(value, (item) =>
-      deriveAnnualSupplyVolumeSuffix({
-        exchangeDataSource: exchangeList,
-        lang: typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : 'en',
-      }),
+    normalizeAnnualSupplyVolumeMultiLang(
+      value,
+      (item) => {
+        const language =
+          typeof item?.['@xml:lang'] === 'string' ? item['@xml:lang'] : CANONICAL_CONTENT_LANGUAGE;
+        const suffix = deriveAnnualSupplyVolumeSuffix({
+          exchangeDataSource: exchangeList,
+          getLangText: getExactLangText,
+          lang: language,
+        });
+
+        return (
+          suffix ||
+          (normalizeSupportedContentLanguage(language) === CANONICAL_CONTENT_LANGUAGE
+            ? ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX
+            : '')
+        );
+      },
+      { useDefaultSuffix: false },
     );
   const exchange = exchangeList.map((item: any) => {
     if (item?.quantitativeReference === true) {

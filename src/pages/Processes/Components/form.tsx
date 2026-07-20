@@ -10,7 +10,10 @@ import { RefCheckType, useRefCheckContext } from '@/contexts/refCheckContext';
 import { getRules } from '@/pages/Utils';
 import type { ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { getFlowStateCodeByIdsAndVersions } from '@/services/flows/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  ContentLanguageAwareTableParams,
+  getContentLanguageAwareTableParams,
+} from '@/services/general/data';
 import { getUnitData } from '@/services/general/util';
 import { LCIAResultTable } from '@/services/lciaMethods/data';
 import { getProcessExchange } from '@/services/processes/api';
@@ -293,6 +296,11 @@ export const ProcessForm: FC<Props> = ({
   const refCheckContext = useRefCheckContext();
   const actionRefExchangeTableInput = useRef<ActionType>();
   const actionRefExchangeTableOutput = useRef<ActionType>();
+  const inputExchangeRequestEpochRef = useRef(0);
+  const outputExchangeRequestEpochRef = useRef(0);
+  const exchangeTableParams = useMemo(() => getContentLanguageAwareTableParams(lang), [lang]);
+  const currentExchangeContentLanguageRef = useRef(exchangeTableParams.contentLanguage);
+  currentExchangeContentLanguageRef.current = exchangeTableParams.contentLanguage;
   const rootSdkFieldMessagesRef = useRef<
     Map<string, { entries: SdkFieldMessageEntry[]; name: Array<string | number> }>
   >(new Map());
@@ -2594,8 +2602,9 @@ export const ProcessForm: FC<Props> = ({
               key: '1',
               label: <FormattedMessage id='pages.process.exchange.input' defaultMessage='Input' />,
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
                   actionRef={actionRefExchangeTableInput}
+                  params={exchangeTableParams}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
@@ -2650,9 +2659,14 @@ export const ProcessForm: FC<Props> = ({
                       />,
                     ];
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = inputExchangeRequestEpochRef.current + 1;
+                    inputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Input',
                       params,
                     ).then((res) => {
@@ -2666,27 +2680,40 @@ export const ProcessForm: FC<Props> = ({
                             version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
-                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
-                          if (!error) {
-                            normalizedUnitRes.forEach((item) => {
-                              const flow = flowsResp.find(
-                                (flowItem) =>
-                                  flowItem.id === item?.referenceToFlowDataSetId &&
-                                  flowItem.version === item?.referenceToFlowDataSetVersion,
-                              );
-                              if (flow) {
-                                item.stateCode = flow.stateCode;
-                                item['classification'] = flow.classification ?? '';
-                              }
-                            });
-                          }
-                          return {
-                            ...processExchangeRes,
-                            data: normalizedUnitRes,
-                            success: true,
-                          };
-                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
+                          (flowRes) => {
+                            if (
+                              inputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...processExchangeRes,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
+                            const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                            if (!error) {
+                              normalizedUnitRes.forEach((item) => {
+                                const flow = flowsResp.find(
+                                  (flowItem) =>
+                                    flowItem.id === item?.referenceToFlowDataSetId &&
+                                    flowItem.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification ?? '';
+                                }
+                              });
+                            }
+                            return {
+                              ...processExchangeRes,
+                              data: normalizedUnitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}
@@ -2705,8 +2732,9 @@ export const ProcessForm: FC<Props> = ({
                 <FormattedMessage id='pages.process.exchange.output' defaultMessage='Output' />
               ),
               children: (
-                <ProTable<ProcessExchangeTable, ListPagination>
+                <ProTable<ProcessExchangeTable, ContentLanguageAwareTableParams>
                   actionRef={actionRefExchangeTableOutput}
+                  params={exchangeTableParams}
                   search={false}
                   pagination={{
                     showSizeChanger: false,
@@ -2761,9 +2789,14 @@ export const ProcessForm: FC<Props> = ({
                       />,
                     ];
                   }}
-                  request={async (params: { pageSize: number; current: number }) => {
+                  request={async (params) => {
+                    const requestEpoch = outputExchangeRequestEpochRef.current + 1;
+                    outputExchangeRequestEpochRef.current = requestEpoch;
+                    const contentLanguage =
+                      params.contentLanguage ?? exchangeTableParams.contentLanguage;
+
                     return getProcessExchange(
-                      genProcessExchangeTableData(exchangeDataSource, lang),
+                      genProcessExchangeTableData(exchangeDataSource, contentLanguage),
                       'Output',
                       params,
                     ).then((res) => {
@@ -2777,27 +2810,40 @@ export const ProcessForm: FC<Props> = ({
                             version: ref?.['@version'] ?? '',
                           };
                         });
-                        return getFlowStateCodeByIdsAndVersions(flows, lang).then((flowRes) => {
-                          const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
-                          if (!error) {
-                            normalizedUnitRes.forEach((item) => {
-                              const flow = flowsResp.find(
-                                (flowItem) =>
-                                  flowItem.id === item?.referenceToFlowDataSetId &&
-                                  flowItem.version === item?.referenceToFlowDataSetVersion,
-                              );
-                              if (flow) {
-                                item.stateCode = flow.stateCode;
-                                item['classification'] = flow.classification ?? '';
-                              }
-                            });
-                          }
-                          return {
-                            ...processExchangeRes,
-                            data: normalizedUnitRes,
-                            success: true,
-                          };
-                        });
+                        return getFlowStateCodeByIdsAndVersions(flows, contentLanguage).then(
+                          (flowRes) => {
+                            if (
+                              outputExchangeRequestEpochRef.current !== requestEpoch ||
+                              currentExchangeContentLanguageRef.current !== contentLanguage
+                            ) {
+                              return {
+                                ...processExchangeRes,
+                                data: [],
+                                success: false,
+                              };
+                            }
+
+                            const { error, data: flowsResp } = flowRes as FlowStateCodeResponse;
+                            if (!error) {
+                              normalizedUnitRes.forEach((item) => {
+                                const flow = flowsResp.find(
+                                  (flowItem) =>
+                                    flowItem.id === item?.referenceToFlowDataSetId &&
+                                    flowItem.version === item?.referenceToFlowDataSetVersion,
+                                );
+                                if (flow) {
+                                  item.stateCode = flow.stateCode;
+                                  item['classification'] = flow.classification ?? '';
+                                }
+                              });
+                            }
+                            return {
+                              ...processExchangeRes,
+                              data: normalizedUnitRes,
+                              success: true,
+                            };
+                          },
+                        );
                       });
                     });
                   }}

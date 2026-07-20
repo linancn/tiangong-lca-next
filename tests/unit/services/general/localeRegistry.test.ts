@@ -2,7 +2,11 @@ import {
   CANONICAL_SOURCE_APP_LOCALE,
   getLocaleDefinition,
   getLocaleDefinitionByLanguage,
+  getLocaleFallbackDefinition,
+  getWelcomeTidasFallbackDefinition,
   hasEnglishFallback,
+  hasLocaleFallback,
+  hasWelcomeTidasFallback,
   LOCALE_REGISTRY,
   normalizeSupportedAppLocale,
   SUPPORTED_APP_LOCALES,
@@ -39,12 +43,14 @@ describe('localeRegistry', () => {
           twoItemConjunction: ' et ',
           manyItemConjunction: ' et ',
         },
+        contentCapability: {
+          status: 'native',
+          contentLanguage: 'fr',
+        },
         fallbacks: {
           documentationLocale: 'en-US',
           documentationUrl: 'https://docs.tiangong.earth/en',
           legalLocale: 'en-US',
-          dataLanguage: 'en',
-          serviceLocale: 'en-US',
         },
         environment: {
           titleKey: 'APP_TITLE_FR_FR',
@@ -80,5 +86,51 @@ describe('localeRegistry', () => {
     expect(hasEnglishFallback('zh-CN')).toBe(true);
     expect(hasEnglishFallback('en-US')).toBe(false);
     expect(hasEnglishFallback('es-ES')).toBe(false);
+  });
+
+  it.each(LOCALE_REGISTRY)(
+    'derives fallback and welcome-asset behavior for $canonicalLocale from the registry',
+    (definition) => {
+      const documentationFallback = getLocaleFallbackDefinition(
+        definition.canonicalLocale,
+        'documentationLocale',
+      );
+      const legalFallback = getLocaleFallbackDefinition(definition.canonicalLocale, 'legalLocale');
+
+      expect(documentationFallback?.canonicalLocale).toBe(definition.fallbacks.documentationLocale);
+      expect(legalFallback?.canonicalLocale).toBe(definition.fallbacks.legalLocale);
+      expect(hasLocaleFallback(definition.canonicalLocale, 'documentationLocale')).toBe(
+        definition.fallbacks.documentationLocale !== definition.canonicalLocale,
+      );
+      expect(hasLocaleFallback(definition.canonicalLocale, 'legalLocale')).toBe(
+        definition.fallbacks.legalLocale !== definition.canonicalLocale,
+      );
+      expect(definition.assets.welcomeTidas.light).toMatch(/[.]svg$/u);
+      expect(definition.assets.welcomeTidas.dark).toMatch(/-dark[.]svg$/u);
+      const tidasImageLocale = getWelcomeTidasFallbackDefinition(
+        definition.canonicalLocale,
+        'imageLocale',
+      );
+      const tidasDocumentationLocale = getWelcomeTidasFallbackDefinition(
+        definition.canonicalLocale,
+        'documentationLocale',
+      );
+      expect(tidasImageLocale?.canonicalLocale).toBe(definition.assets.welcomeTidas.imageLocale);
+      expect(tidasDocumentationLocale?.canonicalLocale).toBe(
+        definition.assets.welcomeTidas.documentationLocale,
+      );
+      expect(hasWelcomeTidasFallback(definition.canonicalLocale, 'imageLocale')).toBe(
+        definition.assets.welcomeTidas.imageLocale !== definition.canonicalLocale,
+      );
+      expect(hasWelcomeTidasFallback(definition.canonicalLocale, 'documentationLocale')).toBe(
+        definition.assets.welcomeTidas.documentationLocale !== definition.canonicalLocale,
+      );
+      expect(definition.assets.welcomeTidas.documentationUrl).toMatch(/^https:\/\//u);
+    },
+  );
+
+  it('does not invent a TIDAS fallback target for unsupported locales', () => {
+    expect(getWelcomeTidasFallbackDefinition('es-ES', 'imageLocale')).toBeUndefined();
+    expect(hasWelcomeTidasFallback('es-ES', 'documentationLocale')).toBe(false);
   });
 });

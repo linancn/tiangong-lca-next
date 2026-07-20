@@ -5,6 +5,7 @@ import ProcessView from '@/pages/Processes/Components/view';
 import type { refDataType, ValidationIssueSdkDetail } from '@/pages/Utils/review';
 import { checkReferences, getAllRefObj, getRefTableName, ReffPath } from '@/pages/Utils/review';
 import { getRefData, hasLangNormalizationDraftChanges } from '@/services/general/api';
+import { resolveContentLanguage } from '@/services/general/contentLanguageRegistry';
 import { initVersion } from '@/services/general/data';
 import { formatDateTime, getImportedId, getLangText } from '@/services/general/util';
 import {
@@ -70,6 +71,7 @@ import { getEdgeLabel } from './utils/edge';
 import {
   buildEditorNodeTools,
   buildEmptyCreateInfoData,
+  buildLocalizedGraphNodeVisualUpdate,
   buildPortSelectionUpdate,
   buildProcessNodesFromDetails,
   buildSavePayload,
@@ -186,6 +188,7 @@ const ToolbarEdit: FC<Props> = ({
   const syncGraphData = useGraphStore((state) => state.syncGraphData);
   const graph = useGraphStore((state) => state.graph);
   const intl = useIntl();
+  const contentLanguage = resolveContentLanguage(lang);
   const edgeLabelText = {
     balanced: intl.formatMessage({
       id: 'pages.button.model.edgeStatus.balanced',
@@ -1525,25 +1528,19 @@ const ToolbarEdit: FC<Props> = ({
 
   useEffect(() => {
     nodes.forEach((node) => {
-      updateNode(
-        node.id ?? '',
-        {
-          tools: [
-            node?.data?.quantitativeReference === '1' ? refTool : nonRefTool,
-            nodeTitleTool(
-              node?.size?.width ?? node?.width ?? nodeTemplateWidth,
-              genProcessName(node?.data?.label, lang) ?? '',
-              token,
-              lang,
-            ),
-            inputFlowTool,
-            outputFlowTool,
-          ],
-        },
-        VISUAL_ONLY_MUTATION_OPTIONS,
-      );
+      const visualUpdate = buildLocalizedGraphNodeVisualUpdate({
+        node,
+        refTool,
+        nonRefTool,
+        inputFlowTool,
+        outputFlowTool,
+        token,
+        lang: contentLanguage,
+        nodeTemplateWidth,
+      });
+      updateNode(node.id ?? '', visualUpdate, VISUAL_ONLY_MUTATION_OPTIONS);
     });
-  }, [nodeCount]);
+  }, [contentLanguage, intl.locale, nodeCount]);
 
   useEffect(() => {
     nodes.forEach((node) => {

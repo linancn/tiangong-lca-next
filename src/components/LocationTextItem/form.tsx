@@ -21,14 +21,19 @@ const LocationTextItemForm: FC<Props> = ({
 }) => {
   const [locationData, setLocationData] = useState<any>([]);
 
-  const handleLChange = async (value: any) => {
-    console.log(value);
+  const handleLChange = async () => {
     onData();
   };
 
   useEffect(() => {
-    getILCDLocationAll(lang).then((res) => {
-      if (res.success) {
+    let active = true;
+
+    setLocationData([]);
+    getILCDLocationAll(lang)
+      .then((res) => {
+        if (!active || !res.success) {
+          return;
+        }
         const data: any = res.data?.[0]?.location ?? [];
         setLocationData(
           data.map((l: any) => {
@@ -41,9 +46,17 @@ const LocationTextItemForm: FC<Props> = ({
             };
           }),
         );
-      }
-    });
-  }, []);
+      })
+      .catch(() => {
+        if (active) {
+          setLocationData([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [lang]);
 
   return (
     <Space direction='vertical' style={{ width: '100%' }}>

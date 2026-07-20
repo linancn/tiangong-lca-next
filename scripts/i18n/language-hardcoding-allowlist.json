@@ -1,0 +1,495 @@
+{
+  "schemaVersion": "tiangong.i18n-language-hardcoding-allowlist.v2",
+  "entries": [
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "18489f8f8afad99ca0662b80ebce5b87d98bc22bc989aaffdd71b136dfdbc57e",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "03cb6f01486b6af6d7fd601a8c350f98e4509e32286450ccd623e553a43359de",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "06e1ee122500f6881d54c38b41f27baa92ba9fa976f9bf17c25c09e1f656272c",
+      "maxMatches": 4,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "21f112041cea184a70d72214ba84e3511a0549a4b239ba8056e611459bda7d48",
+      "maxMatches": 2,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "3df9d84bd8d24486f07887cf3dad743437700f71cf2acd76dcad94040ba526b4",
+      "maxMatches": 4,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "6116aa9d6699b4f99a4e64cd3a3131efffc4ee7102bed3082274fbf3bb397249",
+      "maxMatches": 2,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "8b2860656ce473ad54a768afabb6e622fd6f8ec8ec82d7849e9191ad340ba634",
+      "maxMatches": 4,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "f65741a9326e34308052452eac890d0361211d1950f7cbb7292f2eb107fb1c04",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "d972b9897783ced08804a671f7093e0de620e66f600a0a096654b0870c59fbcc",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "06e1ee122500f6881d54c38b41f27baa92ba9fa976f9bf17c25c09e1f656272c",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "111997b5857e1fd4bd726ee4a672071511971e941e11b597ccc964136b7a257b",
+      "maxMatches": 7,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "3df9d84bd8d24486f07887cf3dad743437700f71cf2acd76dcad94040ba526b4",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "8b2860656ce473ad54a768afabb6e622fd6f8ec8ec82d7849e9191ad340ba634",
+      "maxMatches": 3,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "901f4706675ec67e891ccb2cab60008a15904e29e50311d375521e8d3afa4408",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "a1cc213140d6a42b1c64c706e1f0a0891e3cae7f3b1a0ee1bb73c4df3aeed5c9",
+      "maxMatches": 2,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "c98aaa2b302093c2d856ff1c2a8d7296b0ed1f7e085a6ad40866f2bae4132e79",
+      "maxMatches": 2,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "80ce966483aa1edd7c5d7ea25b6338a541346cb515fe6c88fd8f96f0d154db6c",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/audit-german-pilot.mjs",
+      "nodeTextDigest": "d2592434e77a7749a5870f9dd3e64c149629a0cdd02e215b5f61b532b6910a66",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-frozen-review-check.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-offline-review.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 6,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/german-offline-review.mjs",
+      "nodeTextDigest": "28389fe8d25f0a18de2668960cd776a176c94e59aa7b80b123db2c50ebe16cb4",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/german-offline-review.mjs",
+      "nodeTextDigest": "77e7b143de1954311fdd13d4bcaa6dd16b9e189b4adbdb8a1b91d1d2af9c984a",
+      "maxMatches": 2,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/german-offline-review.mjs",
+      "nodeTextDigest": "b39268a5b9b407b40ab0e78b19704af6e946eecd400a42a7fd51e56cc3761079",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-array",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "94143728a45bf55858af5ff0d4f25baeab4ab2fe38ec35ba82713679730a8da7",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "3df9d84bd8d24486f07887cf3dad743437700f71cf2acd76dcad94040ba526b4",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "41132c29d13c4fc3942ba92f86128e876fed75b18ecc069541a3488b7df5896f",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "60c665b2b1f1291aaf9b9d2af76bd3b339e191067b41519a0e310c1977bfccda",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-activation.mjs",
+      "nodeTextDigest": "a50d3cc1ba629c5b9d33da91ebc43d5a830fae74b236dcd1c8d12db3ee518c07",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 4,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "6116aa9d6699b4f99a4e64cd3a3131efffc4ee7102bed3082274fbf3bb397249",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "aa0d9b020b9a1eca7a3956cdb8b9e3b7159ab6840fc8212763bfcb8e6e83a8e4",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "b6850d187ac0ae8fd963c5959ea3e6ab73b15b8dbfd184f58631b834410ecd65",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-element-access",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "f6242972d9c1abe10cbb817d74faa4e3546b760e76101552c09e0237064f305b",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/german-runtime-delta-review.mjs",
+      "nodeTextDigest": "77e7b143de1954311fdd13d4bcaa6dd16b9e189b4adbdb8a1b91d1d2af9c984a",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-array",
+      "path": "scripts/i18n/german-runtime-policy.mjs",
+      "nodeTextDigest": "581d5d658242e575517afa030dc7f635cb9ef9eef1f16921730b3f90e8b5f328",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-array",
+      "path": "scripts/i18n/german-runtime-policy.mjs",
+      "nodeTextDigest": "94143728a45bf55858af5ff0d4f25baeab4ab2fe38ec35ba82713679730a8da7",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-runtime-policy.mjs",
+      "nodeTextDigest": "bbc426818166c403c8d6064c5ecf471fa7fe894ed75532e599adf6ddcd174c14",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-runtime-policy.mjs",
+      "nodeTextDigest": "cafc71bb59ab9e2296d2aa40c6f48730f00a478ee1750cfcc6cd8ec6fec141da",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/german-runtime-policy.mjs",
+      "nodeTextDigest": "d38b5b441d0a0287ef9bf6a21b2302890c5210646f73ff7579ae4029f7da918b",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/icu-message-parser.cjs",
+      "nodeTextDigest": "3ab1c43bb68d8e9a3456cbd61dceda893eb20935d17c82c1e9375ae162f3211e",
+      "maxMatches": 1,
+      "ownerIssue": "#633",
+      "reason": "The standalone ICU adapter requires a deterministic canonical locale when callers omit one.",
+      "status": "permanent-contract",
+      "permanentContract": "standalone-icu-canonical-default"
+    },
+    {
+      "ruleId": "language-call-argument",
+      "path": "scripts/i18n/locale-delivery.mjs",
+      "nodeTextDigest": "fd737462729234ed46ba26e2ff311750c5d0f12dedfefc11e863a96a63455ede",
+      "maxMatches": 1,
+      "ownerIssue": "#606",
+      "reason": "The tracked German correction ledger verifies its frozen catalog baseline explicitly.",
+      "status": "permanent-contract",
+      "permanentContract": "german-correction-ledger-boundary"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/locale-delivery.mjs",
+      "nodeTextDigest": "109b19a517466bf7da2091c28d58755225b9178589ba74825378985abb25181e",
+      "maxMatches": 1,
+      "ownerIssue": "#606",
+      "reason": "The active German manifest records the frozen historical-review boundary explicitly.",
+      "status": "permanent-contract",
+      "permanentContract": "german-correction-ledger-boundary"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "c5fa4e52941fb51d9d27ed22f72e1a023f46c0cd606344435a84143e3e485a9a",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-equality",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "057108d233f8576cca8c43b207eba9a870eec83964b52c5e97d639615f97bfbb",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "af8445e46f428bca27cc643e91ae0464ea684cbea2899047c67e8e04fa520dff",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "1b997200d2f256e6a996f5c7b7d9a0b1de9d1130466c0e81007344e79b1fe9f7",
+      "maxMatches": 3,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    },
+    {
+      "ruleId": "language-default",
+      "path": "scripts/i18n/audit-german-candidate.mjs",
+      "nodeTextDigest": "176be9dd13bb28d9869a94b7e85c284d620a0feb6f14f94b92b21b5701205a1a",
+      "maxMatches": 1,
+      "ownerIssue": "#601",
+      "reason": "Frozen German delivery evidence intentionally preserves its historical locale topology.",
+      "status": "permanent-contract",
+      "permanentContract": "frozen-german-delivery-evidence"
+    }
+  ]
+}

@@ -1,7 +1,15 @@
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
+import { REFERENCE_RESOURCE_MANIFEST } from '@/services/referenceResources/manifest';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  APP_LOCALES,
+  flattenExecutableRouteAssertions,
+  flattenExecutableViewVariants,
+  getLocaleMessage,
+} from '../../e2e/i18n/contracts';
 
 const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const DELIVERY_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/locale-delivery.mjs');
@@ -14,8 +22,172 @@ describe('shared locale delivery contracts', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);
 
-    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v3');
-    const routeViews = coverage.rows.map(({ route, viewState }: any) => `${route}::${viewState}`);
+    expect(coverage.schemaVersion).toBe('tiangong.i18n-route-view-coverage.v4');
+    const familyRows = coverage.routeFamilies.flatMap((family: any) =>
+      family.routes.map((route: string) => ({
+        ...family,
+        route,
+        executableAssertionId: family.executableAssertionIds[route],
+      })),
+    );
+    const coverageRows = [...coverage.rows, ...familyRows];
+    const expectedEvidencePath = 'docs/plans/i18n/semantic-e2e-evidence.json';
+    const expectedEvidenceDescriptor = {
+      path: expectedEvidencePath,
+      sha256: expect.stringMatching(/^[0-9a-f]{64}$/),
+    };
+    const hasVerifiedBrowserProof =
+      coverage.proofPolicy.status === 'execution-evidence' &&
+      coverage.proofPolicy.browserProof.status === 'verified';
+    expect(coverage.proofPolicy).toEqual(
+      expect.objectContaining({
+        status: hasVerifiedBrowserProof ? 'execution-evidence' : 'inventory-only',
+        assertionSemantics: expect.stringContaining('never execution evidence'),
+        evidenceContract: expect.objectContaining({
+          schemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+          schemaPath: 'docs/plans/i18n/semantic-e2e-evidence.schema.json',
+          evidencePath: expectedEvidencePath,
+          requiredAssertionCount: 49,
+          requiredLocales: SUPPORTED_APP_LOCALES,
+          requiredBrowsers: ['chromium', 'firefox', 'webkit'],
+          target: { frontend: 'candidate-local', backend: 'production' },
+          productionData: expect.objectContaining({
+            markerPrefix: 'codex-e2e',
+            exactCreated: 1,
+            requireCreatedAndCleaned: true,
+            maximumLeaked: 0,
+          }),
+        }),
+        browserProof: hasVerifiedBrowserProof
+          ? {
+              status: 'verified',
+              ownerIssue: '#635',
+              executedEvidence: [expectedEvidenceDescriptor],
+            }
+          : {
+              status: 'planned',
+              ownerIssue: '#635',
+              executedEvidence: [],
+            },
+      }),
+    );
+    expect(coverageRows).toHaveLength(49);
+    const executableAssertionIds = coverageRows.map(
+      ({ executableAssertionId }: any) => executableAssertionId,
+    );
+    expect(new Set(executableAssertionIds).size).toBe(49);
+    expect(
+      executableAssertionIds.every((assertionId: string) =>
+        /^rv\.[a-z0-9][a-z0-9.-]+$/u.test(assertionId),
+      ),
+    ).toBe(true);
+    expect(Object.keys(coverage.executableTargets).sort()).toEqual(
+      [...executableAssertionIds].sort(),
+    );
+    const executableAssertions = flattenExecutableRouteAssertions(coverage);
+    expect(executableAssertions).toHaveLength(49);
+    expect(APP_LOCALES).toEqual(SUPPORTED_APP_LOCALES);
+    expect(new Set(executableAssertions.map(({ target }) => JSON.stringify(target))).size).toBe(49);
+    const authenticatedAssertions = executableAssertions.filter(
+      ({ target }) =>
+        target.kind !== 'declared-static-fallback' && target.session === 'authenticated',
+    );
+    expect(authenticatedAssertions.length).toBeGreaterThan(30);
+    expect(
+      authenticatedAssertions.every(({ requiredScenarios }) =>
+        requiredScenarios.includes('anonymous-protection'),
+      ),
+    ).toBe(true);
+    expect(
+      executableAssertions
+        .filter(
+          ({ target }) =>
+            target.kind === 'declared-static-fallback' || target.session !== 'authenticated',
+        )
+        .every(({ requiredScenarios }) => !requiredScenarios.includes('anonymous-protection')),
+    ).toBe(true);
+    expect(
+      executableAssertions
+        .filter(({ proofScope }) => proofScope === 'internal-localization')
+        .every(({ pageOwnedMessageIds }) => pageOwnedMessageIds.length > 0),
+    ).toBe(true);
+    const executableViewVariants = flattenExecutableViewVariants(coverage);
+    expect(executableViewVariants.map(({ assertionId }) => assertionId)).toEqual([
+      'vv.welcome.overview',
+      'vv.welcome.carbon-footprint-guide',
+      'vv.team.base',
+      'vv.team.create',
+      'vv.team.edit',
+      'vv.process.drawer-edit',
+      'vv.process.drawer-view',
+      'vv.process.required-optional',
+      'vv.process.required-enabled',
+      'vv.data-processing.builds',
+      'vv.data-processing.preview',
+      'vv.data-processing.publication',
+    ]);
+    const viewStateRegistry = readJson(coverage.viewStateRegistry.sourcePath);
+    expect(coverage.viewStateRegistry.schemaVersion).toBe(viewStateRegistry.schemaVersion);
+    expect(coverage.viewStateRegistry.usages.map(({ registryId }: any) => registryId)).toEqual(
+      viewStateRegistry.registries.map(({ id }: any) => id),
+    );
+    for (const usage of coverage.viewStateRegistry.usages) {
+      const registry = viewStateRegistry.registries.find(({ id }: any) => id === usage.registryId);
+      expect(usage.variantIds).toEqual(registry.variants.map(({ id }: any) => id));
+    }
+    expect(
+      executableAssertions.every((assertion) => {
+        const { target } = assertion;
+        if (JSON.stringify(target).includes('body')) {
+          return false;
+        }
+        if (target.kind === 'declared-static-fallback') {
+          return (
+            assertion.proofScope === 'declared-fallback-observed' &&
+            target.expectedPathname === assertion.route &&
+            target.exactVisibleText.length > 0
+          );
+        }
+        if (
+          !target.navigate.hashPath.startsWith('/') ||
+          !target.expected.hashPath.startsWith('/') ||
+          typeof target.navigate.hashQuery !== 'object' ||
+          typeof target.expected.hashQuery !== 'object'
+        ) {
+          return false;
+        }
+        if (target.kind === 'role-boundary') {
+          return (
+            assertion.proofScope === 'access-boundary-observed' &&
+            target.session === 'authenticated' &&
+            target.boundary.selector !== 'body'
+          );
+        }
+        const scopeMatchesTarget =
+          assertion.proofScope === 'access-boundary-observed'
+            ? target.session === 'anonymous' && target.kind === 'configured-redirect'
+            : assertion.proofScope === 'internal-localization';
+        return (
+          scopeMatchesTarget &&
+          target.visible.kind === 'locale-messages' &&
+          target.visible.messageIds.length > 0
+        );
+      }),
+    ).toBe(true);
+    const executableMessageIds = executableAssertions.flatMap(({ target }) => {
+      if (target.kind === 'declared-static-fallback') {
+        return [];
+      }
+      return target.kind === 'role-boundary'
+        ? target.boundary.messageIds
+        : target.visible.messageIds;
+    });
+    expect(
+      APP_LOCALES.every((locale) =>
+        executableMessageIds.every((messageId) => getLocaleMessage(locale, messageId).length > 0),
+      ),
+    ).toBe(true);
+    const routeViews = coverageRows.map(({ route, viewState }: any) => `${route}::${viewState}`);
     expect(routeViews).toEqual(
       expect.arrayContaining([
         '/::redirect-to-welcome',
@@ -31,7 +203,7 @@ describe('shared locale delivery contracts', () => {
       ]),
     );
     expect(
-      coverage.rows.every(
+      coverageRows.every(
         ({
           blockedContext,
           component,
@@ -54,6 +226,45 @@ describe('shared locale delivery contracts', () => {
           Boolean(proof),
       ),
     ).toBe(true);
+    expect(
+      coverageRows.every(
+        ({ proof }: any) =>
+          [
+            'internal-localization',
+            'access-boundary-observed',
+            'declared-fallback-observed',
+          ].includes(proof.requiredEvidenceScope) &&
+          Array.isArray(proof.plannedBrowserAssertions) &&
+          proof.plannedBrowserAssertions.length > 0 &&
+          proof.browserAssertions === undefined,
+      ),
+    ).toBe(true);
+    expect(
+      coverageRows.every(
+        ({ targetCoverage }: any) =>
+          targetCoverage.localeScope === 'all-registry-locales' &&
+          targetCoverage.missingContent === 0,
+      ),
+    ).toBe(true);
+
+    const routeSource = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, coverage.sourceRouteConfig),
+      'utf8',
+    );
+    const configuredPaths = [
+      ...new Set(
+        [...routeSource.matchAll(/\bpath:\s*['"]([^'"]+)['"]/gu)].map((match) => match[1]),
+      ),
+    ].sort();
+    const coveredConfiguredPaths = [
+      ...new Set(
+        coverageRows
+          .map(({ route }: any) => route.split(/[?#]/u)[0])
+          .filter((route: string) => configuredPaths.includes(route)),
+      ),
+    ].sort();
+    expect(configuredPaths).toHaveLength(46);
+    expect(coveredConfiguredPaths).toEqual(configuredPaths);
 
     const forgotPassword = coverage.rows.find(
       ({ route }: any) => route === '/user/login/password_forgot',
@@ -67,24 +278,155 @@ describe('shared locale delivery contracts', () => {
     expect(resetPassword.visibleStates).toEqual(
       expect.arrayContaining(['session-loading', 'session-unavailable', 'request-new-link-action']),
     );
+
+    const evidenceSchema = readJson('docs/plans/i18n/semantic-e2e-evidence.schema.json');
+    expect(evidenceSchema).toEqual(
+      expect.objectContaining({
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        additionalProperties: false,
+        required: expect.arrayContaining([
+          'generatedAt',
+          'runId',
+          'candidate',
+          'target',
+          'digests',
+        ]),
+        properties: expect.objectContaining({
+          schemaVersion: { const: 'tiangong.i18n-semantic-e2e-evidence.v1' },
+          status: { const: 'verified' },
+          candidate: expect.objectContaining({
+            additionalProperties: false,
+            required: [
+              'configTreeDigest',
+              'observedHeadCommit',
+              'packageManifestDigest',
+              'sourceTreeDigest',
+              'unitTestTreeDigest',
+            ],
+          }),
+          target: expect.objectContaining({
+            additionalProperties: false,
+            required: ['frontend', 'backend', 'proof'],
+            properties: expect.objectContaining({
+              proof: expect.objectContaining({
+                additionalProperties: false,
+                required: expect.arrayContaining([
+                  'backendObservedOriginSha256',
+                  'backendObservedPublishableKeySha256',
+                  'backendTrackedOriginSha256',
+                  'backendTrackedPublishableKeySha256',
+                  'candidateEnvironmentSha256',
+                  'trackedMainEnvironmentSha256',
+                ]),
+                properties: expect.objectContaining({
+                  observer: { const: 'chromium-auth-request' },
+                  freshPlaywrightServer: { const: true },
+                }),
+              }),
+            }),
+          }),
+          digests: expect.objectContaining({
+            additionalProperties: false,
+            required: ['packageLock', 'runtimeAssets', 'tests', 'sources'],
+          }),
+          assertions: expect.objectContaining({ minItems: 49, maxItems: 49 }),
+          productionData: expect.objectContaining({
+            required: ['markerPrefix', 'created', 'cleaned', 'leaked'],
+            properties: expect.objectContaining({
+              created: { type: 'integer', const: 1 },
+              cleaned: { type: 'integer', const: 1 },
+            }),
+          }),
+        }),
+      }),
+    );
+    expect(evidenceSchema.$defs.assertion.required).toContain('scenarios');
+    expect(evidenceSchema.$defs.assertion.required).toContain('scenarioCoverage');
+
+    const playwrightConfig = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, 'playwright.config.ts'),
+      'utf8',
+    );
+    expect(playwrightConfig).toMatch(/reuseExistingServer:\s*false/u);
+    expect(playwrightConfig).not.toMatch(/reuseExistingServer:\s*!process\.env\.CI/u);
+    expect(playwrightConfig).toContain("process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1'");
+    expect(playwrightConfig).toMatch(/serviceWorkers:\s*'block'/u);
+    expect(playwrightConfig).toContain('failOnFlakyTests: Boolean(process.env.CI)');
+
+    const reporter = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
+      'utf8',
+    );
+    expect(reporter).toContain("const VERIFIED_EVIDENCE_OPT_IN = 'E2E_WRITE_VERIFIED_EVIDENCE'");
+    expect(reporter).toContain("observer: 'chromium-auth-request'");
+    expect(reporter).toContain('backendObservedOriginSha256');
+    expect(reporter).toContain('backendObservedPublishableKeySha256');
+    expect(reporter).toContain("packageLock: digestFiles(['package-lock.json'])[0]");
+    expect(reporter).toContain('runtimeAssets: digestFiles(runtimeAssetPaths())');
+    expect(reporter).toContain("'tests/data-workflows/data-workflow-paths.ts'");
+    expect(reporter).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
+    expect(reporter).toContain("'tests/unit/e2e/productionDataLedger.test.ts'");
+    expect(reporter).toContain('captureExecutionInputs(config.rootDir)');
+    expect(reporter).toContain('executionInputDigest(finalExecutionInputs)');
+    expect(reporter).toContain('parseEvidenceAnnotations(result.annotations)');
+    expect(reporter).toContain('hasCompleteScenarioCoverage(requiredScenarios, scenarioCoverage)');
+    expect(reporter).toContain('hasExactProductionDataClosure(');
+    expect(reporter).toContain('scenarioCoverage');
+    expect(reporter).toContain('executableViewVariants: coverage.executableViewVariants');
+    expect(reporter).toContain('viewStateRegistry: coverage.viewStateRegistry');
+    const localeDelivery = fs.readFileSync(DELIVERY_SCRIPT, 'utf8');
+    expect(localeDelivery).toContain('executableViewVariants: coverage.executableViewVariants');
+    expect(localeDelivery).toContain('viewStateRegistry: coverage.viewStateRegistry');
+    expect(localeDelivery).toContain('playwrightTestDirectory(root) !== semanticE2ERoot');
+    expect(localeDelivery).toContain("'tests/data-workflows/data-workflow-paths.ts'");
+    expect(localeDelivery).toContain("'tests/data-workflows/workflows/workflow-shared.ts'");
+    expect(localeDelivery).toContain(
+      'Semantic E2E digest root must be a non-empty repository directory matching Playwright testDir.',
+    );
   });
 
-  it.each(['de-DE', 'fr-FR'])(
-    '%s has complete generated dossiers, derived route evidence, and digest-bound review',
+  it.each(SUPPORTED_APP_LOCALES)(
+    '%s has complete generated dossiers, derived route evidence, and digest-bound structural validation',
     (locale) => {
       const context = readJson(`docs/plans/i18n-${locale}/context-manifest.json`);
+      const structuralValidation = readJson(`docs/plans/i18n-${locale}/structural-validation.json`);
       const quality = readJson(`docs/plans/i18n-${locale}/quality-manifest.json`);
+      const activation = readJson(`docs/plans/i18n-${locale}/locale-activation-manifest.json`);
+      const routeCoverage = readJson('docs/plans/i18n/route-view-coverage.json');
+      const semanticRouteAndE2EReady =
+        routeCoverage.proofPolicy.status === 'execution-evidence' &&
+        routeCoverage.proofPolicy.browserProof.status === 'verified' &&
+        routeCoverage.proofPolicy.browserProof.executedEvidence.length === 1;
+      const capability = LOCALE_CAPABILITY_MATRIX.find(({ appLocale }) => appLocale === locale)!;
+      const expectedReferenceBlockerIds = REFERENCE_RESOURCE_MANIFEST.filter((resource) => {
+        const localized = capability.referenceResources.find(
+          ({ resourceId }) => resourceId === resource.resourceId,
+        );
+        const deliveryBlocked =
+          localized?.status !== 'native' ||
+          (localized.deliveryStatus !== 'official' &&
+            localized.deliveryStatus !== 'project-reviewed');
+        return (
+          resource.required &&
+          (deliveryBlocked ||
+            (resource.structureSource.usageTerms as { productionStatus?: string })
+              .productionStatus !== 'ready')
+        );
+      }).map(({ resourceId }) => resourceId);
+      const referenceResourcesReady = expectedReferenceBlockerIds.length === 0;
 
       expect(context.schemaVersion).toBe('tiangong.i18n-locale-context.v2');
       expect(context.messageDossiers).toEqual(
         expect.objectContaining({
-          messageCount: 3026,
-          completeCount: 3026,
+          messageCount: expect.any(Number),
+          completeCount: expect.any(Number),
           blockedCount: 0,
           highRiskMessageCount: expect.any(Number),
           highRiskMessageDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
         }),
       );
+      expect(context.messageDossiers.messageCount).toBeGreaterThan(0);
+      expect(context.messageDossiers.completeCount).toBe(context.messageDossiers.messageCount);
       expect(context.typedContentDossiers).toEqual(
         expect.objectContaining({
           registryLocaleCount: SUPPORTED_APP_LOCALES.length,
@@ -94,9 +436,32 @@ describe('shared locale delivery contracts', () => {
       );
       expect(context.routeViewCoverage.derivedEvidence).toEqual(
         expect.objectContaining({
-          configuredRouteCount: expect.any(Number),
+          configuredRouteCount: 46,
+          coveredConfiguredRouteCount: 46,
+          browserProof: expect.objectContaining({
+            status: semanticRouteAndE2EReady ? 'verified' : 'planned',
+            ownerIssue: '#635',
+            inventoryOnly: !semanticRouteAndE2EReady,
+            executedEvidenceCount: semanticRouteAndE2EReady ? 1 : 0,
+            evidenceSchemaVersion: 'tiangong.i18n-semantic-e2e-evidence.v1',
+            routeCoverageContractDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
+            requiredAssertionCount: 49,
+            ready: semanticRouteAndE2EReady,
+          }),
           blockedDerivedStateCount: 0,
           unownedVisibleLiteralCount: 0,
+        }),
+      );
+      const executionEvidence =
+        context.routeViewCoverage.derivedEvidence.browserProof.executionEvidence;
+      expect(Boolean(executionEvidence)).toBe(semanticRouteAndE2EReady);
+      expect(executionEvidence?.assertionCount ?? 0).toBe(semanticRouteAndE2EReady ? 49 : 0);
+      expect(executionEvidence?.leakedDataCount ?? 0).toBe(0);
+      expect(context.inventory).toEqual(
+        expect.objectContaining({
+          routeViewRowCount: context.routeViewCoverage.derivedEvidence.rowEvidence.length,
+          configuredRouteCount: 46,
+          coveredConfiguredRouteCount: 46,
         }),
       );
       expect(context.routeViewCoverage.requiredRouteViews).toEqual([
@@ -119,22 +484,86 @@ describe('shared locale delivery contracts', () => {
         expect.objectContaining({
           everyMessageDossierComplete: true,
           typedContentTopologyComplete: true,
-          allHighRiskMessagesIndependentlyReviewed: true,
+          allHighRiskMessageStructuresValidated: true,
+          semanticRouteAndE2EReady,
+          semanticRouteAndE2EOwnerIssue: '#635',
           humanTranslationReviewRequired: false,
         }),
       );
-      expect(quality.independentReview).toEqual(
+      expect(quality.automatedChecks.semanticRouteAndE2EReady).toBe(semanticRouteAndE2EReady);
+      expect(structuralValidation.schemaVersion).toBe('tiangong.i18n-structural-validation.v1');
+      expect(structuralValidation.validationLanes).toHaveLength(1);
+      expect(
+        structuralValidation.validationLanes.every(
+          ({ executionEvidence, findings, result }: any) =>
+            result === 'passed' &&
+            findings.length === 0 &&
+            executionEvidence.findingCount === 0 &&
+            executionEvidence.executor ===
+              'scripts/i18n/locale-delivery.mjs#executeStructuralValidationLane' &&
+            Object.values(executionEvidence.checks).every(Boolean),
+        ),
+      ).toBe(true);
+      expect(quality.structuralValidation).toEqual(
         expect.objectContaining({
-          reviewedMessageCount: 3026,
-          reviewedModuleCount: 31,
+          validatedMessageCount: context.messageDossiers.messageCount,
+          validatedModuleCount: 31,
           blockedItems: 0,
-          humanTranslationReviewRequired: false,
+          semanticReviewPerformed: false,
         }),
+      );
+      expect(activation).toEqual(
+        expect.objectContaining({
+          schemaVersion: 'tiangong.i18n-locale-activation.v2',
+          locale,
+          checks: expect.objectContaining({
+            platformContractValid: true,
+            languageHardcodingPassed: true,
+            fallbackContractPassed: true,
+            referenceResourcesReady,
+            semanticRouteAndE2EReady,
+            productionActivationReady: referenceResourcesReady && semanticRouteAndE2EReady,
+          }),
+          referenceResourceBlockers: expect.any(Array),
+        }),
+      );
+      expect(
+        activation.referenceResourceBlockers.map(({ resourceId }: any) => resourceId).sort(),
+      ).toEqual(expectedReferenceBlockerIds.sort());
+      expect(
+        activation.referenceResourceBlockers.every(({ ownerIssue }: any) => ownerIssue === '#634'),
+      ).toBe(true);
+      for (const resource of REFERENCE_RESOURCE_MANIFEST.filter(
+        ({ required, structureSource }) =>
+          required &&
+          (structureSource.usageTerms as { productionStatus?: string }).productionStatus !==
+            'ready',
+      )) {
+        expect(activation.referenceResourceBlockers).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              resourceId: resource.resourceId,
+              usageTermsStatus: resource.structureSource.usageTerms.status,
+              usageTermsProductionStatus: 'blocked',
+              reason: expect.stringContaining('usage terms are'),
+            }),
+          ]),
+        );
+      }
+      expect(activation.productionActivationBlockers).toHaveLength(
+        activation.referenceResourceBlockers.length + (semanticRouteAndE2EReady ? 0 : 1),
+      );
+      const semanticProofBlocker = activation.productionActivationBlockers.find(
+        ({ blockerId }: any) => blockerId === 'semantic-route-and-e2e-proof',
+      );
+      expect(Boolean(semanticProofBlocker)).toBe(!semanticRouteAndE2EReady);
+      expect(semanticProofBlocker?.ownerIssue ?? null).toBe(
+        semanticRouteAndE2EReady ? null : '#635',
       );
     },
   );
 
-  it('reconstructs an individual French dossier on demand', () => {
+  it.each(SUPPORTED_APP_LOCALES)('%s reconstructs an individual dossier on demand', (locale) => {
     const result = spawnSync(
       process.execPath,
       [
@@ -143,7 +572,7 @@ describe('shared locale delivery contracts', () => {
         DELIVERY_SCRIPT,
         'dossier',
         '--locale',
-        'fr-FR',
+        locale,
         '--message',
         'pages.login.passwordReset.sessionUnavailable',
         '--check',
@@ -167,47 +596,121 @@ describe('shared locale delivery contracts', () => {
       }),
     );
     expect(output.dossier.translations).toEqual(
-      expect.objectContaining({
-        'zh-CN': expect.any(String),
-        'en-US': expect.any(String),
-        'de-DE': expect.any(String),
-        'fr-FR': expect.any(String),
-      }),
+      expect.objectContaining(
+        Object.fromEntries(
+          SUPPORTED_APP_LOCALES.map((supportedLocale) => [supportedLocale, expect.any(String)]),
+        ),
+      ),
     );
   });
 
-  it('declares docs, legal, data, service, report, and environment fallbacks for every locale', () => {
+  it('declares independent UI, content, service-query, reference-data, and boundary fallbacks for every registry locale', () => {
     const contract = readJson('docs/plans/i18n/fallback-contract.json');
     const mandatorySurfaces = [
+      'ui-locale',
       'documentation',
       'legal',
-      'dataset-language-parameter',
+      'content-language',
+      'service-query-language',
+      'classification-reference-data',
+      'location-reference-data',
       'service-errors',
       'TIDAS-import-report',
       'environment-branding',
     ];
 
-    SUPPORTED_APP_LOCALES.forEach((locale) => {
-      expect(
-        contract.rows
-          .filter(({ requestedLocale }: any) => requestedLocale === locale)
-          .map(({ surface }: any) => surface),
-      ).toEqual(mandatorySurfaces);
-    });
+    expect(contract.schemaVersion).toBe('tiangong.i18n-fallback-contract.v3');
+    expect(contract.rows).toHaveLength(SUPPORTED_APP_LOCALES.length * mandatorySurfaces.length);
 
-    const frenchReport = contract.rows.find(
-      ({ requestedLocale, surface }: any) =>
-        requestedLocale === 'fr-FR' && surface === 'TIDAS-import-report',
-    );
-    expect(frenchReport).toEqual(
-      expect.objectContaining({
-        resolvedLocale: 'fr_FR',
-        urlOrPayload: 'human_summary.fr_FR and readme_markdown.fr_FR',
-      }),
-    );
+    SUPPORTED_APP_LOCALES.forEach((locale) => {
+      const localeRows = contract.rows.filter(
+        ({ requestedLocale }: any) => requestedLocale === locale,
+      );
+      expect(localeRows.map(({ surface }: any) => surface)).toEqual(mandatorySurfaces);
+
+      const capability = LOCALE_CAPABILITY_MATRIX.find(({ appLocale }) => appLocale === locale);
+      expect(capability).toBeDefined();
+
+      const uiLocale = localeRows.find(({ surface }: any) => surface === 'ui-locale');
+      expect(uiLocale).toEqual(
+        expect.objectContaining({
+          resolvedLocale: locale,
+          capabilityStatus: 'native',
+          disclosure: 'none',
+        }),
+      );
+
+      const contentLanguage = localeRows.find(({ surface }: any) => surface === 'content-language');
+      expect(contentLanguage).toEqual(
+        expect.objectContaining({
+          resolvedLocale: capability?.contentLanguage,
+          capabilityStatus: capability?.contentReading,
+          disclosure: 'none',
+        }),
+      );
+
+      const serviceQuery = localeRows.find(
+        ({ surface }: any) => surface === 'service-query-language',
+      );
+      const serviceUsesFallback = capability?.serviceQuery.status === 'declared-fallback';
+      expect(serviceQuery).toEqual(
+        expect.objectContaining({
+          resolvedLocale: capability?.serviceQuery.resolvedLanguage,
+          capabilityStatus: capability?.serviceQuery.status,
+          usedFallback: serviceUsesFallback,
+          disclosure: capability?.serviceQuery.disclosure,
+          userDisclosure: capability?.serviceQuery.disclosure === 'user-visible',
+        }),
+      );
+
+      const assertReferenceSurface = (
+        surface: 'classification-reference-data' | 'location-reference-data',
+        scope: 'classification' | 'location',
+      ) => {
+        const referenceRow = localeRows.find(
+          ({ surface: rowSurface }: any) => rowSurface === surface,
+        );
+        const resourceIds = REFERENCE_RESOURCE_MANIFEST.filter(
+          ({ scope: resourceScope }) => resourceScope === scope,
+        ).map(({ resourceId }) => resourceId);
+        const resourceCapabilities = capability?.referenceResources.filter(({ resourceId }) =>
+          resourceIds.includes(resourceId),
+        );
+
+        expect(resourceCapabilities).not.toHaveLength(0);
+        expect(referenceRow).toEqual(
+          expect.objectContaining({
+            userDisclosure: false,
+            resources: resourceCapabilities?.map((resourceCapability) => ({
+              resourceId: resourceCapability.resourceId,
+              resolvedLocale: resourceCapability.resolvedLanguage ?? null,
+              capabilityStatus: resourceCapability.status,
+              deliveryStatus: resourceCapability.deliveryStatus ?? null,
+              usedFallback: resourceCapability.status === 'development-base',
+              disclosure: resourceCapability.status === 'development-base' ? 'diagnostic' : 'none',
+              ownerIssue: resourceCapability.ownerIssue ?? null,
+            })),
+          }),
+        );
+        expect(referenceRow).not.toHaveProperty('capabilityStatus');
+        expect(referenceRow).not.toHaveProperty('deliveryStatus');
+      };
+
+      assertReferenceSurface('classification-reference-data', 'classification');
+      assertReferenceSurface('location-reference-data', 'location');
+
+      const reportLocale = locale.replace('-', '_');
+      const report = localeRows.find(({ surface }: any) => surface === 'TIDAS-import-report');
+      expect(report).toEqual(
+        expect.objectContaining({
+          resolvedLocale: reportLocale,
+          urlOrPayload: `human_summary.${reportLocale} and readme_markdown.${reportLocale}`,
+        }),
+      );
+    });
   });
 
-  it.each(['de-DE', 'fr-FR'])(
+  it.each(SUPPORTED_APP_LOCALES)(
     '%s active activation check is CI-safe and confirmation-free',
     (locale) => {
       const result = spawnSync(
@@ -232,4 +735,53 @@ describe('shared locale delivery contracts', () => {
       expect(`${result.stdout}\n${result.stderr}`).not.toContain('.local/');
     },
   );
+
+  it('makes the explicit production-readiness gate follow verified semantic evidence', () => {
+    const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
+    const semanticRouteAndE2EReady =
+      coverage.proofPolicy.status === 'execution-evidence' &&
+      coverage.proofPolicy.browserProof.status === 'verified' &&
+      coverage.proofPolicy.browserProof.executedEvidence.length === 1;
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--import',
+        'tsx',
+        DELIVERY_SCRIPT,
+        'activation',
+        '--locale',
+        'en-US',
+        '--check',
+        '--require-production-ready',
+      ],
+      {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+        env: { ...process.env, NODE_NO_WARNINGS: '1' },
+        maxBuffer: 20 * 1024 * 1024,
+      },
+    );
+
+    expect(result.status).toBe(semanticRouteAndE2EReady ? 0 : 1);
+    expect(result.stderr.includes('is not production-ready')).toBe(!semanticRouteAndE2EReady);
+    expect(result.stderr.includes('#635')).toBe(!semanticRouteAndE2EReady);
+    expect(result.stderr).not.toContain('rights-clearance-required');
+    expect(result.stderr).not.toContain('file-specific-owner-confirmation-required');
+  });
+
+  it('requires the production locale gate in the release workflow', () => {
+    const releaseWorkflow = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, '.github/workflows/build.yml'),
+      'utf8',
+    );
+    expect(releaseWorkflow).toContain('npm run i18n:locale:all:production:check');
+    expect(releaseWorkflow).toContain('npm run reference-data:production:check');
+
+    const manualWorkflow = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),
+      'utf8',
+    );
+    expect(manualWorkflow).toContain('npm run i18n:locale:all:check');
+    expect(manualWorkflow).toContain('npm run reference-data:production:check');
+  });
 });

@@ -20,6 +20,8 @@ type IconProps = {
 const configProviderThemes: string[] = [];
 let mockLocale: string | undefined = 'zh-CN';
 let renderedLocales: Array<Record<string, unknown>> = [];
+let selectLangReload: boolean | undefined;
+let selectLangTrigger: readonly string[] | undefined;
 const defaultAvailableLocales = () => [
   { lang: 'de-DE', label: 'Deutsch (Deutschland)', icon: '🇩🇪' },
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
@@ -36,27 +38,43 @@ jest.mock('@ant-design/icons', () => ({
 
 jest.mock('@umijs/max', () => ({
   SelectLang: ({
+    globalIconClassName,
     postLocalesData,
+    reload,
     style,
+    trigger,
   }: {
+    globalIconClassName?: string;
     postLocalesData?: (locales: Array<Record<string, unknown>>) => Array<Record<string, unknown>>;
+    reload?: boolean;
     style?: Record<string, unknown>;
+    trigger?: readonly string[];
   }) => {
+    selectLangReload = reload;
+    selectLangTrigger = trigger;
     renderedLocales = postLocalesData?.(mockAvailableLocales) ?? [];
     return (
-      <button data-testid='select-lang' type='button' style={style ?? {}}>
+      <button
+        className={globalIconClassName}
+        data-testid='select-lang'
+        type='button'
+        style={style ?? {}}
+      >
         language selector
       </button>
     );
   },
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: ({ defaultMessage, id }: { defaultMessage?: string; id: string }) => {
-      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.englishFallback') {
-        return 'Englische Hilfedokumentation öffnen';
+    formatMessage: (
+      { defaultMessage, id }: { defaultMessage?: string; id: string },
+      values?: Record<string, string>,
+    ) => {
+      if (mockLocale === 'de-DE' && id === 'component.globalHeader.help.fallback') {
+        return `Hilfedokumentation (${values?.language})`;
       }
-      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.englishFallback') {
-        return 'Ouvrir la documentation d’aide (en anglais)';
+      if (mockLocale === 'fr-FR' && id === 'component.globalHeader.help.fallback') {
+        return `Documentation d’aide (${values?.language})`;
       }
       if (mockLocale === 'fr-FR' && id === 'pages.theme.toggleDarkMode') {
         return 'Activer ou désactiver le mode sombre';
@@ -79,6 +97,8 @@ afterEach(() => {
   configProviderThemes.length = 0;
   mockLocale = 'zh-CN';
   renderedLocales = [];
+  selectLangReload = undefined;
+  selectLangTrigger = undefined;
   mockAvailableLocales = defaultAvailableLocales();
 });
 
@@ -190,10 +210,10 @@ describe('RightContent Components', () => {
     render(<Question />);
 
     const helpButton = screen.getByRole('button', {
-      name: 'Englische Hilfedokumentation öffnen',
+      name: 'Hilfedokumentation (English)',
     });
     expect(helpButton).not.toHaveAttribute('title');
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Englische Hilfedokumentation öffnen');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Hilfedokumentation (English)');
     fireEvent.click(helpButton);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
@@ -205,11 +225,9 @@ describe('RightContent Components', () => {
     render(<Question />);
 
     const helpButton = screen.getByRole('button', {
-      name: 'Ouvrir la documentation d’aide (en anglais)',
+      name: 'Documentation d’aide (English)',
     });
-    expect(screen.getByRole('tooltip')).toHaveTextContent(
-      'Ouvrir la documentation d’aide (en anglais)',
-    );
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Documentation d’aide (English)');
     fireEvent.click(helpButton);
 
     expect(mockWindowOpen).toHaveBeenCalledWith('https://docs.tiangong.earth/en');
@@ -222,6 +240,9 @@ describe('RightContent Components', () => {
 
     expect(selector).toBeInTheDocument();
     expect(selector).toHaveStyle({ padding: '4px' });
+    expect(selector).toHaveClass('tg-global-language-selector');
+    expect(selectLangReload).toBe(false);
+    expect(selectLangTrigger).toEqual(['click']);
   });
 
   it('merges custom styles into the language selector', () => {

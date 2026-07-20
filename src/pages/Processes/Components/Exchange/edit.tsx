@@ -532,8 +532,24 @@ const ProcessExchangeEdit: FC<Props> = ({
                   }
                   optionFilterProp='direction'
                   options={[
-                    { value: 'input', label: 'Input' },
-                    { value: 'output', label: 'Output' },
+                    {
+                      value: 'input',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.exchange.input'
+                          defaultMessage='Input'
+                        />
+                      ),
+                    },
+                    {
+                      value: 'output',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.exchange.output'
+                          defaultMessage='Output'
+                        />
+                      ),
+                    },
                   ]}
                   onChange={(value) => {
                     setAsInput(value === 'input');
@@ -679,11 +695,51 @@ const ProcessExchangeEdit: FC<Props> = ({
               >
                 <Select
                   options={[
-                    { value: 'undefined', label: 'Undefined' },
-                    { value: 'log-normal', label: 'Lognormal' },
-                    { value: 'normal', label: 'Normal' },
-                    { value: 'triangular', label: 'Triangular' },
-                    { value: 'uniform', label: 'Uniform' },
+                    {
+                      value: 'undefined',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.undefined'
+                          defaultMessage='Undefined'
+                        />
+                      ),
+                    },
+                    {
+                      value: 'log-normal',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.logNormal'
+                          defaultMessage='Log-normal'
+                        />
+                      ),
+                    },
+                    {
+                      value: 'normal',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.normal'
+                          defaultMessage='Normal'
+                        />
+                      ),
+                    },
+                    {
+                      value: 'triangular',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.triangular'
+                          defaultMessage='Triangular'
+                        />
+                      ),
+                    },
+                    {
+                      value: 'uniform',
+                      label: (
+                        <FormattedMessage
+                          id='pages.process.view.modellingAndValidation.uncertaintyDistributionType.uniform'
+                          defaultMessage='Uniform'
+                        />
+                      ),
+                    },
                   ]}
                 />
               </Form.Item>,

@@ -4,10 +4,21 @@
  */
 
 import LevelTextItemForm from '@/components/LevelTextItem/form';
+import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageRegistry';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 const mockGetILCDClassification = jest.fn();
 const mockGetILCDFlowCategorization = jest.fn();
 let latestTreeSelectProps: any = null;
+
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolver, rejecter) => {
+    resolve = resolver;
+    reject = rejecter;
+  });
+  return { promise, reject, resolve };
+};
 
 jest.mock('@/services/classifications/api', () => ({
   getILCDClassification: (...args: any[]) => mockGetILCDClassification(...args),
@@ -404,5 +415,119 @@ describe('LevelTextItemForm', () => {
     });
 
     expect(screen.getByText('Please input classification')).toBeInTheDocument();
+  });
+
+  it('refreshes for every registry content language selected by its parent', async () => {
+    mockGetILCDClassification.mockResolvedValue({ data: [], success: true });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(SUPPORTED_CONTENT_LANGUAGES[0]));
+
+    for (const languageCode of SUPPORTED_CONTENT_LANGUAGES) {
+      rerender(renderControl(languageCode));
+      await waitFor(() => {
+        expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', languageCode, ['all']);
+      });
+    }
+  });
+
+  it('ignores a stale classification response after the parent switches language', async () => {
+    const [initialLanguage, nextLanguage] = SUPPORTED_CONTENT_LANGUAGES;
+    expect(nextLanguage).toBeDefined();
+    const initialRequest = deferred<any>();
+    mockGetILCDClassification.mockReturnValueOnce(initialRequest.promise).mockResolvedValueOnce({
+      success: true,
+      data: [{ id: 'next', label: 'Current label', value: 'current' }],
+    });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    rerender(renderControl(nextLanguage));
+    expect(await screen.findByRole('button', { name: 'Current label' })).toBeInTheDocument();
+
+    await act(async () => {
+      initialRequest.resolve({
+        success: true,
+        data: [{ id: 'stale', label: 'Stale label', value: 'stale' }],
+      });
+      await initialRequest.promise;
+    });
+
+    expect(screen.queryByRole('button', { name: 'Stale label' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Current label' })).toBeInTheDocument();
+  });
+
+  it('keeps locale refresh failures and missing data from reviving stale options', async () => {
+    const [initialLanguage, staleLanguage, failingLanguage, missingDataLanguage] =
+      SUPPORTED_CONTENT_LANGUAGES;
+    expect(missingDataLanguage).toBeDefined();
+    const staleRequest = deferred<any>();
+    mockGetILCDClassification
+      .mockResolvedValueOnce({
+        success: true,
+        data: [{ id: 'initial', label: 'Initial option', value: 'initial' }],
+      })
+      .mockReturnValueOnce(staleRequest.promise)
+      .mockRejectedValueOnce(new Error('current locale failed'))
+      .mockResolvedValueOnce({ success: true });
+    const formRef = createFormRef();
+    const renderControl = (lang: string) => (
+      <LevelTextItemForm
+        name={['classification']}
+        lang={lang}
+        dataType='Process'
+        flowType='Product flow'
+        formRef={formRef}
+        onData={jest.fn()}
+      />
+    );
+    const { rerender } = render(renderControl(initialLanguage));
+
+    expect(await screen.findByRole('button', { name: 'Initial option' })).toBeInTheDocument();
+    rerender(renderControl(staleLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', staleLanguage, ['all']);
+    });
+
+    rerender(renderControl(failingLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', failingLanguage, ['all']);
+      expect(screen.queryByRole('button', { name: 'Initial option' })).not.toBeInTheDocument();
+    });
+
+    rerender(renderControl(missingDataLanguage));
+    await waitFor(() => {
+      expect(mockGetILCDClassification).toHaveBeenCalledWith('Process', missingDataLanguage, [
+        'all',
+      ]);
+      expect(latestTreeSelectProps.treeData).toEqual([]);
+    });
+
+    await act(async () => {
+      staleRequest.reject(new Error('stale locale failed'));
+      await staleRequest.promise.catch(() => undefined);
+    });
+
+    expect(latestTreeSelectProps.treeData).toEqual([]);
+    expect(screen.queryByRole('button', { name: 'Initial option' })).not.toBeInTheDocument();
   });
 });

@@ -42,21 +42,9 @@ jest.mock('antd', () => {
     Array.isArray(path) ? path : path !== undefined ? [path] : [];
 
   const Form = ({ children, formRef }: any) => {
-    const [version, forceUpdate] = React.useReducer((count: number) => count + 1, 0);
-
-    React.useEffect(() => {
-      if (!formRef?.current?.subscribe) {
-        return;
-      }
-      const unsubscribe = formRef.current.subscribe(() => {
-        forceUpdate();
-      });
-      return unsubscribe;
-    }, [formRef]);
-
     const contextValue = React.useMemo(
       () => ({ form: formRef?.current ?? {}, prefix: [] as Path }),
-      [formRef, version],
+      [formRef],
     );
 
     return <FormContext.Provider value={contextValue}>{children}</FormContext.Provider>;
@@ -64,8 +52,30 @@ jest.mock('antd', () => {
 
   Form.useFormInstance = () => React.useContext(FormContext).form;
 
+  const useFormSubscription = (form: any) => {
+    const [, forceUpdate] = React.useReducer((count: number) => count + 1, 0);
+
+    React.useEffect(() => {
+      if (!form?.subscribe) {
+        return;
+      }
+
+      return form.subscribe(() => {
+        forceUpdate();
+      });
+    }, [form]);
+  };
+
+  Form.useWatch = (name: any, formInstance?: any) => {
+    const context = React.useContext(FormContext);
+    const form = formInstance ?? context.form;
+    useFormSubscription(form);
+    return form?.getFieldValue(name);
+  };
+
   const FormItem = ({ name, children, style, rules = [], help, validateStatus }: any) => {
     const { form, prefix } = React.useContext(FormContext);
+    useFormSubscription(form);
     const path = [...prefix, ...normalizePath(name)];
 
     if (path.length === 0) {
@@ -104,7 +114,7 @@ jest.mock('antd', () => {
     );
   };
 
-  const FormList = ({ name, children, rules = [] }: any) => {
+  const FormList = ({ name, children, rules = [], initialValue }: any) => {
     const context = React.useContext(FormContext);
     const form = context.form;
     const prefixArray = Array.isArray(context.prefix) ? context.prefix : [];
@@ -124,6 +134,10 @@ jest.mock('antd', () => {
     const [fields, setFields] = React.useState<Array<{ key: number; name: number }>>([]);
 
     React.useEffect(() => {
+      if (form.getFieldValue(path) === undefined && initialValue !== undefined) {
+        form.setFieldValue(path, JSON.parse(JSON.stringify(initialValue)));
+      }
+
       const handleValuesChange = (values: any[]) => {
         const nextFields: Array<{ key: number; name: number }> = Array.isArray(values)
           ? values.map((_: any, index: number) => ({ key: index, name: index }))
@@ -216,7 +230,7 @@ jest.mock('antd', () => {
     </button>
   );
 
-  const Row = ({ children }: any) => <div>{children}</div>;
+  const Row = ({ children, ...props }: any) => <div {...props}>{children}</div>;
   const Col = ({ children }: any) => <div>{children}</div>;
 
   const message = {
@@ -326,7 +340,7 @@ const renderLangTextItemForm = (options: RenderOptions = {}) => {
     fieldErrorMessages,
     listName,
     setRuleErrorState,
-    initialValues = { translations: [] },
+    initialValues = {},
   } = options;
 
   const formRef = createFormRef(initialValues);
@@ -395,7 +409,7 @@ describe('LangTextItemForm', () => {
   it('prevents removing the final required entry', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
-      initialValues: { translations: [] },
+      initialValues: {},
     });
 
     const user = userEvent.setup();
@@ -435,6 +449,63 @@ describe('LangTextItemForm', () => {
 
     await waitFor(() => {
       expect(screen.getAllByRole('combobox')).toHaveLength(1);
+    });
+  });
+
+  it('offers every registry authoring language and preserves unknown stored language codes', async () => {
+    const { unmount } = renderLangTextItemForm({
+      initialValues: {
+        translations: [{ '@xml:lang': 'de', '#text': 'Deutsch' }],
+      },
+    });
+
+    const declaredSelect = screen.getByRole('combobox');
+    expect(
+      Array.from(declaredSelect.querySelectorAll('option')).map((option) => option.value),
+    ).toEqual(['', 'en', 'zh', 'de', 'fr']);
+    expect(declaredSelect).toHaveValue('de');
+
+    unmount();
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [{ '@xml:lang': 'ja', '#text': '日本語' }],
+      },
+    });
+
+    const legacySelect = screen.getByRole('combobox');
+    expect(legacySelect).toHaveValue('ja');
+    expect(screen.getByRole('option', { name: 'Japanese' })).toBeDisabled();
+  });
+
+  it('exposes the hydrated content-language code on each authoring row', async () => {
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [
+          { '@xml:lang': 'en', '#text': 'English value' },
+          { '@xml:lang': 'de', '#text': 'Deutscher Wert' },
+        ],
+      },
+    });
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="de"]')).toBeInTheDocument();
+    });
+  });
+
+  it('updates the content-language code when an empty row selects a language', async () => {
+    renderLangTextItemForm({
+      initialValues: {
+        translations: [{}],
+      },
+    });
+
+    expect(document.querySelector('[data-content-language]')).not.toBeInTheDocument();
+
+    await userEvent.setup().selectOptions(screen.getByRole('combobox'), 'en');
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
     });
   });
 
@@ -518,18 +589,22 @@ describe('LangTextItemForm', () => {
     });
   });
 
-  it('keeps grouped required state clear when blank translations should rely on child field validation', async () => {
+  it('repairs an explicit empty required list and rejects an empty submit payload', async () => {
     const setRuleErrorState = jest.fn();
-    const { formRef } = renderLangTextItemForm({
+    renderLangTextItemForm({
       label: 'Treatment, standards, routes',
       rules: [{ required: true }],
       initialValues: { translations: [] },
       setRuleErrorState,
     });
 
-    await act(async () => {
-      formRef.current.setFieldValue(['translations'], [{}]);
+    await waitFor(() => {
+      expect(screen.getAllByRole('combobox')).toHaveLength(1);
     });
+
+    const listRule = listRulesByPath.translations?.[0];
+    await expect(listRule.validator(null, [])).rejects.toThrow('Please input this field');
+    await expect(listRule.validator(null, [{}])).resolves.toBeUndefined();
 
     await waitFor(() => {
       expect(setRuleErrorState).toHaveBeenLastCalledWith(false);
@@ -594,6 +669,73 @@ describe('LangTextItemForm', () => {
     });
   });
 
+  it('resolves a scalar field name with an explicitly declared list path', async () => {
+    const formRef = createFormRef({
+      details: [{ '@xml:lang': 'fr', '#text': 'Notes de revue' }],
+    });
+
+    render(
+      <Form {...({ formRef } as any)}>
+        <LangTextItemForm name='details' listName={[]} formRef={formRef} label='Review details' />
+      </Form>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Notes de revue')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="fr"]')).toBeInTheDocument();
+    });
+  });
+
+  it('subscribes to the correct nested list row when its language changes', async () => {
+    const initialValues = {
+      review: [
+        {
+          'common:otherReviewDetails': [{ '@xml:lang': 'zh', '#text': '首条评论' }],
+        },
+        {
+          'common:otherReviewDetails': [{ '@xml:lang': 'en', '#text': 'Second review' }],
+        },
+      ],
+    };
+
+    const formRef = createFormRef(initialValues);
+
+    const NestedWrapper = () => (
+      <Form {...({ formRef } as any)}>
+        <Form.List name={['review']}>
+          {(fields: Array<{ key: number; name: number }>) => (
+            <>
+              {fields.map((field) => (
+                <LangTextItemForm
+                  key={field.key}
+                  name={[field.name, 'common:otherReviewDetails']}
+                  listName={['review']}
+                  formRef={formRef}
+                  label='Review details'
+                />
+              ))}
+            </>
+          )}
+        </Form.List>
+      </Form>
+    );
+
+    render(<NestedWrapper />);
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="zh"]')).toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="en"]')).toBeInTheDocument();
+    });
+
+    const selects = screen.getAllByRole('combobox');
+    await userEvent.setup().selectOptions(selects[1], 'de');
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-content-language="en"]')).not.toBeInTheDocument();
+      expect(document.querySelector('[data-content-language="de"]')).toBeInTheDocument();
+    });
+  });
+
   it('renders sdk field errors on the matching localized text row', async () => {
     renderLangTextItemForm({
       fieldErrorMessages: {
@@ -615,7 +757,7 @@ describe('LangTextItemForm', () => {
   it('runs required child validators for text and language inputs', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
-      initialValues: { translations: [] },
+      initialValues: {},
     });
 
     const [languageSelect] = await screen.findAllByRole('combobox');
@@ -652,7 +794,7 @@ describe('LangTextItemForm', () => {
     expect(message.error).not.toHaveBeenCalled();
   });
 
-  it('normalizes non-array validator input to an empty list before running required checks', async () => {
+  it('normalizes non-array required input to an invalid empty list', async () => {
     renderLangTextItemForm({
       rules: [{ required: true }],
       setRuleErrorState: jest.fn(),
@@ -660,7 +802,7 @@ describe('LangTextItemForm', () => {
 
     const listRule = listRulesByPath.translations?.[0];
 
-    await expect(listRule.validator(null, undefined)).resolves.toBeUndefined();
+    await expect(listRule.validator(null, undefined)).rejects.toThrow('Please input this field');
     expect(message.error).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,7 @@ import { UnitItem } from '@/services/unitgroups/data';
 import { ProFormInstance } from '@ant-design/pro-components';
 import { Card, Col, Divider, Form, Input, Row, Spin, theme } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
-import { FormattedMessage } from 'umi';
+import { FormattedMessage, useIntl } from 'umi';
 // import LangTextItemForm from '@/components/LangTextItem/form';
 const { TextArea } = Input;
 
@@ -23,6 +23,7 @@ type Props = {
 };
 
 const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, drawerVisible }) => {
+  const intl = useIntl();
   const [spinning, setSpinning] = useState<boolean>(false);
   const { token } = theme.useToken();
   const { setUnits, setTargetUnit } = useUnitsContext() as {
@@ -109,7 +110,10 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                     <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '#text']}>
                         <TextArea
-                          placeholder='text'
+                          placeholder={intl.formatMessage({
+                            id: 'pages.lang.text.placeholder',
+                            defaultMessage: 'Text',
+                          })}
                           rows={1}
                           disabled={true}
                           style={{ color: token.colorTextDescription }}
@@ -160,7 +164,10 @@ const UnitGroupFromMini: FC<Props> = ({ id, version, idType, name, formRef, draw
                       <Col flex='auto' style={{ marginRight: '10px' }}>
                         <Form.Item noStyle name={[subField.name, '#text']}>
                           <TextArea
-                            placeholder='text'
+                            placeholder={intl.formatMessage({
+                              id: 'pages.lang.text.placeholder',
+                              defaultMessage: 'Text',
+                            })}
                             rows={1}
                             disabled={true}
                             style={{ color: token.colorTextDescription }}

@@ -10,6 +10,7 @@ const mockGetLocalStorageJson = jest.fn();
 const mockInitIndexedDbStore = jest.fn();
 const mockPutCachedJsonEntry = jest.fn();
 const mockSetLocalStorageJson = jest.fn();
+const mockSha256Hex = jest.fn();
 
 jest.mock('@/services/general/browserResourceCache', () => ({
   __esModule: true,
@@ -20,19 +21,21 @@ jest.mock('@/services/general/browserResourceCache', () => ({
   initIndexedDbStore: (...args: any[]) => mockInitIndexedDbStore(...args),
   putCachedJsonEntry: (...args: any[]) => mockPutCachedJsonEntry(...args),
   setLocalStorageJson: (...args: any[]) => mockSetLocalStorageJson(...args),
+  sha256Hex: (...args: any[]) => mockSha256Hex(...args),
 }));
 
 import {
   cacheAndDecompressClassificationFile,
-  categoryTypeOptions,
   genClass,
-  genClassZH,
+  genClassWithLocalizedLabels,
   getCachedClassificationFileData,
   getCachedClassificationFileList,
   getCachedOrFetchClassificationFileData,
   getClassificationCacheManifest,
+  getLocalizedCategoryDataType,
   setClassificationCacheManifest,
 } from '@/services/classifications/util';
+import { getReferenceResourceDefinition } from '@/services/referenceResources/manifest';
 
 describe('Classifications Util (src/services/classifications/util.ts)', () => {
   const originalFetch = global.fetch;
@@ -40,22 +43,16 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn() as any;
+    mockSha256Hex.mockResolvedValue('unmanaged-digest');
   });
 
   afterAll(() => {
     global.fetch = originalFetch;
   });
 
-  it('exposes the expected category type options', () => {
-    expect(categoryTypeOptions.map((item) => item.en)).toEqual([
-      'Process',
-      'Flow',
-      'FlowProperty',
-      'UnitGroup',
-      'Contact',
-      'Source',
-      'LCIAMethod',
-    ]);
+  it('resolves category data type names through the resource manifest', () => {
+    expect(getLocalizedCategoryDataType('Process', 'en')).toBe('Process');
+    expect(getLocalizedCategoryDataType('Process', 'zh')).toBe('过程');
   });
 
   it('builds classification trees recursively in genClass', () => {
@@ -77,8 +74,8 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
     ]);
   });
 
-  it('uses translated labels in genClassZH and falls back to English when needed', () => {
-    const result = genClassZH(
+  it('uses scoped localized labels when the localized tree exactly covers the base', () => {
+    const result = genClassWithLocalizedLabels(
       [
         {
           '@id': 'root',
@@ -86,7 +83,13 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
           category: [{ '@id': 'leaf', '@name': 'Leaf' }],
         },
       ],
-      [{ '@id': 'root', '@name': '根' }],
+      [
+        {
+          '@id': 'root',
+          '@name': '根',
+          category: [{ '@id': 'leaf', '@name': '叶' }],
+        },
+      ],
     );
 
     expect(result).toEqual([
@@ -94,9 +97,71 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
         id: 'root',
         value: 'Root',
         label: '根',
-        children: [{ id: 'leaf', value: 'Leaf', label: 'Leaf', children: [] }],
+        children: [{ id: 'leaf', value: 'Leaf', label: '叶', children: [] }],
       },
     ]);
+  });
+
+  it('matches localized labels by duplicate-id occurrence order', () => {
+    expect(
+      genClassWithLocalizedLabels(
+        [
+          { '@id': 'duplicate', '@name': 'First' },
+          { '@id': 'duplicate', '@name': 'Second' },
+        ],
+        [
+          { '@id': 'duplicate', '@name': 'Premier' },
+          { '@id': 'duplicate', '@name': 'Deuxième' },
+        ],
+      ),
+    ).toEqual([
+      { id: 'duplicate', value: 'First', label: 'Premier', children: [] },
+      { id: 'duplicate', value: 'Second', label: 'Deuxième', children: [] },
+    ]);
+  });
+
+  it('fails closed instead of silently using a base label for a partial localized tree', () => {
+    expect(() =>
+      genClassWithLocalizedLabels(
+        [
+          {
+            '@id': 'root',
+            '@name': 'Root',
+            category: [{ '@id': 'leaf', '@name': 'Leaf' }],
+          },
+        ],
+        [{ '@id': 'root', '@name': 'Wurzel' }],
+      ),
+    ).toThrow('Localized classification does not exactly cover the base structure.');
+  });
+
+  it('rejects localized nodes when the base structure is absent', () => {
+    expect(() =>
+      genClassWithLocalizedLabels(undefined, [{ '@id': 'orphan', '@name': 'Orphelin' }]),
+    ).toThrow('Localized classification contains nodes outside the base structure.');
+  });
+
+  it.each([
+    { localizedData: [{ '@id': 'other', '@name': 'Andere' }] },
+    { localizedData: [{ '@id': 'root', '@name': '' }] },
+    { localizedData: [{ '@id': 'root', '@name': 42 as unknown as string }] },
+  ])('rejects missing, blank, or non-string localized labels', ({ localizedData }) => {
+    expect(() =>
+      genClassWithLocalizedLabels([{ '@id': 'root', '@name': 'Root' }], localizedData),
+    ).toThrow('Localized classification is missing a label for root.');
+  });
+
+  it('keeps the deprecated Chinese helper as an alias of localized label generation', () => {
+    const legacyGenClass = (
+      jest.requireActual('@/services/classifications/util') as Record<
+        string,
+        (...args: any[]) => unknown
+      >
+    )['genClassZH'];
+
+    expect(
+      legacyGenClass([{ '@id': 'root', '@name': 'Root' }], [{ '@id': 'root', '@name': '根' }]),
+    ).toEqual([{ id: 'root', value: 'Root', label: '根', children: [] }]);
   });
 
   it('gets and sets the classification cache manifest through browser cache helpers', () => {
@@ -111,14 +176,16 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   });
 
   it('returns cached classification file names from IndexedDB', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetAllCachedKeys.mockResolvedValue(['one.json.gz', 'two.json.gz']);
 
     await expect(getCachedClassificationFileList()).resolves.toEqual([
       'one.json.gz',
       'two.json.gz',
     ]);
-    expect(mockGetAllCachedKeys).toHaveBeenCalledWith('db', 'classification_files');
+    expect(mockGetAllCachedKeys).toHaveBeenCalledWith(db, 'classification_files');
+    expect(db.close).toHaveBeenCalledTimes(1);
   });
 
   it('returns an empty file list and logs when cache listing fails', async () => {
@@ -131,17 +198,81 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   });
 
   it('returns cached classification file data when present', async () => {
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    const db = { close: jest.fn() };
+    mockInitIndexedDbStore.mockResolvedValue(db);
     mockGetCachedJsonEntry.mockResolvedValue({ data: { hello: 'world' } });
 
     await expect(getCachedClassificationFileData('file.json.gz')).resolves.toEqual({
       hello: 'world',
     });
+    expect(mockGetCachedJsonEntry).toHaveBeenCalledWith(db, 'classification_files', 'file.json.gz');
+    expect(db.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not address a stale unversioned IndexedDB entry after manifest activation', async () => {
+    const legacyFileName = 'CPCClassification.min.json.gz';
+    const activeFileName = getReferenceResourceDefinition('cpc').runtimeAssets.en!.fileName;
+    expect(activeFileName).not.toBe(legacyFileName);
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockImplementation(
+      async (_db: unknown, _store: string, fileName: string) =>
+        fileName === legacyFileName ? { data: { stale: true } } : null,
+    );
+
+    await expect(getCachedClassificationFileData(activeFileName)).resolves.toBeNull();
     expect(mockGetCachedJsonEntry).toHaveBeenCalledWith(
       'db',
       'classification_files',
-      'file.json.gz',
+      activeFileName,
     );
+    expect(mockGetCachedJsonEntry).not.toHaveBeenCalledWith(
+      'db',
+      'classification_files',
+      legacyFileName,
+    );
+  });
+
+  it('rejects a managed entry from a previous manifest revision', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { stale: true },
+      revision: `${resource.cacheRevision}-previous`,
+      sha256: asset.jsonDigest.value,
+    });
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toBeNull();
+  });
+
+  it('accepts a managed entry only with the exact revision and JSON digest', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { current: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue(asset.jsonDigest.value);
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toEqual({
+      current: true,
+    });
+  });
+
+  it('rejects managed cached JSON that does not match its asserted current digest', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockGetCachedJsonEntry.mockResolvedValue({
+      data: { tampered: true },
+      revision: resource.cacheRevision,
+      sha256: asset.jsonDigest.value,
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(getCachedClassificationFileData(asset.fileName)).resolves.toBeNull();
   });
 
   it('returns null and logs when reading cached classification file data fails', async () => {
@@ -154,23 +285,150 @@ describe('Classifications Util (src/services/classifications/util.ts)', () => {
   });
 
   it('downloads, decompresses, parses, and stores a classification file', async () => {
+    const db = { close: jest.fn() };
     (global.fetch as jest.Mock).mockResolvedValue({
       ok: true,
       arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
     });
     mockDecompressGzipData.mockResolvedValue(JSON.stringify({ ok: true }));
-    mockInitIndexedDbStore.mockResolvedValue('db');
+    mockInitIndexedDbStore.mockResolvedValue(db);
 
     await expect(cacheAndDecompressClassificationFile('file.json.gz')).resolves.toBe(true);
     expect(global.fetch).toHaveBeenCalledWith('/classifications/file.json.gz');
     expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(
-      'db',
+      db,
       'classification_files',
       'file.json.gz',
       {
         ok: true,
       },
     );
+    expect(db.close).toHaveBeenCalledTimes(1);
+  });
+
+  it('shares one classification fetch and cache write between concurrent callers', async () => {
+    let releaseFetch!: (response: unknown) => void;
+    const fetchResult = new Promise((resolve) => {
+      releaseFetch = resolve;
+    });
+    (global.fetch as jest.Mock).mockReturnValue(fetchResult);
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ shared: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    const first = cacheAndDecompressClassificationFile('shared.json.gz');
+    const second = cacheAndDecompressClassificationFile('shared.json.gz');
+
+    expect(second).toBe(first);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    releaseFetch({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a failed classification flight so a later caller can retry', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    (global.fetch as jest.Mock)
+      .mockRejectedValueOnce(new Error('network failed'))
+      .mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+      });
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ retried: true }));
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressClassificationFile('retry.json.gz')).resolves.toBe(false);
+    await expect(cacheAndDecompressClassificationFile('retry.json.gz')).resolves.toBe(true);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('verifies and persists the exact manifest identity for a managed classification asset', async () => {
+    const resource = getReferenceResourceDefinition('cpc');
+    const asset = resource.runtimeAssets.en!;
+    const gzipBytes = new ArrayBuffer(8);
+    const json = JSON.stringify({ ok: true });
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(gzipBytes),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce(asset.jsonDigest.value);
+    mockDecompressGzipData.mockResolvedValue(json);
+    mockInitIndexedDbStore.mockResolvedValue('db');
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(true);
+    expect(mockPutCachedJsonEntry).toHaveBeenCalledWith(
+      'db',
+      'classification_files',
+      asset.fileName,
+      { ok: true },
+      { revision: resource.cacheRevision, sha256: asset.jsonDigest.value },
+    );
+  });
+
+  it('rejects a managed reference asset from the wrong cache scope', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const locationAsset = getReferenceResourceDefinition('ilcd-locations').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+
+    await expect(cacheAndDecompressClassificationFile(locationAsset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache classification file ${locationAsset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('is not a classification asset'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('rejects a managed classification asset whose decompressed JSON digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex
+      .mockResolvedValueOnce(asset.gzipDigest.value)
+      .mockResolvedValueOnce('0'.repeat(64));
+    mockDecompressGzipData.mockResolvedValue(JSON.stringify({ tampered: true }));
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`Failed to cache classification file ${asset.fileName}`),
+      expect.objectContaining({
+        message: expect.stringContaining('Classification JSON digest mismatch'),
+      }),
+    );
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('fails closed before parsing when a managed classification gzip digest differs', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const asset = getReferenceResourceDefinition('cpc').runtimeAssets.en!;
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(8)),
+    });
+    mockSha256Hex.mockResolvedValue('0'.repeat(64));
+
+    await expect(cacheAndDecompressClassificationFile(asset.fileName)).resolves.toBe(false);
+    expect(mockDecompressGzipData).not.toHaveBeenCalled();
+    expect(mockPutCachedJsonEntry).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('returns false when the remote classification file is missing', async () => {

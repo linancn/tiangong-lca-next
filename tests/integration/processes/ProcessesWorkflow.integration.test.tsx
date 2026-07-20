@@ -45,9 +45,49 @@ jest.mock('@ant-design/icons', () =>
 
 jest.mock('antd', () => require('@/tests/mocks/antd').createAntdMock());
 
-jest.mock('@ant-design/pro-components', () =>
-  require('@/tests/mocks/proComponents').createProComponentsMock(),
-);
+jest.mock('@ant-design/pro-components', () => {
+  const React = require('react');
+  const proComponents = require('@/tests/mocks/proComponents').createProComponentsMock();
+  const BaseProTable = proComponents.ProTable;
+
+  const LocaleAwareProTableMock = (props: any) => {
+    const latestPropsRef = React.useRef(props);
+    const lastSuccessfulResultRef = React.useRef();
+    const paramsKey = JSON.stringify(props.params ?? {});
+    const previousParamsKeyRef = React.useRef(paramsKey);
+    latestPropsRef.current = props;
+
+    const request = React.useCallback(async (tableParams: any, sort: any) => {
+      const currentProps = latestPropsRef.current;
+      const result = await currentProps.request?.(
+        { ...(tableParams ?? {}), ...(currentProps.params ?? {}) },
+        sort,
+      );
+
+      if (result?.success === false && lastSuccessfulResultRef.current !== undefined) {
+        return { ...result, data: lastSuccessfulResultRef.current?.data ?? [] };
+      }
+      if (result?.success !== false) {
+        lastSuccessfulResultRef.current = result;
+      }
+      return result;
+    }, []);
+
+    React.useEffect(() => {
+      if (previousParamsKeyRef.current !== paramsKey) {
+        previousParamsKeyRef.current = paramsKey;
+        void latestPropsRef.current.actionRef?.current?.reload?.();
+      }
+    }, [paramsKey]);
+
+    return React.createElement(BaseProTable, { ...props, request });
+  };
+
+  return {
+    ...proComponents,
+    ProTable: LocaleAwareProTableMock,
+  };
+});
 
 jest.mock('@/components/AllVersions', () => ({
   __esModule: true,

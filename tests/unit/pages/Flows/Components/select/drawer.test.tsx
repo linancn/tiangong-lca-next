@@ -262,10 +262,19 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, toolBarRender, columns = [] }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    params = {},
+    rowSelection,
+    toolBarRender,
+    columns = [],
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
+    latestParamsRef.current = params;
 
     const api = React.useMemo(
       () => ({
@@ -273,7 +282,11 @@ jest.mock('@ant-design/pro-components', () => {
         reload: jest.fn(async () => {
           const filter = mockNextRequestFilter;
           mockNextRequestFilter = {};
-          const result = await latestRequestRef.current({ pageSize: 10, current: 1 }, {}, filter);
+          const result = await latestRequestRef.current(
+            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            {},
+            filter,
+          );
           setRows(result?.data ?? []);
           return result;
         }),

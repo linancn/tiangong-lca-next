@@ -1,9 +1,10 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import UnitGroupDescriptionMini from '@/pages/Unitgroups/Components/select/descriptionMini';
 import { ReferenceItem } from '@/services/general/data';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage, getLocale } from 'umi';
+import { FormattedMessage } from 'umi';
 import FlowsView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -12,7 +13,6 @@ type Props = {
 };
 
 const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
-  const locale = getLocale();
   const refData = data ?? undefined;
   const refObjectId = refData?.['@refObjectId'] ?? '';
   const refVersion = refData?.['@version'] ?? '';
@@ -28,7 +28,7 @@ const FlowsSelectDescription: FC<Props> = ({ title, data, lang }) => {
                 defaultMessage='Reference flow dataset identifier'
               />
             }
-            styles={{ label: { width: locale === 'zh-CN' ? '160px' : '240px' } }}
+            styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
           >
             {refObjectId || '-'}
           </Descriptions.Item>

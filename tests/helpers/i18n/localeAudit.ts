@@ -1,4 +1,7 @@
-import type { SupportedAppLocale } from '@/services/general/localeRegistry';
+import {
+  CANONICAL_SOURCE_APP_LOCALE,
+  type SupportedAppLocale,
+} from '@/services/general/localeRegistry';
 import fs from 'fs';
 import path from 'path';
 import ts from 'typescript';
@@ -172,7 +175,7 @@ export const analyzeIcuMessage = (message: string): IcuMessageAnalysis =>
 export const formatIcuMessage = (
   message: string,
   values: Record<string, unknown> = {},
-  locale = 'en-US',
+  locale: string = CANONICAL_SOURCE_APP_LOCALE,
 ): string => sharedIcuParser.formatIcuMessage(message, values, locale);
 
 export const serializeIcuArgumentSignature = (message: string): string =>

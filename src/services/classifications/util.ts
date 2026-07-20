@@ -6,14 +6,24 @@ import {
   initIndexedDbStore,
   putCachedJsonEntry,
   setLocalStorageJson,
+  sha256Hex,
 } from '@/services/general/browserResourceCache';
 
 import type { Classification } from '../general/data';
+import {
+  getReferenceRuntimeAssetCacheIdentity,
+  type IlcdCanonicalDataType,
+} from '../referenceResources/manifest';
+import {
+  getResolvedReferenceDataTypeName,
+  resolveReferenceResource,
+} from '../referenceResources/resolver';
 
 const CACHE_KEY = 'classification_cache_manifest';
 const CACHE_DB_NAME = 'classification_cache_db';
 const CACHE_DB_VERSION = 1;
 const CACHE_STORE_NAME = 'classification_files';
+const cacheWriteFlights = new Map<string, Promise<boolean>>();
 
 export interface ClassificationCacheManifest {
   version: string;
@@ -22,36 +32,14 @@ export interface ClassificationCacheManifest {
   decompressed: boolean;
 }
 
-export const categoryTypeOptions = [
-  {
-    en: 'Process',
-    zh: '过程',
-  },
-  {
-    en: 'Flow',
-    zh: '流',
-  },
-  {
-    en: 'FlowProperty',
-    zh: '流属性',
-  },
-  {
-    en: 'UnitGroup',
-    zh: '单位组',
-  },
-  {
-    en: 'Contact',
-    zh: '联系信息',
-  },
-  {
-    en: 'Source',
-    zh: '来源',
-  },
-  {
-    en: 'LCIAMethod',
-    zh: '生命周期影响评估方法',
-  },
-];
+export const getLocalizedCategoryDataType = (
+  categoryType: IlcdCanonicalDataType,
+  language: string,
+): string =>
+  getResolvedReferenceDataTypeName(
+    resolveReferenceResource('ilcd-classification', language),
+    categoryType,
+  );
 
 export type ILCDCategoryNode = {
   '@id': string;
@@ -74,26 +62,53 @@ export function genClass(data?: ILCDCategoryNode[] | null): Classification[] {
   });
 }
 
-export function genClassZH(
+export function genClassWithLocalizedLabels(
   data?: ILCDCategoryNode[] | null,
-  dataZH?: ILCDCategoryNode[] | null,
+  localizedData?: ILCDCategoryNode[] | null,
 ): Classification[] {
   if (!data) {
+    if (localizedData && localizedData.length > 0) {
+      throw new Error('Localized classification contains nodes outside the base structure.');
+    }
     return [];
   }
-  return data.map((item) => {
-    const zh = dataZH ? dataZH.find((candidate) => candidate['@id'] === item['@id']) : null;
+  if (!localizedData || localizedData.length !== data.length) {
+    throw new Error('Localized classification does not exactly cover the base structure.');
+  }
+  return data.map((item, itemIndex) => {
+    const occurrence = data
+      .slice(0, itemIndex)
+      .filter((candidate) => candidate['@id'] === item['@id']).length;
+    const localizedMatches = localizedData?.filter((candidate) => candidate['@id'] === item['@id']);
+    const localized = localizedMatches?.[occurrence];
+    if (!localized || typeof localized['@name'] !== 'string' || localized['@name'].trim() === '') {
+      throw new Error(`Localized classification is missing a label for ${item['@id']}.`);
+    }
     return {
       id: item['@id'],
       value: item['@name'],
-      label: zh?.['@name'] ?? item['@name'],
-      children: genClassZH(item.category, zh?.category),
+      label: localized['@name'],
+      children: genClassWithLocalizedLabels(item.category, localized.category),
     };
   });
 }
 
+/** @deprecated Use genClassWithLocalizedLabels. */
+export function genClassZH(
+  data?: ILCDCategoryNode[] | null,
+  localizedData?: ILCDCategoryNode[] | null,
+) {
+  return genClassWithLocalizedLabels(data, localizedData);
+}
+
 const initDB = (): Promise<IDBDatabase> => {
   return initIndexedDbStore(CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_NAME);
+};
+
+const closeDB = (db: IDBDatabase): void => {
+  if (typeof db.close === 'function') {
+    db.close();
+  }
 };
 
 export const getClassificationCacheManifest = (): ClassificationCacheManifest | null => {
@@ -105,27 +120,53 @@ export const setClassificationCacheManifest = (manifest: ClassificationCacheMani
 };
 
 export const getCachedClassificationFileList = async (): Promise<string[]> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     return await getAllCachedKeys(db, CACHE_STORE_NAME);
   } catch (error) {
     console.error('Failed to get classification cached file list:', error);
     return [];
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
 export const getCachedClassificationFileData = async <T>(filename: string): Promise<T | null> => {
+  let db: IDBDatabase | null = null;
   try {
-    const db = await initDB();
+    db = await initDB();
     const cachedEntry = await getCachedJsonEntry<T>(db, CACHE_STORE_NAME, filename);
+    const identity = getReferenceRuntimeAssetCacheIdentity(filename);
+    if (
+      identity &&
+      (identity.scope !== 'classification' ||
+        cachedEntry?.revision !== identity.cacheRevision ||
+        cachedEntry?.sha256 !== identity.jsonSha256)
+    ) {
+      return null;
+    }
+    if (
+      identity &&
+      cachedEntry &&
+      (await sha256Hex(JSON.stringify(cachedEntry.data))) !== identity.jsonSha256
+    ) {
+      return null;
+    }
     return cachedEntry?.data ?? null;
   } catch (error) {
     console.error(`Failed to read classification cached file ${filename}:`, error);
     return null;
+  } finally {
+    if (db) {
+      closeDB(db);
+    }
   }
 };
 
-export const cacheAndDecompressClassificationFile = async (filename: string): Promise<boolean> => {
+const cacheAndDecompressClassificationFileOnce = async (filename: string): Promise<boolean> => {
   try {
     const response = await fetch(`/classifications/${filename}`);
     if (!response.ok) {
@@ -134,17 +175,55 @@ export const cacheAndDecompressClassificationFile = async (filename: string): Pr
     }
 
     const arrayBuffer = await response.arrayBuffer();
+    const identity = getReferenceRuntimeAssetCacheIdentity(filename);
+    if (identity?.scope !== 'classification') {
+      if (identity) {
+        throw new Error(`Reference asset ${filename} is not a classification asset.`);
+      }
+    } else if ((await sha256Hex(arrayBuffer)) !== identity.gzipSha256) {
+      throw new Error(`Classification gzip digest mismatch for ${filename}.`);
+    }
     const decompressedText = await decompressGzipData(arrayBuffer);
+    if (identity && (await sha256Hex(decompressedText)) !== identity.jsonSha256) {
+      throw new Error(`Classification JSON digest mismatch for ${filename}.`);
+    }
     const data = JSON.parse(decompressedText);
 
     const db = await initDB();
-    await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+    try {
+      if (identity) {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data, {
+          revision: identity.cacheRevision,
+          sha256: identity.jsonSha256,
+        });
+      } else {
+        await putCachedJsonEntry(db, CACHE_STORE_NAME, filename, data);
+      }
+    } finally {
+      closeDB(db);
+    }
 
     return true;
   } catch (error) {
     console.error(`Failed to cache classification file ${filename}:`, error);
     return false;
   }
+};
+
+export const cacheAndDecompressClassificationFile = (filename: string): Promise<boolean> => {
+  const flightKey = `classification:${filename}`;
+  const activeFlight = cacheWriteFlights.get(flightKey);
+  if (activeFlight) {
+    return activeFlight;
+  }
+
+  const flight = cacheAndDecompressClassificationFileOnce(filename);
+  cacheWriteFlights.set(flightKey, flight);
+  const clearFlight = () => {
+    cacheWriteFlights.delete(flightKey);
+  };
+  void flight.then(clearFlight, clearFlight);
+  return flight;
 };
 
 export const getCachedOrFetchClassificationFileData = async <T>(

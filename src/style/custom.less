@@ -173,6 +173,14 @@
 
 .welcome_team_card {
   cursor: pointer;
+
+  :global(.ant-card-meta-title),
+  :global(.ant-card-meta-description) {
+    min-width: 0;
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (max-width: 991px) {

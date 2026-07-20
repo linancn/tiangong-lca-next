@@ -19,13 +19,16 @@ checkPaths:
   - docs/agents/repo-validation.md
   - .husky/pre-push
   - package.json
+  - playwright.config.ts
+  - tests/e2e/i18n/**
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
+  - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the second Issue #625 hook-owned coverage block and exact async fallback closure; failed gates still block transport and a changed HEAD must run a new checked push.'
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
+lastReviewedNote: 'Reviewed for Issue #635: kept the full gate unchanged and made every GitHub semantic E2E run credential-free/read-only; authenticated closure is local-operator-only.'
 ---
 
 # Pre-Push Gate Policy
@@ -48,6 +51,12 @@ npm run docpact:gate
 npm run prepush:gate
 ```
 
+The full gate runs LCIA verification, `npm run reference-data:check`, lint/type checks, complete coverage, and the unchanged 100% coverage assertion in that order. Reference-data verification fails before the expensive suite when the source manifest, evidence, content-addressed filenames, generated registry, or gzip outputs drift.
+
+Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
+
+`npm run test:e2e:i18n` is a separate Playwright semantic localization proof, not another step inside `prepush:gate`. Keeping it separate prevents a routine local push from requiring production credentials or creating production data. Its GitHub Actions workflow owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+
 ## Scope
 
 This document owns the intended trigger policy only.
@@ -65,8 +74,10 @@ It does not own:
 | --- | --- |
 | local `pre-push` hook on any branch | run docpact first, then run the full local gate |
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
-| ordinary GitHub branch pushes | do not run standalone remote test jobs |
-| PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance |
+| ordinary GitHub branch pushes | do not run broad duplicate remote test jobs; the path-scoped semantic E2E workflow may run its credential-free/read-only matrix on relevant `dev` changes |
+| PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance, plus the independent credential-free Chromium/Firefox/WebKit public semantic matrix when its paths match |
+| semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
+| local authenticated semantic E2E | run only in an explicitly authorized operator session with runtime credentials, verified candidate-local/production-backend targeting, authenticated mode, the two production-write guards, and explicit verified-evidence opt-in |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
@@ -79,6 +90,9 @@ It does not own:
 - branch policy must stay aligned with `dev -> main`
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
+- semantic E2E keeps its local candidate frontend on a loopback URL, derives locales from registries, disables screenshot/trace/video/auth artifacts, and keeps every semantic E2E GitHub Actions run credential-free/read-only
+- an authorized local production-data run uses `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, and the exact one-process confirmation token; `E2E_WRITE_VERIFIED_EVIDENCE=true` separately opts into tracked evidence. It writes its intent ledger before create; cleanup verifies the production row UUID, authenticated owner, and all five multilingual-field markers across registry authoring languages before exact-ID deletion, then proves `created=cleaned` and `leaked=0`
+- Header Umi `SelectLang` remains `reload={false}` so same-document locale refresh and delayed old-response race behavior stay browser-verifiable
 - historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `npm run prepush:gate` must never read ignored confirmation files
 
 ## Short Rule Summary
@@ -100,6 +114,7 @@ It does not own:
 - protect the actual local and release gates
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
+- keep the path-scoped semantic E2E workflow independent from `prepush:gate`: all semantic E2E GitHub events have no production credentials or writes, while only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run

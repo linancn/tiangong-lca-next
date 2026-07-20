@@ -12,6 +12,14 @@ const toText = (node: any): string => {
   return '';
 };
 
+const deferred = <T,>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((nextResolve) => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+};
+
 const proTableInstances: any[] = [];
 const formListInstances: Record<string, any> = {};
 
@@ -1366,6 +1374,47 @@ describe('ProcessForm component', () => {
           }),
         ],
       }),
+    );
+  });
+
+  it('rejects older input and output exchange requests after newer requests start', async () => {
+    const pendingInputFlowState = deferred<any>();
+    const pendingOutputFlowState = deferred<any>();
+    const exchangeRow = {
+      referenceToFlowDataSetId: 'flow-1',
+      referenceToFlowDataSetVersion: '1.0',
+    };
+
+    mockGetProcessExchange.mockResolvedValue({ data: [exchangeRow], total: 1 });
+    mockGetUnitData.mockResolvedValue([exchangeRow]);
+    mockGetFlowStateCodeByIdsAndVersions
+      .mockReset()
+      .mockReturnValueOnce(pendingInputFlowState.promise)
+      .mockReturnValueOnce(pendingOutputFlowState.promise)
+      .mockResolvedValue({ error: null, data: [] });
+
+    render(<ProcessForm {...defaultProps} activeTabKey='exchanges' />);
+    const [inputTable, outputTable] = await getLatestExchangeTables();
+
+    const olderInputRequest = inputTable.request({ pageSize: 10, current: 1 });
+    const olderOutputRequest = outputTable.request({ pageSize: 10, current: 1 });
+    await waitFor(() => expect(mockGetFlowStateCodeByIdsAndVersions).toHaveBeenCalledTimes(2));
+
+    await expect(inputTable.request({ pageSize: 10, current: 1 })).resolves.toEqual(
+      expect.objectContaining({ success: true }),
+    );
+    await expect(outputTable.request({ pageSize: 10, current: 1 })).resolves.toEqual(
+      expect.objectContaining({ success: true }),
+    );
+
+    pendingInputFlowState.resolve({ error: null, data: [] });
+    pendingOutputFlowState.resolve({ error: null, data: [] });
+
+    await expect(olderInputRequest).resolves.toEqual(
+      expect.objectContaining({ data: [], success: false }),
+    );
+    await expect(olderOutputRequest).resolves.toEqual(
+      expect.objectContaining({ data: [], success: false }),
     );
   });
 

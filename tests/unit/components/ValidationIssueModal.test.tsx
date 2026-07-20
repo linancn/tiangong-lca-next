@@ -1,4 +1,5 @@
 import { showValidationIssueModal } from '@/components/ValidationIssueModal';
+import { publishRuntimeIntlChange } from '@/services/general/runtimeLocale';
 import { upsertValidationIssueNotification } from '@/services/notifications/api';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 
@@ -258,6 +259,106 @@ describe('ValidationIssueModal', () => {
       }, template);
     },
   };
+
+  it('reformats a custom title descriptor when the registry-backed runtime intl changes', async () => {
+    const buildIntl = (locale: string, title: string, issue: string) => ({
+      locale,
+      formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
+        ({
+          'pages.validationIssues.modal.checkDataTitle': title,
+          'pages.validationIssues.issue.ruleVerificationFailed': issue,
+        })[id] ??
+        defaultMessage ??
+        id,
+    });
+    const initialIntl = buildIntl('zh-CN', '校验问题', '数据校验未通过');
+    const germanIntl = buildIntl(
+      'de-DE',
+      'Validierungsprobleme',
+      'Datensatzprüfung fehlgeschlagen',
+    );
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl: initialIntl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: 'http://localhost:8000/mydata/processes?id=process-1&version=01.00.000',
+            ref: {
+              '@refObjectId': 'process-1',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: {
+          id: 'pages.validationIssues.modal.checkDataTitle',
+          defaultMessage: 'Data validation issues',
+        },
+      }) as { destroy: () => void };
+    });
+    expect(screen.getByText('校验问题')).toBeInTheDocument();
+    expect(screen.getByText('数据校验未通过')).toBeInTheDocument();
+
+    await act(async () => {
+      publishRuntimeIntlChange(germanIntl);
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Validierungsprobleme')).toBeInTheDocument();
+      expect(screen.getByText('Datensatzprüfung fehlgeschlagen')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
+
+  it('recomputes a custom title factory with the active runtime intl', async () => {
+    const buildIntl = (locale: string, title: string) => ({
+      locale,
+      formatMessage: ({ id, defaultMessage }: { id: string; defaultMessage?: string }) =>
+        id === 'custom.validation.title' ? title : (defaultMessage ?? id),
+    });
+    const initialIntl = buildIntl('zh-CN', '自定义校验标题');
+    const germanIntl = buildIntl('de-DE', 'Benutzerdefinierter Validierungstitel');
+    let modalHandle: { destroy: () => void } | null = null;
+
+    await act(async () => {
+      modalHandle = showValidationIssueModal({
+        intl: initialIntl,
+        issues: [
+          {
+            code: 'ruleVerificationFailed',
+            link: '',
+            ref: {
+              '@refObjectId': 'process-title-factory',
+              '@type': 'process data set',
+              '@version': '01.00.000',
+            },
+          },
+        ],
+        title: (activeIntl) =>
+          activeIntl.formatMessage({
+            id: 'custom.validation.title',
+            defaultMessage: 'Custom validation title',
+          }),
+      }) as { destroy: () => void };
+    });
+    expect(screen.getByText('自定义校验标题')).toBeInTheDocument();
+
+    await act(async () => {
+      publishRuntimeIntlChange(germanIntl);
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Benutzerdefinierter Validierungstitel')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      modalHandle?.destroy();
+    });
+  });
 
   beforeEach(() => {
     cleanup();

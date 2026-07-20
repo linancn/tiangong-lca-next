@@ -6,7 +6,13 @@ import {
   getFlowpropertyTablePgroongaSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
-import { DataTabKey, ListPagination } from '@/services/general/data';
+import {
+  getContentLanguageAwareTableParams,
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type ContentLanguageAwareTableParams,
+  type DataTabKey,
+} from '@/services/general/data';
 import { getLangText, getUnitData } from '@/services/general/util';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -42,6 +48,17 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
   const teActionRefSelect = useRef<ActionType>();
 
   const intl = useIntl();
+  const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
+  const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
+  const tgRequestEpochRef = useRef(0);
+  const coRequestEpochRef = useRef(0);
+  const teRequestEpochRef = useRef(0);
+  const myRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(
+    currentContentLanguageRef,
+    contentLanguageAwareTableParams.contentLanguage,
+    [tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef, myRequestEpochRef],
+  );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
@@ -268,42 +285,56 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             enterButton
           />
         </Card>
-        <ProTable<FlowpropertyTable, ListPagination>
+        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
           actionRef={tgActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (tgKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'tg', tgKeyWord, {}).then(
-                (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                    return {
-                      ...res,
-                      data: unitRes,
-                      success: true,
-                    };
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              tgRequestEpochRef,
+              async () => {
+                if (tgKeyWord.length > 0) {
+                  return getFlowpropertyTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'tg',
+                    tgKeyWord,
+                    {},
+                  ).then((res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
                   });
-                },
-              );
-            }
-            return getFlowpropertyTableAll(params, sort, lang, 'tg', []).then((res) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                return {
-                  ...res,
-                  data: unitRes,
-                  success: true,
-                };
-              });
-            });
+                }
+                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'tg', []).then(
+                  (res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
+                  },
+                );
+              },
+            );
           }}
           columns={FlowpropertyColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -329,42 +360,56 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             enterButton
           />
         </Card>
-        <ProTable<FlowpropertyTable, ListPagination>
+        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
           actionRef={coActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (coKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'co', coKeyWord, {}).then(
-                (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                    return {
-                      ...res,
-                      data: unitRes,
-                      success: true,
-                    };
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              coRequestEpochRef,
+              async () => {
+                if (coKeyWord.length > 0) {
+                  return getFlowpropertyTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'co',
+                    coKeyWord,
+                    {},
+                  ).then((res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
                   });
-                },
-              );
-            }
-            return getFlowpropertyTableAll(params, sort, lang, 'co', []).then((res) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                return {
-                  ...res,
-                  data: unitRes,
-                  success: true,
-                };
-              });
-            });
+                }
+                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'co', []).then(
+                  (res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
+                  },
+                );
+              },
+            );
           }}
           columns={FlowpropertyColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -390,42 +435,56 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             enterButton
           />
         </Card>
-        <ProTable<FlowpropertyTable, ListPagination>
+        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
           actionRef={teActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (teKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'te', teKeyWord, {}).then(
-                (res) => {
-                  return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                    return {
-                      ...res,
-                      data: unitRes,
-                      success: true,
-                    };
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              teRequestEpochRef,
+              async () => {
+                if (teKeyWord.length > 0) {
+                  return getFlowpropertyTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'te',
+                    teKeyWord,
+                    {},
+                  ).then((res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
                   });
-                },
-              );
-            }
-            return getFlowpropertyTableAll(params, sort, lang, 'te', []).then((res) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                return {
-                  ...res,
-                  data: unitRes,
-                  success: true,
-                };
-              });
-            });
+                }
+                return getFlowpropertyTableAll(params, sort, params.contentLanguage, 'te', []).then(
+                  (res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
+                  },
+                );
+              },
+            );
           }}
           columns={FlowpropertyColumns}
           tableAlertOptionRender={tableAlertOptionRender}
@@ -451,23 +510,52 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
             enterButton
           />
         </Card>
-        <ProTable<FlowpropertyTable, ListPagination>
+        <ProTable<FlowpropertyTable, ContentLanguageAwareTableParams>
           actionRef={myActionRefSelect}
+          params={contentLanguageAwareTableParams}
           search={false}
           pagination={{
             showSizeChanger: false,
             pageSize: 10,
           }}
           request={async (
-            params: {
-              pageSize: number;
-              current: number;
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
             },
             sort,
           ) => {
-            if (myKeyWord.length > 0) {
-              return getFlowpropertyTablePgroongaSearch(params, lang, 'my', myKeyWord, {}, 0).then(
-                (res) => {
+            return guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              myRequestEpochRef,
+              async () => {
+                if (myKeyWord.length > 0) {
+                  return getFlowpropertyTablePgroongaSearch(
+                    params,
+                    params.contentLanguage,
+                    'my',
+                    myKeyWord,
+                    {},
+                    0,
+                  ).then((res) => {
+                    return getUnitData('unitgroup', res?.data).then((unitRes) => {
+                      return {
+                        ...res,
+                        data: unitRes,
+                        success: true,
+                      };
+                    });
+                  });
+                }
+                return getFlowpropertyTableAll(
+                  params,
+                  sort,
+                  params.contentLanguage,
+                  'my',
+                  [],
+                  0,
+                ).then((res) => {
                   return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
@@ -475,18 +563,9 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                       success: true,
                     };
                   });
-                },
-              );
-            }
-            return getFlowpropertyTableAll(params, sort, lang, 'my', [], 0).then((res) => {
-              return getUnitData('unitgroup', res?.data).then((unitRes) => {
-                return {
-                  ...res,
-                  data: unitRes,
-                  success: true,
-                };
-              });
-            });
+                });
+              },
+            );
           }}
           columns={FlowpropertyColumns}
           tableAlertOptionRender={tableAlertOptionRender}

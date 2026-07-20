@@ -1,7 +1,12 @@
+import {
+  REQUIRED_CONTENT_LANGUAGES,
+  resolveContentLanguage,
+  resolveContentLanguages,
+} from '../general/contentLanguageRegistry';
 import type { ProcessExchangeData, ProcessRefUnitDisplay } from './data';
 
 export const ANNUAL_SUPPLY_VOLUME_DEFAULT_SUFFIX = 'reference flow';
-const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = ['en', 'zh'];
+const ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS = REQUIRED_CONTENT_LANGUAGES;
 
 export const ANNUAL_SUPPLY_VOLUME_TEXT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?\s+\S.*$/;
 export const ANNUAL_SUPPLY_VOLUME_NUMERIC_TEXT_PATTERN =
@@ -56,9 +61,13 @@ const getFallbackLangText = (value: unknown, lang: string): string => {
   }
 
   if (Array.isArray(value)) {
-    const localizedItem =
-      value.find((item) => item?.['@xml:lang'] === lang) ??
-      value.find((item) => normalizeText(item?.['#text']));
+    const localizedItem = resolveContentLanguages(lang)
+      .map((candidateLanguage) =>
+        value.find(
+          (item) => item?.['@xml:lang'] === candidateLanguage && normalizeText(item?.['#text']),
+        ),
+      )
+      .find(Boolean);
 
     return normalizeText(localizedItem?.['#text']);
   }
@@ -70,7 +79,7 @@ const getFallbackLangText = (value: unknown, lang: string): string => {
   return '';
 };
 
-const uniqueNonEmpty = (values: string[]) => {
+const uniqueNonEmpty = (values: readonly string[]) => {
   const seen = new Set<string>();
 
   return values.filter((value) => {
@@ -225,11 +234,13 @@ const getAnnualSupplyVolumeTextForLang = (value: unknown, lang: string) => {
     const valueItems = value.filter(
       (item): item is Record<string, unknown> => !!item && typeof item === 'object',
     );
-    const langItem =
-      valueItems.find((item) => item['@xml:lang'] === lang) ??
-      valueItems.find((item) => item['@xml:lang'] === 'en') ??
-      valueItems.find((item) => normalizeText(item['#text'])) ??
-      valueItems[0];
+    const langItem = resolveContentLanguages(lang)
+      .map((candidateLanguage) =>
+        valueItems.find(
+          (item) => item['@xml:lang'] === candidateLanguage && normalizeText(item['#text']),
+        ),
+      )
+      .find(Boolean);
 
     return langItem ? langItem['#text'] : undefined;
   }
@@ -239,6 +250,25 @@ const getAnnualSupplyVolumeTextForLang = (value: unknown, lang: string) => {
   }
 
   return value;
+};
+
+export const getAnnualSupplyVolumeLanguages = (
+  value: unknown,
+  currentLanguage: string,
+): string[] => {
+  const existingLanguages = (Array.isArray(value) ? value : [value])
+    .map((item) =>
+      item && typeof item === 'object'
+        ? normalizeText((item as Record<string, unknown>)['@xml:lang']).toLowerCase()
+        : '',
+    )
+    .filter(Boolean);
+
+  return uniqueNonEmpty([
+    ...REQUIRED_CONTENT_LANGUAGES,
+    ...existingLanguages,
+    resolveContentLanguage(currentLanguage),
+  ]);
 };
 
 export const getAnnualSupplyVolumeDisplayNumericText = (value: unknown, lang: string) => {
@@ -251,7 +281,7 @@ export const getAnnualSupplyVolumeDisplayNumericText = (value: unknown, lang: st
 export const buildAnnualSupplyVolumeMultiLang = (
   numericValue: unknown,
   suffixResolver: string | ((lang: string) => string),
-  languages = ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS,
+  languages: readonly string[] = ANNUAL_SUPPLY_VOLUME_DEFAULT_LANGS,
   options: AnnualSupplyVolumeFormatOptions = { useDefaultSuffix: false },
 ) => {
   const { numericText } = parseAnnualSupplyVolumeText(numericValue);

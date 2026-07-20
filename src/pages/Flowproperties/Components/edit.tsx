@@ -506,10 +506,10 @@ const FlowpropertiesEdit: FC<Props> = ({
           intl,
           issues: validationIssuesWithOwner,
           onNavigate: handleValidationIssueNavigate,
-          title: intl.formatMessage({
+          title: {
             id: 'pages.validationIssues.modal.checkDataTitle',
             defaultMessage: 'Data validation issues',
-          }),
+          },
         });
       } else if (!silent) {
         message.error(validationHint);

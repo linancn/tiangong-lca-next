@@ -77,13 +77,21 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, columns = [], headerTitle }: any) => {
+  const ProTable = ({ actionRef, params, request, columns = [], headerTitle }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
+    const requestRef = React.useRef(request);
+    const paramsRef = React.useRef(params);
+    requestRef.current = request;
+    paramsRef.current = params;
+    const serializedParams = JSON.stringify(params ?? {});
 
     const load = React.useCallback(async () => {
-      const result = await request({ pageSize: 10, current: 1 }, {});
+      const result = await requestRef.current(
+        { pageSize: 10, current: 1, ...paramsRef.current },
+        {},
+      );
       setRows(result?.data ?? []);
-    }, [request]);
+    }, []);
 
     React.useEffect(() => {
       if (actionRef) {
@@ -92,8 +100,11 @@ jest.mock('@ant-design/pro-components', () => {
           setPageInfo: jest.fn(),
         };
       }
-      void load();
     }, [actionRef, load]);
+
+    React.useEffect(() => {
+      void load();
+    }, [load, serializedParams]);
 
     return (
       <section data-testid='pro-table'>

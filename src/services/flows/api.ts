@@ -1,7 +1,12 @@
 import { validateDatasetRuleVerification } from '@/pages/Utils/review';
 import {
+  getServiceQueryLanguage,
+  type SupportedContentLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
+import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -86,6 +91,12 @@ type FlowSearchFilters = {
   classification?: FlowClassificationFilter[];
 };
 
+type FlowSearchOrderBy = {
+  key: 'common:class' | 'baseName';
+  lang?: SupportedContentLanguage;
+  order: 'asc' | 'desc';
+};
+
 type FlowListRpcRow = {
   id?: string;
   json?: any;
@@ -120,6 +131,46 @@ function normalizeFlowSortBy(sortBy: string): string {
 
 function normalizeFlowSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function resolveFlowSearchOrderBy(orderBy?: FlowSearchOrderBy): Partial<
+  Omit<FlowSearchOrderBy, 'lang'> & {
+    lang?: SupportedServiceQueryLanguage;
+  }
+> {
+  if (!orderBy) {
+    return {};
+  }
+
+  if (!orderBy.lang) {
+    return {
+      key: orderBy.key,
+      order: orderBy.order,
+    };
+  }
+
+  return {
+    ...orderBy,
+    lang: getServiceQueryLanguage(orderBy.lang),
+  };
+}
+
+function getLocalizedFlowClassification(
+  classificationInformation: any,
+  typeOfDataSet: string | undefined,
+  categorizationData: Awaited<ReturnType<typeof getCachedFlowCategorizationAll>> | null | undefined,
+): string {
+  const elementaryFlow = typeOfDataSet === 'Elementary flow';
+  const classificationSource = elementaryFlow
+    ? classificationInformation?.['common:elementaryFlowCategorization']?.['common:category']
+    : classificationInformation?.['common:classification']?.['common:class'];
+  const classificationTree = elementaryFlow
+    ? (categorizationData?.categoryElementaryFlow ?? [])
+    : (categorizationData?.category ?? []);
+
+  return classificationToString(
+    genLocalizedClassification(jsonToList(classificationSource), classificationTree),
+  );
 }
 
 function getOptionalTeamId(tid: string | []): string | null {
@@ -390,90 +441,36 @@ export async function getFlowTableAll(
 
     const [locationData, categorizationData] = await Promise.all([
       fetchLocationLookup(lang, locations),
-      lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+      getCachedFlowCategorizationAll(lang),
     ]);
 
-    let data: any[] = [];
-
-    if (lang === 'zh' && categorizationData) {
-      data = result.data.map((i: any) => {
-        try {
-          let classificationData: any = {};
-          let thisClass: any[] = [];
-          if (i?.typeOfDataSet === 'Elementary flow') {
-            classificationData =
-              i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ];
-            thisClass = categorizationData?.categoryElementaryFlow;
-          } else {
-            classificationData =
-              i?.classificationInformation?.['common:classification']?.['common:class'];
-            thisClass = categorizationData?.category;
-          }
-
-          const classifications = jsonToList(classificationData);
-          const classificationZH = genClassificationZH(classifications, thisClass);
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(i?.name ?? {}, lang),
-            flowType: i?.typeOfDataSet ?? '-',
-            classification: classificationToString(classificationZH),
-            synonyms: getLangText(i?.['common:synonyms'], lang),
-            CASNumber: i?.CASNumber ?? '-',
-            refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-            locationOfSupply: resolveLocationOfSupply(i['locationOfSupply'], locationData),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          let classificationData: any = {};
-          if (i?.typeOfDataSet === 'Elementary flow') {
-            classificationData =
-              i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ];
-          } else {
-            classificationData =
-              i?.classificationInformation?.['common:classification']?.['common:class'];
-          }
-
-          const classifications = jsonToList(classificationData);
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(i?.name ?? {}, lang),
-            flowType: i.typeOfDataSet ?? '-',
-            classification: classificationToString(classifications),
-            synonyms: getLangText(i['common:synonyms'], lang),
-            CASNumber: i.CASNumber ?? '-',
-            refFlowPropertyId: i.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
-            locationOfSupply: resolveLocationOfSupply(i['locationOfSupply'], locationData),
-            version: i.version,
-            modifiedAt: new Date(i.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const data = result.data.map((i: any) => {
+      try {
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          name: genFlowName(i?.name ?? {}, lang),
+          flowType: i?.typeOfDataSet ?? '-',
+          classification: getLocalizedFlowClassification(
+            i?.classificationInformation,
+            i?.typeOfDataSet,
+            categorizationData,
+          ),
+          synonyms: getLangText(i?.['common:synonyms'], lang),
+          CASNumber: i?.CASNumber ?? '-',
+          refFlowPropertyId: i?.referenceToFlowPropertyDataSet?.['@refObjectId'] ?? '-',
+          locationOfSupply: resolveLocationOfSupply(i['locationOfSupply'], locationData),
+          version: i.version,
+          modifiedAt: new Date(i?.modified_at),
+          teamId: i?.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
 
     return Promise.resolve({
       data: data,
@@ -499,10 +496,11 @@ export async function getFlowTablePgroongaSearch(
   queryText: string,
   filter: FlowSearchFilters,
   stateCode?: string | number,
-  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  orderBy?: FlowSearchOrderBy,
   tid: string | [] = [],
 ) {
   let result: any = {};
+  const serviceOrderBy = resolveFlowSearchOrderBy(orderBy);
   const session = await supabase.auth.getSession();
 
   if (session.data.session) {
@@ -520,7 +518,7 @@ export async function getFlowTablePgroongaSearch(
         ? {
             query_text: queryText,
             filter_condition: filter,
-            order_by: orderBy ?? {},
+            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -531,7 +529,7 @@ export async function getFlowTablePgroongaSearch(
         : {
             query_text: queryText,
             filter_condition: filter,
-            order_by: orderBy ?? {},
+            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -560,96 +558,41 @@ export async function getFlowTablePgroongaSearch(
           (i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
         ),
       ),
-      lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+      getCachedFlowCategorizationAll(lang),
     ]);
 
-    let data: any[] = [];
+    const data = result.data.map((i: any) => {
+      try {
+        const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+        const typeOfDataSet = i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
 
-    if (lang === 'zh' && categorizationData) {
-      data = result.data.map((i: any) => {
-        try {
-          const typeOfDataSet =
-            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
-          const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-
-          let classificationData: any = {};
-          let thisClass: any[] = [];
-          if (typeOfDataSet === 'Elementary flow') {
-            classificationData =
-              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ];
-            thisClass = categorizationData?.categoryElementaryFlow;
-          } else {
-            classificationData =
-              dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
-            thisClass = categorizationData?.category;
-          }
-
-          const classifications = jsonToList(classificationData);
-
-          const classificationZH = genClassificationZH(classifications, thisClass);
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(dataInfo?.name ?? {}, lang),
-            synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-            flowType: typeOfDataSet ?? '-',
-            classification: classificationToString(classificationZH),
-            CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: resolveLocationOfSupply(
-              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-              locationData,
-            ),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const typeOfDataSet =
-            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
-          const classificationSource =
-            typeOfDataSet === 'Elementary flow'
-              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                  'common:category'
-                ]
-              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
-          const classifications = jsonToList(classificationSource);
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(dataInfo?.name ?? {}, lang),
-            synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-            classification: classificationToString(classifications),
-            flowType: typeOfDataSet ?? '-',
-            CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: resolveLocationOfSupply(
-              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-              locationData,
-            ),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          name: genFlowName(dataInfo?.name ?? {}, lang),
+          synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
+          classification: getLocalizedFlowClassification(
+            dataInfo?.classificationInformation,
+            typeOfDataSet,
+            categorizationData,
+          ),
+          flowType: typeOfDataSet ?? '-',
+          CASNumber: dataInfo?.CASNumber ?? '-',
+          locationOfSupply: resolveLocationOfSupply(
+            i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+            locationData,
+          ),
+          version: i.version,
+          modifiedAt: new Date(i?.modified_at),
+          teamId: i?.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
 
     return Promise.resolve({
       data: data,
@@ -670,31 +613,18 @@ async function mapFlowMentionRows(rows: FlowListRpcRow[], lang: string): Promise
       lang,
       rows.map((i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply),
     ),
-    lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+    getCachedFlowCategorizationAll(lang),
   ]);
 
   return rows.map((i: any) => {
     try {
       const typeOfDataSet = i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
       const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-      let classificationData: any = {};
-      let thisClass: any[] = [];
-      if (typeOfDataSet === 'Elementary flow') {
-        classificationData =
-          dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-            'common:category'
-          ];
-        thisClass = categorizationData?.categoryElementaryFlow ?? [];
-      } else {
-        classificationData =
-          dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
-        thisClass = categorizationData?.category ?? [];
-      }
-      const classifications = jsonToList(classificationData);
-      const classification =
-        lang === 'zh' && categorizationData
-          ? classificationToString(genClassificationZH(classifications, thisClass))
-          : classificationToString(classifications);
+      const classification = getLocalizedFlowClassification(
+        dataInfo?.classificationInformation,
+        typeOfDataSet,
+        categorizationData,
+      );
 
       return {
         key: i.id + ':' + i.version,
@@ -821,96 +751,41 @@ export async function flow_hybrid_search(
           (i: any) => i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
         ),
       ),
-      lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+      getCachedFlowCategorizationAll(lang),
     ]);
 
-    let data: any[] = [];
+    const data = resultData.map((i: any) => {
+      try {
+        const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
+        const typeOfDataSet = i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
 
-    if (lang === 'zh' && categorizationData) {
-      data = resultData.map((i: any) => {
-        try {
-          const typeOfDataSet =
-            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
-          const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-
-          let classificationData: any = {};
-          let thisClass: any[] = [];
-          if (typeOfDataSet === 'Elementary flow') {
-            classificationData =
-              dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                'common:category'
-              ];
-            thisClass = categorizationData?.categoryElementaryFlow;
-          } else {
-            classificationData =
-              dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
-            thisClass = categorizationData?.category;
-          }
-
-          const classifications = jsonToList(classificationData);
-
-          const classificationZH = genClassificationZH(classifications, thisClass);
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(dataInfo?.name ?? {}, lang),
-            synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-            flowType: typeOfDataSet ?? '-',
-            classification: classificationToString(classificationZH),
-            CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: resolveLocationOfSupply(
-              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-              locationData,
-            ),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    } else {
-      data = resultData.map((i: any) => {
-        try {
-          const dataInfo = i.json?.flowDataSet?.flowInformation?.dataSetInformation;
-          const typeOfDataSet =
-            i.json?.flowDataSet?.modellingAndValidation?.LCIMethod?.typeOfDataSet;
-          const classificationSource =
-            typeOfDataSet === 'Elementary flow'
-              ? dataInfo?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-                  'common:category'
-                ]
-              : dataInfo?.classificationInformation?.['common:classification']?.['common:class'];
-          const classifications = jsonToList(classificationSource);
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genFlowName(dataInfo?.name ?? {}, lang),
-            synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
-            classification: classificationToString(classifications),
-            flowType: typeOfDataSet ?? '-',
-            CASNumber: dataInfo?.CASNumber ?? '-',
-            locationOfSupply: resolveLocationOfSupply(
-              i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-              locationData,
-            ),
-            version: i.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+        return {
+          key: i.id + ':' + i.version,
+          id: i.id,
+          name: genFlowName(dataInfo?.name ?? {}, lang),
+          synonyms: getLangText(dataInfo?.['common:synonyms'] ?? {}, lang),
+          classification: getLocalizedFlowClassification(
+            dataInfo?.classificationInformation,
+            typeOfDataSet,
+            categorizationData,
+          ),
+          flowType: typeOfDataSet ?? '-',
+          CASNumber: dataInfo?.CASNumber ?? '-',
+          locationOfSupply: resolveLocationOfSupply(
+            i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
+            locationData,
+          ),
+          version: i.version,
+          modifiedAt: new Date(i?.modified_at),
+          teamId: i?.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
     return Promise.resolve({
       data: data,
       page: params.current ?? 1,
@@ -1070,79 +945,29 @@ export async function getFlowStateCodeByIdsAndVersions(
 
   const [locationData, categorizationData] = await Promise.all([
     fetchLocationLookup(lang, locations),
-    lang === 'zh' ? getCachedFlowCategorizationAll(lang) : Promise.resolve(null),
+    getCachedFlowCategorizationAll(lang),
   ]);
 
-  let data: any[] = [];
-
-  if (lang === 'zh' && categorizationData) {
-    data = result.data.map((i: any) => {
-      try {
-        let classificationData: any = {};
-        let thisClass: any[] = [];
-        if (i?.typeOfDataSet === 'Elementary flow') {
-          classificationData =
-            i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ];
-          thisClass = categorizationData?.categoryElementaryFlow;
-        } else {
-          classificationData =
-            i?.classificationInformation?.['common:classification']?.['common:class'];
-          thisClass = categorizationData?.category;
-        }
-
-        const classifications = jsonToList(classificationData);
-        const classificationZH = genClassificationZH(classifications, thisClass);
-
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          stateCode: i.state_code,
-          classification: classificationToString(classificationZH),
-          locationOfSupply: resolveLocationOfSupply(
-            i.json?.flowDataSet?.flowInformation?.geography?.locationOfSupply,
-            locationData,
-          ),
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  } else {
-    data = result.data.map((i: any) => {
-      try {
-        let classificationData: any = {};
-        if (i?.typeOfDataSet === 'Elementary flow') {
-          classificationData =
-            i?.classificationInformation?.['common:elementaryFlowCategorization']?.[
-              'common:category'
-            ];
-        } else {
-          classificationData =
-            i?.classificationInformation?.['common:classification']?.['common:class'];
-        }
-
-        const classifications = jsonToList(classificationData);
-
-        return {
-          key: i.id + ':' + i.version,
-          id: i.id,
-          version: i.version,
-          stateCode: i.state_code,
-          classification: classificationToString(classifications),
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-        };
-      }
-    });
-  }
+  const data = result.data.map((i: any) => {
+    try {
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        version: i.version,
+        stateCode: i.state_code,
+        classification: getLocalizedFlowClassification(
+          i?.classificationInformation,
+          i?.typeOfDataSet,
+          categorizationData,
+        ),
+        locationOfSupply: resolveLocationOfSupply(i?.locationOfSupply, locationData),
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        id: i.id,
+      };
+    }
+  });
   return { error: null, data };
 }

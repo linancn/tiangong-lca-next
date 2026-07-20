@@ -6,7 +6,7 @@ import { getSourceDetail } from '@/services/sources/api';
 import { SourceDetailData, SourceDetailResponse } from '@/services/sources/data';
 import { genSourceFromData } from '@/services/sources/util';
 import { ProFormInstance } from '@ant-design/pro-components';
-import { FormattedMessage, useModel } from '@umijs/max';
+import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
@@ -45,6 +45,7 @@ const SourceSelectForm: FC<Props> = ({
   type,
   showRequiredLabel = false,
 }) => {
+  const intl = useIntl();
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
@@ -364,7 +365,10 @@ const SourceSelectForm: FC<Props> = ({
                   <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder='text'
+                        placeholder={intl.formatMessage({
+                          id: 'pages.lang.text.placeholder',
+                          defaultMessage: 'Text',
+                        })}
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}

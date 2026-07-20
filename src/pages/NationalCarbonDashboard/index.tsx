@@ -1,4 +1,8 @@
 import AccessDenied from '@/components/AccessDenied';
+import {
+  getRouteViewStateVariantIds,
+  resolveRouteViewState,
+} from '@/services/general/routeViewState';
 import { useIntl, useModel } from '@umijs/max';
 import { gsap } from 'gsap';
 import { Application, Container, Graphics } from 'pixi.js';
@@ -79,13 +83,9 @@ type FloatingNavigatorPosition = {
 
 const dashboardSnapshot = parseDashboardSnapshot(rawSnapshot);
 
-const screens: { key: ScreenKey; shortLabel: string }[] = [
-  { key: 'overview', shortLabel: '01' },
-  { key: 'map_status', shortLabel: '02' },
-  { key: 'outcome_metrics', shortLabel: '03' },
-  { key: 'connectivity', shortLabel: '04' },
-  { key: 'flow_topology', shortLabel: '05' },
-];
+const screens: { key: ScreenKey; shortLabel: string }[] = getRouteViewStateVariantIds(
+  'national-carbon-screen',
+).map((key, index) => ({ key: key as ScreenKey, shortLabel: String(index + 1).padStart(2, '0') }));
 
 const dashboardStageWidth = 1920;
 const dashboardStageHeight = 1080;
@@ -190,13 +190,17 @@ function getHashSearchParams(): URLSearchParams {
 }
 
 function getInitialScreen(): ScreenKey {
-  const screenParam = getHashSearchParams().get('screen');
-  const matchedScreen = screens.find((screen) => screen.key === screenParam);
-  return matchedScreen?.key ?? 'overview';
+  return resolveRouteViewState(
+    'national-carbon-screen',
+    getHashSearchParams().get('screen'),
+  ) as ScreenKey;
 }
 
 function getAutoplayEnabled(): boolean {
-  return getHashSearchParams().get('autoplay') !== '0';
+  return (
+    resolveRouteViewState('national-carbon-autoplay', getHashSearchParams().get('autoplay')) !==
+    'disabled'
+  );
 }
 
 function getStatusTone(statusKey: StatusFilterKey): StatusTone {

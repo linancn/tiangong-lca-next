@@ -252,21 +252,23 @@ jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
   const TableDropdown = () => <span>table-dropdown</span>;
 
-  const ProTable = ({ actionRef, request, rowSelection, columns, toolBarRender }: any) => {
+  const ProTable = ({ actionRef, params, request, rowSelection, columns, toolBarRender }: any) => {
     const requestRef = React.useRef(request);
-    const initializedRef = React.useRef(false);
+    const paramsRef = React.useRef(params);
+    const serializedParams = JSON.stringify(params ?? {});
 
     React.useEffect(() => {
       requestRef.current = request;
     }, [request]);
+    paramsRef.current = params;
 
     React.useEffect(() => {
-      latestProTableProps = { actionRef, request, rowSelection, columns, toolBarRender };
-    }, [actionRef, request, rowSelection, columns, toolBarRender]);
+      latestProTableProps = { actionRef, params, request, rowSelection, columns, toolBarRender };
+    }, [actionRef, params, request, rowSelection, columns, toolBarRender]);
 
     const reload = React.useCallback(async () => {
       if (requestRef.current) {
-        await requestRef.current({ pageSize: 10, current: 1 }, {});
+        await requestRef.current({ pageSize: 10, current: 1, ...paramsRef.current }, {});
       }
     }, []);
 
@@ -277,11 +279,11 @@ jest.mock('@ant-design/pro-components', () => {
           setPageInfo: jest.fn(),
         };
       }
-      if (!initializedRef.current) {
-        initializedRef.current = true;
-        void reload();
-      }
     }, [actionRef, reload]);
+
+    React.useEffect(() => {
+      void reload();
+    }, [reload, serializedParams]);
 
     return (
       <div data-testid='pro-table'>

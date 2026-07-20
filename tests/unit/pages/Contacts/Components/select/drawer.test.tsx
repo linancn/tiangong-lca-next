@@ -238,17 +238,29 @@ jest.mock('antd', () => {
 jest.mock('@ant-design/pro-components', () => {
   const React = require('react');
 
-  const ProTable = ({ actionRef, request, rowSelection, toolBarRender, columns = [] }: any) => {
+  const ProTable = ({
+    actionRef,
+    request,
+    params = {},
+    rowSelection,
+    toolBarRender,
+    columns = [],
+  }: any) => {
     const [rows, setRows] = React.useState<any[]>([]);
     const latestRequestRef = React.useRef(request);
+    const latestParamsRef = React.useRef(params);
     latestRequestRef.current = request;
+    latestParamsRef.current = params;
 
     const api = React.useMemo(
       () => ({
         setPageInfo: jest.fn(),
         reload: jest.fn(async () => {
           await Promise.resolve();
-          const result = await latestRequestRef.current({ pageSize: 10, current: 1 }, {});
+          const result = await latestRequestRef.current(
+            { ...latestParamsRef.current, pageSize: 10, current: 1 },
+            {},
+          );
           setRows(result?.data ?? []);
           return result;
         }),

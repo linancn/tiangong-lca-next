@@ -41,6 +41,11 @@ jest.mock('@/components/LCIACacheMonitor', () => ({
   default: 'lcia-cache-monitor',
 }));
 
+jest.mock('@/components/AccessDenied', () => ({
+  __esModule: true,
+  default: () => <div data-testid='access-denied'>Localized access denied</div>,
+}));
+
 jest.mock('@/components/ClassificationCacheMonitor', () => ({
   __esModule: true,
   default: 'classification-cache-monitor',
@@ -526,6 +531,8 @@ describe('app runtime config', () => {
     expect(runtimeLayout.avatarProps?.render?.().props.children.type).toBe('div');
     expect(runtimeLayout.footerRender?.().type()).toEqual(<div data-testid='footer'>Footer</div>);
     expect(runtimeLayout.bgLayoutImgList).toBeUndefined();
+    render(runtimeLayout.unAccessible);
+    expect(screen.getByTestId('access-denied')).toHaveTextContent('Localized access denied');
 
     const children = runtimeLayout.childrenRender?.(<div data-testid='child'>child</div>);
     render(children);

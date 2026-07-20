@@ -10,7 +10,7 @@ import { renderWithProviders, screen, waitFor } from '../../helpers/testUtils';
 let mockLocale = 'en-US';
 const mockHistoryPush = jest.fn();
 let mockLocation = { pathname: '/welcome', search: '' };
-const mockFormatMessage = ({ defaultMessage, id }: any) => {
+const mockFormatMessage = ({ defaultMessage, id, values: inlineValues }: any, values?: any) => {
   const localeMessages = mockLocale.startsWith('zh')
     ? jest.requireActual('@/locales/zh-CN/pages_home').default
     : mockLocale.startsWith('de')
@@ -19,7 +19,13 @@ const mockFormatMessage = ({ defaultMessage, id }: any) => {
         ? jest.requireActual('@/locales/fr-FR/pages_home').default
         : jest.requireActual('@/locales/en-US/pages_home').default;
 
-  return localeMessages[id] ?? defaultMessage ?? id;
+  const template = localeMessages[id] ?? defaultMessage ?? id;
+  const replacements = values ?? inlineValues;
+  return replacements
+    ? template.replace(/\{([^}]+)\}/gu, (placeholder: string, key: string) =>
+        key in replacements ? String(replacements[key]) : placeholder,
+      )
+    : template;
 };
 
 jest.mock('@ant-design/pro-components', () => ({
@@ -40,7 +46,7 @@ jest.mock('umi', () => ({
   },
   useIntl: () => ({
     locale: mockLocale,
-    formatMessage: (props: any) => mockFormatMessage(props),
+    formatMessage: (props: any, values?: any) => mockFormatMessage(props, values),
   }),
   useLocation: () => mockLocation,
 }));
@@ -155,9 +161,21 @@ describe('Welcome page', () => {
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveStyle({ margin: '0 auto', paddingBottom: '0', top: '16px' });
+    expect(dialog.querySelector('.ant-modal-content')).toHaveStyle({
+      display: 'flex',
+      flexDirection: 'column',
+      maxHeight: 'calc(100dvh - 32px)',
+      overflow: 'hidden',
+    });
+    expect(dialog.querySelector('.ant-modal-body')).toHaveStyle({
+      minHeight: '0',
+      overflowY: 'auto',
+    });
     expect(
       screen.getByRole('img', { name: 'TIDAS data system architecture diagram' }),
-    ).toBeInTheDocument();
+    ).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByTestId('welcome-tidas-image-language')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Learn more' })).toHaveAttribute(
       'href',
       'https://tidas.tiangong.earth/en/docs/intro',
@@ -206,10 +224,10 @@ describe('Welcome page', () => {
       '../sys-files/video/platform_usage_process_first_matched.mp4',
     );
 
-    await user.click(screen.getByRole('button', { name: /Browse Open Data/ }));
+    await user.click(screen.getByRole('button', { name: 'Browse Open Data', exact: true }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/tgdata/flows');
 
-    await user.click(screen.getByRole('button', { name: /My Data/ }));
+    await user.click(screen.getByRole('button', { name: 'My Data', exact: true }));
     expect(mockHistoryPush).toHaveBeenCalledWith('/mydata/processes');
   });
 
@@ -349,6 +367,20 @@ describe('Welcome page', () => {
     await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
     expect(screen.getByText('Unit Processes & Inventories')).toBeInTheDocument();
     expect(screen.queryByText('Operation Demo Video')).not.toBeInTheDocument();
+  });
+
+  it('uses the default locale definition when the runtime locale is unsupported', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'es-ES';
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS Architecture' }));
+
+    expect(
+      await screen.findByRole('img', { name: 'TIDAS data system architecture diagram' }),
+    ).toHaveAttribute('src', '/images/tidas/TIDAS-zh-CN.svg');
   });
 
   it('loads ecosystem teams with thumbnails and reuses cached teams across reopen', async () => {
@@ -497,10 +529,35 @@ describe('Welcome page', () => {
       'Schéma de l’architecture du système de données TIDAS',
     );
     expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-en-dark.svg');
+    expect(tidasImage).toHaveAttribute('aria-describedby', 'welcome-tidas-image-language');
+    expect(screen.getByTestId('welcome-tidas-image-language')).toHaveTextContent(
+      'Langue du schéma : English',
+    );
     expect(
       screen.getByText(/Un écosystème ouvert fondé sur des paquets de données modulaires/),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'En savoir plus' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'En savoir plus (English)' })).toHaveAttribute(
+      'href',
+      'https://tidas.tiangong.earth/en/docs/intro',
+    );
+  });
+
+  it('discloses both German TIDAS resource fallbacks without relabelling them as German', async () => {
+    const user = userEvent.setup();
+    mockLocale = 'de-DE';
+    mockGetLang.mockReturnValue('de');
+
+    renderWithProviders(<Welcome />);
+
+    await waitFor(() => expect(mockGetTeams).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole('button', { name: 'TIDAS-Architektur' }));
+
+    const tidasImage = await screen.findByAltText('Architektur des TIDAS-Datensystems');
+    expect(tidasImage).toHaveAttribute('src', '/images/tidas/TIDAS-en.svg');
+    expect(screen.getByTestId('welcome-tidas-image-language')).toHaveTextContent(
+      'Sprache der Abbildung: English',
+    );
+    expect(screen.getByRole('link', { name: 'Mehr erfahren (English)' })).toHaveAttribute(
       'href',
       'https://tidas.tiangong.earth/en/docs/intro',
     );

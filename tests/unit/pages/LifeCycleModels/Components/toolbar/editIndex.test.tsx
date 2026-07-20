@@ -946,6 +946,30 @@ describe('ToolbarEdit', () => {
     );
   });
 
+  it('rehydrates only graph visuals when content language changes', async () => {
+    const { rerender } = render(<ToolbarEdit {...baseProps} />);
+    mockInitData.mockClear();
+    mockUpdateNode.mockClear();
+
+    rerender(<ToolbarEdit {...baseProps} lang='de' />);
+
+    await waitFor(() => expect(mockUpdateNode).toHaveBeenCalledTimes(2));
+    mockUpdateNode.mock.calls.forEach(([, visualUpdate, options]: [string, any, any]) => {
+      expect(visualUpdate).toEqual(
+        expect.objectContaining({
+          ports: expect.any(Object),
+          tools: expect.any(Array),
+        }),
+      );
+      expect(visualUpdate).not.toHaveProperty('data');
+      expect(visualUpdate).not.toHaveProperty('selected');
+      expect(visualUpdate).not.toHaveProperty('x');
+      expect(visualUpdate).not.toHaveProperty('y');
+      expect(options).toEqual({ ignoreHistory: true });
+    });
+    expect(mockInitData).not.toHaveBeenCalled();
+  });
+
   it('duplicates selected cells from the control actions and syncs graph state', async () => {
     const selectedCell = { id: 'node-1' };
     const pastedReferenceNode = {

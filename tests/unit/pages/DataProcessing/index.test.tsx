@@ -18,6 +18,8 @@ import DataProcessing, {
   statusToneFromValue,
   stringifyCommandData,
 } from '@/pages/DataProcessing';
+import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageRegistry';
+import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
@@ -45,6 +47,8 @@ const mockListLciaResultPublications = jest.fn();
 const mockRequestWorkerJobsApi = jest.fn();
 const mockFetch = jest.fn();
 let mockLocale: string | undefined = 'en-US';
+let mockLocation = { pathname: '/data-processing', search: '' };
+const mockHistoryReplace = jest.fn();
 
 const mockMessages: Record<string, Record<string, string>> = {
   'zh-CN': {
@@ -117,10 +121,12 @@ const mockLciaMethodList = {
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  history: { replace: (...args: any[]) => mockHistoryReplace(...args) },
   useIntl: () => ({
     formatMessage: mockFormatMessage,
     locale: mockLocale,
   }),
+  useLocation: () => mockLocation,
 }));
 
 jest.mock('@/services/roles/api', () => ({
@@ -146,6 +152,7 @@ describe('DataProcessing page', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     mockLocale = 'en-US';
+    mockLocation = { pathname: '/data-processing', search: '' };
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockLciaMethodList,
@@ -235,6 +242,38 @@ describe('DataProcessing page', () => {
     expect(resolveLocalizedText(['raw fallback'], 'en-US')).toBe('');
     expect(resolveLocalizedText({}, 'en-US')).toBe('');
     expect(resolveLocalizedText(undefined, 'en-US')).toBe('');
+
+    const registryLocalizedValue = CONTENT_LANGUAGE_REGISTRY.map(({ languageCode }) => ({
+      '@xml:lang': languageCode,
+      '#text': `label-${languageCode}`,
+    }));
+    for (const { appLocale, contentLanguage } of LOCALE_CAPABILITY_MATRIX) {
+      if (!contentLanguage) {
+        throw new Error(`Missing content capability for ${appLocale}.`);
+      }
+      expect(resolveLocalizedText(registryLocalizedValue, appLocale)).toBe(
+        `label-${contentLanguage}`,
+      );
+    }
+    expect(
+      resolveLocalizedText(
+        [
+          { '@xml:lang': 'fr', '#text': '   ' },
+          { '@xml:lang': 'en', '#text': 'English fallback after blank French' },
+          { '@xml:lang': 'zh', '#text': '中文备选' },
+        ],
+        'fr-FR',
+      ),
+    ).toBe('English fallback after blank French');
+    expect(
+      resolveLocalizedText(
+        [
+          { '@xml:lang': 'fr', '#text': '' },
+          { '@xml:lang': 'ja', '#text': 'First non-blank legacy fallback' },
+        ],
+        'fr-FR',
+      ),
+    ).toBe('First non-blank legacy fallback');
 
     expect(buildImpactCategoryOptions({}, 'en-US')).toEqual([]);
     expect(
@@ -545,6 +584,30 @@ describe('DataProcessing page', () => {
       expect(mockUnpublishLciaResultPublication).toHaveBeenCalledWith({
         publicationId: 'publication-1',
       }),
+    );
+  });
+
+  it('hydrates typed hash tabs and preserves other deep-link parameters when tabs change', async () => {
+    mockLocation = {
+      pathname: '/data-processing',
+      search: '?tab=preview&packageId=package-1',
+    };
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('tab-panel-preview')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('tab-publication'));
+    expect(mockHistoryReplace).toHaveBeenCalledWith({
+      pathname: '/data-processing',
+      search: '?tab=publication&packageId=package-1',
+    });
+    await waitFor(() => expect(mockListLciaResultPublications).toHaveBeenCalledWith({ limit: 50 }));
+    await waitFor(() =>
+      expect(
+        within(screen.getByTestId('tab-panel-publication')).getByRole('button', {
+          name: 'Refresh publications',
+        }),
+      ).toHaveAttribute('data-loading', 'false'),
     );
   });
 

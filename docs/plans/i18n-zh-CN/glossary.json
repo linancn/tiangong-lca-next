@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "tiangong.i18n-glossary.v1",
+  "locale": "zh-CN",
+  "purpose": "Canonical Simplified Chinese terminology input for the registry-complete locale delivery gate.",
+  "sourceEqualityPolicy": {
+    "rationale": "The single current non-technical source-equal value is an established mixed-language UUID field label; every other source-equal value remains suspicious.",
+    "exactValues": ["Flow UUID"],
+    "messageIdPrefixes": []
+  },
+  "terms": [
+    { "concept": "life cycle assessment", "preferred": ["生命周期评价"] },
+    { "concept": "process", "preferred": ["过程"] },
+    { "concept": "flow", "preferred": ["流"] },
+    { "concept": "flow property", "preferred": ["流属性"] },
+    { "concept": "unit group", "preferred": ["单位组"] },
+    { "concept": "dataset", "preferred": ["数据集"] },
+    { "concept": "TIDAS", "preferred": ["TIDAS"] }
+  ]
+}

@@ -1,0 +1,5828 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "isic",
+  "locale": "fr",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Procédé",
+    "Flow": "Flux",
+    "FlowProperty": "Propriété de flux",
+    "UnitGroup": "Groupe d'unités",
+    "Contact": "Contact",
+    "Source": "Source",
+    "LCIAMethod": "Méthode d'ACVI",
+    "LifeCycleModel": "Modèle de cycle de vie"
+  },
+  "labels": [
+    {
+      "key": "category[0]",
+      "assertion": {
+        "id": "A"
+      },
+      "label": "Agriculture, sylviculture et pêche"
+    },
+    {
+      "key": "category[0]/category[0]",
+      "assertion": {
+        "id": "01"
+      },
+      "label": "Culture et production animale, chasse et activités de services connexes"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "011"
+      },
+      "label": "Culture de plantes non pérennes"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0111"
+      },
+      "label": "Culture de céréales, à l'exception du riz, de légumineuses et de graines oléagineuses"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "0112"
+      },
+      "label": "Culture du riz"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "0113"
+      },
+      "label": "Culture de légumes et de melons, de racines et de tubercules"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "0114"
+      },
+      "label": "Culture de la canne à sucre"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "0115"
+      },
+      "label": "Culture du tabac"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "0116"
+      },
+      "label": "Culture de plantes à fibres"
+    },
+    {
+      "key": "category[0]/category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "0119"
+      },
+      "label": "Culture d'autres plantes non pérennes"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "012"
+      },
+      "label": "Culture de plantes pérennes"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0121"
+      },
+      "label": "Culture de la vigne"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "0122"
+      },
+      "label": "Culture de fruits tropicaux et subtropicaux"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "0123"
+      },
+      "label": "Culture d'agrumes"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "0124"
+      },
+      "label": "Culture de fruits à pépins et à noyau"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[4]",
+      "assertion": {
+        "id": "0125"
+      },
+      "label": "Culture d'autres fruits d'arbres ou d'arbustes et de fruits à coque"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[5]",
+      "assertion": {
+        "id": "0126"
+      },
+      "label": "Culture de fruits oléagineux"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[6]",
+      "assertion": {
+        "id": "0127"
+      },
+      "label": "Culture de plantes à boissons"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[7]",
+      "assertion": {
+        "id": "0128"
+      },
+      "label": "Culture de plantes à épices, aromatiques, médicinales et pharmaceutiques"
+    },
+    {
+      "key": "category[0]/category[0]/category[1]/category[8]",
+      "assertion": {
+        "id": "0129"
+      },
+      "label": "Culture d'autres plantes pérennes"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "013"
+      },
+      "label": "Multiplication des plantes"
+    },
+    {
+      "key": "category[0]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "0130"
+      },
+      "label": "Multiplication des plantes"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "014"
+      },
+      "label": "Production animale"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "0141"
+      },
+      "label": "Élevage de bovins et de buffles"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "0142"
+      },
+      "label": "Élevage de chevaux et d'autres équidés"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "0143"
+      },
+      "label": "Élevage de chameaux et de camélidés"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "0144"
+      },
+      "label": "Élevage d'ovins et de caprins"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "0145"
+      },
+      "label": "Élevage de porcins"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "0146"
+      },
+      "label": "Élevage de volailles"
+    },
+    {
+      "key": "category[0]/category[0]/category[3]/category[6]",
+      "assertion": {
+        "id": "0149"
+      },
+      "label": "Élevage d'autres animaux"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]",
+      "assertion": {
+        "id": "015"
+      },
+      "label": "Culture et élevage associés"
+    },
+    {
+      "key": "category[0]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "0150"
+      },
+      "label": "Culture et élevage associés"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]",
+      "assertion": {
+        "id": "016"
+      },
+      "label": "Activités de soutien à l'agriculture et activités de post-récolte"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "0161"
+      },
+      "label": "Activités de soutien aux cultures"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "0162"
+      },
+      "label": "Activités de soutien à la production animale"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "0163"
+      },
+      "label": "Activités de post-récolte"
+    },
+    {
+      "key": "category[0]/category[0]/category[5]/category[3]",
+      "assertion": {
+        "id": "0164"
+      },
+      "label": "Traitement des semences pour la multiplication"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]",
+      "assertion": {
+        "id": "017"
+      },
+      "label": "Chasse, piégeage et activités de services connexes"
+    },
+    {
+      "key": "category[0]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "0170"
+      },
+      "label": "Chasse, piégeage et activités de services connexes"
+    },
+    {
+      "key": "category[0]/category[1]",
+      "assertion": {
+        "id": "02"
+      },
+      "label": "Sylviculture et exploitation forestière"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "021"
+      },
+      "label": "Sylviculture et autres activités forestières"
+    },
+    {
+      "key": "category[0]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0210"
+      },
+      "label": "Sylviculture et autres activités forestières"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "022"
+      },
+      "label": "Exploitation forestière"
+    },
+    {
+      "key": "category[0]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0220"
+      },
+      "label": "Exploitation forestière"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "023"
+      },
+      "label": "Récolte de produits forestiers non ligneux"
+    },
+    {
+      "key": "category[0]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "0230"
+      },
+      "label": "Récolte de produits forestiers non ligneux"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "024"
+      },
+      "label": "Services de soutien à la sylviculture"
+    },
+    {
+      "key": "category[0]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "0240"
+      },
+      "label": "Services de soutien à la sylviculture"
+    },
+    {
+      "key": "category[0]/category[2]",
+      "assertion": {
+        "id": "03"
+      },
+      "label": "Pêche et aquaculture"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "031"
+      },
+      "label": "Pêche"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0311"
+      },
+      "label": "Pêche maritime"
+    },
+    {
+      "key": "category[0]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "0312"
+      },
+      "label": "Pêche en eau douce"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "032"
+      },
+      "label": "Aquaculture"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0321"
+      },
+      "label": "Aquaculture marine"
+    },
+    {
+      "key": "category[0]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0322"
+      },
+      "label": "Aquaculture en eau douce"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "033"
+      },
+      "label": "Activités de soutien à la pêche et à l'aquaculture"
+    },
+    {
+      "key": "category[0]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "0330"
+      },
+      "label": "Activités de soutien à la pêche et à l'aquaculture"
+    },
+    {
+      "key": "category[1]",
+      "assertion": {
+        "id": "B"
+      },
+      "label": "Industries extractives"
+    },
+    {
+      "key": "category[1]/category[0]",
+      "assertion": {
+        "id": "05"
+      },
+      "label": "Extraction de houille et de lignite"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "051"
+      },
+      "label": "Extraction de houille"
+    },
+    {
+      "key": "category[1]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "0510"
+      },
+      "label": "Extraction de houille"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "052"
+      },
+      "label": "Extraction de lignite"
+    },
+    {
+      "key": "category[1]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "0520"
+      },
+      "label": "Extraction de lignite"
+    },
+    {
+      "key": "category[1]/category[1]",
+      "assertion": {
+        "id": "06"
+      },
+      "label": "Extraction de pétrole brut et de gaz naturel"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "061"
+      },
+      "label": "Extraction de pétrole brut"
+    },
+    {
+      "key": "category[1]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "0610"
+      },
+      "label": "Extraction de pétrole brut"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "062"
+      },
+      "label": "Extraction de gaz naturel"
+    },
+    {
+      "key": "category[1]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "0620"
+      },
+      "label": "Extraction de gaz naturel"
+    },
+    {
+      "key": "category[1]/category[2]",
+      "assertion": {
+        "id": "07"
+      },
+      "label": "Extraction de minerais métalliques"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "071"
+      },
+      "label": "Extraction de minerais de fer"
+    },
+    {
+      "key": "category[1]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "0710"
+      },
+      "label": "Extraction de minerais de fer"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "072"
+      },
+      "label": "Extraction de minerais de métaux non ferreux"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "0721"
+      },
+      "label": "Extraction de minerais d'uranium et de thorium"
+    },
+    {
+      "key": "category[1]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "0729"
+      },
+      "label": "Extraction d'autres minerais de métaux non ferreux"
+    },
+    {
+      "key": "category[1]/category[3]",
+      "assertion": {
+        "id": "08"
+      },
+      "label": "Autres activités extractives"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "081"
+      },
+      "label": "Extraction de pierre, de sable et d'argile"
+    },
+    {
+      "key": "category[1]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "0810"
+      },
+      "label": "Extraction de pierre, de sable et d'argile"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "089"
+      },
+      "label": "Activités extractives n.c.a."
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "0891"
+      },
+      "label": "Extraction de minéraux chimiques et d'engrais minéraux"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "0892"
+      },
+      "label": "Extraction de tourbe"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "0893"
+      },
+      "label": "Extraction de sel"
+    },
+    {
+      "key": "category[1]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "0899"
+      },
+      "label": "Autres activités extractives n.c.a."
+    },
+    {
+      "key": "category[1]/category[4]",
+      "assertion": {
+        "id": "09"
+      },
+      "label": "Activités de soutien à l'extraction"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "091"
+      },
+      "label": "Activités de soutien à l'extraction de pétrole et de gaz naturel"
+    },
+    {
+      "key": "category[1]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "0910"
+      },
+      "label": "Activités de soutien à l'extraction de pétrole et de gaz naturel"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "099"
+      },
+      "label": "Activités de soutien aux autres activités extractives"
+    },
+    {
+      "key": "category[1]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "0990"
+      },
+      "label": "Activités de soutien aux autres activités extractives"
+    },
+    {
+      "key": "category[2]",
+      "assertion": {
+        "id": "C"
+      },
+      "label": "Industrie manufacturière"
+    },
+    {
+      "key": "category[2]/category[0]",
+      "assertion": {
+        "id": "10"
+      },
+      "label": "Fabrication de produits alimentaires"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "101"
+      },
+      "label": "Transformation et conservation de la viande"
+    },
+    {
+      "key": "category[2]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1010"
+      },
+      "label": "Transformation et conservation de la viande"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "102"
+      },
+      "label": "Transformation et conservation de poissons, crustacés et mollusques"
+    },
+    {
+      "key": "category[2]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1020"
+      },
+      "label": "Transformation et conservation de poissons, crustacés et mollusques"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "103"
+      },
+      "label": "Transformation et conservation de fruits et légumes"
+    },
+    {
+      "key": "category[2]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1030"
+      },
+      "label": "Transformation et conservation de fruits et légumes"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]",
+      "assertion": {
+        "id": "104"
+      },
+      "label": "Fabrication d'huiles et graisses végétales et animales"
+    },
+    {
+      "key": "category[2]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "1040"
+      },
+      "label": "Fabrication d'huiles et graisses végétales et animales"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]",
+      "assertion": {
+        "id": "105"
+      },
+      "label": "Fabrication de produits laitiers"
+    },
+    {
+      "key": "category[2]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "1050"
+      },
+      "label": "Fabrication de produits laitiers"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]",
+      "assertion": {
+        "id": "106"
+      },
+      "label": "Fabrication de produits de la meunerie, d'amidons et de produits amylacés"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "1061"
+      },
+      "label": "Fabrication de produits de la meunerie"
+    },
+    {
+      "key": "category[2]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "1062"
+      },
+      "label": "Fabrication d'amidons et de produits amylacés"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]",
+      "assertion": {
+        "id": "107"
+      },
+      "label": "Fabrication d'autres produits alimentaires"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "1071"
+      },
+      "label": "Fabrication de produits de boulangerie"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "1072"
+      },
+      "label": "Fabrication de sucre"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "1073"
+      },
+      "label": "Fabrication de cacao, chocolat et confiseries"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "1074"
+      },
+      "label": "Fabrication de pâtes alimentaires, couscous et produits farinacés similaires"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[4]",
+      "assertion": {
+        "id": "1075"
+      },
+      "label": "Fabrication de plats préparés"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[5]",
+      "assertion": {
+        "id": "1076"
+      },
+      "label": "Transformation du café et du thé"
+    },
+    {
+      "key": "category[2]/category[0]/category[6]/category[6]",
+      "assertion": {
+        "id": "1079"
+      },
+      "label": "Fabrication d'autres produits alimentaires n.c.a."
+    },
+    {
+      "key": "category[2]/category[0]/category[7]",
+      "assertion": {
+        "id": "108"
+      },
+      "label": "Fabrication d'aliments préparés pour animaux"
+    },
+    {
+      "key": "category[2]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "1080"
+      },
+      "label": "Fabrication d'aliments préparés pour animaux"
+    },
+    {
+      "key": "category[2]/category[1]",
+      "assertion": {
+        "id": "11"
+      },
+      "label": "Fabrication de boissons"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "110"
+      },
+      "label": "Fabrication de boissons"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "1101"
+      },
+      "label": "Distillation, rectification et mélange de boissons alcoolisées"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "1102"
+      },
+      "label": "Fabrication de vins"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "1103"
+      },
+      "label": "Fabrication de bière"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "1104"
+      },
+      "label": "Fabrication de malt"
+    },
+    {
+      "key": "category[2]/category[1]/category[0]/category[4]",
+      "assertion": {
+        "id": "1105"
+      },
+      "label": "Fabrication de boissons rafraîchissantes sans alcool; production d'eaux minérales et d'autres eaux embouteillées"
+    },
+    {
+      "key": "category[2]/category[2]",
+      "assertion": {
+        "id": "12"
+      },
+      "label": "Fabrication de produits du tabac"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "120"
+      },
+      "label": "Fabrication de produits du tabac"
+    },
+    {
+      "key": "category[2]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "1200"
+      },
+      "label": "Fabrication de produits du tabac"
+    },
+    {
+      "key": "category[2]/category[3]",
+      "assertion": {
+        "id": "13"
+      },
+      "label": "Fabrication de textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "131"
+      },
+      "label": "Filature, tissage et ennoblissement des textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "1311"
+      },
+      "label": "Préparation et filature de fibres textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "1312"
+      },
+      "label": "Tissage de textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "1313"
+      },
+      "label": "Ennoblissement des textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]",
+      "assertion": {
+        "id": "139"
+      },
+      "label": "Fabrication d'autres textiles"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "1391"
+      },
+      "label": "Fabrication d'étoffes à mailles et au crochet"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "1392"
+      },
+      "label": "Fabrication d'articles textiles confectionnés, à l'exception des vêtements"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "1393"
+      },
+      "label": "Fabrication de tapis et moquettes"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "1394"
+      },
+      "label": "Fabrication de ficelles, cordes, cordages et filets"
+    },
+    {
+      "key": "category[2]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "1399"
+      },
+      "label": "Fabrication d'autres textiles n.c.a."
+    },
+    {
+      "key": "category[2]/category[4]",
+      "assertion": {
+        "id": "14"
+      },
+      "label": "Fabrication de vêtements"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "141"
+      },
+      "label": "Fabrication de vêtements, à l'exception des vêtements en fourrure"
+    },
+    {
+      "key": "category[2]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "1410"
+      },
+      "label": "Fabrication de vêtements, à l'exception des vêtements en fourrure"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]",
+      "assertion": {
+        "id": "142"
+      },
+      "label": "Fabrication d'articles en fourrure"
+    },
+    {
+      "key": "category[2]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "1420"
+      },
+      "label": "Fabrication d'articles en fourrure"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]",
+      "assertion": {
+        "id": "143"
+      },
+      "label": "Fabrication de vêtements à mailles et au crochet"
+    },
+    {
+      "key": "category[2]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "1430"
+      },
+      "label": "Fabrication de vêtements à mailles et au crochet"
+    },
+    {
+      "key": "category[2]/category[5]",
+      "assertion": {
+        "id": "15"
+      },
+      "label": "Fabrication de cuir et de produits connexes"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]",
+      "assertion": {
+        "id": "151"
+      },
+      "label": "Tannage, teinture et apprêt du cuir et de la fourrure ; fabrication de bagages, sacs à main, articles de sellerie et harnais"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "1511"
+      },
+      "label": "Tannage et apprêt du cuir ; apprêt et teinture de la fourrure"
+    },
+    {
+      "key": "category[2]/category[5]/category[0]/category[1]",
+      "assertion": {
+        "id": "1512"
+      },
+      "label": "Fabrication de bagages, sacs à main et articles similaires, articles de sellerie et harnais en toute matière"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]",
+      "assertion": {
+        "id": "152"
+      },
+      "label": "Fabrication de chaussures"
+    },
+    {
+      "key": "category[2]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "1520"
+      },
+      "label": "Fabrication de chaussures"
+    },
+    {
+      "key": "category[2]/category[6]",
+      "assertion": {
+        "id": "16"
+      },
+      "label": "Fabrication de produits en bois et en liège, à l'exception des meubles ; fabrication d'articles en paille et en matières à tresser"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]",
+      "assertion": {
+        "id": "161"
+      },
+      "label": "Sciage et rabotage du bois"
+    },
+    {
+      "key": "category[2]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "1610"
+      },
+      "label": "Sciage et rabotage du bois"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]",
+      "assertion": {
+        "id": "162"
+      },
+      "label": "Fabrication de produits en bois, liège, paille et matières à tresser"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "1621"
+      },
+      "label": "Fabrication de placages et de panneaux à base de bois"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "1622"
+      },
+      "label": "Fabrication de charpentes et menuiseries"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "1623"
+      },
+      "label": "Fabrication d'emballages en bois"
+    },
+    {
+      "key": "category[2]/category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "1629"
+      },
+      "label": "Fabrication d'autres produits en bois ; fabrication d'articles en liège, paille et matières à tresser"
+    },
+    {
+      "key": "category[2]/category[7]",
+      "assertion": {
+        "id": "17"
+      },
+      "label": "Fabrication de papier et d'articles en papier"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]",
+      "assertion": {
+        "id": "170"
+      },
+      "label": "Fabrication de papier et d'articles en papier"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "1701"
+      },
+      "label": "Fabrication de pâte à papier, papier et carton"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "1702"
+      },
+      "label": "Fabrication de papier et carton ondulés et d'emballages en papier et carton"
+    },
+    {
+      "key": "category[2]/category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "1709"
+      },
+      "label": "Fabrication d'autres articles en papier et carton"
+    },
+    {
+      "key": "category[2]/category[8]",
+      "assertion": {
+        "id": "18"
+      },
+      "label": "Imprimerie et reproduction de supports enregistrés"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]",
+      "assertion": {
+        "id": "181"
+      },
+      "label": "Imprimerie et activités de services liées à l'imprimerie"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "1811"
+      },
+      "label": "Imprimerie"
+    },
+    {
+      "key": "category[2]/category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "1812"
+      },
+      "label": "Activités de services liées à l'imprimerie"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]",
+      "assertion": {
+        "id": "182"
+      },
+      "label": "Reproduction de supports enregistrés"
+    },
+    {
+      "key": "category[2]/category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "1820"
+      },
+      "label": "Reproduction de supports enregistrés"
+    },
+    {
+      "key": "category[2]/category[9]",
+      "assertion": {
+        "id": "19"
+      },
+      "label": "Fabrication de coke et de produits pétroliers raffinés"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]",
+      "assertion": {
+        "id": "191"
+      },
+      "label": "Fabrication de produits de fours à coke"
+    },
+    {
+      "key": "category[2]/category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "1910"
+      },
+      "label": "Fabrication de produits de fours à coke"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]",
+      "assertion": {
+        "id": "192"
+      },
+      "label": "Fabrication de produits pétroliers raffinés ; fabrication de produits combustibles fossiles"
+    },
+    {
+      "key": "category[2]/category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "1920"
+      },
+      "label": "Fabrication de produits pétroliers raffinés ; fabrication de produits combustibles fossiles"
+    },
+    {
+      "key": "category[2]/category[10]",
+      "assertion": {
+        "id": "20"
+      },
+      "label": "Fabrication de produits chimiques"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]",
+      "assertion": {
+        "id": "201"
+      },
+      "label": "Fabrication de produits chimiques de base, d'engrais et de composés azotés, de matières plastiques et de caoutchouc synthétique sous formes primaires"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "2011"
+      },
+      "label": "Fabrication de produits chimiques de base"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "2012"
+      },
+      "label": "Fabrication d'engrais et de composés azotés"
+    },
+    {
+      "key": "category[2]/category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "2013"
+      },
+      "label": "Fabrication de matières plastiques et de caoutchouc synthétique sous formes primaires"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]",
+      "assertion": {
+        "id": "202"
+      },
+      "label": "Fabrication d'autres produits chimiques"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "2021"
+      },
+      "label": "Fabrication de pesticides et d'autres produits agrochimiques"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "2022"
+      },
+      "label": "Fabrication de peintures, vernis et revêtements similaires, d'encres d'imprimerie et de mastics"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "2023"
+      },
+      "label": "Fabrication de savons et détergents, de produits d'entretien et de polissage, de parfums et de produits de toilette"
+    },
+    {
+      "key": "category[2]/category[10]/category[1]/category[3]",
+      "assertion": {
+        "id": "2029"
+      },
+      "label": "Fabrication d'autres produits chimiques n.c.a."
+    },
+    {
+      "key": "category[2]/category[10]/category[2]",
+      "assertion": {
+        "id": "203"
+      },
+      "label": "Fabrication de fibres chimiques"
+    },
+    {
+      "key": "category[2]/category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "2030"
+      },
+      "label": "Fabrication de fibres chimiques"
+    },
+    {
+      "key": "category[2]/category[11]",
+      "assertion": {
+        "id": "21"
+      },
+      "label": "Fabrication de produits pharmaceutiques de base et de préparations pharmaceutiques"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]",
+      "assertion": {
+        "id": "210"
+      },
+      "label": "Fabrication de produits pharmaceutiques, de substances chimiques médicinales et de produits botaniques"
+    },
+    {
+      "key": "category[2]/category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "2100"
+      },
+      "label": "Fabrication de produits pharmaceutiques, de substances chimiques médicinales et de produits botaniques"
+    },
+    {
+      "key": "category[2]/category[12]",
+      "assertion": {
+        "id": "22"
+      },
+      "label": "Fabrication de produits en caoutchouc et en matières plastiques"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]",
+      "assertion": {
+        "id": "221"
+      },
+      "label": "Fabrication de produits en caoutchouc"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "2211"
+      },
+      "label": "Fabrication de pneumatiques et de chambres à air en caoutchouc; rechapage et reconstruction de pneumatiques en caoutchouc"
+    },
+    {
+      "key": "category[2]/category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "2219"
+      },
+      "label": "Fabrication d'autres produits en caoutchouc"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]",
+      "assertion": {
+        "id": "222"
+      },
+      "label": "Fabrication de produits en matières plastiques"
+    },
+    {
+      "key": "category[2]/category[12]/category[1]/category[0]",
+      "assertion": {
+        "id": "2220"
+      },
+      "label": "Fabrication de produits en matières plastiques"
+    },
+    {
+      "key": "category[2]/category[13]",
+      "assertion": {
+        "id": "23"
+      },
+      "label": "Fabrication d'autres produits minéraux non métalliques"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]",
+      "assertion": {
+        "id": "231"
+      },
+      "label": "Fabrication de verre et d'articles en verre"
+    },
+    {
+      "key": "category[2]/category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "2310"
+      },
+      "label": "Fabrication de verre et d'articles en verre"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]",
+      "assertion": {
+        "id": "239"
+      },
+      "label": "Fabrication de produits minéraux non métalliques n.c.a."
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "2391"
+      },
+      "label": "Fabrication de produits réfractaires"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "2392"
+      },
+      "label": "Fabrication de matériaux de construction en terre cuite"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[2]",
+      "assertion": {
+        "id": "2393"
+      },
+      "label": "Fabrication d'autres produits en porcelaine et en céramique"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[3]",
+      "assertion": {
+        "id": "2394"
+      },
+      "label": "Fabrication de ciment, de chaux et de plâtre"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[4]",
+      "assertion": {
+        "id": "2395"
+      },
+      "label": "Fabrication d'articles en béton, en ciment et en plâtre"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[5]",
+      "assertion": {
+        "id": "2396"
+      },
+      "label": "Taille, façonnage et finition de la pierre"
+    },
+    {
+      "key": "category[2]/category[13]/category[1]/category[6]",
+      "assertion": {
+        "id": "2399"
+      },
+      "label": "Fabrication d'autres produits minéraux non métalliques n.c.a."
+    },
+    {
+      "key": "category[2]/category[14]",
+      "assertion": {
+        "id": "24"
+      },
+      "label": "Fabrication de métaux de base"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]",
+      "assertion": {
+        "id": "241"
+      },
+      "label": "Fabrication de fer et d'acier de base"
+    },
+    {
+      "key": "category[2]/category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "2410"
+      },
+      "label": "Fabrication de fer et d'acier de base"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]",
+      "assertion": {
+        "id": "242"
+      },
+      "label": "Fabrication de métaux précieux et d'autres métaux non ferreux de base"
+    },
+    {
+      "key": "category[2]/category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "2420"
+      },
+      "label": "Fabrication de métaux précieux et d'autres métaux non ferreux de base"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]",
+      "assertion": {
+        "id": "243"
+      },
+      "label": "Fonderie de métaux"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "2431"
+      },
+      "label": "Fonderie de fer et d'acier"
+    },
+    {
+      "key": "category[2]/category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "2432"
+      },
+      "label": "Fonderie de métaux non ferreux"
+    },
+    {
+      "key": "category[2]/category[15]",
+      "assertion": {
+        "id": "25"
+      },
+      "label": "Fabrication de produits métalliques, à l'exception des machines et des équipements"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]",
+      "assertion": {
+        "id": "251"
+      },
+      "label": "Fabrication d'éléments de construction métalliques, de réservoirs, de citernes et de générateurs de vapeur"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "2511"
+      },
+      "label": "Fabrication d'éléments de construction métalliques"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "2512"
+      },
+      "label": "Fabrication de réservoirs, de citernes et de conteneurs métalliques"
+    },
+    {
+      "key": "category[2]/category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "2513"
+      },
+      "label": "Fabrication de générateurs de vapeur, à l'exception des chaudières à eau chaude pour chauffage central"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]",
+      "assertion": {
+        "id": "252"
+      },
+      "label": "Fabrication d'armes et de munitions"
+    },
+    {
+      "key": "category[2]/category[15]/category[1]/category[0]",
+      "assertion": {
+        "id": "2520"
+      },
+      "label": "Fabrication d'armes et de munitions"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]",
+      "assertion": {
+        "id": "259"
+      },
+      "label": "Fabrication d'autres produits métalliques; activités de services de travail des métaux"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[0]",
+      "assertion": {
+        "id": "2591"
+      },
+      "label": "Forgeage, pressage, estampage et profilage des métaux; métallurgie des poudres"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[1]",
+      "assertion": {
+        "id": "2592"
+      },
+      "label": "Traitement et revêtement des métaux; usinage"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[2]",
+      "assertion": {
+        "id": "2593"
+      },
+      "label": "Fabrication de coutellerie, d'outils à main et de quincaillerie générale"
+    },
+    {
+      "key": "category[2]/category[15]/category[2]/category[3]",
+      "assertion": {
+        "id": "2599"
+      },
+      "label": "Fabrication d'autres produits métalliques n.c.a."
+    },
+    {
+      "key": "category[2]/category[16]",
+      "assertion": {
+        "id": "26"
+      },
+      "label": "Fabrication de produits informatiques, électroniques et optiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]",
+      "assertion": {
+        "id": "261"
+      },
+      "label": "Fabrication de composants et de cartes électroniques"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "2611"
+      },
+      "label": "Fabrication de cellules solaires, de panneaux solaires et d'onduleurs photovoltaïques"
+    },
+    {
+      "key": "category[2]/category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "2619"
+      },
+      "label": "Fabrication d'autres composants et cartes électroniques"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]",
+      "assertion": {
+        "id": "262"
+      },
+      "label": "Fabrication d'ordinateurs et d'équipements périphériques"
+    },
+    {
+      "key": "category[2]/category[16]/category[1]/category[0]",
+      "assertion": {
+        "id": "2620"
+      },
+      "label": "Fabrication d'ordinateurs et d'équipements périphériques"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]",
+      "assertion": {
+        "id": "263"
+      },
+      "label": "Fabrication d'équipements de communication"
+    },
+    {
+      "key": "category[2]/category[16]/category[2]/category[0]",
+      "assertion": {
+        "id": "2630"
+      },
+      "label": "Fabrication d'équipements de communication"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]",
+      "assertion": {
+        "id": "264"
+      },
+      "label": "Fabrication de produits électroniques grand public"
+    },
+    {
+      "key": "category[2]/category[16]/category[3]/category[0]",
+      "assertion": {
+        "id": "2640"
+      },
+      "label": "Fabrication de produits électroniques grand public"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]",
+      "assertion": {
+        "id": "265"
+      },
+      "label": "Fabrication d'équipements de mesure, d'essai, de navigation et de contrôle; fabrication de montres et d'horloges"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[0]",
+      "assertion": {
+        "id": "2651"
+      },
+      "label": "Fabrication d'équipements de mesure, d'essai, de navigation et de contrôle"
+    },
+    {
+      "key": "category[2]/category[16]/category[4]/category[1]",
+      "assertion": {
+        "id": "2652"
+      },
+      "label": "Fabrication de montres et d'horloges"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]",
+      "assertion": {
+        "id": "266"
+      },
+      "label": "Fabrication d'équipements d'irradiation, électromédicaux et électrothérapeutiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[5]/category[0]",
+      "assertion": {
+        "id": "2660"
+      },
+      "label": "Fabrication d'équipements d'irradiation, électromédicaux et électrothérapeutiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]",
+      "assertion": {
+        "id": "267"
+      },
+      "label": "Fabrication d'instruments d'optique et d'équipements photographiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[6]/category[0]",
+      "assertion": {
+        "id": "2670"
+      },
+      "label": "Fabrication d'instruments d'optique et d'équipements photographiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]",
+      "assertion": {
+        "id": "268"
+      },
+      "label": "Fabrication de supports magnétiques et optiques"
+    },
+    {
+      "key": "category[2]/category[16]/category[7]/category[0]",
+      "assertion": {
+        "id": "2680"
+      },
+      "label": "Fabrication de supports magnétiques et optiques"
+    },
+    {
+      "key": "category[2]/category[17]",
+      "assertion": {
+        "id": "27"
+      },
+      "label": "Fabrication d'équipements électriques"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]",
+      "assertion": {
+        "id": "271"
+      },
+      "label": "Fabrication de moteurs, génératrices, transformateurs et appareils de distribution et de commande électriques"
+    },
+    {
+      "key": "category[2]/category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "2710"
+      },
+      "label": "Fabrication de moteurs, génératrices, transformateurs et appareils de distribution et de commande électriques"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]",
+      "assertion": {
+        "id": "272"
+      },
+      "label": "Fabrication de piles et d'accumulateurs"
+    },
+    {
+      "key": "category[2]/category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "2720"
+      },
+      "label": "Fabrication de piles et d'accumulateurs"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]",
+      "assertion": {
+        "id": "273"
+      },
+      "label": "Fabrication de fils et câbles électriques et de matériel d'installation électrique"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "2731"
+      },
+      "label": "Fabrication de câbles à fibres optiques"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "2732"
+      },
+      "label": "Fabrication d'autres fils et câbles électroniques et électriques"
+    },
+    {
+      "key": "category[2]/category[17]/category[2]/category[2]",
+      "assertion": {
+        "id": "2733"
+      },
+      "label": "Fabrication de matériel d'installation électrique"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]",
+      "assertion": {
+        "id": "274"
+      },
+      "label": "Fabrication de matériel d'éclairage"
+    },
+    {
+      "key": "category[2]/category[17]/category[3]/category[0]",
+      "assertion": {
+        "id": "2740"
+      },
+      "label": "Fabrication de matériel d'éclairage"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]",
+      "assertion": {
+        "id": "275"
+      },
+      "label": "Fabrication d'appareils ménagers"
+    },
+    {
+      "key": "category[2]/category[17]/category[4]/category[0]",
+      "assertion": {
+        "id": "2750"
+      },
+      "label": "Fabrication d'appareils ménagers"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]",
+      "assertion": {
+        "id": "279"
+      },
+      "label": "Fabrication d'autres matériels électriques"
+    },
+    {
+      "key": "category[2]/category[17]/category[5]/category[0]",
+      "assertion": {
+        "id": "2790"
+      },
+      "label": "Fabrication d'autres matériels électriques"
+    },
+    {
+      "key": "category[2]/category[18]",
+      "assertion": {
+        "id": "28"
+      },
+      "label": "Fabrication de machines et équipements n.c.a."
+    },
+    {
+      "key": "category[2]/category[18]/category[0]",
+      "assertion": {
+        "id": "281"
+      },
+      "label": "Fabrication de machines d'usage général"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "2811"
+      },
+      "label": "Fabrication de moteurs et turbines, à l'exception des moteurs d'avions, de véhicules et de cycles"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "2812"
+      },
+      "label": "Fabrication d'équipements hydrauliques et pneumatiques"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "2813"
+      },
+      "label": "Fabrication d'autres pompes, compresseurs, robinets et vannes"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[3]",
+      "assertion": {
+        "id": "2814"
+      },
+      "label": "Fabrication de roulements, engrenages et organes mécaniques de transmission"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[4]",
+      "assertion": {
+        "id": "2815"
+      },
+      "label": "Fabrication de fours, fourneaux et appareils de chauffage domestique fixes"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[5]",
+      "assertion": {
+        "id": "2816"
+      },
+      "label": "Fabrication d'équipements de levage et de manutention"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[6]",
+      "assertion": {
+        "id": "2817"
+      },
+      "label": "Fabrication de machines et équipements de bureau, à l'exception des ordinateurs et équipements périphériques"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[7]",
+      "assertion": {
+        "id": "2818"
+      },
+      "label": "Fabrication d'outils portatifs à moteur"
+    },
+    {
+      "key": "category[2]/category[18]/category[0]/category[8]",
+      "assertion": {
+        "id": "2819"
+      },
+      "label": "Fabrication d'autres machines d'usage général"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]",
+      "assertion": {
+        "id": "282"
+      },
+      "label": "Fabrication de machines à usage spécifique"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "2821"
+      },
+      "label": "Fabrication de machines agricoles et forestières"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "2822"
+      },
+      "label": "Fabrication de machines de formage des métaux et de machines-outils"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "2823"
+      },
+      "label": "Fabrication de machines pour la métallurgie"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "2824"
+      },
+      "label": "Fabrication de machines pour l'extraction minière, l'exploitation de carrières et la construction"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[4]",
+      "assertion": {
+        "id": "2825"
+      },
+      "label": "Fabrication de machines pour l'industrie alimentaire, des boissons et du tabac"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[5]",
+      "assertion": {
+        "id": "2826"
+      },
+      "label": "Fabrication de machines pour les industries textiles, de l'habillement et du cuir"
+    },
+    {
+      "key": "category[2]/category[18]/category[1]/category[6]",
+      "assertion": {
+        "id": "2829"
+      },
+      "label": "Fabrication d'autres machines à usage spécifique"
+    },
+    {
+      "key": "category[2]/category[19]",
+      "assertion": {
+        "id": "29"
+      },
+      "label": "Fabrication de véhicules automobiles, remorques et semi-remorques"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]",
+      "assertion": {
+        "id": "291"
+      },
+      "label": "Fabrication de véhicules automobiles"
+    },
+    {
+      "key": "category[2]/category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "2910"
+      },
+      "label": "Fabrication de véhicules automobiles"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]",
+      "assertion": {
+        "id": "292"
+      },
+      "label": "Fabrication de carrosseries pour véhicules automobiles, de remorques et de semi-remorques"
+    },
+    {
+      "key": "category[2]/category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "2920"
+      },
+      "label": "Fabrication de carrosseries pour véhicules automobiles, de remorques et de semi-remorques"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]",
+      "assertion": {
+        "id": "293"
+      },
+      "label": "Fabrication de pièces et accessoires pour véhicules automobiles"
+    },
+    {
+      "key": "category[2]/category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "2930"
+      },
+      "label": "Fabrication de pièces et accessoires pour véhicules automobiles"
+    },
+    {
+      "key": "category[2]/category[20]",
+      "assertion": {
+        "id": "30"
+      },
+      "label": "Fabrication d'autres matériels de transport"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]",
+      "assertion": {
+        "id": "301"
+      },
+      "label": "Construction de navires et de bateaux"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "3011"
+      },
+      "label": "Construction de navires et de structures flottantes"
+    },
+    {
+      "key": "category[2]/category[20]/category[0]/category[1]",
+      "assertion": {
+        "id": "3012"
+      },
+      "label": "Construction de bateaux de plaisance et de sport"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]",
+      "assertion": {
+        "id": "302"
+      },
+      "label": "Fabrication de locomotives et d'autre matériel ferroviaire roulant"
+    },
+    {
+      "key": "category[2]/category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "3020"
+      },
+      "label": "Fabrication de locomotives et d'autre matériel ferroviaire roulant"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]",
+      "assertion": {
+        "id": "303"
+      },
+      "label": "Construction aéronautique et spatiale et fabrication de matériels connexes"
+    },
+    {
+      "key": "category[2]/category[20]/category[2]/category[0]",
+      "assertion": {
+        "id": "3030"
+      },
+      "label": "Construction aéronautique et spatiale et fabrication de matériels connexes"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]",
+      "assertion": {
+        "id": "304"
+      },
+      "label": "Fabrication de véhicules militaires de combat"
+    },
+    {
+      "key": "category[2]/category[20]/category[3]/category[0]",
+      "assertion": {
+        "id": "3040"
+      },
+      "label": "Fabrication de véhicules militaires de combat"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]",
+      "assertion": {
+        "id": "309"
+      },
+      "label": "Fabrication de matériels de transport n.c.a."
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[0]",
+      "assertion": {
+        "id": "3091"
+      },
+      "label": "Fabrication de motocycles"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[1]",
+      "assertion": {
+        "id": "3092"
+      },
+      "label": "Fabrication de bicyclettes et de véhicules pour invalides"
+    },
+    {
+      "key": "category[2]/category[20]/category[4]/category[2]",
+      "assertion": {
+        "id": "3099"
+      },
+      "label": "Fabrication d'autres matériels de transport n.c.a."
+    },
+    {
+      "key": "category[2]/category[21]",
+      "assertion": {
+        "id": "31"
+      },
+      "label": "Fabrication de meubles"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]",
+      "assertion": {
+        "id": "310"
+      },
+      "label": "Fabrication de meubles"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "3101"
+      },
+      "label": "Fabrication de meubles en bois"
+    },
+    {
+      "key": "category[2]/category[21]/category[0]/category[1]",
+      "assertion": {
+        "id": "3102"
+      },
+      "label": "Fabrication d'autres meubles"
+    },
+    {
+      "key": "category[2]/category[22]",
+      "assertion": {
+        "id": "32"
+      },
+      "label": "Autres activités de fabrication"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]",
+      "assertion": {
+        "id": "321"
+      },
+      "label": "Fabrication de joaillerie, de bijouterie et d'articles connexes"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[0]",
+      "assertion": {
+        "id": "3211"
+      },
+      "label": "Fabrication de joaillerie et d'articles connexes"
+    },
+    {
+      "key": "category[2]/category[22]/category[0]/category[1]",
+      "assertion": {
+        "id": "3212"
+      },
+      "label": "Fabrication de bijouterie fantaisie et d'articles connexes"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]",
+      "assertion": {
+        "id": "322"
+      },
+      "label": "Fabrication d'instruments de musique"
+    },
+    {
+      "key": "category[2]/category[22]/category[1]/category[0]",
+      "assertion": {
+        "id": "3220"
+      },
+      "label": "Fabrication d'instruments de musique"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]",
+      "assertion": {
+        "id": "323"
+      },
+      "label": "Fabrication d'articles de sport"
+    },
+    {
+      "key": "category[2]/category[22]/category[2]/category[0]",
+      "assertion": {
+        "id": "3230"
+      },
+      "label": "Fabrication d'articles de sport"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]",
+      "assertion": {
+        "id": "324"
+      },
+      "label": "Fabrication de jeux et jouets"
+    },
+    {
+      "key": "category[2]/category[22]/category[3]/category[0]",
+      "assertion": {
+        "id": "3240"
+      },
+      "label": "Fabrication de jeux et jouets"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]",
+      "assertion": {
+        "id": "325"
+      },
+      "label": "Fabrication d'instruments et fournitures médicaux et dentaires"
+    },
+    {
+      "key": "category[2]/category[22]/category[4]/category[0]",
+      "assertion": {
+        "id": "3250"
+      },
+      "label": "Fabrication d'instruments et fournitures médicaux et dentaires"
+    },
+    {
+      "key": "category[2]/category[22]/category[5]",
+      "assertion": {
+        "id": "329"
+      },
+      "label": "Autres activités de fabrication n.c.a."
+    },
+    {
+      "key": "category[2]/category[22]/category[5]/category[0]",
+      "assertion": {
+        "id": "3290"
+      },
+      "label": "Autres activités de fabrication n.c.a."
+    },
+    {
+      "key": "category[2]/category[23]",
+      "assertion": {
+        "id": "33"
+      },
+      "label": "Réparation, maintenance et installation de machines et d'équipements"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]",
+      "assertion": {
+        "id": "331"
+      },
+      "label": "Réparation et maintenance d'ouvrages en métaux, de machines et d'équipements"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[0]",
+      "assertion": {
+        "id": "3311"
+      },
+      "label": "Réparation et maintenance d'ouvrages en métaux"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[1]",
+      "assertion": {
+        "id": "3312"
+      },
+      "label": "Réparation et maintenance de machines"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[2]",
+      "assertion": {
+        "id": "3313"
+      },
+      "label": "Réparation et maintenance d'équipements électroniques et optiques"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[3]",
+      "assertion": {
+        "id": "3314"
+      },
+      "label": "Réparation et maintenance d'équipements électriques"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[4]",
+      "assertion": {
+        "id": "3315"
+      },
+      "label": "Réparation et maintenance d'équipements de transport, à l'exclusion des véhicules automobiles"
+    },
+    {
+      "key": "category[2]/category[23]/category[0]/category[5]",
+      "assertion": {
+        "id": "3319"
+      },
+      "label": "Réparation et maintenance d'autres équipements"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]",
+      "assertion": {
+        "id": "332"
+      },
+      "label": "Installation de machines et d'équipements industriels"
+    },
+    {
+      "key": "category[2]/category[23]/category[1]/category[0]",
+      "assertion": {
+        "id": "3320"
+      },
+      "label": "Installation de machines et d'équipements industriels"
+    },
+    {
+      "key": "category[3]",
+      "assertion": {
+        "id": "D"
+      },
+      "label": "Production et distribution d'électricité, de gaz, de vapeur et d'air conditionné"
+    },
+    {
+      "key": "category[3]/category[0]",
+      "assertion": {
+        "id": "35"
+      },
+      "label": "Production et distribution d'électricité, de gaz, de vapeur et d'air conditionné"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "351"
+      },
+      "label": "Production, transport et distribution d'électricité"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3511"
+      },
+      "label": "Production d'électricité à partir de sources non renouvelables"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "3512"
+      },
+      "label": "Production d'électricité à partir de sources renouvelables"
+    },
+    {
+      "key": "category[3]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "3513"
+      },
+      "label": "Transport et distribution d'électricité"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "352"
+      },
+      "label": "Production de gaz ; distribution de combustibles gazeux par conduites"
+    },
+    {
+      "key": "category[3]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "3520"
+      },
+      "label": "Production de gaz ; distribution de combustibles gazeux par conduites"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "353"
+      },
+      "label": "Production et distribution de vapeur et d'air conditionné"
+    },
+    {
+      "key": "category[3]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "3530"
+      },
+      "label": "Production et distribution de vapeur et d'air conditionné"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]",
+      "assertion": {
+        "id": "354"
+      },
+      "label": "Activités de courtiers et d'agents en électricité et gaz naturel"
+    },
+    {
+      "key": "category[3]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "3540"
+      },
+      "label": "Activités de courtiers et d'agents en électricité et gaz naturel"
+    },
+    {
+      "key": "category[4]",
+      "assertion": {
+        "id": "E"
+      },
+      "label": "Production et distribution d'eau ; assainissement, gestion des déchets et dépollution"
+    },
+    {
+      "key": "category[4]/category[0]",
+      "assertion": {
+        "id": "36"
+      },
+      "label": "Captage, traitement et distribution d'eau"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "360"
+      },
+      "label": "Captage, traitement et distribution d'eau"
+    },
+    {
+      "key": "category[4]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "3600"
+      },
+      "label": "Captage, traitement et distribution d'eau"
+    },
+    {
+      "key": "category[4]/category[1]",
+      "assertion": {
+        "id": "37"
+      },
+      "label": "Assainissement"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "370"
+      },
+      "label": "Assainissement"
+    },
+    {
+      "key": "category[4]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "3700"
+      },
+      "label": "Assainissement"
+    },
+    {
+      "key": "category[4]/category[2]",
+      "assertion": {
+        "id": "38"
+      },
+      "label": "Collecte, traitement et élimination des déchets ; valorisation"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "381"
+      },
+      "label": "Activités de collecte des déchets"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "3811"
+      },
+      "label": "Collecte de déchets non dangereux"
+    },
+    {
+      "key": "category[4]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "3812"
+      },
+      "label": "Collecte de déchets dangereux"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]",
+      "assertion": {
+        "id": "382"
+      },
+      "label": "Traitement et élimination des déchets"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "3821"
+      },
+      "label": "Traitement et élimination des déchets non dangereux"
+    },
+    {
+      "key": "category[4]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "3822"
+      },
+      "label": "Traitement et élimination des déchets dangereux"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]",
+      "assertion": {
+        "id": "383"
+      },
+      "label": "Valorisation des matériaux et autres déchets"
+    },
+    {
+      "key": "category[4]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "3830"
+      },
+      "label": "Valorisation des matériaux et autres déchets"
+    },
+    {
+      "key": "category[4]/category[3]",
+      "assertion": {
+        "id": "39"
+      },
+      "label": "Dépollution et autres services de gestion des déchets"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]",
+      "assertion": {
+        "id": "390"
+      },
+      "label": "Dépollution et autres services de gestion des déchets"
+    },
+    {
+      "key": "category[4]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "3900"
+      },
+      "label": "Dépollution et autres services de gestion des déchets"
+    },
+    {
+      "key": "category[5]",
+      "assertion": {
+        "id": "F"
+      },
+      "label": "Construction"
+    },
+    {
+      "key": "category[5]/category[0]",
+      "assertion": {
+        "id": "41"
+      },
+      "label": "Construction de bâtiments résidentiels et non résidentiels"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "410"
+      },
+      "label": "Construction de bâtiments résidentiels et non résidentiels"
+    },
+    {
+      "key": "category[5]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4100"
+      },
+      "label": "Construction de bâtiments résidentiels et non résidentiels"
+    },
+    {
+      "key": "category[5]/category[1]",
+      "assertion": {
+        "id": "42"
+      },
+      "label": "Génie civil"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "421"
+      },
+      "label": "Construction de routes et de voies ferrées"
+    },
+    {
+      "key": "category[5]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4210"
+      },
+      "label": "Construction de routes et de voies ferrées"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]",
+      "assertion": {
+        "id": "422"
+      },
+      "label": "Construction d'ouvrages d'utilité publique"
+    },
+    {
+      "key": "category[5]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4220"
+      },
+      "label": "Construction d'ouvrages d'utilité publique"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]",
+      "assertion": {
+        "id": "429"
+      },
+      "label": "Construction d'autres ouvrages de génie civil"
+    },
+    {
+      "key": "category[5]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4290"
+      },
+      "label": "Construction d'autres ouvrages de génie civil"
+    },
+    {
+      "key": "category[5]/category[2]",
+      "assertion": {
+        "id": "43"
+      },
+      "label": "Activités de construction spécialisées"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "431"
+      },
+      "label": "Démolition et préparation de sites"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "4311"
+      },
+      "label": "Démolition"
+    },
+    {
+      "key": "category[5]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "4312"
+      },
+      "label": "Préparation de sites"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]",
+      "assertion": {
+        "id": "432"
+      },
+      "label": "Travaux d'installation électrique, de plomberie et autres travaux d'installation"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "4321"
+      },
+      "label": "Installation électrique"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "4322"
+      },
+      "label": "Installation de plomberie, de chauffage et de climatisation"
+    },
+    {
+      "key": "category[5]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "4329"
+      },
+      "label": "Autres travaux d'installation"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]",
+      "assertion": {
+        "id": "433"
+      },
+      "label": "Finition et achèvement de bâtiments"
+    },
+    {
+      "key": "category[5]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "4330"
+      },
+      "label": "Finition et achèvement de bâtiments"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]",
+      "assertion": {
+        "id": "434"
+      },
+      "label": "Activités d'intermédiation pour des services de construction spécialisés"
+    },
+    {
+      "key": "category[5]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "4340"
+      },
+      "label": "Activités d'intermédiation pour des services de construction spécialisés"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]",
+      "assertion": {
+        "id": "439"
+      },
+      "label": "Autres activités de construction spécialisées"
+    },
+    {
+      "key": "category[5]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "4390"
+      },
+      "label": "Autres activités de construction spécialisées"
+    },
+    {
+      "key": "category[6]",
+      "assertion": {
+        "id": "G"
+      },
+      "label": "Commerce de gros et de détail"
+    },
+    {
+      "key": "category[6]/category[0]",
+      "assertion": {
+        "id": "46"
+      },
+      "label": "Commerce de gros"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "461"
+      },
+      "label": "Commerce de gros à la commission ou sous contrat"
+    },
+    {
+      "key": "category[6]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4610"
+      },
+      "label": "Commerce de gros à la commission ou sous contrat"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]",
+      "assertion": {
+        "id": "462"
+      },
+      "label": "Commerce de gros de matières premières agricoles et d'animaux vivants"
+    },
+    {
+      "key": "category[6]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4620"
+      },
+      "label": "Commerce de gros de matières premières agricoles et d'animaux vivants"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]",
+      "assertion": {
+        "id": "463"
+      },
+      "label": "Commerce de gros de produits alimentaires, de boissons et de tabac"
+    },
+    {
+      "key": "category[6]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4630"
+      },
+      "label": "Commerce de gros de produits alimentaires, de boissons et de tabac"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]",
+      "assertion": {
+        "id": "464"
+      },
+      "label": "Commerce de gros d'articles ménagers"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "4641"
+      },
+      "label": "Commerce de gros de textiles, d'habillement et de chaussures"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "4642"
+      },
+      "label": "Commerce de gros de meubles domestiques, de bureau et de magasin, de tapis et de matériel d'éclairage"
+    },
+    {
+      "key": "category[6]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "4649"
+      },
+      "label": "Commerce de gros d'autres articles ménagers"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]",
+      "assertion": {
+        "id": "465"
+      },
+      "label": "Commerce de gros de machines, d'équipements et de fournitures"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "4651"
+      },
+      "label": "Commerce de gros d'ordinateurs, de matériel informatique périphérique et de logiciels"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "4652"
+      },
+      "label": "Commerce de gros d'équipements électroniques et de télécommunications et de pièces détachées"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "4653"
+      },
+      "label": "Commerce de gros de machines, d'équipements et de fournitures agricoles"
+    },
+    {
+      "key": "category[6]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "4659"
+      },
+      "label": "Commerce de gros d'autres machines et équipements"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]",
+      "assertion": {
+        "id": "466"
+      },
+      "label": "Commerce de gros de véhicules automobiles, de motocycles et de pièces et accessoires connexes"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "4661"
+      },
+      "label": "Commerce de gros de véhicules automobiles"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "4662"
+      },
+      "label": "Commerce de gros de pièces et accessoires de véhicules automobiles"
+    },
+    {
+      "key": "category[6]/category[0]/category[5]/category[2]",
+      "assertion": {
+        "id": "4663"
+      },
+      "label": "Commerce de gros de motocycles, de pièces et accessoires de motocycles"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]",
+      "assertion": {
+        "id": "467"
+      },
+      "label": "Autre commerce de gros spécialisé"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[0]",
+      "assertion": {
+        "id": "4671"
+      },
+      "label": "Commerce de gros de combustibles solides, liquides et gazeux et de produits connexes"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[1]",
+      "assertion": {
+        "id": "4672"
+      },
+      "label": "Commerce de gros de métaux et de minerais métalliques"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[2]",
+      "assertion": {
+        "id": "4673"
+      },
+      "label": "Commerce de gros de matériaux de construction, de quincaillerie, d'équipements et fournitures de plomberie et de chauffage"
+    },
+    {
+      "key": "category[6]/category[0]/category[6]/category[3]",
+      "assertion": {
+        "id": "4679"
+      },
+      "label": "Commerce de gros de produits chimiques, de déchets et de ferraille et d'autres produits n.c.a."
+    },
+    {
+      "key": "category[6]/category[0]/category[7]",
+      "assertion": {
+        "id": "469"
+      },
+      "label": "Commerce de gros non spécialisé"
+    },
+    {
+      "key": "category[6]/category[0]/category[7]/category[0]",
+      "assertion": {
+        "id": "4690"
+      },
+      "label": "Commerce de gros non spécialisé"
+    },
+    {
+      "key": "category[6]/category[1]",
+      "assertion": {
+        "id": "47"
+      },
+      "label": "Commerce de détail"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]",
+      "assertion": {
+        "id": "471"
+      },
+      "label": "Commerce de détail non spécialisé"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "4711"
+      },
+      "label": "Commerce de détail non spécialisé à prédominance alimentaire, de boissons ou de tabac"
+    },
+    {
+      "key": "category[6]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "4719"
+      },
+      "label": "Autre commerce de détail non spécialisé"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]",
+      "assertion": {
+        "id": "472"
+      },
+      "label": "Commerce de détail de produits alimentaires, de boissons et de tabac"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "4721"
+      },
+      "label": "Commerce de détail de produits alimentaires"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "4722"
+      },
+      "label": "Commerce de détail de boissons"
+    },
+    {
+      "key": "category[6]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "4723"
+      },
+      "label": "Commerce de détail de produits du tabac"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]",
+      "assertion": {
+        "id": "473"
+      },
+      "label": "Commerce de détail de carburants automobiles"
+    },
+    {
+      "key": "category[6]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "4730"
+      },
+      "label": "Commerce de détail de carburants automobiles"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]",
+      "assertion": {
+        "id": "474"
+      },
+      "label": "Commerce de détail d'équipements d'information et de communication"
+    },
+    {
+      "key": "category[6]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "4740"
+      },
+      "label": "Commerce de détail d'équipements d'information et de communication"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]",
+      "assertion": {
+        "id": "475"
+      },
+      "label": "Commerce de détail d'autres équipements du foyer"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[0]",
+      "assertion": {
+        "id": "4751"
+      },
+      "label": "Commerce de détail de textiles"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[1]",
+      "assertion": {
+        "id": "4752"
+      },
+      "label": "Commerce de détail de quincaillerie, matériaux de construction, peintures et verre"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[2]",
+      "assertion": {
+        "id": "4753"
+      },
+      "label": "Commerce de détail de tapis, moquettes et revêtements muraux et de sol"
+    },
+    {
+      "key": "category[6]/category[1]/category[4]/category[3]",
+      "assertion": {
+        "id": "4759"
+      },
+      "label": "Commerce de détail d'appareils électroménagers, de meubles, d'articles d'éclairage et d'autres articles ménagers"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]",
+      "assertion": {
+        "id": "476"
+      },
+      "label": "Commerce de détail de biens culturels et de loisirs"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[0]",
+      "assertion": {
+        "id": "4761"
+      },
+      "label": "Commerce de détail de livres, journaux, papeterie et fournitures de bureau"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[1]",
+      "assertion": {
+        "id": "4762"
+      },
+      "label": "Commerce de détail d'articles de sport"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[2]",
+      "assertion": {
+        "id": "4763"
+      },
+      "label": "Commerce de détail de jeux et jouets"
+    },
+    {
+      "key": "category[6]/category[1]/category[5]/category[3]",
+      "assertion": {
+        "id": "4769"
+      },
+      "label": "Commerce de détail d'autres biens culturels et de loisirs n.c.a."
+    },
+    {
+      "key": "category[6]/category[1]/category[6]",
+      "assertion": {
+        "id": "477"
+      },
+      "label": "Commerce de détail d'autres biens, à l'exception des véhicules automobiles et des motocycles"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[0]",
+      "assertion": {
+        "id": "4771"
+      },
+      "label": "Commerce de détail d'habillement, de chaussures et d'articles en cuir"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[1]",
+      "assertion": {
+        "id": "4772"
+      },
+      "label": "Commerce de détail de produits pharmaceutiques et médicaux, d'articles cosmétiques et de toilette"
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[2]",
+      "assertion": {
+        "id": "4773"
+      },
+      "label": "Commerce de détail d'autres biens neufs n.c.a."
+    },
+    {
+      "key": "category[6]/category[1]/category[6]/category[3]",
+      "assertion": {
+        "id": "4774"
+      },
+      "label": "Commerce de détail de biens d'occasion"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]",
+      "assertion": {
+        "id": "478"
+      },
+      "label": "Commerce de détail de véhicules automobiles, de motocycles et de pièces et accessoires connexes"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[0]",
+      "assertion": {
+        "id": "4781"
+      },
+      "label": "Commerce de détail de véhicules automobiles"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[1]",
+      "assertion": {
+        "id": "4782"
+      },
+      "label": "Commerce de détail de pièces et accessoires pour véhicules automobiles"
+    },
+    {
+      "key": "category[6]/category[1]/category[7]/category[2]",
+      "assertion": {
+        "id": "4783"
+      },
+      "label": "Commerce de détail de motocycles, de pièces et accessoires pour motocycles"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]",
+      "assertion": {
+        "id": "479"
+      },
+      "label": "Activités de services d'intermédiation pour le commerce de détail"
+    },
+    {
+      "key": "category[6]/category[1]/category[8]/category[0]",
+      "assertion": {
+        "id": "4790"
+      },
+      "label": "Activités de services d'intermédiation pour le commerce de détail"
+    },
+    {
+      "key": "category[7]",
+      "assertion": {
+        "id": "H"
+      },
+      "label": "Transport et entreposage"
+    },
+    {
+      "key": "category[7]/category[0]",
+      "assertion": {
+        "id": "49"
+      },
+      "label": "Transports terrestres et transport par conduites"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]",
+      "assertion": {
+        "id": "491"
+      },
+      "label": "Transport ferroviaire"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "4911"
+      },
+      "label": "Transport ferroviaire interurbain de voyageurs"
+    },
+    {
+      "key": "category[7]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "4912"
+      },
+      "label": "Transport ferroviaire de marchandises"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]",
+      "assertion": {
+        "id": "492"
+      },
+      "label": "Autres transports terrestres"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "4921"
+      },
+      "label": "Transport terrestre urbain et suburbain de voyageurs"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "4922"
+      },
+      "label": "Autres transports terrestres de voyageurs"
+    },
+    {
+      "key": "category[7]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "4923"
+      },
+      "label": "Transport routier de marchandises"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]",
+      "assertion": {
+        "id": "493"
+      },
+      "label": "Transport par conduites"
+    },
+    {
+      "key": "category[7]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "4930"
+      },
+      "label": "Transport par conduites"
+    },
+    {
+      "key": "category[7]/category[1]",
+      "assertion": {
+        "id": "50"
+      },
+      "label": "Transports par eau"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]",
+      "assertion": {
+        "id": "501"
+      },
+      "label": "Transport maritime et côtier"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5011"
+      },
+      "label": "Transport maritime et côtier de voyageurs"
+    },
+    {
+      "key": "category[7]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5012"
+      },
+      "label": "Transport maritime et côtier de marchandises"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]",
+      "assertion": {
+        "id": "502"
+      },
+      "label": "Transport par voies navigables intérieures"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5021"
+      },
+      "label": "Transport de voyageurs par voies navigables intérieures"
+    },
+    {
+      "key": "category[7]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5022"
+      },
+      "label": "Transport de marchandises par voies navigables intérieures"
+    },
+    {
+      "key": "category[7]/category[2]",
+      "assertion": {
+        "id": "51"
+      },
+      "label": "Transport aérien"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]",
+      "assertion": {
+        "id": "511"
+      },
+      "label": "Transport aérien de voyageurs"
+    },
+    {
+      "key": "category[7]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "5110"
+      },
+      "label": "Transport aérien de voyageurs"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]",
+      "assertion": {
+        "id": "512"
+      },
+      "label": "Transport aérien de marchandises"
+    },
+    {
+      "key": "category[7]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "5120"
+      },
+      "label": "Transport aérien de marchandises"
+    },
+    {
+      "key": "category[7]/category[3]",
+      "assertion": {
+        "id": "52"
+      },
+      "label": "Entreposage et activités de soutien au transport"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]",
+      "assertion": {
+        "id": "521"
+      },
+      "label": "Entreposage et stockage"
+    },
+    {
+      "key": "category[7]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "5210"
+      },
+      "label": "Entreposage et stockage"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]",
+      "assertion": {
+        "id": "522"
+      },
+      "label": "Activités de soutien au transport"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "5221"
+      },
+      "label": "Activités de services annexes aux transports terrestres"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "5222"
+      },
+      "label": "Activités de services annexes aux transports par eau"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[2]",
+      "assertion": {
+        "id": "5223"
+      },
+      "label": "Activités de services annexes aux transports aériens"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[3]",
+      "assertion": {
+        "id": "5224"
+      },
+      "label": "Manutention de marchandises"
+    },
+    {
+      "key": "category[7]/category[3]/category[1]/category[4]",
+      "assertion": {
+        "id": "5229"
+      },
+      "label": "Autres activités de soutien au transport"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]",
+      "assertion": {
+        "id": "523"
+      },
+      "label": "Activités de services d'intermédiation pour le transport"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[0]",
+      "assertion": {
+        "id": "5231"
+      },
+      "label": "Activités de services d'intermédiation pour le transport de marchandises"
+    },
+    {
+      "key": "category[7]/category[3]/category[2]/category[1]",
+      "assertion": {
+        "id": "5232"
+      },
+      "label": "Activités de services d'intermédiation pour le transport de voyageurs"
+    },
+    {
+      "key": "category[7]/category[4]",
+      "assertion": {
+        "id": "53"
+      },
+      "label": "Activités de poste et de courrier"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]",
+      "assertion": {
+        "id": "531"
+      },
+      "label": "Activités de poste"
+    },
+    {
+      "key": "category[7]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "5310"
+      },
+      "label": "Activités de poste"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]",
+      "assertion": {
+        "id": "532"
+      },
+      "label": "Activités de messagerie"
+    },
+    {
+      "key": "category[7]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "5320"
+      },
+      "label": "Activités de messagerie"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]",
+      "assertion": {
+        "id": "533"
+      },
+      "label": "Activités de services d'intermédiation pour les activités postales et de messagerie"
+    },
+    {
+      "key": "category[7]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "5330"
+      },
+      "label": "Activités de services d'intermédiation pour les activités postales et de messagerie"
+    },
+    {
+      "key": "category[8]",
+      "assertion": {
+        "id": "I"
+      },
+      "label": "Activités d'hébergement et de restauration"
+    },
+    {
+      "key": "category[8]/category[0]",
+      "assertion": {
+        "id": "55"
+      },
+      "label": "Hébergement"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]",
+      "assertion": {
+        "id": "551"
+      },
+      "label": "Activités d'hébergement en hôtels et hébergements similaires"
+    },
+    {
+      "key": "category[8]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5510"
+      },
+      "label": "Activités d'hébergement en hôtels et hébergements similaires"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]",
+      "assertion": {
+        "id": "552"
+      },
+      "label": "Autres activités d'hébergement de courte durée"
+    },
+    {
+      "key": "category[8]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5520"
+      },
+      "label": "Autres activités d'hébergement de courte durée"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]",
+      "assertion": {
+        "id": "553"
+      },
+      "label": "Terrains de camping, parcs pour véhicules de loisirs et caravanes"
+    },
+    {
+      "key": "category[8]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "5530"
+      },
+      "label": "Terrains de camping, parcs pour véhicules de loisirs et caravanes"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]",
+      "assertion": {
+        "id": "554"
+      },
+      "label": "Activités de services d'intermédiation pour l'hébergement"
+    },
+    {
+      "key": "category[8]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "5540"
+      },
+      "label": "Activités de services d'intermédiation pour l'hébergement"
+    },
+    {
+      "key": "category[8]/category[0]/category[4]",
+      "assertion": {
+        "id": "559"
+      },
+      "label": "Autres activités d'hébergement n.c.a."
+    },
+    {
+      "key": "category[8]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "5590"
+      },
+      "label": "Autres activités d'hébergement n.c.a."
+    },
+    {
+      "key": "category[8]/category[1]",
+      "assertion": {
+        "id": "56"
+      },
+      "label": "Activités de restauration et de services de boissons"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]",
+      "assertion": {
+        "id": "561"
+      },
+      "label": "Restaurants et activités de restauration mobile"
+    },
+    {
+      "key": "category[8]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5610"
+      },
+      "label": "Restaurants et activités de restauration mobile"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]",
+      "assertion": {
+        "id": "562"
+      },
+      "label": "Services de restauration pour événements et autres activités de restauration"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5621"
+      },
+      "label": "Services de restauration pour événements"
+    },
+    {
+      "key": "category[8]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "5629"
+      },
+      "label": "Autres activités de restauration"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]",
+      "assertion": {
+        "id": "563"
+      },
+      "label": "Débits de boissons"
+    },
+    {
+      "key": "category[8]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "5630"
+      },
+      "label": "Débits de boissons"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]",
+      "assertion": {
+        "id": "564"
+      },
+      "label": "Activités de services d'intermédiation pour les services de restauration et de boissons"
+    },
+    {
+      "key": "category[8]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "5640"
+      },
+      "label": "Activités de services d'intermédiation pour les services de restauration et de boissons"
+    },
+    {
+      "key": "category[9]",
+      "assertion": {
+        "id": "J"
+      },
+      "label": "Activités d'édition, de radiodiffusion et de production et distribution de contenu"
+    },
+    {
+      "key": "category[9]/category[0]",
+      "assertion": {
+        "id": "58"
+      },
+      "label": "Activités d'édition"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]",
+      "assertion": {
+        "id": "581"
+      },
+      "label": "Édition de livres, journaux, périodiques et autres activités d'édition"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "5811"
+      },
+      "label": "Édition de livres"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "5812"
+      },
+      "label": "Édition de journaux"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "5813"
+      },
+      "label": "Édition de revues et périodiques"
+    },
+    {
+      "key": "category[9]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "5819"
+      },
+      "label": "Autres activités d'édition"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]",
+      "assertion": {
+        "id": "582"
+      },
+      "label": "Édition de logiciels"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5821"
+      },
+      "label": "Édition de jeux vidéo"
+    },
+    {
+      "key": "category[9]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "5829"
+      },
+      "label": "Autres activités d'édition de logiciels"
+    },
+    {
+      "key": "category[9]/category[1]",
+      "assertion": {
+        "id": "59"
+      },
+      "label": "Production de films cinématographiques, de vidéos et de programmes de télévision, enregistrement sonore et édition musicale"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]",
+      "assertion": {
+        "id": "591"
+      },
+      "label": "Activités liées aux films cinématographiques, aux vidéos et aux programmes de télévision"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "5911"
+      },
+      "label": "Production de films cinématographiques, de vidéos et de programmes de télévision"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "5912"
+      },
+      "label": "Post-production de films cinématographiques, de vidéos et de programmes de télévision"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[2]",
+      "assertion": {
+        "id": "5913"
+      },
+      "label": "Distribution de films cinématographiques, de vidéos et de programmes de télévision"
+    },
+    {
+      "key": "category[9]/category[1]/category[0]/category[3]",
+      "assertion": {
+        "id": "5914"
+      },
+      "label": "Projection de films cinématographiques"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]",
+      "assertion": {
+        "id": "592"
+      },
+      "label": "Enregistrement sonore et édition musicale"
+    },
+    {
+      "key": "category[9]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "5920"
+      },
+      "label": "Enregistrement sonore et édition musicale"
+    },
+    {
+      "key": "category[9]/category[2]",
+      "assertion": {
+        "id": "60"
+      },
+      "label": "Programmation, radiodiffusion, agences de presse et autres activités de distribution de contenu"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]",
+      "assertion": {
+        "id": "601"
+      },
+      "label": "Radiodiffusion et distribution audio"
+    },
+    {
+      "key": "category[9]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6010"
+      },
+      "label": "Radiodiffusion et distribution audio"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]",
+      "assertion": {
+        "id": "602"
+      },
+      "label": "Programmation et diffusion de télévision et distribution de vidéos"
+    },
+    {
+      "key": "category[9]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6020"
+      },
+      "label": "Programmation et diffusion de télévision et distribution de vidéos"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]",
+      "assertion": {
+        "id": "603"
+      },
+      "label": "Agences de presse et autres activités de distribution de contenu"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6031"
+      },
+      "label": "Activités des agences de presse"
+    },
+    {
+      "key": "category[9]/category[2]/category[2]/category[1]",
+      "assertion": {
+        "id": "6039"
+      },
+      "label": "Sites de réseaux sociaux et autres activités de distribution de contenu"
+    },
+    {
+      "key": "category[10]",
+      "assertion": {
+        "id": "K"
+      },
+      "label": "Télécommunications, programmation informatique, conseil, infrastructure informatique et autres activités de services d'information"
+    },
+    {
+      "key": "category[10]/category[0]",
+      "assertion": {
+        "id": "61"
+      },
+      "label": "Télécommunications"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]",
+      "assertion": {
+        "id": "611"
+      },
+      "label": "Activités de télécommunications filaires, sans fil et par satellite"
+    },
+    {
+      "key": "category[10]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6110"
+      },
+      "label": "Activités de télécommunications filaires, sans fil et par satellite"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]",
+      "assertion": {
+        "id": "612"
+      },
+      "label": "Revente de services de télécommunication et activités de services d'intermédiation pour les télécommunications"
+    },
+    {
+      "key": "category[10]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6120"
+      },
+      "label": "Revente de services de télécommunication et activités de services d'intermédiation pour les télécommunications"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]",
+      "assertion": {
+        "id": "619"
+      },
+      "label": "Autres activités de télécommunication"
+    },
+    {
+      "key": "category[10]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6190"
+      },
+      "label": "Autres activités de télécommunication"
+    },
+    {
+      "key": "category[10]/category[1]",
+      "assertion": {
+        "id": "62"
+      },
+      "label": "Programmation informatique, conseil et activités connexes"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]",
+      "assertion": {
+        "id": "621"
+      },
+      "label": "Activités de programmation informatique"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6211"
+      },
+      "label": "Développement de jeux vidéo, de logiciels de jeux vidéo et d'outils logiciels pour jeux vidéo"
+    },
+    {
+      "key": "category[10]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6219"
+      },
+      "label": "Autres activités de programmation informatique"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]",
+      "assertion": {
+        "id": "622"
+      },
+      "label": "Conseil informatique et gestion d'installations informatiques"
+    },
+    {
+      "key": "category[10]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6220"
+      },
+      "label": "Conseil informatique et gestion d'installations informatiques"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]",
+      "assertion": {
+        "id": "629"
+      },
+      "label": "Autres activités de services informatiques et liés aux technologies de l'information"
+    },
+    {
+      "key": "category[10]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6290"
+      },
+      "label": "Autres activités de services informatiques et liés aux technologies de l'information"
+    },
+    {
+      "key": "category[10]/category[2]",
+      "assertion": {
+        "id": "63"
+      },
+      "label": "Infrastructure informatique, traitement de données, hébergement et autres activités de services d'information"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]",
+      "assertion": {
+        "id": "631"
+      },
+      "label": "Infrastructure informatique, traitement de données, hébergement et activités connexes"
+    },
+    {
+      "key": "category[10]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6310"
+      },
+      "label": "Infrastructure informatique, traitement de données, hébergement et activités connexes"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]",
+      "assertion": {
+        "id": "639"
+      },
+      "label": "Activités de portails de recherche sur le Web et autres activités de services d'information"
+    },
+    {
+      "key": "category[10]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6390"
+      },
+      "label": "Activités de portails de recherche sur le Web et autres activités de services d'information"
+    },
+    {
+      "key": "category[11]",
+      "assertion": {
+        "id": "L"
+      },
+      "label": "Activités financières et d'assurance"
+    },
+    {
+      "key": "category[11]/category[0]",
+      "assertion": {
+        "id": "64"
+      },
+      "label": "Activités de services financiers, hors assurance et caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]",
+      "assertion": {
+        "id": "641"
+      },
+      "label": "Intermédiation monétaire"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6411"
+      },
+      "label": "Banque centrale"
+    },
+    {
+      "key": "category[11]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "6419"
+      },
+      "label": "Autre intermédiation monétaire"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]",
+      "assertion": {
+        "id": "642"
+      },
+      "label": "Activités des sociétés holding et des structures de financement"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6421"
+      },
+      "label": "Activités des sociétés holding"
+    },
+    {
+      "key": "category[11]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6422"
+      },
+      "label": "Activités des structures de financement"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]",
+      "assertion": {
+        "id": "643"
+      },
+      "label": "Activités des fonds, fonds fiduciaires et entités financières similaires"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6431"
+      },
+      "label": "Activités des fonds du marché monétaire"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "6432"
+      },
+      "label": "Activités des fonds d'investissement autres que les fonds du marché monétaire"
+    },
+    {
+      "key": "category[11]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "6433"
+      },
+      "label": "Activités des comptes fiduciaires, successoraux et d'agence"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]",
+      "assertion": {
+        "id": "649"
+      },
+      "label": "Autres activités de services financiers, hors assurance et caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "6491"
+      },
+      "label": "Activités de crédit-bail"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "6492"
+      },
+      "label": "Activités de financement du commerce international"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "6493"
+      },
+      "label": "Activités d'affacturage"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "6494"
+      },
+      "label": "Activités de titrisation"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "6495"
+      },
+      "label": "Autres activités d'octroi de crédit"
+    },
+    {
+      "key": "category[11]/category[0]/category[3]/category[5]",
+      "assertion": {
+        "id": "6499"
+      },
+      "label": "Autres activités de services financiers n.c.a., hors assurance et caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[1]",
+      "assertion": {
+        "id": "65"
+      },
+      "label": "Assurance, réassurance et caisses de retraite, hors sécurité sociale obligatoire"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]",
+      "assertion": {
+        "id": "651"
+      },
+      "label": "Assurance"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "6511"
+      },
+      "label": "Assurance-vie"
+    },
+    {
+      "key": "category[11]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "6512"
+      },
+      "label": "Assurance non-vie"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]",
+      "assertion": {
+        "id": "652"
+      },
+      "label": "Réassurance"
+    },
+    {
+      "key": "category[11]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "6520"
+      },
+      "label": "Réassurance"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]",
+      "assertion": {
+        "id": "653"
+      },
+      "label": "Caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "6530"
+      },
+      "label": "Caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[2]",
+      "assertion": {
+        "id": "66"
+      },
+      "label": "Activités auxiliaires de services financiers et d'assurance"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]",
+      "assertion": {
+        "id": "661"
+      },
+      "label": "Activités auxiliaires de services financiers, hors assurance et caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "6611"
+      },
+      "label": "Administration des marchés financiers"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "6612"
+      },
+      "label": "Courtage de valeurs mobilières et de contrats sur marchandises"
+    },
+    {
+      "key": "category[11]/category[2]/category[0]/category[2]",
+      "assertion": {
+        "id": "6619"
+      },
+      "label": "Autres activités auxiliaires de services financiers, hors assurance et caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]",
+      "assertion": {
+        "id": "662"
+      },
+      "label": "Activités auxiliaires d'assurance et de caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "6621"
+      },
+      "label": "Évaluation des risques et des dommages"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "6622"
+      },
+      "label": "Activités des agents et courtiers d'assurance"
+    },
+    {
+      "key": "category[11]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "6629"
+      },
+      "label": "Autres activités auxiliaires d'assurance et de caisses de retraite"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]",
+      "assertion": {
+        "id": "663"
+      },
+      "label": "Activités de gestion de fonds"
+    },
+    {
+      "key": "category[11]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "6630"
+      },
+      "label": "Activités de gestion de fonds"
+    },
+    {
+      "key": "category[12]",
+      "assertion": {
+        "id": "M"
+      },
+      "label": "Activités immobilières"
+    },
+    {
+      "key": "category[12]/category[0]",
+      "assertion": {
+        "id": "68"
+      },
+      "label": "Activités immobilières"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]",
+      "assertion": {
+        "id": "681"
+      },
+      "label": "Activités immobilières sur biens propres ou loués"
+    },
+    {
+      "key": "category[12]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6810"
+      },
+      "label": "Activités immobilières sur biens propres ou loués"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]",
+      "assertion": {
+        "id": "682"
+      },
+      "label": "Activités immobilières à commission ou sur contrat"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6821"
+      },
+      "label": "Activités de services d'intermédiation immobilière"
+    },
+    {
+      "key": "category[12]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "6829"
+      },
+      "label": "Autres activités immobilières à commission ou sur contrat"
+    },
+    {
+      "key": "category[13]",
+      "assertion": {
+        "id": "N"
+      },
+      "label": "Activités spécialisées, scientifiques et techniques"
+    },
+    {
+      "key": "category[13]/category[0]",
+      "assertion": {
+        "id": "69"
+      },
+      "label": "Activités juridiques et comptables"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]",
+      "assertion": {
+        "id": "691"
+      },
+      "label": "Activités juridiques"
+    },
+    {
+      "key": "category[13]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "6910"
+      },
+      "label": "Activités juridiques"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]",
+      "assertion": {
+        "id": "692"
+      },
+      "label": "Activités comptables, de tenue de livres et d'audit ; conseil fiscal"
+    },
+    {
+      "key": "category[13]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "6920"
+      },
+      "label": "Activités comptables, de tenue de livres et d'audit ; conseil fiscal"
+    },
+    {
+      "key": "category[13]/category[1]",
+      "assertion": {
+        "id": "70"
+      },
+      "label": "Activités des sièges sociaux ; conseil de gestion"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]",
+      "assertion": {
+        "id": "701"
+      },
+      "label": "Activités des sièges sociaux"
+    },
+    {
+      "key": "category[13]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7010"
+      },
+      "label": "Activités des sièges sociaux"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]",
+      "assertion": {
+        "id": "702"
+      },
+      "label": "Conseil en gestion d'entreprise et autres conseils de gestion"
+    },
+    {
+      "key": "category[13]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7020"
+      },
+      "label": "Conseil en gestion d'entreprise et autres conseils de gestion"
+    },
+    {
+      "key": "category[13]/category[2]",
+      "assertion": {
+        "id": "71"
+      },
+      "label": "Activités d'architecture et d'ingénierie ; contrôle et analyses techniques"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]",
+      "assertion": {
+        "id": "711"
+      },
+      "label": "Activités d'architecture et d'ingénierie et conseils techniques connexes"
+    },
+    {
+      "key": "category[13]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7110"
+      },
+      "label": "Activités d'architecture et d'ingénierie et conseils techniques connexes"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]",
+      "assertion": {
+        "id": "712"
+      },
+      "label": "Contrôle et analyses techniques"
+    },
+    {
+      "key": "category[13]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7120"
+      },
+      "label": "Contrôle et analyses techniques"
+    },
+    {
+      "key": "category[13]/category[3]",
+      "assertion": {
+        "id": "72"
+      },
+      "label": "Recherche-développement scientifique"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]",
+      "assertion": {
+        "id": "721"
+      },
+      "label": "Recherche-développement expérimental en sciences naturelles et ingénierie"
+    },
+    {
+      "key": "category[13]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "7210"
+      },
+      "label": "Recherche-développement expérimental en sciences naturelles et ingénierie"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]",
+      "assertion": {
+        "id": "722"
+      },
+      "label": "Recherche-développement expérimental en sciences sociales et humaines"
+    },
+    {
+      "key": "category[13]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "7220"
+      },
+      "label": "Recherche-développement expérimental en sciences sociales et humaines"
+    },
+    {
+      "key": "category[13]/category[4]",
+      "assertion": {
+        "id": "73"
+      },
+      "label": "Publicité, études de marché et relations publiques"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]",
+      "assertion": {
+        "id": "731"
+      },
+      "label": "Activités de publicité"
+    },
+    {
+      "key": "category[13]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "7310"
+      },
+      "label": "Activités de publicité"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]",
+      "assertion": {
+        "id": "732"
+      },
+      "label": "Études de marché et sondages d'opinion"
+    },
+    {
+      "key": "category[13]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "7320"
+      },
+      "label": "Études de marché et sondages d'opinion"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]",
+      "assertion": {
+        "id": "733"
+      },
+      "label": "Activités de relations publiques"
+    },
+    {
+      "key": "category[13]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "7330"
+      },
+      "label": "Activités de relations publiques"
+    },
+    {
+      "key": "category[13]/category[5]",
+      "assertion": {
+        "id": "74"
+      },
+      "label": "Autres activités spécialisées, scientifiques et techniques"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]",
+      "assertion": {
+        "id": "741"
+      },
+      "label": "Activités de conception spécialisée"
+    },
+    {
+      "key": "category[13]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "7410"
+      },
+      "label": "Activités de conception spécialisée"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]",
+      "assertion": {
+        "id": "742"
+      },
+      "label": "Activités photographiques"
+    },
+    {
+      "key": "category[13]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "7420"
+      },
+      "label": "Activités photographiques"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]",
+      "assertion": {
+        "id": "743"
+      },
+      "label": "Activités de traduction et d'interprétation"
+    },
+    {
+      "key": "category[13]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "7430"
+      },
+      "label": "Activités de traduction et d'interprétation"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]",
+      "assertion": {
+        "id": "749"
+      },
+      "label": "Autres activités spécialisées, scientifiques et techniques n.c.a."
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "7491"
+      },
+      "label": "Activités de courtage et de commercialisation de brevets"
+    },
+    {
+      "key": "category[13]/category[5]/category[3]/category[1]",
+      "assertion": {
+        "id": "7499"
+      },
+      "label": "Toutes autres activités spécialisées, scientifiques et techniques n.c.a."
+    },
+    {
+      "key": "category[13]/category[6]",
+      "assertion": {
+        "id": "75"
+      },
+      "label": "Activités vétérinaires"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]",
+      "assertion": {
+        "id": "750"
+      },
+      "label": "Activités vétérinaires"
+    },
+    {
+      "key": "category[13]/category[6]/category[0]/category[0]",
+      "assertion": {
+        "id": "7500"
+      },
+      "label": "Activités vétérinaires"
+    },
+    {
+      "key": "category[14]",
+      "assertion": {
+        "id": "O"
+      },
+      "label": "Activités de services administratifs et de soutien"
+    },
+    {
+      "key": "category[14]/category[0]",
+      "assertion": {
+        "id": "77"
+      },
+      "label": "Activités de location et location-bail"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]",
+      "assertion": {
+        "id": "771"
+      },
+      "label": "Location et location-bail de véhicules automobiles"
+    },
+    {
+      "key": "category[14]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "7710"
+      },
+      "label": "Location et location-bail de véhicules automobiles"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]",
+      "assertion": {
+        "id": "772"
+      },
+      "label": "Location et location-bail de biens personnels et ménagers"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "7721"
+      },
+      "label": "Location et location-bail d'articles de loisirs et de sport"
+    },
+    {
+      "key": "category[14]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "7729"
+      },
+      "label": "Location et location-bail d'autres biens personnels et ménagers"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]",
+      "assertion": {
+        "id": "773"
+      },
+      "label": "Location et location-bail d'autres machines, équipements et biens matériels"
+    },
+    {
+      "key": "category[14]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "7730"
+      },
+      "label": "Location et location-bail d'autres machines, équipements et biens matériels"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]",
+      "assertion": {
+        "id": "774"
+      },
+      "label": "Location-bail de propriété intellectuelle et de produits similaires, à l'exception des œuvres protégées par le droit d'auteur"
+    },
+    {
+      "key": "category[14]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "7740"
+      },
+      "label": "Location-bail de propriété intellectuelle et de produits similaires, à l'exception des œuvres protégées par le droit d'auteur"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]",
+      "assertion": {
+        "id": "775"
+      },
+      "label": "Activités d'intermédiation pour la location et la location-bail de biens matériels et d'actifs incorporels non financiers"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "7751"
+      },
+      "label": "Activités d'intermédiation pour la location et la location-bail de voitures, camping-cars et remorques"
+    },
+    {
+      "key": "category[14]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "7752"
+      },
+      "label": "Activités d'intermédiation pour la location et la location-bail d'autres biens matériels et d'actifs incorporels non financiers"
+    },
+    {
+      "key": "category[14]/category[1]",
+      "assertion": {
+        "id": "78"
+      },
+      "label": "Activités liées à l'emploi"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]",
+      "assertion": {
+        "id": "781"
+      },
+      "label": "Activités des agences de placement de main-d'œuvre"
+    },
+    {
+      "key": "category[14]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "7810"
+      },
+      "label": "Activités des agences de placement de main-d'œuvre"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]",
+      "assertion": {
+        "id": "782"
+      },
+      "label": "Activités des agences de travail temporaire et autres mises à disposition de ressources humaines"
+    },
+    {
+      "key": "category[14]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "7820"
+      },
+      "label": "Activités des agences de travail temporaire et autres mises à disposition de ressources humaines"
+    },
+    {
+      "key": "category[14]/category[2]",
+      "assertion": {
+        "id": "79"
+      },
+      "label": "Activités des agences de voyage, voyagistes et autres services liés aux voyages"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]",
+      "assertion": {
+        "id": "791"
+      },
+      "label": "Activités des agences de voyage et des voyagistes"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "7911"
+      },
+      "label": "Activités des agences de voyage"
+    },
+    {
+      "key": "category[14]/category[2]/category[0]/category[1]",
+      "assertion": {
+        "id": "7912"
+      },
+      "label": "Activités des voyagistes"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]",
+      "assertion": {
+        "id": "799"
+      },
+      "label": "Autres activités liées aux voyages"
+    },
+    {
+      "key": "category[14]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "7990"
+      },
+      "label": "Autres activités liées aux voyages"
+    },
+    {
+      "key": "category[14]/category[3]",
+      "assertion": {
+        "id": "80"
+      },
+      "label": "Activités d'enquête et de sécurité"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]",
+      "assertion": {
+        "id": "801"
+      },
+      "label": "Activités d'enquête et de sécurité"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "8011"
+      },
+      "label": "Activités d'enquête et de sécurité privée"
+    },
+    {
+      "key": "category[14]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "8019"
+      },
+      "label": "Activités de sécurité n.c.a."
+    },
+    {
+      "key": "category[14]/category[4]",
+      "assertion": {
+        "id": "81"
+      },
+      "label": "Services relatifs aux bâtiments et activités d'aménagement paysager"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]",
+      "assertion": {
+        "id": "811"
+      },
+      "label": "Activités combinées de soutien lié aux bâtiments"
+    },
+    {
+      "key": "category[14]/category[4]/category[0]/category[0]",
+      "assertion": {
+        "id": "8110"
+      },
+      "label": "Activités combinées de soutien lié aux bâtiments"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]",
+      "assertion": {
+        "id": "812"
+      },
+      "label": "Activités de nettoyage"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[0]",
+      "assertion": {
+        "id": "8121"
+      },
+      "label": "Nettoyage général des bâtiments"
+    },
+    {
+      "key": "category[14]/category[4]/category[1]/category[1]",
+      "assertion": {
+        "id": "8129"
+      },
+      "label": "Autres activités de nettoyage"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]",
+      "assertion": {
+        "id": "813"
+      },
+      "label": "Activités d'aménagement paysager"
+    },
+    {
+      "key": "category[14]/category[4]/category[2]/category[0]",
+      "assertion": {
+        "id": "8130"
+      },
+      "label": "Activités d'aménagement paysager"
+    },
+    {
+      "key": "category[14]/category[5]",
+      "assertion": {
+        "id": "82"
+      },
+      "label": "Activités administratives de bureau, services de soutien de bureau et autres activités de soutien aux entreprises"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]",
+      "assertion": {
+        "id": "821"
+      },
+      "label": "Activités administratives de bureau et de soutien de bureau"
+    },
+    {
+      "key": "category[14]/category[5]/category[0]/category[0]",
+      "assertion": {
+        "id": "8210"
+      },
+      "label": "Activités administratives de bureau et de soutien de bureau"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]",
+      "assertion": {
+        "id": "822"
+      },
+      "label": "Activités de centres d'appels"
+    },
+    {
+      "key": "category[14]/category[5]/category[1]/category[0]",
+      "assertion": {
+        "id": "8220"
+      },
+      "label": "Activités de centres d'appels"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]",
+      "assertion": {
+        "id": "823"
+      },
+      "label": "Organisation de congrès et de salons professionnels"
+    },
+    {
+      "key": "category[14]/category[5]/category[2]/category[0]",
+      "assertion": {
+        "id": "8230"
+      },
+      "label": "Organisation de congrès et de salons professionnels"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]",
+      "assertion": {
+        "id": "824"
+      },
+      "label": "Activités d'intermédiation pour les activités de soutien aux entreprises n.c.a., à l'exclusion de l'intermédiation financière"
+    },
+    {
+      "key": "category[14]/category[5]/category[3]/category[0]",
+      "assertion": {
+        "id": "8240"
+      },
+      "label": "Activités d'intermédiation pour les activités de soutien aux entreprises n.c.a., à l'exclusion de l'intermédiation financière"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]",
+      "assertion": {
+        "id": "829"
+      },
+      "label": "Activités de services de soutien aux entreprises n.c.a."
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[0]",
+      "assertion": {
+        "id": "8291"
+      },
+      "label": "Activités des agences de recouvrement et des bureaux de crédit"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[1]",
+      "assertion": {
+        "id": "8292"
+      },
+      "label": "Activités de conditionnement"
+    },
+    {
+      "key": "category[14]/category[5]/category[4]/category[2]",
+      "assertion": {
+        "id": "8299"
+      },
+      "label": "Autres activités de services de soutien aux entreprises n.c.a."
+    },
+    {
+      "key": "category[15]",
+      "assertion": {
+        "id": "P"
+      },
+      "label": "Administration publique et défense ; sécurité sociale obligatoire"
+    },
+    {
+      "key": "category[15]/category[0]",
+      "assertion": {
+        "id": "84"
+      },
+      "label": "Administration publique et défense ; sécurité sociale obligatoire"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]",
+      "assertion": {
+        "id": "841"
+      },
+      "label": "Administration de l'État et des politiques économiques, sociales et environnementales de la collectivité"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8411"
+      },
+      "label": "Activités générales d'administration publique"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "8412"
+      },
+      "label": "Réglementation des activités de prestation de soins de santé, d'enseignement, de services culturels et d'autres services sociaux, à l'exclusion de la sécurité sociale et de l'environnement"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "8413"
+      },
+      "label": "Réglementation des activités de fourniture de services environnementaux"
+    },
+    {
+      "key": "category[15]/category[0]/category[0]/category[3]",
+      "assertion": {
+        "id": "8414"
+      },
+      "label": "Réglementation et contribution au fonctionnement plus efficace des entreprises"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]",
+      "assertion": {
+        "id": "842"
+      },
+      "label": "Fourniture de services à la collectivité dans son ensemble"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8421"
+      },
+      "label": "Affaires étrangères"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "8422"
+      },
+      "label": "Activités de défense"
+    },
+    {
+      "key": "category[15]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "8423"
+      },
+      "label": "Activités d'ordre public et de sécurité"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]",
+      "assertion": {
+        "id": "843"
+      },
+      "label": "Activités de sécurité sociale obligatoire"
+    },
+    {
+      "key": "category[15]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8430"
+      },
+      "label": "Activités de sécurité sociale obligatoire"
+    },
+    {
+      "key": "category[16]",
+      "assertion": {
+        "id": "Q"
+      },
+      "label": "Enseignement"
+    },
+    {
+      "key": "category[16]/category[0]",
+      "assertion": {
+        "id": "85"
+      },
+      "label": "Enseignement"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]",
+      "assertion": {
+        "id": "851"
+      },
+      "label": "Enseignement préprimaire"
+    },
+    {
+      "key": "category[16]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8510"
+      },
+      "label": "Enseignement préprimaire"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]",
+      "assertion": {
+        "id": "852"
+      },
+      "label": "Enseignement primaire"
+    },
+    {
+      "key": "category[16]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8520"
+      },
+      "label": "Enseignement primaire"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]",
+      "assertion": {
+        "id": "853"
+      },
+      "label": "Enseignement secondaire et postsecondaire non supérieur"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8531"
+      },
+      "label": "Enseignement secondaire général"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8532"
+      },
+      "label": "Enseignement secondaire professionnel"
+    },
+    {
+      "key": "category[16]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "8533"
+      },
+      "label": "Enseignement postsecondaire non supérieur"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]",
+      "assertion": {
+        "id": "854"
+      },
+      "label": "Enseignement supérieur"
+    },
+    {
+      "key": "category[16]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "8540"
+      },
+      "label": "Enseignement supérieur"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]",
+      "assertion": {
+        "id": "855"
+      },
+      "label": "Autres activités d'enseignement"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "8551"
+      },
+      "label": "Enseignement de disciplines sportives et d'activités de loisirs"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "8552"
+      },
+      "label": "Enseignement culturel"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "8553"
+      },
+      "label": "Activités des écoles de conduite"
+    },
+    {
+      "key": "category[16]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "8559"
+      },
+      "label": "Autres activités d'enseignement n.c.a."
+    },
+    {
+      "key": "category[16]/category[0]/category[5]",
+      "assertion": {
+        "id": "856"
+      },
+      "label": "Activités de soutien à l'enseignement"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[0]",
+      "assertion": {
+        "id": "8561"
+      },
+      "label": "Activités d'intermédiation pour les cours et les répétiteurs"
+    },
+    {
+      "key": "category[16]/category[0]/category[5]/category[1]",
+      "assertion": {
+        "id": "8569"
+      },
+      "label": "Autres activités de soutien à l'enseignement"
+    },
+    {
+      "key": "category[17]",
+      "assertion": {
+        "id": "R"
+      },
+      "label": "Activités pour la santé humaine et l'action sociale"
+    },
+    {
+      "key": "category[17]/category[0]",
+      "assertion": {
+        "id": "86"
+      },
+      "label": "Activités pour la santé humaine"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]",
+      "assertion": {
+        "id": "861"
+      },
+      "label": "Activités hospitalières"
+    },
+    {
+      "key": "category[17]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "8610"
+      },
+      "label": "Activités hospitalières"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]",
+      "assertion": {
+        "id": "862"
+      },
+      "label": "Activités de pratique médicale et dentaire"
+    },
+    {
+      "key": "category[17]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "8620"
+      },
+      "label": "Activités de pratique médicale et dentaire"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]",
+      "assertion": {
+        "id": "869"
+      },
+      "label": "Autres activités pour la santé humaine"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "8691"
+      },
+      "label": "Activités d'intermédiation pour les services médicaux, dentaires et autres services de santé humaine"
+    },
+    {
+      "key": "category[17]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "8699"
+      },
+      "label": "Autres activités pour la santé humaine n.c.a."
+    },
+    {
+      "key": "category[17]/category[1]",
+      "assertion": {
+        "id": "87"
+      },
+      "label": "Activités de soins en établissement"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]",
+      "assertion": {
+        "id": "871"
+      },
+      "label": "Activités de soins infirmiers en établissement"
+    },
+    {
+      "key": "category[17]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "8710"
+      },
+      "label": "Activités de soins infirmiers en établissement"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]",
+      "assertion": {
+        "id": "872"
+      },
+      "label": "Activités de soins en établissement pour les personnes vivant avec une maladie mentale ou souffrant d'abus de substances, ou ayant reçu un diagnostic de maladie mentale ou d'abus de substances"
+    },
+    {
+      "key": "category[17]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "8720"
+      },
+      "label": "Activités de soins en établissement pour les personnes vivant avec une maladie mentale ou souffrant d'abus de substances, ou ayant reçu un diagnostic de maladie mentale ou d'abus de substances"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]",
+      "assertion": {
+        "id": "873"
+      },
+      "label": "Activités de soins en établissement pour les personnes âgées ou les personnes ayant un handicap physique"
+    },
+    {
+      "key": "category[17]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "8730"
+      },
+      "label": "Activités de soins en établissement pour les personnes âgées ou les personnes ayant un handicap physique"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]",
+      "assertion": {
+        "id": "879"
+      },
+      "label": "Autres activités de soins en établissement"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "8791"
+      },
+      "label": "Activités d'intermédiation pour les activités de soins en établissement"
+    },
+    {
+      "key": "category[17]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "8799"
+      },
+      "label": "Autres activités de soins en établissement n.c.a."
+    },
+    {
+      "key": "category[17]/category[2]",
+      "assertion": {
+        "id": "88"
+      },
+      "label": "Activités d'action sociale sans hébergement"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]",
+      "assertion": {
+        "id": "881"
+      },
+      "label": "Activités d'action sociale sans hébergement pour les personnes âgées ou les personnes handicapées"
+    },
+    {
+      "key": "category[17]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "8810"
+      },
+      "label": "Activités d'action sociale sans hébergement pour les personnes âgées ou les personnes handicapées"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]",
+      "assertion": {
+        "id": "889"
+      },
+      "label": "Autres activités d'action sociale sans hébergement"
+    },
+    {
+      "key": "category[17]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "8890"
+      },
+      "label": "Autres activités d'action sociale sans hébergement"
+    },
+    {
+      "key": "category[18]",
+      "assertion": {
+        "id": "S"
+      },
+      "label": "Arts, sports et loisirs"
+    },
+    {
+      "key": "category[18]/category[0]",
+      "assertion": {
+        "id": "90"
+      },
+      "label": "Activités de création artistique et d'arts du spectacle"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]",
+      "assertion": {
+        "id": "901"
+      },
+      "label": "Activités de création artistique"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9011"
+      },
+      "label": "Activités de création littéraire et de composition musicale"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9012"
+      },
+      "label": "Activités de création dans les arts visuels"
+    },
+    {
+      "key": "category[18]/category[0]/category[0]/category[2]",
+      "assertion": {
+        "id": "9013"
+      },
+      "label": "Autres activités de création artistique"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]",
+      "assertion": {
+        "id": "902"
+      },
+      "label": "Activités d'arts du spectacle"
+    },
+    {
+      "key": "category[18]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9020"
+      },
+      "label": "Activités d'arts du spectacle"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]",
+      "assertion": {
+        "id": "903"
+      },
+      "label": "Activités de soutien à la création artistique et aux arts du spectacle"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9031"
+      },
+      "label": "Exploitation d'installations et de sites artistiques"
+    },
+    {
+      "key": "category[18]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9039"
+      },
+      "label": "Autres activités de soutien à la création artistique et aux arts du spectacle"
+    },
+    {
+      "key": "category[18]/category[1]",
+      "assertion": {
+        "id": "91"
+      },
+      "label": "Activités des bibliothèques, archives, musées et autres activités culturelles"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]",
+      "assertion": {
+        "id": "911"
+      },
+      "label": "Activités des bibliothèques et archives"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9111"
+      },
+      "label": "Activités des bibliothèques"
+    },
+    {
+      "key": "category[18]/category[1]/category[0]/category[1]",
+      "assertion": {
+        "id": "9112"
+      },
+      "label": "Activités des archives"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]",
+      "assertion": {
+        "id": "912"
+      },
+      "label": "Activités des musées, collections, sites historiques et monuments"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9121"
+      },
+      "label": "Activités des musées et collections"
+    },
+    {
+      "key": "category[18]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9122"
+      },
+      "label": "Activités des sites historiques et monuments"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]",
+      "assertion": {
+        "id": "913"
+      },
+      "label": "Conservation, restauration et autres activités de soutien au patrimoine culturel"
+    },
+    {
+      "key": "category[18]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9130"
+      },
+      "label": "Conservation, restauration et autres activités de soutien au patrimoine culturel"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]",
+      "assertion": {
+        "id": "914"
+      },
+      "label": "Activités des jardins botaniques et zoologiques et des réserves naturelles"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9141"
+      },
+      "label": "Activités des jardins botaniques et zoologiques"
+    },
+    {
+      "key": "category[18]/category[1]/category[3]/category[1]",
+      "assertion": {
+        "id": "9142"
+      },
+      "label": "Activités des réserves naturelles"
+    },
+    {
+      "key": "category[18]/category[2]",
+      "assertion": {
+        "id": "92"
+      },
+      "label": "Activités de jeux de hasard et d'argent"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]",
+      "assertion": {
+        "id": "920"
+      },
+      "label": "Activités de jeux de hasard et d'argent"
+    },
+    {
+      "key": "category[18]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9200"
+      },
+      "label": "Activités de jeux de hasard et d'argent"
+    },
+    {
+      "key": "category[18]/category[3]",
+      "assertion": {
+        "id": "93"
+      },
+      "label": "Activités sportives et activités de loisirs et de divertissement"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]",
+      "assertion": {
+        "id": "931"
+      },
+      "label": "Activités sportives"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[0]",
+      "assertion": {
+        "id": "9311"
+      },
+      "label": "Exploitation d'installations sportives"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[1]",
+      "assertion": {
+        "id": "9312"
+      },
+      "label": "Activités des clubs sportifs"
+    },
+    {
+      "key": "category[18]/category[3]/category[0]/category[2]",
+      "assertion": {
+        "id": "9319"
+      },
+      "label": "Autres activités sportives"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]",
+      "assertion": {
+        "id": "932"
+      },
+      "label": "Activités de loisirs et de divertissement"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[0]",
+      "assertion": {
+        "id": "9321"
+      },
+      "label": "Activités des parcs d'attractions et des parcs à thème"
+    },
+    {
+      "key": "category[18]/category[3]/category[1]/category[1]",
+      "assertion": {
+        "id": "9329"
+      },
+      "label": "Autres activités de loisirs et de divertissement"
+    },
+    {
+      "key": "category[19]",
+      "assertion": {
+        "id": "T"
+      },
+      "label": "Autres activités de services"
+    },
+    {
+      "key": "category[19]/category[0]",
+      "assertion": {
+        "id": "94"
+      },
+      "label": "Activités des organisations associatives"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]",
+      "assertion": {
+        "id": "941"
+      },
+      "label": "Activités des organisations associatives d'entreprises, d'employeurs et professionnelles"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9411"
+      },
+      "label": "Activités des organisations associatives d'entreprises et d'employeurs"
+    },
+    {
+      "key": "category[19]/category[0]/category[0]/category[1]",
+      "assertion": {
+        "id": "9412"
+      },
+      "label": "Activités des organisations associatives professionnelles"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]",
+      "assertion": {
+        "id": "942"
+      },
+      "label": "Activités des syndicats de salariés"
+    },
+    {
+      "key": "category[19]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "9420"
+      },
+      "label": "Activités des syndicats de salariés"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]",
+      "assertion": {
+        "id": "949"
+      },
+      "label": "Activités d'autres organisations associatives"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "9491"
+      },
+      "label": "Activités des organisations religieuses"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "9492"
+      },
+      "label": "Activités des organisations politiques"
+    },
+    {
+      "key": "category[19]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "9499"
+      },
+      "label": "Activités d'autres organisations associatives n.c.a."
+    },
+    {
+      "key": "category[19]/category[1]",
+      "assertion": {
+        "id": "95"
+      },
+      "label": "Réparation et maintenance d'ordinateurs, de biens personnels et ménagers, de véhicules automobiles et de motocycles"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]",
+      "assertion": {
+        "id": "951"
+      },
+      "label": "Réparation et maintenance d'ordinateurs et d'équipements de communication"
+    },
+    {
+      "key": "category[19]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9510"
+      },
+      "label": "Réparation et maintenance d'ordinateurs et d'équipements de communication"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]",
+      "assertion": {
+        "id": "952"
+      },
+      "label": "Réparation et maintenance de biens personnels et ménagers"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9521"
+      },
+      "label": "Réparation et maintenance d'appareils électroniques grand public"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[1]",
+      "assertion": {
+        "id": "9522"
+      },
+      "label": "Réparation et maintenance d'appareils ménagers et d'équipements pour la maison et le jardin"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[2]",
+      "assertion": {
+        "id": "9523"
+      },
+      "label": "Réparation et maintenance de chaussures et d'articles en cuir"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[3]",
+      "assertion": {
+        "id": "9524"
+      },
+      "label": "Réparation et maintenance de meubles et d'articles d'ameublement"
+    },
+    {
+      "key": "category[19]/category[1]/category[1]/category[4]",
+      "assertion": {
+        "id": "9529"
+      },
+      "label": "Réparation et maintenance d'autres biens personnels et ménagers"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]",
+      "assertion": {
+        "id": "953"
+      },
+      "label": "Réparation et maintenance de véhicules automobiles et de motocycles"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[0]",
+      "assertion": {
+        "id": "9531"
+      },
+      "label": "Réparation et maintenance de véhicules automobiles"
+    },
+    {
+      "key": "category[19]/category[1]/category[2]/category[1]",
+      "assertion": {
+        "id": "9532"
+      },
+      "label": "Réparation et maintenance de motocycles"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]",
+      "assertion": {
+        "id": "954"
+      },
+      "label": "Activités d'intermédiation pour la réparation et la maintenance d'ordinateurs, de biens personnels et ménagers, de véhicules automobiles et de motocycles"
+    },
+    {
+      "key": "category[19]/category[1]/category[3]/category[0]",
+      "assertion": {
+        "id": "9540"
+      },
+      "label": "Activités d'intermédiation pour la réparation et la maintenance d'ordinateurs, de biens personnels et ménagers, de véhicules automobiles et de motocycles"
+    },
+    {
+      "key": "category[19]/category[2]",
+      "assertion": {
+        "id": "96"
+      },
+      "label": "Activités de services personnels"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]",
+      "assertion": {
+        "id": "961"
+      },
+      "label": "Blanchissage et nettoyage de produits textiles et en fourrure"
+    },
+    {
+      "key": "category[19]/category[2]/category[0]/category[0]",
+      "assertion": {
+        "id": "9610"
+      },
+      "label": "Blanchissage et nettoyage de produits textiles et en fourrure"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]",
+      "assertion": {
+        "id": "962"
+      },
+      "label": "Coiffure, soins de beauté, spas de jour et activités similaires"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[0]",
+      "assertion": {
+        "id": "9621"
+      },
+      "label": "Activités de coiffure et de barbier"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[1]",
+      "assertion": {
+        "id": "9622"
+      },
+      "label": "Soins de beauté et autres soins esthétiques"
+    },
+    {
+      "key": "category[19]/category[2]/category[1]/category[2]",
+      "assertion": {
+        "id": "9623"
+      },
+      "label": "Activités de spas de jour, de saunas et de bains de vapeur"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]",
+      "assertion": {
+        "id": "963"
+      },
+      "label": "Services funéraires et activités connexes"
+    },
+    {
+      "key": "category[19]/category[2]/category[2]/category[0]",
+      "assertion": {
+        "id": "9630"
+      },
+      "label": "Services funéraires et activités connexes"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]",
+      "assertion": {
+        "id": "964"
+      },
+      "label": "Activités d'intermédiation pour les services personnels"
+    },
+    {
+      "key": "category[19]/category[2]/category[3]/category[0]",
+      "assertion": {
+        "id": "9640"
+      },
+      "label": "Activités d'intermédiation pour les services personnels"
+    },
+    {
+      "key": "category[19]/category[2]/category[4]",
+      "assertion": {
+        "id": "969"
+      },
+      "label": "Autres activités de services personnels n.c.a."
+    },
+    {
+      "key": "category[19]/category[2]/category[4]/category[0]",
+      "assertion": {
+        "id": "9690"
+      },
+      "label": "Autres activités de services personnels n.c.a."
+    },
+    {
+      "key": "category[20]",
+      "assertion": {
+        "id": "U"
+      },
+      "label": "Activités des ménages en tant qu'employeurs; activités indifférenciées de production de biens et de services des ménages pour usage propre"
+    },
+    {
+      "key": "category[20]/category[0]",
+      "assertion": {
+        "id": "97"
+      },
+      "label": "Activités des ménages en tant qu'employeurs de personnel domestique"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]",
+      "assertion": {
+        "id": "970"
+      },
+      "label": "Activités des ménages en tant qu'employeurs de personnel domestique"
+    },
+    {
+      "key": "category[20]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9700"
+      },
+      "label": "Activités des ménages en tant qu'employeurs de personnel domestique"
+    },
+    {
+      "key": "category[20]/category[1]",
+      "assertion": {
+        "id": "98"
+      },
+      "label": "Activités indifférenciées de production de biens et de services des ménages privés pour usage propre"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]",
+      "assertion": {
+        "id": "981"
+      },
+      "label": "Activités indifférenciées de production de biens des ménages privés pour usage propre"
+    },
+    {
+      "key": "category[20]/category[1]/category[0]/category[0]",
+      "assertion": {
+        "id": "9810"
+      },
+      "label": "Activités indifférenciées de production de biens des ménages privés pour usage propre"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]",
+      "assertion": {
+        "id": "982"
+      },
+      "label": "Activités indifférenciées de production de services des ménages privés pour usage propre"
+    },
+    {
+      "key": "category[20]/category[1]/category[1]/category[0]",
+      "assertion": {
+        "id": "9820"
+      },
+      "label": "Activités indifférenciées de production de services des ménages privés pour usage propre"
+    },
+    {
+      "key": "category[21]",
+      "assertion": {
+        "id": "V"
+      },
+      "label": "Activités des organisations et organismes extraterritoriaux"
+    },
+    {
+      "key": "category[21]/category[0]",
+      "assertion": {
+        "id": "99"
+      },
+      "label": "Activités des organisations et organismes extraterritoriaux"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]",
+      "assertion": {
+        "id": "990"
+      },
+      "label": "Activités des organisations et organismes extraterritoriaux"
+    },
+    {
+      "key": "category[21]/category[0]/category[0]/category[0]",
+      "assertion": {
+        "id": "9900"
+      },
+      "label": "Activités des organisations et organismes extraterritoriaux"
+    }
+  ]
+}

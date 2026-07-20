@@ -41,6 +41,9 @@ const mockGetValueAtPath = (path: any[]) => {
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  useIntl: () => ({
+    formatMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
+  }),
   useModel: () => ({ initialState: { currentUser: { userid: mockCurrentUserId } } }),
 }));
 
@@ -481,7 +484,7 @@ describe('FlowpropertySelectForm', () => {
       );
     });
 
-    await waitFor(() => expect(screen.getAllByPlaceholderText('text')).toHaveLength(1));
+    await waitFor(() => expect(screen.getAllByPlaceholderText('Text')).toHaveLength(1));
     expect(mockGetLocalValueProps).toHaveBeenCalled();
 
     await userEvent.click(screen.getByRole('button', { name: /trigger edit err ref/i }));

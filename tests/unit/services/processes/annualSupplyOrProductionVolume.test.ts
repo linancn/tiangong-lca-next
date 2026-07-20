@@ -6,6 +6,7 @@ import {
   deriveAnnualSupplyVolumeSuffix,
   formatAnnualSupplyVolumeText,
   getAnnualSupplyVolumeDisplayNumericText,
+  getAnnualSupplyVolumeLanguages,
   mergeAnnualSupplyVolumeUnitRows,
   normalizeAnnualSupplyVolumeMultiLang,
   normalizeAnnualSupplyVolumeText,
@@ -92,11 +93,9 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     expect(buildAnnualSupplyVolumeMultiLang('', 'kg Steel')).toEqual([]);
     expect(buildAnnualSupplyVolumeMultiLang('500', 'kg Steel')).toEqual([
       { '@xml:lang': 'en', '#text': '500 kg Steel' },
-      { '@xml:lang': 'zh', '#text': '500 kg Steel' },
     ]);
     expect(buildAnnualSupplyVolumeMultiLang('500', '')).toEqual([
       { '@xml:lang': 'en', '#text': '500' },
-      { '@xml:lang': 'zh', '#text': '500' },
     ]);
     expect(
       getAnnualSupplyVolumeDisplayNumericText(
@@ -118,10 +117,23 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ).toBe('100');
     expect(
       getAnnualSupplyVolumeDisplayNumericText([null, { '#text': '600 kg Steel' }] as never, 'de'),
-    ).toBe('600');
+    ).toBe('');
     expect(getAnnualSupplyVolumeDisplayNumericText([], 'en')).toBe('');
     expect(getAnnualSupplyVolumeDisplayNumericText({ '#text': '300 kg Steel' }, 'en')).toBe('300');
     expect(getAnnualSupplyVolumeDisplayNumericText('400 kg Steel', 'en')).toBe('400');
+  });
+
+  it('derives generated languages from required, existing, and current content only', () => {
+    expect(getAnnualSupplyVolumeLanguages(undefined, 'de-DE')).toEqual(['en', 'de']);
+    expect(
+      getAnnualSupplyVolumeLanguages(
+        [
+          { '@xml:lang': 'zh', '#text': '100 千克' },
+          { '@xml:lang': 'ja', '#text': '100 kg' },
+        ],
+        'fr-FR',
+      ),
+    ).toEqual(['en', 'zh', 'ja', 'fr']);
   });
 
   it('preserves an existing unit prefix when the derived suffix only has reference flow text', () => {
@@ -303,7 +315,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
     ).toBe('kg functional unit');
   });
 
-  it('uses reference flow text and leaves suffix blank when no reference flow is selected', () => {
+  it('does not use an undeclared reference-flow language and leaves suffix blank when none is selected', () => {
     expect(
       deriveAnnualSupplyVolumeSuffix({
         exchangeDataSource: [
@@ -320,7 +332,7 @@ describe('annualSupplyOrProductionVolume helpers', () => {
         ],
         lang: 'en',
       }),
-    ).toBe('钢板');
+    ).toBe('');
 
     expect(
       deriveAnnualSupplyVolumeSuffix({

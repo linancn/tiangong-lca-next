@@ -1,8 +1,9 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
 import type { ReferenceItem } from '@/services/general/data';
+import { RESPONSIVE_DESCRIPTION_ITEM_STYLES } from '@/style/responsiveDescriptions';
 import { Card, Descriptions, Divider, Space } from 'antd';
 import { FC, ReactNode } from 'react';
-import { FormattedMessage, getLocale } from 'umi';
+import { FormattedMessage } from 'umi';
 import SourceView from '../view';
 type Props = {
   title: ReactNode | string;
@@ -11,7 +12,6 @@ type Props = {
 };
 
 const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
-  const locale = getLocale();
   const dataList: ReferenceItem[] = Array.isArray(data) ? data : data ? [data] : [];
   return (
     <Space direction='vertical' style={{ width: '100%' }}>
@@ -26,7 +26,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                   defaultMessage='Reference source data set identifier'
                 />
               }
-              styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}
+              styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
             >
               -
             </Descriptions.Item>
@@ -55,7 +55,7 @@ const SourceSelectDescription: FC<Props> = ({ title, lang, data }) => {
                         defaultMessage='Reference source data set identifier'
                       />
                     }
-                    styles={{ label: { width: locale === 'zh-CN' ? '150px' : '250px' } }}
+                    styles={RESPONSIVE_DESCRIPTION_ITEM_STYLES}
                   >
                     {item?.['@refObjectId'] ?? '-'}
                   </Descriptions.Item>

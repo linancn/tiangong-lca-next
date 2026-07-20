@@ -1183,7 +1183,7 @@ function buildManifest(root, baseRef, dynamicRegistryPath, pinnedBaseCommit = nu
         defaultMessages,
       });
     }
-    const canonicalEnglish = translations['en-US']?.value;
+    const canonicalEnglish = translations[CANONICAL_SOURCE_APP_LOCALE]?.value;
     if (canonicalEnglish !== undefined) {
       for (const reference of references) {
         if (reference.defaultMessage !== null && reference.defaultMessage !== canonicalEnglish) {

@@ -1,0 +1,3687 @@
+{
+  "auditId": "ef3.1-ilcd-classification-reference",
+  "canonicalBaseDigest": {
+    "algorithm": "sha256",
+    "identityCount": 243,
+    "scope": "canonical-base-json",
+    "value": "5c74d092637aa32021319111d71092c9534edb76fd154a86a104419b923c6ef4"
+  },
+  "counts": {
+    "exact": 243,
+    "projectExtension": 0,
+    "projectModified": 0,
+    "total": 243
+  },
+  "edition": "European Commission EF reference package 3.1, ILCD Format 1.1, Tools Build 985",
+  "identityStrategy": "data-type-index-path-occurrence-with-id-assertion",
+  "projectionDigest": {
+    "algorithm": "sha256",
+    "identityCount": 243,
+    "scope": "ordered-scoped-official-source-projection",
+    "value": "1b00ab988e2a2df3f8d8fd621ff668c443903d1866a4ed2535e750638d37afae"
+  },
+  "records": [
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Energy carriers and technologies",
+      "key": "categories[0:Process#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[0:Process#0]/category[0]"
+      },
+      "sourceLabel": "Energy carriers and technologies"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "baseLabel": "Energetic raw materials",
+      "key": "categories[0:Process#0]/category[0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.1"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[0]"
+      },
+      "sourceLabel": "Energetic raw materials"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "baseLabel": "Electricity",
+      "key": "categories[0:Process#0]/category[0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[1]"
+      },
+      "sourceLabel": "Electricity"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "baseLabel": "Heat and steam",
+      "key": "categories[0:Process#0]/category[0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[2]"
+      },
+      "sourceLabel": "Heat and steam"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "baseLabel": "Mechanical energy",
+      "key": "categories[0:Process#0]/category[0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[3]"
+      },
+      "sourceLabel": "Mechanical energy"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "baseLabel": "Hard coal based fuels",
+      "key": "categories[0:Process#0]/category[0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[4]"
+      },
+      "sourceLabel": "Hard coal based fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.6"
+      },
+      "baseLabel": "Lignite based fuels",
+      "key": "categories[0:Process#0]/category[0]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.6"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[5]"
+      },
+      "sourceLabel": "Lignite based fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.7"
+      },
+      "baseLabel": "Crude oil based fuels",
+      "key": "categories[0:Process#0]/category[0]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.7"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[6]"
+      },
+      "sourceLabel": "Crude oil based fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.8"
+      },
+      "baseLabel": "Natural gas based fuels",
+      "key": "categories[0:Process#0]/category[0]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.8"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[7]"
+      },
+      "sourceLabel": "Natural gas based fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.9"
+      },
+      "baseLabel": "Nuclear fuels",
+      "key": "categories[0:Process#0]/category[0]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.9"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[8]"
+      },
+      "sourceLabel": "Nuclear fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.10"
+      },
+      "baseLabel": "Other non-renewable fuels",
+      "key": "categories[0:Process#0]/category[0]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.10"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[9]"
+      },
+      "sourceLabel": "Other non-renewable fuels"
+    },
+    {
+      "assertion": {
+        "id": "1.11"
+      },
+      "baseLabel": "Renewable fuels",
+      "key": "categories[0:Process#0]/category[0]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.11"
+        },
+        "key": "categories[0:Process#0]/category[0]/category[10]"
+      },
+      "sourceLabel": "Renewable fuels"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Materials production",
+      "key": "categories[0:Process#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[0:Process#0]/category[1]"
+      },
+      "sourceLabel": "Materials production"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "baseLabel": "Non-energetic raw materials",
+      "key": "categories[0:Process#0]/category[1]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.1"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[0]"
+      },
+      "sourceLabel": "Non-energetic raw materials"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "baseLabel": "Metals and semimetals",
+      "key": "categories[0:Process#0]/category[1]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.2"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[1]"
+      },
+      "sourceLabel": "Metals and semimetals"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "baseLabel": "Organic chemicals",
+      "key": "categories[0:Process#0]/category[1]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.3"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[2]"
+      },
+      "sourceLabel": "Organic chemicals"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "baseLabel": "Inorganic chemicals",
+      "key": "categories[0:Process#0]/category[1]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.4"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[3]"
+      },
+      "sourceLabel": "Inorganic chemicals"
+    },
+    {
+      "assertion": {
+        "id": "2.5"
+      },
+      "baseLabel": "Glass and ceramics",
+      "key": "categories[0:Process#0]/category[1]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.5"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[4]"
+      },
+      "sourceLabel": "Glass and ceramics"
+    },
+    {
+      "assertion": {
+        "id": "2.6"
+      },
+      "baseLabel": "Other mineralic materials",
+      "key": "categories[0:Process#0]/category[1]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.6"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[5]"
+      },
+      "sourceLabel": "Other mineralic materials"
+    },
+    {
+      "assertion": {
+        "id": "2.7"
+      },
+      "baseLabel": "Plastics",
+      "key": "categories[0:Process#0]/category[1]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.7"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[6]"
+      },
+      "sourceLabel": "Plastics"
+    },
+    {
+      "assertion": {
+        "id": "2.8"
+      },
+      "baseLabel": "Paper and cardboards",
+      "key": "categories[0:Process#0]/category[1]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.8"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[7]"
+      },
+      "sourceLabel": "Paper and cardboards"
+    },
+    {
+      "assertion": {
+        "id": "2.9"
+      },
+      "baseLabel": "Water",
+      "key": "categories[0:Process#0]/category[1]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.9"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[8]"
+      },
+      "sourceLabel": "Water"
+    },
+    {
+      "assertion": {
+        "id": "2.10"
+      },
+      "baseLabel": "Agricultural production means",
+      "key": "categories[0:Process#0]/category[1]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.10"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[9]"
+      },
+      "sourceLabel": "Agricultural production means"
+    },
+    {
+      "assertion": {
+        "id": "2.11"
+      },
+      "baseLabel": "Food and renewable raw materials",
+      "key": "categories[0:Process#0]/category[1]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.11"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[10]"
+      },
+      "sourceLabel": "Food and renewable raw materials"
+    },
+    {
+      "assertion": {
+        "id": "2.12"
+      },
+      "baseLabel": "Wood",
+      "key": "categories[0:Process#0]/category[1]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.12"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[11]"
+      },
+      "sourceLabel": "Wood"
+    },
+    {
+      "assertion": {
+        "id": "2.13"
+      },
+      "baseLabel": "Other materials",
+      "key": "categories[0:Process#0]/category[1]/category[12]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.13"
+        },
+        "key": "categories[0:Process#0]/category[1]/category[12]"
+      },
+      "sourceLabel": "Other materials"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "baseLabel": "Systems",
+      "key": "categories[0:Process#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3"
+        },
+        "key": "categories[0:Process#0]/category[2]"
+      },
+      "sourceLabel": "Systems"
+    },
+    {
+      "assertion": {
+        "id": "3.1"
+      },
+      "baseLabel": "Packaging",
+      "key": "categories[0:Process#0]/category[2]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.1"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[0]"
+      },
+      "sourceLabel": "Packaging"
+    },
+    {
+      "assertion": {
+        "id": "3.2"
+      },
+      "baseLabel": "Electrics and electronics",
+      "key": "categories[0:Process#0]/category[2]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.2"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[1]"
+      },
+      "sourceLabel": "Electrics and electronics"
+    },
+    {
+      "assertion": {
+        "id": "3.3"
+      },
+      "baseLabel": "Vehicles",
+      "key": "categories[0:Process#0]/category[2]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.3"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[2]"
+      },
+      "sourceLabel": "Vehicles"
+    },
+    {
+      "assertion": {
+        "id": "3.4"
+      },
+      "baseLabel": "Other machines",
+      "key": "categories[0:Process#0]/category[2]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.4"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[3]"
+      },
+      "sourceLabel": "Other machines"
+    },
+    {
+      "assertion": {
+        "id": "3.5"
+      },
+      "baseLabel": "Construction",
+      "key": "categories[0:Process#0]/category[2]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.5"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[4]"
+      },
+      "sourceLabel": "Construction"
+    },
+    {
+      "assertion": {
+        "id": "3.6"
+      },
+      "baseLabel": "White goods",
+      "key": "categories[0:Process#0]/category[2]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.6"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[5]"
+      },
+      "sourceLabel": "White goods"
+    },
+    {
+      "assertion": {
+        "id": "3.7"
+      },
+      "baseLabel": "Textiles, furnitures and other interiors",
+      "key": "categories[0:Process#0]/category[2]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.7"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[6]"
+      },
+      "sourceLabel": "Textiles, furnitures and other interiors"
+    },
+    {
+      "assertion": {
+        "id": "3.8"
+      },
+      "baseLabel": "Unspecific parts",
+      "key": "categories[0:Process#0]/category[2]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.8"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[7]"
+      },
+      "sourceLabel": "Unspecific parts"
+    },
+    {
+      "assertion": {
+        "id": "3.9"
+      },
+      "baseLabel": "Paints and chemical preparations",
+      "key": "categories[0:Process#0]/category[2]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.9"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[8]"
+      },
+      "sourceLabel": "Paints and chemical preparations"
+    },
+    {
+      "assertion": {
+        "id": "3.10"
+      },
+      "baseLabel": "Other systems",
+      "key": "categories[0:Process#0]/category[2]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3.10"
+        },
+        "key": "categories[0:Process#0]/category[2]/category[9]"
+      },
+      "sourceLabel": "Other systems"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "baseLabel": "End-of-life treatment",
+      "key": "categories[0:Process#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4"
+        },
+        "key": "categories[0:Process#0]/category[3]"
+      },
+      "sourceLabel": "End-of-life treatment"
+    },
+    {
+      "assertion": {
+        "id": "4.1"
+      },
+      "baseLabel": "Reuse or further use",
+      "key": "categories[0:Process#0]/category[3]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.1"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[0]"
+      },
+      "sourceLabel": "Reuse or further use"
+    },
+    {
+      "assertion": {
+        "id": "4.2"
+      },
+      "baseLabel": "Material recycling",
+      "key": "categories[0:Process#0]/category[3]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.2"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[1]"
+      },
+      "sourceLabel": "Material recycling"
+    },
+    {
+      "assertion": {
+        "id": "4.3"
+      },
+      "baseLabel": "Raw material recycling",
+      "key": "categories[0:Process#0]/category[3]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.3"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[2]"
+      },
+      "sourceLabel": "Raw material recycling"
+    },
+    {
+      "assertion": {
+        "id": "4.4"
+      },
+      "baseLabel": "Energy recycling",
+      "key": "categories[0:Process#0]/category[3]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.4"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[3]"
+      },
+      "sourceLabel": "Energy recycling"
+    },
+    {
+      "assertion": {
+        "id": "4.5"
+      },
+      "baseLabel": "Landfilling",
+      "key": "categories[0:Process#0]/category[3]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.5"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[4]"
+      },
+      "sourceLabel": "Landfilling"
+    },
+    {
+      "assertion": {
+        "id": "4.6"
+      },
+      "baseLabel": "Waste collection",
+      "key": "categories[0:Process#0]/category[3]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.6"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[5]"
+      },
+      "sourceLabel": "Waste collection"
+    },
+    {
+      "assertion": {
+        "id": "4.7"
+      },
+      "baseLabel": "Waste water treatment",
+      "key": "categories[0:Process#0]/category[3]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.7"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[6]"
+      },
+      "sourceLabel": "Waste water treatment"
+    },
+    {
+      "assertion": {
+        "id": "4.8"
+      },
+      "baseLabel": "Raw gas treatment",
+      "key": "categories[0:Process#0]/category[3]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.8"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[7]"
+      },
+      "sourceLabel": "Raw gas treatment"
+    },
+    {
+      "assertion": {
+        "id": "4.9"
+      },
+      "baseLabel": "Other end-of-life services",
+      "key": "categories[0:Process#0]/category[3]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4.9"
+        },
+        "key": "categories[0:Process#0]/category[3]/category[8]"
+      },
+      "sourceLabel": "Other end-of-life services"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "baseLabel": "Transport services",
+      "key": "categories[0:Process#0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5"
+        },
+        "key": "categories[0:Process#0]/category[4]"
+      },
+      "sourceLabel": "Transport services"
+    },
+    {
+      "assertion": {
+        "id": "5.1"
+      },
+      "baseLabel": "Road",
+      "key": "categories[0:Process#0]/category[4]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.1"
+        },
+        "key": "categories[0:Process#0]/category[4]/category[0]"
+      },
+      "sourceLabel": "Road"
+    },
+    {
+      "assertion": {
+        "id": "5.2"
+      },
+      "baseLabel": "Rail",
+      "key": "categories[0:Process#0]/category[4]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.2"
+        },
+        "key": "categories[0:Process#0]/category[4]/category[1]"
+      },
+      "sourceLabel": "Rail"
+    },
+    {
+      "assertion": {
+        "id": "5.3"
+      },
+      "baseLabel": "Water",
+      "key": "categories[0:Process#0]/category[4]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.3"
+        },
+        "key": "categories[0:Process#0]/category[4]/category[2]"
+      },
+      "sourceLabel": "Water"
+    },
+    {
+      "assertion": {
+        "id": "5.4"
+      },
+      "baseLabel": "Air",
+      "key": "categories[0:Process#0]/category[4]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.4"
+        },
+        "key": "categories[0:Process#0]/category[4]/category[3]"
+      },
+      "sourceLabel": "Air"
+    },
+    {
+      "assertion": {
+        "id": "5.5"
+      },
+      "baseLabel": "Other transport",
+      "key": "categories[0:Process#0]/category[4]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.5"
+        },
+        "key": "categories[0:Process#0]/category[4]/category[4]"
+      },
+      "sourceLabel": "Other transport"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "baseLabel": "Other Services",
+      "key": "categories[0:Process#0]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6"
+        },
+        "key": "categories[0:Process#0]/category[5]"
+      },
+      "sourceLabel": "Other Services"
+    },
+    {
+      "assertion": {
+        "id": "6.1"
+      },
+      "baseLabel": "Cleaning",
+      "key": "categories[0:Process#0]/category[5]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.1"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[0]"
+      },
+      "sourceLabel": "Cleaning"
+    },
+    {
+      "assertion": {
+        "id": "6.2"
+      },
+      "baseLabel": "Storage",
+      "key": "categories[0:Process#0]/category[5]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.2"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[1]"
+      },
+      "sourceLabel": "Storage"
+    },
+    {
+      "assertion": {
+        "id": "6.3"
+      },
+      "baseLabel": "Health, social services, beauty and wellness",
+      "key": "categories[0:Process#0]/category[5]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.3"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[2]"
+      },
+      "sourceLabel": "Health, social services, beauty and wellness"
+    },
+    {
+      "assertion": {
+        "id": "6.4"
+      },
+      "baseLabel": "Repair and maintenance",
+      "key": "categories[0:Process#0]/category[5]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.4"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[3]"
+      },
+      "sourceLabel": "Repair and maintenance"
+    },
+    {
+      "assertion": {
+        "id": "6.5"
+      },
+      "baseLabel": "Sale and whole sale",
+      "key": "categories[0:Process#0]/category[5]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.5"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[4]"
+      },
+      "sourceLabel": "Sale and whole sale"
+    },
+    {
+      "assertion": {
+        "id": "6.6"
+      },
+      "baseLabel": "Communication and information services",
+      "key": "categories[0:Process#0]/category[5]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.6"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[5]"
+      },
+      "sourceLabel": "Communication and information services"
+    },
+    {
+      "assertion": {
+        "id": "6.7"
+      },
+      "baseLabel": "Financial, legal, and insurance",
+      "key": "categories[0:Process#0]/category[5]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.7"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[6]"
+      },
+      "sourceLabel": "Financial, legal, and insurance"
+    },
+    {
+      "assertion": {
+        "id": "6.8"
+      },
+      "baseLabel": "Administration and government",
+      "key": "categories[0:Process#0]/category[5]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.8"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[7]"
+      },
+      "sourceLabel": "Administration and government"
+    },
+    {
+      "assertion": {
+        "id": "6.9"
+      },
+      "baseLabel": "Defence",
+      "key": "categories[0:Process#0]/category[5]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.9"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[8]"
+      },
+      "sourceLabel": "Defence"
+    },
+    {
+      "assertion": {
+        "id": "6.10"
+      },
+      "baseLabel": "Lodging and gastronomy",
+      "key": "categories[0:Process#0]/category[5]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.10"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[9]"
+      },
+      "sourceLabel": "Lodging and gastronomy"
+    },
+    {
+      "assertion": {
+        "id": "6.11"
+      },
+      "baseLabel": "Education",
+      "key": "categories[0:Process#0]/category[5]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.11"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[10]"
+      },
+      "sourceLabel": "Education"
+    },
+    {
+      "assertion": {
+        "id": "6.12"
+      },
+      "baseLabel": "Research and development",
+      "key": "categories[0:Process#0]/category[5]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.12"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[11]"
+      },
+      "sourceLabel": "Research and development"
+    },
+    {
+      "assertion": {
+        "id": "6.13"
+      },
+      "baseLabel": "Entertainment",
+      "key": "categories[0:Process#0]/category[5]/category[12]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.13"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[12]"
+      },
+      "sourceLabel": "Entertainment"
+    },
+    {
+      "assertion": {
+        "id": "6.14"
+      },
+      "baseLabel": "Renting",
+      "key": "categories[0:Process#0]/category[5]/category[13]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.14"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[13]"
+      },
+      "sourceLabel": "Renting"
+    },
+    {
+      "assertion": {
+        "id": "6.15"
+      },
+      "baseLabel": "Engineering and consulting",
+      "key": "categories[0:Process#0]/category[5]/category[14]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.15"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[14]"
+      },
+      "sourceLabel": "Engineering and consulting"
+    },
+    {
+      "assertion": {
+        "id": "6.16"
+      },
+      "baseLabel": "Other services",
+      "key": "categories[0:Process#0]/category[5]/category[15]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.16"
+        },
+        "key": "categories[0:Process#0]/category[5]/category[15]"
+      },
+      "sourceLabel": "Other services"
+    },
+    {
+      "assertion": {
+        "id": "7"
+      },
+      "baseLabel": "Use and consumption",
+      "key": "categories[0:Process#0]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7"
+        },
+        "key": "categories[0:Process#0]/category[6]"
+      },
+      "sourceLabel": "Use and consumption"
+    },
+    {
+      "assertion": {
+        "id": "7.1"
+      },
+      "baseLabel": "Consumption of goods",
+      "key": "categories[0:Process#0]/category[6]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.1"
+        },
+        "key": "categories[0:Process#0]/category[6]/category[0]"
+      },
+      "sourceLabel": "Consumption of goods"
+    },
+    {
+      "assertion": {
+        "id": "7.2"
+      },
+      "baseLabel": "Use of energy-using products",
+      "key": "categories[0:Process#0]/category[6]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.2"
+        },
+        "key": "categories[0:Process#0]/category[6]/category[1]"
+      },
+      "sourceLabel": "Use of energy-using products"
+    },
+    {
+      "assertion": {
+        "id": "7.3"
+      },
+      "baseLabel": "Other use and consumption",
+      "key": "categories[0:Process#0]/category[6]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.3"
+        },
+        "key": "categories[0:Process#0]/category[6]/category[2]"
+      },
+      "sourceLabel": "Other use and consumption"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Damage level LCIA methods",
+      "key": "categories[1:LCIAMethod#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]"
+      },
+      "sourceLabel": "Damage level LCIA methods"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "baseLabel": "Total impact across areas of protection",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[0]"
+      },
+      "sourceLabel": "Total impact across areas of protection"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "baseLabel": "Human health",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]"
+      },
+      "sourceLabel": "Human health"
+    },
+    {
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "baseLabel": "Total human health, combined",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[0]"
+      },
+      "sourceLabel": "Total human health, combined"
+    },
+    {
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "baseLabel": "Human health, toxicity",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[1]"
+      },
+      "sourceLabel": "Human health, toxicity"
+    },
+    {
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "baseLabel": "Human health, climate change",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[2]"
+      },
+      "sourceLabel": "Human health, climate change"
+    },
+    {
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "baseLabel": "Human health, ionising radiation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[3]"
+      },
+      "sourceLabel": "Human health, ionising radiation"
+    },
+    {
+      "assertion": {
+        "id": "1.2.5"
+      },
+      "baseLabel": "Human health, ozone depletion",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[4]"
+      },
+      "sourceLabel": "Human health, ozone depletion"
+    },
+    {
+      "assertion": {
+        "id": "1.2.6"
+      },
+      "baseLabel": "Human health, photooxidant creation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.6"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[5]"
+      },
+      "sourceLabel": "Human health, photooxidant creation"
+    },
+    {
+      "assertion": {
+        "id": "1.2.7"
+      },
+      "baseLabel": "Human health, other",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2.7"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[6]"
+      },
+      "sourceLabel": "Human health, other"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "baseLabel": "Natural environment",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]"
+      },
+      "sourceLabel": "Natural environment"
+    },
+    {
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "baseLabel": "Total natural environment, combined",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[0]"
+      },
+      "sourceLabel": "Total natural environment, combined"
+    },
+    {
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "baseLabel": "Natural environment, climate change",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[1]"
+      },
+      "sourceLabel": "Natural environment, climate change"
+    },
+    {
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "baseLabel": "Natural environment, ozone depletion",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[2]"
+      },
+      "sourceLabel": "Natural environment, ozone depletion"
+    },
+    {
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "baseLabel": "Natural environment, land use",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[3]"
+      },
+      "sourceLabel": "Natural environment, land use"
+    },
+    {
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "baseLabel": "Natural environment, freshwater ecotoxicity",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[4]"
+      },
+      "sourceLabel": "Natural environment, freshwater ecotoxicity"
+    },
+    {
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "baseLabel": "Natural environment, seawater ecotoxicity",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.6"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[5]"
+      },
+      "sourceLabel": "Natural environment, seawater ecotoxicity"
+    },
+    {
+      "assertion": {
+        "id": "1.3.7"
+      },
+      "baseLabel": "Natural environment, terrestric ecotoxicity",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.7"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[6]"
+      },
+      "sourceLabel": "Natural environment, terrestric ecotoxicity"
+    },
+    {
+      "assertion": {
+        "id": "1.3.8"
+      },
+      "baseLabel": "Natural environment, acidification",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.8"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[7]"
+      },
+      "sourceLabel": "Natural environment, acidification"
+    },
+    {
+      "assertion": {
+        "id": "1.3.9"
+      },
+      "baseLabel": "Natural environment, eutrophication",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.9"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[8]"
+      },
+      "sourceLabel": "Natural environment, eutrophication"
+    },
+    {
+      "assertion": {
+        "id": "1.3.10"
+      },
+      "baseLabel": "Natural environment, photooxidant creation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.10"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[9]"
+      },
+      "sourceLabel": "Natural environment, photooxidant creation"
+    },
+    {
+      "assertion": {
+        "id": "1.3.11"
+      },
+      "baseLabel": "Natural environment, ionising radiation",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.11"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[10]"
+      },
+      "sourceLabel": "Natural environment, ionising radiation"
+    },
+    {
+      "assertion": {
+        "id": "1.3.12"
+      },
+      "baseLabel": "Natural environment, other",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3.12"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[11]"
+      },
+      "sourceLabel": "Natural environment, other"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "baseLabel": "Man-made environment",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]"
+      },
+      "sourceLabel": "Man-made environment"
+    },
+    {
+      "assertion": {
+        "id": "1.4.1"
+      },
+      "baseLabel": "Total man-made environment, combined",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[0]"
+      },
+      "sourceLabel": "Total man-made environment, combined"
+    },
+    {
+      "assertion": {
+        "id": "1.4.2"
+      },
+      "baseLabel": "Man-made environment, acidification",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[1]"
+      },
+      "sourceLabel": "Man-made environment, acidification"
+    },
+    {
+      "assertion": {
+        "id": "1.4.3"
+      },
+      "baseLabel": "Man-made environment, climate change",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[2]"
+      },
+      "sourceLabel": "Man-made environment, climate change"
+    },
+    {
+      "assertion": {
+        "id": "1.4.4"
+      },
+      "baseLabel": "Man-made environment, eutrophication",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[3]"
+      },
+      "sourceLabel": "Man-made environment, eutrophication"
+    },
+    {
+      "assertion": {
+        "id": "1.4.5"
+      },
+      "baseLabel": "Man-made environment, other",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[4]"
+      },
+      "sourceLabel": "Man-made environment, other"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "baseLabel": "Resource availability",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]"
+      },
+      "sourceLabel": "Resource availability"
+    },
+    {
+      "assertion": {
+        "id": "1.5.1"
+      },
+      "baseLabel": "Total resource depletion, combined",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[0]"
+      },
+      "sourceLabel": "Total resource depletion, combined"
+    },
+    {
+      "assertion": {
+        "id": "1.5.2"
+      },
+      "baseLabel": "Resource depletion, minerals and metals",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[1]"
+      },
+      "sourceLabel": "Resource depletion, minerals and metals"
+    },
+    {
+      "assertion": {
+        "id": "1.5.3"
+      },
+      "baseLabel": "Resource depletion, non-renewable energy resourcess",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[2]"
+      },
+      "sourceLabel": "Resource depletion, non-renewable energy resourcess"
+    },
+    {
+      "assertion": {
+        "id": "1.5.4"
+      },
+      "baseLabel": "Resource depletion, land use",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[3]"
+      },
+      "sourceLabel": "Resource depletion, land use"
+    },
+    {
+      "assertion": {
+        "id": "1.5.5"
+      },
+      "baseLabel": "Resource depletion, renewable energy resources",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[4]"
+      },
+      "sourceLabel": "Resource depletion, renewable energy resources"
+    },
+    {
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "baseLabel": "Resource depletion, renewable non-energy resources",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.6"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[5]"
+      },
+      "sourceLabel": "Resource depletion, renewable non-energy resources"
+    },
+    {
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "baseLabel": "Resource depletion, other",
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5.6"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[6]"
+      },
+      "sourceLabel": "Resource depletion, other"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Midpoint level LCIA methods",
+      "key": "categories[1:LCIAMethod#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]"
+      },
+      "sourceLabel": "Midpoint level LCIA methods"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "baseLabel": "Combined methods",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.1"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[0]"
+      },
+      "sourceLabel": "Combined methods"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "baseLabel": "Climate change",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.2"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[1]"
+      },
+      "sourceLabel": "Climate change"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "baseLabel": "Ozone depletion",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.3"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[2]"
+      },
+      "sourceLabel": "Ozone depletion"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "baseLabel": "Land use",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.4"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[3]"
+      },
+      "sourceLabel": "Land use"
+    },
+    {
+      "assertion": {
+        "id": "2.5"
+      },
+      "baseLabel": "Ecotoxicity",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.5"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[4]"
+      },
+      "sourceLabel": "Ecotoxicity"
+    },
+    {
+      "assertion": {
+        "id": "2.6"
+      },
+      "baseLabel": "Acidification",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.6"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[5]"
+      },
+      "sourceLabel": "Acidification"
+    },
+    {
+      "assertion": {
+        "id": "2.7"
+      },
+      "baseLabel": "Eutrophication",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.7"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[6]"
+      },
+      "sourceLabel": "Eutrophication"
+    },
+    {
+      "assertion": {
+        "id": "2.8"
+      },
+      "baseLabel": "Photooxidant creation",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.8"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[7]"
+      },
+      "sourceLabel": "Photooxidant creation"
+    },
+    {
+      "assertion": {
+        "id": "2.9"
+      },
+      "baseLabel": "Nuclear radiation",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.9"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[8]"
+      },
+      "sourceLabel": "Nuclear radiation"
+    },
+    {
+      "assertion": {
+        "id": "2.10"
+      },
+      "baseLabel": "Human toxicity",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.10"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[9]"
+      },
+      "sourceLabel": "Human toxicity"
+    },
+    {
+      "assertion": {
+        "id": "2.11"
+      },
+      "baseLabel": "Respiratory effects",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.11"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[10]"
+      },
+      "sourceLabel": "Respiratory effects"
+    },
+    {
+      "assertion": {
+        "id": "2.12"
+      },
+      "baseLabel": "Noise",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.12"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[11]"
+      },
+      "sourceLabel": "Noise"
+    },
+    {
+      "assertion": {
+        "id": "2.13"
+      },
+      "baseLabel": "Resource depletion",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[12]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.13"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[12]"
+      },
+      "sourceLabel": "Resource depletion"
+    },
+    {
+      "assertion": {
+        "id": "2.14"
+      },
+      "baseLabel": "Other midpoint categories",
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[13]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.14"
+        },
+        "key": "categories[1:LCIAMethod#0]/category[1]/category[13]"
+      },
+      "sourceLabel": "Other midpoint categories"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Emissions",
+      "key": "categories[2:Flow#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[2:Flow#0]/category[0]"
+      },
+      "sourceLabel": "Emissions"
+    },
+    {
+      "assertion": {
+        "id": "1.1"
+      },
+      "baseLabel": "Radioactives",
+      "key": "categories[2:Flow#0]/category[0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.1"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[0]"
+      },
+      "sourceLabel": "Radioactives"
+    },
+    {
+      "assertion": {
+        "id": "1.2"
+      },
+      "baseLabel": "Pesticides",
+      "key": "categories[2:Flow#0]/category[0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.2"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[1]"
+      },
+      "sourceLabel": "Pesticides"
+    },
+    {
+      "assertion": {
+        "id": "1.3"
+      },
+      "baseLabel": "Particles",
+      "key": "categories[2:Flow#0]/category[0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.3"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[2]"
+      },
+      "sourceLabel": "Particles"
+    },
+    {
+      "assertion": {
+        "id": "1.4"
+      },
+      "baseLabel": "Metal and semimetal elements and ions",
+      "key": "categories[2:Flow#0]/category[0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.4"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[3]"
+      },
+      "sourceLabel": "Metal and semimetal elements and ions"
+    },
+    {
+      "assertion": {
+        "id": "1.5"
+      },
+      "baseLabel": "Non-metallic or -semimetallic ions",
+      "key": "categories[2:Flow#0]/category[0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.5"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[4]"
+      },
+      "sourceLabel": "Non-metallic or -semimetallic ions"
+    },
+    {
+      "assertion": {
+        "id": "1.6"
+      },
+      "baseLabel": "Inorganic covalent compounds",
+      "key": "categories[2:Flow#0]/category[0]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.6"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[5]"
+      },
+      "sourceLabel": "Inorganic covalent compounds"
+    },
+    {
+      "assertion": {
+        "id": "1.7"
+      },
+      "baseLabel": "Cyclic organics",
+      "key": "categories[2:Flow#0]/category[0]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.7"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[6]"
+      },
+      "sourceLabel": "Cyclic organics"
+    },
+    {
+      "assertion": {
+        "id": "1.8"
+      },
+      "baseLabel": "Acylic organics",
+      "key": "categories[2:Flow#0]/category[0]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.8"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[7]"
+      },
+      "sourceLabel": "Acylic organics"
+    },
+    {
+      "assertion": {
+        "id": "1.9"
+      },
+      "baseLabel": "Other substance type",
+      "key": "categories[2:Flow#0]/category[0]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1.9"
+        },
+        "key": "categories[2:Flow#0]/category[0]/category[8]"
+      },
+      "sourceLabel": "Other substance type"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "baseLabel": "Energy carriers and technologies",
+      "key": "categories[2:Flow#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5"
+        },
+        "key": "categories[2:Flow#0]/category[1]"
+      },
+      "sourceLabel": "Energy carriers and technologies"
+    },
+    {
+      "assertion": {
+        "id": "5.1"
+      },
+      "baseLabel": "Energetic raw materials",
+      "key": "categories[2:Flow#0]/category[1]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.1"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[0]"
+      },
+      "sourceLabel": "Energetic raw materials"
+    },
+    {
+      "assertion": {
+        "id": "5.2"
+      },
+      "baseLabel": "Electricity",
+      "key": "categories[2:Flow#0]/category[1]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.2"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[1]"
+      },
+      "sourceLabel": "Electricity"
+    },
+    {
+      "assertion": {
+        "id": "5.3"
+      },
+      "baseLabel": "Heat and steam",
+      "key": "categories[2:Flow#0]/category[1]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.3"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[2]"
+      },
+      "sourceLabel": "Heat and steam"
+    },
+    {
+      "assertion": {
+        "id": "5.4"
+      },
+      "baseLabel": "Mechanical energy",
+      "key": "categories[2:Flow#0]/category[1]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.4"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[3]"
+      },
+      "sourceLabel": "Mechanical energy"
+    },
+    {
+      "assertion": {
+        "id": "5.5"
+      },
+      "baseLabel": "Hard coal based fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.5"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[4]"
+      },
+      "sourceLabel": "Hard coal based fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.6"
+      },
+      "baseLabel": "Lignite based fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.6"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[5]"
+      },
+      "sourceLabel": "Lignite based fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.7"
+      },
+      "baseLabel": "Crude oil based fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.7"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[6]"
+      },
+      "sourceLabel": "Crude oil based fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.8"
+      },
+      "baseLabel": "Natural gas based fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.8"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[7]"
+      },
+      "sourceLabel": "Natural gas based fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.9"
+      },
+      "baseLabel": "Nuclear fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.9"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[8]"
+      },
+      "sourceLabel": "Nuclear fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.10"
+      },
+      "baseLabel": "Other non-renewable fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.10"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[9]"
+      },
+      "sourceLabel": "Other non-renewable fuels"
+    },
+    {
+      "assertion": {
+        "id": "5.11"
+      },
+      "baseLabel": "Renewable fuels",
+      "key": "categories[2:Flow#0]/category[1]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5.11"
+        },
+        "key": "categories[2:Flow#0]/category[1]/category[10]"
+      },
+      "sourceLabel": "Renewable fuels"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "baseLabel": "Materials production",
+      "key": "categories[2:Flow#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6"
+        },
+        "key": "categories[2:Flow#0]/category[2]"
+      },
+      "sourceLabel": "Materials production"
+    },
+    {
+      "assertion": {
+        "id": "6.1"
+      },
+      "baseLabel": "Raw materials",
+      "key": "categories[2:Flow#0]/category[2]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.1"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[0]"
+      },
+      "sourceLabel": "Raw materials"
+    },
+    {
+      "assertion": {
+        "id": "6.2"
+      },
+      "baseLabel": "Metals and semimetals",
+      "key": "categories[2:Flow#0]/category[2]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.2"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[1]"
+      },
+      "sourceLabel": "Metals and semimetals"
+    },
+    {
+      "assertion": {
+        "id": "6.3"
+      },
+      "baseLabel": "Organic chemicals",
+      "key": "categories[2:Flow#0]/category[2]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.3"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[2]"
+      },
+      "sourceLabel": "Organic chemicals"
+    },
+    {
+      "assertion": {
+        "id": "6.4"
+      },
+      "baseLabel": "Inorganic chemicals",
+      "key": "categories[2:Flow#0]/category[2]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.4"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[3]"
+      },
+      "sourceLabel": "Inorganic chemicals"
+    },
+    {
+      "assertion": {
+        "id": "6.5"
+      },
+      "baseLabel": "Glass and ceramics",
+      "key": "categories[2:Flow#0]/category[2]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.5"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[4]"
+      },
+      "sourceLabel": "Glass and ceramics"
+    },
+    {
+      "assertion": {
+        "id": "6.6"
+      },
+      "baseLabel": "Other mineralic materials",
+      "key": "categories[2:Flow#0]/category[2]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.6"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[5]"
+      },
+      "sourceLabel": "Other mineralic materials"
+    },
+    {
+      "assertion": {
+        "id": "6.7"
+      },
+      "baseLabel": "Plastics",
+      "key": "categories[2:Flow#0]/category[2]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.7"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[6]"
+      },
+      "sourceLabel": "Plastics"
+    },
+    {
+      "assertion": {
+        "id": "6.8"
+      },
+      "baseLabel": "Paper and cardboards",
+      "key": "categories[2:Flow#0]/category[2]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.8"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[7]"
+      },
+      "sourceLabel": "Paper and cardboards"
+    },
+    {
+      "assertion": {
+        "id": "6.9"
+      },
+      "baseLabel": "Water",
+      "key": "categories[2:Flow#0]/category[2]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.9"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[8]"
+      },
+      "sourceLabel": "Water"
+    },
+    {
+      "assertion": {
+        "id": "6.10"
+      },
+      "baseLabel": "Agricultural production means",
+      "key": "categories[2:Flow#0]/category[2]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.10"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[9]"
+      },
+      "sourceLabel": "Agricultural production means"
+    },
+    {
+      "assertion": {
+        "id": "6.11"
+      },
+      "baseLabel": "Food and renewable raw materials",
+      "key": "categories[2:Flow#0]/category[2]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.11"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[10]"
+      },
+      "sourceLabel": "Food and renewable raw materials"
+    },
+    {
+      "assertion": {
+        "id": "6.12"
+      },
+      "baseLabel": "Wood",
+      "key": "categories[2:Flow#0]/category[2]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.12"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[11]"
+      },
+      "sourceLabel": "Wood"
+    },
+    {
+      "assertion": {
+        "id": "6.13"
+      },
+      "baseLabel": "Other materials",
+      "key": "categories[2:Flow#0]/category[2]/category[12]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6.13"
+        },
+        "key": "categories[2:Flow#0]/category[2]/category[12]"
+      },
+      "sourceLabel": "Other materials"
+    },
+    {
+      "assertion": {
+        "id": "7"
+      },
+      "baseLabel": "Systems",
+      "key": "categories[2:Flow#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7"
+        },
+        "key": "categories[2:Flow#0]/category[3]"
+      },
+      "sourceLabel": "Systems"
+    },
+    {
+      "assertion": {
+        "id": "7.1"
+      },
+      "baseLabel": "Packaging",
+      "key": "categories[2:Flow#0]/category[3]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.1"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[0]"
+      },
+      "sourceLabel": "Packaging"
+    },
+    {
+      "assertion": {
+        "id": "7.2"
+      },
+      "baseLabel": "Electrics and electronics",
+      "key": "categories[2:Flow#0]/category[3]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.2"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[1]"
+      },
+      "sourceLabel": "Electrics and electronics"
+    },
+    {
+      "assertion": {
+        "id": "7.3"
+      },
+      "baseLabel": "Vehicles",
+      "key": "categories[2:Flow#0]/category[3]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.3"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[2]"
+      },
+      "sourceLabel": "Vehicles"
+    },
+    {
+      "assertion": {
+        "id": "7.4"
+      },
+      "baseLabel": "Other machines",
+      "key": "categories[2:Flow#0]/category[3]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.4"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[3]"
+      },
+      "sourceLabel": "Other machines"
+    },
+    {
+      "assertion": {
+        "id": "7.5"
+      },
+      "baseLabel": "Construction",
+      "key": "categories[2:Flow#0]/category[3]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.5"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[4]"
+      },
+      "sourceLabel": "Construction"
+    },
+    {
+      "assertion": {
+        "id": "7.6"
+      },
+      "baseLabel": "White goods",
+      "key": "categories[2:Flow#0]/category[3]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.6"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[5]"
+      },
+      "sourceLabel": "White goods"
+    },
+    {
+      "assertion": {
+        "id": "7.7"
+      },
+      "baseLabel": "Textiles, furnitures and other interiors",
+      "key": "categories[2:Flow#0]/category[3]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.7"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[6]"
+      },
+      "sourceLabel": "Textiles, furnitures and other interiors"
+    },
+    {
+      "assertion": {
+        "id": "7.8"
+      },
+      "baseLabel": "Unspecific parts",
+      "key": "categories[2:Flow#0]/category[3]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.8"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[7]"
+      },
+      "sourceLabel": "Unspecific parts"
+    },
+    {
+      "assertion": {
+        "id": "7.9"
+      },
+      "baseLabel": "Paints and chemical preparations",
+      "key": "categories[2:Flow#0]/category[3]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.9"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[8]"
+      },
+      "sourceLabel": "Paints and chemical preparations"
+    },
+    {
+      "assertion": {
+        "id": "7.10"
+      },
+      "baseLabel": "Other systems",
+      "key": "categories[2:Flow#0]/category[3]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "7.10"
+        },
+        "key": "categories[2:Flow#0]/category[3]/category[9]"
+      },
+      "sourceLabel": "Other systems"
+    },
+    {
+      "assertion": {
+        "id": "8"
+      },
+      "baseLabel": "End-of-life treatment",
+      "key": "categories[2:Flow#0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8"
+        },
+        "key": "categories[2:Flow#0]/category[4]"
+      },
+      "sourceLabel": "End-of-life treatment"
+    },
+    {
+      "assertion": {
+        "id": "8.1"
+      },
+      "baseLabel": "Reuse or further use",
+      "key": "categories[2:Flow#0]/category[4]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.1"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[0]"
+      },
+      "sourceLabel": "Reuse or further use"
+    },
+    {
+      "assertion": {
+        "id": "8.2"
+      },
+      "baseLabel": "Material recycling",
+      "key": "categories[2:Flow#0]/category[4]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.2"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[1]"
+      },
+      "sourceLabel": "Material recycling"
+    },
+    {
+      "assertion": {
+        "id": "8.3"
+      },
+      "baseLabel": "Raw material recycling",
+      "key": "categories[2:Flow#0]/category[4]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.3"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[2]"
+      },
+      "sourceLabel": "Raw material recycling"
+    },
+    {
+      "assertion": {
+        "id": "8.4"
+      },
+      "baseLabel": "Energy recycling",
+      "key": "categories[2:Flow#0]/category[4]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.4"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[3]"
+      },
+      "sourceLabel": "Energy recycling"
+    },
+    {
+      "assertion": {
+        "id": "8.5"
+      },
+      "baseLabel": "Landfilling",
+      "key": "categories[2:Flow#0]/category[4]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.5"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[4]"
+      },
+      "sourceLabel": "Landfilling"
+    },
+    {
+      "assertion": {
+        "id": "8.6"
+      },
+      "baseLabel": "Waste collection",
+      "key": "categories[2:Flow#0]/category[4]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.6"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[5]"
+      },
+      "sourceLabel": "Waste collection"
+    },
+    {
+      "assertion": {
+        "id": "8.7"
+      },
+      "baseLabel": "Waste water treatment",
+      "key": "categories[2:Flow#0]/category[4]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.7"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[6]"
+      },
+      "sourceLabel": "Waste water treatment"
+    },
+    {
+      "assertion": {
+        "id": "8.8"
+      },
+      "baseLabel": "Raw gas treatment",
+      "key": "categories[2:Flow#0]/category[4]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.8"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[7]"
+      },
+      "sourceLabel": "Raw gas treatment"
+    },
+    {
+      "assertion": {
+        "id": "8.9"
+      },
+      "baseLabel": "Other end-of-life services",
+      "key": "categories[2:Flow#0]/category[4]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "8.9"
+        },
+        "key": "categories[2:Flow#0]/category[4]/category[8]"
+      },
+      "sourceLabel": "Other end-of-life services"
+    },
+    {
+      "assertion": {
+        "id": "9"
+      },
+      "baseLabel": "Transport services",
+      "key": "categories[2:Flow#0]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9"
+        },
+        "key": "categories[2:Flow#0]/category[5]"
+      },
+      "sourceLabel": "Transport services"
+    },
+    {
+      "assertion": {
+        "id": "9.1"
+      },
+      "baseLabel": "Road",
+      "key": "categories[2:Flow#0]/category[5]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9.1"
+        },
+        "key": "categories[2:Flow#0]/category[5]/category[0]"
+      },
+      "sourceLabel": "Road"
+    },
+    {
+      "assertion": {
+        "id": "9.2"
+      },
+      "baseLabel": "Rail",
+      "key": "categories[2:Flow#0]/category[5]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9.2"
+        },
+        "key": "categories[2:Flow#0]/category[5]/category[1]"
+      },
+      "sourceLabel": "Rail"
+    },
+    {
+      "assertion": {
+        "id": "9.3"
+      },
+      "baseLabel": "Water",
+      "key": "categories[2:Flow#0]/category[5]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9.3"
+        },
+        "key": "categories[2:Flow#0]/category[5]/category[2]"
+      },
+      "sourceLabel": "Water"
+    },
+    {
+      "assertion": {
+        "id": "9.4"
+      },
+      "baseLabel": "Air",
+      "key": "categories[2:Flow#0]/category[5]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9.4"
+        },
+        "key": "categories[2:Flow#0]/category[5]/category[3]"
+      },
+      "sourceLabel": "Air"
+    },
+    {
+      "assertion": {
+        "id": "9.5"
+      },
+      "baseLabel": "Other transport",
+      "key": "categories[2:Flow#0]/category[5]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "9.5"
+        },
+        "key": "categories[2:Flow#0]/category[5]/category[4]"
+      },
+      "sourceLabel": "Other transport"
+    },
+    {
+      "assertion": {
+        "id": "10"
+      },
+      "baseLabel": "Other Services",
+      "key": "categories[2:Flow#0]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10"
+        },
+        "key": "categories[2:Flow#0]/category[6]"
+      },
+      "sourceLabel": "Other Services"
+    },
+    {
+      "assertion": {
+        "id": "10.1"
+      },
+      "baseLabel": "Cleaning",
+      "key": "categories[2:Flow#0]/category[6]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.1"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[0]"
+      },
+      "sourceLabel": "Cleaning"
+    },
+    {
+      "assertion": {
+        "id": "10.2"
+      },
+      "baseLabel": "Storage",
+      "key": "categories[2:Flow#0]/category[6]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.2"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[1]"
+      },
+      "sourceLabel": "Storage"
+    },
+    {
+      "assertion": {
+        "id": "10.3"
+      },
+      "baseLabel": "Health, social services, beauty and wellness",
+      "key": "categories[2:Flow#0]/category[6]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.3"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[2]"
+      },
+      "sourceLabel": "Health, social services, beauty and wellness"
+    },
+    {
+      "assertion": {
+        "id": "10.4"
+      },
+      "baseLabel": "Repair and maintenance",
+      "key": "categories[2:Flow#0]/category[6]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.4"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[3]"
+      },
+      "sourceLabel": "Repair and maintenance"
+    },
+    {
+      "assertion": {
+        "id": "10.5"
+      },
+      "baseLabel": "Sale and whole sale",
+      "key": "categories[2:Flow#0]/category[6]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.5"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[4]"
+      },
+      "sourceLabel": "Sale and whole sale"
+    },
+    {
+      "assertion": {
+        "id": "10.6"
+      },
+      "baseLabel": "Communication and information services",
+      "key": "categories[2:Flow#0]/category[6]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.6"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[5]"
+      },
+      "sourceLabel": "Communication and information services"
+    },
+    {
+      "assertion": {
+        "id": "10.7"
+      },
+      "baseLabel": "Financial, legal, and insurance",
+      "key": "categories[2:Flow#0]/category[6]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.7"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[6]"
+      },
+      "sourceLabel": "Financial, legal, and insurance"
+    },
+    {
+      "assertion": {
+        "id": "10.8"
+      },
+      "baseLabel": "Administration and government",
+      "key": "categories[2:Flow#0]/category[6]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.8"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[7]"
+      },
+      "sourceLabel": "Administration and government"
+    },
+    {
+      "assertion": {
+        "id": "10.9"
+      },
+      "baseLabel": "Defence",
+      "key": "categories[2:Flow#0]/category[6]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.9"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[8]"
+      },
+      "sourceLabel": "Defence"
+    },
+    {
+      "assertion": {
+        "id": "10.10"
+      },
+      "baseLabel": "Lodging and gastronomy",
+      "key": "categories[2:Flow#0]/category[6]/category[9]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.10"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[9]"
+      },
+      "sourceLabel": "Lodging and gastronomy"
+    },
+    {
+      "assertion": {
+        "id": "10.11"
+      },
+      "baseLabel": "Education",
+      "key": "categories[2:Flow#0]/category[6]/category[10]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.11"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[10]"
+      },
+      "sourceLabel": "Education"
+    },
+    {
+      "assertion": {
+        "id": "10.12"
+      },
+      "baseLabel": "Research and development",
+      "key": "categories[2:Flow#0]/category[6]/category[11]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.12"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[11]"
+      },
+      "sourceLabel": "Research and development"
+    },
+    {
+      "assertion": {
+        "id": "10.13"
+      },
+      "baseLabel": "Entertainment",
+      "key": "categories[2:Flow#0]/category[6]/category[12]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.13"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[12]"
+      },
+      "sourceLabel": "Entertainment"
+    },
+    {
+      "assertion": {
+        "id": "10.14"
+      },
+      "baseLabel": "Renting",
+      "key": "categories[2:Flow#0]/category[6]/category[13]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.14"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[13]"
+      },
+      "sourceLabel": "Renting"
+    },
+    {
+      "assertion": {
+        "id": "10.15"
+      },
+      "baseLabel": "Engineering and consulting",
+      "key": "categories[2:Flow#0]/category[6]/category[14]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.15"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[14]"
+      },
+      "sourceLabel": "Engineering and consulting"
+    },
+    {
+      "assertion": {
+        "id": "10.16"
+      },
+      "baseLabel": "Other services",
+      "key": "categories[2:Flow#0]/category[6]/category[15]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "10.16"
+        },
+        "key": "categories[2:Flow#0]/category[6]/category[15]"
+      },
+      "sourceLabel": "Other services"
+    },
+    {
+      "assertion": {
+        "id": "11"
+      },
+      "baseLabel": "Use and consumption",
+      "key": "categories[2:Flow#0]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "11"
+        },
+        "key": "categories[2:Flow#0]/category[7]"
+      },
+      "sourceLabel": "Use and consumption"
+    },
+    {
+      "assertion": {
+        "id": "11.1"
+      },
+      "baseLabel": "Consumption of goods",
+      "key": "categories[2:Flow#0]/category[7]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "11.1"
+        },
+        "key": "categories[2:Flow#0]/category[7]/category[0]"
+      },
+      "sourceLabel": "Consumption of goods"
+    },
+    {
+      "assertion": {
+        "id": "11.2"
+      },
+      "baseLabel": "Use of energy-using products",
+      "key": "categories[2:Flow#0]/category[7]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "11.2"
+        },
+        "key": "categories[2:Flow#0]/category[7]/category[1]"
+      },
+      "sourceLabel": "Use of energy-using products"
+    },
+    {
+      "assertion": {
+        "id": "11.3"
+      },
+      "baseLabel": "Other use and consumption",
+      "key": "categories[2:Flow#0]/category[7]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "11.3"
+        },
+        "key": "categories[2:Flow#0]/category[7]/category[2]"
+      },
+      "sourceLabel": "Other use and consumption"
+    },
+    {
+      "assertion": {
+        "id": "12"
+      },
+      "baseLabel": "Wastes",
+      "key": "categories[2:Flow#0]/category[8]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12"
+        },
+        "key": "categories[2:Flow#0]/category[8]"
+      },
+      "sourceLabel": "Wastes"
+    },
+    {
+      "assertion": {
+        "id": "12.1"
+      },
+      "baseLabel": "Mining waste",
+      "key": "categories[2:Flow#0]/category[8]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.1"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[0]"
+      },
+      "sourceLabel": "Mining waste"
+    },
+    {
+      "assertion": {
+        "id": "12.2"
+      },
+      "baseLabel": "Construction waste",
+      "key": "categories[2:Flow#0]/category[8]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.2"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[1]"
+      },
+      "sourceLabel": "Construction waste"
+    },
+    {
+      "assertion": {
+        "id": "12.3"
+      },
+      "baseLabel": "Production residues",
+      "key": "categories[2:Flow#0]/category[8]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.3"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[2]"
+      },
+      "sourceLabel": "Production residues"
+    },
+    {
+      "assertion": {
+        "id": "12.4"
+      },
+      "baseLabel": "Post consumer waste",
+      "key": "categories[2:Flow#0]/category[8]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.4"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[3]"
+      },
+      "sourceLabel": "Post consumer waste"
+    },
+    {
+      "assertion": {
+        "id": "12.5"
+      },
+      "baseLabel": "Radioactive waste",
+      "key": "categories[2:Flow#0]/category[8]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.5"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[4]"
+      },
+      "sourceLabel": "Radioactive waste"
+    },
+    {
+      "assertion": {
+        "id": "12.6"
+      },
+      "baseLabel": "Raw gas",
+      "key": "categories[2:Flow#0]/category[8]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.6"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[5]"
+      },
+      "sourceLabel": "Raw gas"
+    },
+    {
+      "assertion": {
+        "id": "12.7"
+      },
+      "baseLabel": "Waste water",
+      "key": "categories[2:Flow#0]/category[8]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.7"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[6]"
+      },
+      "sourceLabel": "Waste water"
+    },
+    {
+      "assertion": {
+        "id": "12.8"
+      },
+      "baseLabel": "Other waste",
+      "key": "categories[2:Flow#0]/category[8]/category[7]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "12.8"
+        },
+        "key": "categories[2:Flow#0]/category[8]/category[7]"
+      },
+      "sourceLabel": "Other waste"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Technical flow properties",
+      "key": "categories[3:FlowProperty#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[3:FlowProperty#0]/category[0]"
+      },
+      "sourceLabel": "Technical flow properties"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Chemical composition of flows",
+      "key": "categories[3:FlowProperty#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[3:FlowProperty#0]/category[1]"
+      },
+      "sourceLabel": "Chemical composition of flows"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "baseLabel": "Economic flow properties",
+      "key": "categories[3:FlowProperty#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3"
+        },
+        "key": "categories[3:FlowProperty#0]/category[2]"
+      },
+      "sourceLabel": "Economic flow properties"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "baseLabel": "Other flow properties",
+      "key": "categories[3:FlowProperty#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4"
+        },
+        "key": "categories[3:FlowProperty#0]/category[3]"
+      },
+      "sourceLabel": "Other flow properties"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Technical unit groups",
+      "key": "categories[4:UnitGroup#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[4:UnitGroup#0]/category[0]"
+      },
+      "sourceLabel": "Technical unit groups"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Chemical composition unit groups",
+      "key": "categories[4:UnitGroup#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[4:UnitGroup#0]/category[1]"
+      },
+      "sourceLabel": "Chemical composition unit groups"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "baseLabel": "Economic unit groups",
+      "key": "categories[4:UnitGroup#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3"
+        },
+        "key": "categories[4:UnitGroup#0]/category[2]"
+      },
+      "sourceLabel": "Economic unit groups"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "baseLabel": "Other unit groups",
+      "key": "categories[4:UnitGroup#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4"
+        },
+        "key": "categories[4:UnitGroup#0]/category[3]"
+      },
+      "sourceLabel": "Other unit groups"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Group of organisations, project",
+      "key": "categories[5:Contact#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[5:Contact#0]/category[0]"
+      },
+      "sourceLabel": "Group of organisations, project"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Organisations",
+      "key": "categories[5:Contact#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[5:Contact#0]/category[1]"
+      },
+      "sourceLabel": "Organisations"
+    },
+    {
+      "assertion": {
+        "id": "2.1"
+      },
+      "baseLabel": "Private companies",
+      "key": "categories[5:Contact#0]/category[1]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.1"
+        },
+        "key": "categories[5:Contact#0]/category[1]/category[0]"
+      },
+      "sourceLabel": "Private companies"
+    },
+    {
+      "assertion": {
+        "id": "2.2"
+      },
+      "baseLabel": "Governmental organisations",
+      "key": "categories[5:Contact#0]/category[1]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.2"
+        },
+        "key": "categories[5:Contact#0]/category[1]/category[1]"
+      },
+      "sourceLabel": "Governmental organisations"
+    },
+    {
+      "assertion": {
+        "id": "2.3"
+      },
+      "baseLabel": "Non-governmental organisations",
+      "key": "categories[5:Contact#0]/category[1]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.3"
+        },
+        "key": "categories[5:Contact#0]/category[1]/category[2]"
+      },
+      "sourceLabel": "Non-governmental organisations"
+    },
+    {
+      "assertion": {
+        "id": "2.4"
+      },
+      "baseLabel": "Other organisations",
+      "key": "categories[5:Contact#0]/category[1]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2.4"
+        },
+        "key": "categories[5:Contact#0]/category[1]/category[3]"
+      },
+      "sourceLabel": "Other organisations"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "baseLabel": "Working groups within organisation",
+      "key": "categories[5:Contact#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3"
+        },
+        "key": "categories[5:Contact#0]/category[2]"
+      },
+      "sourceLabel": "Working groups within organisation"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "baseLabel": "Persons",
+      "key": "categories[5:Contact#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4"
+        },
+        "key": "categories[5:Contact#0]/category[3]"
+      },
+      "sourceLabel": "Persons"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "baseLabel": "Other",
+      "key": "categories[5:Contact#0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5"
+        },
+        "key": "categories[5:Contact#0]/category[4]"
+      },
+      "sourceLabel": "Other"
+    },
+    {
+      "assertion": {
+        "id": "0"
+      },
+      "baseLabel": "Images",
+      "key": "categories[6:Source#0]/category[0]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "0"
+        },
+        "key": "categories[6:Source#0]/category[0]"
+      },
+      "sourceLabel": "Images"
+    },
+    {
+      "assertion": {
+        "id": "1"
+      },
+      "baseLabel": "Data set formats",
+      "key": "categories[6:Source#0]/category[1]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "1"
+        },
+        "key": "categories[6:Source#0]/category[1]"
+      },
+      "sourceLabel": "Data set formats"
+    },
+    {
+      "assertion": {
+        "id": "2"
+      },
+      "baseLabel": "Databases",
+      "key": "categories[6:Source#0]/category[2]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "2"
+        },
+        "key": "categories[6:Source#0]/category[2]"
+      },
+      "sourceLabel": "Databases"
+    },
+    {
+      "assertion": {
+        "id": "3"
+      },
+      "baseLabel": "Compliance systems",
+      "key": "categories[6:Source#0]/category[3]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "3"
+        },
+        "key": "categories[6:Source#0]/category[3]"
+      },
+      "sourceLabel": "Compliance systems"
+    },
+    {
+      "assertion": {
+        "id": "4"
+      },
+      "baseLabel": "Statistical classifications",
+      "key": "categories[6:Source#0]/category[4]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "4"
+        },
+        "key": "categories[6:Source#0]/category[4]"
+      },
+      "sourceLabel": "Statistical classifications"
+    },
+    {
+      "assertion": {
+        "id": "5"
+      },
+      "baseLabel": "Publications and communications",
+      "key": "categories[6:Source#0]/category[5]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "5"
+        },
+        "key": "categories[6:Source#0]/category[5]"
+      },
+      "sourceLabel": "Publications and communications"
+    },
+    {
+      "assertion": {
+        "id": "6"
+      },
+      "baseLabel": "Other source types",
+      "key": "categories[6:Source#0]/category[6]",
+      "provenanceStatus": "exact",
+      "sourceIdentity": {
+        "assertion": {
+          "id": "6"
+        },
+        "key": "categories[6:Source#0]/category[6]"
+      },
+      "sourceLabel": "Other source types"
+    }
+  ],
+  "resourceId": "ilcd-classification",
+  "retrievedAt": "2026-07-18",
+  "schemaVersion": 1,
+  "source": {
+    "edition": "European Commission DG JRC (2022), EF reference package 3.1 / ILCD Format 1.1 Tools Build 985",
+    "rawDigest": {
+      "algorithm": "sha256",
+      "byteLength": 13710,
+      "scope": "stylesheets/ILCDClassification_Reference.xml",
+      "value": "f73babf7069ccaf2c0c4d02745aa6944aea6138f01797d811058f8262a4b4f0c"
+    },
+    "role": "official-base",
+    "sourceUrl": "https://eplca.jrc.ec.europa.eu/permalink/EF3_1/EF-v3.1.zip"
+  },
+  "transformVersion": "ilcd-category-xml-identity-path-v1",
+  "unmatchedUpstreamIdentityCount": 0,
+  "upstreamIdentityCount": 243
+}

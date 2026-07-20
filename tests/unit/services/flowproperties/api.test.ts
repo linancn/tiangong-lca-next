@@ -50,7 +50,7 @@ jest.mock('@/services/flowproperties/util', () => ({
 
 jest.mock('@/services/general/util', () => ({
   classificationToString: jest.fn(),
-  genClassificationZH: jest.fn(),
+  genLocalizedClassification: jest.fn(),
   getLangText: jest.fn(),
   jsonToList: jest.fn(),
 }));
@@ -76,7 +76,7 @@ jest.mock('@/services/general/api', () => ({
 
 const { supabase } = jest.requireMock('@/services/supabase');
 const { genFlowpropertyJsonOrdered } = jest.requireMock('@/services/flowproperties/util');
-const { getLangText, classificationToString, jsonToList, genClassificationZH } =
+const { getLangText, classificationToString, jsonToList, genLocalizedClassification } =
   jest.requireMock('@/services/general/util');
 const { getCachedClassificationData } = jest.requireMock('@/services/classifications/cache');
 const {
@@ -567,6 +567,8 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         success: true,
         total: 7,
       });
+      expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'en', ['all']);
+      expect(genLocalizedClassification).toHaveBeenCalled();
     });
 
     it('should localize flow properties for zh language', async () => {
@@ -581,14 +583,14 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         error: null,
       });
       jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
-      genClassificationZH.mockReturnValue(['第0级分类']);
+      genLocalizedClassification.mockReturnValue(['第0级分类']);
       classificationToString.mockReturnValue('第0级分类');
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);
 
       const result = await getFlowpropertyTableAll({}, {}, 'zh', 'tg', [], undefined);
 
       expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
-      expect(genClassificationZH).toHaveBeenCalledWith(
+      expect(genLocalizedClassification).toHaveBeenCalledWith(
         [{ id: 'class-id-1' }],
         mockILCDClassificationResponse.data,
       );
@@ -601,6 +603,96 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       });
       expect(result.data[0].modifiedAt).toBeInstanceOf(Date);
     });
+
+    it.each([
+      ['de', 'Masse', 'Deutsche Flusseigenschaft', 'Massenkommentar', 'Referenzeinheitengruppe'],
+      [
+        'fr',
+        'Masse française',
+        'Propriété de flux française',
+        'Commentaire de masse',
+        'Groupe d’unités de référence',
+      ],
+    ])(
+      'keeps %s flow-property text while resolving classification labels through the manifest cache',
+      async (
+        lang,
+        localizedName,
+        localizedClassification,
+        localizedComment,
+        localizedReference,
+      ) => {
+        const names = [
+          { '@xml:lang': 'en', '#text': 'Mass' },
+          { '@xml:lang': lang, '#text': localizedName },
+        ];
+        const comments = [
+          { '@xml:lang': 'en', '#text': 'Mass comment' },
+          { '@xml:lang': lang, '#text': localizedComment },
+        ];
+        const references = [
+          { '@xml:lang': 'en', '#text': 'Reference unit group' },
+          { '@xml:lang': lang, '#text': localizedReference },
+        ];
+        const classifications = [{ '@level': '0', '#text': 'Technical flow properties' }];
+        const classificationData = [
+          {
+            id: 'technical-flow-properties',
+            value: 'Technical flow properties',
+            label: localizedClassification,
+            children: [],
+          },
+        ];
+        const localizedPath = [{ '@level': '0', '#text': localizedClassification }];
+        supabase.rpc.mockResolvedValueOnce({
+          data: [
+            latestFlowpropertyRow({
+              json: {
+                flowPropertyDataSet: {
+                  flowPropertiesInformation: {
+                    dataSetInformation: {
+                      'common:name': names,
+                      classificationInformation: {
+                        'common:classification': { 'common:class': classifications },
+                      },
+                      'common:generalComment': comments,
+                    },
+                    quantitativeReference: {
+                      referenceToReferenceUnitGroup: {
+                        '@refObjectId': 'ug-1',
+                        'common:shortDescription': references,
+                      },
+                    },
+                  },
+                },
+              },
+            }),
+          ],
+          error: null,
+        });
+        getCachedClassificationData.mockResolvedValueOnce(classificationData);
+        jsonToList.mockReturnValueOnce(classifications);
+        genLocalizedClassification.mockReturnValueOnce(localizedPath);
+        classificationToString.mockReturnValueOnce(localizedClassification);
+
+        const result = await getFlowpropertyTableAll({}, {}, lang, 'tg', [], undefined);
+
+        expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', lang, ['all']);
+        expect(genLocalizedClassification).toHaveBeenCalledWith(
+          classifications,
+          classificationData,
+        );
+        expect(getLangText).toHaveBeenCalledWith(names, lang);
+        expect(getLangText).toHaveBeenCalledWith(comments, lang);
+        expect(getLangText).toHaveBeenCalledWith(references, lang);
+        expect(result.data[0]).toMatchObject({
+          name: localizedName,
+          classification: localizedClassification,
+          generalComment: localizedComment,
+          refUnitGroup: localizedReference,
+        });
+      },
+    );
 
     it('should return empty when session is not available for my data', async () => {
       supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
@@ -1146,7 +1238,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
 
       supabase.rpc.mockResolvedValue({ data: searchResult, error: null });
       jsonToList.mockReturnValue([{ id: 'class-id-1' }]);
-      genClassificationZH.mockReturnValue(['第0级分类']);
+      genLocalizedClassification.mockReturnValue(['第0级分类']);
       classificationToString.mockReturnValue('第0级分类');
       getLangText.mockImplementation((value: any, lang: string) => {
         if (Array.isArray(value)) {
@@ -1166,7 +1258,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
       );
 
       expect(getCachedClassificationData).toHaveBeenCalledWith('FlowProperty', 'zh', ['all']);
-      expect(genClassificationZH).toHaveBeenCalled();
+      expect(genLocalizedClassification).toHaveBeenCalled();
       expect(result.success).toBe(true);
       expect(result.total).toBe(1);
       expect(result.data[0]).toMatchObject({
@@ -1316,7 +1408,7 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         error: null,
       });
       jsonToList.mockReturnValue([]);
-      genClassificationZH.mockReturnValue([]);
+      genLocalizedClassification.mockReturnValue([]);
       classificationToString.mockReturnValue('');
       getLangText.mockReturnValue('');
       getCachedClassificationData.mockResolvedValue(mockILCDClassificationResponse.data);

@@ -16,6 +16,11 @@ import {
   type LangNormalizationMetadata,
   type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
+import {
+  getServiceQueryLanguage,
+  type SupportedContentLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
 import { getLifeCyclesByIdAndVersion } from '@/services/lifeCycleModels/api';
 import { supabase } from '@/services/supabase';
 import {
@@ -33,7 +38,7 @@ import {
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -89,6 +94,12 @@ type ProcessTableResponse = {
   error?: unknown;
 };
 
+type ProcessSearchOrderBy = {
+  key: 'common:class' | 'baseName';
+  lang?: SupportedContentLanguage;
+  order: 'asc' | 'desc';
+};
+
 type ProcessListRpcRow = {
   id?: string;
   json?: any;
@@ -127,6 +138,84 @@ function normalizeProcessSortBy(sortBy: string): string {
 
 function normalizeProcessSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function resolveProcessSearchOrderBy(orderBy?: ProcessSearchOrderBy): Partial<
+  Omit<ProcessSearchOrderBy, 'lang'> & {
+    lang?: SupportedServiceQueryLanguage;
+  }
+> {
+  if (!orderBy) {
+    return {};
+  }
+
+  if (!orderBy.lang) {
+    return {
+      key: orderBy.key,
+      order: orderBy.order,
+    };
+  }
+
+  return {
+    ...orderBy,
+    lang: getServiceQueryLanguage(orderBy.lang),
+  };
+}
+
+function getLocalizedProcessClassification(
+  classificationSource: any,
+  classificationData: any,
+): string {
+  return classificationToString(
+    genLocalizedClassification(jsonToList(classificationSource), classificationData ?? []),
+  );
+}
+
+function mapProcessSearchResultRows(
+  rows: ProcessListRpcRow[],
+  lang: string,
+  locationData: any[],
+  classificationData: any,
+): ProcessTable[] {
+  return rows.map((i: any) => {
+    try {
+      const dataInfo = i.json?.processDataSet?.processInformation;
+      const locationCode =
+        dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
+      const localizedLocation = locationData.find(
+        (location: any) => location?.['@value'] === locationCode,
+      )?.['#text'];
+
+      return {
+        key: i.id + ':' + i.version,
+        id: i.id,
+        lang,
+        name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        classification: getLocalizedProcessClassification(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+          classificationData,
+        ),
+        referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
+        location: localizedLocation ?? locationCode ?? '-',
+        version: i.version,
+        typeOfDataSet:
+          i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation?.typeOfDataSet ??
+          '-',
+        modifiedAt: new Date(i.modified_at),
+        teamId: i.team_id,
+        modelId: i.model_id,
+      };
+    } catch (error) {
+      console.error(error);
+      return { id: i.id, lang } as ProcessTable;
+    }
+  });
 }
 
 function getOptionalTeamId(tid: string | []): string | null {
@@ -174,18 +263,17 @@ async function mapProcessTableRows(rawRows: any[], lang: string): Promise<Proces
   const locations = Array.from(new Set(rawRows.map((item: any) => item['@location'])));
   const [locationRes, classificationRes] = await Promise.all([
     getCachedLocationData(lang, locations),
-    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve([]),
+    getCachedClassificationData('Process', lang, ['all']),
   ]);
   const locationMap = new Map(locationRes.map((item: any) => [item['@value'], item['#text']]));
   const classificationData = classificationRes ?? [];
 
   return rawRows.map((item: any) => {
     try {
-      const classifications = jsonToList(item['common:class']);
-      const classification =
-        lang === 'zh'
-          ? classificationToString(genClassificationZH(classifications, classificationData) ?? {})
-          : classificationToString(classifications);
+      const classification = getLocalizedProcessClassification(
+        item['common:class'],
+        classificationData,
+      );
       let location = item['@location'];
       if (locationMap.has(location)) {
         location = locationMap.get(location);
@@ -208,7 +296,7 @@ async function mapProcessTableRows(rawRows: any[], lang: string): Promise<Proces
       };
     } catch (error) {
       console.error(error);
-      return { id: item.id } as ProcessTable;
+      return { id: item.id, lang } as ProcessTable;
     }
   });
 }
@@ -678,7 +766,7 @@ export async function getConnectableProcessesTable(
   const processIdsAndVersions = result.data.map((i: any) => ({ id: i.id, version: i.version }));
   const [locationRes, classificationRes, lifeCycleResult] = await Promise.all([
     getCachedLocationData(lang, locations),
-    lang === 'zh' ? getCachedClassificationData('Process', lang, ['all']) : Promise.resolve([]),
+    getCachedClassificationData('Process', lang, ['all']),
     getLifeCyclesByIdAndVersion(processIdsAndVersions),
   ]);
   const locationMap = new Map(locationRes.map((l: any) => [l['@value'], l['#text']]));
@@ -686,14 +774,10 @@ export async function getConnectableProcessesTable(
 
   let data: any[] = result.data.map((i: any) => {
     try {
-      const classifications = jsonToList(i['common:class']);
-      let classification;
-      if (lang === 'zh') {
-        const classificationZH = genClassificationZH(classifications, classificationData);
-        classification = classificationToString(classificationZH ?? {});
-      } else {
-        classification = classificationToString(classifications);
-      }
+      const classification = getLocalizedProcessClassification(
+        i['common:class'],
+        classificationData,
+      );
       let location = i['@location'];
       if (locationMap.has(location)) {
         location = locationMap.get(location);
@@ -736,135 +820,6 @@ export async function getConnectableProcessesTable(
     // total: result?.count ?? 0,
   };
 }
-// export async function getProcessTableAllByTeam(
-//   params: {
-//     current?: number;
-//     pageSize?: number;
-//   },
-//   sort: Record<string, SortOrder>,
-//   lang: string,
-//   teamId: string[],
-// ) {
-//   console.log('teamId', teamId);
-//   const sortBy = Object.keys(sort)[0] ?? 'modified_at';
-//   const orderBy = sort[sortBy] ?? 'descend';
-
-//   const selectStr = `
-//     id,
-//     json->processDataSet->processInformation->dataSetInformation->name,
-//     json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class",
-//     json->processDataSet->processInformation->dataSetInformation->"common:generalComment",
-//     json->processDataSet->processInformation->time->>"common:referenceYear",
-//     json->processDataSet->processInformation->geography->locationOfOperationSupplyOrProduction->>"@location",
-//     version,
-//     modified_at
-//   `;
-
-//   const result = await supabase
-//     .from('processes')
-//     .select(selectStr, { count: 'exact' })
-//     .eq('state_code', 100)
-//     .in('user_id', teamId)
-//     .order(sortBy, { ascending: orderBy === 'ascend' })
-//     .range(
-//       ((params.current ?? 1) - 1) * (params.pageSize ?? 10),
-//       (params.current ?? 1) * (params.pageSize ?? 10) - 1,
-//     );
-
-//   if (result.error) {
-//     console.log('error', result.error);
-//   }
-
-//   if (result.data) {
-//     if (result.data.length === 0) {
-//       return Promise.resolve({
-//         data: [],
-//         success: true,
-//       });
-//     }
-
-//     const locations: string[] = Array.from(new Set(result.data.map((i: any) => i['@location'])));
-//     let locationData: any[] = [];
-//     await getILCDLocationByValues(lang, locations).then((res) => {
-//       locationData = res.data;
-//     });
-
-//     let data: any[] = [];
-//     if (lang === 'zh') {
-//       await getILCDClassification('Process', lang, ['all']).then((res) => {
-//         data = result.data.map((i: any) => {
-//           try {
-//             const classifications = jsonToList(i['common:class']);
-//             const classificationZH = genClassificationZH(classifications, res?.data);
-
-//             const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-//             let location = i['@location'];
-//             if (thisLocation?.['#text']) {
-//               location = thisLocation['#text'];
-//             }
-
-//             return {
-//               key: i.id + ':' + i.version,
-//               id: i.id,
-//               version: i.version,
-//               lang: lang,
-//               name: genProcessName(i.name ?? {}, lang),
-//               generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-//               classification: classificationToString(classificationZH ?? {}),
-//               referenceYear: i['common:referenceYear'] ?? '-',
-//               location: location ?? '-',
-//               modifiedAt: new Date(i.modified_at),
-//             };
-//           } catch (e) {
-//             console.error(e);
-//             return {
-//               id: i.id,
-//             };
-//           }
-//         });
-//       });
-//     } else {
-//       data = result.data.map((i: any) => {
-//         try {
-//           const thisLocation = locationData.find((l) => l['@value'] === i['@location']);
-//           let location = i['@location'];
-//           if (thisLocation?.['#text']) {
-//             location = thisLocation['#text'];
-//           }
-//           return {
-//             key: i.id + ':' + i.version,
-//             id: i.id,
-//             version: i.version,
-//             lang: lang,
-//             name: genProcessName(i.name ?? {}, lang),
-//             generalComment: getLangText(i['common:generalComment'] ?? {}, lang),
-//             classification: classificationToString(i['common:class'] ?? {}),
-//             referenceYear: i['common:referenceYear'] ?? '-',
-//             location: location,
-//             modifiedAt: new Date(i.modified_at),
-//           };
-//         } catch (e) {
-//           console.error(e);
-//           return {
-//             id: i.id,
-//           };
-//         }
-//       });
-//     }
-
-//     return Promise.resolve({
-//       data: data,
-//       page: params.current ?? 1,
-//       success: true,
-//       total: result.count ?? 0,
-//     });
-//   }
-//   return Promise.resolve({
-//     data: [],
-//     success: false,
-//   });
-// }
-
 export async function getProcessTablePgroongaSearch(
   params: {
     current?: number;
@@ -877,7 +832,7 @@ export async function getProcessTablePgroongaSearch(
   filterCondition: any,
   stateCode?: string | number,
   typeOfDataSet?: string,
-  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  orderBy?: ProcessSearchOrderBy,
   tid: string | [] = [],
 ) {
   // const time_start = new Date();
@@ -899,7 +854,7 @@ export async function getProcessTablePgroongaSearch(
   const requestParams: { [key: string]: any } = {
     query_text: queryText,
     filter_condition: filterCondition,
-    order_by: orderBy ?? {},
+    order_by: resolveProcessSearchOrderBy(orderBy),
     page_size: params.pageSize ?? 10,
     page_current: params.current ?? 1,
     data_source: dataSource,
@@ -930,108 +885,11 @@ export async function getProcessTablePgroongaSearch(
         ),
       ),
     );
-    let locationData: any[] = [];
-    await getCachedLocationData(lang, locations).then((res) => {
-      locationData = res;
-    });
-
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.processDataSet?.processInformation;
-
-            const thisLocation = locationData.find(
-              (l) =>
-                l['@value'] ===
-                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-            );
-            let location = i['@location'];
-            if (thisLocation?.['#text']) {
-              location = thisLocation['#text'];
-            }
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              classification: classificationToString(classificationZH),
-              referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-              location: location ?? '-',
-              version: i.version,
-              typeOfDataSet:
-                i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
-                  ?.typeOfDataSet ?? '-',
-              modifiedAt: new Date(i.modified_at),
-              teamId: i.team_id,
-              modelId: i.model_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.processDataSet?.processInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          const thisLocation = locationData.find(
-            (l) =>
-              l['@value'] ===
-              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-          );
-          let location = dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
-          if (thisLocation?.['#text']) {
-            location = thisLocation['#text'];
-          }
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            classification: classificationToString(classifications),
-            referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-            location: location ?? '-',
-            version: i.version,
-            typeOfDataSet:
-              i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
-                ?.typeOfDataSet ?? '-',
-            modifiedAt: new Date(i.modified_at),
-            teamId: i.team_id,
-            modelId: i.model_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const [locationData, classificationData] = await Promise.all([
+      getCachedLocationData(lang, locations),
+      getCachedClassificationData('Process', lang, ['all']),
+    ]);
+    const data = mapProcessSearchResultRows(result.data, lang, locationData, classificationData);
 
     return {
       data,
@@ -1093,17 +951,11 @@ async function mapProcessListRows(
     ),
   );
   const locationData = await getCachedLocationData(lang, locations);
-  const classificationData =
-    lang === 'zh' ? await getCachedClassificationData('Process', lang, ['all']) : [];
+  const classificationData = await getCachedClassificationData('Process', lang, ['all']);
 
   return rows.map((i: any) => {
     try {
       const dataInfo = i.json?.processDataSet?.processInformation;
-      const classifications = jsonToList(
-        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-          'common:class'
-        ],
-      );
       const thisLocation = locationData.find(
         (l: any) =>
           l['@value'] === dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
@@ -1111,10 +963,12 @@ async function mapProcessListRows(
       const location =
         thisLocation?.['#text'] ??
         dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
-      const classification =
-        lang === 'zh'
-          ? classificationToString(genClassificationZH(classifications, classificationData))
-          : classificationToString(classifications);
+      const classification = getLocalizedProcessClassification(
+        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+          'common:class'
+        ],
+        classificationData,
+      );
 
       return {
         key: i.id + ':' + i.version,
@@ -1435,108 +1289,11 @@ export async function process_hybrid_search(
         ),
       ),
     );
-    let locationData: any[] = [];
-    await getCachedLocationData(lang, locations).then((res) => {
-      locationData = res;
-    });
-
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getCachedClassificationData('Process', lang, ['all']).then((res) => {
-        data = resultData.map((i: any) => {
-          try {
-            const dataInfo = i.json?.processDataSet?.processInformation;
-
-            const thisLocation = locationData.find(
-              (l) =>
-                l['@value'] ===
-                dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-            );
-            let location = i['@location'];
-            if (thisLocation?.['#text']) {
-              location = thisLocation['#text'];
-            }
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res);
-
-            return {
-              key: i.id + ':' + i.version,
-              id: i.id,
-              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              classification: classificationToString(classificationZH),
-              referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-              location: location ?? '-',
-              version: i.version,
-              typeOfDataSet:
-                i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
-                  ?.typeOfDataSet ?? '-',
-              modifiedAt: new Date(i.modified_at),
-              teamId: i.team_id,
-              modelId: i.model_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = resultData.map((i: any) => {
-        try {
-          const dataInfo = i.json?.processDataSet?.processInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          const thisLocation = locationData.find(
-            (l) =>
-              l['@value'] ===
-              dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'],
-          );
-          let location = dataInfo?.geography?.locationOfOperationSupplyOrProduction?.['@location'];
-          if (thisLocation?.['#text']) {
-            location = thisLocation['#text'];
-          }
-
-          return {
-            key: i.id + ':' + i.version,
-            id: i.id,
-            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            classification: classificationToString(classifications),
-            referenceYear: dataInfo?.time?.['common:referenceYear'] ?? '-',
-            location: location ?? '-',
-            version: i.version,
-            typeOfDataSet:
-              i?.json?.processDataSet?.modellingAndValidation?.LCIMethodAndAllocation
-                ?.typeOfDataSet ?? '-',
-            modifiedAt: new Date(i.modified_at),
-            teamId: i.team_id,
-            modelId: i.model_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const [locationData, classificationData] = await Promise.all([
+      getCachedLocationData(lang, locations),
+      getCachedClassificationData('Process', lang, ['all']),
+    ]);
+    const data = mapProcessSearchResultRows(resultData, lang, locationData, classificationData);
 
     return Promise.resolve({
       data: data,

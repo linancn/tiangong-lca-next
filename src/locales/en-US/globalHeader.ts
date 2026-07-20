@@ -5,6 +5,7 @@ export default {
   'component.globalHeader.search.example3': 'Search example 3',
   'component.globalHeader.help': 'Help',
   'component.globalHeader.help.englishFallback': 'Help documentation (English)',
+  'component.globalHeader.help.fallback': 'Help documentation ({language})',
   'component.globalHeader.openapiDocumentation': 'OpenAPI documentation',
   'component.request.responseStatus': 'Response status: {status}',
   'component.request.noResponse': 'No response. Please try again.',

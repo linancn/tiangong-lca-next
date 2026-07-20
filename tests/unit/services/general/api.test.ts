@@ -69,6 +69,7 @@ jest.mock('@/services/general/util', () => {
   return {
     __esModule: true,
     ...actual,
+    genLocalizedClassification: (...args: any[]) => mockGenClassificationZH.apply(null, args),
     genClassificationZH: (...args: any[]) => mockGenClassificationZH.apply(null, args),
     classificationToString: (...args: any[]) => mockClassificationToString.apply(null, args),
     getLangText: (...args: any[]) => mockGetLangText.apply(null, args),
@@ -1317,7 +1318,7 @@ describe('contributeSource', () => {
     expect(messageMock.error).toHaveBeenCalledWith(frTeamMessages['teams.modal.noTeam.title']);
   });
 
-  it('should fall back to the English no-team error when a locale bundle omits the message', async () => {
+  it('should recover the German no-team error from the reviewed native snapshot', async () => {
     const messageId = 'teams.modal.noTeam.title';
     const reviewedGermanMessage = deTeamMessages[messageId];
     delete deTeamMessages[messageId];
@@ -1336,7 +1337,7 @@ describe('contributeSource', () => {
 
     try {
       await generalApi.contributeSource('flows', sampleId, sampleVersion);
-      expect(messageMock.error).toHaveBeenCalledWith('You are not in any team');
+      expect(messageMock.error).toHaveBeenCalledWith(reviewedGermanMessage);
     } finally {
       deTeamMessages[messageId] = reviewedGermanMessage;
     }

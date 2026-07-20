@@ -31,6 +31,7 @@ describe('useResourceCacheMonitor', () => {
     const setManifest = jest.fn();
     const getCachedFileList = jest.fn().mockResolvedValue([]);
     const cacheFile = jest.fn().mockResolvedValue(true);
+    const onCacheUpdated = jest.fn();
 
     const TestComponent = () => {
       useResourceCacheMonitor({
@@ -41,6 +42,7 @@ describe('useResourceCacheMonitor', () => {
         setManifest,
         getCachedFileList,
         cacheFile,
+        onCacheUpdated,
         logMessages: {
           upToDate: 'up to date',
           start: 'starting cache',
@@ -72,6 +74,51 @@ describe('useResourceCacheMonitor', () => {
     });
     expect(consoleLogSpy).toHaveBeenCalledWith('starting cache');
     expect(consoleLogSpy).toHaveBeenCalledWith('success 3/3');
+    expect(onCacheUpdated).toHaveBeenCalledWith(['file-a', 'file-b', 'file-c']);
     expect(getCachedFileList).not.toHaveBeenCalled();
+  });
+
+  it('logs an in-memory invalidation failure without failing the completed cache update', async () => {
+    jest.useFakeTimers();
+
+    const setManifest = jest.fn();
+    const onCacheUpdated = jest.fn().mockRejectedValue(new Error('invalidation failed'));
+
+    const TestComponent = () => {
+      useResourceCacheMonitor({
+        version: '1.0.0',
+        files: ['file-a'],
+        batchSize: 1,
+        getManifest: jest.fn(() => null),
+        setManifest,
+        getCachedFileList: jest.fn().mockResolvedValue([]),
+        cacheFile: jest.fn().mockResolvedValue(true),
+        onCacheUpdated,
+        logMessages: {
+          upToDate: 'up to date',
+          start: 'starting cache',
+          success: (successCount, totalFiles) => `success ${successCount}/${totalFiles}`,
+          issues: (successCount, totalFiles, errorCount) =>
+            `issues ${successCount}/${totalFiles}/${errorCount}`,
+          failure: 'cache failed',
+        },
+        startDelayMs: 1,
+      });
+
+      return null;
+    };
+
+    render(<TestComponent />);
+
+    await flushTimers(1);
+
+    expect(onCacheUpdated).toHaveBeenCalledWith(['file-a']);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to invalidate in-memory resource cache:',
+      expect.objectContaining({ message: 'invalidation failed' }),
+    );
+    expect(setManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ files: ['file-a'], version: '1.0.0' }),
+    );
   });
 });

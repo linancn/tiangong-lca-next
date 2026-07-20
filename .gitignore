@@ -44,6 +44,7 @@ build
 .env.users.local
 tests/data-workflows/fixtures/data/users.json
 tests/data-workflows/runtime/
+/tests/e2e/runtime/
 
 dev_docs/*
 

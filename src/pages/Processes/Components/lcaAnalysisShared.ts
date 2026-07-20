@@ -1,3 +1,4 @@
+import { CANONICAL_CONTENT_LANGUAGE } from '@/services/general/contentLanguageRegistry';
 import { getDataSource, getLangJson } from '@/services/general/util';
 import type { LCIAResultTable, LciaMethodListData } from '@/services/lciaMethods/data';
 import {
@@ -249,7 +250,7 @@ export async function getLcaMethodMetaMap(
 }
 
 function toLangFallback(text: string) {
-  return getLangJson({ '@xml:lang': 'en', '#text': text });
+  return getLangJson({ '@xml:lang': CANONICAL_CONTENT_LANGUAGE, '#text': text });
 }
 
 export function buildMergedLcaRows(

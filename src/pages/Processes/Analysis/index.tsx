@@ -1729,7 +1729,7 @@ const LcaAnalysisPage = () => {
         <Space
           size='small'
           wrap={true}
-          split={<Typography.Text type='secondary'>&gt;</Typography.Text>}
+          split={<Typography.Text type='secondary'>{'>'}</Typography.Text>}
         >
           {item.pathProcessIds.length > 0
             ? item.pathProcessIds.map((processId, index) => (

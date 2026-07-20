@@ -1,0 +1,1719 @@
+{
+  "schemaVersion": 1,
+  "resourceId": "ilcd-classification",
+  "locale": "fr",
+  "deliveryStatus": "project-reviewed",
+  "dataTypeNames": {
+    "Process": "Procédé",
+    "Flow": "Flux",
+    "FlowProperty": "Propriété de flux",
+    "UnitGroup": "Groupe d'unités",
+    "Contact": "Contact",
+    "Source": "Source",
+    "LCIAMethod": "Méthode d'ACVI",
+    "LifeCycleModel": "Modèle de cycle de vie"
+  },
+  "labels": [
+    {
+      "key": "categories[0:Process#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Vecteurs et technologies énergétiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "Matières premières énergétiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "Électricité"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "Chaleur et vapeur"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "Énergie mécanique"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "Combustibles à base de houille"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[5]",
+      "assertion": {
+        "id": "1.6"
+      },
+      "label": "Combustibles à base de lignite"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[6]",
+      "assertion": {
+        "id": "1.7"
+      },
+      "label": "Combustibles à base de pétrole brut"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[7]",
+      "assertion": {
+        "id": "1.8"
+      },
+      "label": "Combustibles à base de gaz naturel"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[8]",
+      "assertion": {
+        "id": "1.9"
+      },
+      "label": "Combustibles nucléaires"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[9]",
+      "assertion": {
+        "id": "1.10"
+      },
+      "label": "Autres combustibles non renouvelables"
+    },
+    {
+      "key": "categories[0:Process#0]/category[0]/category[10]",
+      "assertion": {
+        "id": "1.11"
+      },
+      "label": "Combustibles renouvelables"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Production de matériaux"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "Matières premières non énergétiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "Métaux et semi-métaux"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "Produits chimiques organiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "Produits chimiques inorganiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.5"
+      },
+      "label": "Verre et céramiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.6"
+      },
+      "label": "Autres matériaux minéraux"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.7"
+      },
+      "label": "Plastiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.8"
+      },
+      "label": "Papier et carton"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "2.9"
+      },
+      "label": "Eau"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "2.10"
+      },
+      "label": "Moyens de production agricole"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "2.11"
+      },
+      "label": "Aliments et matières premières renouvelables"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[11]",
+      "assertion": {
+        "id": "2.12"
+      },
+      "label": "Bois"
+    },
+    {
+      "key": "categories[0:Process#0]/category[1]/category[12]",
+      "assertion": {
+        "id": "2.13"
+      },
+      "label": "Autres matériaux"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Systèmes"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[0]",
+      "assertion": {
+        "id": "3.1"
+      },
+      "label": "Emballages"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[1]",
+      "assertion": {
+        "id": "3.2"
+      },
+      "label": "Équipements électriques et électroniques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[2]",
+      "assertion": {
+        "id": "3.3"
+      },
+      "label": "Véhicules"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[3]",
+      "assertion": {
+        "id": "3.4"
+      },
+      "label": "Autres machines"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[4]",
+      "assertion": {
+        "id": "3.5"
+      },
+      "label": "Construction"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[5]",
+      "assertion": {
+        "id": "3.6"
+      },
+      "label": "Appareils électroménagers"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[6]",
+      "assertion": {
+        "id": "3.7"
+      },
+      "label": "Textiles, meubles et autres éléments d'intérieur"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[7]",
+      "assertion": {
+        "id": "3.8"
+      },
+      "label": "Pièces non spécifiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[8]",
+      "assertion": {
+        "id": "3.9"
+      },
+      "label": "Peintures et préparations chimiques"
+    },
+    {
+      "key": "categories[0:Process#0]/category[2]/category[9]",
+      "assertion": {
+        "id": "3.10"
+      },
+      "label": "Autres systèmes"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Traitement en fin de vie"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[0]",
+      "assertion": {
+        "id": "4.1"
+      },
+      "label": "Réemploi ou utilisation ultérieure"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[1]",
+      "assertion": {
+        "id": "4.2"
+      },
+      "label": "Recyclage des matériaux"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[2]",
+      "assertion": {
+        "id": "4.3"
+      },
+      "label": "Recyclage des matières premières"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[3]",
+      "assertion": {
+        "id": "4.4"
+      },
+      "label": "Valorisation énergétique"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[4]",
+      "assertion": {
+        "id": "4.5"
+      },
+      "label": "Mise en décharge"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[5]",
+      "assertion": {
+        "id": "4.6"
+      },
+      "label": "Collecte des déchets"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[6]",
+      "assertion": {
+        "id": "4.7"
+      },
+      "label": "Traitement des eaux usées"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[7]",
+      "assertion": {
+        "id": "4.8"
+      },
+      "label": "Traitement des gaz bruts"
+    },
+    {
+      "key": "categories[0:Process#0]/category[3]/category[8]",
+      "assertion": {
+        "id": "4.9"
+      },
+      "label": "Autres services de fin de vie"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "Services de transport"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[0]",
+      "assertion": {
+        "id": "5.1"
+      },
+      "label": "Route"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[1]",
+      "assertion": {
+        "id": "5.2"
+      },
+      "label": "Rail"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[2]",
+      "assertion": {
+        "id": "5.3"
+      },
+      "label": "Voie d'eau"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[3]",
+      "assertion": {
+        "id": "5.4"
+      },
+      "label": "Air"
+    },
+    {
+      "key": "categories[0:Process#0]/category[4]/category[4]",
+      "assertion": {
+        "id": "5.5"
+      },
+      "label": "Autres transports"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "Autres services"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[0]",
+      "assertion": {
+        "id": "6.1"
+      },
+      "label": "Nettoyage"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[1]",
+      "assertion": {
+        "id": "6.2"
+      },
+      "label": "Stockage"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[2]",
+      "assertion": {
+        "id": "6.3"
+      },
+      "label": "Santé, services sociaux, beauté et bien-être"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[3]",
+      "assertion": {
+        "id": "6.4"
+      },
+      "label": "Réparation et maintenance"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[4]",
+      "assertion": {
+        "id": "6.5"
+      },
+      "label": "Vente et commerce de gros"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[5]",
+      "assertion": {
+        "id": "6.6"
+      },
+      "label": "Services de communication et d'information"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[6]",
+      "assertion": {
+        "id": "6.7"
+      },
+      "label": "Finance, droit et assurance"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[7]",
+      "assertion": {
+        "id": "6.8"
+      },
+      "label": "Administration et gouvernement"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[8]",
+      "assertion": {
+        "id": "6.9"
+      },
+      "label": "Défense"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[9]",
+      "assertion": {
+        "id": "6.10"
+      },
+      "label": "Hébergement et restauration"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[10]",
+      "assertion": {
+        "id": "6.11"
+      },
+      "label": "Éducation"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[11]",
+      "assertion": {
+        "id": "6.12"
+      },
+      "label": "Recherche et développement"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[12]",
+      "assertion": {
+        "id": "6.13"
+      },
+      "label": "Divertissement"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[13]",
+      "assertion": {
+        "id": "6.14"
+      },
+      "label": "Location"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[14]",
+      "assertion": {
+        "id": "6.15"
+      },
+      "label": "Ingénierie et conseil"
+    },
+    {
+      "key": "categories[0:Process#0]/category[5]/category[15]",
+      "assertion": {
+        "id": "6.16"
+      },
+      "label": "Autres services"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]",
+      "assertion": {
+        "id": "7"
+      },
+      "label": "Utilisation et consommation"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[0]",
+      "assertion": {
+        "id": "7.1"
+      },
+      "label": "Consommation de biens"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[1]",
+      "assertion": {
+        "id": "7.2"
+      },
+      "label": "Utilisation de produits consommateurs d'énergie"
+    },
+    {
+      "key": "categories[0:Process#0]/category[6]/category[2]",
+      "assertion": {
+        "id": "7.3"
+      },
+      "label": "Autres utilisations et consommations"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Méthodes d'ACVI au niveau des dommages"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "Impact total sur les domaines de protection"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "Santé humaine"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[0]",
+      "assertion": {
+        "id": "1.2.1"
+      },
+      "label": "Santé humaine totale, combinée"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[1]",
+      "assertion": {
+        "id": "1.2.2"
+      },
+      "label": "Santé humaine, toxicité"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[2]",
+      "assertion": {
+        "id": "1.2.3"
+      },
+      "label": "Santé humaine, changement climatique"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[3]",
+      "assertion": {
+        "id": "1.2.4"
+      },
+      "label": "Santé humaine, rayonnements ionisants"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[4]",
+      "assertion": {
+        "id": "1.2.5"
+      },
+      "label": "Santé humaine, appauvrissement de la couche d'ozone"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[5]",
+      "assertion": {
+        "id": "1.2.6"
+      },
+      "label": "Santé humaine, formation de photo-oxydants"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[1]/category[6]",
+      "assertion": {
+        "id": "1.2.7"
+      },
+      "label": "Santé humaine, autres"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "Environnement naturel"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[0]",
+      "assertion": {
+        "id": "1.3.1"
+      },
+      "label": "Environnement naturel total, combiné"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[1]",
+      "assertion": {
+        "id": "1.3.2"
+      },
+      "label": "Environnement naturel, changement climatique"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[2]",
+      "assertion": {
+        "id": "1.3.3"
+      },
+      "label": "Environnement naturel, appauvrissement de la couche d'ozone"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[3]",
+      "assertion": {
+        "id": "1.3.4"
+      },
+      "label": "Environnement naturel, utilisation des terres"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[4]",
+      "assertion": {
+        "id": "1.3.5"
+      },
+      "label": "Environnement naturel, écotoxicité aquatique en eau douce"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[5]",
+      "assertion": {
+        "id": "1.3.6"
+      },
+      "label": "Environnement naturel, écotoxicité marine"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[6]",
+      "assertion": {
+        "id": "1.3.7"
+      },
+      "label": "Environnement naturel, écotoxicité terrestre"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[7]",
+      "assertion": {
+        "id": "1.3.8"
+      },
+      "label": "Environnement naturel, acidification"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[8]",
+      "assertion": {
+        "id": "1.3.9"
+      },
+      "label": "Environnement naturel, eutrophisation"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[9]",
+      "assertion": {
+        "id": "1.3.10"
+      },
+      "label": "Environnement naturel, formation de photo-oxydants"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[10]",
+      "assertion": {
+        "id": "1.3.11"
+      },
+      "label": "Environnement naturel, rayonnements ionisants"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[2]/category[11]",
+      "assertion": {
+        "id": "1.3.12"
+      },
+      "label": "Environnement naturel, autres"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "Environnement anthropisé"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[0]",
+      "assertion": {
+        "id": "1.4.1"
+      },
+      "label": "Environnement anthropisé total, combiné"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[1]",
+      "assertion": {
+        "id": "1.4.2"
+      },
+      "label": "Environnement anthropisé, acidification"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[2]",
+      "assertion": {
+        "id": "1.4.3"
+      },
+      "label": "Environnement anthropisé, changement climatique"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[3]",
+      "assertion": {
+        "id": "1.4.4"
+      },
+      "label": "Environnement anthropisé, eutrophisation"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[3]/category[4]",
+      "assertion": {
+        "id": "1.4.5"
+      },
+      "label": "Environnement anthropisé, autres"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "Disponibilité des ressources"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[0]",
+      "assertion": {
+        "id": "1.5.1"
+      },
+      "label": "Épuisement total des ressources, combiné"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[1]",
+      "assertion": {
+        "id": "1.5.2"
+      },
+      "label": "Épuisement des ressources, minéraux et métaux"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[2]",
+      "assertion": {
+        "id": "1.5.3"
+      },
+      "label": "Épuisement des ressources, ressources énergétiques non renouvelables"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[3]",
+      "assertion": {
+        "id": "1.5.4"
+      },
+      "label": "Épuisement des ressources, utilisation des sols"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[4]",
+      "assertion": {
+        "id": "1.5.5"
+      },
+      "label": "Épuisement des ressources, ressources énergétiques renouvelables"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[5]",
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "label": "Épuisement des ressources, ressources renouvelables non énergétiques"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[0]/category[4]/category[6]",
+      "assertion": {
+        "id": "1.5.6"
+      },
+      "label": "Épuisement des ressources, autres"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Méthodes d'ACVI au niveau intermédiaire"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "Méthodes combinées"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "Changement climatique"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "Appauvrissement de la couche d'ozone"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "Utilisation des sols"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "2.5"
+      },
+      "label": "Écotoxicité"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "2.6"
+      },
+      "label": "Acidification"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "2.7"
+      },
+      "label": "Eutrophisation"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "2.8"
+      },
+      "label": "Formation de photo-oxydants"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "2.9"
+      },
+      "label": "Rayonnements nucléaires"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "2.10"
+      },
+      "label": "Toxicité humaine"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "2.11"
+      },
+      "label": "Effets respiratoires"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[11]",
+      "assertion": {
+        "id": "2.12"
+      },
+      "label": "Bruit"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[12]",
+      "assertion": {
+        "id": "2.13"
+      },
+      "label": "Épuisement des ressources"
+    },
+    {
+      "key": "categories[1:LCIAMethod#0]/category[1]/category[13]",
+      "assertion": {
+        "id": "2.14"
+      },
+      "label": "Autres catégories intermédiaires"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Émissions"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[0]",
+      "assertion": {
+        "id": "1.1"
+      },
+      "label": "Substances radioactives"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[1]",
+      "assertion": {
+        "id": "1.2"
+      },
+      "label": "Pesticides"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[2]",
+      "assertion": {
+        "id": "1.3"
+      },
+      "label": "Particules"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[3]",
+      "assertion": {
+        "id": "1.4"
+      },
+      "label": "Éléments et ions métalliques et semi-métalliques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[4]",
+      "assertion": {
+        "id": "1.5"
+      },
+      "label": "Ions non métalliques ou semi-métalliques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[5]",
+      "assertion": {
+        "id": "1.6"
+      },
+      "label": "Composés covalents inorganiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[6]",
+      "assertion": {
+        "id": "1.7"
+      },
+      "label": "Composés organiques cycliques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[7]",
+      "assertion": {
+        "id": "1.8"
+      },
+      "label": "Composés organiques acycliques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[0]/category[8]",
+      "assertion": {
+        "id": "1.9"
+      },
+      "label": "Autres types de substances"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "Vecteurs énergétiques et technologies"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "5.1"
+      },
+      "label": "Matières premières énergétiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "5.2"
+      },
+      "label": "Électricité"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "5.3"
+      },
+      "label": "Chaleur et vapeur"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "5.4"
+      },
+      "label": "Énergie mécanique"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[4]",
+      "assertion": {
+        "id": "5.5"
+      },
+      "label": "Combustibles à base de houille"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[5]",
+      "assertion": {
+        "id": "5.6"
+      },
+      "label": "Combustibles à base de lignite"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[6]",
+      "assertion": {
+        "id": "5.7"
+      },
+      "label": "Combustibles à base de pétrole brut"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[7]",
+      "assertion": {
+        "id": "5.8"
+      },
+      "label": "Combustibles à base de gaz naturel"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[8]",
+      "assertion": {
+        "id": "5.9"
+      },
+      "label": "Combustibles nucléaires"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[9]",
+      "assertion": {
+        "id": "5.10"
+      },
+      "label": "Autres combustibles non renouvelables"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[1]/category[10]",
+      "assertion": {
+        "id": "5.11"
+      },
+      "label": "Combustibles renouvelables"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "Production de matériaux"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[0]",
+      "assertion": {
+        "id": "6.1"
+      },
+      "label": "Matières premières"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[1]",
+      "assertion": {
+        "id": "6.2"
+      },
+      "label": "Métaux et semi-métaux"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[2]",
+      "assertion": {
+        "id": "6.3"
+      },
+      "label": "Produits chimiques organiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[3]",
+      "assertion": {
+        "id": "6.4"
+      },
+      "label": "Produits chimiques inorganiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[4]",
+      "assertion": {
+        "id": "6.5"
+      },
+      "label": "Verre et céramiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[5]",
+      "assertion": {
+        "id": "6.6"
+      },
+      "label": "Autres matériaux minéraux"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[6]",
+      "assertion": {
+        "id": "6.7"
+      },
+      "label": "Plastiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[7]",
+      "assertion": {
+        "id": "6.8"
+      },
+      "label": "Papier et carton"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[8]",
+      "assertion": {
+        "id": "6.9"
+      },
+      "label": "Eau"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[9]",
+      "assertion": {
+        "id": "6.10"
+      },
+      "label": "Moyens de production agricole"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[10]",
+      "assertion": {
+        "id": "6.11"
+      },
+      "label": "Aliments et matières premières renouvelables"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[11]",
+      "assertion": {
+        "id": "6.12"
+      },
+      "label": "Bois"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[2]/category[12]",
+      "assertion": {
+        "id": "6.13"
+      },
+      "label": "Autres matériaux"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]",
+      "assertion": {
+        "id": "7"
+      },
+      "label": "Systèmes"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[0]",
+      "assertion": {
+        "id": "7.1"
+      },
+      "label": "Emballages"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[1]",
+      "assertion": {
+        "id": "7.2"
+      },
+      "label": "Équipements électriques et électroniques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[2]",
+      "assertion": {
+        "id": "7.3"
+      },
+      "label": "Véhicules"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[3]",
+      "assertion": {
+        "id": "7.4"
+      },
+      "label": "Autres machines"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[4]",
+      "assertion": {
+        "id": "7.5"
+      },
+      "label": "Construction"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[5]",
+      "assertion": {
+        "id": "7.6"
+      },
+      "label": "Appareils électroménagers"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[6]",
+      "assertion": {
+        "id": "7.7"
+      },
+      "label": "Textiles, meubles et autres aménagements intérieurs"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[7]",
+      "assertion": {
+        "id": "7.8"
+      },
+      "label": "Pièces non spécifiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[8]",
+      "assertion": {
+        "id": "7.9"
+      },
+      "label": "Peintures et préparations chimiques"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[3]/category[9]",
+      "assertion": {
+        "id": "7.10"
+      },
+      "label": "Autres systèmes"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]",
+      "assertion": {
+        "id": "8"
+      },
+      "label": "Traitement en fin de vie"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[0]",
+      "assertion": {
+        "id": "8.1"
+      },
+      "label": "Réutilisation ou utilisation ultérieure"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[1]",
+      "assertion": {
+        "id": "8.2"
+      },
+      "label": "Recyclage des matériaux"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[2]",
+      "assertion": {
+        "id": "8.3"
+      },
+      "label": "Recyclage des matières premières"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[3]",
+      "assertion": {
+        "id": "8.4"
+      },
+      "label": "Valorisation énergétique"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[4]",
+      "assertion": {
+        "id": "8.5"
+      },
+      "label": "Mise en décharge"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[5]",
+      "assertion": {
+        "id": "8.6"
+      },
+      "label": "Collecte des déchets"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[6]",
+      "assertion": {
+        "id": "8.7"
+      },
+      "label": "Traitement des eaux usées"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[7]",
+      "assertion": {
+        "id": "8.8"
+      },
+      "label": "Traitement des gaz bruts"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[4]/category[8]",
+      "assertion": {
+        "id": "8.9"
+      },
+      "label": "Autres services de fin de vie"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]",
+      "assertion": {
+        "id": "9"
+      },
+      "label": "Services de transport"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[0]",
+      "assertion": {
+        "id": "9.1"
+      },
+      "label": "Transport routier"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[1]",
+      "assertion": {
+        "id": "9.2"
+      },
+      "label": "Transport ferroviaire"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[2]",
+      "assertion": {
+        "id": "9.3"
+      },
+      "label": "Transport par voie d'eau"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[3]",
+      "assertion": {
+        "id": "9.4"
+      },
+      "label": "Transport aérien"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[5]/category[4]",
+      "assertion": {
+        "id": "9.5"
+      },
+      "label": "Autres transports"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]",
+      "assertion": {
+        "id": "10"
+      },
+      "label": "Autres services"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[0]",
+      "assertion": {
+        "id": "10.1"
+      },
+      "label": "Nettoyage"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[1]",
+      "assertion": {
+        "id": "10.2"
+      },
+      "label": "Stockage"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[2]",
+      "assertion": {
+        "id": "10.3"
+      },
+      "label": "Santé, services sociaux, beauté et bien-être"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[3]",
+      "assertion": {
+        "id": "10.4"
+      },
+      "label": "Réparation et entretien"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[4]",
+      "assertion": {
+        "id": "10.5"
+      },
+      "label": "Vente et commerce de gros"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[5]",
+      "assertion": {
+        "id": "10.6"
+      },
+      "label": "Services de communication et d'information"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[6]",
+      "assertion": {
+        "id": "10.7"
+      },
+      "label": "Services financiers, juridiques et d'assurance"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[7]",
+      "assertion": {
+        "id": "10.8"
+      },
+      "label": "Administration et gouvernement"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[8]",
+      "assertion": {
+        "id": "10.9"
+      },
+      "label": "Défense"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[9]",
+      "assertion": {
+        "id": "10.10"
+      },
+      "label": "Hébergement et gastronomie"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[10]",
+      "assertion": {
+        "id": "10.11"
+      },
+      "label": "Éducation"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[11]",
+      "assertion": {
+        "id": "10.12"
+      },
+      "label": "Recherche et développement"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[12]",
+      "assertion": {
+        "id": "10.13"
+      },
+      "label": "Divertissement"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[13]",
+      "assertion": {
+        "id": "10.14"
+      },
+      "label": "Location"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[14]",
+      "assertion": {
+        "id": "10.15"
+      },
+      "label": "Ingénierie et conseil"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[6]/category[15]",
+      "assertion": {
+        "id": "10.16"
+      },
+      "label": "Autres services"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]",
+      "assertion": {
+        "id": "11"
+      },
+      "label": "Utilisation et consommation"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[0]",
+      "assertion": {
+        "id": "11.1"
+      },
+      "label": "Consommation de biens"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[1]",
+      "assertion": {
+        "id": "11.2"
+      },
+      "label": "Utilisation de produits consommateurs d'énergie"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[7]/category[2]",
+      "assertion": {
+        "id": "11.3"
+      },
+      "label": "Autres utilisations et consommations"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]",
+      "assertion": {
+        "id": "12"
+      },
+      "label": "Déchets"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[0]",
+      "assertion": {
+        "id": "12.1"
+      },
+      "label": "Déchets miniers"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[1]",
+      "assertion": {
+        "id": "12.2"
+      },
+      "label": "Déchets de construction"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[2]",
+      "assertion": {
+        "id": "12.3"
+      },
+      "label": "Résidus de production"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[3]",
+      "assertion": {
+        "id": "12.4"
+      },
+      "label": "Déchets post-consommation"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[4]",
+      "assertion": {
+        "id": "12.5"
+      },
+      "label": "Déchets radioactifs"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[5]",
+      "assertion": {
+        "id": "12.6"
+      },
+      "label": "Gaz brut"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[6]",
+      "assertion": {
+        "id": "12.7"
+      },
+      "label": "Eaux usées"
+    },
+    {
+      "key": "categories[2:Flow#0]/category[8]/category[7]",
+      "assertion": {
+        "id": "12.8"
+      },
+      "label": "Autres déchets"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Propriétés techniques des flux"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Composition chimique des flux"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Propriétés économiques des flux"
+    },
+    {
+      "key": "categories[3:FlowProperty#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Autres propriétés des flux"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Groupes d'unités techniques"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Groupes d'unités de composition chimique"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Groupes d'unités économiques"
+    },
+    {
+      "key": "categories[4:UnitGroup#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Autres groupes d'unités"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[0]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Groupe d'organisations, projet"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Organisations"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[0]",
+      "assertion": {
+        "id": "2.1"
+      },
+      "label": "Entreprises privées"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[1]",
+      "assertion": {
+        "id": "2.2"
+      },
+      "label": "Organisations gouvernementales"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[2]",
+      "assertion": {
+        "id": "2.3"
+      },
+      "label": "Organisations non gouvernementales"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[1]/category[3]",
+      "assertion": {
+        "id": "2.4"
+      },
+      "label": "Autres organisations"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[2]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Groupes de travail au sein d'une organisation"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[3]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Personnes"
+    },
+    {
+      "key": "categories[5:Contact#0]/category[4]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "Autre"
+    },
+    {
+      "key": "categories[6:Source#0]/category[0]",
+      "assertion": {
+        "id": "0"
+      },
+      "label": "Images"
+    },
+    {
+      "key": "categories[6:Source#0]/category[1]",
+      "assertion": {
+        "id": "1"
+      },
+      "label": "Formats de jeux de données"
+    },
+    {
+      "key": "categories[6:Source#0]/category[2]",
+      "assertion": {
+        "id": "2"
+      },
+      "label": "Bases de données"
+    },
+    {
+      "key": "categories[6:Source#0]/category[3]",
+      "assertion": {
+        "id": "3"
+      },
+      "label": "Systèmes de conformité"
+    },
+    {
+      "key": "categories[6:Source#0]/category[4]",
+      "assertion": {
+        "id": "4"
+      },
+      "label": "Classifications statistiques"
+    },
+    {
+      "key": "categories[6:Source#0]/category[5]",
+      "assertion": {
+        "id": "5"
+      },
+      "label": "Publications et communications"
+    },
+    {
+      "key": "categories[6:Source#0]/category[6]",
+      "assertion": {
+        "id": "6"
+      },
+      "label": "Autres types de sources"
+    }
+  ]
+}

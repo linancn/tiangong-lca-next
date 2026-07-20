@@ -23,10 +23,11 @@ import {
   convertToUTCISOString,
   formatDateTime,
   genClassIdList,
-  genClassificationZH,
   genClassJsonZH,
   genClassStr,
+  genLocalizedClassification,
   getDataSource,
+  getExactLangText,
   getImportedId,
   getLang,
   getLangJson,
@@ -684,11 +685,11 @@ describe('General Utility Functions', () => {
       expect(getLang('zh-CN')).toBe('zh');
     });
 
-    it('should use the declared English dataset fallback for non-Chinese app locales', () => {
+    it('should resolve each declared app locale to its own content language', () => {
       expect(getLang('en-US')).toBe('en');
-      expect(getLang('fr-FR')).toBe('en');
-      expect(getLang('fr_FR.UTF-8')).toBe('en');
-      expect(getLang('de-DE')).toBe('en');
+      expect(getLang('fr-FR')).toBe('fr');
+      expect(getLang('fr_FR.UTF-8')).toBe('fr');
+      expect(getLang('de-DE')).toBe('de');
       expect(getLang('es-ES')).toBe('en');
     });
   });
@@ -711,12 +712,41 @@ describe('General Utility Functions', () => {
       expect(getLangText(langTexts, 'fr')).toBe('Hello');
     });
 
-    it('should use first item if no English fallback', () => {
+    it('should prefer German and French content before the declared English fallback', () => {
+      const langTexts = [
+        { '@xml:lang': 'en', '#text': 'Hello' },
+        { '@xml:lang': 'de', '#text': 'Hallo' },
+        { '@xml:lang': 'fr', '#text': 'Bonjour' },
+      ];
+      expect(getLangText(langTexts, 'de')).toBe('Hallo');
+      expect(getLangText(langTexts, 'fr')).toBe('Bonjour');
+    });
+
+    it('should not use an undeclared language when the requested fallback chain is unavailable', () => {
       const langTexts = [
         { '@xml:lang': 'zh', '#text': '你好' },
         { '@xml:lang': 'fr', '#text': 'Bonjour' },
       ];
-      expect(getLangText(langTexts, 'de')).toBe('你好');
+      expect(getLangText(langTexts, 'de')).toBe('-');
+    });
+
+    it('should skip empty requested-language values before using the declared fallback', () => {
+      const langTexts = [
+        { '@xml:lang': 'de', '#text': '  ' },
+        { '@xml:lang': 'de', '#text': 'Hallo' },
+        { '@xml:lang': 'en', '#text': 'Hello' },
+      ];
+
+      expect(getLangText(langTexts, 'de')).toBe('Hallo');
+      expect(
+        getLangText(
+          [
+            { '@xml:lang': 'de', '#text': '-' },
+            { '@xml:lang': 'en', '#text': 'Hello' },
+          ],
+          'de',
+        ),
+      ).toBe('Hello');
     });
 
     it('should handle single object instead of array', () => {
@@ -756,6 +786,41 @@ describe('General Utility Functions', () => {
       expect(consoleSpy).toHaveBeenCalled();
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('getExactLangText', () => {
+    const langTexts = [
+      { '@xml:lang': 'en', '#text': 'Hello' },
+      { '@xml:lang': 'de', '#text': '' },
+      { '@xml:lang': 'de', '#text': 'Hallo' },
+    ];
+
+    it('returns only the requested content language and skips empty duplicate entries', () => {
+      expect(getExactLangText(langTexts, 'de-DE')).toBe('Hallo');
+      expect(getExactLangText(langTexts, 'fr-FR')).toBe('-');
+    });
+
+    it('does not apply the reading fallback chain to a tagged single object', () => {
+      expect(getExactLangText({ '@xml:lang': 'en', '#text': 'Hello' }, 'fr')).toBe('-');
+      expect(getExactLangText({ '#text': 'Legacy text' }, 'fr')).toBe('Legacy text');
+    });
+
+    it('keeps an unregistered language exact instead of normalizing it to English', () => {
+      expect(
+        getExactLangText(
+          [
+            { '@xml:lang': 'en', '#text': 'Hello' },
+            { '@xml:lang': 'ja', '#text': 'こんにちは' },
+          ],
+          'ja-JP',
+        ),
+      ).toBe('こんにちは');
+    });
+
+    it('handles non-string locale input, untagged array entries, and primitive text payloads', () => {
+      expect(getExactLangText([{ '#text': 'Legacy text' }], undefined as any)).toBe('Legacy text');
+      expect(getExactLangText(null, 'en')).toBe('-');
     });
   });
 
@@ -1269,7 +1334,7 @@ describe('General Utility Functions', () => {
       expect(message).toBe('Save failed, the following fields are missing English: (root).');
     });
 
-    it('should fall back to built-in English templates when validator locale messages are missing', () => {
+    it('should recover from the reviewed English snapshot when live validator messages are missing', () => {
       const mutableEnMessages = enValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableEnMessages['validator.langValidation.missingEnglish'],
@@ -1319,7 +1384,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should fall back to the Chinese root label when the locale root message is missing', () => {
+    it('should recover the Chinese root label from the reviewed native snapshot', () => {
       const mutableZhMessages = zhValidatorMessages as Record<string, string | undefined>;
       const originalRoot = mutableZhMessages['validator.langValidation.root'];
 
@@ -1338,7 +1403,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should keep German fallback copy when validator locale messages are missing', () => {
+    it('should recover German copy from the reviewed native snapshot when live messages are missing', () => {
       const mutableDeMessages = deValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableDeMessages['validator.langValidation.missingEnglish'],
@@ -1369,7 +1434,7 @@ describe('General Utility Functions', () => {
       }
     });
 
-    it('should keep French fallback copy when validator locale messages are missing', () => {
+    it('should keep the reviewed French catalog copy when validator messages are missing', () => {
       const mutableFrMessages = frValidatorMessages as Record<string, string | undefined>;
       const originalMessages = {
         missingEnglish: mutableFrMessages['validator.langValidation.missingEnglish'],
@@ -1388,9 +1453,7 @@ describe('General Utility Functions', () => {
             5,
             'fr-FR',
           ),
-        ).toBe(
-          'Échec de l’enregistrement : les champs suivants ne comportent pas de version anglaise : (racine).',
-        );
+        ).toBe(originalMessages.missingEnglish?.replace('{fields}', originalMessages.root ?? ''));
       } finally {
         mutableFrMessages['validator.langValidation.missingEnglish'] =
           originalMessages.missingEnglish;
@@ -1941,6 +2004,45 @@ describe('General Utility Functions', () => {
       ]);
     });
 
+    it('should use stable class and category IDs before duplicate source text', () => {
+      const classifications = [
+        { '@level': '0', '@classId': 'root-b', '#text': 'Duplicate' },
+        { '@level': '1', '@catId': 'child-b', '#text': 'Duplicate child' },
+      ];
+      const categoryData = [
+        {
+          id: 'root-a',
+          value: 'Duplicate',
+          label: '错误根分类',
+          children: [],
+        },
+        {
+          id: 'root-b',
+          value: 'Duplicate',
+          label: '正确根分类',
+          children: [
+            {
+              id: 'child-a',
+              value: 'Duplicate child',
+              label: '错误子分类',
+              children: [],
+            },
+            {
+              id: 'child-b',
+              value: 'Duplicate child',
+              label: '正确子分类',
+              children: [],
+            },
+          ],
+        },
+      ];
+
+      expect(genClassJsonZH(classifications, 0, categoryData)).toEqual([
+        { '@level': '0', '@classId': 'root-b', '#text': '正确根分类' },
+        { '@level': '1', '@catId': 'child-b', '#text': '正确子分类' },
+      ]);
+    });
+
     it('should return empty array for empty classifications', () => {
       const classifications: any[] = [];
       const categoryData: any[] = [];
@@ -1951,8 +2053,8 @@ describe('General Utility Functions', () => {
     });
   });
 
-  describe('genClassificationZH', () => {
-    it('should delegate to genClassJsonZH when classifications exist', () => {
+  describe('genLocalizedClassification', () => {
+    it('should localize classifications when entries exist', () => {
       const classifications = [
         { '@level': '0', '#text': 'Category A' },
         { '@level': '1', '#text': 'Subcategory B' },
@@ -1971,7 +2073,7 @@ describe('General Utility Functions', () => {
         },
       ];
 
-      const result = genClassificationZH(classifications, categoryData);
+      const result = genLocalizedClassification(classifications, categoryData);
 
       expect(result).toEqual([
         { '@level': '0', '#text': '分类 A' },
@@ -1981,7 +2083,19 @@ describe('General Utility Functions', () => {
 
     it('should return empty array when classifications array is empty', () => {
       const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
-      expect(genClassificationZH([], categoryData as any)).toEqual([]);
+      expect(genLocalizedClassification([], categoryData as any)).toEqual([]);
+    });
+
+    it('keeps the deprecated Chinese wrapper behavior aligned with the localized helper', () => {
+      const classifications = [{ '@level': '0', '#text': 'Category A' }];
+      const categoryData = [{ value: 'Category A', label: '分类 A', children: [] }];
+      const legacyGenClassification = (
+        jest.requireActual('@/services/general/util') as Record<string, (...args: any[]) => unknown>
+      )['genClassificationZH'];
+
+      expect(legacyGenClassification(classifications, categoryData)).toEqual([
+        { '@level': '0', '#text': '分类 A' },
+      ]);
     });
   });
 

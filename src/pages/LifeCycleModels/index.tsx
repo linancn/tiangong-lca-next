@@ -22,7 +22,20 @@ import {
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import { attachStateCodesToRows } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  getServiceQueryLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import {
   contributeLifeCycleModel,
@@ -78,12 +91,17 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
-  const routeMode = searchParams.get('mode');
+  const required =
+    resolveRouteViewState('dataset-required', searchParams.get('required')) === 'required';
+  const routeMode = resolveRouteViewState('dataset-drawer-mode', searchParams.get('mode'));
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType>();
   const keyWordRef = useRef('');
@@ -397,7 +415,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<LifeCycleModelTable, ListPagination>
+      <ProTable<LifeCycleModelTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -407,6 +425,7 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         pagination={{
@@ -443,92 +462,106 @@ const TableList: FC = () => {
           return [];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          const currentKeyWord = keyWordRef.current || keyWord;
-          const currentStateCode = stateCodeRef.current;
-          if (referenceLookup) {
-            const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-            if (!referenceLookupUuid) {
-              return attachReviewState(getReferenceLookupEmptyResult(params.current));
-            }
-            const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              const currentKeyWord = keyWordRef.current || keyWord;
+              const currentStateCode = stateCodeRef.current;
+              if (referenceLookup) {
+                const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                if (!referenceLookupUuid) {
+                  return attachReviewState(getReferenceLookupEmptyResult(requestParams.current));
+                }
+                const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-            const result = await getLifeCycleModelTableUuidMentionSearch(
-              params,
-              lang,
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            );
-            const noticeKey = [
-              dataSource,
-              referenceLookupUuid,
-              currentStateCode,
-              referenceLookupTeamId,
-            ].join(':');
-            if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-              referenceLookupLimitNoticeRef.current = noticeKey;
-              showReferenceLookupLimitMessage(intl);
-            }
-            return attachReviewState(result);
-          }
-          if (currentKeyWord.length > 0) {
-            let orderBy:
-              | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
-              | undefined;
-            if (sort && Object.keys(sort).length > 0) {
-              const field = Object.keys(sort)[0];
-              const order = sort[field];
-              if (field === 'name') {
-                orderBy = {
-                  key: 'baseName',
-                  lang: lang,
-                  order: order === 'ascend' ? 'asc' : 'desc',
-                };
-              } else if (field === 'classification') {
-                orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
-              }
-            }
-            if (openAI) {
-              return attachReviewState(
-                await lifeCycleModel_hybrid_search(
-                  params,
+                const result = await getLifeCycleModelTableUuidMentionSearch(
+                  requestParams,
                   lang,
                   dataSource,
-                  currentKeyWord,
-                  {},
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                );
+                const noticeKey = [
+                  dataSource,
+                  referenceLookupUuid,
+                  currentStateCode,
+                  referenceLookupTeamId,
+                  requestedLocale,
+                ].join(':');
+                if (
+                  isCurrentRequest() &&
+                  result.capped &&
+                  referenceLookupLimitNoticeRef.current !== noticeKey
+                ) {
+                  referenceLookupLimitNoticeRef.current = noticeKey;
+                  showReferenceLookupLimitMessage(intl);
+                }
+                return attachReviewState(result);
+              }
+              if (currentKeyWord.length > 0) {
+                let orderBy:
+                  | {
+                      key: 'common:class' | 'baseName';
+                      lang?: SupportedServiceQueryLanguage;
+                      order: 'asc' | 'desc';
+                    }
+                  | undefined;
+                if (sort && Object.keys(sort).length > 0) {
+                  const field = Object.keys(sort)[0];
+                  const order = sort[field];
+                  if (field === 'name') {
+                    orderBy = {
+                      key: 'baseName',
+                      lang: getServiceQueryLanguage(lang),
+                      order: order === 'ascend' ? 'asc' : 'desc',
+                    };
+                  } else if (field === 'classification') {
+                    orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+                  }
+                }
+                if (openAI) {
+                  return attachReviewState(
+                    await lifeCycleModel_hybrid_search(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      {},
+                      currentStateCode,
+                    ),
+                  );
+                }
+                return attachReviewState(
+                  await getLifeCycleModelTablePgroongaSearch(
+                    requestParams,
+                    lang,
+                    dataSource,
+                    currentKeyWord,
+                    {},
+                    currentStateCode,
+                    orderBy,
+                    tid ?? '',
+                  ),
+                );
+              }
+              return attachReviewState(
+                await getLifeCycleModelTableAll(
+                  requestParams,
+                  sort,
+                  lang,
+                  dataSource,
+                  tid ?? '',
                   currentStateCode,
                 ),
               );
-            }
-            return attachReviewState(
-              await getLifeCycleModelTablePgroongaSearch(
-                params,
-                lang,
-                dataSource,
-                currentKeyWord,
-                {},
-                currentStateCode,
-                orderBy,
-                tid ?? '',
-              ),
-            );
-          }
-          return attachReviewState(
-            await getLifeCycleModelTableAll(
-              params,
-              sort,
-              lang,
-              dataSource,
-              tid ?? '',
-              currentStateCode,
-            ),
+            },
           );
         }}
         columns={processColumns}

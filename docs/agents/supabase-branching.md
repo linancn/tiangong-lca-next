@@ -19,9 +19,11 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed Issue #625 team-loading behavior: preserving a service failure as a localized frontend error/retry state does not change Supabase environment, schema, or Edge ownership.'
+  - playwright.config.ts
+  - tests/e2e/i18n/**
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Reviewed for Issue #635: the guarded candidate-local semantic E2E uses the existing main backend and a user-scoped exact-ID cleanup path without changing schema or Edge ownership.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -66,6 +68,8 @@ Rules:
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
+- the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: it serves the local candidate with `npm run start:main`, verifies the selected Supabase origin matches the tracked main environment, authenticates as the runtime test user, never uses a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in its ignored ledger
+- ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
 
 ## Common Scenarios
 
@@ -76,6 +80,7 @@ Rules:
 | translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
+| semantic localization release evidence | run the local candidate with the tracked `main` backend only inside the guarded Playwright workflow; use user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |
 
 ## Database-Side Webhook Secrets
 

@@ -1,15 +1,28 @@
 import * as umiRuntime from 'umi';
 import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  DEFAULT_SERVICE_APP_LOCALE,
   getLocaleDefinition,
   normalizeSupportedAppLocale,
   type SupportedAppLocale,
 } from './localeRegistry';
 
-export { SUPPORTED_APP_LOCALES, type SupportedAppLocale } from './localeRegistry';
-
-export const DEFAULT_BROWSER_APP_LOCALE: SupportedAppLocale = 'zh-CN';
-export const DEFAULT_SERVICE_APP_LOCALE: SupportedAppLocale = 'en-US';
+export {
+  DEFAULT_BROWSER_APP_LOCALE,
+  DEFAULT_SERVICE_APP_LOCALE,
+  SUPPORTED_APP_LOCALES,
+  type SupportedAppLocale,
+} from './localeRegistry';
 export const UMI_LOCALE_STORAGE_KEY = 'umi_locale';
+export const RUNTIME_INTL_CHANGE_EVENT = 'tiangong:runtime-intl-change';
+
+export type RuntimeIntlShapeLike = {
+  locale?: string;
+  formatMessage: (
+    descriptor: { defaultMessage?: string; id: string },
+    values?: Record<string, string | number | undefined>,
+  ) => string;
+};
 
 const RUNTIME_LOCALE_ENV_KEYS = ['LC_ALL', 'LC_MESSAGES', 'LANGUAGE', 'LANG'] as const;
 type RuntimeLocaleEnv = Record<string, string | undefined>;
@@ -54,6 +67,38 @@ function getDefaultBrowserNavigator(): RuntimeLocaleNavigator | undefined {
  */
 export function normalizeRuntimeLocale(value?: string | null): SupportedAppLocale | undefined {
   return normalizeSupportedAppLocale(value);
+}
+
+/**
+ * React roots mounted outside Umi's provider tree cannot consume useIntl.
+ * Publish the current registry-backed intl instance so those roots can remain
+ * reactive without copying catalogs or hard-coding locale branches.
+ */
+export function publishRuntimeIntlChange(intl: RuntimeIntlShapeLike): void {
+  if (typeof window !== 'object' || !normalizeRuntimeLocale(intl.locale)) {
+    return;
+  }
+  window.dispatchEvent(
+    new CustomEvent<{ intl: RuntimeIntlShapeLike }>(RUNTIME_INTL_CHANGE_EVENT, {
+      detail: { intl },
+    }),
+  );
+}
+
+export function subscribeRuntimeIntlChange(
+  listener: (intl: RuntimeIntlShapeLike) => void,
+): () => void {
+  if (typeof window !== 'object') {
+    return () => undefined;
+  }
+  const handleChange = (event: Event) => {
+    const intl = (event as CustomEvent<{ intl?: RuntimeIntlShapeLike }>).detail?.intl;
+    if (intl && typeof intl.formatMessage === 'function' && normalizeRuntimeLocale(intl.locale)) {
+      listener(intl);
+    }
+  };
+  window.addEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
+  return () => window.removeEventListener(RUNTIME_INTL_CHANGE_EVENT, handleChange);
 }
 
 function safeReadStoredLocale(storage?: RuntimeLocaleStorage | null): string | null | undefined {

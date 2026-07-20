@@ -1,0 +1,1819 @@
+{
+  "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
+  "status": "verified",
+  "generatedAt": "2026-07-19T16:53:13.372Z",
+  "runId": "local-81b2218a-4d3f-4bc8-a9d0-85fe60018b88",
+  "candidate": {
+    "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
+    "observedHeadCommit": "91973faef33baa3534490e47688f7a538dd41861",
+    "packageManifestDigest": "f80ad3c2d30abe3f9c03bbc4cb17915b110d539a7f3ecd637696723706117009",
+    "sourceTreeDigest": "6d57f0320172a30374bd304a22ab627da1a19a48955bc130f33f4d31f016433d",
+    "unitTestTreeDigest": "91f3e7ffe38c075794d8e851813eaeadc672a993766514d307894c8a5fb46ec1"
+  },
+  "target": {
+    "frontend": "candidate-local",
+    "backend": "production",
+    "proof": {
+      "backendObservedOriginSha256": "bf39ee1b65b9f4b508e97aeb69b704b9fc172f20b7d74e7f24ccfbc515161495",
+      "backendObservedPublishableKeySha256": "f48ee2a57a2e550f6a43fee565727d28865ec821b3cf8e5e08854bd7cc33ba9e",
+      "backendTrackedOriginSha256": "bf39ee1b65b9f4b508e97aeb69b704b9fc172f20b7d74e7f24ccfbc515161495",
+      "backendTrackedPublishableKeySha256": "f48ee2a57a2e550f6a43fee565727d28865ec821b3cf8e5e08854bd7cc33ba9e",
+      "candidateEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174",
+      "frontendOriginSha256": "63767aa5615dabadd32b93fdf0db0c7190c850062ba568114ea4f28b6cdc9e71",
+      "freshPlaywrightServer": true,
+      "observer": "chromium-auth-request",
+      "trackedMainEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174"
+    }
+  },
+  "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+  "browsers": ["chromium", "firefox", "webkit"],
+  "routeCoverage": {
+    "path": "docs/plans/i18n/route-view-coverage.json",
+    "contractDigest": "b9def444859e8fabbc7abed5c6b274e1c24896dd5de0f0ea38b28aacc0570e5e"
+  },
+  "digests": {
+    "packageLock": {
+      "path": "package-lock.json",
+      "sha256": "d909770f35048f325093cad75d93da86e3a9ff2521973e4373fac6007b1c051c"
+    },
+    "runtimeAssets": [
+      {
+        "path": "public/classifications/CPCClassification.27c6fd06261f6e06_zh.min.json.gz",
+        "sha256": "fe672f7a88d1636a5f2eadce531effd0c7dbd91f265c9dff39f12cba7c895bc9"
+      },
+      {
+        "path": "public/classifications/CPCClassification.623e9b86917a5f7d_de.min.json.gz",
+        "sha256": "95b4a7eaee598b90f3eefa2c3235a58e1fbaca413417321fcdb70ab35221438e"
+      },
+      {
+        "path": "public/classifications/CPCClassification.9d45ad0a5395f2dd_fr.min.json.gz",
+        "sha256": "0bebcf43d2340416b634372ad35d1dd92fff1870738aea1e779f931923fb5091"
+      },
+      {
+        "path": "public/classifications/CPCClassification.ed784ea38b85fc5b.min.json.gz",
+        "sha256": "9c88b6c9c00902d4295e97532c2450a90e56ae8adb5df13cb5199f0a5b8beb36"
+      },
+      {
+        "path": "public/classifications/ILCDClassification.5c74d092637aa320.min.json.gz",
+        "sha256": "329ff554769d26d2e39168d221a5854c4f8f30833ef3316b1ff73c8884c9c52a"
+      },
+      {
+        "path": "public/classifications/ILCDClassification.66a7df47fc937089_fr.min.json.gz",
+        "sha256": "cb411444ead23418a50d20c18accf3724f9e4e141cbf917c680dc278b74160f0"
+      },
+      {
+        "path": "public/classifications/ILCDClassification.a0ebc4f03bdd49cc_de.min.json.gz",
+        "sha256": "0cc8c5526b8b89ed4638fccfd289ca3725fefec997e74472efc621ca4d60ab06"
+      },
+      {
+        "path": "public/classifications/ILCDClassification.e30a3e90520a915f_zh.min.json.gz",
+        "sha256": "df8f76376eec7162760329f521e2d5e3a35a22879610b76ac9e3a58b404acffd"
+      },
+      {
+        "path": "public/classifications/ILCDFlowCategorization.519b7ec408131c56.min.json.gz",
+        "sha256": "18609273d614dad632aa4b23a582d14193aa1726d4a7d6f53acf2b09fdfafa87"
+      },
+      {
+        "path": "public/classifications/ILCDFlowCategorization.ae503754e77e5b19_de.min.json.gz",
+        "sha256": "833498ff140db4a3536356b12f7f4de7a4df9389038895f5b3a838604dfb51f0"
+      },
+      {
+        "path": "public/classifications/ILCDFlowCategorization.cf2bf4be7fc6ab91_fr.min.json.gz",
+        "sha256": "3a1b6a81504692c69c4af6b0564c358c020f6c28e0e37ee3ca71320465c584be"
+      },
+      {
+        "path": "public/classifications/ILCDFlowCategorization.dbc4de4506d39a2e_zh.min.json.gz",
+        "sha256": "db1f8c6f634e9b37990f1c452034e9b25c5392162b0f883c6a2fedcaab04e539"
+      },
+      {
+        "path": "public/classifications/ISICClassification.5d9f08d11bb7028a_fr.min.json.gz",
+        "sha256": "483e91296284e075010ab8407562e0235686518492a31d5cb341eb6f8bd4d278"
+      },
+      {
+        "path": "public/classifications/ISICClassification.6455c8b1a0747aed_zh.min.json.gz",
+        "sha256": "86be671105200aa7a6afcbf2e3f9560142b52b74c82b6dbe3e2c45ddb49a4807"
+      },
+      {
+        "path": "public/classifications/ISICClassification.852053b3e1692408.min.json.gz",
+        "sha256": "19f60846d7658d21cf0993ebe94993588dfc686953840f15a658a39a74084aa1"
+      },
+      {
+        "path": "public/classifications/ISICClassification.c87a6025d12803b1_de.min.json.gz",
+        "sha256": "9518fd0397e095a47a2c3f2fc04434de6ac98d0e4b4e10bb4b65007c5daaf12e"
+      },
+      {
+        "path": "public/locations/ILCDLocations.3fdd552e27dca310_fr.min.json.gz",
+        "sha256": "ed69e79b8aaa1600609dfa308dff59c856f263e023a1709dc6ab6d0098cdd27a"
+      },
+      {
+        "path": "public/locations/ILCDLocations.7048b701b1dfacb4_de.min.json.gz",
+        "sha256": "77479039e4dbd7484b39c3ef31eaf9df404258bb34b576c66674e5cc718cb0c6"
+      },
+      {
+        "path": "public/locations/ILCDLocations.b65e8d45de515726.min.json.gz",
+        "sha256": "e47cb3299abb9e56ae1ef54d8f3906144975da99ef20a7ebb809a6423ac27e85"
+      },
+      {
+        "path": "public/locations/ILCDLocations.c406f6ae5aa30ef1_zh.min.json.gz",
+        "sha256": "e2d92a822bc3c97f8d45f6b55b6734aea8e2f86ba047c450be3dec1bc8913208"
+      },
+      {
+        "path": "src/services/referenceResources/generatedManifest.ts",
+        "sha256": "3600514e17b856b87d7f8e4bd2b296335198ba34e0334fb6a0e50e5eb82f8f34"
+      },
+      {
+        "path": "src/services/referenceResources/manifest.ts",
+        "sha256": "ef7cb96ab189b86abc21060ad002ebabf1372c73904918994a6fe36b541f85fc"
+      },
+      {
+        "path": "src/services/referenceResources/reference-resource-manifest.json",
+        "sha256": "ac32f36e5682bd9984cda5a609aeaa3d4d5be9be1ae834f79c871e06c948f548"
+      }
+    ],
+    "tests": [
+      {
+        "path": "docs/plans/i18n/semantic-e2e-evidence.schema.json",
+        "sha256": "dc9c76ea778e408be8f692ba0cd373bfaba0201de0d0572c40e4e7377d73e1d6"
+      },
+      {
+        "path": "playwright.config.ts",
+        "sha256": "90f3b6d1e0a2437979f5fedd43ecd1bdb2790de4a14318fead36661a691042c1"
+      },
+      {
+        "path": "scripts/i18n/locale-delivery.mjs",
+        "sha256": "7bcf9d0c0ec0147ff900c3b836bc3a6c6948adf64cff607a809e21e9fd4760e0"
+      },
+      {
+        "path": "tests/data-workflows/data-workflow-paths.ts",
+        "sha256": "9ade3abca31299c8968c71f66b80129103130e4b9597eb3c24a67793510a91b9"
+      },
+      {
+        "path": "tests/data-workflows/workflows/workflow-shared.ts",
+        "sha256": "9a3a04bd47fb6d2f50d5c530f57e002275afcd3bfae871659073a56de45094bc"
+      },
+      {
+        "path": "tests/e2e/i18n/access-fallback.spec.ts",
+        "sha256": "709bac7281a50150bcf5e15c19b6b6b934d84ca1f3eb4e401d5cebe090695bc3"
+      },
+      {
+        "path": "tests/e2e/i18n/auth.ts",
+        "sha256": "65b5528396835894644c9b80992edf1b62ccd00eca9a8ef7a236ec06f4b33349"
+      },
+      {
+        "path": "tests/e2e/i18n/candidate-readiness.ts",
+        "sha256": "3c3caa4860092ef012301c6a2a099b32f17c071c8e9f1606521a6545ebc1b5f5"
+      },
+      {
+        "path": "tests/e2e/i18n/carbon-footprint-guide.spec.ts",
+        "sha256": "eb87ab43ead7f945bde9ee390c1ce118848183f14b878abd9f0b9b0f33aa0296"
+      },
+      {
+        "path": "tests/e2e/i18n/content-authoring.spec.ts",
+        "sha256": "450d193bdadbb7bdcb12774a3baff7595333951a6fa1f3c2423cfb18cd6d78d8"
+      },
+      {
+        "path": "tests/e2e/i18n/contracts.ts",
+        "sha256": "d217b79cd222872eb328ac1c1d12fc4355ec5a0c83a3385e0bed39b998862674"
+      },
+      {
+        "path": "tests/e2e/i18n/evidence-reporter.ts",
+        "sha256": "aa6e2a29633056275a3ae4d384f39f5ee09616a8534311a5f11f09a860c0a598"
+      },
+      {
+        "path": "tests/e2e/i18n/fixtures.ts",
+        "sha256": "988286acae9adfb9b19a4c3fc2cfa511d25ef52500f99291c2948766246ab89e"
+      },
+      {
+        "path": "tests/e2e/i18n/global-setup.ts",
+        "sha256": "7b60fe66b1b2c228ea324e1b99c1ceeaa00ec2aef884533092a4d3be3cf2e8b9"
+      },
+      {
+        "path": "tests/e2e/i18n/global-teardown.ts",
+        "sha256": "c54a161cfb0c341b1a3b1b5d2bfa5e12d8429582fe466d332430c7036c718972"
+      },
+      {
+        "path": "tests/e2e/i18n/locale-capability-scenarios.ts",
+        "sha256": "cb6b7565022520b5267abafa47af1aa4fed390ea228400a86b04e373a3c06e3b"
+      },
+      {
+        "path": "tests/e2e/i18n/locale-catalog-adapter.ts",
+        "sha256": "dcae1c20525749afd1ced26697540c6ceaba660291754c00d5e6e51036615f34"
+      },
+      {
+        "path": "tests/e2e/i18n/login-route-readiness.ts",
+        "sha256": "f7bc0e138d2801d8f1a0178cc4d1a43298822d604da7c19d09ef2e119a0b3e32"
+      },
+      {
+        "path": "tests/e2e/i18n/process-lifecycle.spec.ts",
+        "sha256": "2dbdcaa8d8690b9995200457fffccc2569205d98cc3a91c7a7910fcdbeb1daf4"
+      },
+      {
+        "path": "tests/e2e/i18n/process-persisted-authoring.spec.ts",
+        "sha256": "a3ecf3ca7e0026742757a663d5dcbe3b97b69f80ba8f74ab435d4f00c9d1b91d"
+      },
+      {
+        "path": "tests/e2e/i18n/production-backend-target.ts",
+        "sha256": "e166530894ab5199a110b7ae2c7f64be0e50005ada1545a39f7a8d0bd08f5823"
+      },
+      {
+        "path": "tests/e2e/i18n/production-data-ledger.ts",
+        "sha256": "7aab896b3f947c85173f4617bc9829bce1d496a366017dd38748e2ad327eb694"
+      },
+      {
+        "path": "tests/e2e/i18n/production-data-safety.ts",
+        "sha256": "bd28d61d9d6a2f92bcc20c50699867688ee9c98d3f6172b8c3c7864017e7162e"
+      },
+      {
+        "path": "tests/e2e/i18n/production-request-guard.ts",
+        "sha256": "35c59de65c93bf3a17fba286ff6ba6a350d8619ba68eb69a7d6fc36a938f0fbe"
+      },
+      {
+        "path": "tests/e2e/i18n/query-responsive.spec.ts",
+        "sha256": "b5d8d0e504de3233c729df92741abb72c6f2d4e3aaca2c52ee14256cccc9f92c"
+      },
+      {
+        "path": "tests/e2e/i18n/reference-fixture.ts",
+        "sha256": "e1f69299bf174382014c14199750ba7df514d1a13e0624917b9492224a8219dd"
+      },
+      {
+        "path": "tests/e2e/i18n/reference-refresh.spec.ts",
+        "sha256": "7124f65ce6fd87ba19994542c20a4b03bb03bea226629f8680e39ad200c95c43"
+      },
+      {
+        "path": "tests/e2e/i18n/responsive-layout.spec.ts",
+        "sha256": "4b7fecbce085f074301608b12c94ff5726958972d2269a484c7bab14d923149d"
+      },
+      {
+        "path": "tests/e2e/i18n/responsive-surface-registry.ts",
+        "sha256": "08fe2703d6d302542c1fe1279becfff508bafc433ab11b2ecc694965ec228d77"
+      },
+      {
+        "path": "tests/e2e/i18n/responsive-surfaces.spec.ts",
+        "sha256": "7235ade87ec397941fe3e6c6d93d7f92dd02bbdf0ea7a41c2b92c9c9298f9369"
+      },
+      {
+        "path": "tests/e2e/i18n/route-inventory.spec.ts",
+        "sha256": "6fe86ce2715bd2397199be2f0b4b4bf2fbfe49408a56e7343d09da1aa99a59e6"
+      },
+      {
+        "path": "tests/e2e/i18n/semantic-critical.spec.ts",
+        "sha256": "0c77f45a2415fc3fcb72f3fcb90763f59c0eca1fc71d1183bf2e4b42574e7ca5"
+      },
+      {
+        "path": "tests/e2e/i18n/state-semantics.spec.ts",
+        "sha256": "bf52e5d0a0ecf1ea39087a36311d04bb9578d02c3ecc56b1a2d3df27b8d03b2e"
+      },
+      {
+        "path": "tests/e2e/i18n/typed-view-readonly-fixture.ts",
+        "sha256": "a85eaa06339570fb0d47f907ed936a4a29baf722da5c18b834311c735a294180"
+      },
+      {
+        "path": "tests/e2e/i18n/typed-view-variants.spec.ts",
+        "sha256": "ff229804f5b0b26d235a211464c78094cc662ca05bd91387739c869b45a67b44"
+      },
+      {
+        "path": "tests/unit/app.test.tsx",
+        "sha256": "365a94f4b1a8aed325dd590ef0eac03d5fb466d37e046f53984276097392b118"
+      },
+      {
+        "path": "tests/unit/components/AccessDenied.test.tsx",
+        "sha256": "7ce1714e7df2dc9f34b81c154ae713ddb4a0664062e3184fa9926da49dba40fa"
+      },
+      {
+        "path": "tests/unit/components/AllTeamsEdit.test.tsx",
+        "sha256": "e9750336a55103a5e738b2070305cc52d898de21fa1ad43f4f1693e6dd943f96"
+      },
+      {
+        "path": "tests/unit/components/AllTeamsView.test.tsx",
+        "sha256": "256b0a8fa376d9ee147da2ca646baf497ae5b088ee72cb27fdebddb1d0ea1d86"
+      },
+      {
+        "path": "tests/unit/components/LevelTextItemDescription.test.tsx",
+        "sha256": "4e70e48fec0be0f57c78325506be0d8586ce45017a5b74ca1ff4ee9d26270da2"
+      },
+      {
+        "path": "tests/unit/components/LevelTextItemForm.test.tsx",
+        "sha256": "7c7874d95cc6f47930c134b7b8ea0e4ce819d8d3cea2023b056cc7b287e04196"
+      },
+      {
+        "path": "tests/unit/components/LocationTextItemDescription.test.tsx",
+        "sha256": "37cfdab517ee77f2fb37522dca6ff94c6d365d81a740a7e94ddc1edb26ae8668"
+      },
+      {
+        "path": "tests/unit/components/LocationTextItemForm.test.tsx",
+        "sha256": "314ed615591486cdbae097b9e65de91dae0566f3b5b9185904b4b574a6f55931"
+      },
+      {
+        "path": "tests/unit/components/RightContent.test.tsx",
+        "sha256": "c8c199c70655a01059b0b81fac08bdef1dff7fbada1535e897edd92455f532f5"
+      },
+      {
+        "path": "tests/unit/components/TeamNotification.test.tsx",
+        "sha256": "e782b32faadb562e498310d0e57812f8efb34e3707078fc2e5f2f26b0be76b0c"
+      },
+      {
+        "path": "tests/unit/config/routes.test.ts",
+        "sha256": "5f179871f49ebc0a52aaa0a34e3017544edd1f9abf711774be510206c3413a8b"
+      },
+      {
+        "path": "tests/unit/e2e/carbonFootprintGuideContract.test.ts",
+        "sha256": "f2a2d543536aefa2d58cd2ff2b5c96b7979471707e44f8cbc7bebc61c0835603"
+      },
+      {
+        "path": "tests/unit/e2e/evidenceReporter.test.ts",
+        "sha256": "aa603958dc81f7092408721cb8fd6dbd5870ca006280ac6d36a8bdae1e8cd0ab"
+      },
+      {
+        "path": "tests/unit/e2e/productionDataLedger.test.ts",
+        "sha256": "20bf46725a67ad2e5a709165377e70064103ce837f51666676070972bfdd5b70"
+      },
+      {
+        "path": "tests/unit/e2e/productionRequestGuard.test.ts",
+        "sha256": "ad91f5be37717309c144b0b6ea5e09536c6d202ceb49a6e7ee75be71a9da7b5a"
+      },
+      {
+        "path": "tests/unit/e2e/referenceRefreshContract.test.ts",
+        "sha256": "a99ecbaa23056488375e1cdceb1a944ff4cea2e4db566e4aa9bbce0c17a954f3"
+      },
+      {
+        "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
+        "sha256": "f654ac82a08968d4e4d0b433f406d28a6f618b0cb7e8e6fa6d5eca49ac027336"
+      },
+      {
+        "path": "tests/unit/pages/404.test.tsx",
+        "sha256": "12fadac2812b1fbeffd88b9c1ecd0a77ea017001ab4822e77530e4a7dbf7edda"
+      },
+      {
+        "path": "tests/unit/pages/Account/ProfilePage.test.tsx",
+        "sha256": "03015b511420d52d86944277d7613b964718e93111600f49d871887fbf8b9a1a"
+      },
+      {
+        "path": "tests/unit/pages/Contacts/index.test.tsx",
+        "sha256": "3442fc271546c715658518255322e5d21fe49c47c05233c0facc56627b516f6f"
+      },
+      {
+        "path": "tests/unit/pages/DataProcessing/index.test.tsx",
+        "sha256": "427ad645056dd3afed30782ff53d2ed849638fbc676fd59dff8db018d26ab705"
+      },
+      {
+        "path": "tests/unit/pages/Flowproperties/index.test.tsx",
+        "sha256": "3459cf390e90d954877c54984e2b1e4878fb7e801044384beebdef353ec7ffb0"
+      },
+      {
+        "path": "tests/unit/pages/Flows/index.test.tsx",
+        "sha256": "8d63c7af9efbf4a3b78cfab12011c2b65cd66da509fff2a7a0cbc433569bc04d"
+      },
+      {
+        "path": "tests/unit/pages/LifeCycleModels/index.test.tsx",
+        "sha256": "02a9896d83b499af15b2189f0a122a8519631dae67b748279fda3d0f00aa0054"
+      },
+      {
+        "path": "tests/unit/pages/ManageSystem/index.test.tsx",
+        "sha256": "03152db0ed05bc7e1efd84c3020b12e6fc34407f07fc6a40004ac19772d6fee9"
+      },
+      {
+        "path": "tests/unit/pages/NationalCarbonDashboard/i18n.test.ts",
+        "sha256": "455d6f4f9bb4324c427124086edaf05adfb66977aa80d6801d2902cdba6ed3bf"
+      },
+      {
+        "path": "tests/unit/pages/NationalCarbonDashboard/index.test.tsx",
+        "sha256": "db7c4c9f668aa598257518b051370bd4708134b9727866dc981ca6d106e0d65b"
+      },
+      {
+        "path": "tests/unit/pages/NationalCarbonDashboard/processFlowGraphPanel.test.tsx",
+        "sha256": "0de49c2d29fcf52bb1dd8c04965c31ad161a7017215677e1dec733892955447d"
+      },
+      {
+        "path": "tests/unit/pages/Processes/Analysis/index.test.tsx",
+        "sha256": "48c15da36960db143e145a97409ebae9d49470f61780003a20054a1860914769"
+      },
+      {
+        "path": "tests/unit/pages/Processes/Components/Exchange/create.test.tsx",
+        "sha256": "38d6deb2aad16d497e41b5356b96cd2c0ccb66662f6933866c003e6b39019829"
+      },
+      {
+        "path": "tests/unit/pages/Processes/Components/Exchange/edit.test.tsx",
+        "sha256": "d46f4a8781e21d16e70c77c72942baeec3d3435bb6ba7eb7d4fdab2e49bf4a62"
+      },
+      {
+        "path": "tests/unit/pages/Processes/index.test.tsx",
+        "sha256": "cc6dc738a9a77def09d50cc25d393fa6789a21434eeffd3e775861e291d70bed"
+      },
+      {
+        "path": "tests/unit/pages/Review/Components/AssignmentReview.test.tsx",
+        "sha256": "8c54fa6c38588923d961d076b946790a85ef9a018d0a57b785f563b9229cdf64"
+      },
+      {
+        "path": "tests/unit/pages/Review/index.test.tsx",
+        "sha256": "b40f8e57d9a13c7b7754d3cc81016174a41e6445a6bab4ad3ef304b29fec66cb"
+      },
+      {
+        "path": "tests/unit/pages/Sources/index.test.tsx",
+        "sha256": "b5908ed87dd501739c3a7768bef6103ead036cdceb1ab5bf661a39e5c9b41bfd"
+      },
+      {
+        "path": "tests/unit/pages/Teams/TeamPage.test.tsx",
+        "sha256": "fbae26d9ff9412ba988990c97a6ad4fae6d42a2e75955be354aebe3b08b5e9b7"
+      },
+      {
+        "path": "tests/unit/pages/Unitgroups/index.test.tsx",
+        "sha256": "78f45716f25a7271f18fe7220d80942036209d2daa0022ef2d65b602d5fa2793"
+      },
+      {
+        "path": "tests/unit/pages/User/Login/Components/LoginTopActions.test.tsx",
+        "sha256": "080b056cfa13169a299ba4752a94bf54199d24b5c73a6b922acf2ffcc16bffb7"
+      },
+      {
+        "path": "tests/unit/pages/User/Login/index.test.tsx",
+        "sha256": "6bbd76dd6fd8d7ddc30fda5bd4d79932c99c93a83316a8520b641b1dd991d0fe"
+      },
+      {
+        "path": "tests/unit/pages/User/Login/password_forgot.test.tsx",
+        "sha256": "52ad225a4dce0566e166cac3419bb351c85e6e3026942ed4dd49a8797ab3156d"
+      },
+      {
+        "path": "tests/unit/pages/User/Login/password_reset.test.tsx",
+        "sha256": "9719abd24e6ee66caa8e6d65ac07c795f341a498762999bf60cd952a3d92a12d"
+      },
+      {
+        "path": "tests/unit/pages/Welcome.test.tsx",
+        "sha256": "f499a1fe47b70532e9ef3aea704a914cc89d163d3e58d41df2d02828b138105d"
+      },
+      {
+        "path": "tests/unit/requestErrorConfig.test.ts",
+        "sha256": "64776dce5b248927054b5614b29715ce1deaabc9be971a08999da1b34929e645"
+      },
+      {
+        "path": "tests/unit/services/general/publicRoutePolicy.test.ts",
+        "sha256": "27196590823ba86e70f8c74115b726680f37cfe3916f54db231e829a08de7595"
+      },
+      {
+        "path": "tests/unit/services/general/routeViewStateRegistry.test.ts",
+        "sha256": "6297a66c57091da3331cfb375b1044f44c43417f37e172521857a93434902676"
+      },
+      {
+        "path": "tests/unit/wrappers/AuthGuard.test.tsx",
+        "sha256": "2dfded1227b15be060de9d75d1fdde01667f049a39e16889ad15c3f333ad12a6"
+      },
+      {
+        "path": "tests/unit/wrappers/LoginFlowGuard.test.tsx",
+        "sha256": "0c6d74bb0f3ffa436ab05e46bb670975e19985403d9c50883b18ab2e9d40a718"
+      }
+    ],
+    "sources": [
+      {
+        "path": "config/routes.ts",
+        "sha256": "187cf98262cf30a778816e86f6d711fc31aa0197f18f80130b7f8e0dc93f5341"
+      },
+      {
+        "path": "public/privacy_notice.html",
+        "sha256": "2b38e2e19bd9a5c703c725f131770549ec6da0fa221cf6edea36d55b83921d16"
+      },
+      {
+        "path": "public/terms_of_use.html",
+        "sha256": "0bb3282b285031fc5cff0f8a5b0ee8f9181daee5bf092f57c061ca4a48b54115"
+      },
+      {
+        "path": "src/app.tsx",
+        "sha256": "26cc47642adb9d4db2ba5f5aa18e1c11feaf1f3ab2054fd613330ececf9fd11e"
+      },
+      {
+        "path": "src/components/AccessDenied/index.tsx",
+        "sha256": "dd7267149bc2701e17242eaef13e636c510df2abd11fadaea14feecaa6452dda"
+      },
+      {
+        "path": "src/components/LocationTextItem/description.tsx",
+        "sha256": "4fd9547f412ab6f67cdabc01b996f8f04cb9af14305b8148dcd1ce9fa6b6bfc9"
+      },
+      {
+        "path": "src/components/RightContent/index.tsx",
+        "sha256": "96c5c18a12222835b714477214b56f7391302c7375f2bc4adc27b901f4a2c929"
+      },
+      {
+        "path": "src/locales/en-US/globalHeader.ts",
+        "sha256": "313f33957a93ffd3352dd5d691be7b2a35c0e48c5152f71cd6ae590b6fb6672e"
+      },
+      {
+        "path": "src/locales/en-US/pages.ts",
+        "sha256": "e0641ded0241e319736e82d562c03f981fedfe6790fec8d5a29dff0e9f5b7bb5"
+      },
+      {
+        "path": "src/locales/en-US/pages_general.ts",
+        "sha256": "7e9d52aaa02a6bd3c87eb289e009be9d227de050baea9770672acb3b1d08c064"
+      },
+      {
+        "path": "src/locales/en-US/pages_home.ts",
+        "sha256": "0f849cb7eab9c1367bd6deeb72a458122ba5c700d0388b55a38e17539c982a5b"
+      },
+      {
+        "path": "src/pages/404.tsx",
+        "sha256": "90c96e3bb3d0eb5fc70a160ab8805b2b805b6aa12b85138af377f6e4c11ba391"
+      },
+      {
+        "path": "src/pages/Account/index.tsx",
+        "sha256": "c745113211bc7994caf46a52b33b184470e595b29ef160445b3f8dfbc1405887"
+      },
+      {
+        "path": "src/pages/Contacts/index.tsx",
+        "sha256": "4de1b014f64f4a0d0063ef79e6abcf1e77ab838db6cdbb385c13a3d45a2cac46"
+      },
+      {
+        "path": "src/pages/DataProcessing/index.tsx",
+        "sha256": "a6a23127f49c417287d220a7d974315b73004aa2bb58bf2f03b78d9af89e9896"
+      },
+      {
+        "path": "src/pages/Flowproperties/index.tsx",
+        "sha256": "fcf6f6b0fa7ca7586a612aac0035f85eb80a76324829f4e0f70088ad2341c94c"
+      },
+      {
+        "path": "src/pages/Flows/index.tsx",
+        "sha256": "4d45fa37d9ab268774e39878aa065700773db99fa7cdf639503fb211491d1d38"
+      },
+      {
+        "path": "src/pages/LifeCycleModels/index.tsx",
+        "sha256": "54041c9aa527753e6e6c34e19d9fb53de582c98c545b998bd4832a411a33f126"
+      },
+      {
+        "path": "src/pages/ManageSystem/index.tsx",
+        "sha256": "24d5fd9fc00919c464bf18cd29a55edce699704f9ec27161b5edc20335cbb45a"
+      },
+      {
+        "path": "src/pages/NationalCarbonDashboard/components/ProcessFlowGraph/ProcessFlowGraphPanel.tsx",
+        "sha256": "959c06755bc3d40d3bedfd336b5d0f276acc278fa839b6a5cfeefc283cf403f2"
+      },
+      {
+        "path": "src/pages/NationalCarbonDashboard/i18n.ts",
+        "sha256": "49fea3a5eacec70e731ba664a96b68146e91d3fdaa90ab3eb14a87e5af8f7b8f"
+      },
+      {
+        "path": "src/pages/NationalCarbonDashboard/index.tsx",
+        "sha256": "1894251f2b23f3082beef04105324d92e0fa1cecd300232e317652696daad41c"
+      },
+      {
+        "path": "src/pages/Processes/Analysis/index.tsx",
+        "sha256": "fc198a16b2ef97dc68a4758fe2f6abb20da683f84b185b4d81cef4016f7e2b96"
+      },
+      {
+        "path": "src/pages/Processes/index.tsx",
+        "sha256": "5398701c83d32d610fbe9f2359be04f537d93f3dfd307df791fbda2ed227be1d"
+      },
+      {
+        "path": "src/pages/Review/index.tsx",
+        "sha256": "bde2c6c4f7aa2100d1dc1b7e2fbf9338c8c1754be52167636b37aa8c9182c3aa"
+      },
+      {
+        "path": "src/pages/Sources/index.tsx",
+        "sha256": "bceade080baeaac893c373ea3628b5959f2d2efbc87ff96fd84a5ef8c3b4181a"
+      },
+      {
+        "path": "src/pages/Teams/index.tsx",
+        "sha256": "647534b512fd3eb54c291338200de4997a25265999a0f4d2a2024bd69f6aabd2"
+      },
+      {
+        "path": "src/pages/Unitgroups/index.tsx",
+        "sha256": "a6879e37c49b2b9db43f4d8aebfb1e24f63f7b81221d099f8296bd9a97aff73f"
+      },
+      {
+        "path": "src/pages/User/Login/Components/LoginTopActions.tsx",
+        "sha256": "15ca451198018a3665d319d761d79d2d3d047e6004529eecaec865130e2456c7"
+      },
+      {
+        "path": "src/pages/User/Login/index.tsx",
+        "sha256": "75bc5e6e77afecbb5ef6c5b60d134f079103b570850d609211c715894ca928c0"
+      },
+      {
+        "path": "src/pages/User/Login/password_forgot.tsx",
+        "sha256": "cb76f24e150d4d61a8a6f45db84458fccfcd4bcb0afb30cc998a6207c7d55871"
+      },
+      {
+        "path": "src/pages/User/Login/password_reset.tsx",
+        "sha256": "55721e458fdf5788429e36ad68fac33e551b72c61b741dccd4bd3584000cabd1"
+      },
+      {
+        "path": "src/pages/Welcome.tsx",
+        "sha256": "164eef3bb11731e98081618b4d8efd9f5d378c49e3b3994d43dd0901c092e81f"
+      },
+      {
+        "path": "src/requestErrorConfig.ts",
+        "sha256": "ac23c333905a93af377f84a51649ddf0277c21a91bcc19c6a7200e0f2f87bb73"
+      },
+      {
+        "path": "src/services/general/contentLanguageRegistry.ts",
+        "sha256": "2bb1e3395138c0cc4eef6aa2a69dba7a749af94df29760cb5c45d08381205c9e"
+      },
+      {
+        "path": "src/services/general/localeRegistry.ts",
+        "sha256": "c04e58fec60280fbdd8e486235da694223573cef72ac9bb855ebbbfa5d190460"
+      },
+      {
+        "path": "src/services/general/publicRoutePolicy.ts",
+        "sha256": "2cd2467e3aeb7a4cf3545bb20dc986a400276c726eefcf136b5070ecfc088ee8"
+      },
+      {
+        "path": "src/services/general/routeViewState.ts",
+        "sha256": "6b73e61d2e1e94d3e7537a7799677f7b2d794dfcb73cd824d8ead12ecc020ec4"
+      },
+      {
+        "path": "src/services/general/routeViewStateRegistry.json",
+        "sha256": "e296972fc135327906352bfea38dc3ccd614bd1ab81d4053ed21f5ba65f2f170"
+      },
+      {
+        "path": "src/wrappers/AuthGuard.tsx",
+        "sha256": "07b1736f8f5bd09b67b387cfeaacbc13293bdfb0e35648510d800229d3f89364"
+      },
+      {
+        "path": "src/wrappers/LoginFlowGuard.tsx",
+        "sha256": "316e50c5278c51bf55ac7a06e6a8472dcc676083fe779de1ca8532b43a7cc6d9"
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "assertionId": "rv.section-redirects.tgdata",
+      "route": "/tgdata",
+      "viewState": "configured-redirect",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.section-redirects.codata",
+      "route": "/codata",
+      "viewState": "configured-redirect",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.section-redirects.mydata",
+      "route": "/mydata",
+      "viewState": "configured-redirect",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.section-redirects.tedata",
+      "route": "/tedata",
+      "viewState": "configured-redirect",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.section-redirects.user",
+      "route": "/user",
+      "viewState": "anonymous-login-flow-redirect",
+      "result": "passed",
+      "proofScope": "access-boundary-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium"],
+      "scenarios": ["route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.manage-system.team-management",
+      "route": "/manageSystem",
+      "viewState": "team-management",
+      "result": "passed",
+      "proofScope": "access-boundary-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.review.review-workbench",
+      "route": "/review",
+      "viewState": "review-workbench",
+      "result": "passed",
+      "proofScope": "access-boundary-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.lifecycle-model-lists.tgdata",
+      "route": "/tgdata/models",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.lifecycle-model-lists.codata",
+      "route": "/codata/models",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.lifecycle-model-lists.mydata",
+      "route": "/mydata/models",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "responsive-surface-matrix", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "responsive-surface-matrix",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.lifecycle-model-lists.tedata",
+      "route": "/tedata/models",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.process-analysis.process-analysis",
+      "route": "/mydata/processes/analysis",
+      "viewState": "process-analysis",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.process-lists.tgdata",
+      "route": "/tgdata/processes",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.process-lists.codata",
+      "route": "/codata/processes",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.process-lists.mydata",
+      "route": "/mydata/processes",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": [
+        "anonymous-protection",
+        "persisted-multilingual-authoring",
+        "persisted-multilingual-content",
+        "reference-refresh",
+        "reference-refresh-cache",
+        "responsive-surface-matrix",
+        "route",
+        "typed-process-drawer-mode",
+        "typed-process-required-state"
+      ],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "persisted-multilingual-authoring",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "persisted-multilingual-content",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "reference-refresh",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "reference-refresh-cache",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "responsive-surface-matrix",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-process-drawer-mode",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-process-required-state",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.process-lists.tedata",
+      "route": "/tedata/processes",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-lists.tgdata",
+      "route": "/tgdata/flows",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-lists.codata",
+      "route": "/codata/flows",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-lists.mydata",
+      "route": "/mydata/flows",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-lists.tedata",
+      "route": "/tedata/flows",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-property-lists.tgdata",
+      "route": "/tgdata/flowproperties",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-property-lists.codata",
+      "route": "/codata/flowproperties",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-property-lists.mydata",
+      "route": "/mydata/flowproperties",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.flow-property-lists.tedata",
+      "route": "/tedata/flowproperties",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.unit-group-lists.tgdata",
+      "route": "/tgdata/unitgroups",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.unit-group-lists.codata",
+      "route": "/codata/unitgroups",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.unit-group-lists.mydata",
+      "route": "/mydata/unitgroups",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.unit-group-lists.tedata",
+      "route": "/tedata/unitgroups",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.source-lists.tgdata",
+      "route": "/tgdata/sources",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.source-lists.codata",
+      "route": "/codata/sources",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.source-lists.mydata",
+      "route": "/mydata/sources",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.source-lists.tedata",
+      "route": "/tedata/sources",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.contact-lists.tgdata",
+      "route": "/tgdata/contacts",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.contact-lists.codata",
+      "route": "/codata/contacts",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.contact-lists.mydata",
+      "route": "/mydata/contacts",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.contact-lists.tedata",
+      "route": "/tedata/contacts",
+      "viewState": "dataset-list-and-drawers",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.data-processing.build-preview-publication-tabs",
+      "route": "/data-processing",
+      "viewState": "build-preview-publication-tabs",
+      "result": "passed",
+      "proofScope": "access-boundary-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route", "typed-data-processing-tabs"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-data-processing-tabs",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.account.account-profile",
+      "route": "/account",
+      "viewState": "account-profile",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.team.team-membership",
+      "route": "/team",
+      "viewState": "team-membership",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": [
+        "anonymous-protection",
+        "authoring-options",
+        "responsive-layout",
+        "responsive-surface-matrix",
+        "route",
+        "typed-action-variants"
+      ],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "authoring-options",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "responsive-layout",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "responsive-surface-matrix",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-action-variants",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.root.redirect-to-welcome",
+      "route": "/",
+      "viewState": "redirect-to-welcome",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.welcome.overview",
+      "route": "/welcome",
+      "viewState": "overview",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": [
+        "anonymous-protection",
+        "modal-state-machine",
+        "responsive-surface-matrix",
+        "route",
+        "typed-view-variants"
+      ],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "modal-state-machine",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "responsive-surface-matrix",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-view-variants",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.welcome.carbon-footprint-guide",
+      "route": "/welcome?view=carbon-footprint",
+      "viewState": "carbon-footprint-guide",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": [
+        "anonymous-protection",
+        "carbon-guide-state-machine",
+        "route",
+        "typed-view-variants"
+      ],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "carbon-guide-state-machine",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        },
+        {
+          "scenario": "typed-view-variants",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.login.login-and-register",
+      "route": "/user/login",
+      "viewState": "login-and-register",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["locale-fallback-refresh", "query-responsive", "registry-selector", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "locale-fallback-refresh",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "query-responsive",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "registry-selector",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.login.password-forgot",
+      "route": "/user/login/password_forgot",
+      "viewState": "password-forgot",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium"],
+      "scenarios": ["route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.login.password-reset",
+      "route": "/user/login/password_reset",
+      "viewState": "password-reset",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium"],
+      "scenarios": ["route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.dashboard.national-carbon",
+      "route": "/dashboard/national-carbon",
+      "viewState": "national-carbon-dashboard",
+      "result": "passed",
+      "proofScope": "access-boundary-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.legal.terms-of-use-fallback",
+      "route": "/terms_of_use.html",
+      "viewState": "static-legal-English-fallback",
+      "result": "passed",
+      "proofScope": "declared-fallback-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium"],
+      "scenarios": ["route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.legal.privacy-notice-fallback",
+      "route": "/privacy_notice.html",
+      "viewState": "static-legal-English-fallback",
+      "result": "passed",
+      "proofScope": "declared-fallback-observed",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium"],
+      "scenarios": ["route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    },
+    {
+      "assertionId": "rv.not-found.localized",
+      "route": "*",
+      "viewState": "not-found",
+      "result": "passed",
+      "proofScope": "internal-localization",
+      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+      "browsers": ["chromium", "firefox", "webkit"],
+      "scenarios": ["anonymous-protection", "route"],
+      "scenarioCoverage": [
+        {
+          "scenario": "anonymous-protection",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium", "firefox", "webkit"]
+        },
+        {
+          "scenario": "route",
+          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
+          "browsers": ["chromium"]
+        }
+      ]
+    }
+  ],
+  "productionData": {
+    "markerPrefix": "codex-e2e",
+    "created": 1,
+    "cleaned": 1,
+    "leaked": 0
+  }
+}

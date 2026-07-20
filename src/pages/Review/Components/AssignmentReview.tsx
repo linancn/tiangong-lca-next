@@ -3,6 +3,7 @@ import AccountView from '@/pages/Account/view';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import ProcessView from '@/pages/Processes/Components/view';
 import { ListPagination } from '@/services/general/data';
+import { getLang } from '@/services/general/util';
 import {
   getLifeCycleModelSubTableDataBatch,
   getReviewsTableDataOfReviewAdmin,
@@ -15,7 +16,7 @@ import { FormattedMessage, useIntl } from '@umijs/max';
 import { Card, Col, Input, Row, Space, Spin, Table, theme } from 'antd';
 import { SearchProps } from 'antd/es/input/Search';
 import { SortOrder } from 'antd/es/table/interface';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import RejectReview from './RejectReview';
 import ReviewLifeCycleModelsDetail from './reviewLifeCycleModels';
 import ReviewProcessDetail from './reviewProcess';
@@ -57,7 +58,7 @@ const AssignmentReview = ({
 }: AssignmentReviewProps) => {
   // const intl = useIntl();
   const { locale } = useIntl();
-  const lang = locale === 'zh-CN' ? 'zh' : 'en';
+  const lang = getLang(locale);
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const tableAlertOptionRender = renderTableSelectionClearAction(
@@ -69,6 +70,21 @@ const AssignmentReview = ({
   const [subTableData, setSubTableData] = useState<Record<string, any[]>>({});
   const [subTableLoading, setSubTableLoading] = useState<Record<string, boolean>>({});
   const [preloadedSubTableData, setPreloadedSubTableData] = useState<Record<string, any[]>>({});
+  const previousLangRef = useRef(lang);
+
+  useEffect(() => {
+    if (previousLangRef.current === lang) {
+      return;
+    }
+
+    previousLangRef.current = lang;
+    setSelectedRowKeys([]);
+    setExpandedRowKeys([]);
+    setSubTableData({});
+    setSubTableLoading({});
+    setPreloadedSubTableData({});
+    actionRef.current?.reload?.();
+  }, [actionRef, lang]);
 
   const onSearch: SearchProps['onSearch'] = () => {
     // setKeyWord(value);

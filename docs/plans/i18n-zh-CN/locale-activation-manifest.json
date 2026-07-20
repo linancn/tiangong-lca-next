@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "tiangong.i18n-locale-activation.v2",
+  "locale": "zh-CN",
+  "source": {
+    "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
+    "sourceManifestDigest": "43bf490c0d2b308be7e09c8d1c16fb099f67c4d1249601b7957e9b2bbfafb840"
+  },
+  "registry": {
+    "canonicalLocale": "zh-CN",
+    "aliases": ["zh", "zh-*", "zh_*", "zh_*.UTF-8", "zh_*.UTF-8@*"],
+    "direction": "ltr",
+    "adapters": { "antDesign": "zh_CN", "dayjs": "zh-cn", "intl": "zh-CN", "report": "zh_CN" },
+    "fallbacks": {
+      "documentationLocale": "zh-CN",
+      "documentationUrl": "https://docs.tiangong.earth",
+      "legalLocale": "en-US"
+    },
+    "environment": {
+      "titleKey": "APP_TITLE_ZH_CN",
+      "loginSubtitleKey": "APP_LOGIN_SUBTITLE_ZH_CN"
+    },
+    "registryDigest": "c04e58fec60280fbdd8e486235da694223573cef72ac9bb855ebbbfa5d190460"
+  },
+  "languagePlatform": {
+    "capability": {
+      "appLocale": "zh-CN",
+      "contentLanguage": "zh",
+      "uiCatalog": "native",
+      "contentReading": "native",
+      "contentAuthoring": "native",
+      "serviceQuery": { "status": "native", "resolvedLanguage": "zh", "disclosure": "none" },
+      "referenceResources": [
+        {
+          "resourceId": "cpc",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "project-reviewed"
+        },
+        {
+          "resourceId": "isic",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "project-reviewed"
+        },
+        {
+          "resourceId": "ilcd-classification",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "project-reviewed"
+        },
+        {
+          "resourceId": "ilcd-flow-categorization",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "project-reviewed"
+        },
+        {
+          "resourceId": "ilcd-locations",
+          "status": "native",
+          "requestedLanguage": "zh",
+          "resolvedLanguage": "zh",
+          "deliveryStatus": "project-reviewed"
+        }
+      ]
+    },
+    "contentLanguageRegistryDigest": "2bb1e3395138c0cc4eef6aa2a69dba7a749af94df29760cb5c45d08381205c9e",
+    "capabilityMatrixDigest": "d8903f58f8b5582bb4a491a8724b9ba5b8adf93f5f48dcfc7c908bb4eaa5dcd7",
+    "referenceResourceManifestDigest": "002bf11147f566b701c6365791fab31ffeaac87edd5d810a42417c9f2dfad281",
+    "referenceResourceResolverDigest": "15ed3893a7f03969b1a83cc2c81921a994be891d16943da8a6784a84e09f08e1",
+    "hardcodingAllowlistDigest": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a"
+  },
+  "evidence": {
+    "contextDigest": "67a72f7800a3dc7999736f489514e5b6f9e5861d4315ecc531b7fe2d7d0523e6",
+    "qualityDigest": "d4ebfa90c861f4b2a6aaed36d0c38f758c7468a9f5ce872a13f0255604d6fa6b",
+    "correctionLedgerDigest": "af8bed7cc80fddd36ad049f8ae9a17e4f3f9a960bcc50f31d6df42c169807fb2",
+    "routeViewCoverageDigest": "ea2cca1e196561ad60eba3217e219ad797599820562f83a0b45e94a3029f7652",
+    "fallbackContractDigest": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
+    "localeFallbackRowCount": 10
+  },
+  "ciSafeCommands": {
+    "localeAudit": "npm run i18n:locale:audit -- --locale zh-CN",
+    "context": "npm run i18n:context:check -- --locale zh-CN",
+    "quality": "npm run i18n:locale:quality:check -- --locale zh-CN",
+    "corrections": "npm run i18n:corrections:check",
+    "languagePlatform": "npm run i18n:platform:audit",
+    "referenceData": "npm run reference-data:check",
+    "languageHardcoding": "npm run i18n:hardcoding:audit",
+    "allLocales": "npm run i18n:locale:all:check",
+    "productionLocale": "npm run i18n:locale:production:check -- --locale zh-CN",
+    "productionAllLocales": "npm run i18n:locale:all:production:check",
+    "activation": "npm run i18n:locale:activation:check -- --locale zh-CN"
+  },
+  "privateConfirmationDependencies": [],
+  "historicalGermanBoundary": "Not applicable; this locale has never used translation confirmation files.",
+  "checks": {
+    "exactTopology": true,
+    "contextComplete": true,
+    "structuralQualityPassed": true,
+    "semanticRouteAndE2EReady": true,
+    "correctionOverlayPassed": true,
+    "fallbackContractPassed": true,
+    "platformContractValid": true,
+    "languageHardcodingPassed": true,
+    "referenceResourcesReady": true,
+    "productionActivationReady": true,
+    "ltrCondition": "single-standard; RTL work not applicable",
+    "humanTranslationReviewRequired": false
+  },
+  "referenceResourceBlockers": [],
+  "productionActivationBlockers": [],
+  "activationDigest": "3af315a40cea03ba8055d73720a7432405623cee0f3ab562c2a341b8a5b2cafa"
+}

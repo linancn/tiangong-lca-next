@@ -41,7 +41,20 @@ import LifeCycleModelCreate from '@/pages/LifeCycleModels/Components/create';
 import LifeCycleModelEdit from '@/pages/LifeCycleModels/Components/edit';
 import LifeCycleModelView from '@/pages/LifeCycleModels/Components/view';
 import { attachStateCodesToRows } from '@/services/general/api';
-import { ListPagination } from '@/services/general/data';
+import {
+  getServiceQueryLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
+import {
+  guardLocaleMaterializedTableRequest,
+  syncLocaleMaterializedTableRequestEpochs,
+  type LocaleAwareTableParams,
+} from '@/services/general/data';
+import { resolveRouteViewState } from '@/services/general/routeViewState';
+import {
+  DEFAULT_BROWSER_APP_LOCALE,
+  normalizeRuntimeLocale,
+} from '@/services/general/runtimeLocale';
 import { getDataSource, getLang, getLangText, isDataUnderReview } from '@/services/general/util';
 import { ProcessImportData, ProcessTable } from '@/services/processes/data';
 import { getTeamById } from '@/services/teams/api';
@@ -95,12 +108,17 @@ const TableList: FC = () => {
   const tid = searchParams.get('tid');
   const id = searchParams.get('id');
   const version = searchParams.get('version');
-  const required = searchParams.get('required') === '1';
-  const routeMode = searchParams.get('mode');
+  const required =
+    resolveRouteViewState('dataset-required', searchParams.get('required')) === 'required';
+  const routeMode = resolveRouteViewState('dataset-drawer-mode', searchParams.get('mode'));
 
   const intl = useIntl();
 
-  const lang = getLang(intl.locale);
+  const appLocale = normalizeRuntimeLocale(intl.locale) ?? DEFAULT_BROWSER_APP_LOCALE;
+  const lang = getLang(appLocale);
+  const currentAppLocaleRef = useRef(appLocale);
+  const tableRequestEpochRef = useRef(0);
+  syncLocaleMaterializedTableRequestEpochs(currentAppLocaleRef, appLocale, [tableRequestEpochRef]);
 
   const actionRef = useRef<ActionType>();
   const attachReviewState = async (result: {
@@ -569,7 +587,7 @@ const TableList: FC = () => {
           </Col>
         </Row>
       </Card>
-      <ProTable<ProcessTable, ListPagination>
+      <ProTable<ProcessTable, LocaleAwareTableParams>
         {...responsiveDataListTableProps}
         rowKey={(record) => `${record.id}-${record.version}`}
         headerTitle={
@@ -579,6 +597,7 @@ const TableList: FC = () => {
           </>
         }
         actionRef={actionRef}
+        params={{ locale: appLocale }}
         search={false}
         options={isMobileDataList ? false : { fullScreen: true }}
         optionsRender={
@@ -677,126 +696,144 @@ const TableList: FC = () => {
           return [<span key={0}>{typeOfDataSetFilter(isMobileDataList ? 120 : 160)}</span>];
         }}
         request={async (
-          params: {
-            pageSize: number;
-            current: number;
-          },
+          params: LocaleAwareTableParams & { pageSize?: number; current?: number },
           sort,
         ) => {
-          try {
-            const currentKeyWord = keyWordRef.current || keyWord;
-            const currentStateCode = stateCodeRef.current;
-            const currentTypeOfDataSet = typeOfDataSetRef.current;
-            if (referenceLookup) {
-              const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
-              if (!referenceLookupUuid) {
-                return applyProcessTableResult(getReferenceLookupEmptyResult(params.current));
-              }
-              const referenceLookupTeamId = getReferenceLookupTeamId(tid);
+          const { locale: requestedLocale, ...requestParams } = params;
+          return guardLocaleMaterializedTableRequest(
+            requestedLocale,
+            () => currentAppLocaleRef.current,
+            tableRequestEpochRef,
+            async ({ isCurrentRequest }) => {
+              try {
+                const currentKeyWord = keyWordRef.current || keyWord;
+                const currentStateCode = stateCodeRef.current;
+                const currentTypeOfDataSet = typeOfDataSetRef.current;
+                if (referenceLookup) {
+                  const referenceLookupUuid = getReferenceLookupUuid(currentKeyWord);
+                  if (!referenceLookupUuid) {
+                    return applyProcessTableResult(
+                      getReferenceLookupEmptyResult(requestParams.current),
+                    );
+                  }
+                  const referenceLookupTeamId = getReferenceLookupTeamId(tid);
 
-              const result = await getProcessTableUuidMentionSearch(
-                params,
-                lang,
-                dataSource,
-                referenceLookupUuid,
-                currentStateCode,
-                currentTypeOfDataSet,
-                referenceLookupTeamId,
-              );
-              const noticeKey = [
-                dataSource,
-                referenceLookupUuid,
-                currentStateCode,
-                currentTypeOfDataSet,
-                referenceLookupTeamId,
-              ].join(':');
-              if (result.capped && referenceLookupLimitNoticeRef.current !== noticeKey) {
-                referenceLookupLimitNoticeRef.current = noticeKey;
-                showReferenceLookupLimitMessage(intl);
-              }
-              return applyProcessTableResult(result);
-            }
-            if (currentKeyWord.length > 0) {
-              let orderBy:
-                | { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' }
-                | undefined;
-              if (sort && Object.keys(sort).length > 0) {
-                const field = Object.keys(sort)[0];
-                const order = sort[field];
-                if (field === 'name') {
-                  orderBy = {
-                    key: 'baseName',
-                    lang: lang,
-                    order: order === 'ascend' ? 'asc' : 'desc',
-                  };
-                } else if (field === 'classification') {
-                  orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
-                }
-              }
-              if (openAI) {
-                return applyProcessTableResult(
-                  await process_hybrid_search(
-                    params,
+                  const result = await getProcessTableUuidMentionSearch(
+                    requestParams,
                     lang,
                     dataSource,
-                    currentKeyWord,
-                    {},
+                    referenceLookupUuid,
+                    currentStateCode,
+                    currentTypeOfDataSet,
+                    referenceLookupTeamId,
+                  );
+                  const noticeKey = [
+                    dataSource,
+                    referenceLookupUuid,
+                    currentStateCode,
+                    currentTypeOfDataSet,
+                    referenceLookupTeamId,
+                    requestedLocale,
+                  ].join(':');
+                  if (
+                    isCurrentRequest() &&
+                    result.capped &&
+                    referenceLookupLimitNoticeRef.current !== noticeKey
+                  ) {
+                    referenceLookupLimitNoticeRef.current = noticeKey;
+                    showReferenceLookupLimitMessage(intl);
+                  }
+                  return applyProcessTableResult(result);
+                }
+                if (currentKeyWord.length > 0) {
+                  let orderBy:
+                    | {
+                        key: 'common:class' | 'baseName';
+                        lang?: SupportedServiceQueryLanguage;
+                        order: 'asc' | 'desc';
+                      }
+                    | undefined;
+                  if (sort && Object.keys(sort).length > 0) {
+                    const field = Object.keys(sort)[0];
+                    const order = sort[field];
+                    if (field === 'name') {
+                      orderBy = {
+                        key: 'baseName',
+                        lang: getServiceQueryLanguage(lang),
+                        order: order === 'ascend' ? 'asc' : 'desc',
+                      };
+                    } else if (field === 'classification') {
+                      orderBy = { key: 'common:class', order: order === 'ascend' ? 'asc' : 'desc' };
+                    }
+                  }
+                  if (openAI) {
+                    return applyProcessTableResult(
+                      await process_hybrid_search(
+                        requestParams,
+                        lang,
+                        dataSource,
+                        currentKeyWord,
+                        {},
+                        currentStateCode,
+                        currentTypeOfDataSet,
+                      ),
+                    );
+                  }
+                  return applyProcessTableResult(
+                    await getProcessTablePgroongaSearch(
+                      requestParams,
+                      lang,
+                      dataSource,
+                      currentKeyWord,
+                      {},
+                      currentStateCode,
+                      currentTypeOfDataSet,
+                      orderBy,
+                      tid ?? '',
+                    ),
+                  );
+                }
+
+                const sortFields: Record<string, string> = {
+                  name: 'json->processDataSet->processInformation->dataSetInformation->name',
+                  classification:
+                    'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
+                };
+
+                const convertedSort: Record<string, SortOrder> = {};
+                if (sort && Object.keys(sort).length > 0) {
+                  const field = Object.keys(sort)[0];
+                  if (sortFields[field]) {
+                    convertedSort[sortFields[field]] = sort[field];
+                  } else {
+                    convertedSort[field] = sort[field];
+                  }
+                }
+
+                return applyProcessTableResult(
+                  await getProcessTableAll(
+                    requestParams,
+                    convertedSort,
+                    lang,
+                    dataSource,
+                    tid ?? '',
                     currentStateCode,
                     currentTypeOfDataSet,
                   ),
                 );
+              } catch (error) {
+                if (isCurrentRequest()) {
+                  message.error(
+                    intl.formatMessage({
+                      id: 'pages.process.list.loadError',
+                      defaultMessage: 'Failed to load process list.',
+                    }),
+                  );
+                }
+                return applyProcessTableResult();
               }
-              return applyProcessTableResult(
-                await getProcessTablePgroongaSearch(
-                  params,
-                  lang,
-                  dataSource,
-                  currentKeyWord,
-                  {},
-                  currentStateCode,
-                  currentTypeOfDataSet,
-                  orderBy,
-                  tid ?? '',
-                ),
-              );
-            }
-
-            const sortFields: Record<string, string> = {
-              name: 'json->processDataSet->processInformation->dataSetInformation->name',
-              classification:
-                'json->processDataSet->processInformation->dataSetInformation->classificationInformation->"common:classification"->"common:class"',
-            };
-
-            const convertedSort: Record<string, SortOrder> = {};
-            if (sort && Object.keys(sort).length > 0) {
-              const field = Object.keys(sort)[0];
-              if (sortFields[field]) {
-                convertedSort[sortFields[field]] = sort[field];
-              } else {
-                convertedSort[field] = sort[field];
-              }
-            }
-
-            return applyProcessTableResult(
-              await getProcessTableAll(
-                params,
-                convertedSort,
-                lang,
-                dataSource,
-                tid ?? '',
-                currentStateCode,
-                currentTypeOfDataSet,
-              ),
-            );
-          } catch (error) {
-            message.error(
-              intl.formatMessage({
-                id: 'pages.process.list.loadError',
-                defaultMessage: 'Failed to load process list.',
-              }),
-            );
-            return applyProcessTableResult();
-          }
+            },
+          );
         }}
         columns={processColumns}
       />

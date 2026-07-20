@@ -20,10 +20,12 @@ checkPaths:
   - docs/agents/testing-troubleshooting.md
   - tests/helpers/**
   - tests/data-workflows/**
+  - tests/e2e/i18n/**
+  - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed Issue #625 async and locale fallback coverage: focused tests settle rejected requests, resolve deferred work after unmount, and exercise unsupported locale labels.'
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
+lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the local-operator-only authenticated production-data pattern.'
 ---
 
 # Testing Patterns Reference
@@ -100,6 +102,22 @@ Special cases:
 10. validate each edit with the narrowest proof that covers its risk; accumulate coherent locale work into batch audits rather than running lint, build, coverage, or the repository full gate for every message
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
+13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; the tracked evidence must close all 49 IDs and match its route, test, source, locale, browser, and cleanup digests
+
+Browser semantic E2E pattern:
+
+- use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
+- serve the candidate locally with `npm run start:main`; reject a non-loopback Playwright base URL even though the candidate uses the production backend configuration
+- keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
+- derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
+- run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
+- keep every semantic E2E GitHub Actions event, including `workflow_dispatch`, credential-free and read-only; CI runs only three-browser public semantics/contract, while authenticated production writes are restricted to an explicitly authorized local operator session with `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
+- write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
+- delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
+- keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
+- disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
+- treat adding a registry locale or changing a bound route/source/test as evidence invalidation, not as a request to reuse the old result
 
 Gate-bootstrap pattern:
 
@@ -114,9 +132,12 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | --- | --- |
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
+| semantic localization browser proof | `npm run test:e2e:i18n` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
+| language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
+| all-active-locale activation | `npm run i18n:locale:all:check` |
 | existing-translation correction overlay | `npm run i18n:corrections:check` |
 | historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |

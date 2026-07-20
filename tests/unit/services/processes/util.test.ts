@@ -26,6 +26,21 @@ jest.mock('@/services/general/util', () => ({
   }),
   convertToUTCISOString: jest.fn((dateStr) => dateStr || ''),
   formatDateTime: jest.fn((date) => date.toISOString()),
+  getExactLangText: jest.fn((data, lang) => {
+    if (!data) return '-';
+    if (Array.isArray(data)) {
+      const item = data.find(
+        (candidate) =>
+          candidate?.['@xml:lang'] === lang &&
+          typeof candidate?.['#text'] === 'string' &&
+          candidate['#text'].trim() &&
+          candidate['#text'].trim() !== '-',
+      );
+      return item?.['#text'] || '-';
+    }
+    if (data?.['@xml:lang'] && data['@xml:lang'] !== lang) return '-';
+    return data?.['#text'] || data || '-';
+  }),
   getLangJson: jest.fn((data) => data),
   getLangList: jest.fn((data) => (Array.isArray(data) ? data : data ? [data] : [])),
   getLangText: jest.fn((data, lang) => {
@@ -539,6 +554,52 @@ describe('Process Utility Functions', () => {
           .annualSupplyOrProductionVolume,
       ).toEqual([{ '@xml:lang': 'en', '#text': '100 kg Steel' }]);
     });
+
+    it.each(['de', 'fr'])(
+      'should not persist English fallback context as %s annual supply content',
+      (targetLanguage) => {
+        const dataWithMissingTargetContext = {
+          ...mockProcessData,
+          exchanges: {
+            exchange: [
+              {
+                '@dataSetInternalID': '1',
+                referenceToFlowDataSet: {
+                  '@refObjectId': 'flow-id-1',
+                  '@version': '01.00.000',
+                  'common:shortDescription': [{ '@xml:lang': 'en', '#text': 'Steel' }],
+                },
+                refUnitRes: {
+                  name: [{ '@xml:lang': 'en', '#text': 'kilogram' }],
+                },
+                exchangeDirection: 'Output',
+                meanAmount: '1',
+                quantitativeReference: true,
+              },
+            ],
+          },
+          modellingAndValidation: {
+            ...mockProcessData.modellingAndValidation,
+            dataSourcesTreatmentAndRepresentativeness: {
+              annualSupplyOrProductionVolume: [
+                { '@xml:lang': 'en', '#text': '100 old suffix' },
+                { '@xml:lang': targetLanguage, '#text': '100 stale fallback suffix' },
+              ],
+            },
+          },
+        };
+
+        const result = genProcessJsonOrdered('test-id', dataWithMissingTargetContext);
+
+        expect(
+          result.processDataSet.modellingAndValidation.dataSourcesTreatmentAndRepresentativeness
+            .annualSupplyOrProductionVolume,
+        ).toEqual([
+          { '@xml:lang': 'en', '#text': '100 kilogram Steel' },
+          { '@xml:lang': targetLanguage, '#text': '100' },
+        ]);
+      },
+    );
 
     it('should save annual supply volume with a suffix even when no quantitative reference is selected', () => {
       const dataWithoutRef = {

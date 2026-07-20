@@ -12,11 +12,16 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '@/services/general/api';
+import {
+  getServiceQueryLanguage,
+  type SupportedContentLanguage,
+  type SupportedServiceQueryLanguage,
+} from '@/services/general/contentLanguageRegistry';
 import { supabase } from '@/services/supabase';
 import { isRuleVerificationPassed } from '@/utils/ruleVerification';
 import { FunctionRegion } from '@supabase/supabase-js';
 import { SortOrder } from 'antd/lib/table/interface';
-import { getILCDClassification } from '../classifications/api';
+import { getCachedClassificationData } from '../classifications/cache';
 import {
   mapDatasetUuidMentionRowsToListRows,
   normalizeDatasetUuidMentionTeamId,
@@ -25,7 +30,7 @@ import {
 import { getTeamIdByUserId } from '../general/api';
 import {
   classificationToString,
-  genClassificationZH,
+  genLocalizedClassification,
   getLangText,
   jsonToList,
 } from '../general/util';
@@ -52,6 +57,12 @@ type LifeCycleModelListRpcRow = {
   modified_at?: string;
   team_id?: string;
   total_count?: number | string | null;
+};
+
+type LifeCycleModelSearchOrderBy = {
+  key: 'common:class' | 'baseName';
+  lang?: SupportedContentLanguage;
+  order: 'asc' | 'desc';
 };
 
 function normalizeLifeCycleModelTotalCount(row?: LifeCycleModelListRpcRow): number {
@@ -82,6 +93,73 @@ function normalizeLifeCycleModelSortBy(sortBy: string): string {
 
 function normalizeLifeCycleModelSortDirection(orderBy: SortOrder): 'asc' | 'desc' {
   return orderBy === 'ascend' ? 'asc' : 'desc';
+}
+
+function resolveLifeCycleModelSearchOrderBy(orderBy?: LifeCycleModelSearchOrderBy): Partial<
+  Omit<LifeCycleModelSearchOrderBy, 'lang'> & {
+    lang?: SupportedServiceQueryLanguage;
+  }
+> {
+  if (!orderBy) {
+    return {};
+  }
+
+  if (!orderBy.lang) {
+    return {
+      key: orderBy.key,
+      order: orderBy.order,
+    };
+  }
+
+  return {
+    ...orderBy,
+    lang: getServiceQueryLanguage(orderBy.lang),
+  };
+}
+
+function getLocalizedLifeCycleModelClassification(
+  classificationSource: any,
+  classificationData: any,
+  fallback?: any,
+): string {
+  return classificationToString(
+    genLocalizedClassification(jsonToList(classificationSource), classificationData ?? []) ??
+      fallback,
+  );
+}
+
+function mapLifeCycleModelSearchResultRows(
+  rows: LifeCycleModelListRpcRow[],
+  lang: string,
+  classificationData: any,
+): LifeCycleModelTable[] {
+  return rows.map((i: any) => {
+    try {
+      const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
+
+      return {
+        key: i.id,
+        id: i.id,
+        name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
+        generalComment: getLangText(
+          dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
+          lang,
+        ),
+        classification: getLocalizedLifeCycleModelClassification(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+          classificationData,
+        ),
+        version: i?.version ?? '',
+        modifiedAt: new Date(i?.modified_at ?? 0),
+        teamId: i?.team_id ?? '',
+      };
+    } catch (error) {
+      console.error(error);
+      return { id: i.id } as LifeCycleModelTable;
+    }
+  });
 }
 
 async function getLifeCycleModelTeamFilter(
@@ -586,54 +664,30 @@ export async function getLifeCycleModelTableAll(
       });
     }
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const classifications = jsonToList(i['common:class']);
-            const classificationZH = genClassificationZH(classifications, res?.data);
-
-            return {
-              key: i.id,
-              id: i.id,
-              name: genProcessName(i.name ?? {}, lang),
-              generalComment: getLangText(i?.['common:generalComment'], lang),
-              classification: classificationToString(classificationZH ?? {}),
-              version: i?.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const classifications = jsonToList(i['common:class']);
-          return {
-            key: i.id,
-            id: i.id,
-            name: genProcessName(i.name ?? {}, lang),
-            generalComment: getLangText(i?.['common:generalComment'], lang),
-            classification: classificationToString(classifications),
-            version: i?.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const classificationData = await getCachedClassificationData('LifeCycleModel', lang, ['all']);
+    const data = result.data.map((i: any) => {
+      try {
+        return {
+          key: i.id,
+          id: i.id,
+          name: genProcessName(i.name ?? {}, lang),
+          generalComment: getLangText(i?.['common:generalComment'], lang),
+          classification: getLocalizedLifeCycleModelClassification(
+            i['common:class'],
+            classificationData,
+            {},
+          ),
+          version: i?.version,
+          modifiedAt: new Date(i?.modified_at),
+          teamId: i?.team_id,
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          id: i.id,
+        };
+      }
+    });
 
     return Promise.resolve({
       data: data,
@@ -659,10 +713,11 @@ export async function getLifeCycleModelTablePgroongaSearch(
   queryText: string,
   filterCondition: any,
   stateCode?: string | number,
-  orderBy?: { key: 'common:class' | 'baseName'; lang?: 'en' | 'zh'; order: 'asc' | 'desc' },
+  orderBy?: LifeCycleModelSearchOrderBy,
   tid?: string | [],
 ) {
   let result: any = {};
+  const serviceOrderBy = resolveLifeCycleModelSearchOrderBy(orderBy);
   const session = await supabase.auth.getSession();
   if (session.data.session) {
     const teamId = await getLifeCycleModelTeamFilter(dataSource, tid);
@@ -679,7 +734,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
         ? {
             query_text: queryText,
             filter_condition: filterCondition,
-            order_by: orderBy ?? {},
+            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -690,7 +745,7 @@ export async function getLifeCycleModelTablePgroongaSearch(
         : {
             query_text: queryText,
             filter_condition: filterCondition,
-            order_by: orderBy ?? {},
+            order_by: serviceOrderBy,
             page_size: params.pageSize ?? 10,
             page_current: params.current ?? 1,
             data_source: dataSource,
@@ -712,71 +767,8 @@ export async function getLifeCycleModelTablePgroongaSearch(
     }
     const totalCount = normalizeLifeCycleModelTotalCount(result.data[0]) || result.data.length;
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
-        data = result.data.map((i: any) => {
-          try {
-            const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res?.data);
-
-            return {
-              key: i.id,
-              id: i.id,
-              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              classification: classificationToString(classificationZH),
-              version: i?.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = result.data.map((i: any) => {
-        try {
-          const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          return {
-            key: i.id,
-            id: i.id,
-            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            classification: classificationToString(classifications),
-            version: i?.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const classificationData = await getCachedClassificationData('LifeCycleModel', lang, ['all']);
+    const data = mapLifeCycleModelSearchResultRows(result.data, lang, classificationData);
 
     return Promise.resolve({
       data: data,
@@ -793,54 +785,11 @@ async function mapLifeCycleModelMentionRows(
   rows: LifeCycleModelListRpcRow[],
   lang: string,
 ): Promise<LifeCycleModelTable[]> {
-  if (lang === 'zh') {
-    const classificationData = await getILCDClassification('LifeCycleModel', lang, ['all']);
-    return rows.map((i: any) => {
-      try {
-        const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-        const classifications = jsonToList(
-          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-            'common:class'
-          ],
-        );
-        const classificationZH = genClassificationZH(classifications, classificationData?.data);
-
-        return {
-          key: i.id,
-          id: i.id,
-          name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-          generalComment: getLangText(
-            dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-            lang,
-          ),
-          classification: classificationToString(classificationZH),
-          version: i?.version ?? '',
-          modifiedAt: new Date(i?.modified_at ?? 0),
-          teamId: i?.team_id ?? '',
-        };
-      } catch (e) {
-        console.error(e);
-        return {
-          id: i.id,
-          version: i.version ?? '',
-          modifiedAt: new Date(i.modified_at ?? 0),
-          teamId: i.team_id ?? '',
-          name: '-',
-          generalComment: '',
-          classification: '',
-        };
-      }
-    });
-  }
+  const classificationData = await getCachedClassificationData('LifeCycleModel', lang, ['all']);
 
   return rows.map((i: any) => {
     try {
       const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-      const classifications = jsonToList(
-        dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-          'common:class'
-        ],
-      );
       return {
         key: i.id,
         id: i.id,
@@ -849,7 +798,12 @@ async function mapLifeCycleModelMentionRows(
           dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
           lang,
         ),
-        classification: classificationToString(classifications),
+        classification: getLocalizedLifeCycleModelClassification(
+          dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
+            'common:class'
+          ],
+          classificationData,
+        ),
         version: i?.version ?? '',
         modifiedAt: new Date(i?.modified_at ?? 0),
         teamId: i?.team_id ?? '',
@@ -947,71 +901,8 @@ export async function lifeCycleModel_hybrid_search(
     const resultData = result.data.data;
     const totalCount = normalizeLifeCycleModelResultTotalCount(resultData, result.data);
 
-    let data: any[] = [];
-    if (lang === 'zh') {
-      await getILCDClassification('LifeCycleModel', lang, ['all']).then((res) => {
-        data = resultData.map((i: any) => {
-          try {
-            const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-
-            const classifications = jsonToList(
-              dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-                'common:class'
-              ],
-            );
-            const classificationZH = genClassificationZH(classifications, res?.data);
-
-            return {
-              key: i.id,
-              id: i.id,
-              name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-              generalComment: getLangText(
-                dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-                lang,
-              ),
-              classification: classificationToString(classificationZH),
-              version: i?.version,
-              modifiedAt: new Date(i?.modified_at),
-              teamId: i?.team_id,
-            };
-          } catch (e) {
-            console.error(e);
-            return {
-              id: i.id,
-            };
-          }
-        });
-      });
-    } else {
-      data = resultData.map((i: any) => {
-        try {
-          const dataInfo = i.json?.lifeCycleModelDataSet?.lifeCycleModelInformation;
-          const classifications = jsonToList(
-            dataInfo?.dataSetInformation?.classificationInformation?.['common:classification']?.[
-              'common:class'
-            ],
-          );
-          return {
-            key: i.id,
-            id: i.id,
-            name: genProcessName(dataInfo?.dataSetInformation?.name ?? {}, lang),
-            generalComment: getLangText(
-              dataInfo?.dataSetInformation?.['common:generalComment'] ?? {},
-              lang,
-            ),
-            classification: classificationToString(classifications),
-            version: i?.version,
-            modifiedAt: new Date(i?.modified_at),
-            teamId: i?.team_id,
-          };
-        } catch (e) {
-          console.error(e);
-          return {
-            id: i.id,
-          };
-        }
-      });
-    }
+    const classificationData = await getCachedClassificationData('LifeCycleModel', lang, ['all']);
+    const data = mapLifeCycleModelSearchResultRows(resultData, lang, classificationData);
 
     return Promise.resolve({
       data: data,

@@ -13,14 +13,19 @@ import { CloseOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProTable } from '@ant-design/pro-components';
 import { Button, Card, Col, Drawer, Row, Space, Tooltip } from 'antd';
 import type { FC, Key } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage } from 'umi';
 import ProcessExchangeView from './view';
 
 type ExchangeSelectionData = {
   id: string;
-  selectedSource?: ProcessExchangeData;
-  selectedTarget?: ProcessExchangeData;
+  selectedSource: ProcessExchangeData;
+  selectedTarget: ProcessExchangeData;
+};
+
+type ProcessIdentity = {
+  id: string;
+  version: string;
 };
 
 type Props = {
@@ -55,21 +60,65 @@ const ExchangeSelect: FC<Props> = ({
   const [selectedTargetRowKeys, setSelectedTargetRowKeys] = useState<Key[]>([]);
   const [exchangeDataSource, setExchangeDataSource] = useState<ProcessExchangeData[]>([]);
   const [exchangeDataTarget, setExchangeDataTarget] = useState<ProcessExchangeData[]>([]);
-  const [exchangeDataSourceTable, setExchangeDataSourceTable] = useState<ProcessExchangeTable[]>(
-    [],
+  const exchangeDataSourceTable = useMemo(
+    () =>
+      genProcessExchangeTableData(
+        exchangeDataSource.filter((item) => item?.exchangeDirection?.toLowerCase() === 'output'),
+        lang,
+      ),
+    [exchangeDataSource, lang],
   );
-  const [exchangeDataTargetTable, setExchangeDataTargetTable] = useState<ProcessExchangeTable[]>(
-    [],
+  const exchangeDataTargetTable = useMemo(
+    () =>
+      genProcessExchangeTableData(
+        exchangeDataTarget.filter((item) => item?.exchangeDirection?.toLowerCase() === 'input'),
+        lang,
+      ),
+    [exchangeDataTarget, lang],
   );
   const [loadingSource, setLoadingSource] = useState(false);
   const [loadingTarget, setLoadingTarget] = useState(false);
+  const [loadedSourceProcess, setLoadedSourceProcess] = useState<ProcessIdentity | null>(null);
+  const [loadedTargetProcess, setLoadedTargetProcess] = useState<ProcessIdentity | null>(null);
   const actionRefSelectSource = useRef<ActionType>();
   const actionRefSelectTarget = useRef<ActionType>();
+  const detailRequestEpochRef = useRef(0);
+  const selectedSource = useMemo(
+    () =>
+      exchangeDataSource.find(
+        (item) =>
+          item['@dataSetInternalID'] === selectedSourceRowKeys[0] &&
+          item.exchangeDirection?.toLowerCase() === 'output',
+      ),
+    [exchangeDataSource, selectedSourceRowKeys],
+  );
+  const selectedTarget = useMemo(
+    () =>
+      exchangeDataTarget.find(
+        (item) =>
+          item['@dataSetInternalID'] === selectedTargetRowKeys[0] &&
+          item.exchangeDirection?.toLowerCase() === 'input',
+      ),
+    [exchangeDataTarget, selectedTargetRowKeys],
+  );
+  const canSubmit =
+    !loadingSource &&
+    !loadingTarget &&
+    loadedSourceProcess?.id === sourceProcessId &&
+    loadedSourceProcess.version === sourceProcessVersion &&
+    loadedTargetProcess?.id === targetProcessId &&
+    loadedTargetProcess.version === targetProcessVersion &&
+    selectedSource !== undefined &&
+    selectedTarget !== undefined;
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
   );
 
   const onSelect = () => {
+    setLoadedSourceProcess(null);
+    setLoadedTargetProcess(null);
+    setLoadingSource(true);
+    setLoadingTarget(true);
     setDrawerVisible(true);
   };
 
@@ -153,64 +202,60 @@ const ExchangeSelect: FC<Props> = ({
 
   useEffect(() => {
     if (!drawerVisible) return;
-    console.log('sourceRowKeys', sourceRowKeys);
     setSelectedSourceRowKeys(sourceRowKeys);
     setSelectedTargetRowKeys(targetRowKeys);
+  }, [drawerVisible, sourceRowKeys, targetRowKeys]);
+
+  useEffect(() => {
+    if (!drawerVisible) return;
+
+    const requestEpoch = detailRequestEpochRef.current + 1;
+    detailRequestEpochRef.current = requestEpoch;
+    setExchangeDataSource([]);
+    setExchangeDataTarget([]);
+    setLoadedSourceProcess(null);
+    setLoadedTargetProcess(null);
     setLoadingSource(true);
     setLoadingTarget(true);
-    getProcessDetail(sourceProcessId, sourceProcessVersion).then(
-      async (result: ProcessDetailResponse) => {
-        await setExchangeDataSource([
-          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
-            []),
-        ]);
-        await setExchangeDataSourceTable(
-          genProcessExchangeTableData(
-            [
-              ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges
-                ?.exchange ?? []),
-            ]
-              ?.map((item) => {
-                if (item?.exchangeDirection?.toLowerCase() === 'output') {
-                  return item;
-                } else {
-                  return null;
-                }
-              })
-              .filter((item) => item !== null),
-            lang,
-          ),
-        );
-        setLoadingSource(false);
-      },
-    );
-    getProcessDetail(targetProcessId, targetProcessVersion).then(
-      async (result: ProcessDetailResponse) => {
-        await setExchangeDataTarget([
-          ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges?.exchange ??
-            []),
-        ]);
-        await setExchangeDataTargetTable(
-          genProcessExchangeTableData(
-            [
-              ...(genProcessFromData(result.data?.json?.processDataSet ?? {})?.exchanges
-                ?.exchange ?? []),
-            ]
-              ?.map((item) => {
-                if (item?.exchangeDirection?.toLowerCase() === 'input') {
-                  return item;
-                } else {
-                  return null;
-                }
-              })
-              .filter((item) => item !== null),
-            lang,
-          ),
-        );
-        setLoadingTarget(false);
-      },
-    );
-  }, [drawerVisible]);
+
+    void getProcessDetail(sourceProcessId, sourceProcessVersion)
+      .then((result: ProcessDetailResponse) => {
+        if (detailRequestEpochRef.current !== requestEpoch) {
+          return;
+        }
+
+        const processData = genProcessFromData(result.data?.json?.processDataSet ?? {});
+        setExchangeDataSource([...(processData?.exchanges?.exchange ?? [])]);
+        setLoadedSourceProcess({ id: sourceProcessId, version: sourceProcessVersion });
+      })
+      .finally(() => {
+        if (detailRequestEpochRef.current === requestEpoch) {
+          setLoadingSource(false);
+        }
+      });
+
+    void getProcessDetail(targetProcessId, targetProcessVersion)
+      .then((result: ProcessDetailResponse) => {
+        if (detailRequestEpochRef.current !== requestEpoch) {
+          return;
+        }
+
+        const processData = genProcessFromData(result.data?.json?.processDataSet ?? {});
+        setExchangeDataTarget([...(processData?.exchanges?.exchange ?? [])]);
+        setLoadedTargetProcess({ id: targetProcessId, version: targetProcessVersion });
+      })
+      .finally(() => {
+        if (detailRequestEpochRef.current === requestEpoch) {
+          setLoadingTarget(false);
+        }
+      });
+
+    return () => {
+      if (detailRequestEpochRef.current === requestEpoch) {
+        detailRequestEpochRef.current += 1;
+      }
+    };
+  }, [drawerVisible, sourceProcessId, sourceProcessVersion, targetProcessId, targetProcessVersion]);
 
   return (
     <>
@@ -267,14 +312,12 @@ const ExchangeSelect: FC<Props> = ({
               <FormattedMessage id='pages.button.cancel' defaultMessage='Cancel' />
             </Button>
             <Button
-              disabled={selectedSourceRowKeys.length === 0 || selectedTargetRowKeys.length === 0}
+              disabled={!canSubmit}
               onClick={() => {
-                const selectedSource = exchangeDataSource.find(
-                  (item) => item['@dataSetInternalID'] === selectedSourceRowKeys[0],
-                );
-                const selectedTarget = exchangeDataTarget.find(
-                  (item) => item['@dataSetInternalID'] === selectedTargetRowKeys[0],
-                );
+                if (!canSubmit || selectedSource === undefined || selectedTarget === undefined) {
+                  return;
+                }
+
                 onData({ id: id, selectedSource: selectedSource, selectedTarget: selectedTarget });
                 setDrawerVisible(false);
               }}

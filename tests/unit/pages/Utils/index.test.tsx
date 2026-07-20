@@ -162,7 +162,8 @@ describe('Utils page helpers', () => {
   it('maps local language values into display labels', () => {
     expect(getLocalValueProps('en')).toEqual({ value: 'English' });
     expect(getLocalValueProps('zh')).toEqual({ value: '简体中文' });
-    expect(getLocalValueProps('fr')).toEqual({ value: 'fr' });
+    expect(getLocalValueProps('de')).toEqual({ value: 'Deutsch' });
+    expect(getLocalValueProps('fr')).toEqual({ value: 'Français' });
   });
 
   it('extracts classification values only from supported object shapes', () => {

@@ -19,10 +19,13 @@ checkPaths:
   - AGENTS.md
   - .docpact/config.yaml
   - package.json
+  - playwright.config.ts
+  - tests/e2e/i18n/**
+  - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-18
-lastReviewedCommit: 762a287342456defb1c298f87d6922261e398284
-lastReviewedNote: 'Reviewed the final async and unsupported-locale coverage closure after the French locale delivery; the documented bootstrap commands and safe work loop remain current.'
+lastReviewedAt: 2026-07-20
+lastReviewedCommit: 91973faef33baa3534490e47688f7a538dd41861
+lastReviewedNote: 'Reviewed for Issue #635 and separated credential-free GitHub browser proof from the explicitly authorized local production-data operator run.'
 ---
 
 # Development Bootstrap
@@ -57,6 +60,12 @@ npm ci
 
 `npm ci` installs the exact dependency tree from the committed `package-lock.json`. Use `npm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
+The semantic localization browser harness uses `@playwright/test` `1.61.1`. Install its browser engines only when running that harness locally:
+
+```bash
+npx playwright install chromium firefox webkit
+```
+
 ## Default Work Loop
 
 1. `nvm use 24`
@@ -79,6 +88,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
+| semantic localization E2E | `npm run test:e2e:i18n` |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
 | data workflow unit proof | `npm run test:data-workflows:unit` |
 | focused live data workflow | `npm run test:workflows -- --<workflow> <workflow-args>` |
@@ -87,11 +97,18 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | strict full-coverage assertion | `npm run test:coverage:assert-full` |
 | coverage report + queue summary | `npm run test:coverage:report` |
 | deterministic locale audit | `npm run i18n:audit` |
+| language registry/Manifest contract audit | `npm run i18n:platform:audit` |
+| business-language hardcoding audit | `npm run i18n:hardcoding:audit` |
+| verify generated reference-resource assets and manifest | `npm run reference-data:check` |
+| require every governed reference resource to have native reviewed assets and explicit production clearance | `npm run reference-data:production:check` (fails while rights or delivery blockers remain) |
+| regenerate reference-resource assets and manifest from reviewed sources | `npm run reference-data:write` |
 | audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
-| build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
+| execute deterministic structural validation and build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
 | check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | check tracked existing-translation corrections | `npm run i18n:corrections:check` |
 | check one locale's activation boundary | `npm run i18n:locale:activation:check -- --locale <canonical-locale>` |
+| check every active locale's activation boundary | `npm run i18n:locale:all:check` |
+| require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
@@ -101,10 +118,31 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
+After explicit user authorization, an operator with credentials already supplied through the local runtime environment runs the authenticated closure only from that local session:
+
+```bash
+E2E_AUTHENTICATED=true \
+E2E_ALLOW_PRODUCTION_DATA=true \
+E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS \
+E2E_RECOVERY_LEDGER_PATH=/tmp/tiangong-lca-next-codex-e2e-recovery.json \
+E2E_WRITE_VERIFIED_EVIDENCE=true \
+E2E_BACKEND_TARGET=production \
+npm run test:e2e:i18n
+```
+
+This command shape is forbidden in semantic E2E GitHub Actions; CI uses the same canonical script with authenticated/write/evidence opt-ins absent or false.
+
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
+- semantic localization E2E is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and always serves the local candidate with `npm run start:main` against the production backend; `E2E_BASE_URL` must remain a loopback URL
+- every semantic E2E GitHub Actions invocation, including `workflow_dispatch`, is credential-free and read-only; CI runs only contract discovery plus the three-browser public semantic/boundary matrix
+- the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; production write requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
+- before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
+- teardown deletes only the verified exact-ID rows, records created/cleaned counts, and must prove `created=cleaned` and `leaked=0`
+- shared Header language switching uses Umi `SelectLang` with `reload={false}`; semantic proof must retain the same document identity while refreshing locale-dependent state and reject a delayed old-locale reference response
+- never persist or upload credentials, auth state, screenshots, traces, or video; the digest-bound semantic evidence contains assertions and non-secret digests only
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
@@ -114,6 +152,9 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint
 - ignored local evidence and GitHub metadata do not invalidate repository full-gate evidence; a controlled tracked change, relevant Node/dependency change, or gate/configuration change does
 - after a controlled active-locale change, regenerate that locale's tracked artifacts, run the shared audit/context/quality/correction/activation checks, and keep `BLOCKED_CONTEXT`, unowned route views, topology drift, ICU drift, and undeclared corrections at zero
+- treat `src/services/referenceResources/reference-resource-manifest.json` plus `src/services/referenceResources/data/**` as the editable source of truth for classification and location reference data; run `npm run reference-data:write` after an approved source, overlay, or review change and commit the resulting content-addressed assets and generated manifest together
+- use `npm run reference-data:check` for read-only reproducibility proof; the command is also part of `npm run prepush:gate`
+- production-effective workflows additionally run `npm run reference-data:production:check`; the normal development/pre-push gate intentionally reports but does not waive unresolved rights-clearance blockers
 - `npm run i18n:de:audit` uses the same tracked automated activation boundary as every active registry locale; `i18n:de:pilot`, review, and delta commands validate only their frozen Issue #601/#602/#606 snapshots and are never active-release or full-gate inputs
 - active locale commands and clean-runner proof must pass with `.local/**confirmation*` absent; historical reviewer forms and identity remain outside Git and GitHub
 - a successful managed push leaves no retry receipt; only a non-zero transport result after both hook gates passed activates the ignored, one-hour, exact-intent receipt used by argument-free `npm run push:retry`

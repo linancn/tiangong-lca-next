@@ -12,12 +12,9 @@ const toText = (node: any): string => {
   return '';
 };
 
-let mockLocale = 'en-US';
-
 jest.mock('umi', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  getLocale: () => mockLocale,
 }));
 
 jest.mock('@/components/AlignedNumber', () => ({
@@ -58,7 +55,12 @@ jest.mock('antd', () => {
   const Space = ({ children }: any) => <div>{children}</div>;
   const Descriptions: any = ({ children }: any) => <div>{children}</div>;
   Descriptions.Item = ({ children, styles }: any) => (
-    <div data-styles-label-width={styles?.label?.width}>{children}</div>
+    <div
+      data-styles-label-width={styles?.label?.width}
+      data-styles-label-max-width={styles?.label?.maxWidth}
+    >
+      {children}
+    </div>
   );
   const Divider = ({ children }: any) => <div>{toText(children)}</div>;
   return {
@@ -77,7 +79,6 @@ describe('UnitGroupSelectDescription', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLocale = 'en-US';
   });
 
   it('renders fallback values when no referenced unit group is provided', () => {
@@ -116,8 +117,7 @@ describe('UnitGroupSelectDescription', () => {
     expect(screen.getByText('Reference comment')).toBeInTheDocument();
   });
 
-  it('uses the zh label width and falls back to an empty version when it is missing', async () => {
-    mockLocale = 'zh-CN';
+  it('uses responsive label sizing and falls back to an empty version when it is missing', async () => {
     mockGetReferenceUnit.mockResolvedValue({ data: null });
 
     const { container } = renderWithProviders(
@@ -133,7 +133,10 @@ describe('UnitGroupSelectDescription', () => {
 
     await waitFor(() => expect(mockGetReferenceUnit).toHaveBeenCalledWith('ug-zh', ''));
     expect(screen.getByTestId('unitgroup-view')).toHaveTextContent('ug-zh:');
-    expect(container.querySelector('[data-styles-label-width="210px"]')).not.toBeNull();
+    expect(container.querySelector('[data-styles-label-width="auto"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-styles-label-max-width="min(42vw, 22rem)"]'),
+    ).not.toBeNull();
     expect(screen.getAllByTestId('lang-desc')[1]).toHaveTextContent('');
   });
 });

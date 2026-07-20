@@ -16,7 +16,7 @@ import { ProFormInstance } from '@ant-design/pro-components';
 import { Button, Card, Col, Divider, Form, Input, Row, Space, theme } from 'antd';
 import type { Rule } from 'antd/lib/form';
 import React, { FC, ReactNode, useEffect, useState } from 'react';
-import { FormattedMessage, useModel } from 'umi';
+import { FormattedMessage, useIntl, useModel } from 'umi';
 import UnitgroupsEdit from '../edit';
 import UnitgroupsView from '../view';
 import UnitgroupsSelectDrawer from './drawer';
@@ -49,6 +49,7 @@ const UnitgroupsSelectFrom: FC<Props> = ({
   rules = [],
   showRequiredLabel = false,
 }) => {
+  const intl = useIntl();
   const [id, setId] = useState<string | undefined>(undefined);
   const [version, setVersion] = useState<string | undefined>(undefined);
   const [dataUserId, setDataUserId] = useState<string | undefined>(undefined);
@@ -329,7 +330,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({
                   <Col flex='auto' style={{ marginRight: '10px' }}>
                     <Form.Item noStyle name={[subField.name, '#text']}>
                       <TextArea
-                        placeholder='text'
+                        placeholder={intl.formatMessage({
+                          id: 'pages.lang.text.placeholder',
+                          defaultMessage: 'Text',
+                        })}
                         rows={1}
                         disabled={true}
                         style={{ color: token.colorTextDescription }}
@@ -378,7 +382,10 @@ const UnitgroupsSelectFrom: FC<Props> = ({
                     <Col flex='auto' style={{ marginRight: '10px' }}>
                       <Form.Item noStyle name={[subField.name, '#text']}>
                         <TextArea
-                          placeholder='text'
+                          placeholder={intl.formatMessage({
+                            id: 'pages.lang.text.placeholder',
+                            defaultMessage: 'Text',
+                          })}
                           rows={1}
                           disabled={true}
                           style={{ color: token.colorTextDescription }}

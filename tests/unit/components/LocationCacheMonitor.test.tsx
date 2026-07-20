@@ -1,4 +1,8 @@
 import LocationCacheMonitor from '@/components/LocationCacheMonitor';
+import {
+  getReferenceResourceCacheFiles,
+  getReferenceResourceCacheVersion,
+} from '@/services/referenceResources/manifest';
 import { render } from '@testing-library/react';
 
 const mockUseResourceCacheMonitor = jest.fn();
@@ -6,6 +10,7 @@ const mockCacheAndDecompressLocationFile = jest.fn();
 const mockGetCachedLocationFileList = jest.fn();
 const mockGetLocationCacheManifest = jest.fn();
 const mockSetLocationCacheManifest = jest.fn();
+const mockClearLocationCache = jest.fn();
 
 jest.mock('@/components/CacheMonitor/useResourceCacheMonitor', () => ({
   __esModule: true,
@@ -20,23 +25,32 @@ jest.mock('@/services/locations/util', () => ({
   setLocationCacheManifest: (...args: any[]) => mockSetLocationCacheManifest(...args),
 }));
 
+jest.mock('@/services/locations/cache', () => ({
+  __esModule: true,
+  locationCache: {
+    clear: () => mockClearLocationCache(),
+  },
+}));
+
 describe('LocationCacheMonitor', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('wires the shared cache monitor hook with location resources', () => {
-    const { container } = render(<LocationCacheMonitor />);
+    const { container, rerender } = render(<LocationCacheMonitor />);
 
     expect(container.firstChild).toBeNull();
     expect(mockUseResourceCacheMonitor).toHaveBeenCalledWith({
-      version: '1.1.0',
-      files: ['ILCDLocations.min.json.gz', 'ILCDLocations_zh.min.json.gz'],
+      version: getReferenceResourceCacheVersion('location'),
+      files: [...getReferenceResourceCacheFiles('location')],
       batchSize: 2,
       getManifest: expect.any(Function),
       setManifest: expect.any(Function),
       getCachedFileList: expect.any(Function),
       cacheFile: expect.any(Function),
+      persistManifestOnPartialSuccess: false,
+      onCacheUpdated: expect.any(Function),
       logMessages: {
         upToDate: '✅ Location cache is up to date.',
         start: '🎯 Starting location files caching...',
@@ -52,5 +66,11 @@ describe('LocationCacheMonitor', () => {
     expect(monitorConfig.logMessages.success(1)).toBe(
       '🎉 Location caching completed! 1 files cached successfully.',
     );
+    monitorConfig.onCacheUpdated(['ILCDLocations.min.json.gz']);
+    expect(mockClearLocationCache).toHaveBeenCalledTimes(1);
+
+    const initialFiles = monitorConfig.files;
+    rerender(<LocationCacheMonitor />);
+    expect(mockUseResourceCacheMonitor.mock.calls[1][0].files).toBe(initialFiles);
   });
 });

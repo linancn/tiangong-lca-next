@@ -20,8 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-16
-lastReviewedCommit: bb7c8da76e2bd0581f7f32e1bc00c4a166fa4581
+lastReviewedAt: 2026-07-19
+lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedNote: 'Updated for Issue #635: generated subproduct labels now derive every authoring-enabled language and its reviewed prefix from the content-language registry; allocation and LCIA semantics are unchanged.'
 ---
 
 # Lifecycle Model Calculation Reference
@@ -110,6 +111,7 @@ lastReviewedCommit: bb7c8da76e2bd0581f7f32e1bc00c4a166fa4581
 - primary-group reference exchange is aligned to `modelTargetAmount`
 - root `refScalingFactor` falls back to `1` when the model target amount or reference mean amount is zero or missing
 - old submodels are reused only when `nodeId`, `processId`, `allocatedExchangeFlowId`, and `allocatedExchangeDirection` all match
+- generated subproduct names emit one localized prefix and bracket wrapper for every content-language registry row whose authoring capability is enabled; a new authoring language must add its reviewed `generatedContent.subproductPrefix` in that registry instead of adding language-specific branches here
 - persistence-plan helpers that prepare ordered datasets for validation or review must stay schema-compatible with these calculation-facing structures even when they do not execute allocation logic
 
 ## Helper Contract Table

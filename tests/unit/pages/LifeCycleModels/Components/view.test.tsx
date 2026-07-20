@@ -16,6 +16,9 @@ const toText = (node: any): string => {
 
 let latestToolbarProps: any = null;
 let latestGraphProps: any = null;
+let latestDrawerProps: any = null;
+let mockLatestContentStyle: any = null;
+let mockLatestLayoutStyles: any[] = [];
 
 jest.mock('umi', () => ({
   __esModule: true,
@@ -51,8 +54,9 @@ jest.mock('antd', () => {
     return <span title={label}>{children}</span>;
   };
 
-  const Drawer = ({ open, title, extra, children, onClose, getContainer }: any) => {
+  const Drawer = ({ open, title, extra, children, onClose, getContainer, ...props }: any) => {
     if (!open) return null;
+    latestDrawerProps = props;
     return (
       <section
         role='dialog'
@@ -68,9 +72,15 @@ jest.mock('antd', () => {
     );
   };
 
-  const Layout = ({ children }: any) => <div>{children}</div>;
+  const Layout = ({ children, style }: any) => {
+    mockLatestLayoutStyles.push(style);
+    return <div>{children}</div>;
+  };
   Layout.Sider = ({ children }: any) => <aside>{children}</aside>;
-  Layout.Content = ({ children }: any) => <main>{children}</main>;
+  Layout.Content = ({ children, style }: any) => {
+    mockLatestContentStyle = style;
+    return <main>{children}</main>;
+  };
 
   const theme = {
     useToken: () => ({
@@ -116,6 +126,9 @@ describe('LifeCycleModelView', () => {
   beforeEach(() => {
     latestToolbarProps = null;
     latestGraphProps = null;
+    latestDrawerProps = null;
+    mockLatestContentStyle = null;
+    mockLatestLayoutStyles = [];
   });
 
   it('does not open the tool icon entry when disabled', async () => {
@@ -170,6 +183,37 @@ describe('LifeCycleModelView', () => {
     );
     expect(screen.getByTestId('graph-provider')).toBeInTheDocument();
     expect(screen.getByTestId('x6-graph')).toBeInTheDocument();
+    expect(latestDrawerProps).toMatchObject({
+      rootStyle: { maxWidth: '100vw', overflow: 'hidden' },
+      width: '100vw',
+      styles: {
+        body: { display: 'flex', minHeight: 0, minWidth: 0, overflow: 'hidden' },
+        content: { minWidth: 0, overflow: 'hidden', width: '100%' },
+        wrapper: { maxWidth: '100vw', overflow: 'hidden', width: '100vw' },
+      },
+    });
+    expect(mockLatestLayoutStyles).toContainEqual(
+      expect.objectContaining({
+        flex: '1 1 auto',
+        height: 'auto',
+        maxHeight: '100%',
+        minHeight: 0,
+        overflow: 'hidden',
+      }),
+    );
+    expect(mockLatestLayoutStyles).toContainEqual({
+      height: '100%',
+      minHeight: 0,
+      minWidth: 0,
+      overflow: 'hidden',
+    });
+    expect(mockLatestContentStyle).toEqual({
+      height: '100%',
+      minHeight: 0,
+      minWidth: 0,
+      overflow: 'hidden',
+      position: 'relative',
+    });
     expect(latestGraphProps?.transformOptions).toEqual({
       resizing: {
         enabled: true,

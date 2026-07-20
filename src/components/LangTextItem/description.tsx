@@ -1,3 +1,4 @@
+import { getLanguageDisplayName } from '@/services/general/contentLanguageRegistry';
 import { getLangList } from '@/services/general/util';
 import { Descriptions } from 'antd';
 import { FC } from 'react';
@@ -22,13 +23,7 @@ const LangTextItemDescription: FC<Props> = ({ data }) => {
       {items?.map((name: any, index: number) => (
         <Descriptions.Item
           key={index}
-          label={
-            name?.['@xml:lang'] === 'en'
-              ? 'English'
-              : name?.['@xml:lang'] === 'zh'
-                ? '简体中文'
-                : '-'
-          }
+          label={getLanguageDisplayName(name?.['@xml:lang'])}
           styles={{ label: { width: '100px' } }}
         >
           {name?.['#text'] ?? '-'}
