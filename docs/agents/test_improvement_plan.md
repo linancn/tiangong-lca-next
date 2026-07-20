@@ -23,8 +23,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Reviewed for Issue #633: the bounded browser strategy remains valid after regenerating digest-bound evidence for the locale-hardcoding repair.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; the maintained testing strategy needs no change.'
 ---
 
 # Testing Strategy

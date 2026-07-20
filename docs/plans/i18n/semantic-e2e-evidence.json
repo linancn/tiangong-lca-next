@@ -1,12 +1,12 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-20T06:49:37.572Z",
-  "runId": "local-5b1ee628-ce60-4a6a-bcab-64d0fda6e7da",
+  "generatedAt": "2026-07-20T08:15:36.565Z",
+  "runId": "local-77a53ac7-7125-42ae-9440-9252c707a6ac",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "9156b4baf8bfacb85d935ca45ed943654bd3e3f3",
-    "packageManifestDigest": "f80ad3c2d30abe3f9c03bbc4cb17915b110d539a7f3ecd637696723706117009",
+    "observedHeadCommit": "9b5bdeb11794f280b639212248b9816338923dd7",
+    "packageManifestDigest": "4910623de8b46e2cc3efb74c665a6fb047fa4315759de0e22819535e7f72ac11",
     "sourceTreeDigest": "b4d9690cc7845351b1ea6ee338f4e5f3e13c937806652b01c43f1225e20118eb",
     "unitTestTreeDigest": "3c93914f11fb952cc1ba593d3bdd832518e4a68b9d62bf013dd03d21fc3782a1"
   },
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "d909770f35048f325093cad75d93da86e3a9ff2521973e4373fac6007b1c051c"
+      "sha256": "c4ae4cce664d94a18b3618df3e0a33363d9dc9c29834e1a44fde8599f0fd90b0"
     },
     "runtimeAssets": [
       {

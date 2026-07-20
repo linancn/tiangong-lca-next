@@ -25,8 +25,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Updated for Issue #633: hardcoding proof now covers logical/nullish locale defaults, exported full-document lang/dir metadata, and intentional fail-closed language snapshot tests.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; the existing proof matrix and production release gate remain sufficient.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

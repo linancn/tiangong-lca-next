@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Closed the Issue #633 audit blind spots for logical/nullish locale defaults, exported full-document lang/dir metadata, and intentional fail-closed supported-language snapshot tests.'
+lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
+lastReviewedNote: 'Reviewed for the digest-bound v0.0.53 release candidate; the full authenticated semantic E2E contract remains satisfied with created=cleaned and leaked=0.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
