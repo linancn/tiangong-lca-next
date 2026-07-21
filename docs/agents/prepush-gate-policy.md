@@ -27,8 +27,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Updated for Issue #647: routine pre-push validates semantic evidence structure without requiring current production-proof digests; production readiness still revalidates exact bindings.'
+lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedNote: 'Updated for Issue #647: routine branches skip browser E2E, which remains optional manually and required for release.'
 ---
 
 # Pre-Push Gate Policy
@@ -76,11 +76,11 @@ It does not own:
 | --- | --- |
 | local `pre-push` hook on any branch | run docpact first, then run the full local gate |
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
-| ordinary GitHub branch pushes | do not run broad duplicate remote test jobs; the path-scoped semantic E2E workflow may run its credential-free/read-only matrix on relevant `dev` changes |
-| PRs into `dev` or `main` | rely on local test-gate evidence and docpact PR governance, plus the independent credential-free Chromium/Firefox/WebKit public semantic matrix when its paths match |
+| ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
+| PRs into `dev` or `main` | rely on local test-gate evidence, focused proof, and docpact PR governance; run browser semantic E2E manually only when risk warrants it |
 | semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
 | local authenticated semantic E2E | run only in an explicitly authorized operator session with runtime credentials, verified candidate-local/production-backend targeting, authenticated mode, the two production-write guards, and explicit verified-evidence opt-in |
-| canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
+| canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests and reusable exact-SHA credential-free semantic E2E, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |
 
@@ -116,7 +116,7 @@ It does not own:
 - protect the actual local and release gates
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
-- keep the path-scoped semantic E2E workflow independent from `prepush:gate`: all semantic E2E GitHub events have no production credentials or writes, while only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
+- keep semantic E2E independent from `prepush:gate`: routine PR/dev events do not trigger it, manual and release invocations have no production credentials or writes, and only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
 - keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code

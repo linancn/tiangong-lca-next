@@ -23,8 +23,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - package.json
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Updated for Issue #647: production semantic evidence drift no longer blocks routine activation or pre-push validation.'
+lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedNote: 'Reviewed for Issue #647: failure recovery remains valid after moving browser semantic E2E to manual and release-only triggers.'
 ---
 
 # Testing Troubleshooting

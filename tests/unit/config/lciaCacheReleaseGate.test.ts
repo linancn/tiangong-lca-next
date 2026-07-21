@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 const read = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
-describe('LCIA cache publication gates', () => {
+describe('Publication workflow gates', () => {
   it('verifies the reviewed bundle before the manual web build and deploy', () => {
     const workflow = read('.github/workflows/ci.yml');
     const verifyAt = workflow.indexOf('run: npm run lcia-cache:verify');
@@ -42,5 +42,45 @@ describe('LCIA cache publication gates', () => {
   it('keeps the local pre-push gate aligned with the release gate', () => {
     const packageJson = JSON.parse(read('package.json'));
     expect(packageJson.scripts['prepush:gate']).toContain('npm run lcia-cache:verify');
+  });
+
+  it('keeps browser semantic E2E optional for daily work and mandatory for releases', () => {
+    const semanticWorkflow = read('.github/workflows/i18n-semantic-e2e.yml');
+    expect(semanticWorkflow).toContain('  workflow_call:');
+    expect(semanticWorkflow).toContain('  workflow_dispatch:');
+    expect(semanticWorkflow).not.toContain('  pull_request:');
+    expect(semanticWorkflow).not.toContain('  push:');
+    expect(semanticWorkflow).toContain('ref: ${{ inputs.ref || github.sha }}');
+    expect(semanticWorkflow).toContain("E2E_ALLOW_PRODUCTION_DATA: 'false'");
+    expect(semanticWorkflow).toContain("E2E_AUTHENTICATED: 'false'");
+    expect(semanticWorkflow).not.toContain('E2E_PRODUCTION_WRITE_CONFIRMATION');
+    expect(semanticWorkflow).not.toContain('E2E_WRITE_VERIFIED_EVIDENCE');
+
+    const releaseWorkflow = read('.github/workflows/build.yml');
+    const semanticJob = releaseWorkflow.slice(
+      releaseWorkflow.indexOf('  release-semantic-e2e:'),
+      releaseWorkflow.indexOf('  release-draft:'),
+    );
+    expect(semanticJob).toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
+    expect(semanticJob).toContain('ref: ${{ needs.release-context.outputs.release_head }}');
+    expect(semanticJob).not.toContain('secrets:');
+
+    const publicationJobs = [
+      releaseWorkflow.slice(
+        releaseWorkflow.indexOf('  release-draft:'),
+        releaseWorkflow.indexOf('  web-deploy:'),
+      ),
+      releaseWorkflow.slice(
+        releaseWorkflow.indexOf('  web-deploy:'),
+        releaseWorkflow.indexOf('  release:', releaseWorkflow.indexOf('  web-deploy:')),
+      ),
+      releaseWorkflow.slice(
+        releaseWorkflow.indexOf('  release:', releaseWorkflow.indexOf('  web-deploy:')),
+        releaseWorkflow.indexOf('  verify-release:'),
+      ),
+    ];
+    for (const publicationJob of publicationJobs) {
+      expect(publicationJob).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
+    }
   });
 });
