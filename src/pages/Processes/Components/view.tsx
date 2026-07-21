@@ -1,5 +1,4 @@
 import LangTextItemDescription from '@/components/LangTextItem/description';
-import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import LevelTextItemDescription from '@/components/LevelTextItem/description';
 import LocationTextItemDescription from '@/components/LocationTextItem/description';
 import ContactSelectDescription from '@/pages/Contacts/Components/select/description';
@@ -212,10 +211,6 @@ const ProcessView: FC<Props> = ({
     {
       key: 'lciaResults',
       tab: <FormattedMessage id='pages.process.view.lciaresults' defaultMessage='LCIA Results' />,
-    },
-    {
-      key: 'releases',
-      tab: <FormattedMessage id='pages.process.view.releases' defaultMessage='Releases' />,
     },
     {
       key: 'validation',
@@ -1666,7 +1661,6 @@ const ProcessView: FC<Props> = ({
         processVersion={version}
       />
     ),
-    releases: <LcaReleaseReadPanel compact processId={id} processVersion={version} />,
     validation: (
       <ReviewItemView data={initData?.modellingAndValidation?.validation?.review ?? []} />
     ),

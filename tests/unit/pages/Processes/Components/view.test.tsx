@@ -136,13 +136,6 @@ jest.mock('@/components/AlignedNumber', () => ({
   default: ({ value }: any) => <span data-testid='aligned-number'>{value}</span>,
 }));
 
-jest.mock('@/components/LcaReleaseReadPanel', () => ({
-  __esModule: true,
-  default: ({ processId, processVersion }: any) => (
-    <div data-testid='release-read-panel'>{`${processId}:${processVersion}`}</div>
-  ),
-}));
-
 jest.mock('@/pages/Processes/Components/Exchange/view', () => ({
   __esModule: true,
   default: (props: any) => {
@@ -600,13 +593,12 @@ describe('ProcessView component', () => {
     });
   });
 
-  it('links the Process drawer to its Model and Result release projection', async () => {
+  it('does not expose release controls from the Process drawer', async () => {
     render(<ProcessView {...defaultProps} />);
     fireEvent.click(screen.getByRole('button'));
-    fireEvent.click(screen.getByRole('button', { name: 'Releases' }));
 
-    expect(await screen.findByTestId('release-read-panel')).toHaveTextContent('process-1:1.0.0');
-    expect(screen.getAllByTestId('card')[0]).toHaveAttribute('data-active-key', 'releases');
+    await waitFor(() => expect(mockGetProcessDetail).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: 'Releases' })).not.toBeInTheDocument();
   });
 
   it('disables the view button when disabled prop is true', () => {

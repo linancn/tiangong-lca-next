@@ -5,8 +5,8 @@
     "repository": "linancn/tiangong-lca-next",
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "sourceManifestPath": "docs/plans/i18n-de-DE/manifest.json",
-    "sourceManifestDigest": "0ba964026db9c377e8c0ff9b281f2434c61879b671997b101a866855740ae92f",
-    "auditedInputDigest": "dbd7e52e372f1a21e4c646202447442d5e79198fcdea3afea44b82f411d5dffa"
+    "sourceManifestDigest": "e3c4985ae2a250796856e941cc17a44d13d389e2ee05712fa57a5ed8a0cebf00",
+    "auditedInputDigest": "1f36e04a72cba4ee610c9786573782863254836566773fc7108e29faa29dffbb"
   },
   "inventory": {
     "sourceMessageCount": 3032,
@@ -47,7 +47,7 @@
     "messageCount": 3032,
     "completeCount": 3032,
     "blockedCount": 0,
-    "dossierDigest": "ac02d8db021b9065707961a6b95fd7d63ad4262fce413c0bc51067f0f8ff7741",
+    "dossierDigest": "6692befb10ab699ab299db391553104385856439ee23f524e078f8a288190050",
     "catalogDigest": "fe762b9712f0e81eab9a0befa1fd0f820986ef430556ff6491148c6a2f30e6a2",
     "moduleCount": 31,
     "moduleDigest": "46fb10d2d29c762e23a92a65d644a45d9f5e3cd5f2cd7c56e5a9c57ed428cd4f",
@@ -55,9 +55,9 @@
       "error-or-validation": 342,
       "explanatory-copy": 110,
       "field-guidance": 49,
-      "label-or-body-copy": 1224,
+      "label-or-body-copy": 1223,
       "navigation-or-tab": 224,
-      "reserved-catalog-copy": 274,
+      "reserved-catalog-copy": 275,
       "status-or-empty-state": 92,
       "success-notification": 176,
       "title-or-heading": 237,
@@ -67,9 +67,9 @@
       "destructive-or-rejecting-action": 43,
       "failure-or-invalid-input": 342,
       "interactive-ready": 512,
-      "retained-not-currently-reachable": 353,
+      "retained-not-currently-reachable": 354,
       "successful-completion": 176,
-      "visible": 1606
+      "visible": 1605
     },
     "riskCounts": { "high": 1341, "low": 1473, "medium": 218 },
     "highRiskMessageCount": 1341,
@@ -88,7 +88,7 @@
   },
   "usageIndex": {
     "source": "docs/plans/i18n-de-DE/manifest.json messages[*].references/moduleOwnership/dynamicFamilies",
-    "literalReferenceCount": 4018,
+    "literalReferenceCount": 4017,
     "dynamicCallsiteCount": 39,
     "glossaryRuleScope": "full target catalog at the automated quality gate",
     "onDemandCommand": "npm run i18n:context:dossier -- --locale fr-FR --message <MESSAGE_ID>"
@@ -1120,5 +1120,5 @@
     "docs/plans/i18n-fr-FR/style-guide.md": "3b651e352a50676ed7f6609dcad88145dbd6a9ad81177ad261526b59d7bf4db4"
   },
   "blockedContext": [],
-  "contextDigest": "b7ef3704774b223cae361f566698043b8d116eeb51fa7d1179d934fac178ef42"
+  "contextDigest": "38f3b5fdee5ec580fec770d6153bcf0c00691c152058695404c55d631555a308"
 }

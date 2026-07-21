@@ -23,7 +23,7 @@ checkPaths:
   - tests/e2e/i18n/**
   - package.json
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedCommit: 5c1723b98f005b40f913f1ed6e174d064388efcc
 lastReviewedNote: 'Reviewed for Issue #647: failure recovery remains valid after moving browser semantic E2E to manual and release-only triggers.'
 ---
 
