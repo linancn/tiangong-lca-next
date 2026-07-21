@@ -1,7 +1,7 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-21"
-lastReviewedCommit: "05fa44f8d1a95662b18a44ecd267a7e7b1306905"
+lastReviewedCommit: "5c1723b98f005b40f913f1ed6e174d064388efcc"
 lastReviewedNote: 'Reviewed for Issue #647; routing and ownership remain unchanged after making browser semantic E2E manual on demand and release-required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.

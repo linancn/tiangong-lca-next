@@ -23,7 +23,7 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedCommit: 5c1723b98f005b40f913f1ed6e174d064388efcc
 lastReviewedNote: 'Updated for Issue #647: the semantic browser matrix is risk-proportional on demand and mandatory at release.'
 ---
 
