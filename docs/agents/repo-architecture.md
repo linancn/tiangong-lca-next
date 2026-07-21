@@ -23,9 +23,9 @@ checkPaths:
   - docker/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Reviewed for Issue #633: locale consumers remain registry-derived, with fixed locale arrays limited to explicit fail-closed product-contract tests.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: db144da244dc905edac60fb2b4cc774209059187
+lastReviewedNote: 'Reviewed for Issue #645: public release readback remains in Data Processing and is no longer mounted in Process detail.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -106,13 +106,11 @@ The persisted calculation read path is:
 
 `src/pages/DataProcessing/CalculationBundlePanel.tsx -> src/services/lcaReleases/api.ts -> authenticated Edge projection -> signed Calculation Bundle artifacts`
 
-The public release read paths are:
+The public release read path is:
 
 `src/pages/DataProcessing/index.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current-release projection`
 
-`src/pages/Processes/Components/view.tsx -> src/components/LcaReleaseReadPanel/index.tsx -> src/services/lcaReleases/api.ts -> public current Process projection`
-
-Next owns read orchestration, exact UUID/version deep links, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts or saving raw Calculation Bundle downloads, and fresh signed-download requests. Verified raw downloads are saved through a local Blob instead of a cross-origin download anchor. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
+Next owns read orchestration, release dataset identity display, directional LCI/LCIA rendering, integrity checks before parsing preview artifacts or saving raw Calculation Bundle downloads, and fresh signed-download requests. Verified raw downloads are saved through a local Blob instead of a cross-origin download anchor. The Calculation Bundle read requires the current user session. A public release projection may be anonymous only after Database and Edge expose it as the current published release. Next never approves or publishes a release, receives a service-role credential, or treats a private storage locator as public data.
 
 ## Current Hotspots
 
