@@ -110,7 +110,17 @@ describe('responsive surface evidence contract', () => {
     const targetMenuFilter = helperSource.indexOf('.filter({ has: targetIcon })');
     const scopedMenuItem = helperSource.indexOf("activeMenu.getByRole('menuitem')");
     const keyboardActivation = helperSource.indexOf("await target.press('Enter')");
-    const explicitMenuClose = helperSource.indexOf("await page.keyboard.press('Escape')");
+    const firstEscape = helperSource.indexOf("await page.keyboard.press('Escape')");
+    const atomicVisibleMenuCheck = helperSource.indexOf(
+      'document.querySelectorAll<HTMLElement>(\'[role="menu"]\')',
+    );
+    const atomicTriggerToggle = helperSource.indexOf(
+      "document.querySelector<HTMLElement>('.tg-global-language-selector')?.click()",
+    );
+    const secondEscape = helperSource.indexOf(
+      "await page.keyboard.press('Escape')",
+      firstEscape + 1,
+    );
     expect(spinnerWait?.index).toBeGreaterThan(-1);
     expect(storedLocaleEarlyReturn).toBeGreaterThan(spinnerWait!.index);
     expect(programmaticTriggerClick).toBeGreaterThan(storedLocaleEarlyReturn);
@@ -119,7 +129,10 @@ describe('responsive surface evidence contract', () => {
     expect(targetMenuFilter).toBeGreaterThan(activeMenuScope);
     expect(scopedMenuItem).toBeGreaterThan(activeMenuScope);
     expect(keyboardActivation).toBeGreaterThan(scopedMenuItem);
-    expect(explicitMenuClose).toBeGreaterThan(keyboardActivation);
+    expect(firstEscape).toBeGreaterThan(keyboardActivation);
+    expect(atomicVisibleMenuCheck).toBeGreaterThan(firstEscape);
+    expect(atomicTriggerToggle).toBeGreaterThan(atomicVisibleMenuCheck);
+    expect(secondEscape).toBeGreaterThan(atomicTriggerToggle);
     expect(helperSource).not.toContain('trigger.click({ force:');
     expect(helperSource).not.toContain('await target.click(');
   });

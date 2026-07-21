@@ -774,12 +774,18 @@ describe('production data ledger safety contract', () => {
     );
   });
 
-  it('reconciles only the atomic cleanup-prepared transition between ledger copies', () => {
+  it('reconciles only recovery-backed ledger states and the atomic cleanup transition', () => {
     const primary = makeLedger();
     const recovery = makeLedgerAtState('cleanup-prepared');
     expect(reconcileProductionLedgerCopies(primary, recovery)).toEqual(recovery);
     expect(reconcileProductionLedgerCopies(recovery, primary)).toEqual(recovery);
-    expect(reconcileProductionLedgerCopies(primary, undefined)).toEqual(primary);
+    expect(reconcileProductionLedgerCopies(undefined, primary)).toEqual(primary);
+  });
+
+  it('refuses to let a stale run adopt a primary ledger without its recovery copy', () => {
+    expect(() => reconcileProductionLedgerCopies(makeLedger(), undefined)).toThrow(
+      /no matching recovery copy/u,
+    );
   });
 
   it('refuses ledger-copy disagreement outside the cleanup-prepared transition', () => {

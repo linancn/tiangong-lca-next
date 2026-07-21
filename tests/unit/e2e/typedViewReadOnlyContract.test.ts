@@ -211,4 +211,24 @@ describe('typed Process required-state read-only trap contract', () => {
       'expect(readTrappedValidationDrafts()).toBe(trappedValidationDraftsBeforeMount);',
     );
   });
+
+  it('settles each Process drawer before changing locale and proves localized copy afterward', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/typed-view-variants.spec.ts'),
+      'utf8',
+    );
+    const scenarioStart = source.indexOf("test('Process edit and view deep links");
+    const scenarioEnd = source.indexOf('PROCESS_REQUIRED_VARIANTS.forEach(', scenarioStart);
+    const scenario = source.slice(scenarioStart, scenarioEnd);
+    const navigation = scenario.indexOf('await page.goto(');
+    const initialMount = scenario.indexOf('await expectProcessDrawerMounted(', navigation);
+    const localeChange = scenario.indexOf('await selectAppLocaleThroughUi(', initialMount);
+    const localizedDrawer = scenario.indexOf('await expectProcessDrawer(', localeChange);
+
+    expect(navigation).toBeGreaterThan(-1);
+    expect(initialMount).toBeGreaterThan(navigation);
+    expect(localeChange).toBeGreaterThan(initialMount);
+    expect(localizedDrawer).toBeGreaterThan(localeChange);
+    expect(source).toContain("drawer.locator('.ant-spin-spinning')");
+  });
 });

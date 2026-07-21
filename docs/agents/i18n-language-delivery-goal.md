@@ -56,7 +56,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
 lastReviewedNote: 'Updated for Issue #647: semantic browser E2E is manual on demand, required for the exact release SHA, and authenticated only in local operator sessions.'
 baselineObservedAt: 2026-07-18
 related:

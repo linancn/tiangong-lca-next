@@ -19,6 +19,8 @@ describe('production semantic E2E mutation authorization contract', () => {
     const config = read('playwright.config.ts');
     expect(config).toContain('failOnFlakyTests: Boolean(process.env.CI)');
     expect(config).toContain('retries: process.env.CI ? 1 : 0');
+    expect(config).toContain('const expectTimeout = authenticatedRun ? 45_000 : 15_000;');
+    expect(config).toContain('timeout: expectTimeout');
   });
 
   it('revalidates the complete operator envelope at create and exact-delete boundaries', () => {

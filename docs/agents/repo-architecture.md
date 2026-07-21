@@ -24,7 +24,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 5c1723b98f005b40f913f1ed6e174d064388efcc
+lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
 lastReviewedNote: 'Reviewed for Issue #645: public release readback remains in Data Processing and is no longer mounted in Process detail.'
 related:
   - ../AGENTS.md

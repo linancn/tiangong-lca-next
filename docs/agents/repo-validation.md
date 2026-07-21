@@ -25,8 +25,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-21
-lastReviewedCommit: 5c1723b98f005b40f913f1ed6e174d064388efcc
-lastReviewedNote: 'Updated for Issue #647: browser semantic E2E is manual for daily work and mandatory for the exact release SHA.'
+lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
+lastReviewedNote: 'Updated for Issue #652: authenticated production E2E has a scoped 45-second assertion budget while public/CI remains at 15 seconds.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

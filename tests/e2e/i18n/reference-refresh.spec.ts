@@ -220,6 +220,37 @@ async function expectProcessDeepLink(
     });
 }
 
+async function gotoCandidateUrl(page: Page, browserName: string, targetUrl: string): Promise<void> {
+  const maxNavigationAttempts = browserName === 'firefox' ? 2 : 1;
+  let navigationError: unknown;
+  for (let attempt = 0; attempt < maxNavigationAttempts; attempt += 1) {
+    try {
+      await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });
+      navigationError = undefined;
+      break;
+    } catch (error) {
+      const isKnownFirefoxCancellation =
+        browserName === 'firefox' &&
+        error instanceof Error &&
+        (error.message.includes('NS_ERROR_FAILURE') ||
+          error.message.includes('NS_BINDING_ABORTED'));
+      if (!isKnownFirefoxCancellation) {
+        throw error;
+      }
+      if (page.url() === targetUrl) {
+        navigationError = undefined;
+        break;
+      }
+      navigationError = error;
+    }
+  }
+  if (navigationError) throw navigationError;
+
+  // A known Firefox cancellation may receive one exact-target retry only when the first attempt
+  // did not commit. Every caller must still prove that its exact URL committed.
+  await expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl);
+}
+
 async function gotoCandidateDocument(
   page: Page,
   browserName: string,
@@ -229,21 +260,7 @@ async function gotoCandidateDocument(
   options: { mode?: 'edit' | 'view'; waitForDrawerIdle?: boolean } = {},
 ): Promise<void> {
   const { mode = 'view', waitForDrawerIdle = true } = options;
-  try {
-    await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });
-  } catch (error) {
-    const isCommittedFirefoxCancellation =
-      browserName === 'firefox' &&
-      error instanceof Error &&
-      (error.message.includes('NS_ERROR_FAILURE') || error.message.includes('NS_BINDING_ABORTED'));
-    if (!isCommittedFirefoxCancellation) {
-      throw error;
-    }
-  }
-
-  // Known Firefox cancellations are accepted only when the exact authenticated Process mount
-  // committed. No second navigation may hide a Welcome/login redirect or wrong query state.
-  await expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl);
+  await gotoCandidateUrl(page, browserName, targetUrl);
   await expectProcessDeepLink(page, ledger, state, mode);
   await expect(page.locator('.tg-global-header-avatar-trigger')).toBeAttached({ timeout: 45_000 });
   await expect(page.locator('.tg-global-language-selector')).toBeVisible({ timeout: 45_000 });
@@ -727,6 +744,9 @@ test('previous-revision browser caches fail closed and process deep links surviv
       }
 
       try {
+        const cacheStagingUrl = new URL('/privacy_notice.html', baseURL!);
+        cacheStagingUrl.searchParams.set('codexE2EReferenceState', state);
+        await gotoCandidateUrl(page, browserName, cacheStagingUrl.toString());
         const injectedEntries = await injectPreviousRevisionEntries(
           page,
           fixtures,
@@ -734,8 +754,7 @@ test('previous-revision browser caches fail closed and process deep links surviv
           staleMarker,
         );
         await expectPreviousRevisionEntriesInjected(page, injectedEntries);
-        await page.reload({ waitUntil: 'domcontentloaded' });
-        expect(page.url()).toBe(targetUrl);
+        await gotoCandidateUrl(page, browserName, targetUrl);
         await expectProcessDeepLink(page, ledger!, state);
         await expect.poll(() => readStoredAppLocale(page)).toBe(definition.appLocale);
         await expect
