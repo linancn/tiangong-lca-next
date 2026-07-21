@@ -23,9 +23,9 @@ checkPaths:
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; bootstrap and canonical command guidance are unchanged.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedNote: 'Updated for Issue #647: documented the manual and exact-release-SHA semantic E2E entrypoints.'
 ---
 
 # Development Bootstrap
@@ -137,7 +137,7 @@ This command shape is forbidden in semantic E2E GitHub Actions; CI uses the same
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - semantic localization E2E is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and always serves the local candidate with `npm run start:main` against the production backend; `E2E_BASE_URL` must remain a loopback URL
-- every semantic E2E GitHub Actions invocation, including `workflow_dispatch`, is credential-free and read-only; CI runs only contract discovery plus the three-browser public semantic/boundary matrix
+- semantic E2E GitHub Actions is credential-free and read-only: `workflow_dispatch` runs the three-browser public semantic/boundary matrix on demand, and the canonical release workflow calls the same matrix for the exact release SHA; routine PR/dev pushes do not trigger it
 - the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; production write requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
 - before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
 - teardown deletes only the verified exact-ID rows, records created/cleaned counts, and must prove `created=cleaned` and `leaked=0`

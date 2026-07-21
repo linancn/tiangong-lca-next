@@ -23,9 +23,9 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; no coverage or testing queue is reopened.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedNote: 'Updated for Issue #647: recorded manual-on-demand and release-required browser semantic E2E.'
 ---
 
 # Testing Execution State
@@ -52,12 +52,12 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
-- every semantic E2E GitHub Actions execution, including `workflow_dispatch`, is credential-free/read-only and runs only contract discovery plus three-browser public semantics; authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
-- tracked semantic evidence remains fail closed until one full local authenticated execution closes every assertion, matches source/test/route digests, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; adding a registry locale invalidates older evidence rather than silently shrinking coverage
+- semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
+- tracked semantic evidence remains fail closed for production readiness until one full local authenticated execution closes every assertion, matches the declared source/test/route bindings, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; routine pre-push checks validate the record structurally without requiring current production-proof hashes, and adding a registry locale still invalidates older evidence rather than silently shrinking coverage
 - Header locale switching now keeps Umi `SelectLang` at `reload={false}`; focused proof covers same-document identity, URL retention, live reference-label refresh, and rejection of a delayed old-locale response
 - clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
-- the production Release Gate delegates the complete test inventory to one `prepush:gate` step: the nested-process receipt suite runs once without coverage in its own Jest process, while every remaining suite runs once through a single-worker coordinator that recycles workers above `64MB` and retains unchanged 100% `src/**` coverage; no earlier standalone `test:ci` is allowed
+- the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; publication waits for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate
 - Issue #606 plus the merged clean-runner assertions now has 87-test focused proof across the release service, Calculation Bundle panel, public release panel, Data Processing integration, Process integration, and locale inventory; the final branch-wide proof remains owned by the push hook
 - dataset SDK validation adapters, shared localized validation helpers, and validation-report navigation now ride on the maintained full-closure baseline

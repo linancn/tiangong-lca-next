@@ -28,9 +28,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; repo, branch, delivery, and workspace-integration contracts are unchanged.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: 05fa44f8d1a95662b18a44ecd267a7e7b1306905
+lastReviewedNote: 'Updated for Issue #647: browser semantic E2E is manual on demand and mandatory for the exact release SHA, while authenticated production proof remains local-only.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -108,7 +108,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
-- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; every semantic E2E GitHub Actions invocation, including `workflow_dispatch`, is credential-free and read-only, while the authenticated candidate-local/production-backend closure runs only in an explicitly authorized local operator session
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; the three-browser GitHub Actions matrix is credential-free/read-only, available through `workflow_dispatch`, and required for the exact release SHA, while routine PR/dev pushes do not trigger it and the authenticated candidate-local/production-backend closure runs only in an explicitly authorized local operator session
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
@@ -171,7 +171,7 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
-- canonical `main` branch pushes read `package.json.version`, create the matching `v*` tag when missing, run the release gate, deploy the web app, and build draft Electron releases in the same workflow run
+- canonical `main` branch pushes read `package.json.version`, create the matching `v*` tag when missing, run the release gate plus exact-SHA credential-free semantic E2E, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
 - manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases
 

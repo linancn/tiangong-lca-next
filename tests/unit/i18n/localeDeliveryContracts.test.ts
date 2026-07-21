@@ -2,6 +2,7 @@ import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities'
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
 import { REFERENCE_RESOURCE_MANIFEST } from '@/services/referenceResources/manifest';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
@@ -16,6 +17,11 @@ const DELIVERY_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/locale-delivery
 
 const readJson = (relativePath: string) =>
   JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), 'utf8'));
+
+const sha256File = (relativePath: string) =>
+  createHash('sha256')
+    .update(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath)))
+    .digest('hex');
 
 describe('shared locale delivery contracts', () => {
   it('covers every registry locale and mandatory route view without granting anonymous access', () => {
@@ -383,6 +389,13 @@ describe('shared locale delivery contracts', () => {
     expect(localeDelivery).toContain(
       'Semantic E2E digest root must be a non-empty repository directory matching Playwright testDir.',
     );
+    expect(localeDelivery).toContain('{ requireCurrentBindings: requireCurrentSemanticEvidence }');
+    expect(localeDelivery).not.toContain(
+      "evidence.candidate.sourceTreeDigest !== digestTree(root, 'src')",
+    );
+    expect(localeDelivery).not.toContain(
+      "evidence.candidate.unitTestTreeDigest !== digestTree(root, 'tests/unit')",
+    );
   });
 
   it.each(SUPPORTED_APP_LOCALES)(
@@ -738,10 +751,22 @@ describe('shared locale delivery contracts', () => {
 
   it('makes the explicit production-readiness gate follow verified semantic evidence', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
+    const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
+    const boundFiles = [
+      evidence.digests.packageLock,
+      ...evidence.digests.runtimeAssets,
+      ...evidence.digests.tests,
+      ...evidence.digests.sources,
+    ];
     const semanticRouteAndE2EReady =
       coverage.proofPolicy.status === 'execution-evidence' &&
       coverage.proofPolicy.browserProof.status === 'verified' &&
-      coverage.proofPolicy.browserProof.executedEvidence.length === 1;
+      coverage.proofPolicy.browserProof.executedEvidence.length === 1 &&
+      boundFiles.every(
+        ({ path: evidencePath, sha256 }: { path: string; sha256: string }) =>
+          fs.existsSync(path.join(REPOSITORY_ROOT, evidencePath)) &&
+          sha256File(evidencePath) === sha256,
+      );
     const result = spawnSync(
       process.execPath,
       [

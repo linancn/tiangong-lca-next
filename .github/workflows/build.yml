@@ -221,11 +221,20 @@ jobs:
       - name: Run full release gate
         run: npm run prepush:gate
 
+  release-semantic-e2e:
+    name: Release Semantic E2E
+    needs: release-context
+    if: needs.release-context.outputs.should_release == 'true'
+    uses: ./.github/workflows/i18n-semantic-e2e.yml
+    with:
+      ref: ${{ needs.release-context.outputs.release_head }}
+
   release-draft:
     name: Prepare Unique Draft Release
     needs:
       - release-context
       - release-gate
+      - release-semantic-e2e
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -298,6 +307,7 @@ jobs:
     needs:
       - release-context
       - release-gate
+      - release-semantic-e2e
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     env:
@@ -389,6 +399,7 @@ jobs:
       - release-context
       - release-gate
       - release-draft
+      - release-semantic-e2e
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ${{ matrix.os }}
 
