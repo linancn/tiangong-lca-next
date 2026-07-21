@@ -23,9 +23,9 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; no coverage or testing queue is reopened.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: db144da244dc905edac60fb2b4cc774209059187
+lastReviewedNote: 'Updated for Issue #647: routine pre-push validates semantic evidence structurally; current digest binding remains an explicit production-readiness concern.'
 ---
 
 # Testing Execution State
@@ -53,7 +53,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - every semantic E2E GitHub Actions execution, including `workflow_dispatch`, is credential-free/read-only and runs only contract discovery plus three-browser public semantics; authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
-- tracked semantic evidence remains fail closed until one full local authenticated execution closes every assertion, matches source/test/route digests, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; adding a registry locale invalidates older evidence rather than silently shrinking coverage
+- tracked semantic evidence remains fail closed for production readiness until one full local authenticated execution closes every assertion, matches the declared source/test/route bindings, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; routine pre-push checks validate the record structurally without requiring current production-proof hashes, and adding a registry locale still invalidates older evidence rather than silently shrinking coverage
 - Header locale switching now keeps Umi `SelectLang` at `reload={false}`; focused proof covers same-document identity, URL retention, live reference-label refresh, and rejection of a delayed old-locale response
 - clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator

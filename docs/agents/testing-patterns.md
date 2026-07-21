@@ -23,9 +23,9 @@ checkPaths:
   - tests/e2e/i18n/**
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; reusable test-selection and structure patterns are unchanged.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: db144da244dc905edac60fb2b4cc774209059187
+lastReviewedNote: 'Updated for Issue #647: routine structural evidence checks and explicit production binding checks are separate reusable gate patterns.'
 ---
 
 # Testing Patterns Reference
@@ -103,7 +103,7 @@ Special cases:
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
-14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; the tracked evidence must close all 49 IDs and match its route, test, source, locale, browser, and cleanup digests
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 
 Browser semantic E2E pattern:
 

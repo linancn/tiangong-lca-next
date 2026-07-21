@@ -22,9 +22,9 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-20
+lastReviewedAt: 2026-07-21
 lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; supported recovery paths are unchanged.'
+lastReviewedNote: 'Updated for Issue #647: production semantic evidence drift no longer blocks routine activation or pre-push validation.'
 ---
 
 # Testing Troubleshooting
@@ -56,7 +56,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | Playwright refuses `E2E_BASE_URL` | the browser target is not the local candidate frontend | use a loopback candidate URL and let `playwright.config.ts` start `npm run start:main`; never point the Playwright frontend target at production |
 | a public semantic browser job reports a flaky missing login control after cold startup | the global candidate probe passed, but a new page returned from `domcontentloaded` before its login route mounted | keep `failOnFlakyTests` enabled, make the page use the shared rendered-login readiness helper, move regenerable Umi/MFSU caches aside, and rerun the exact browser scope without a fixed sleep or global timeout increase |
 | authenticated semantic E2E skips or fails before setup | the explicitly authorized local operator session lacks runtime credentials, authenticated mode, one of the two write guards, verified-evidence opt-in, the production target proof, or an absolute recovery-ledger path outside the candidate worktree | keep every semantic E2E GitHub Actions run unauthenticated/read-only; run the full closure only in the authorized local session with `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, the exact one-process confirmation token, `E2E_WRITE_VERIFIED_EVIDENCE=true`, the verified production backend target, and `E2E_RECOVERY_LEDGER_PATH` set to a protected absolute path outside the candidate worktree |
-| semantic evidence remains `failed` or activation rejects it | one of the 49 assertion IDs, registry locales, required browsers, route/test/source digests, or cleanup counts is incomplete or stale | inspect the first mismatched contract field, rerun only the affected browser scope, then run the complete authenticated closure; never edit evidence to simulate execution |
+| explicit production locale readiness rejects semantic evidence | one of the 49 assertion IDs, registry locales, required browsers, current backend/package/runtime/route/test/source bindings, or cleanup counts is incomplete or stale | inspect the first mismatched contract field, rerun only the affected browser scope, then run the complete authenticated closure; never edit evidence to simulate execution. Routine activation/pre-push checks must not require current production-proof hashes. |
 | teardown refuses cleanup or reports a leaked `codex-e2e` process | the intent ledger is invalid, the production row UUID/owner/five-field registry marker closure does not match, or exact-ID deletion failed | preserve the ignored ledger; inspect only the exact UUID row, restore verifiable ownership/marker evidence or escalate, and never broaden deletion; do not create another record until `created=cleaned` and `leaked=0` |
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
 | Playwright browser executable is missing | the pinned dependency is installed but browser binaries are not | run `npx playwright install chromium firefox webkit` locally, or use the workflow's per-browser `--with-deps` install step |

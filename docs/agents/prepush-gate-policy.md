@@ -26,9 +26,9 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-20
+lastReviewedAt: 2026-07-21
 lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; pre-push and release-gate behavior is unchanged.'
+lastReviewedNote: 'Updated for Issue #647: routine pre-push validates semantic evidence structure without requiring current production-proof digests; production readiness still revalidates exact bindings.'
 ---
 
 # Pre-Push Gate Policy
@@ -56,6 +56,8 @@ The full gate runs LCIA verification, `npm run reference-data:check`, lint/type 
 Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
 
 `npm run test:e2e:i18n` is a separate Playwright semantic localization proof, not another step inside `prepush:gate`. Keeping it separate prevents a routine local push from requiring production credentials or creating production data. Its GitHub Actions workflow owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+
+Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, package-lock, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
 ## Scope
 
@@ -115,6 +117,7 @@ It does not own:
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep the path-scoped semantic E2E workflow independent from `prepush:gate`: all semantic E2E GitHub events have no production credentials or writes, while only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
+- keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate
 - keep release automation in the same `main` push workflow after the tag is created; do not rely on a second tag-push workflow run from `GITHUB_TOKEN`
 - use `workflow_dispatch` with an existing `v*` tag when a release needs to be recovered with newer workflow code
 - make draft creation single-writer before parallel Electron publication, fail closed when more than one release uses the tag, and verify the exact cross-platform asset set after every matrix run

@@ -24,9 +24,9 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-20
+lastReviewedAt: 2026-07-21
 lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; the existing proof matrix and production release gate remain sufficient.'
+lastReviewedNote: 'Updated for Issue #647: normal pre-push no longer requires current authenticated semantic E2E digests, while production readiness remains fail closed.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -93,7 +93,7 @@ The separate full authenticated closure is local-operator-only. It requires expl
 
 The full route/view proof has 49 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
 
-Authenticated setup may create only UUID-scoped `codex-e2e` process data. It writes an ignored intent ledger before attempting create. Before any delete, cleanup reads the production row by UUID and verifies the authenticated owner, the UUID at its exact ILCD path, and language/marker pairs at each of the five exact multilingual field paths; marker strings scattered elsewhere do not attest ownership. Only then may it delete the exact-ID row version. Evidence must prove `created=cleaned` and `leaked=0`. Screenshots, trace, video, stored auth state, and credential-bearing artifacts are disabled. The tracked semantic evidence is accepted only when its schema, 49-ID/required-scenario closure, browser/locale sets, route contract digest, test/source digests, and cleanup counts all match; any drift fails closed.
+Authenticated setup may create only UUID-scoped `codex-e2e` process data. It writes an ignored intent ledger before attempting create. Before any delete, cleanup reads the production row by UUID and verifies the authenticated owner, the UUID at its exact ILCD path, and language/marker pairs at each of the five exact multilingual field paths; marker strings scattered elsewhere do not attest ownership. Only then may it delete the exact-ID row version. Evidence must prove `created=cleaned` and `leaked=0`. Screenshots, trace, video, stored auth state, and credential-bearing artifacts are disabled. Routine locale/pre-push validation checks the evidence schema, record shape, 49-ID/required-scenario closure, browser/locale sets, cleanup counts, and declared digest-path inventory without requiring production proof to match the current checkout. The explicit production-readiness gate additionally requires the current route contract, backend target, package lock, runtime assets, semantic tests, and declared route/source files to match; drift there fails production closed. Candidate-wide `src/**` and `tests/unit/**` digests are retained as execution provenance rather than production invalidation inputs.
 
 The shared Header wraps Umi `SelectLang` with `reload={false}`. Browser proof must show that locale switching preserves the current URL and document identity, refreshes locale-bound reference labels in the mounted page, and prevents a delayed response for the old locale from overwriting the current locale.
 

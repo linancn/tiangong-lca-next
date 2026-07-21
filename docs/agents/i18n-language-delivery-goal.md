@@ -55,9 +55,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for the digest-bound v0.0.53 release candidate; the full authenticated semantic E2E contract remains satisfied with created=cleaned and leaked=0.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: db144da244dc905edac60fb2b4cc774209059187
+lastReviewedNote: 'Updated for Issue #647: routine checks validate semantic evidence structure, while explicit production readiness revalidates current declared bindings.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -620,7 +620,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 生产写入只允许随机 UUID 且 marker 以 `codex-e2e` 开头的数据。任何 create 之前必须先持久化 ignored intent ledger，绑定精确 `id + table + version + marker + createAttempted`。任何 delete 之前必须按 UUID 读取 production row，并同时验证 `common:UUID` 的确切 ILCD 路径、当前 authenticated owner，以及 `baseName`、`treatmentStandardsRoutes`、`mixAndLocationTypes`、`functionalUnitFlowProperties`、`generalComment` 五个确切字段路径中每个 registry authoring language 的 `@xml:lang`/exact-marker 配对；散落在其他位置的 marker 不构成 attestation。任一不符都拒绝删除，禁止扩大查询或模糊清理。只有完成上述 row attestation 后才能逐个删除 exact-ID versions，并验证 `created=cleaned`、`leaked=0`；前一次 ledger 未清零时不得创建下一条。截图、trace、video、持久化 auth state 和任何 credential-bearing artifact 全部禁用。
 
-tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。激活器必须验证 evidence schema、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、route contract digest、test/source digests、local operator target proof 和 ledger cleanup counts；任一输入变化、缺失或不一致都 fail closed。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package lock、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
 ---
 
@@ -1061,7 +1061,7 @@ npm run push:retry
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
 - [ ] 所有 semantic E2E GitHub Actions event（包括 `workflow_dispatch`）无生产凭据、无生产写，只运行三浏览器 public semantics/合同；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
-- [ ] tracked evidence 的 schema、ID/locale/browser closure、route/source/test digests 和 cleanup counts 全部 fail-closed 校验通过。
+- [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
 ### 11.5 工程与发布
 

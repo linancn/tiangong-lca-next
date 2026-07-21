@@ -22,9 +22,9 @@ checkPaths:
   - playwright.config.ts
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; the maintained testing strategy needs no change.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: db144da244dc905edac60fb2b4cc774209059187
+lastReviewedNote: 'Reviewed for Issue #647; the maintained testing strategy remains valid after separating routine and production semantic-evidence validation.'
 ---
 
 # Testing Strategy
