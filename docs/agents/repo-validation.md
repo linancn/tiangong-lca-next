@@ -27,7 +27,7 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
+lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
 lastReviewedNote: 'Updated for Issue #660: added proof requirements for the host-CI refusal and local container CI-marker boundary.'
 related:
   - ../AGENTS.md
