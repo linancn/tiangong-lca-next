@@ -26,6 +26,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
 
   it('keeps worker status and certificate validity separate without accepting raw result fields', () => {
     const summary = decodeDataProductTaskSummary({
+      schemaVersion: 'task-summary.v2',
       jobId: 'job-1',
       jobKind: 'lcia.scope_closure_check',
       category: 'data_product',
@@ -162,6 +163,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
   it('deduplicates by job id and rejects unversioned/raw worker rows', () => {
     upsertDataProductTasks([
       {
+        schemaVersion: 'task-summary.v2',
         jobId: 'safe-job',
         jobKind: 'lcia_result.package_build',
         category: 'data_product',
@@ -178,11 +180,39 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     expect(listDataProductTasks().some((task) => task.jobId === 'raw-worker-job')).toBe(false);
   });
 
+  it('preserves pending certificate validity and rejects an unversioned task projection', () => {
+    expect(
+      decodeDataProductTaskSummary({
+        schemaVersion: 'task-summary.v2',
+        jobId: 'job-pending',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        workerStatus: 'queued',
+        domainValidity: 'pending',
+        projectionUpdatedAt: '2026-07-22T00:00:00Z',
+        capabilities: {},
+      })?.domainValidity,
+    ).toBe('pending');
+
+    expect(
+      decodeDataProductTaskSummary({
+        jobId: 'unversioned',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        workerStatus: 'queued',
+        domainValidity: 'pending',
+        projectionUpdatedAt: '2026-07-22T00:00:00Z',
+        capabilities: {},
+      }),
+    ).toBeNull();
+  });
+
   it('keeps closure issue pagination actor-scoped and out of the task feed', async () => {
     (invokeDataProductCommand as jest.Mock).mockResolvedValue({
       data: {
         schemaVersion: 'lcia.scope-closure-issues-page.v1',
         closureCheckId: 'closure-1',
+        totalCount: 1,
         issues: [
           {
             issueId: 'issue-1',
@@ -220,6 +250,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       affectedRootCount: 1,
     });
     expect(result.data?.issues[0]).not.toHaveProperty('affectedProcess');
+    expect(result.data?.totalCount).toBe(1);
   });
 
   it('whitelists only the safe short-lived report descriptor fields', async () => {

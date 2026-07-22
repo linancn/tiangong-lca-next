@@ -88,6 +88,7 @@ export type ClosureCheckIssuePageV1 = {
   schemaVersion: 'lcia.scope-closure-issues-page.v1';
   closureCheckId: string;
   issues: ClosureCheckIssueV1[];
+  totalCount: number;
   nextCursor?: string;
 };
 
@@ -270,13 +271,23 @@ export function decodeClosureCheckIssue(value: unknown): ClosureCheckIssueV1 | n
 
 export function decodeClosureCheckIssuePage(value: unknown): ClosureCheckIssuePageV1 | null {
   if (!isRecord(value) || value.schemaVersion !== 'lcia.scope-closure-issues-page.v1') return null;
-  if (!isNonEmptyString(value.closureCheckId) || !Array.isArray(value.issues)) return null;
+  const totalCount = numberValue(value.totalCount);
+  if (
+    !isNonEmptyString(value.closureCheckId) ||
+    !Array.isArray(value.issues) ||
+    totalCount === undefined ||
+    !Number.isInteger(totalCount) ||
+    totalCount < 0
+  ) {
+    return null;
+  }
   const issues = value.issues.map(decodeClosureCheckIssue);
   if (issues.some((issue) => !issue)) return null;
   return {
     schemaVersion: 'lcia.scope-closure-issues-page.v1',
     closureCheckId: value.closureCheckId,
     issues: issues as ClosureCheckIssueV1[],
+    totalCount,
     ...(isNonEmptyString(value.nextCursor) ? { nextCursor: value.nextCursor } : {}),
   };
 }

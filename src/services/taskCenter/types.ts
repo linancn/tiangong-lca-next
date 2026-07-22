@@ -17,7 +17,14 @@ export type TaskRawStatus =
   | 'unknown';
 
 export type TaskRunState = 'active' | 'succeeded' | 'blocked' | 'failed' | 'cancelled' | 'stale';
-export type TaskDomainValidity = 'none' | 'valid' | 'stale' | 'revoked' | 'incomplete' | 'unknown';
+export type TaskDomainValidity =
+  | 'none'
+  | 'pending'
+  | 'valid'
+  | 'stale'
+  | 'revoked'
+  | 'incomplete'
+  | 'unknown';
 
 export type TaskCenterDeepLink = {
   routeKey: 'data_product.closure_check' | 'data_product.package';

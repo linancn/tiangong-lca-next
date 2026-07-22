@@ -45,7 +45,7 @@ function text(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function rawStatus(value: unknown): TaskRawStatus {
+function rawStatus(value: unknown): TaskRawStatus | undefined {
   return [
     'queued',
     'running',
@@ -57,11 +57,13 @@ function rawStatus(value: unknown): TaskRawStatus {
     'cancelled',
   ].includes(String(value))
     ? (value as TaskRawStatus)
-    : 'unknown';
+    : undefined;
 }
 
 function domainValidity(value: unknown): TaskDomainValidity {
-  return ['none', 'valid', 'stale', 'revoked', 'incomplete', 'unknown'].includes(String(value))
+  return ['none', 'pending', 'valid', 'stale', 'revoked', 'incomplete', 'unknown'].includes(
+    String(value),
+  )
     ? (value as TaskDomainValidity)
     : 'none';
 }
@@ -92,7 +94,17 @@ export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | nu
   const jobKind = text(row?.jobKind);
   const category = text(row?.category);
   const projectionUpdatedAt = text(row?.projectionUpdatedAt);
-  if (!jobId || !jobKind || category !== 'data_product' || !projectionUpdatedAt) return null;
+  const workerStatus = rawStatus(row?.workerStatus);
+  if (
+    row?.schemaVersion !== 'task-summary.v2' ||
+    !jobId ||
+    !jobKind ||
+    category !== 'data_product' ||
+    !projectionUpdatedAt ||
+    !workerStatus
+  ) {
+    return null;
+  }
   const capabilities = record(row?.capabilities);
   const counters = record(row?.progressCounters);
   return {
@@ -100,7 +112,7 @@ export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | nu
     jobId,
     jobKind,
     ...(text(row?.requestedBy) ? { requestedBy: text(row?.requestedBy) } : {}),
-    workerStatus: rawStatus(row?.workerStatus),
+    workerStatus,
     ...(text(row?.domainStatus) ? { domainStatus: text(row?.domainStatus) } : {}),
     domainValidity: domainValidity(row?.domainValidity),
     projectionUpdatedAt,
@@ -125,7 +137,7 @@ export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | nu
     id: jobId,
     category: 'data_product',
     title: text(row?.title) ?? '',
-    runState: taskRunStateFromRawStatus(rawStatus(row?.workerStatus)),
+    runState: taskRunStateFromRawStatus(workerStatus),
     createdAt: projectionUpdatedAt,
     updatedAt: projectionUpdatedAt,
     ...(deepLink(row?.deepLink) ? { deepLink: deepLink(row?.deepLink) } : {}),
