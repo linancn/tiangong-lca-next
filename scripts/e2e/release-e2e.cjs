@@ -980,10 +980,10 @@ function assertProtectedCredentialFile(filePath) {
 
 function playwrightArguments(options) {
   const args = [];
-  if (options.project) args.push('--project', options.project);
-  if (options.grep) args.push('--grep', options.grep);
-  if (options.repeatEach) args.push('--repeat-each', String(options.repeatEach));
   if (options.spec) args.push(options.spec);
+  if (options.project) args.push(`--project=${options.project}`);
+  if (options.grep) args.push(`--grep=${options.grep}`);
+  if (options.repeatEach) args.push(`--repeat-each=${options.repeatEach}`);
   return args;
 }
 

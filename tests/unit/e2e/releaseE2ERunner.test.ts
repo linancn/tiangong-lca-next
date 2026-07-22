@@ -85,11 +85,9 @@ describe('release E2E controller contracts', () => {
     ]);
     expect(() => controller.validateRunOptions(authenticated)).not.toThrow();
     expect(controller.playwrightArguments(authenticated)).toEqual([
-      '--project',
-      'firefox',
-      '--grep',
-      'login',
       'tests/e2e/i18n/semantic-critical.spec.ts',
+      '--project=firefox',
+      '--grep=login',
     ]);
     const repeatedDiagnostic = controller.parseOptions('run', [
       '--project=chromium',
@@ -98,12 +96,9 @@ describe('release E2E controller contracts', () => {
     ]);
     expect(() => controller.validateRunOptions(repeatedDiagnostic)).not.toThrow();
     expect(controller.playwrightArguments(repeatedDiagnostic)).toEqual([
-      '--project',
-      'chromium',
-      '--grep',
-      'locale race',
-      '--repeat-each',
-      '5',
+      '--project=chromium',
+      '--grep=locale race',
+      '--repeat-each=5',
     ]);
     expect(() =>
       controller.validateRunOptions(controller.parseOptions('run', ['--repeat-each=3'])),
