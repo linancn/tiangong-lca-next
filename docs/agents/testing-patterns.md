@@ -21,11 +21,13 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - scripts/e2e/**
+  - docker/e2e/**
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #652: documented deterministic cache staging, focused menu dismissal, and authenticated production wait budgets.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: separated focused browser diagnosis from exact-candidate release proof and documented preflight/resume boundaries.'
 ---
 
 # Testing Patterns Reference
@@ -108,7 +110,11 @@ Special cases:
 Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
-- serve the candidate locally with `npm run start:main`; reject a non-loopback Playwright base URL even though the candidate uses the production backend configuration
+- use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
+- use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
+- finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
+- serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
+- reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence
 - keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
@@ -134,7 +140,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | --- | --- |
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
-| semantic localization browser proof | `npm run test:e2e:i18n` |
+| focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
+| exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |

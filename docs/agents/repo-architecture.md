@@ -21,11 +21,12 @@ checkPaths:
   - src/**
   - public/**
   - docker/**
+  - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Reviewed for Issue #645: public release readback remains in Data Processing and is no longer mounted in Process detail.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: mapped the isolated release-E2E controller/container while preserving the test-only Supabase and shipped-service ownership boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -54,9 +55,10 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
+| `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `icons/**` | packaged app icons and release assets |
-| `docker/**` | self-hosted sync helpers and mirrors |
+| other `docker/**` paths | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |
 
 ## Runtime Model
@@ -82,7 +84,7 @@ Rules:
 - language options, labels, resolver priorities, service-query adapters, static resource files, and cache revisions are derived from their owning registry or manifest. `npm run i18n:platform:audit` verifies exact registry joins and `npm run i18n:hardcoding:audit` fails closed on unowned language literals outside a narrow, issue-owned adapter allowlist
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
-- semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Its direct Supabase client is a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
+- semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `npm run start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Its direct Supabase client remains a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
 
 ### Process Review-Submit Gate
 

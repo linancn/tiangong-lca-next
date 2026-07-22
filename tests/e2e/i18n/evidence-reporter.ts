@@ -286,7 +286,34 @@ function digestTree(relativeDirectory: string): string {
   return sha256(`${JSON.stringify(entries)}\n`);
 }
 
+export function readManifestCandidateIdentity(): CandidateIdentity | undefined {
+  const manifestPath = process.env.E2E_CANDIDATE_MANIFEST_PATH?.trim();
+  if (!manifestPath) return undefined;
+  const manifest = JSON.parse(readFileSync(path.resolve(manifestPath), 'utf8')) as {
+    candidate?: { evidenceIdentity?: CandidateIdentity };
+    kind?: string;
+    schemaVersion?: number;
+  };
+  const identity = manifest.candidate?.evidenceIdentity;
+  const sha256Pattern = /^[0-9a-f]{64}$/u;
+  if (
+    manifest.kind !== 'tiangong-next-release-e2e-candidate' ||
+    manifest.schemaVersion !== 3 ||
+    !identity ||
+    !/^[0-9a-f]{40}$/u.test(identity.observedHeadCommit) ||
+    !sha256Pattern.test(identity.configTreeDigest) ||
+    !sha256Pattern.test(identity.packageManifestDigest) ||
+    !sha256Pattern.test(identity.sourceTreeDigest) ||
+    !sha256Pattern.test(identity.unitTestTreeDigest)
+  ) {
+    throw new Error('Candidate manifest has no valid semantic evidence identity.');
+  }
+  return identity;
+}
+
 function readCandidateIdentity(): CandidateIdentity {
+  const manifestIdentity = readManifestCandidateIdentity();
+  if (manifestIdentity) return manifestIdentity;
   const observedHeadCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
     cwd: REPOSITORY_ROOT,
     encoding: 'utf8',

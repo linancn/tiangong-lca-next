@@ -57,7 +57,7 @@ describe('candidate frontend readiness', () => {
     expect(closeBrowser).toHaveBeenCalledTimes(1);
   });
 
-  it('fails without page details and still closes partial browser resources', async () => {
+  it('keeps the original failure as cause and still closes partial browser resources', async () => {
     const closeContext = jest.fn().mockResolvedValue(undefined);
     const context = {
       close: closeContext,
@@ -69,13 +69,23 @@ describe('candidate frontend readiness', () => {
       newContext: jest.fn().mockResolvedValue(context),
     };
 
-    await expect(
-      waitForCandidateFrontendReady('http://127.0.0.1:8123', 'chromium', 45_000, {
+    let caught: unknown;
+    try {
+      await waitForCandidateFrontendReady('http://127.0.0.1:8123', 'chromium', 45_000, {
         assertNoBlockedRequests: jest.fn(),
         installReadOnlyGuard: jest.fn().mockResolvedValue({ guard: {} }),
         launchBrowser: jest.fn().mockResolvedValue(browser),
-      } as never),
-    ).rejects.toThrow('Candidate frontend did not become rendered and interactive in chromium.');
+      } as never);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toBe(
+      'Candidate frontend did not become rendered and interactive in chromium.',
+    );
+    expect(((caught as Error & { cause?: Error }).cause as Error).message).toBe(
+      'sensitive page failure',
+    );
     expect(closeContext).toHaveBeenCalledTimes(1);
     expect(closeBrowser).toHaveBeenCalledTimes(1);
   });

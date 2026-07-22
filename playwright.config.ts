@@ -14,7 +14,9 @@ const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8000';
 assertCandidateFrontendTarget(baseURL);
 
 const authenticatedRun = process.env.E2E_AUTHENTICATED === 'true';
+const releaseRun = process.env.E2E_RELEASE_MODE === 'true';
 const verifiedEvidenceRun = process.env.E2E_WRITE_VERIFIED_EVIDENCE === 'true';
+const externalCandidateServer = process.env.E2E_EXTERNAL_SERVER === 'true';
 const expectTimeout = authenticatedRun ? 45_000 : 15_000;
 if (
   verifiedEvidenceRun &&
@@ -33,7 +35,7 @@ export default defineConfig({
   failOnFlakyTests: Boolean(process.env.CI),
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 1 : 0,
+  retries: releaseRun ? 0 : process.env.CI ? 1 : 0,
   workers: authenticatedRun ? 1 : process.env.CI ? 2 : 1,
   timeout: 120_000,
   expect: {
@@ -66,14 +68,16 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'npm run start:main',
-    url: baseURL,
-    // Evidence must always exercise the server spawned for this invocation. If the URL is
-    // already occupied, Playwright fails instead of silently proving an unrelated local build.
-    reuseExistingServer: false,
-    timeout: 180_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+  webServer: externalCandidateServer
+    ? undefined
+    : {
+        command: 'npm run start:main',
+        url: baseURL,
+        // Evidence must always exercise the server spawned for this invocation. If the URL is
+        // already occupied, Playwright fails instead of silently proving an unrelated local build.
+        reuseExistingServer: false,
+        timeout: 180_000,
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
 });

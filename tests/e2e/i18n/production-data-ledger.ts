@@ -1,8 +1,8 @@
-import { execFile } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { parseEnv, promisify } from 'node:util';
+import { parseEnv } from 'node:util';
 
 import { createClient, FunctionRegion } from '@supabase/supabase-js';
 
@@ -36,8 +36,6 @@ import { loadReferenceFixture } from './reference-fixture';
 export type { ProductionDataLedger } from './production-data-safety';
 
 export type { ProductionDataResult } from './production-data-safety';
-
-const execFileAsync = promisify(execFile);
 
 async function readJsonIfPresent<T>(filePath: string): Promise<T | undefined> {
   try {
@@ -153,14 +151,14 @@ async function loadSupabasePublicConfig(): Promise<{ publishableKey: string; url
   if (!url || !publishableKey) {
     throw new Error('Production-data E2E requires SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.');
   }
-  const trackedMainEnv = parseEnv(
-    (
-      await execFileAsync('git', ['show', 'origin/main:.env'], {
+  const trackedMainEnvironmentPath = process.env.E2E_TRACKED_MAIN_ENV_PATH?.trim();
+  const trackedMainEnvironment = trackedMainEnvironmentPath
+    ? await readFile(path.resolve(trackedMainEnvironmentPath), 'utf8')
+    : execFileSync('git', ['show', 'origin/main:.env'], {
         cwd: REPOSITORY_ROOT,
         encoding: 'utf8',
-      })
-    ).stdout,
-  );
+      });
+  const trackedMainEnv = parseEnv(trackedMainEnvironment);
   const trackedMainUrl = trackedMainEnv.SUPABASE_URL?.trim();
   const trackedMainPublishableKey = trackedMainEnv.SUPABASE_PUBLISHABLE_KEY?.trim();
   if (

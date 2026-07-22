@@ -72,10 +72,13 @@ export function verifyProductionBackendTargetSources(
 
 export function readVerifiedProductionBackendTarget(): VerifiedProductionBackendTarget {
   const candidateEnvironment = readFileSync(path.join(REPOSITORY_ROOT, '.env'), 'utf8');
-  const trackedMainEnvironment = execFileSync('git', ['show', 'origin/main:.env'], {
-    cwd: REPOSITORY_ROOT,
-    encoding: 'utf8',
-  });
+  const trackedMainEnvironmentPath = process.env.E2E_TRACKED_MAIN_ENV_PATH?.trim();
+  const trackedMainEnvironment = trackedMainEnvironmentPath
+    ? readFileSync(path.resolve(trackedMainEnvironmentPath), 'utf8')
+    : execFileSync('git', ['show', 'origin/main:.env'], {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+      });
   return verifyProductionBackendTargetSources(candidateEnvironment, trackedMainEnvironment);
 }
 

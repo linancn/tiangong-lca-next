@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import { REPOSITORY_ROOT } from '../../e2e/i18n/contracts';
@@ -7,6 +8,7 @@ import I18nEvidenceReporter, {
   hasExactBackendTargetClosure,
   hasExactProductionDataClosure,
   isIgnoredSemanticEvidenceDirectory,
+  readManifestCandidateIdentity,
   routeCoverageContractDigest,
   semanticEvidenceSourcePaths,
   summarizeScenarioCoverage,
@@ -37,6 +39,35 @@ type EvidenceRecord = {
 };
 
 describe('i18n evidence reporter', () => {
+  it('reads exact candidate identity from the host manifest when container Git is absent', () => {
+    const directory = mkdtempSync(path.join(os.tmpdir(), 'e2e-evidence-manifest-'));
+    const manifestPath = path.join(directory, 'candidate-manifest.json');
+    const identity = {
+      configTreeDigest: 'a'.repeat(64),
+      observedHeadCommit: 'b'.repeat(40),
+      packageManifestDigest: 'c'.repeat(64),
+      sourceTreeDigest: 'd'.repeat(64),
+      unitTestTreeDigest: 'e'.repeat(64),
+    };
+    writeFileSync(
+      manifestPath,
+      `${JSON.stringify({
+        candidate: { evidenceIdentity: identity },
+        kind: 'tiangong-next-release-e2e-candidate',
+        schemaVersion: 3,
+      })}\n`,
+    );
+    const originalManifestPath = process.env.E2E_CANDIDATE_MANIFEST_PATH;
+    process.env.E2E_CANDIDATE_MANIFEST_PATH = manifestPath;
+    try {
+      expect(readManifestCandidateIdentity()).toEqual(identity);
+    } finally {
+      if (originalManifestPath === undefined) delete process.env.E2E_CANDIDATE_MANIFEST_PATH;
+      else process.env.E2E_CANDIDATE_MANIFEST_PATH = originalManifestPath;
+      rmSync(directory, { force: true, recursive: true });
+    }
+  });
+
   it('invalidates old evidence when any executable target, view marker, or registry changes', () => {
     const coverage = JSON.parse(
       readFileSync(path.join(REPOSITORY_ROOT, 'docs/plans/i18n/route-view-coverage.json'), 'utf8'),

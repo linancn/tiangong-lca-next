@@ -67,10 +67,12 @@ export async function waitForCandidateFrontendReady(
     });
     await waitForRenderedLoginControl(page, timeoutMs);
     dependencies.assertNoBlockedRequests(guard);
-  } catch {
-    throw new Error(
+  } catch (error) {
+    const readinessError = new Error(
       `Candidate frontend did not become rendered and interactive in ${browserName}.`,
-    );
+    ) as Error & { cause?: unknown };
+    readinessError.cause = error;
+    throw readinessError;
   } finally {
     await context?.close();
     await browser?.close();

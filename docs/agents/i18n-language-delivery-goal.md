@@ -55,9 +55,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: semantic browser E2E is manual on demand, required for the exact release SHA, and authenticated only in local operator sessions.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4
+lastReviewedNote: 'Reviewed for Issue #654: isolated release E2E execution changes candidate packaging and diagnostics only; locale, route, assertion, production-data, and credential-free CI semantics remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
