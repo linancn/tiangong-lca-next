@@ -27,8 +27,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Updated for Issue #654: release E2E now has isolated install/doctor/run/resume commands and ordered pre-fixture diagnostics.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: added proof requirements for the host-CI refusal and local container CI-marker boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -92,7 +92,7 @@ The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is one creden
 - the canonical release workflow reuses it for the exact release SHA before any Web or Electron publication
 - every invocation uses no production credentials, permits no production writes, and runs only contract discovery plus the public semantic/boundary matrix in Chromium, Firefox, and WebKit
 
-The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified tracked evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
+The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Before Docker execution, the host controller rejects production-data mode whenever `CI` or `GITHUB_ACTIONS` is set. Only after that local check passes does it override the release image's inherited CI markers to empty inside the container; the container's safety check remains unchanged. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified tracked evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
 
 The full route/view proof has 49 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
 

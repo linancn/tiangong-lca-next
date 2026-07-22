@@ -26,8 +26,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Updated for Issue #654: added the repository-owned isolated release E2E installer, doctor, runner, diagnostics, and bounded resume workflow.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: documented the host-CI refusal and local container CI-marker override for production-data E2E.'
 ---
 
 # Development Bootstrap
@@ -145,7 +145,7 @@ npm run e2e:release -- \
   --users-env-file .env.users.local
 ```
 
-The controller translates these explicit options into the existing production-write guards inside the isolated container. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
+The controller first refuses this production-data command when the host has `CI` or `GITHUB_ACTIONS` set. After that local-operator check passes, it clears only the release image's inherited CI markers at container runtime so the unchanged in-container production-write guards can validate the explicit authorization. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
 ## Command Rules
 
@@ -159,7 +159,7 @@ The controller translates these explicit options into the existing production-wr
 - race diagnosis may add `--project <browser> --spec <path>` or `--grep <pattern> --repeat-each <1-5>`; repeat is accepted only for a focused read-only scope and cannot write verified evidence
 - diagnostics retain the sanitized original error chain and emit stable phase/check IDs, coarse exit classes (`2`, `10`, `20`, `30`, `40`, `50`), cleanup state, output path, and one exact next command
 - semantic E2E GitHub Actions is credential-free and read-only: `workflow_dispatch` runs the three-browser public semantic/boundary matrix on demand, and the canonical release workflow calls the same matrix for the exact release SHA; routine PR/dev pushes do not trigger it
-- the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; production write requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
+- the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; the host controller refuses production-data mode when `CI` or `GITHUB_ACTIONS` is set, then an accepted local run overrides the image-inherited markers to empty inside the container; production write still requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
 - before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language
 - use one protected `E2E_RECOVERY_LEDGER_PATH` per active invocation; recovery may proceed from the external copy alone after a crash, but a primary ledger without the configured recovery copy fails closed so a stale teardown cannot adopt another run
 - teardown deletes only the verified exact-ID rows, records created/cleaned counts, and must prove `created=cleaned` and `leaked=0`

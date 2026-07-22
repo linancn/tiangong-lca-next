@@ -31,8 +31,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Updated for Issue #654: local release proof now uses the isolated exact-candidate E2E controller while CI remains credential-free/read-only.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: production-data release E2E now rejects host CI before clearing image-inherited CI markers for a local operator run.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -118,7 +118,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for normal delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change
 - new npm dependencies require human approval
-- production-writing E2E requires authenticated mode plus two write guards: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
+- production-writing E2E requires a host without `CI` or `GITHUB_ACTIONS`; only after that check may the controller clear image-inherited CI markers for the local container. Authenticated mode plus two write guards remain mandatory: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 
 ## Minimal Execution Facts
 
