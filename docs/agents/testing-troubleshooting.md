@@ -20,11 +20,13 @@ checkPaths:
   - docs/agents/repo-validation.md
   - scripts/test-runner.cjs
   - playwright.config.ts
+  - scripts/e2e/**
+  - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #651: added the fail-closed recovery-copy rule for stale or concurrent production E2E teardown.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: added early release-E2E doctor, phase diagnostics, isolated candidate, and bounded resume recovery paths.'
 ---
 
 # Testing Troubleshooting
@@ -40,7 +42,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
-| semantic localization E2E | `npm run test:e2e:i18n` |
+| focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
+| release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
+| exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 
 ## Failure Diagnosis
 
@@ -53,14 +57,18 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | mock not hit | wrong import path or mock order | verify module path and set mocks before importing the subject |
 | provider or context error | missing wrapper or wrong test utility | use the repo helper that already provides the required wrapper |
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
+| release E2E fails before any browser test | Node/Git/Docker, pinned image, output permissions, candidate identity, browser launch, bundle readiness, backend/auth, recovery ledger, or discovery is invalid | run `npm run e2e:env:doctor -- --format json`, then inspect the first failed check in `preflight-report.json`; use its one next command instead of starting the full suite |
+| release E2E refuses a dirty candidate | release evidence cannot identify a mutable worktree | commit the intended candidate before release proof, or use `npm run e2e:dev` for focused diagnosis; never mount the parent workspace to make the dirty tree appear runnable |
+| release E2E reports `E2E_INVOCATION_LOCKED` | another install/run/resume/clean command still owns the project runtime | wait for that exact command to finish and retry the reported command; a dead PID lock is recovered automatically, so do not delete live runtime state |
+| `e2e:release:resume` rejects or is unavailable | the receipt expired, arguments were supplied, identity/input drifted, or execution reached browser/fixture/cleanup work | start a fresh `npm run e2e:release`; resume is intentionally limited to one exact pre-fixture failure and always reruns preflight |
 | Playwright refuses `E2E_BASE_URL` | the browser target is not the local candidate frontend | use a loopback candidate URL and let `playwright.config.ts` start `npm run start:main`; never point the Playwright frontend target at production |
 | a public semantic browser job reports a flaky missing login control after cold startup | the global candidate probe passed, but a new page returned from `domcontentloaded` before its login route mounted | keep `failOnFlakyTests` enabled, make the page use the shared rendered-login readiness helper, move regenerable Umi/MFSU caches aside, and rerun the exact browser scope without a fixed sleep or global timeout increase |
-| authenticated semantic E2E skips or fails before setup | the explicitly authorized local operator session lacks runtime credentials, authenticated mode, one of the two write guards, verified-evidence opt-in, the production target proof, or an absolute recovery-ledger path outside the candidate worktree | keep every semantic E2E GitHub Actions run unauthenticated/read-only; run the full closure only in the authorized local session with `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, the exact one-process confirmation token, `E2E_WRITE_VERIFIED_EVIDENCE=true`, the verified production backend target, and `E2E_RECOVERY_LEDGER_PATH` set to a protected absolute path outside the candidate worktree |
+| authenticated semantic E2E skips or fails before setup | the authorized local session lacks a mode-`0600` users env file, explicit authenticated/write/evidence options, the production target proof, or a safe recovery-ledger path | keep GitHub Actions credential-free/read-only; run `npm run e2e:release -- --authenticated --allow-production-data --write-verified-evidence --users-env-file <path>` locally, and inspect the role-neutral auth/safety preflight check rather than assuming a required business role |
 | explicit production locale readiness rejects semantic evidence | one of the 49 assertion IDs, registry locales, required browsers, current backend/package/runtime/route/test/source bindings, or cleanup counts is incomplete or stale | inspect the first mismatched contract field, rerun only the affected browser scope, then run the complete authenticated closure; never edit evidence to simulate execution. Routine activation/pre-push checks must not require current production-proof hashes. |
 | teardown refuses cleanup or reports a leaked `codex-e2e` process | the intent ledger is invalid, the production row UUID/owner/five-field registry marker closure does not match, or exact-ID deletion failed | preserve the ignored ledger; inspect only the exact UUID row, restore verifiable ownership/marker evidence or escalate, and never broaden deletion; do not create another record until `created=cleaned` and `leaked=0` |
 | teardown reports that the primary ledger has no matching recovery copy | another invocation is active, a stale teardown is reading a newer run's primary ledger, or the protected external recovery file was removed | stop every older E2E runner, verify the exact UUID through audit/read-only checks, and restore only the matching recovery copy; never let the orphaned primary ledger authorize deletion |
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
-| Playwright browser executable is missing | the pinned dependency is installed but browser binaries are not | run `npx playwright install chromium firefox webkit` locally, or use the workflow's per-browser `--with-deps` install step |
+| Playwright browser executable is missing | a direct host run lacks binaries, or the release image is absent/mismatched | for `e2e:dev`, run `npx playwright install chromium firefox webkit`; for release proof, run `npm run e2e:env:install` and do not repair browsers one by one on the host |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |

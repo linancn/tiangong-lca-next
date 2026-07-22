@@ -79,6 +79,7 @@ jobs:
           E2E_AUTHENTICATED: 'false'
           E2E_BACKEND_TARGET: production
           E2E_BASE_URL: http://127.0.0.1:8000
+          E2E_RELEASE_MODE: 'true'
           E2E_READINESS_BROWSER: ${{ matrix.browser }}
         run: >-
           npm run test:e2e:i18n -- tests/e2e/i18n/access-fallback.spec.ts tests/e2e/i18n/semantic-critical.spec.ts tests/e2e/i18n/query-responsive.spec.ts --project="${{ matrix.browser }}"

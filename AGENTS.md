@@ -24,13 +24,15 @@ checkPaths:
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - playwright.config.ts
+  - scripts/e2e/**
+  - docker/e2e/**
   - tests/e2e/i18n/**
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: browser semantic E2E is manual on demand and mandatory for the exact release SHA, while authenticated production proof remains local-only.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: local release proof now uses the isolated exact-candidate E2E controller while CI remains credential-free/read-only.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -108,7 +110,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - app-shell support, branding/package surfaces, and local-stack path mapping live in `docs/agents/repo-architecture.md`
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
-- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; the three-browser GitHub Actions matrix is credential-free/read-only, available through `workflow_dispatch`, and required for the exact release SHA, while routine PR/dev pushes do not trigger it and the authenticated candidate-local/production-backend closure runs only in an explicitly authorized local operator session
+- semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while local release proof uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the three-browser GitHub Actions matrix remains credential-free/read-only and release-required
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
@@ -137,7 +139,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - existing-translation correction proof: `npm run i18n:corrections:check`
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
-- canonical semantic localization E2E: `npm run test:e2e:i18n` (`@playwright/test` `1.61.1`)
+- direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
+- exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
 - app-side Supabase and API access belongs only in `src/services/**`

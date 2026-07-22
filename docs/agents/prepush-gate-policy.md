@@ -20,15 +20,17 @@ checkPaths:
   - .husky/pre-push
   - package.json
   - playwright.config.ts
+  - scripts/e2e/**
+  - docker/e2e/**
   - tests/e2e/i18n/**
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: routine branches skip browser E2E, which remains optional manually and required for release.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Reviewed for Issue #654: the isolated local release E2E controller remains separate from the protected pre-push and credential-free CI gates.'
 ---
 
 # Pre-Push Gate Policy
@@ -55,7 +57,7 @@ The full gate runs LCIA verification, `npm run reference-data:check`, lint/type 
 
 Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
 
-`npm run test:e2e:i18n` is a separate Playwright semantic localization proof, not another step inside `prepush:gate`. Keeping it separate prevents a routine local push from requiring production credentials or creating production data. Its GitHub Actions workflow owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
 Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, package-lock, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
@@ -79,7 +81,7 @@ It does not own:
 | ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
 | PRs into `dev` or `main` | rely on local test-gate evidence, focused proof, and docpact PR governance; run browser semantic E2E manually only when risk warrants it |
 | semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
-| local authenticated semantic E2E | run only in an explicitly authorized operator session with runtime credentials, verified candidate-local/production-backend targeting, authenticated mode, the two production-write guards, and explicit verified-evidence opt-in |
+| local authenticated semantic E2E | run `e2e:release` only in an explicitly authorized operator session with a protected runtime-only credential file, archived clean candidate, verified local-bundle/production-backend targeting, explicit authenticated/write/evidence options, and exact cleanup |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests and reusable exact-SHA credential-free semantic E2E, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
 | unchanged-version `main` workflow hotfix pushes | skip release when the matching `v*` tag already points to an older `main` commit |
 | manual release tags or `workflow_dispatch` recovery on `main` commits | remain supported for recovery/backfill releases and run the same release gate before deploy/release |

@@ -8,17 +8,18 @@ function read(relativePath: string): string {
 }
 
 describe('production semantic E2E mutation authorization contract', () => {
-  it('documents a usable recovery ledger outside the candidate worktree', () => {
+  it('documents a protected recovery ledger outside the candidate worktree', () => {
     const dev = read('DEV.md');
-    expect(dev).toContain(
-      'E2E_RECOVERY_LEDGER_PATH=/tmp/tiangong-lca-next-codex-e2e-recovery.json',
-    );
+    const controller = read('scripts/e2e/release-e2e.cjs');
+    expect(dev).toContain('use one protected `E2E_RECOVERY_LEDGER_PATH` per active invocation');
+    expect(controller).toContain("'.local/state/tiangong-lca-next/e2e-production-ledger.json'");
   });
 
-  it('keeps CI retries diagnostic while failing the workflow on a flaky first attempt', () => {
+  it('keeps ordinary CI retries diagnostic while release proof uses the first attempt', () => {
     const config = read('playwright.config.ts');
     expect(config).toContain('failOnFlakyTests: Boolean(process.env.CI)');
-    expect(config).toContain('retries: process.env.CI ? 1 : 0');
+    expect(config).toContain("const releaseRun = process.env.E2E_RELEASE_MODE === 'true'");
+    expect(config).toContain('retries: releaseRun ? 0 : process.env.CI ? 1 : 0');
     expect(config).toContain('const expectTimeout = authenticatedRun ? 45_000 : 15_000;');
     expect(config).toContain('timeout: expectTimeout');
   });
