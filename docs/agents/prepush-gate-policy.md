@@ -29,7 +29,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
+lastReviewedCommit: b7f2b671323ced00de79b5424cd3d3747b5b0d7f
 lastReviewedNote: 'Updated for Issue #660: local production-data E2E now rejects host CI before overriding image-inherited CI markers.'
 ---
 

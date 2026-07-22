@@ -26,7 +26,7 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: bcbb1e9031a76a6bc68fb3cd4d559d37501fdba9
+lastReviewedCommit: b7f2b671323ced00de79b5424cd3d3747b5b0d7f
 lastReviewedNote: 'Updated for Issue #660: documented the host-CI refusal and local container CI-marker override for production-data E2E.'
 ---
 
