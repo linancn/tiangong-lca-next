@@ -7,16 +7,33 @@ import {
   type TaskSummaryV2,
 } from '@/services/taskCenter/types';
 import {
-  refreshWorkerJobStore,
-  registerWorkerJobPresenter,
-  type WorkerJobFeed,
+  listTaskSummaries,
+  registerTaskSummaryPresenter,
+  subscribeTaskSummaries,
+  upsertTaskSummaries,
 } from '@/services/taskCenter/workerJobStore';
-import type { WorkerJobResult } from '@/services/workerJobs/api';
+import { invokeDataProductCommand, type DataProductApiResult } from './api';
 
-const DATA_PRODUCT_FEEDS: WorkerJobFeed[] = [
-  { subjectType: 'lcia_scope_closure_check', visibility: 'operator', limit: 50 },
-  { subjectType: 'lcia_result_build', visibility: 'operator', limit: 50 },
-];
+export type DataProductTaskFeedCursor = { updatedAt: string; jobId: string };
+
+export type DataProductTaskFeedRequest = {
+  category?: 'data_product';
+  jobKinds?: string[];
+  statuses?: TaskRawStatus[];
+  updatedSince?: string;
+  cursor?: DataProductTaskFeedCursor;
+  limit?: number;
+  rootOnly?: boolean;
+};
+
+export type DataProductTaskFeedPage = {
+  items: TaskSummaryV2[];
+  nextCursor?: DataProductTaskFeedCursor;
+};
+
+const DATA_PRODUCT_JOB_KINDS = ['lcia.scope_closure_check', 'lcia_result.package_build'];
+let taskSummarySource: TaskSummaryV2[] | undefined;
+let dataProductSummaries: TaskSummaryV2[] = [];
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === 'object' && !Array.isArray(value)
@@ -24,15 +41,11 @@ function record(value: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
-function string(...values: unknown[]): string | undefined {
-  for (const value of values) {
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
-  return undefined;
+function text(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function rawStatus(job: WorkerJobResult): TaskRawStatus {
-  const status = job.status;
+function rawStatus(value: unknown): TaskRawStatus {
   return [
     'queued',
     'running',
@@ -42,125 +55,152 @@ function rawStatus(job: WorkerJobResult): TaskRawStatus {
     'stale',
     'failed',
     'cancelled',
-  ].includes(status)
-    ? status
+  ].includes(String(value))
+    ? (value as TaskRawStatus)
     : 'unknown';
 }
 
-function domainValidity(job: WorkerJobResult): TaskDomainValidity {
-  const result = record(job.result);
-  const closure = record(result?.closureCheck) ?? record(result?.closure_check) ?? result;
-  const validity = string(closure?.certificateValidity, closure?.certificate_validity);
-  if (validity === 'valid' || validity === 'stale' || validity === 'revoked') return validity;
-  if (string(closure?.scanCompleteness, closure?.scan_completeness) === 'incomplete')
-    return 'incomplete';
-  return 'none';
+function domainValidity(value: unknown): TaskDomainValidity {
+  return ['none', 'valid', 'stale', 'revoked', 'incomplete', 'unknown'].includes(String(value))
+    ? (value as TaskDomainValidity)
+    : 'none';
 }
 
-function isDataProductJob(job: WorkerJobResult): boolean {
-  return job.jobKind === 'lcia.scope_closure_check' || job.jobKind === 'lcia_result.package_build';
-}
-
-export function presentDataProductWorkerJob(job: WorkerJobResult): TaskSummaryV2 | null {
-  const id = string(job.id);
-  if (!id) return null;
-  const result = record(job.result);
-  const closureCheckId = string(
-    job.closureCheckId,
-    job.closure_check_id,
-    result?.closureCheckId,
-    result?.closure_check_id,
-    job.subjectType === 'lcia_scope_closure_check' ? job.subjectId : undefined,
-  );
-  const resultBuildId = string(
-    job.resultBuildId,
-    job.result_build_id,
-    result?.resultBuildId,
-    result?.result_build_id,
-    job.subjectType === 'lcia_result_build' ? job.subjectId : undefined,
-  );
-  const isClosure = job.jobKind === 'lcia.scope_closure_check';
-  const deepLink: TaskCenterDeepLink = {
-    route: 'data-processing',
-    tab: 'builds',
-    ...(closureCheckId ? { closureCheckId } : {}),
-    ...(resultBuildId ? { resultBuildId } : {}),
+function deepLink(value: unknown): TaskCenterDeepLink | undefined {
+  const row = record(value);
+  const routeKey = text(row?.routeKey);
+  const params = record(row?.params);
+  if (routeKey !== 'data_product.closure_check' && routeKey !== 'data_product.package')
+    return undefined;
+  return {
+    routeKey,
+    params: {
+      ...(text(params?.closureCheckId) ? { closureCheckId: text(params?.closureCheckId) } : {}),
+      ...(text(params?.packageId) ? { packageId: text(params?.packageId) } : {}),
+    },
   };
-  const canCancel = job.canCancel === true || job.can_cancel === true;
-  const canDownloadReport = job.canDownloadReport === true || job.can_download_report === true;
-  const canPreview = job.canPreviewResult === true || job.can_preview_result === true;
+}
+
+/**
+ * This is intentionally a whitelist decoder.  It consumes only the safe
+ * TaskSummaryV2 projection returned by `list_task_feed`, never a worker row,
+ * its payload, diagnostics, result, or artifact locator.
+ */
+export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | null {
+  const row = record(value);
+  const jobId = text(row?.jobId);
+  const jobKind = text(row?.jobKind);
+  const category = text(row?.category);
+  const projectionUpdatedAt = text(row?.projectionUpdatedAt);
+  if (!jobId || !jobKind || category !== 'data_product' || !projectionUpdatedAt) return null;
+  const capabilities = record(row?.capabilities);
+  const counters = record(row?.progressCounters);
   return {
     schemaVersion: 'task-summary.v2',
-    jobId: id,
-    kind: job.jobKind ?? (isClosure ? 'lcia.scope_closure_check' : 'lcia_result.package_build'),
-    requestedBy: string(job.requestedBy, job.requested_by),
-    workerStatus: rawStatus(job),
-    domainStatus: string(result?.runStatus, result?.run_status),
-    projectionUpdatedAt:
-      string(job.projectionUpdatedAt, job.projection_updated_at, job.updatedAt, job.updated_at) ??
-      new Date(0).toISOString(),
-    progressCounters: record(job.progressCounters ?? job.progress_counters) as
-      { completed?: number; total?: number; unit?: string } | undefined,
+    jobId,
+    jobKind,
+    ...(text(row?.requestedBy) ? { requestedBy: text(row?.requestedBy) } : {}),
+    workerStatus: rawStatus(row?.workerStatus),
+    ...(text(row?.domainStatus) ? { domainStatus: text(row?.domainStatus) } : {}),
+    domainValidity: domainValidity(row?.domainValidity),
+    projectionUpdatedAt,
+    ...(text(row?.phase) ? { phase: text(row?.phase) } : {}),
+    progressFraction: progressFractionFromWorkerValue(row?.progressFraction),
+    ...(counters
+      ? {
+          progressCounters: {
+            ...(typeof counters.completed === 'number' ? { completed: counters.completed } : {}),
+            ...(typeof counters.total === 'number' ? { total: counters.total } : {}),
+            ...(text(counters.unit) ? { unit: text(counters.unit) } : {}),
+          },
+        }
+      : {}),
     capabilities: {
-      canCancel,
-      canDownloadReport,
-      canOpenWorkbench: job.canOpenWorkbench !== false && job.can_open_workbench !== false,
-      canPreviewResult: canPreview,
+      canCancel: capabilities?.canCancel === true,
+      canDownloadReport: capabilities?.canDownloadReport === true,
+      canOpenWorkbench: capabilities?.canOpenWorkbench === true,
+      canPreviewResult: capabilities?.canPreviewResult === true,
     },
-    id,
+    id: jobId,
     category: 'data_product',
-    presenterKey: isClosure ? 'data-product-closure.v1' : 'data-product-build.v1',
-    title: isClosure ? 'Data completeness check' : 'Result set generation',
-    subtitle: closureCheckId ? `Closure check ${closureCheckId}` : undefined,
-    rawStatus: rawStatus(job),
-    runState: taskRunStateFromRawStatus(rawStatus(job)),
-    domainValidity: domainValidity(job),
-    phase: string(job.phase),
-    progressFraction: progressFractionFromWorkerValue(
-      job.progressFraction ?? job.progress_fraction ?? job.progress,
-    ),
-    progressLabel: string(job.progressLabel, job.progress_label),
-    createdAt: string(job.createdAt, job.created_at) ?? new Date(0).toISOString(),
-    updatedAt:
-      string(job.updatedAt, job.updated_at, job.createdAt, job.created_at) ??
-      new Date(0).toISOString(),
-    capabilityActions: [
-      ...(canCancel ? (['cancel'] as const) : []),
-      ...(canDownloadReport ? (['download_report'] as const) : []),
-      'open_workbench' as const,
-      ...(canPreview ? (['preview_result'] as const) : []),
-    ],
-    deepLink,
-    references: {
-      ...(closureCheckId ? { closureCheckId } : {}),
-      ...(resultBuildId ? { resultBuildId } : {}),
-      ...(string(result?.packageId, result?.package_id)
-        ? { packageId: string(result?.packageId, result?.package_id) }
-        : {}),
-      ...(string(result?.requestedScopeHash, result?.requested_scope_hash)
-        ? { requestedScopeHash: string(result?.requestedScopeHash, result?.requested_scope_hash) }
-        : {}),
-      ...(string(result?.policyFingerprint, result?.policy_fingerprint)
-        ? { policyFingerprint: string(result?.policyFingerprint, result?.policy_fingerprint) }
-        : {}),
-    },
-    diagnostic: {
-      ...(string(job.errorCode, job.error_code)
-        ? { code: string(job.errorCode, job.error_code) }
-        : {}),
-      ...(string(job.errorMessage, job.error_message)
-        ? { message: string(job.errorMessage, job.error_message) }
-        : {}),
-    },
+    title: text(row?.title) ?? '',
+    runState: taskRunStateFromRawStatus(rawStatus(row?.workerStatus)),
+    createdAt: projectionUpdatedAt,
+    updatedAt: projectionUpdatedAt,
+    ...(deepLink(row?.deepLink) ? { deepLink: deepLink(row?.deepLink) } : {}),
+    ...(text(row?.closureCheckId) ? { closureCheckId: text(row?.closureCheckId) } : {}),
+    ...(text(row?.resultPackageId) ? { resultPackageId: text(row?.resultPackageId) } : {}),
+    ...(Array.isArray(row?.blockerCodes)
+      ? {
+          blockerCodes: row.blockerCodes.filter((code): code is string => typeof code === 'string'),
+        }
+      : {}),
+    ...(text(row?.errorSummary) ? { errorSummary: text(row?.errorSummary) } : {}),
   };
 }
 
-registerWorkerJobPresenter({
-  key: 'data-product.v1',
-  matches: isDataProductJob,
-  present: presentDataProductWorkerJob,
+const DATA_PRODUCT_PRESENTERS = [
+  {
+    key: 'data_product.lcia_scope_closure_check.v1',
+    jobKind: 'lcia.scope_closure_check',
+    fallbackTitle: 'Data completeness check',
+  },
+  {
+    key: 'data_product.lcia_result_package_build.v1',
+    jobKind: 'lcia_result.package_build',
+    fallbackTitle: 'Result set generation',
+  },
+] as const;
+
+DATA_PRODUCT_PRESENTERS.forEach((definition) => {
+  registerTaskSummaryPresenter({
+    key: definition.key,
+    matches: (summary) =>
+      summary.category === 'data_product' && summary.jobKind === definition.jobKind,
+    present: (summary) => ({ ...summary, title: summary.title || definition.fallbackTitle }),
+  });
 });
 
+export async function listDataProductTaskFeed(
+  request: DataProductTaskFeedRequest = {},
+): Promise<DataProductApiResult<DataProductTaskFeedPage>> {
+  return await invokeDataProductCommand<DataProductTaskFeedPage>({
+    action: 'list_task_feed',
+    category: request.category ?? 'data_product',
+    jobKinds: request.jobKinds ?? DATA_PRODUCT_JOB_KINDS,
+    ...(request.statuses?.length ? { statuses: request.statuses } : {}),
+    ...(request.updatedSince ? { updatedSince: request.updatedSince } : {}),
+    ...(request.cursor ? { cursor: request.cursor } : {}),
+    limit: request.limit ?? 50,
+    rootOnly: request.rootOnly ?? false,
+  });
+}
+
+export function subscribeDataProductTasks(listener: () => void): () => void {
+  return subscribeTaskSummaries(listener);
+}
+
+export function listDataProductTasks(): TaskSummaryV2[] {
+  const source = listTaskSummaries();
+  if (source !== taskSummarySource) {
+    taskSummarySource = source;
+    dataProductSummaries = source.filter((summary) => summary.category === 'data_product');
+  }
+  return dataProductSummaries;
+}
+
+export function upsertDataProductTasks(rows: unknown[]): void {
+  upsertTaskSummaries(
+    rows
+      .map(decodeDataProductTaskSummary)
+      .filter((summary): summary is TaskSummaryV2 => Boolean(summary)),
+  );
+}
+
 export async function refreshDataProductTasks(): Promise<TaskSummaryV2[]> {
-  return await refreshWorkerJobStore(DATA_PRODUCT_FEEDS);
+  const result = await listDataProductTaskFeed();
+  if (result.error) throw new Error(result.error.message);
+  const page = record(result.data);
+  upsertDataProductTasks(Array.isArray(page?.items) ? page.items : []);
+  return listDataProductTasks();
 }

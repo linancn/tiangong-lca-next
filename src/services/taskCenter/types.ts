@@ -20,10 +20,11 @@ export type TaskRunState = 'active' | 'succeeded' | 'blocked' | 'failed' | 'canc
 export type TaskDomainValidity = 'none' | 'valid' | 'stale' | 'revoked' | 'incomplete' | 'unknown';
 
 export type TaskCenterDeepLink = {
-  route: 'data-processing';
-  tab: 'builds';
-  closureCheckId?: string;
-  resultBuildId?: string;
+  routeKey: 'data_product.closure_check' | 'data_product.package';
+  params: {
+    closureCheckId?: string;
+    packageId?: string;
+  };
 };
 
 export type TaskCapability = 'cancel' | 'download_report' | 'open_workbench' | 'preview_result';
@@ -32,7 +33,7 @@ export type TaskSummaryV2 = {
   schemaVersion: 'task-summary.v2';
   /** Canonical safe-feed names; `id` is retained for existing shell adapters. */
   jobId: string;
-  kind: string;
+  jobKind: string;
   requestedBy?: string;
   workerStatus: TaskRawStatus;
   domainStatus?: string;
@@ -46,10 +47,7 @@ export type TaskSummaryV2 = {
   };
   id: string;
   category: TaskCenterCategory;
-  presenterKey: string;
   title: string;
-  subtitle?: string;
-  rawStatus: TaskRawStatus;
   runState: TaskRunState;
   /** Certificate/domain truth is intentionally distinct from worker status. */
   domainValidity: TaskDomainValidity;
@@ -58,17 +56,11 @@ export type TaskSummaryV2 = {
   progressLabel?: string;
   createdAt: string;
   updatedAt: string;
-  capabilityActions: TaskCapability[];
   deepLink?: TaskCenterDeepLink;
-  references?: {
-    closureCheckId?: string;
-    resultBuildId?: string;
-    packageId?: string;
-    requestedScopeHash?: string;
-    policyFingerprint?: string;
-  };
-  /** A small, server-safe diagnostic subset; never raw result/payload. */
-  diagnostic?: { code?: string; message?: string };
+  closureCheckId?: string;
+  resultPackageId?: string;
+  blockerCodes?: string[];
+  errorSummary?: string;
 };
 
 export function progressFractionFromWorkerValue(value: unknown): number | undefined {
@@ -85,9 +77,8 @@ export function progressFractionFromWorkerValue(value: unknown): number | undefi
 }
 
 export function taskProgressPercent(summary: TaskSummaryV2): number {
-  if (summary.runState === 'succeeded') return 100;
-  if (summary.runState === 'failed' || summary.runState === 'cancelled') return 0;
-  return Math.round((summary.progressFraction ?? 0) * 100);
+  if (summary.progressFraction !== undefined) return Math.round(summary.progressFraction * 100);
+  return summary.runState === 'succeeded' ? 100 : 0;
 }
 
 export function taskRunStateFromRawStatus(status: unknown): TaskRunState {

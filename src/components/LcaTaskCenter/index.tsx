@@ -1,5 +1,9 @@
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
-import { refreshDataProductTasks } from '@/services/dataProducts/taskCenter';
+import {
+  listDataProductTasks,
+  refreshDataProductTasks,
+  subscribeDataProductTasks,
+} from '@/services/dataProducts/taskCenter';
 import type {
   LcaBackgroundTask,
   LcaTaskPhase,
@@ -28,7 +32,6 @@ import {
   taskProgressPercent as taskSummaryProgressPercent,
   type TaskSummaryV2,
 } from '@/services/taskCenter/types';
-import { listTaskSummaries, subscribeWorkerJobStore } from '@/services/taskCenter/workerJobStore';
 import {
   TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR,
   classifyTidasPackageExportError,
@@ -130,9 +133,9 @@ function useReviewSubmitTasks(): ReviewSubmitBackgroundTask[] {
 
 function useDataProductTaskSummaries(): TaskSummaryV2[] {
   const summaries = useSyncExternalStore(
-    subscribeWorkerJobStore,
-    listTaskSummaries,
-    listTaskSummaries,
+    subscribeDataProductTasks,
+    listDataProductTasks,
+    listDataProductTasks,
   );
   return useMemo(
     () => summaries.filter((summary) => summary.category === 'data_product'),
@@ -1988,8 +1991,10 @@ const LcaTaskCenter: React.FC = () => {
   );
 
   const runningCount = useMemo(
-    () => items.filter((item) => item.task.state === 'running').length,
-    [items],
+    () =>
+      items.filter((item) => item.task.state === 'running').length +
+      dataProductTasks.filter((task) => task.runState === 'active').length,
+    [dataProductTasks, items],
   );
   const attentionCount = useMemo(
     () =>
@@ -2218,17 +2223,17 @@ const LcaTaskCenter: React.FC = () => {
             ) : (
               <>
                 {visibleDataProductTasks.map((task, index) => {
-                  const taskHref = task.deepLink
-                    ? `/data-processing?${new URLSearchParams({
-                        tab: task.deepLink.tab,
-                        ...(task.deepLink.closureCheckId
-                          ? { closureCheckId: task.deepLink.closureCheckId }
-                          : {}),
-                        ...(task.deepLink.resultBuildId
-                          ? { resultBuildId: task.deepLink.resultBuildId }
-                          : {}),
-                      }).toString()}`
-                    : '/data-processing?tab=builds';
+                  const taskHref = `/data-processing?${new URLSearchParams({
+                    tab: 'builds',
+                    ...(task.deepLink?.routeKey === 'data_product.closure_check' &&
+                    task.deepLink.params.closureCheckId
+                      ? { closureCheckId: task.deepLink.params.closureCheckId }
+                      : {}),
+                    ...(task.deepLink?.routeKey === 'data_product.package' &&
+                    task.deepLink.params.packageId
+                      ? { packageId: task.deepLink.params.packageId, tab: 'preview' }
+                      : {}),
+                  }).toString()}`;
                   const progressPercent = taskSummaryProgressPercent(task);
                   return (
                     <div
@@ -2263,7 +2268,7 @@ const LcaTaskCenter: React.FC = () => {
                                       : 'processing'
                             }
                           >
-                            {task.rawStatus}
+                            {task.workerStatus}
                           </Tag>
                           {task.domainValidity !== 'none' ? (
                             <Tag>{`Certificate: ${task.domainValidity}`}</Tag>

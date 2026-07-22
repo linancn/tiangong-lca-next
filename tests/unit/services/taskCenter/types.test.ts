@@ -28,4 +28,14 @@ describe('TaskSummaryV2 progress and state helpers', () => {
     } as TaskSummaryV2;
     expect(taskProgressPercent(task)).toBe(80);
   });
+
+  it('keeps reported terminal progress instead of replacing it with a status-derived value', () => {
+    expect(taskProgressPercent({ runState: 'failed', progressFraction: 0.8 } as TaskSummaryV2)).toBe(
+      80,
+    );
+    expect(taskProgressPercent({ runState: 'cancelled', progressFraction: 0.25 } as TaskSummaryV2)).toBe(
+      25,
+    );
+    expect(taskProgressPercent({ runState: 'succeeded' } as TaskSummaryV2)).toBe(100);
+  });
 });

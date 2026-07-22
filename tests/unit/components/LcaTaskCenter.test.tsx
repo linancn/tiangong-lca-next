@@ -9,6 +9,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 let mockTasks: any[] = [];
 let mockPackageTasks: any[] = [];
 let mockReviewSubmitTasks: any[] = [];
+let mockDataProductTasks: any[] = [];
 const mockClearFinishedLcaTasks = jest.fn();
 const mockClearFinishedTidasPackageTasks = jest.fn();
 const mockClearFinishedReviewSubmitTasks = jest.fn();
@@ -22,6 +23,8 @@ const mockSubscribeLcaTasks = jest.fn(() => jest.fn());
 const mockSubscribeTidasPackageTasks = jest.fn(() => jest.fn());
 const mockSubscribeReviewSubmitTasks = jest.fn(() => jest.fn());
 const mockSubscribeLcaTaskCenterOpenRequests = jest.fn(() => jest.fn());
+const mockRefreshDataProductTasks = jest.fn();
+const mockSubscribeDataProductTasks = jest.fn(() => jest.fn());
 
 const formatWithValues = (message: string, values?: Record<string, any>) =>
   Object.entries(values ?? {}).reduce((text, [key, value]) => {
@@ -56,6 +59,13 @@ jest.mock('@/services/reviews/taskCenter', () => ({
   refreshReviewSubmitTasks: (...args: any[]) => mockRefreshReviewSubmitTasks(...args),
   retryReviewSubmitTask: (...args: any[]) => mockRetryReviewSubmitTask(...args),
   subscribeReviewSubmitTasks: (...args: any[]) => mockSubscribeReviewSubmitTasks(...args),
+}));
+
+jest.mock('@/services/dataProducts/taskCenter', () => ({
+  __esModule: true,
+  listDataProductTasks: () => mockDataProductTasks,
+  refreshDataProductTasks: (...args: any[]) => mockRefreshDataProductTasks(...args),
+  subscribeDataProductTasks: (...args: any[]) => mockSubscribeDataProductTasks(...args),
 }));
 
 jest.mock('umi', () => ({
@@ -237,12 +247,14 @@ describe('LcaTaskCenter', () => {
     mockTasks = [];
     mockPackageTasks = [];
     mockReviewSubmitTasks = [];
+    mockDataProductTasks = [];
     mockDownloadTidasPackageExportTask.mockResolvedValue({ filename: 'downloaded.zip' });
     mockCancelReviewSubmitTask.mockResolvedValue(undefined);
     mockRefreshLcaTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshTidasPackageTasksFromWorkerJobs.mockResolvedValue([]);
     mockRefreshReviewSubmitTasks.mockResolvedValue([]);
     mockRetryReviewSubmitTask.mockResolvedValue(undefined);
+    mockRefreshDataProductTasks.mockResolvedValue([]);
   });
 
   it('shows the empty state when there are no tracked tasks', () => {
