@@ -25,7 +25,7 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
 lastReviewedNote: 'Updated for Issue #660: the local-operator strategy now distinguishes host CI refusal from image-inherited container markers.'
 ---
 
