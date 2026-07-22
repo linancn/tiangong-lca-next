@@ -12,7 +12,10 @@ import {
   genNodeLabel,
   genPortLabel,
   genReferenceToResultingProcess,
+  getLifeCycleModelPortFlowVersion,
+  MissingLifeCycleModelFlowVersionError,
 } from '@/services/lifeCycleModels/util';
+import { createLifeCycleModel as createTidasLifeCycleModel } from '@tiangong-lca/tidas-sdk/core';
 
 const createLangText = (text: string, lang = 'en') => ({ '@xml:lang': lang, '#text': text });
 
@@ -211,8 +214,10 @@ const baseModelData = {
           connection: {
             outputExchange: {
               '@flowUUID': 'flow-1',
+              '@version': '01.01.000',
               downstreamProcess: {
                 '@flowUUID': 'flow-2',
+                '@version': '02.02.000',
               },
             },
           },
@@ -356,8 +361,186 @@ describe('genLifeCycleModelJsonOrdered', () => {
 
     const firstOutput = processes[0].connections.outputExchange;
     expect(firstOutput['@flowUUID']).toBe('flow-1');
+    expect(firstOutput['@version']).toBe('01.01.000');
     expect(firstOutput.downstreamProcess['@id']).toBe('1');
     expect(firstOutput.downstreamProcess['@flowUUID']).toBe('flow-2');
+    expect(firstOutput.downstreamProcess['@version']).toBe('02.02.000');
+  });
+
+  it('should satisfy the TIDAS SDK connection Flow version contract', () => {
+    const result = genLifeCycleModelJsonOrdered('model-sdk-flow-version', baseModelData);
+    const validation = createTidasLifeCycleModel(result).validateEnhanced();
+    const issues = validation.success ? [] : validation.error.issues;
+    const connectionVersionIssues = issues.filter((issue) => {
+      const path = issue.path.map(String);
+      return path.includes('outputExchange') && path.includes('@version');
+    });
+
+    expect(connectionVersionIssues).toEqual([]);
+  });
+
+  it('should recover missing edge Flow versions from the matching source and target ports', () => {
+    const result = genLifeCycleModelJsonOrdered('model-port-version-fallback', {
+      ...baseModelData,
+      model: {
+        nodes: [
+          {
+            ...baseModelData.model.nodes[0],
+            ports: {
+              items: [
+                {
+                  id: 'OUTPUT:flow-1',
+                  group: 'groupOutput',
+                  data: { flowId: 'flow-1', flowVersion: '03.01.004' },
+                },
+              ],
+            },
+          },
+          {
+            ...baseModelData.model.nodes[1],
+            ports: {
+              items: [
+                {
+                  id: 'INPUT:flow-2',
+                  group: 'groupInput',
+                  data: { flowId: 'flow-2', flowVersion: '04.02.005' },
+                },
+              ],
+            },
+          },
+        ],
+        edges: [
+          {
+            id: 'edge-port-version-fallback',
+            source: { cell: 'node-a' },
+            target: { cell: 'node-b' },
+            data: {
+              connection: {
+                outputExchange: {
+                  '@flowUUID': 'flow-1',
+                  downstreamProcess: { '@flowUUID': 'flow-2' },
+                },
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+    const outputExchange = processes[0].connections.outputExchange;
+
+    expect(outputExchange['@version']).toBe('03.01.004');
+    expect(outputExchange.downstreamProcess['@version']).toBe('04.02.005');
+  });
+
+  it('should prefer versions already persisted on the edge over port fallback values', () => {
+    const result = genLifeCycleModelJsonOrdered('model-edge-version-precedence', {
+      ...baseModelData,
+      model: {
+        nodes: baseModelData.model.nodes.map((node, index) => ({
+          ...node,
+          ports: {
+            items: [
+              {
+                id: index === 0 ? 'OUTPUT:flow-1' : 'INPUT:flow-2',
+                group: index === 0 ? 'groupOutput' : 'groupInput',
+                data: {
+                  flowId: index === 0 ? 'flow-1' : 'flow-2',
+                  flowVersion: '99.99.999',
+                },
+              },
+            ],
+          },
+        })),
+        edges: [
+          {
+            ...baseModelData.model.edges[0],
+            source: { cell: 'node-a', port: 'OUTPUT:flow-1' },
+            target: { cell: 'node-b', port: 'INPUT:flow-2' },
+          },
+        ],
+      },
+    });
+
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+    const outputExchange = processes[0].connections.outputExchange;
+
+    expect(outputExchange['@version']).toBe('01.01.000');
+    expect(outputExchange.downstreamProcess['@version']).toBe('02.02.000');
+  });
+
+  it('should keep process instances connection-free when the graph has no edge collection', () => {
+    const result = genLifeCycleModelJsonOrdered('model-without-edges', {
+      ...baseModelData,
+      model: {
+        nodes: baseModelData.model.nodes,
+      },
+    });
+    const processes = result.lifeCycleModelDataSet.lifeCycleModelInformation.technology.processes
+      .processInstance as any[];
+
+    expect(processes).toHaveLength(2);
+    expect(processes[0].connections).toBeUndefined();
+  });
+
+  it('should reject a connection when the source output Flow version cannot be resolved', () => {
+    expect(() =>
+      genLifeCycleModelJsonOrdered('model-missing-output-version', {
+        ...baseModelData,
+        model: {
+          ...baseModelData.model,
+          edges: [
+            {
+              id: 'edge-missing-output-version',
+              source: { cell: 'node-a', port: 'OUTPUT:flow-1' },
+              target: { cell: 'node-b', port: 'INPUT:flow-2' },
+              data: {
+                connection: {
+                  outputExchange: {
+                    '@flowUUID': 'flow-1',
+                    '@version': '   ',
+                    downstreamProcess: {
+                      '@flowUUID': 'flow-2',
+                      '@version': '02.02.000',
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/outputExchange\.@version.*flow-1/i);
+  });
+
+  it('should reject a connection when the target input Flow version cannot be resolved', () => {
+    expect(() =>
+      genLifeCycleModelJsonOrdered('model-missing-downstream-version', {
+        ...baseModelData,
+        model: {
+          ...baseModelData.model,
+          edges: [
+            {
+              id: 'edge-missing-downstream-version',
+              source: { cell: 'node-a', port: 'OUTPUT:flow-1' },
+              target: { cell: 'node-b', port: 'INPUT:flow-2' },
+              data: {
+                connection: {
+                  outputExchange: {
+                    '@flowUUID': 'flow-1',
+                    '@version': '01.01.000',
+                    downstreamProcess: { '@flowUUID': 'flow-2' },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toThrow(/downstreamProcess\.@version.*flow-2/i);
   });
 
   it('should preserve empty downstreamProcess placeholders when an edge target node is missing', () => {
@@ -373,6 +556,7 @@ describe('genLifeCycleModelJsonOrdered', () => {
               connection: {
                 outputExchange: {
                   '@flowUUID': 'flow-missing',
+                  '@version': '01.00.000',
                   downstreamProcess: {},
                 },
               },
@@ -414,8 +598,10 @@ describe('genLifeCycleModelJsonOrdered', () => {
               connection: {
                 outputExchange: {
                   '@flowUUID': 'flow-1',
+                  '@version': '01.01.000',
                   downstreamProcess: {
                     '@flowUUID': 'flow-3',
+                    '@version': '03.03.000',
                   },
                 },
               },
@@ -431,9 +617,18 @@ describe('genLifeCycleModelJsonOrdered', () => {
     const groupedOutput = processes[0].connections.outputExchange;
 
     expect(groupedOutput['@flowUUID']).toBe('flow-1');
+    expect(groupedOutput['@version']).toBe('01.01.000');
     expect(groupedOutput.downstreamProcess).toEqual([
-      expect.objectContaining({ '@id': '1', '@flowUUID': 'flow-2' }),
-      expect.objectContaining({ '@id': '2', '@flowUUID': 'flow-3' }),
+      expect.objectContaining({
+        '@id': '1',
+        '@flowUUID': 'flow-2',
+        '@version': '02.02.000',
+      }),
+      expect.objectContaining({
+        '@id': '2',
+        '@flowUUID': 'flow-3',
+        '@version': '03.03.000',
+      }),
     ]);
   });
 
@@ -607,6 +802,71 @@ describe('genLifeCycleModelJsonOrdered', () => {
         '@refObjectId': 'system-sparse',
       }),
     );
+  });
+});
+
+describe('connection Flow version helpers', () => {
+  it('resolves Flow versions by exact port, Flow id, and direction-derived port id', () => {
+    const node = {
+      id: 'node-flow-versions',
+      ports: {
+        items: [
+          {
+            id: 'INPUT:flow-output',
+            group: 'groupInput',
+            data: { flowId: 'flow-output', flowVersion: '90.00.000' },
+          },
+          {
+            id: 'OUTPUT:flow-output',
+            group: 'groupOutput',
+            data: { flowVersion: '01.02.003' },
+          },
+          {
+            id: 'custom-input-port',
+            group: 'groupInput',
+            data: { flowId: 'flow-input', flowVersion: '04.05.006' },
+          },
+          {
+            id: 'bad-version-port',
+            group: 'groupOutput',
+            data: { flowId: 'flow-bad', flowVersion: 123 },
+          },
+        ],
+      },
+    } as any;
+
+    expect(
+      getLifeCycleModelPortFlowVersion(
+        node,
+        'custom-input-port',
+        'ignored-by-exact-port',
+        'groupInput',
+      ),
+    ).toBe('04.05.006');
+    expect(getLifeCycleModelPortFlowVersion(node, undefined, 'flow-output', 'groupOutput')).toBe(
+      '01.02.003',
+    );
+    expect(getLifeCycleModelPortFlowVersion(node, undefined, 'flow-input', 'groupInput')).toBe(
+      '04.05.006',
+    );
+    expect(
+      getLifeCycleModelPortFlowVersion(node, 'bad-version-port', 'flow-bad', 'groupOutput'),
+    ).toBeUndefined();
+    expect(
+      getLifeCycleModelPortFlowVersion(undefined, undefined, undefined, 'groupOutput'),
+    ).toBeUndefined();
+  });
+
+  it('describes unresolved sparse connections without substituting another version', () => {
+    const error = new MissingLifeCycleModelFlowVersionError({
+      fieldPath: 'outputExchange.@version',
+      flowUUID: 'flow-sparse',
+      role: 'outputExchange',
+    });
+
+    expect(error.message).toContain('edge "unknown"');
+    expect(error.message).toContain('node "unknown"');
+    expect(error.message).toContain('port "unknown"');
   });
 });
 

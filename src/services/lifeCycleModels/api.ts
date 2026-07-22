@@ -47,7 +47,10 @@ import {
   buildReviewUpdateLifeCycleModelPersistencePlan,
   buildSaveLifeCycleModelPersistencePlan,
 } from './persistencePlan';
-import { genLifeCycleModelJsonOrdered } from './util';
+import {
+  genLifeCycleModelJsonOrdered,
+  MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE,
+} from './util';
 import { genLifeCycleModelProcesses } from './util_calculate';
 
 type LifeCycleModelListRpcRow = {
@@ -183,6 +186,42 @@ function buildMutationError(
     message,
     details,
   };
+}
+
+function buildFlowVersionMutationError(error: unknown): LifeCycleModelMutationResult | undefined {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    !('code' in error) ||
+    error.code !== MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE ||
+    !('message' in error) ||
+    typeof error.message !== 'string'
+  ) {
+    return undefined;
+  }
+
+  return buildMutationError(
+    MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE,
+    error.message,
+    'details' in error ? error.details : undefined,
+  );
+}
+
+function serializeLifeCycleModelForMutation(
+  id: string,
+  data: any,
+):
+  | { success: true; jsonOrdered: any }
+  | { success: false; mutationError: LifeCycleModelMutationResult } {
+  try {
+    return { success: true, jsonOrdered: genLifeCycleModelJsonOrdered(id, data) };
+  } catch (error) {
+    const flowVersionError = buildFlowVersionMutationError(error);
+    if (flowVersionError) {
+      return { success: false, mutationError: flowVersionError };
+    }
+    throw error;
+  }
 }
 
 function buildLangValidationError(validationError: string): LifeCycleModelMutationResult {
@@ -346,7 +385,11 @@ export async function createLifeCycleModel(
   options?: NormalizeLangPayloadForSaveOptions,
   createVersionOptions?: { sourceVersion: string },
 ): Promise<LifeCycleModelMutationResult> {
-  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const serializationResult = serializeLifeCycleModelForMutation(data.id, data);
+  if (!serializationResult.success) {
+    return serializationResult.mutationError;
+  }
+  const rawLifeCycleModelJsonOrdered = serializationResult.jsonOrdered;
   const normalizedCreateResult = await normalizeLangPayloadForSave(
     rawLifeCycleModelJsonOrdered,
     options,
@@ -408,7 +451,11 @@ export async function updateLifeCycleModel(
   data: any,
   options?: NormalizeLangPayloadForSaveOptions,
 ): Promise<LifeCycleModelMutationResult> {
-  const rawLifeCycleModelJsonOrdered = genLifeCycleModelJsonOrdered(data.id, data);
+  const serializationResult = serializeLifeCycleModelForMutation(data.id, data);
+  if (!serializationResult.success) {
+    return serializationResult.mutationError;
+  }
+  const rawLifeCycleModelJsonOrdered = serializationResult.jsonOrdered;
   const normalizedUpdateResult = await normalizeLangPayloadForSave(
     rawLifeCycleModelJsonOrdered,
     options,

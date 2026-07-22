@@ -32,6 +32,7 @@ import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
   genPortLabel,
+  getLifeCycleModelPortFlowVersion,
 } from '@/services/lifeCycleModels/util';
 import {
   getProcessDetail,
@@ -1182,14 +1183,30 @@ const ToolbarEdit: FC<Props> = ({
       const targetProcessVersion = targetNode?.data?.version;
       const sourcePortIDs = sourcePortID.split(':');
       const targetPortIDs = targetPortID.split(':');
+      const sourceFlowUUID = sourcePortIDs?.[sourcePortIDs?.length - 1];
+      const targetFlowUUID = targetPortIDs?.[targetPortIDs?.length - 1];
+      const sourceFlowVersion = getLifeCycleModelPortFlowVersion(
+        sourceNode,
+        sourcePortID,
+        sourceFlowUUID,
+        'groupOutput',
+      );
+      const targetFlowVersion = getLifeCycleModelPortFlowVersion(
+        targetNode,
+        targetPortID,
+        targetFlowUUID,
+        'groupInput',
+      );
 
       updateEdge(edge.id, {
         data: {
           connection: {
             outputExchange: {
-              '@flowUUID': sourcePortIDs?.[sourcePortIDs?.length - 1],
+              '@flowUUID': sourceFlowUUID,
+              '@version': sourceFlowVersion,
               downstreamProcess: {
-                '@flowUUID': targetPortIDs?.[targetPortIDs?.length - 1],
+                '@flowUUID': targetFlowUUID,
+                '@version': targetFlowVersion,
               },
             },
           },
