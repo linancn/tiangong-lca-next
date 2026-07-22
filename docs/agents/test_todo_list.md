@@ -26,8 +26,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Updated for Issue #654: recorded the implemented isolated release E2E environment, preflight, diagnostics, and bounded continuation surface.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: recorded the corrected host-CI/local-container boundary for authenticated release E2E.'
 ---
 
 # Testing Execution State
@@ -56,6 +56,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
+- Issue #660 keeps production-data E2E fail-closed on real CI hosts while allowing an authorized local run to override only the release image's inherited `CI`/`GITHUB_ACTIONS` markers before the unchanged in-container authorization and ledger checks
 - tracked semantic evidence remains fail closed for production readiness until one full local authenticated execution closes every assertion, matches the declared source/test/route bindings, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; routine pre-push checks validate the record structurally without requiring current production-proof hashes, and adding a registry locale still invalidates older evidence rather than silently shrinking coverage
 - Header locale switching now keeps Umi `SelectLang` at `reload={false}`; focused proof covers same-document identity, URL retention, live reference-label refresh, and rejection of a delayed old-locale response
 - clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures

@@ -26,8 +26,8 @@ checkPaths:
   - playwright.config.ts
   - package.json
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Updated for Issue #654: separated focused browser diagnosis from exact-candidate release proof and documented preflight/resume boundaries.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: documented the two-sided host-CI and local container-marker production-write boundary.'
 ---
 
 # Testing Patterns Reference
@@ -119,7 +119,7 @@ Browser semantic E2E pattern:
 - retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
 - run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
-- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` provides optional three-browser public semantics/contract proof and release reuses it for the exact candidate SHA, while routine PR/dev events do not trigger it and authenticated production writes are restricted to an explicitly authorized local operator session with `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
+- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` provides optional three-browser public semantics/contract proof and release reuses it for the exact candidate SHA, while routine PR/dev events do not trigger it; host `CI` or `GITHUB_ACTIONS` must fail production-data mode before Docker, and only an accepted local operator run may clear the image-inherited markers inside the container while still requiring `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
