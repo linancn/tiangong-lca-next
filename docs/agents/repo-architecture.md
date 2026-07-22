@@ -25,7 +25,7 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
 lastReviewedNote: 'Updated for Issue #654: mapped the isolated release-E2E controller/container while preserving the test-only Supabase and shipped-service ownership boundaries.'
 related:
   - ../AGENTS.md
