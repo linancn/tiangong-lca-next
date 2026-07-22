@@ -467,6 +467,110 @@ describe('production browser request guard', () => {
   });
 
   it.each([
+    [
+      'read',
+      {
+        action: 'read',
+        reviewSubmitJobId: '33333333-3333-4333-8333-333333333333',
+      },
+    ],
+    [
+      'read_latest',
+      {
+        action: 'read_latest',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+      },
+    ],
+    [
+      'read_latest with revision checksum',
+      {
+        action: 'read_latest',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        revisionChecksum: 'a'.repeat(64),
+      },
+    ],
+  ])('allows the exact read-only review-submit %s action', (_name, body) => {
+    expect(
+      classify('POST', '/functions/v1/app_dataset_review_submit_jobs', JSON.stringify(body)),
+    ).toBe('allow');
+  });
+
+  it.each([
+    [
+      'enqueue',
+      {
+        action: 'enqueue',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+      },
+    ],
+    [
+      'read with an extra key',
+      { action: 'read', reviewSubmitJobId: '33333333-3333-4333-8333-333333333333', write: true },
+    ],
+    ['read with a non-UUID id', { action: 'read', reviewSubmitJobId: 'latest' }],
+    [
+      'read_latest for another table',
+      {
+        action: 'read_latest',
+        table: 'flows',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+      },
+    ],
+    [
+      'read_latest with a non-UUID id',
+      { action: 'read_latest', table: 'processes', id: 'latest', version: '01.00.000' },
+    ],
+    [
+      'read_latest with an invalid version',
+      {
+        action: 'read_latest',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '1',
+      },
+    ],
+    [
+      'read_latest with an invalid checksum',
+      {
+        action: 'read_latest',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        revisionChecksum: 'latest',
+      },
+    ],
+    [
+      'read_latest with an extra key',
+      {
+        action: 'read_latest',
+        table: 'processes',
+        id: '11111111-1111-4111-8111-111111111111',
+        version: '01.00.000',
+        write: true,
+      },
+    ],
+    [
+      'missing action',
+      { table: 'processes', id: '11111111-1111-4111-8111-111111111111', version: '01.00.000' },
+    ],
+  ])('blocks the write-capable or invalid review-submit %s request', (_name, body) => {
+    expect(
+      classify('POST', '/functions/v1/app_dataset_review_submit_jobs', JSON.stringify(body)),
+    ).toBe('block');
+  });
+
+  it('blocks a malformed review-submit request body', () => {
+    expect(classify('POST', '/functions/v1/app_dataset_review_submit_jobs', '{')).toBe('block');
+  });
+
+  it.each([
     ['POST', '/rest/v1/teams'],
     ['PATCH', '/rest/v1/processes?id=eq.codex-e2e'],
     ['DELETE', '/rest/v1/processes?id=eq.codex-e2e'],

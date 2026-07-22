@@ -204,10 +204,18 @@ export function reconcileProductionLedgerCopies(
   if (!primary && !recovery) {
     return undefined;
   }
+  if (primary && !recovery) {
+    assertLedgerScope(primary);
+    throw new Error(
+      'The primary codex-e2e ledger has no matching recovery copy; refusing cross-run adoption.',
+    );
+  }
+  if (!primary && recovery) {
+    assertLedgerScope(recovery);
+    return recovery;
+  }
   if (!primary || !recovery) {
-    const survivingCopy = primary ?? recovery!;
-    assertLedgerScope(survivingCopy);
-    return survivingCopy;
+    throw new Error('Codex E2E ledger reconciliation reached an impossible copy state.');
   }
   assertLedgerScope(primary);
   assertLedgerScope(recovery);

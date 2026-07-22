@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-20T08:15:36.565Z",
-  "runId": "local-77a53ac7-7125-42ae-9440-9252c707a6ac",
+  "generatedAt": "2026-07-21T13:16:30.855Z",
+  "runId": "local-16685da0-f047-467b-826e-4a14a4722909",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "9b5bdeb11794f280b639212248b9816338923dd7",
-    "packageManifestDigest": "4910623de8b46e2cc3efb74c665a6fb047fa4315759de0e22819535e7f72ac11",
-    "sourceTreeDigest": "b4d9690cc7845351b1ea6ee338f4e5f3e13c937806652b01c43f1225e20118eb",
-    "unitTestTreeDigest": "3c93914f11fb952cc1ba593d3bdd832518e4a68b9d62bf013dd03d21fc3782a1"
+    "observedHeadCommit": "804a44c0816076fd5166a6f36764483c7f37aaa8",
+    "packageManifestDigest": "4de95641ba4877d61901bf9f67cfe1f83cd788721b39b74972d302ba2e4a2486",
+    "sourceTreeDigest": "8939ba3cc13c25997f75bb616fbb16e62e57852ae57ab80e8a95e6672051b58b",
+    "unitTestTreeDigest": "0f9266215df76d748c0dacd4bc3151e4d32c250ad03232fcaa83211ab0737c83"
   },
   "target": {
     "frontend": "candidate-local",
@@ -19,7 +19,7 @@
       "backendTrackedOriginSha256": "bf39ee1b65b9f4b508e97aeb69b704b9fc172f20b7d74e7f24ccfbc515161495",
       "backendTrackedPublishableKeySha256": "f48ee2a57a2e550f6a43fee565727d28865ec821b3cf8e5e08854bd7cc33ba9e",
       "candidateEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174",
-      "frontendOriginSha256": "63767aa5615dabadd32b93fdf0db0c7190c850062ba568114ea4f28b6cdc9e71",
+      "frontendOriginSha256": "aea53e7b670632001d67f90ba2fc0bc6c1ad315c8b88bf5019e01594bfa84966",
       "freshPlaywrightServer": true,
       "observer": "chromium-auth-request",
       "trackedMainEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174"
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "c4ae4cce664d94a18b3618df3e0a33363d9dc9c29834e1a44fde8599f0fd90b0"
+      "sha256": "05311df9e31427d52d6bf45e2445850315e23a22ad0489f9a07c6af6ce9f5f43"
     },
     "runtimeAssets": [
       {
@@ -133,15 +133,15 @@
     "tests": [
       {
         "path": "docs/plans/i18n/semantic-e2e-evidence.schema.json",
-        "sha256": "dc9c76ea778e408be8f692ba0cd373bfaba0201de0d0572c40e4e7377d73e1d6"
+        "sha256": "0ad8af33b8a158f5f368435395205e6a824e19070ea4f6eeb0187e5c17aebe12"
       },
       {
         "path": "playwright.config.ts",
-        "sha256": "90f3b6d1e0a2437979f5fedd43ecd1bdb2790de4a14318fead36661a691042c1"
+        "sha256": "131ac48a2a5cac438d0cca681da4ceee014dead9ca641a31c97ed46fc738c9a3"
       },
       {
         "path": "scripts/i18n/locale-delivery.mjs",
-        "sha256": "7bcf9d0c0ec0147ff900c3b836bc3a6c6948adf64cff607a809e21e9fd4760e0"
+        "sha256": "0357f20b041722e07c53d65eb25d40909f0b784fdc1d81775628a4e6fc6e9aa9"
       },
       {
         "path": "tests/data-workflows/data-workflow-paths.ts",
@@ -173,7 +173,7 @@
       },
       {
         "path": "tests/e2e/i18n/contracts.ts",
-        "sha256": "d217b79cd222872eb328ac1c1d12fc4355ec5a0c83a3385e0bed39b998862674"
+        "sha256": "d6d43ed4e2147b7a3cc7f203f6cb313b8bcb856bb8432969d67b781487bafaee"
       },
       {
         "path": "tests/e2e/i18n/evidence-reporter.ts",
@@ -221,11 +221,11 @@
       },
       {
         "path": "tests/e2e/i18n/production-data-safety.ts",
-        "sha256": "bd28d61d9d6a2f92bcc20c50699867688ee9c98d3f6172b8c3c7864017e7162e"
+        "sha256": "31e1393ad2c8228a2134049e050ea50b6562f52019d2402fdff741d272018b8b"
       },
       {
         "path": "tests/e2e/i18n/production-request-guard.ts",
-        "sha256": "35c59de65c93bf3a17fba286ff6ba6a350d8619ba68eb69a7d6fc36a938f0fbe"
+        "sha256": "1f6330390333c142823d00c9c2d5dfdb31a46c32464f1709559754e98008e871"
       },
       {
         "path": "tests/e2e/i18n/query-responsive.spec.ts",
@@ -237,7 +237,7 @@
       },
       {
         "path": "tests/e2e/i18n/reference-refresh.spec.ts",
-        "sha256": "7124f65ce6fd87ba19994542c20a4b03bb03bea226629f8680e39ad200c95c43"
+        "sha256": "97a631d4d4d2c6e37230e6b839e5efced1d745af98baf52fc619e3afe7c7bf6f"
       },
       {
         "path": "tests/e2e/i18n/responsive-layout.spec.ts",
@@ -269,7 +269,7 @@
       },
       {
         "path": "tests/e2e/i18n/typed-view-variants.spec.ts",
-        "sha256": "ff229804f5b0b26d235a211464c78094cc662ca05bd91387739c869b45a67b44"
+        "sha256": "79180299393bf3f97789477ae586775025c802be5f186f4d7345bf21c5aba1d0"
       },
       {
         "path": "tests/unit/app.test.tsx",
@@ -325,19 +325,19 @@
       },
       {
         "path": "tests/unit/e2e/productionDataLedger.test.ts",
-        "sha256": "20bf46725a67ad2e5a709165377e70064103ce837f51666676070972bfdd5b70"
+        "sha256": "a6f3ab5e107ebb039d9d0388a1589514e34b92e0a9d5270166394ecb6254fade"
       },
       {
         "path": "tests/unit/e2e/productionRequestGuard.test.ts",
-        "sha256": "ad91f5be37717309c144b0b6ea5e09536c6d202ceb49a6e7ee75be71a9da7b5a"
+        "sha256": "68a890f057722adfde3be6cb781808ff7694e0715f5a687c1aa8d10257c68e58"
       },
       {
         "path": "tests/unit/e2e/referenceRefreshContract.test.ts",
-        "sha256": "a99ecbaa23056488375e1cdceb1a944ff4cea2e4db566e4aa9bbce0c17a954f3"
+        "sha256": "12e7b526cac4447bc848c6f5eb3f151d35155e65da1b55a24433b02465ffe853"
       },
       {
         "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-        "sha256": "f654ac82a08968d4e4d0b433f406d28a6f618b0cb7e8e6fa6d5eca49ac027336"
+        "sha256": "df14008044560c174f3613365002d7424a277e75d9dc6437d964b04a9be9a486"
       },
       {
         "path": "tests/unit/pages/404.test.tsx",

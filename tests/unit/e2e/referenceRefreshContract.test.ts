@@ -55,6 +55,16 @@ describe('reference refresh semantic E2E contract', () => {
 
   it('drives both real resource scopes without screenshots, traces, video, or writes', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
+    const cacheScenarioStart = source.indexOf(
+      "test('previous-revision browser caches fail closed and process deep links survive locale reloads'",
+    );
+    const cacheScenario = source.slice(cacheScenarioStart);
+    const staticStaging = cacheScenario.indexOf("new URL('/privacy_notice.html', baseURL!)");
+    const staleInjection = cacheScenario.indexOf('await injectPreviousRevisionEntries(');
+    const injectionProof = cacheScenario.indexOf('await expectPreviousRevisionEntriesInjected(');
+    const targetNavigation = cacheScenario.indexOf(
+      'await gotoCandidateUrl(page, browserName, targetUrl);',
+    );
     expect(source).toContain("id: 'classification'");
     expect(source).toContain("id: 'location'");
     expect(source).toContain("'reference-refresh-cache'");
@@ -67,64 +77,84 @@ describe('reference refresh semantic E2E contract', () => {
     expect(source).toContain(
       'await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state);',
     );
-    expect(source).toContain("page.reload({ waitUntil: 'domcontentloaded' })");
+    expect(source).toContain("new URL('/privacy_notice.html', baseURL!)");
+    expect(source).toContain(
+      'await gotoCandidateUrl(page, browserName, cacheStagingUrl.toString());',
+    );
+    expect(source).toContain('await gotoCandidateUrl(page, browserName, targetUrl);');
     expect(source).toContain("locator('.ant-select-dropdown:visible')");
     expect(source).not.toContain("getByRole('option'");
     expect(source.indexOf('await expectCurrentReferenceCacheBaseline')).toBeLessThan(
       source.indexOf('await injectPreviousRevisionEntries'),
     );
+    expect(staticStaging).toBeGreaterThan(-1);
+    expect(staleInjection).toBeGreaterThan(staticStaging);
+    expect(injectionProof).toBeGreaterThan(staleInjection);
+    expect(targetNavigation).toBeGreaterThan(injectionProof);
     expect(source).not.toMatch(/page\.screenshot|ariaSnapshot|context\.tracing|recordVideo/gu);
     expect(source).not.toMatch(/updateProcess|insert\(|delete\(|upsert\(/gu);
   });
 
-  it('uses one candidate navigation and accepts Firefox cancellation only after exact mount readiness', () => {
+  it('bounds Firefox cancellation recovery to one exact-target retry for every candidate URL', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
-    const helperStart = source.indexOf('async function gotoCandidateDocument(');
+    const urlHelperStart = source.indexOf('async function gotoCandidateUrl(');
+    const documentHelperStart = source.indexOf('async function gotoCandidateDocument(');
     const helperEnd = source.indexOf(
       '\n}\n\nasync function selectLocaleThroughHeader(',
-      helperStart,
+      documentHelperStart,
     );
-    const helperSource = source.slice(helperStart, helperEnd);
-    const detailReadyGuard = helperSource.indexOf("if (mode === 'view')");
-    const detailReady = helperSource.indexOf(
+    const urlHelperSource = source.slice(urlHelperStart, documentHelperStart);
+    const documentHelperSource = source.slice(documentHelperStart, helperEnd);
+    const detailReadyGuard = documentHelperSource.indexOf("if (mode === 'view')");
+    const detailReady = documentHelperSource.indexOf(
       "toHaveAttribute('data-detail-ready', 'true'",
       detailReadyGuard,
     );
-    const idleGuard = helperSource.indexOf('if (waitForDrawerIdle)', detailReady);
-    const nestedIdleWait = helperSource.indexOf("drawer.locator('.ant-spin-spinning')", idleGuard);
+    const idleGuard = documentHelperSource.indexOf('if (waitForDrawerIdle)', detailReady);
+    const nestedIdleWait = documentHelperSource.indexOf(
+      "drawer.locator('.ant-spin-spinning')",
+      idleGuard,
+    );
 
-    expect(helperStart).toBeGreaterThan(-1);
-    expect(helperEnd).toBeGreaterThan(helperStart);
-    expect(helperSource).toContain("browserName === 'firefox'");
-    expect(helperSource).toContain("error.message.includes('NS_ERROR_FAILURE')");
-    expect(helperSource).toContain("error.message.includes('NS_BINDING_ABORTED')");
-    expect(helperSource).toContain('throw error;');
-    expect(helperSource).toContain(
+    expect(urlHelperStart).toBeGreaterThan(-1);
+    expect(documentHelperStart).toBeGreaterThan(urlHelperStart);
+    expect(helperEnd).toBeGreaterThan(documentHelperStart);
+    expect(urlHelperSource).toContain("browserName === 'firefox'");
+    expect(urlHelperSource).toContain("browserName === 'firefox' ? 2 : 1");
+    expect(urlHelperSource).toContain("error.message.includes('NS_ERROR_FAILURE')");
+    expect(urlHelperSource).toContain("error.message.includes('NS_BINDING_ABORTED')");
+    expect(urlHelperSource).toContain('throw error;');
+    expect(urlHelperSource).toContain(
       "await page.goto(targetUrl, { timeout: 45_000, waitUntil: 'domcontentloaded' });",
     );
-    expect(helperSource.match(/page[.]goto[(]/gu)).toHaveLength(1);
-    expect(helperSource).toContain(
+    expect(urlHelperSource.match(/page[.]goto[(]/gu)).toHaveLength(1);
+    expect(urlHelperSource).toContain(
       'expect.poll(() => page.url(), { timeout: 45_000 }).toBe(targetUrl)',
     );
-    expect(helperSource).toContain('await expectProcessDeepLink(page, ledger, state, mode);');
-    expect(helperSource).toContain("const { mode = 'view', waitForDrawerIdle = true } = options;");
+    expect(documentHelperSource).toContain('await gotoCandidateUrl(page, browserName, targetUrl);');
+    expect(documentHelperSource).toContain(
+      'await expectProcessDeepLink(page, ledger, state, mode);',
+    );
+    expect(documentHelperSource).toContain(
+      "const { mode = 'view', waitForDrawerIdle = true } = options;",
+    );
     expect(detailReadyGuard).toBeGreaterThan(-1);
     expect(detailReady).toBeGreaterThan(detailReadyGuard);
     expect(idleGuard).toBeGreaterThan(detailReady);
     expect(nestedIdleWait).toBeGreaterThan(idleGuard);
-    expect(helperSource).toContain("page.locator('.tg-global-header-avatar-trigger')");
-    expect(helperSource).toContain("page.locator('.tg-global-language-selector')");
-    expect(helperSource).toContain("page.locator('.ant-result-403')");
-    expect(helperSource).toContain("page.getByTestId('process-deep-link-state')");
-    expect(helperSource).toContain("toHaveAttribute('data-route-mode', mode");
-    expect(helperSource).toContain(
+    expect(documentHelperSource).toContain("page.locator('.tg-global-header-avatar-trigger')");
+    expect(documentHelperSource).toContain("page.locator('.tg-global-language-selector')");
+    expect(documentHelperSource).toContain("page.locator('.ant-result-403')");
+    expect(documentHelperSource).toContain("page.getByTestId('process-deep-link-state')");
+    expect(documentHelperSource).toContain("toHaveAttribute('data-route-mode', mode");
+    expect(documentHelperSource).toContain(
       "page.locator('.ant-drawer-content:visible').filter({ has: deepLinkState })",
     );
     expect(source).not.toContain('isAuthenticatedWelcomeBootRedirect');
-    expect(source).not.toContain('MAX_CANDIDATE_NAVIGATION_ATTEMPTS');
-    expect(helperSource).not.toContain('selectLocaleThroughHeader');
-    expect(helperSource).not.toContain('staleRequestsStarted');
-    expect(helperSource).not.toContain('releaseOldResponseOnce');
+    expect(urlHelperSource).toContain('for (let attempt = 0; attempt < maxNavigationAttempts;');
+    expect(urlHelperSource).not.toContain('selectLocaleThroughHeader');
+    expect(urlHelperSource).not.toContain('staleRequestsStarted');
+    expect(urlHelperSource).not.toContain('releaseOldResponseOnce');
   });
 
   it('settles the delayed-response race through mounted localized text, not a required network miss', () => {

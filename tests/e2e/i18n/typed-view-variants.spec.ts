@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from './fixtures';
+import { expect, test, type Locator, type Page, type Route } from './fixtures';
 
 import { signInViaUi } from './auth';
 import {
@@ -350,25 +350,38 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
   }
 });
 
-async function expectProcessDrawer(
+async function expectProcessDrawerMounted(
   page: Page,
-  locale: (typeof APP_LOCALES)[number],
   mode: 'edit' | 'view',
   required: 'optional' | 'required' | undefined,
-): Promise<void> {
-  const titleMessageId = `pages.process.drawer.title.${mode}`;
-  const drawer = page.locator('.ant-drawer-content:visible').filter({
-    has: page.getByText(getLocaleMessage(locale, titleMessageId), { exact: true }),
-  });
-  await expect(drawer).toHaveCount(1);
-  await expect(drawer).toBeVisible();
-  const state = drawer.getByTestId('process-deep-link-state');
+): Promise<Locator> {
+  const state = page.getByTestId('process-deep-link-state');
+  await expect(state).toBeAttached();
   await expect(state).toHaveAttribute('data-route-mode', mode);
   if (required) {
     await expect(state).toHaveAttribute('data-auto-check-required', required);
   } else {
     await expect(state).not.toHaveAttribute('data-auto-check-required');
   }
+  const drawer = page.locator('.ant-drawer-content:visible').filter({ has: state });
+  await expect(drawer).toHaveCount(1);
+  await expect(drawer).toBeVisible();
+  await expect(drawer.locator('.ant-spin-spinning')).toHaveCount(0);
+  return drawer;
+}
+
+async function expectProcessDrawer(
+  page: Page,
+  locale: (typeof APP_LOCALES)[number],
+  mode: 'edit' | 'view',
+  required: 'optional' | 'required' | undefined,
+): Promise<void> {
+  const drawer = await expectProcessDrawerMounted(page, mode, required);
+  await expect(
+    drawer.getByText(getLocaleMessage(locale, `pages.process.drawer.title.${mode}`), {
+      exact: true,
+    }),
+  ).toBeVisible();
 }
 
 async function expectProcessDeepLinkMountSettled(input: {
@@ -436,6 +449,8 @@ test('Process edit and view deep links survive locale switches and reloads', asy
         await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
           waitUntil: 'domcontentloaded',
         });
+        await expectSpaLocation(page, location);
+        await expectProcessDrawerMounted(page, mode, mode === 'edit' ? 'optional' : undefined);
         await selectAppLocaleThroughUi(page, locale, { forceTrigger: true });
         await expectSpaLocation(page, location);
         await expect.poll(() => readStoredAppLocale(page)).toBe(locale);

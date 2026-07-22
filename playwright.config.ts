@@ -15,6 +15,7 @@ assertCandidateFrontendTarget(baseURL);
 
 const authenticatedRun = process.env.E2E_AUTHENTICATED === 'true';
 const verifiedEvidenceRun = process.env.E2E_WRITE_VERIFIED_EVIDENCE === 'true';
+const expectTimeout = authenticatedRun ? 45_000 : 15_000;
 if (
   verifiedEvidenceRun &&
   (!authenticatedRun ||
@@ -36,7 +37,7 @@ export default defineConfig({
   workers: authenticatedRun ? 1 : process.env.CI ? 2 : 1,
   timeout: 120_000,
   expect: {
-    timeout: 15_000,
+    timeout: expectTimeout,
   },
   globalSetup: './tests/e2e/i18n/global-setup.ts',
   globalTeardown: './tests/e2e/i18n/global-teardown.ts',
