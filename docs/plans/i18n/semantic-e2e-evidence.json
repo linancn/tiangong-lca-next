@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-21T13:16:30.855Z",
-  "runId": "local-16685da0-f047-467b-826e-4a14a4722909",
+  "generatedAt": "2026-07-22T08:58:00.948Z",
+  "runId": "local-6b1ee179-ecbd-464a-8fa9-0dc2bd1d4ca2",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "804a44c0816076fd5166a6f36764483c7f37aaa8",
-    "packageManifestDigest": "4de95641ba4877d61901bf9f67cfe1f83cd788721b39b74972d302ba2e4a2486",
-    "sourceTreeDigest": "8939ba3cc13c25997f75bb616fbb16e62e57852ae57ab80e8a95e6672051b58b",
-    "unitTestTreeDigest": "0f9266215df76d748c0dacd4bc3151e4d32c250ad03232fcaa83211ab0737c83"
+    "observedHeadCommit": "6c394521e7f950a7034603fcc68fe396228462a8",
+    "packageManifestDigest": "6a0e84db397073141ca2faef8674446aa03bd07b4fb287937f443250d9be5225",
+    "sourceTreeDigest": "5aa2311b857a493eab9755059853e7b3ac3689ac6af88ed795a1447709dac33e",
+    "unitTestTreeDigest": "c6f3c684dada88c46c2db25505b682a4674ce50963e0b09128f4dcf2aee77959"
   },
   "target": {
     "frontend": "candidate-local",
@@ -19,7 +19,7 @@
       "backendTrackedOriginSha256": "bf39ee1b65b9f4b508e97aeb69b704b9fc172f20b7d74e7f24ccfbc515161495",
       "backendTrackedPublishableKeySha256": "f48ee2a57a2e550f6a43fee565727d28865ec821b3cf8e5e08854bd7cc33ba9e",
       "candidateEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174",
-      "frontendOriginSha256": "aea53e7b670632001d67f90ba2fc0bc6c1ad315c8b88bf5019e01594bfa84966",
+      "frontendOriginSha256": "63767aa5615dabadd32b93fdf0db0c7190c850062ba568114ea4f28b6cdc9e71",
       "freshPlaywrightServer": true,
       "observer": "chromium-auth-request",
       "trackedMainEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174"
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "05311df9e31427d52d6bf45e2445850315e23a22ad0489f9a07c6af6ce9f5f43"
+      "sha256": "f6982084b05eb7a416508d645f17b7c95dfdef9c9da2c8aa5c4155b5978f2c6f"
     },
     "runtimeAssets": [
       {
@@ -137,7 +137,7 @@
       },
       {
         "path": "playwright.config.ts",
-        "sha256": "131ac48a2a5cac438d0cca681da4ceee014dead9ca641a31c97ed46fc738c9a3"
+        "sha256": "2a9a8e25a097ed7878bf18009177accb318d50b27996a99762fd8a992a6a0ae0"
       },
       {
         "path": "scripts/i18n/locale-delivery.mjs",
@@ -157,11 +157,11 @@
       },
       {
         "path": "tests/e2e/i18n/auth.ts",
-        "sha256": "65b5528396835894644c9b80992edf1b62ccd00eca9a8ef7a236ec06f4b33349"
+        "sha256": "e2a34b56f3f3941b538e865dd585e9ae15e20da862083c0e8dc43e57266ac09d"
       },
       {
         "path": "tests/e2e/i18n/candidate-readiness.ts",
-        "sha256": "3c3caa4860092ef012301c6a2a099b32f17c071c8e9f1606521a6545ebc1b5f5"
+        "sha256": "8f05be640ee568be1fd2a34031c35b392f19cad3691562eaaef7bf7d2b0882c2"
       },
       {
         "path": "tests/e2e/i18n/carbon-footprint-guide.spec.ts",
@@ -173,11 +173,11 @@
       },
       {
         "path": "tests/e2e/i18n/contracts.ts",
-        "sha256": "d6d43ed4e2147b7a3cc7f203f6cb313b8bcb856bb8432969d67b781487bafaee"
+        "sha256": "345b44b33f285323b98ebaab5f3353a7da9e598c3d939d0d54209f47c24b6793"
       },
       {
         "path": "tests/e2e/i18n/evidence-reporter.ts",
-        "sha256": "aa6e2a29633056275a3ae4d384f39f5ee09616a8534311a5f11f09a860c0a598"
+        "sha256": "cb4f29bb95afb916d62b4c81e6f35855eb880ce1da8691d9b90b78c48611d833"
       },
       {
         "path": "tests/e2e/i18n/fixtures.ts",
@@ -213,11 +213,11 @@
       },
       {
         "path": "tests/e2e/i18n/production-backend-target.ts",
-        "sha256": "e166530894ab5199a110b7ae2c7f64be0e50005ada1545a39f7a8d0bd08f5823"
+        "sha256": "d2f4d82be10fef63920e2bcafa3db5f8544d364b6e4910b4a3486a373a4396fe"
       },
       {
         "path": "tests/e2e/i18n/production-data-ledger.ts",
-        "sha256": "7aab896b3f947c85173f4617bc9829bce1d496a366017dd38748e2ad327eb694"
+        "sha256": "dc85d963d17a03ccf5c2bdad8bcf119744963325dce9f5a09d83eb8efe29f7f6"
       },
       {
         "path": "tests/e2e/i18n/production-data-safety.ts",
@@ -321,7 +321,7 @@
       },
       {
         "path": "tests/unit/e2e/evidenceReporter.test.ts",
-        "sha256": "aa603958dc81f7092408721cb8fd6dbd5870ca006280ac6d36a8bdae1e8cd0ab"
+        "sha256": "a61467e8e17859518aedbc35fd9123d841e1db96535c78155db9bbec3216adc7"
       },
       {
         "path": "tests/unit/e2e/productionDataLedger.test.ts",

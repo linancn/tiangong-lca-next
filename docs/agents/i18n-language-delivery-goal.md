@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4
-lastReviewedNote: 'Reviewed for Issue #654: isolated release E2E execution changes candidate packaging and diagnostics only; locale, route, assertion, production-data, and credential-free CI semantics remain unchanged.'
+lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
+lastReviewedNote: 'Reviewed for Issue #666: verified semantic E2E evidence is bound to the v0.0.56 package lock and records one controlled production-data create/cleanup cycle; locale delivery semantics remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

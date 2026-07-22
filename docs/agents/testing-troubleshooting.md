@@ -25,8 +25,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - package.json
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: b7f2b671323ced00de79b5424cd3d3747b5b0d7f
-lastReviewedNote: 'Updated for Issue #660: added diagnosis for host-CI refusal versus inherited container CI markers.'
+lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
+lastReviewedNote: 'Reviewed for Issue #666: stale package-lock binding is resolved by regenerating verified evidence on the final candidate; no troubleshooting change is required.'
 ---
 
 # Testing Troubleshooting
