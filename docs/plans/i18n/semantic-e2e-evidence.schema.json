@@ -46,20 +46,24 @@
       ],
       "properties": {
         "configTreeDigest": {
-          "$ref": "#/$defs/sha256"
+          "$ref": "#/$defs/sha256",
+          "description": "Execution-time provenance for the complete config tree; current production readiness is bound by the narrower declared contract inputs."
         },
         "observedHeadCommit": {
           "type": "string",
           "pattern": "^[0-9a-f]{40}$"
         },
         "packageManifestDigest": {
-          "$ref": "#/$defs/sha256"
+          "$ref": "#/$defs/sha256",
+          "description": "Execution-time package manifest provenance; current production readiness uses the declared package-lock and semantic input digests."
         },
         "sourceTreeDigest": {
-          "$ref": "#/$defs/sha256"
+          "$ref": "#/$defs/sha256",
+          "description": "Execution-time provenance for the complete source tree; unrelated source files do not invalidate production proof."
         },
         "unitTestTreeDigest": {
-          "$ref": "#/$defs/sha256"
+          "$ref": "#/$defs/sha256",
+          "description": "Execution-time provenance for the complete unit-test tree; unrelated unit tests do not invalidate production proof."
         }
       }
     },

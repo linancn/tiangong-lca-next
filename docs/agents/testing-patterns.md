@@ -23,9 +23,9 @@ checkPaths:
   - tests/e2e/i18n/**
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9b5bdeb11794f280b639212248b9816338923dd7
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; reusable test-selection and structure patterns are unchanged.'
+lastReviewedAt: 2026-07-21
+lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
+lastReviewedNote: 'Updated for Issue #652: documented deterministic cache staging, focused menu dismissal, and authenticated production wait budgets.'
 ---
 
 # Testing Patterns Reference
@@ -103,19 +103,21 @@ Special cases:
 11. bind the repository full gate to the final committed controlled checkpoint and use `push:checked` so the ordinary hook owns that one execution; only a failed transport after successful gates may activate the exact-intent receipt consumed by argument-free `push:retry`
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
-14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; the tracked evidence must close all 49 IDs and match its route, test, source, locale, browser, and cleanup digests
+14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 
 Browser semantic E2E pattern:
 
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - serve the candidate locally with `npm run start:main`; reject a non-loopback Playwright base URL even though the candidate uses the production backend configuration
 - keep the global rendered-candidate probe and require every new login page/context to await the shared route-specific visible marker before interaction; use a bounded readiness timeout, never a fixed sleep, broader action timeout, disabled retry accounting, or relaxed `failOnFlakyTests`
+- retain the 15-second assertion budget for public/CI semantics, but allow the explicitly authenticated production-backed closure 45 seconds for remote Process drawers; this scoped budget must not weaken routine browser checks
 - derive locale and authoring-language loops from `LOCALE_REGISTRY` and `CONTENT_LANGUAGE_REGISTRY`; never copy the current locale list into a spec or reporter
 - run the complete 49-route/view matrix in Chromium, require every target-declared semantic scenario in the evidence record, and run the critical selector, team authoring, and process lifecycle scenarios in Chromium, Firefox, and WebKit
-- keep every semantic E2E GitHub Actions event, including `workflow_dispatch`, credential-free and read-only; CI runs only three-browser public semantics/contract, while authenticated production writes are restricted to an explicitly authorized local operator session with `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
+- keep every semantic E2E GitHub Actions invocation credential-free and read-only; `workflow_dispatch` provides optional three-browser public semantics/contract proof and release reuses it for the exact candidate SHA, while routine PR/dev events do not trigger it and authenticated production writes are restricted to an explicitly authorized local operator session with `E2E_AUTHENTICATED=true` plus the two write guards (`E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token); verified evidence is a separate explicit opt-in
 - write an ignored UUID-scoped `codex-e2e` intent ledger before create; before delete, fetch the exact production row and verify its exact ILCD UUID path, authenticated owner, and per-language marker pairs at all five exact multilingual field paths
 - delete only verified exact-ID row versions and fail unless `created=cleaned` and `leaked=0`; an absent or unverifiable attempted row is not successful cleanup evidence
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
+- stage deliberately stale IndexedDB/localStorage fixtures on a same-origin static document before navigating to the tested deep link, and send menu-dismissal keys to the visible menu/trigger rather than ambient page focus; Firefox may retry one exact navigation only after its known cancellation failed to commit that target
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
 - treat adding a registry locale or changing a bound route/source/test as evidence invalidation, not as a request to reuse the old result
 

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-20"
-lastReviewedCommit: "9b5bdeb11794f280b639212248b9816338923dd7"
-lastReviewedNote: 'Reviewed for v0.0.53 version-only release preparation; routing, ownership, and testing-gate contracts are unchanged.'
+lastReviewedAt: "2026-07-21"
+lastReviewedCommit: "804a44c0816076fd5166a6f36764483c7f37aaa8"
+lastReviewedNote: 'Reviewed for Issue #647; routing and ownership remain unchanged after making browser semantic E2E manual on demand and release-required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

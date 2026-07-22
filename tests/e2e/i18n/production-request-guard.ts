@@ -14,6 +14,9 @@ const PUBLIC_AUTH_READ_PATHS = new Set(['/auth/v1/.well-known/jwks.json']);
 const AUTHENTICATED_AUTH_READ_PATHS = new Set(['/auth/v1/user']);
 const AUTH_TOKEN_GRANT_TYPES = new Set(['password', 'refresh_token']);
 const LEDGER_CONTROLLED_SAVE_DRAFT_SEARCH_ENTRIES = [['forceFunctionRegion', 'us-east-1']] as const;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const PROCESS_VERSION_PATTERN = /^\d{2}[.]\d{2}[.]\d{3}$/u;
+const SHA256_PATTERN = /^[0-9a-f]{64}$/iu;
 const STATIC_STORAGE_READ_PATH =
   /^\/storage\/v1\/(?:object|render\/image)\/(?:public|sign)\/[^/]+\/.+/u;
 const AUTHENTICATED_STORAGE_READ_PATH =
@@ -148,6 +151,41 @@ function isExactWorkerReadBody(postData: string | null | undefined): boolean {
   }
 }
 
+function isExactReviewSubmitJobReadBody(postData: string | null | undefined): boolean {
+  try {
+    const body = JSON.parse(postData ?? '');
+    if (body.action === 'read') {
+      return (
+        hasExactObjectKeys(body, ['action', 'reviewSubmitJobId']) &&
+        typeof body.reviewSubmitJobId === 'string' &&
+        UUID_PATTERN.test(body.reviewSubmitJobId)
+      );
+    }
+    if (body.action !== 'read_latest') {
+      return false;
+    }
+    const hasRevisionChecksum = Object.prototype.hasOwnProperty.call(body, 'revisionChecksum');
+    return (
+      hasExactObjectKeys(body, [
+        'action',
+        'table',
+        'id',
+        'version',
+        ...(hasRevisionChecksum ? ['revisionChecksum'] : []),
+      ]) &&
+      body.table === 'processes' &&
+      typeof body.id === 'string' &&
+      UUID_PATTERN.test(body.id) &&
+      typeof body.version === 'string' &&
+      PROCESS_VERSION_PATTERN.test(body.version) &&
+      (!hasRevisionChecksum ||
+        (typeof body.revisionChecksum === 'string' && SHA256_PATTERN.test(body.revisionChecksum)))
+    );
+  } catch {
+    return false;
+  }
+}
+
 function isExactPublicationListBody(postData: string | null | undefined): boolean {
   try {
     const body = JSON.parse(postData ?? '');
@@ -269,6 +307,9 @@ export function classifyProductionRequest(
     }
     if (functionName === 'app_worker_jobs') {
       return isExactWorkerReadBody(postData) ? 'allow' : 'block';
+    }
+    if (functionName === 'app_dataset_review_submit_jobs') {
+      return isExactReviewSubmitJobReadBody(postData) ? 'allow' : 'block';
     }
     if (functionName === 'app_data_product_commands') {
       return isExactPublicationListBody(postData) ? 'allow' : 'block';

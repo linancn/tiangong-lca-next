@@ -881,7 +881,12 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
   };
 }
 
-function assertExactFileDigests(actual, expected, label) {
+function assertExactFileDigests(
+  actual,
+  expected,
+  label,
+  { requireCurrentBindings = true } = {},
+) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
   if (
     JSON.stringify(actual.map((entry) => entry?.path)) !==
@@ -895,7 +900,7 @@ function assertExactFileDigests(actual, expected, label) {
     assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
     if (
       !/^[0-9a-f]{64}$/u.test(actualEntry.sha256) ||
-      actualEntry.sha256 !== expectedEntry.sha256
+      (requireCurrentBindings && actualEntry.sha256 !== expectedEntry.sha256)
     ) {
       throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
     }
@@ -1021,7 +1026,14 @@ function validateSemanticEvidenceContract(root, coverage, routeRows) {
   return contract;
 }
 
-function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evidenceContract) {
+function validateSemanticE2EEvidence(
+  root,
+  coverage,
+  routeRows,
+  descriptor,
+  evidenceContract,
+  { requireCurrentBindings = false } = {},
+) {
   if (
     !descriptor?.path ||
     descriptor.path !== evidenceContract.evidencePath ||
@@ -1079,13 +1091,9 @@ function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evid
     !/^[0-9a-f]{64}$/u.test(evidence.candidate.configTreeDigest ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.candidate.packageManifestDigest ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.candidate.sourceTreeDigest ?? '') ||
-    !/^[0-9a-f]{64}$/u.test(evidence.candidate.unitTestTreeDigest ?? '') ||
-    evidence.candidate.configTreeDigest !== digestTree(root, 'config') ||
-    evidence.candidate.packageManifestDigest !== fileDigest(root, 'package.json') ||
-    evidence.candidate.sourceTreeDigest !== digestTree(root, 'src') ||
-    evidence.candidate.unitTestTreeDigest !== digestTree(root, 'tests/unit')
+    !/^[0-9a-f]{64}$/u.test(evidence.candidate.unitTestTreeDigest ?? '')
   ) {
-    throw new Error('Semantic E2E evidence is not bound to the current source/test snapshot.');
+    throw new Error('Semantic E2E evidence has an invalid candidate identity.');
   }
   assertRecordShape(evidence.target, ['frontend', 'backend', 'proof'], [], 'Semantic E2E target');
   if (
@@ -1112,18 +1120,19 @@ function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evid
   );
   const trackedBackend = trackedBackendTarget(root);
   if (
-    evidence.target.proof.backendObservedOriginSha256 !== trackedBackend.originDigest ||
-    evidence.target.proof.backendTrackedOriginSha256 !== trackedBackend.originDigest ||
-    evidence.target.proof.backendObservedPublishableKeySha256 !==
-      trackedBackend.publishableKeyDigest ||
-    evidence.target.proof.backendTrackedPublishableKeySha256 !==
-      trackedBackend.publishableKeyDigest ||
-    evidence.target.proof.candidateEnvironmentSha256 !==
-      trackedBackend.candidateEnvironmentDigest ||
-    evidence.target.proof.trackedMainEnvironmentSha256 !==
-      trackedBackend.trackedMainEnvironmentDigest ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendObservedOriginSha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendTrackedOriginSha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(
+      evidence.target.proof.backendObservedPublishableKeySha256 ?? '',
+    ) ||
+    !/^[0-9a-f]{64}$/u.test(
+      evidence.target.proof.backendTrackedPublishableKeySha256 ?? '',
+    ) ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.candidateEnvironmentSha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.trackedMainEnvironmentSha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.frontendOriginSha256 ?? '') ||
-    evidence.target.proof.frontendOriginSha256 === trackedBackend.originDigest ||
+    evidence.target.proof.frontendOriginSha256 ===
+      evidence.target.proof.backendObservedOriginSha256 ||
     evidence.target.proof.freshPlaywrightServer !== true ||
     evidence.target.proof.observer !== 'chromium-auth-request' ||
     !playwrightRequiresFreshServer(root) ||
@@ -1132,6 +1141,23 @@ function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evid
   ) {
     throw new Error(
       'Semantic E2E target proof does not bind a fresh local candidate to the tracked production backend.',
+    );
+  }
+  if (
+    requireCurrentBindings &&
+    (evidence.target.proof.backendObservedOriginSha256 !== trackedBackend.originDigest ||
+      evidence.target.proof.backendTrackedOriginSha256 !== trackedBackend.originDigest ||
+      evidence.target.proof.backendObservedPublishableKeySha256 !==
+        trackedBackend.publishableKeyDigest ||
+      evidence.target.proof.backendTrackedPublishableKeySha256 !==
+        trackedBackend.publishableKeyDigest ||
+      evidence.target.proof.candidateEnvironmentSha256 !==
+        trackedBackend.candidateEnvironmentDigest ||
+      evidence.target.proof.trackedMainEnvironmentSha256 !==
+        trackedBackend.trackedMainEnvironmentDigest)
+  ) {
+    throw new Error(
+      'Semantic E2E target proof is not bound to the current tracked production backend.',
     );
   }
   assertExactSequence(evidence.locales, SUPPORTED_APP_LOCALES, 'Semantic E2E evidence locales');
@@ -1164,7 +1190,9 @@ function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evid
   );
   if (
     evidence.digests.packageLock.path !== expectedDigests.packageLock.path ||
-    evidence.digests.packageLock.sha256 !== expectedDigests.packageLock.sha256
+    !/^[0-9a-f]{64}$/u.test(evidence.digests.packageLock.sha256 ?? '') ||
+    (requireCurrentBindings &&
+      evidence.digests.packageLock.sha256 !== expectedDigests.packageLock.sha256)
   ) {
     throw new Error('Semantic E2E evidence is not bound to the current package lock.');
   }
@@ -1172,16 +1200,19 @@ function validateSemanticE2EEvidence(root, coverage, routeRows, descriptor, evid
     evidence.digests.runtimeAssets,
     expectedDigests.runtimeAssets,
     'Semantic E2E runtime-asset digests',
+    { requireCurrentBindings },
   );
   assertExactFileDigests(
     evidence.digests.tests,
     expectedDigests.tests,
     'Semantic E2E test digests',
+    { requireCurrentBindings },
   );
   assertExactFileDigests(
     evidence.digests.sources,
     expectedDigests.sources,
     'Semantic E2E source digests',
+    { requireCurrentBindings },
   );
 
   if (!Array.isArray(evidence.assertions)) {
@@ -1636,7 +1667,11 @@ function validateViewStateRegistry(root, coverage, routeRows, manifest) {
   };
 }
 
-function validateRouteCoverage(root, manifest) {
+function validateRouteCoverage(
+  root,
+  manifest,
+  { requireCurrentSemanticEvidence = false } = {},
+) {
   const coverage = readJson(root, ROUTE_VIEW_COVERAGE);
   if (coverage.sourceRouteConfig !== 'config/routes.ts') {
     throw new Error('Route-view coverage must identify config/routes.ts as its route source.');
@@ -1767,6 +1802,7 @@ function validateRouteCoverage(root, manifest) {
         routeRows,
         browserProof.executedEvidence[0],
         evidenceContract,
+        { requireCurrentBindings: requireCurrentSemanticEvidence },
       )
     : null;
   const verifiedBrowserEvidence = semanticExecutionEvidence !== null;
@@ -2338,10 +2374,10 @@ function buildMessageDossiers(locale, manifest, coverage, glossary, styleGuideDi
   };
 }
 
-function buildContextEvidence(root, locale, manifest) {
+function buildContextEvidence(root, locale, manifest, options = {}) {
   assertSharedManifest(manifest, locale);
   const paths = localePaths(locale);
-  const coverage = validateRouteCoverage(root, manifest);
+  const coverage = validateRouteCoverage(root, manifest, options);
   const typedContent = validateTypedContentSources(locale);
   const glossary = readJson(root, paths.glossary);
   const messageDossiers = buildMessageDossiers(
@@ -3339,6 +3375,20 @@ function assertProductionActivationReady(activation) {
   );
 }
 
+function assertCurrentSemanticEvidenceReady(root, locale, manifest) {
+  try {
+    buildContextEvidence(root, locale, manifest, {
+      requireCurrentSemanticEvidence: true,
+    });
+  } catch (error) {
+    throw new Error(
+      `${locale} is not production-ready; unresolved activation blocker: semantic-route-and-e2e-proof (#635): ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+}
+
 async function loadCheckedArtifact(root, relativeFile, builder, options) {
   const value = builder();
   const status = await writeOrCheckJson(root, relativeFile, value, options);
@@ -3431,6 +3481,14 @@ async function main() {
   if (action === 'corrections') {
     process.stdout.write(`${JSON.stringify({ action, ...correctionSummary }, null, 2)}\n`);
     return;
+  }
+
+  if (options.requireProductionReady) {
+    assertCurrentSemanticEvidenceReady(
+      root,
+      locale ?? SUPPORTED_APP_LOCALES[0],
+      manifest,
+    );
   }
 
   if (action === 'all') {

@@ -480,9 +480,16 @@ export async function selectAppLocaleThroughUi(
     key: UMI_LOCALE_STORAGE_KEY,
     value: locale,
   });
-  if ((await activeMenu.count()) > 0) {
-    await page.keyboard.press('Escape');
-  }
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => {
+    const visibleMenuExists = [...document.querySelectorAll<HTMLElement>('[role="menu"]')].some(
+      (menu) => menu.getClientRects().length > 0 && getComputedStyle(menu).visibility !== 'hidden',
+    );
+    if (visibleMenuExists) {
+      document.querySelector<HTMLElement>('.tg-global-language-selector')?.click();
+    }
+  });
+  await page.keyboard.press('Escape');
   await waitForLocatorCount(
     page,
     activeMenu,

@@ -1,35 +1,19 @@
 name: I18n semantic E2E
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/i18n-semantic-e2e.yml'
-      - 'config/routes.ts'
-      - 'docs/plans/i18n/route-view-coverage.json'
-      - 'package-lock.json'
-      - 'package.json'
-      - 'playwright.config.ts'
-      - 'src/**'
-      - 'tests/e2e/i18n/**'
-  push:
-    branches:
-      - dev
-    paths:
-      - '.github/workflows/i18n-semantic-e2e.yml'
-      - 'config/routes.ts'
-      - 'docs/plans/i18n/route-view-coverage.json'
-      - 'package-lock.json'
-      - 'package.json'
-      - 'playwright.config.ts'
-      - 'src/**'
-      - 'tests/e2e/i18n/**'
+  workflow_call:
+    inputs:
+      ref:
+        description: Exact candidate commit to validate.
+        required: true
+        type: string
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: i18n-semantic-e2e-${{ github.ref }}
+  group: i18n-semantic-e2e-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -40,6 +24,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -73,6 +58,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
 
       - name: Set up Node.js
