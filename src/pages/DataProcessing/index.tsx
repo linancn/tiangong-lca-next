@@ -1,13 +1,19 @@
 import AccessDenied from '@/components/AccessDenied';
 import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
+  createClosureCheck,
   createLciaResultBuildRequest,
+  getClosureCheck,
+  getClosureReportDownload,
   listLciaResultPublications,
+  prepareClosureScope,
   previewLciaResultPackage,
   publishLciaResultPackage,
   unpublishLciaResultPublication,
+  type ClosureCheckSummaryV1,
   type LciaResultPublication,
 } from '@/services/dataProducts';
+import { refreshDataProductTasks } from '@/services/dataProducts/taskCenter';
 import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
 import { resolveRouteViewState } from '@/services/general/routeViewState';
 import {
@@ -15,7 +21,12 @@ import {
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
-import { requestWorkerJobsApi, type WorkerJobResult } from '@/services/workerJobs/api';
+import {
+  listWorkerJobs,
+  subscribeWorkerJobStore,
+  upsertWorkerJobs,
+} from '@/services/taskCenter/workerJobStore';
+import type { WorkerJobResult } from '@/services/workerJobs/api';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -43,7 +54,14 @@ import {
   Tabs,
   Tooltip,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import CalculationBundlePanel from './CalculationBundlePanel';
 import styles from './index.less';
 
@@ -52,7 +70,12 @@ type CommandStatus = {
   message: ReactNode;
 };
 
-type CommandAction = 'createBuild' | 'previewPackage' | 'publishPackage' | 'unpublishPublication';
+type CommandAction =
+  | 'createClosureCheck'
+  | 'createBuild'
+  | 'previewPackage'
+  | 'publishPackage'
+  | 'unpublishPublication';
 
 type CommandSummaryRow = {
   label: string;
@@ -93,11 +116,27 @@ const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
 const previewExportPageSize = 100;
 
+function scopeSelectionKey(values: Record<string, unknown>): string {
+  return JSON.stringify({
+    coverageMode: values.coverageMode ?? 'global_eligible',
+    defaultImpactCategory: values.defaultImpactCategory ?? null,
+  });
+}
+
+function newIdempotencyToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `closure-check-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export function parseDataProcessingDeepLink(search: string): {
   activeTabKey: 'builds' | 'preview' | 'publication';
   packageId?: string;
   processId?: string;
   processVersion?: string;
+  closureCheckId?: string;
+  resultBuildId?: string;
 } {
   const params = new URLSearchParams(search);
   const activeTabKey = resolveRouteViewState('data-processing-tab', params.get('tab')) as
@@ -108,6 +147,8 @@ export function parseDataProcessingDeepLink(search: string): {
     packageId: value('packageId'),
     processId: value('processId'),
     processVersion: value('processVersion'),
+    closureCheckId: value('closureCheckId'),
+    resultBuildId: value('resultBuildId'),
   };
 }
 
@@ -651,8 +692,14 @@ const DataProcessing = () => {
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
-  const [buildJobs, setBuildJobs] = useState<WorkerJobResult[]>([]);
-  const [submittedBuildJobs, setSubmittedBuildJobs] = useState<WorkerJobResult[]>([]);
+  const workerJobs = useSyncExternalStore(subscribeWorkerJobStore, listWorkerJobs, listWorkerJobs);
+  const buildJobs = useMemo(
+    () => workerJobs.filter((job) => job.subjectType === 'lcia_result_build'),
+    [workerJobs],
+  );
+  const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
+  const [closureSelectionKey, setClosureSelectionKey] = useState<string | null>(null);
+  const [currentSelectionKey, setCurrentSelectionKey] = useState<string>(scopeSelectionKey({}));
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
     deepLink.packageId,
   );
@@ -732,15 +779,13 @@ const DataProcessing = () => {
   const loadBuildJobs = useCallback(async () => {
     setBuildJobsLoading(true);
     setBuildJobsError(null);
-    const result = await requestWorkerJobsApi({
-      action: 'list',
-      subjectType: 'lcia_result_build',
-      visibility: 'operator',
-      limit: 50,
-    });
-    setBuildJobs(result.data ?? []);
-    setBuildJobsError(result.error?.message ?? null);
-    setBuildJobsLoading(false);
+    try {
+      await refreshDataProductTasks();
+    } catch (error) {
+      setBuildJobsError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBuildJobsLoading(false);
+    }
   }, []);
 
   const loadPublications = useCallback(async () => {
@@ -768,15 +813,24 @@ const DataProcessing = () => {
   }, [isAuthorized, loadBuildJobs]);
 
   useEffect(() => {
+    if (!isAuthorized || !deepLink.closureCheckId) return;
+    void getClosureCheck(deepLink.closureCheckId).then((result) => {
+      if (!result.error && result.data) {
+        setClosureCheck(result.data);
+        const selectionKey = scopeSelectionKey(buildForm.getFieldsValue?.() ?? {});
+        setClosureSelectionKey(selectionKey);
+        setCurrentSelectionKey(selectionKey);
+      }
+    });
+  }, [buildForm, deepLink.closureCheckId, isAuthorized]);
+
+  useEffect(() => {
     if (isAuthorized && activeTabKey === 'publication') {
       void loadPublications();
     }
   }, [activeTabKey, isAuthorized, loadPublications]);
 
-  const visibleBuildJobs = useMemo(
-    () => mergeSubmittedBuildJobs(submittedBuildJobs, buildJobs),
-    [buildJobs, submittedBuildJobs],
-  );
+  const visibleBuildJobs = useMemo(() => buildJobs, [buildJobs]);
   const packageOptions = useMemo(
     () => packageOptionsFromBuildJobs(visibleBuildJobs),
     [visibleBuildJobs],
@@ -807,6 +861,10 @@ const DataProcessing = () => {
 
   const commandSuccessTitle = (action: CommandAction) => {
     const messages: Record<CommandAction, { defaultMessage: string; id: string }> = {
+      createClosureCheck: {
+        id: 'pages.dataProcessing.command.createClosureCheckSuccess',
+        defaultMessage: 'Data completeness check submitted',
+      },
       createBuild: {
         id: 'pages.dataProcessing.command.createBuildSuccess',
         defaultMessage: 'Result generation request submitted',
@@ -837,6 +895,18 @@ const DataProcessing = () => {
         rows.push({ label, value });
       }
     };
+
+    if (action === 'createClosureCheck') {
+      addRow(
+        t('pages.dataProcessing.command.closureCheckId', 'Closure check ID'),
+        firstString(record?.closureCheckId, record?.closure_check_id, record?.id),
+      );
+      addRow(
+        t('pages.dataProcessing.command.workerJobId', 'Worker job ID'),
+        firstString(record?.workerJobId, record?.worker_job_id),
+      );
+      return rows;
+    }
 
     if (action === 'createBuild') {
       addRow(
@@ -905,12 +975,57 @@ const DataProcessing = () => {
 
   const showResult = (
     action: CommandAction,
-    result: { data: unknown; error: { message?: string } | null },
+    result: { data: unknown; error: { message?: string; code?: string } | null },
   ) => {
     if (result.error) {
+      const closureErrorMessages: Record<string, string> = {
+        closure_check_required: t(
+          'pages.dataProcessing.closure.error.required',
+          'A closure check is required.',
+        ),
+        closure_check_not_found: t(
+          'pages.dataProcessing.closure.error.notFound',
+          'The selected closure check was not found.',
+        ),
+        closure_check_not_passed: t(
+          'pages.dataProcessing.closure.error.notPassed',
+          'The closure check has not passed.',
+        ),
+        closure_check_incomplete: t(
+          'pages.dataProcessing.closure.error.incomplete',
+          'The closure scan is incomplete.',
+        ),
+        closure_check_scope_mismatch: t(
+          'pages.dataProcessing.closure.error.scopeMismatch',
+          'The current selection does not match this closure check.',
+        ),
+        closure_check_policy_mismatch: t(
+          'pages.dataProcessing.closure.error.policyMismatch',
+          'The current policy does not match this closure check.',
+        ),
+        closure_check_stale: t(
+          'pages.dataProcessing.closure.error.stale',
+          'The closure certificate is stale.',
+        ),
+        closure_check_revoked: t(
+          'pages.dataProcessing.closure.error.revoked',
+          'The closure certificate was revoked.',
+        ),
+        closure_evidence_unavailable: t(
+          'pages.dataProcessing.closure.error.evidenceUnavailable',
+          'Closure evidence is unavailable.',
+        ),
+        closure_evidence_hash_mismatch: t(
+          'pages.dataProcessing.closure.error.evidenceHashMismatch',
+          'Closure evidence integrity verification failed.',
+        ),
+      };
       setCommandStatus({
         kind: 'error',
-        message: result.error.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
+        message:
+          (result.error.code ? closureErrorMessages[result.error.code] : undefined) ??
+          result.error.message ??
+          t('pages.dataProcessing.command.failed', 'Command failed'),
       });
       return;
     }
@@ -923,7 +1038,7 @@ const DataProcessing = () => {
 
   const runCommand = async (
     action: CommandAction,
-    command: () => Promise<{ data: unknown; error: { message?: string } | null }>,
+    command: () => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>,
   ) => {
     setSubmittingAction(action);
     try {
@@ -943,6 +1058,22 @@ const DataProcessing = () => {
 
   const handleCreateBuild = async () => {
     const values = await buildForm.validateFields();
+    const selectionKey = scopeSelectionKey(values);
+    const closureIsUsable =
+      closureCheck?.runStatus === 'passed' &&
+      closureCheck.certificateValidity === 'valid' &&
+      closureCheck.scanCompleteness === 'complete' &&
+      closureSelectionKey === selectionKey;
+    if (!closureIsUsable || !closureCheck?.requestedScopeHash || !closureCheck.policyFingerprint) {
+      setCommandStatus({
+        kind: 'error',
+        message: t(
+          'pages.dataProcessing.closure.buildRequiresValidCertificate',
+          'Run a complete data check for the current selection before generating a result set.',
+        ),
+      });
+      return;
+    }
     const result = await runCommand('createBuild', () =>
       createLciaResultBuildRequest({
         name: values.name,
@@ -951,18 +1082,77 @@ const DataProcessing = () => {
           ? { defaultImpactCategory: values.defaultImpactCategory }
           : {}),
         lciaMethodSet: [],
+        closureCheckId: closureCheck.closureCheckId,
+        requestedScopeHash: closureCheck.requestedScopeHash,
+        policyFingerprint: closureCheck.policyFingerprint,
       }),
     );
 
     if (result && !result.error) {
       const submittedJob = createSubmittedBuildJob(result.data);
       if (submittedJob) {
-        setSubmittedBuildJobs((currentJobs) =>
-          mergeSubmittedBuildJobs([submittedJob], currentJobs),
-        );
+        upsertWorkerJobs([submittedJob]);
       }
       void loadBuildJobs();
     }
+  };
+
+  const handleCreateClosureCheck = async () => {
+    const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
+    const selectionKey = scopeSelectionKey(values);
+    const scopeContext = await prepareClosureScope({
+      scopeSchemaVersion: 'data-product-scope-selection.v1',
+      coverageMode: values.coverageMode || 'global_eligible',
+      lciaMethodSet: values.defaultImpactCategory ? [values.defaultImpactCategory] : [],
+    });
+    if (
+      scopeContext.error ||
+      !scopeContext.data?.requestedScopeHash ||
+      !scopeContext.data.policyFingerprint
+    ) {
+      setCommandStatus({
+        kind: 'error',
+        message:
+          scopeContext.error?.message ??
+          t(
+            'pages.dataProcessing.closure.scopeUnavailable',
+            'The server could not prepare this scope.',
+          ),
+      });
+      return;
+    }
+    const preparedScope = scopeContext.data;
+    const result = await runCommand('createClosureCheck', () =>
+      createClosureCheck({
+        requestSchemaVersion: 'lcia.scope_closure_check.request.v1',
+        requestedScopeHash: preparedScope.requestedScopeHash,
+        policyFingerprint: preparedScope.policyFingerprint,
+        requestIdempotencyToken: newIdempotencyToken(),
+        audit: { source: 'data-processing', selectionVersion: 'data-product-scope-selection.v1' },
+      }),
+    );
+    if (result && !result.error && result.data) {
+      const summary = result.data as ClosureCheckSummaryV1;
+      setClosureCheck(summary);
+      setClosureSelectionKey(selectionKey);
+      setCurrentSelectionKey(selectionKey);
+      void loadBuildJobs();
+    }
+  };
+
+  const handleDownloadClosureReport = async () => {
+    if (!closureCheck?.closureCheckId) return;
+    const result = await getClosureReportDownload(closureCheck.closureCheckId);
+    if (result.error || !result.data?.url) {
+      setCommandStatus({
+        kind: 'error',
+        message:
+          result.error?.message ??
+          t('pages.dataProcessing.closure.reportUnavailable', 'Report is unavailable'),
+      });
+      return;
+    }
+    window.open(result.data.url, '_blank', 'noopener,noreferrer');
   };
 
   const previewPackageById = async (
@@ -1225,6 +1415,9 @@ const DataProcessing = () => {
           initialValues={{
             coverageMode: 'global_eligible',
           }}
+          onValuesChange={(_changedValues, allValues) => {
+            setCurrentSelectionKey(scopeSelectionKey(allValues));
+          }}
         >
           <Form.Item
             label={t('pages.dataProcessing.form.packageName', 'Result set name')}
@@ -1258,9 +1451,78 @@ const DataProcessing = () => {
               t('pages.dataProcessing.form.defaultImpactCategory', 'Default impact category'),
             )}
           </Form.Item>
+          <Card
+            size='small'
+            title={t('pages.dataProcessing.closure.title', 'Data completeness preflight')}
+            className={styles.closureCard}
+          >
+            <Space direction='vertical' size='small'>
+              {!closureCheck ? (
+                <Alert
+                  type='info'
+                  message={t(
+                    'pages.dataProcessing.closure.notChecked',
+                    'Check data completeness before generation.',
+                  )}
+                />
+              ) : (
+                <Descriptions size='small' column={1} bordered>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.status', 'Check status')}
+                  >
+                    {closureCheck.runStatus}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.certificate', 'Certificate')}
+                  >
+                    {closureCheck.certificateValidity}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.completeness', 'Scan completeness')}
+                  >
+                    {closureCheck.scanCompleteness}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={t('pages.dataProcessing.closure.issues', 'Issues')}>
+                    {`${closureCheck.blockingCount ?? 0} blockers / ${closureCheck.warningCount ?? 0} warnings`}
+                  </Descriptions.Item>
+                </Descriptions>
+              )}
+              {closureCheck && closureSelectionKey !== currentSelectionKey ? (
+                <Alert
+                  type='warning'
+                  message={t(
+                    'pages.dataProcessing.closure.scopeMismatch',
+                    'The current selection differs from this check. Run a new check before generating.',
+                  )}
+                />
+              ) : null}
+              <Space wrap>
+                <Button
+                  loading={submittingAction === 'createClosureCheck'}
+                  onClick={handleCreateClosureCheck}
+                >
+                  {t('pages.dataProcessing.action.checkCompleteness', 'Check data completeness')}
+                </Button>
+                {closureCheck?.canDownloadReport ? (
+                  <Button onClick={handleDownloadClosureReport} icon={<DownloadOutlined />}>
+                    {t(
+                      'pages.dataProcessing.action.downloadClosureReport',
+                      'Download issue report',
+                    )}
+                  </Button>
+                ) : null}
+              </Space>
+            </Space>
+          </Card>
           <Button
             type='primary'
             loading={submittingAction === 'createBuild'}
+            disabled={
+              closureCheck?.runStatus !== 'passed' ||
+              closureCheck?.certificateValidity !== 'valid' ||
+              closureCheck?.scanCompleteness !== 'complete' ||
+              closureSelectionKey !== currentSelectionKey
+            }
             onClick={handleCreateBuild}
           >
             {t('pages.dataProcessing.action.createBuild', 'Generate result set')}

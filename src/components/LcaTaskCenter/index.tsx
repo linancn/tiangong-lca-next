@@ -1,4 +1,5 @@
 import HeaderActionIcon, { getHeaderBadgeStyle } from '@/components/HeaderActionIcon';
+import { refreshDataProductTasks } from '@/services/dataProducts/taskCenter';
 import type {
   LcaBackgroundTask,
   LcaTaskPhase,
@@ -23,6 +24,11 @@ import {
   retryReviewSubmitTask,
   subscribeReviewSubmitTasks,
 } from '@/services/reviews/taskCenter';
+import {
+  taskProgressPercent as taskSummaryProgressPercent,
+  type TaskSummaryV2,
+} from '@/services/taskCenter/types';
+import { listTaskSummaries, subscribeWorkerJobStore } from '@/services/taskCenter/workerJobStore';
 import {
   TIDAS_PACKAGE_EXPORT_TOO_LARGE_ERROR,
   classifyTidasPackageExportError,
@@ -82,6 +88,9 @@ type TaskCenterItem =
       task: ReviewSubmitBackgroundTask;
     };
 
+type TaskKindFilter =
+  'all' | 'lca' | 'tidas_export' | 'tidas_import' | 'review_submit' | 'data_product';
+
 type ReviewSubmitBlockingReason = NonNullable<
   ReviewSubmitBackgroundTask['blockingReasons']
 >[number];
@@ -116,6 +125,18 @@ function useReviewSubmitTasks(): ReviewSubmitBackgroundTask[] {
     subscribeReviewSubmitTasks,
     listReviewSubmitTasks,
     listReviewSubmitTasks,
+  );
+}
+
+function useDataProductTaskSummaries(): TaskSummaryV2[] {
+  const summaries = useSyncExternalStore(
+    subscribeWorkerJobStore,
+    listTaskSummaries,
+    listTaskSummaries,
+  );
+  return useMemo(
+    () => summaries.filter((summary) => summary.category === 'data_product'),
+    [summaries],
   );
 }
 
@@ -930,8 +951,6 @@ function normalizedReviewSubmitReasons(
   return reasons.length > 0 ? reasons : blockerCodes.map((code) => ({ code }));
 }
 
-type TaskKindFilter = 'all' | 'lca' | 'tidas_export' | 'tidas_import' | 'review_submit';
-
 type DetailRow = {
   label: string;
   value?: React.ReactNode;
@@ -1019,6 +1038,12 @@ function taskTypeLabel(filter: TaskKindFilter, intl: IntlShapeLike): string {
     return intl.formatMessage({
       id: 'pages.process.reviewSubmitTaskCenter.kind',
       defaultMessage: 'Review Submit',
+    });
+  }
+  if (filter === 'data_product') {
+    return intl.formatMessage({
+      id: 'pages.dataProcessing.taskCenter.kind',
+      defaultMessage: 'Data Product',
     });
   }
   return intl.formatMessage({
@@ -1922,12 +1947,14 @@ const LcaTaskCenter: React.FC = () => {
   const lcaTasks = useLcaTasks();
   const packageTasks = useTidasPackageTasks();
   const reviewSubmitTasks = useReviewSubmitTasks();
+  const dataProductTasks = useDataProductTaskSummaries();
 
   const refreshAllTasks = useCallback(async () => {
     await Promise.all([
       refreshLcaTasksFromWorkerJobs(),
       refreshTidasPackageTasksFromWorkerJobs(),
       refreshReviewSubmitTasks(),
+      refreshDataProductTasks(),
     ]);
   }, []);
 
@@ -1978,13 +2005,19 @@ const LcaTaskCenter: React.FC = () => {
   );
   const filterOptions = useMemo(
     () =>
-      (['all', 'lca', 'tidas_export', 'tidas_import', 'review_submit'] as const).map((value) => ({
+      (
+        ['all', 'lca', 'tidas_export', 'tidas_import', 'review_submit', 'data_product'] as const
+      ).map((value) => ({
         value,
         label: taskTypeLabel(value, intl),
       })),
     [intl],
   );
   const badgeStyle = getHeaderBadgeStyle(token.colorError);
+  const visibleDataProductTasks = useMemo(
+    () => (activeFilter === 'all' || activeFilter === 'data_product' ? dataProductTasks : []),
+    [activeFilter, dataProductTasks],
+  );
 
   useEffect(() => {
     setExpandedTaskKeys((current) =>
@@ -2172,7 +2205,7 @@ const LcaTaskCenter: React.FC = () => {
               overflow: 'auto',
             }}
           >
-            {filteredItems.length === 0 ? (
+            {filteredItems.length === 0 && visibleDataProductTasks.length === 0 ? (
               <div style={{ padding: 40 }}>
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -2183,223 +2216,314 @@ const LcaTaskCenter: React.FC = () => {
                 />
               </div>
             ) : (
-              filteredItems.map((item, index) => {
-                const itemKey = taskItemKey(item);
-                const progressPercent = taskProgressPercent(item);
-                const expanded = expandedTaskKeys.includes(itemKey);
-                return (
-                  <div
-                    key={itemKey}
-                    style={{
-                      alignItems: 'center',
-                      borderTop:
-                        index === 0 ? undefined : `1px solid ${token.colorBorderSecondary}`,
-                      display: 'grid',
-                      gap: 14,
-                      gridTemplateColumns:
-                        'minmax(250px, 1.35fr) minmax(108px, 0.48fr) minmax(230px, 0.9fr) minmax(168px, max-content)',
-                      minHeight: 76,
-                      padding: '12px 16px',
-                    }}
-                  >
-                    <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
-                      <Space size={8} wrap>
-                        <Typography.Text strong style={{ fontSize: 14 }}>
-                          {taskTitle(item, intl)}
-                        </Typography.Text>
-                        {statusTag(item.task.state, intl)}
-                        <Popover
-                          trigger='click'
-                          placement='bottomLeft'
-                          styles={{
-                            body: {
-                              maxHeight: DIAGNOSTICS_POPOVER_MAX_HEIGHT,
-                              overflowX: 'hidden',
-                              overflowY: 'auto',
-                            },
-                            root: {
-                              maxWidth: DIAGNOSTICS_POPOVER_WIDTH + 32,
-                            },
-                          }}
-                          content={<TaskDiagnosticsPopoverContent item={item} intl={intl} />}
-                        >
-                          <Tooltip
-                            title={intl.formatMessage({
-                              id: 'pages.process.lca.taskCenter.diagnostics',
-                              defaultMessage: 'Diagnostics',
-                            })}
+              <>
+                {visibleDataProductTasks.map((task, index) => {
+                  const taskHref = task.deepLink
+                    ? `/data-processing?${new URLSearchParams({
+                        tab: task.deepLink.tab,
+                        ...(task.deepLink.closureCheckId
+                          ? { closureCheckId: task.deepLink.closureCheckId }
+                          : {}),
+                        ...(task.deepLink.resultBuildId
+                          ? { resultBuildId: task.deepLink.resultBuildId }
+                          : {}),
+                      }).toString()}`
+                    : '/data-processing?tab=builds';
+                  const progressPercent = taskSummaryProgressPercent(task);
+                  return (
+                    <div
+                      key={`data-product:${task.id}`}
+                      style={{
+                        alignItems: 'center',
+                        borderTop:
+                          index === 0 ? undefined : `1px solid ${token.colorBorderSecondary}`,
+                        display: 'grid',
+                        gap: 14,
+                        gridTemplateColumns:
+                          'minmax(250px, 1.35fr) minmax(108px, 0.48fr) minmax(230px, 0.9fr) minmax(168px, max-content)',
+                        minHeight: 76,
+                        padding: '12px 16px',
+                      }}
+                    >
+                      <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
+                        <Space size={8} wrap>
+                          <Typography.Text strong style={{ fontSize: 14 }}>
+                            {task.title}
+                          </Typography.Text>
+                          <Tag
+                            color={
+                              task.runState === 'succeeded'
+                                ? 'success'
+                                : task.runState === 'blocked'
+                                  ? 'warning'
+                                  : task.runState === 'failed'
+                                    ? 'error'
+                                    : task.runState === 'cancelled'
+                                      ? 'default'
+                                      : 'processing'
+                            }
                           >
-                            <Button
-                              aria-label={intl.formatMessage({
+                            {task.rawStatus}
+                          </Tag>
+                          {task.domainValidity !== 'none' ? (
+                            <Tag>{`Certificate: ${task.domainValidity}`}</Tag>
+                          ) : null}
+                        </Space>
+                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
+                          {task.subtitle ?? `Worker job ${task.id}`}
+                        </Typography.Text>
+                      </Space>
+                      <Typography.Text style={{ fontSize: 13 }}>
+                        {formatDateTime(task.updatedAt, intl)}
+                      </Typography.Text>
+                      <Space direction='vertical' size={5} style={{ width: '100%' }}>
+                        <Typography.Text style={{ fontSize: 13 }}>
+                          {task.phase ?? 'Queued'}
+                        </Typography.Text>
+                        <div style={{ alignItems: 'center', display: 'flex', gap: 8 }}>
+                          <Progress
+                            percent={progressPercent}
+                            showInfo={false}
+                            size='small'
+                            style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
+                            trailColor={token.colorFillSecondary}
+                          />
+                          <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
+                            {progressPercent}%
+                          </Typography.Text>
+                        </div>
+                      </Space>
+                      <Space size={6} wrap>
+                        <Button size='small' type='link' href={taskHref} icon={<EyeOutlined />}>
+                          {intl.formatMessage({
+                            id: 'pages.process.lca.taskCenter.openWorkbench',
+                            defaultMessage: 'Open',
+                          })}
+                        </Button>
+                      </Space>
+                    </div>
+                  );
+                })}
+                {filteredItems.map((item, index) => {
+                  const itemKey = taskItemKey(item);
+                  const progressPercent = taskProgressPercent(item);
+                  const expanded = expandedTaskKeys.includes(itemKey);
+                  return (
+                    <div
+                      key={itemKey}
+                      style={{
+                        alignItems: 'center',
+                        borderTop:
+                          index === 0 && visibleDataProductTasks.length === 0
+                            ? undefined
+                            : `1px solid ${token.colorBorderSecondary}`,
+                        display: 'grid',
+                        gap: 14,
+                        gridTemplateColumns:
+                          'minmax(250px, 1.35fr) minmax(108px, 0.48fr) minmax(230px, 0.9fr) minmax(168px, max-content)',
+                        minHeight: 76,
+                        padding: '12px 16px',
+                      }}
+                    >
+                      <Space direction='vertical' size={3} style={{ minWidth: 0 }}>
+                        <Space size={8} wrap>
+                          <Typography.Text strong style={{ fontSize: 14 }}>
+                            {taskTitle(item, intl)}
+                          </Typography.Text>
+                          {statusTag(item.task.state, intl)}
+                          <Popover
+                            trigger='click'
+                            placement='bottomLeft'
+                            styles={{
+                              body: {
+                                maxHeight: DIAGNOSTICS_POPOVER_MAX_HEIGHT,
+                                overflowX: 'hidden',
+                                overflowY: 'auto',
+                              },
+                              root: {
+                                maxWidth: DIAGNOSTICS_POPOVER_WIDTH + 32,
+                              },
+                            }}
+                            content={<TaskDiagnosticsPopoverContent item={item} intl={intl} />}
+                          >
+                            <Tooltip
+                              title={intl.formatMessage({
                                 id: 'pages.process.lca.taskCenter.diagnostics',
                                 defaultMessage: 'Diagnostics',
                               })}
-                              size='small'
-                              type='text'
-                              icon={<InfoCircleOutlined style={{ fontSize: 12 }} />}
-                              style={{
-                                color: token.colorTextTertiary,
-                                height: 18,
-                                minWidth: 18,
-                                paddingInline: 0,
-                                width: 18,
-                              }}
-                            />
-                          </Tooltip>
-                        </Popover>
-                      </Space>
-                      <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                        {intl.formatMessage({
-                          id: 'pages.process.lca.taskCenter.updated',
-                          defaultMessage: 'Updated',
-                        })}{' '}
-                        {formatDateTime(item.task.updatedAt, intl)}
-                      </Typography.Text>
-                    </Space>
-                    <Typography.Text style={{ fontSize: 13 }}>
-                      {intl.formatMessage({
-                        id: 'pages.process.lca.taskCenter.elapsedPrefix',
-                        defaultMessage: 'Elapsed',
-                      })}{' '}
-                      {formatDuration(getTaskElapsedMs(item))}
-                    </Typography.Text>
-                    <Space direction='vertical' size={5} style={{ width: '100%' }}>
-                      <Space size={4} wrap>
-                        <Typography.Text style={{ fontSize: 13 }}>
+                            >
+                              <Button
+                                aria-label={intl.formatMessage({
+                                  id: 'pages.process.lca.taskCenter.diagnostics',
+                                  defaultMessage: 'Diagnostics',
+                                })}
+                                size='small'
+                                type='text'
+                                icon={<InfoCircleOutlined style={{ fontSize: 12 }} />}
+                                style={{
+                                  color: token.colorTextTertiary,
+                                  height: 18,
+                                  minWidth: 18,
+                                  paddingInline: 0,
+                                  width: 18,
+                                }}
+                              />
+                            </Tooltip>
+                          </Popover>
+                        </Space>
+                        <Typography.Text type='secondary' style={{ fontSize: 12 }}>
                           {intl.formatMessage({
-                            id: 'pages.process.lca.taskCenter.phasePrefix',
-                            defaultMessage: 'Phase:',
-                          })}
-                        </Typography.Text>
-                        <Typography.Text style={{ fontSize: 13 }}>
-                          {phaseLabel(item, intl)}
+                            id: 'pages.process.lca.taskCenter.updated',
+                            defaultMessage: 'Updated',
+                          })}{' '}
+                          {formatDateTime(item.task.updatedAt, intl)}
                         </Typography.Text>
                       </Space>
-                      <div style={{ alignItems: 'center', display: 'flex', gap: 8 }}>
-                        <Progress
-                          percent={progressPercent}
-                          showInfo={false}
-                          size='small'
-                          strokeColor={taskProgressStrokeColor(item, token)}
-                          style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
-                          trailColor={token.colorFillSecondary}
-                        />
-                        <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
-                          {progressPercent}%
-                        </Typography.Text>
-                      </div>
-                    </Space>
-                    <Space size={6} wrap>
-                      <Tooltip
-                        title={intl.formatMessage({
-                          id: 'pages.process.lca.taskCenter.view',
-                          defaultMessage: 'View',
-                        })}
-                      >
-                        <Button
-                          aria-label={intl.formatMessage({
+                      <Typography.Text style={{ fontSize: 13 }}>
+                        {intl.formatMessage({
+                          id: 'pages.process.lca.taskCenter.elapsedPrefix',
+                          defaultMessage: 'Elapsed',
+                        })}{' '}
+                        {formatDuration(getTaskElapsedMs(item))}
+                      </Typography.Text>
+                      <Space direction='vertical' size={5} style={{ width: '100%' }}>
+                        <Space size={4} wrap>
+                          <Typography.Text style={{ fontSize: 13 }}>
+                            {intl.formatMessage({
+                              id: 'pages.process.lca.taskCenter.phasePrefix',
+                              defaultMessage: 'Phase:',
+                            })}
+                          </Typography.Text>
+                          <Typography.Text style={{ fontSize: 13 }}>
+                            {phaseLabel(item, intl)}
+                          </Typography.Text>
+                        </Space>
+                        <div style={{ alignItems: 'center', display: 'flex', gap: 8 }}>
+                          <Progress
+                            percent={progressPercent}
+                            showInfo={false}
+                            size='small'
+                            strokeColor={taskProgressStrokeColor(item, token)}
+                            style={{ flex: '1 1 132px', marginBottom: 0, minWidth: 132 }}
+                            trailColor={token.colorFillSecondary}
+                          />
+                          <Typography.Text style={{ fontSize: 12, minWidth: 34 }}>
+                            {progressPercent}%
+                          </Typography.Text>
+                        </div>
+                      </Space>
+                      <Space size={6} wrap>
+                        <Tooltip
+                          title={intl.formatMessage({
                             id: 'pages.process.lca.taskCenter.view',
                             defaultMessage: 'View',
                           })}
-                          icon={<EyeOutlined />}
-                          size='small'
-                          type='text'
-                          style={expanded ? { color: token.colorPrimary } : undefined}
-                          onClick={() => {
-                            setExpandedTaskKeys((current) =>
-                              current.includes(itemKey)
-                                ? current.filter((key) => key !== itemKey)
-                                : [...current, itemKey],
-                            );
-                          }}
-                        />
-                      </Tooltip>
-                      {item.kind === 'package' &&
-                        item.task.kind === 'tidas_package_export' &&
-                        item.task.state === 'completed' && (
+                        >
+                          <Button
+                            aria-label={intl.formatMessage({
+                              id: 'pages.process.lca.taskCenter.view',
+                              defaultMessage: 'View',
+                            })}
+                            icon={<EyeOutlined />}
+                            size='small'
+                            type='text'
+                            style={expanded ? { color: token.colorPrimary } : undefined}
+                            onClick={() => {
+                              setExpandedTaskKeys((current) =>
+                                current.includes(itemKey)
+                                  ? current.filter((key) => key !== itemKey)
+                                  : [...current, itemKey],
+                              );
+                            }}
+                          />
+                        </Tooltip>
+                        {item.kind === 'package' &&
+                          item.task.kind === 'tidas_package_export' &&
+                          item.task.state === 'completed' && (
+                            <Tooltip
+                              title={intl.formatMessage({
+                                id: 'component.tidasPackage.taskCenter.download',
+                                defaultMessage: 'Download',
+                              })}
+                            >
+                              <Button
+                                aria-label={intl.formatMessage({
+                                  id: 'component.tidasPackage.taskCenter.download',
+                                  defaultMessage: 'Download',
+                                })}
+                                icon={<DownloadOutlined />}
+                                loading={downloadingTaskId === item.task.id}
+                                size='small'
+                                type='text'
+                                onClick={() => {
+                                  void handleDownload(item.task);
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                        {item.kind === 'reviewSubmit' && item.task.state === 'running' && (
                           <Tooltip
                             title={intl.formatMessage({
-                              id: 'component.tidasPackage.taskCenter.download',
-                              defaultMessage: 'Download',
+                              id: 'pages.process.reviewSubmitTaskCenter.cancel',
+                              defaultMessage: 'Cancel',
                             })}
                           >
                             <Button
                               aria-label={intl.formatMessage({
-                                id: 'component.tidasPackage.taskCenter.download',
-                                defaultMessage: 'Download',
+                                id: 'pages.process.reviewSubmitTaskCenter.cancel',
+                                defaultMessage: 'Cancel',
                               })}
-                              icon={<DownloadOutlined />}
-                              loading={downloadingTaskId === item.task.id}
+                              danger
+                              icon={<CloseCircleOutlined />}
+                              loading={cancellingTaskId === item.task.id}
                               size='small'
                               type='text'
                               onClick={() => {
-                                void handleDownload(item.task);
+                                void handleCancelReviewSubmit(item.task);
                               }}
                             />
                           </Tooltip>
                         )}
-                      {item.kind === 'reviewSubmit' && item.task.state === 'running' && (
-                        <Tooltip
-                          title={intl.formatMessage({
-                            id: 'pages.process.reviewSubmitTaskCenter.cancel',
-                            defaultMessage: 'Cancel',
-                          })}
-                        >
-                          <Button
-                            aria-label={intl.formatMessage({
-                              id: 'pages.process.reviewSubmitTaskCenter.cancel',
-                              defaultMessage: 'Cancel',
-                            })}
-                            danger
-                            icon={<CloseCircleOutlined />}
-                            loading={cancellingTaskId === item.task.id}
-                            size='small'
-                            type='text'
-                            onClick={() => {
-                              void handleCancelReviewSubmit(item.task);
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                      {item.kind === 'reviewSubmit' && item.task.state === 'failed' && (
-                        <Tooltip
-                          title={intl.formatMessage({
-                            id: 'pages.process.reviewSubmitTaskCenter.retry',
-                            defaultMessage: 'Retry',
-                          })}
-                        >
-                          <Button
-                            aria-label={intl.formatMessage({
+                        {item.kind === 'reviewSubmit' && item.task.state === 'failed' && (
+                          <Tooltip
+                            title={intl.formatMessage({
                               id: 'pages.process.reviewSubmitTaskCenter.retry',
                               defaultMessage: 'Retry',
                             })}
-                            icon={<ReloadOutlined />}
-                            loading={retryingTaskId === item.task.id}
-                            size='small'
-                            type='text'
-                            onClick={() => {
-                              void handleRetryReviewSubmit(item.task);
-                            }}
-                          />
-                        </Tooltip>
+                          >
+                            <Button
+                              aria-label={intl.formatMessage({
+                                id: 'pages.process.reviewSubmitTaskCenter.retry',
+                                defaultMessage: 'Retry',
+                              })}
+                              icon={<ReloadOutlined />}
+                              loading={retryingTaskId === item.task.id}
+                              size='small'
+                              type='text'
+                              onClick={() => {
+                                void handleRetryReviewSubmit(item.task);
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </Space>
+                      {expanded && (
+                        <div
+                          style={{
+                            background: token.colorFillSecondary,
+                            borderRadius: 6,
+                            gridColumn: '1 / -1',
+                            marginTop: 2,
+                            padding: '12px 14px',
+                          }}
+                        >
+                          <TaskDetailPopoverContent item={item} intl={intl} />
+                        </div>
                       )}
-                    </Space>
-                    {expanded && (
-                      <div
-                        style={{
-                          background: token.colorFillSecondary,
-                          borderRadius: 6,
-                          gridColumn: '1 / -1',
-                          marginTop: 2,
-                          padding: '12px 14px',
-                        }}
-                      >
-                        <TaskDetailPopoverContent item={item} intl={intl} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         </Space>
