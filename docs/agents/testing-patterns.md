@@ -21,11 +21,12 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - docs/agents/release-e2e-execution-design.md
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #652: documented deterministic cache staging, focused menu dismissal, and authenticated production wait budgets.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Reviewed for Issue #654: current browser patterns remain runtime truth while the pinned environment, preflight, production-bundle, and bounded-resume path is still proposed.'
 ---
 
 # Testing Patterns Reference

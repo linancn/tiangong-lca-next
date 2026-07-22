@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-21"
-lastReviewedCommit: "804a44c0816076fd5166a6f36764483c7f37aaa8"
-lastReviewedNote: 'Reviewed for Issue #647; routing and ownership remain unchanged after making browser semantic E2E manual on demand and release-required.'
+lastReviewedAt: '2026-07-22'
+lastReviewedCommit: '8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9'
+lastReviewedNote: 'Updated for Issue #654 to register and route the proposed release semantic E2E execution design.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -83,6 +83,7 @@ coverage:
     - docs/agents/testing-troubleshooting.md
     - docs/agents/prepush-gate-policy.md
     - docs/agents/test_improvement_plan.md
+    - docs/agents/release-e2e-execution-design.md
     - docs/agents/contribution-path-analysis-design.md
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
@@ -170,6 +171,7 @@ routing:
         - scripts/reference-data/**
         - tests/**
         - tests/e2e/**
+        - docs/agents/release-e2e-execution-design.md
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
         - docs/plans/i18n/semantic-e2e-evidence.json
     i18n-semantic-e2e:
@@ -180,6 +182,7 @@ routing:
         - docs/plans/i18n/route-view-coverage.json
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
         - docs/plans/i18n/semantic-e2e-evidence.json
+        - docs/agents/release-e2e-execution-design.md
         - src/services/general/localeRegistry.ts
         - src/services/general/contentLanguageRegistry.ts
     repo-docs:
@@ -233,6 +236,7 @@ routing:
         - docs/agents/testing-troubleshooting.md
         - docs/agents/prepush-gate-policy.md
         - docs/agents/test_improvement_plan.md
+        - docs/agents/release-e2e-execution-design.md
     repo-shape:
       paths:
         - config/**
@@ -297,6 +301,7 @@ docInventory:
     - docs/agents/testing-troubleshooting.md
     - docs/agents/prepush-gate-policy.md
     - docs/agents/test_improvement_plan.md
+    - docs/agents/release-e2e-execution-design.md
     - docs/agents/contribution-path-analysis-design.md
     - docs/agents/lca-analysis-visualization-plan.md
     - docs/agents/public-classifications-gz-usage.md
@@ -565,6 +570,8 @@ rules:
         kind: gate-policy
       - path: docs/agents/test_improvement_plan.md
         kind: testing-strategy
+      - path: docs/agents/release-e2e-execution-design.md
+        kind: release-e2e-execution-design
       - path: jest.config.cjs
         kind: test-gate
       - path: .husky/pre-push
@@ -615,6 +622,8 @@ rules:
       - path: docs/agents/prepush-gate-policy.md
         mode: review_or_update
       - path: docs/agents/test_improvement_plan.md
+        mode: review_or_update
+      - path: docs/agents/release-e2e-execution-design.md
         mode: review_or_update
     reason: Coverage, testing workflow, browser trust boundaries, and protected-branch gate changes alter how future frontend work is validated and should refresh the proof baseline, testing references, and current strategy/state docs.
   - id: next-static-resource-contract

@@ -21,14 +21,15 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - tests/e2e/i18n/**
+  - docs/agents/release-e2e-execution-design.md
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: routine branches skip browser E2E, which remains optional manually and required for release.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Reviewed for Issue #654: the proposed release runner preserves the #647 routine-versus-release gate boundary and does not change current pre-push triggers.'
 ---
 
 # Pre-Push Gate Policy

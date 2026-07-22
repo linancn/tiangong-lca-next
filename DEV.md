@@ -22,10 +22,11 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
+  - docs/agents/release-e2e-execution-design.md
   - .nvmrc
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #651: production cleanup now requires the configured recovery copy before adopting a primary ledger.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Reviewed for Issue #654: the new release E2E commands remain proposed, so the current bootstrap and local authenticated command stay authoritative until implementation lands.'
 ---
 
 # Development Bootstrap

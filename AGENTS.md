@@ -35,6 +35,7 @@ related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
   - docs/agents/repo-architecture.md
+  - docs/agents/release-e2e-execution-design.md
   - DEV.md
 ---
 
@@ -86,6 +87,7 @@ Additional governed source docs, not part of the default first-load surface:
 | `docs/agents/testing-troubleshooting.md` | shortest recovery path for failing or hanging tests | strategy or canonical proof requirements |
 | `docs/agents/prepush-gate-policy.md` | intended protected-branch and pre-push rollout contract | live hook/runtime truth |
 | `docs/agents/test_improvement_plan.md` | long-term testing strategy and reopen conditions | current operational queue or proof baseline |
+| `docs/agents/release-e2e-execution-design.md` | proposed hermetic release E2E environment, preflight, exact-candidate, diagnostics, race-hardening, and bounded-resume design | current executable commands or permission to weaken production-data and evidence guards |
 | `docs/agents/contribution-path-analysis-design.md` and `docs/agents/lca-analysis-visualization-plan.md` | scoped design references for analysis features | current runtime truth or active delivery state |
 | `.github/PULL_REQUEST_TEMPLATE/feature-to-dev.md` and `.github/PULL_REQUEST_TEMPLATE/promote-dev-to-main.md` | branch-specific PR note shape and handoff prompts | canonical proof rules or repo branch policy truth |
 
@@ -115,6 +117,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - dataset-validation adapters live in `src/pages/*/sdkValidation.ts`; shared localized validation helpers live in `src/pages/Utils/validation/**`
 - data workflow result fixture relationships live in `tests/data-workflows/fixtures/result/README.md`; proof selection stays in `docs/agents/repo-validation.md`
 - run Umi-generating focused tests, coverage, and `npm run prepush:gate` serially; for normal delivery, use focused proof during iteration and let the push hook own the one full gate after the final controlled tracked change
+- the proposed release E2E execution redesign for Issue #654 lives in `docs/agents/release-e2e-execution-design.md`; until its implementation lands, `DEV.md` remains the source of truth for executable commands and the #647 local-authenticated/GitHub-read-only trust split remains unchanged
 - new npm dependencies require human approval
 - production-writing E2E requires authenticated mode plus two write guards: `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; verified tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`. Before create it writes an intent ledger, and before delete it verifies the production row's UUID, authenticated owner, and all five multilingual fields across every registry authoring language, then proves `created=cleaned` and `leaked=0`
 

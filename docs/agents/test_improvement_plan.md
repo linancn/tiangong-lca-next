@@ -21,10 +21,11 @@ checkPaths:
   - tests/**
   - playwright.config.ts
   - .github/workflows/i18n-semantic-e2e.yml
+  - docs/agents/release-e2e-execution-design.md
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: the semantic browser matrix is risk-proportional on demand and mandatory at release.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: release semantic E2E now has a proposed hermetic environment, preflight, exact-candidate, diagnostics, race-hardening, and bounded-resume design.'
 ---
 
 # Testing Strategy
@@ -47,6 +48,8 @@ lastReviewedNote: 'Updated for Issue #647: the semantic browser matrix is risk-p
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage
+- release semantic E2E execution efficiency is now active strategy work under Issue #654 because v0.0.54 exposed repeated environment discovery, broad reruns, and browser/UI timing diagnosis; `release-e2e-execution-design.md` owns the proposed environment and execution architecture while this document keeps only the long-term strategy boundary
+- the target state is a repository-owned pinned environment, read-only preflight before fixture creation, exact committed Next candidate with no parent-workspace mount, production-bundle browser target, role-neutral authentication boundary, structured failure guidance, explicit UI readiness, and digest-bound bounded resume without weakening #647 production credential/write isolation
 
 ## Operating Principles
 
@@ -72,6 +75,7 @@ Add integration tests when they protect one of these:
 - current tests stop protecting important workflows
 - repeated incidents show a missing integration boundary
 - the validation system changes enough that the current model becomes misleading
+- release certification repeatedly spends more time on environment repair or broad reruns than on the required browser proof itself
 
 ## Done Definition
 

@@ -21,10 +21,11 @@ checkPaths:
   - scripts/test-runner.cjs
   - playwright.config.ts
   - tests/e2e/i18n/**
+  - docs/agents/release-e2e-execution-design.md
   - package.json
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #651: added the fail-closed recovery-copy rule for stale or concurrent production E2E teardown.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Reviewed for Issue #654: current recovery commands remain authoritative until the proposed doctor, release runner, and bounded-resume commands are implemented.'
 ---
 
 # Testing Troubleshooting

@@ -20,12 +20,13 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
+  - docs/agents/release-e2e-execution-design.md
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #647: recorded manual-on-demand and release-required browser semantic E2E.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: recorded the active release E2E execution-efficiency design and implementation queue without reopening the coverage queue.'
 ---
 
 # Testing Execution State
@@ -47,6 +48,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
+- Issue #654 is the active release E2E execution-efficiency queue: standardize the pinned environment, exact Next candidate, read-only preflight, production-bundle target, role-neutral capability boundary, structured diagnostics, explicit readiness, and bounded resume; this does not reopen the source-coverage queue
 - touched code must stay at full closure
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
