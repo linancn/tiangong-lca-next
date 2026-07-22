@@ -26,8 +26,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: b7f2b671323ced00de79b5424cd3d3747b5b0d7f
-lastReviewedNote: 'Updated for Issue #660: documented the host-CI refusal and local container CI-marker override for production-data E2E.'
+lastReviewedCommit: ff86b9f7349fd70f8da4852904d48e8948bd2e71
+lastReviewedNote: 'Reviewed for Issue #666: the existing development bootstrap already covers production evidence refresh, validation, and checked push; no command changes are required.'
 ---
 
 # Development Bootstrap
