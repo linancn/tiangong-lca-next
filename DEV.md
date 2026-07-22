@@ -20,12 +20,14 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - playwright.config.ts
+  - scripts/e2e/**
+  - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-21
-lastReviewedCommit: 804a44c0816076fd5166a6f36764483c7f37aaa8
-lastReviewedNote: 'Updated for Issue #651: production cleanup now requires the configured recovery copy before adopting a primary ledger.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: added the repository-owned isolated release E2E installer, doctor, runner, diagnostics, and bounded resume workflow.'
 ---
 
 # Development Bootstrap
@@ -60,11 +62,20 @@ npm ci
 
 `npm ci` installs the exact dependency tree from the committed `package-lock.json`. Use `npm install` only when intentionally changing dependencies, and commit the resulting lockfile update.
 
-The semantic localization browser harness uses `@playwright/test` `1.61.1`. Install its browser engines only when running that harness locally:
+The direct development browser harness uses `@playwright/test` `1.61.1`. Install its browser engines only when using `npm run e2e:dev` or `npm run test:e2e:i18n` directly on the host:
 
 ```bash
 npx playwright install chromium firefox webkit
 ```
+
+Release proof does not use host browser binaries, host `node_modules`, Umi/MFSU caches, or the parent workspace. It requires the repo Node.js `24` launcher plus Git and a running Docker engine; the idempotent installer owns the pinned Playwright image and all E2E-specific runtime dependencies:
+
+```bash
+npm run e2e:env:install
+npm run e2e:env:doctor
+```
+
+`e2e:env:doctor` is read-only and never pulls, builds, authenticates, or writes production data. A missing image exits early with the exact installer command.
 
 ## Default Work Loop
 
@@ -88,7 +99,12 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
-| semantic localization E2E | `npm run test:e2e:i18n` |
+| direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
+| install the isolated release E2E environment | `npm run e2e:env:install` |
+| read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
+| run an exact committed release candidate | `npm run e2e:release -- <release options>` |
+| resume one exact pre-fixture failure | `npm run e2e:release:resume` (no arguments) |
+| clean project-owned release E2E runtime state | `npm run e2e:env:clean` (`--purge-images` is opt-in) |
 | focused Jest suite | `npm run test:ci -- <jest-args>` |
 | data workflow unit proof | `npm run test:data-workflows:unit` |
 | focused live data workflow | `npm run test:workflows -- --<workflow> <workflow-args>` |
@@ -118,25 +134,30 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
-After explicit user authorization, an operator with credentials already supplied through the local runtime environment runs the authenticated closure only from that local session:
+After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 
 ```bash
-E2E_AUTHENTICATED=true \
-E2E_ALLOW_PRODUCTION_DATA=true \
-E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS \
-E2E_RECOVERY_LEDGER_PATH=/tmp/tiangong-lca-next-codex-e2e-recovery.json \
-E2E_WRITE_VERIFIED_EVIDENCE=true \
-E2E_BACKEND_TARGET=production \
-npm run test:e2e:i18n
+chmod 600 .env.users.local
+npm run e2e:release -- \
+  --authenticated \
+  --allow-production-data \
+  --write-verified-evidence \
+  --users-env-file .env.users.local
 ```
 
-This command shape is forbidden in semantic E2E GitHub Actions; CI uses the same canonical script with authenticated/write/evidence opt-ins absent or false.
+The controller translates these explicit options into the existing production-write guards inside the isolated container. This command shape remains forbidden in semantic E2E GitHub Actions; CI keeps using the credential-free/read-only exact-SHA matrix.
 
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
 - use `npm run start:main` only when the task explicitly requires the `main` environment
-- semantic localization E2E is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and always serves the local candidate with `npm run start:main` against the production backend; `E2E_BASE_URL` must remain a loopback URL
+- direct semantic E2E development is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and serves the local worktree with `npm run start:main`; `E2E_BASE_URL` must remain a loopback URL
+- release E2E accepts only a clean committed Next candidate, exports it with `git archive`, builds one production bundle in the digest-pinned Playwright image, serves that immutable bundle internally, and never mounts `lca-workspace`, `.git`, unrelated submodules, host dependencies, or browser profiles
+- release preflight verifies the environment/candidate identities, writable isolated storage, all three browser launches, bundle/login readiness, production backend target, optional role-neutral login, recovery-ledger safety, and Playwright discovery before production fixture intent/create
+- only one install/run/resume/clean invocation may mutate project-owned E2E state at a time; a dead owner lock is recovered automatically, while a live owner fails early instead of racing shared build/runtime/ledger state
+- a failed build, server, or preflight phase may activate one ignored one-hour HMAC-bound continuation receipt; argument-free `npm run e2e:release:resume` revalidates the exact commit/tree/lock/environment/source/image/arguments and reruns preflight, while browser results and production-fixture phases are never reused
+- race diagnosis may add `--project <browser> --spec <path>` or `--grep <pattern> --repeat-each <1-5>`; repeat is accepted only for a focused read-only scope and cannot write verified evidence
+- diagnostics retain the sanitized original error chain and emit stable phase/check IDs, coarse exit classes (`2`, `10`, `20`, `30`, `40`, `50`), cleanup state, output path, and one exact next command
 - semantic E2E GitHub Actions is credential-free and read-only: `workflow_dispatch` runs the three-browser public semantic/boundary matrix on demand, and the canonical release workflow calls the same matrix for the exact release SHA; routine PR/dev pushes do not trigger it
 - the full authenticated closure runs only in an explicitly authorized local operator session with runtime credentials and `E2E_AUTHENTICATED=true`; production write requires both `E2E_ALLOW_PRODUCTION_DATA=true` and the exact one-process confirmation token, while tracked evidence additionally requires `E2E_WRITE_VERIFIED_EVIDENCE=true`; never move that closure or its credentials into a semantic E2E GitHub job
 - before any create, authenticated E2E writes a UUID-scoped `codex-e2e` intent ledger; before any delete, it must read the production row and verify the UUID, authenticated owner, and exact marker coverage for all five multilingual fields across every registry authoring language

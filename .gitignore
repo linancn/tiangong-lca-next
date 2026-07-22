@@ -75,3 +75,6 @@ docker/.env.deploy.local
 
 # bounded failed-transport push receipt (never commit or upload)
 /.local/prepush-gate/
+
+# isolated release E2E images, manifests, reports, and bounded continuation receipt
+/.local/e2e-release/

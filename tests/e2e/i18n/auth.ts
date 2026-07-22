@@ -31,7 +31,9 @@ export function getLoginFormControls(page: Page) {
 
 export async function loadE2ECredential() {
   const usersPath = path.resolve(process.cwd(), DEFAULT_USERS_PATH);
-  const { sourceLabel, users } = await loadUsersConfig(usersPath);
+  const { sourceLabel, users } = await loadUsersConfig(usersPath, process.env, {
+    usersEnvFilePath: process.env.E2E_USERS_ENV_FILE?.trim() || undefined,
+  });
   return pickCredentialByRole(users, process.env.E2E_AUTH_ROLE ?? 'user', sourceLabel);
 }
 

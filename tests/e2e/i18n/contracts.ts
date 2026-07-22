@@ -16,7 +16,9 @@ import { UMI_LOCALE_STORAGE_KEY } from '../../../src/services/general/runtimeLoc
 import { E2E_LOCALE_CATALOG_ADAPTER } from './locale-catalog-adapter';
 
 export const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
-export const E2E_RUNTIME_DIR = path.join(REPOSITORY_ROOT, 'tests/e2e/runtime');
+export const E2E_RUNTIME_DIR = path.resolve(
+  process.env.E2E_RUNTIME_DIR?.trim() || path.join(REPOSITORY_ROOT, 'tests/e2e/runtime'),
+);
 export const E2E_AUTH_STATE_PATH = path.join(E2E_RUNTIME_DIR, 'auth-state.json');
 export const E2E_LEDGER_PATH = path.join(E2E_RUNTIME_DIR, 'production-data-ledger.json');
 export const E2E_LEDGER_RESULT_PATH = path.join(E2E_RUNTIME_DIR, 'production-data-result.json');

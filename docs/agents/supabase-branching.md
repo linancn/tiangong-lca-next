@@ -19,11 +19,12 @@ checkPaths:
   - config/supabaseEnv.ts
   - src/services/**
   - docker/**
+  - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-20
-lastReviewedCommit: 9156b4baf8bfacb85d935ca45ed943654bd3e3f3
-lastReviewedNote: 'Reviewed for Issue #633: the final authorized candidate-local production-backend E2E preserved user-scoped exact-UUID cleanup, dual-ledger recovery, and existing schema/Edge ownership boundaries.'
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
+lastReviewedNote: 'Updated for Issue #654: isolated release E2E consumes a read-only tracked-main environment proof and exact external recovery ledger without changing schema, Edge, role, or user-scoped cleanup ownership.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -68,7 +69,7 @@ Rules:
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
-- the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: it serves the local candidate with `npm run start:main`, verifies the selected Supabase origin matches the tracked main environment, authenticates as the runtime test user, never uses a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in its ignored ledger
+- the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
 
 ## Common Scenarios

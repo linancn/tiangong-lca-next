@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-21"
-lastReviewedCommit: "804a44c0816076fd5166a6f36764483c7f37aaa8"
-lastReviewedNote: 'Reviewed for Issue #647; routing and ownership remain unchanged after making browser semantic E2E manual on demand and release-required.'
+lastReviewedAt: '2026-07-22'
+lastReviewedCommit: '8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9'
+lastReviewedNote: 'Updated for Issue #654; release E2E container, controller, runtime inputs, and local state now route through the repo testing/quality contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -51,6 +51,7 @@ ownership:
         include:
           - tests/**
           - tests/e2e/**
+          - .gitignore
           - playwright.config.ts
           - package.json
           - .nvmrc
@@ -63,6 +64,7 @@ ownership:
           - scripts/test-coverage-report.js
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
+          - scripts/e2e/**
           - scripts/i18n/**
           - scripts/reference-data/**
       ownerRepo: next
@@ -101,6 +103,7 @@ coverage:
     - icons/**
     - tests/**
     - tests/e2e/**
+    - .gitignore
     - playwright.config.ts
     - package.json
     - .nvmrc
@@ -113,6 +116,7 @@ coverage:
     - scripts/test-coverage-report.js
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
+    - scripts/e2e/**
     - scripts/i18n/**
     - scripts/reference-data/**
   exclude:
@@ -551,8 +555,12 @@ rules:
     triggers:
       - path: package.json
         kind: runtime-config
+      - path: .gitignore
+        kind: local-runtime-boundary
       - path: playwright.config.ts
         kind: semantic-e2e-config
+      - path: docker/e2e/**
+        kind: semantic-e2e-environment
       - path: .nvmrc
         kind: runtime-config
       - path: docs/agents/test_todo_list.md
@@ -583,6 +591,8 @@ rules:
         kind: test-gate
       - path: scripts/prepush-gate-receipt.cjs
         kind: test-gate
+      - path: scripts/e2e/**
+        kind: semantic-e2e-runner
       - path: scripts/i18n/**
         kind: test-gate
       - path: scripts/reference-data/**
