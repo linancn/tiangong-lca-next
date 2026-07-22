@@ -12,6 +12,10 @@ import { readVerifiedProductionBackendTarget } from '../../e2e/i18n/production-b
 const controller = require('../../../scripts/e2e/release-e2e.cjs') as {
   RECEIPT_SCHEMA_VERSION: number;
   acquireInvocationLock: (command: string, lockPath: string) => () => void;
+  assertLocalOperatorHostEnvironment: (
+    options: Record<string, any>,
+    environment?: Record<string, string | undefined>,
+  ) => void;
   commandHelp: () => string;
   createReceipt: (input: Record<string, any>, key: Buffer) => Record<string, any>;
   dockerRunArguments: (
@@ -119,6 +123,49 @@ describe('release E2E controller contracts', () => {
     );
   });
 
+  it('keeps production writes local while clearing only image-inherited CI markers', () => {
+    const readOnly = controller.parseOptions('run', []);
+    expect(() =>
+      controller.assertLocalOperatorHostEnvironment(readOnly, { CI: 'true' }),
+    ).not.toThrow();
+
+    const productionData = controller.parseOptions('run', [
+      '--authenticated',
+      '--allow-production-data',
+    ]);
+    expect(() =>
+      controller.assertLocalOperatorHostEnvironment(productionData, { CI: 'true' }),
+    ).toThrow('forbidden when the host is CI or GitHub Actions');
+    expect(() =>
+      controller.assertLocalOperatorHostEnvironment(productionData, { GITHUB_ACTIONS: 'true' }),
+    ).toThrow('forbidden when the host is CI or GitHub Actions');
+    expect(() => controller.assertLocalOperatorHostEnvironment(productionData, {})).not.toThrow();
+
+    const productionArgs = controller.dockerRunArguments(
+      { imageTag: 'candidate:test' },
+      productionData,
+      '/host/run',
+      {
+        recoveryLedger: '/host/recovery/ledger.json',
+        trackedMainEnvironmentPath: '/host/input/main.env',
+      },
+    );
+    expect(productionArgs).toContain('CI=');
+    expect(productionArgs).toContain('GITHUB_ACTIONS=');
+
+    const readOnlyArgs = controller.dockerRunArguments(
+      { imageTag: 'candidate:test' },
+      readOnly,
+      '/host/run',
+      {
+        recoveryLedger: '/host/recovery/ledger.json',
+        trackedMainEnvironmentPath: '/host/input/main.env',
+      },
+    );
+    expect(readOnlyArgs).not.toContain('CI=');
+    expect(readOnlyArgs).not.toContain('GITHUB_ACTIONS=');
+  });
+
   it('emits parseable JSON-only stdout and a coarse input exit code on refusal', () => {
     const result = spawnSync(
       process.execPath,
@@ -131,6 +178,22 @@ describe('release E2E controller contracts', () => {
       exitCode: 2,
       failureCode: 'E2E_PRODUCTION_DATA_REQUIRES_AUTH',
       phase: 'input',
+      status: 'failed',
+    });
+  });
+
+  it('refuses host CI production writes before checking Docker or credentials', () => {
+    const result = spawnSync(
+      process.execPath,
+      [controllerPath, 'run', '--format=json', '--authenticated', '--allow-production-data'],
+      { cwd: process.cwd(), encoding: 'utf8', env: { ...process.env, CI: 'true' } },
+    );
+    expect(result.status).toBe(30);
+    expect(result.stderr).toBe('');
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      exitCode: 30,
+      failureCode: 'E2E_PRODUCTION_DATA_FORBIDDEN_IN_HOST_CI',
+      phase: 'safety',
       status: 'failed',
     });
   });

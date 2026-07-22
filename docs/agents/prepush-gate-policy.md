@@ -29,8 +29,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 8d7d9ee4ed25b3f5226116d5e63244ba324bfdc9
-lastReviewedNote: 'Reviewed for Issue #654: the isolated local release E2E controller remains separate from the protected pre-push and credential-free CI gates.'
+lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedNote: 'Updated for Issue #660: local production-data E2E now rejects host CI before overriding image-inherited CI markers.'
 ---
 
 # Pre-Push Gate Policy
@@ -95,7 +95,7 @@ It does not own:
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
 - semantic E2E keeps its local candidate frontend on a loopback URL, derives locales from registries, disables screenshot/trace/video/auth artifacts, and keeps every semantic E2E GitHub Actions run credential-free/read-only
-- an authorized local production-data run uses `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, and the exact one-process confirmation token; `E2E_WRITE_VERIFIED_EVIDENCE=true` separately opts into tracked evidence. It writes its intent ledger before create; cleanup verifies the production row UUID, authenticated owner, and all five multilingual-field markers across registry authoring languages before exact-ID deletion, then proves `created=cleaned` and `leaked=0`
+- an authorized local production-data run is rejected before Docker when host `CI` or `GITHUB_ACTIONS` is set; after the local check passes, the controller clears only those image-inherited markers at container runtime and still requires `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, and the exact one-process confirmation token; `E2E_WRITE_VERIFIED_EVIDENCE=true` separately opts into tracked evidence. It writes its intent ledger before create; cleanup verifies the production row UUID, authenticated owner, and all five multilingual-field markers across registry authoring languages before exact-ID deletion, then proves `created=cleaned` and `leaked=0`
 - Header Umi `SelectLang` remains `reload={false}` so same-document locale refresh and delayed old-response race behavior stay browser-verifiable
 - historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `npm run prepush:gate` must never read ignored confirmation files
 

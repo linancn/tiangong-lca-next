@@ -505,6 +505,20 @@ function validateRunOptions(options) {
   }
 }
 
+function assertLocalOperatorHostEnvironment(options, environment = process.env) {
+  if (!options.allowProductionData) return;
+  if (environment.CI || environment.GITHUB_ACTIONS) {
+    throw new ReleaseE2EError(
+      'Production-data release E2E is forbidden when the host is CI or GitHub Actions.',
+      {
+        exitCode: EXIT.SAFETY,
+        failureCode: 'E2E_PRODUCTION_DATA_FORBIDDEN_IN_HOST_CI',
+        phase: 'safety',
+      },
+    );
+  }
+}
+
 function loadEnvironmentContractFromWorkingTree() {
   const contractPath = path.join(REPOSITORY_ROOT, ENVIRONMENT_CONTRACT_RELATIVE_PATH);
   const raw = fs.readFileSync(contractPath, 'utf8');
@@ -1205,6 +1219,7 @@ function prepareRuntimeInputs(context, options, runDirectory) {
 function dockerRunArguments(context, options, runDirectory, runtimeInputs) {
   const containerRecoveryLedger = `/e2e-recovery/${path.basename(runtimeInputs.recoveryLedger)}`;
   const environment = {
+    ...(options.allowProductionData ? { CI: '', GITHUB_ACTIONS: '' } : {}),
     E2E_ALLOW_PRODUCTION_DATA: String(options.allowProductionData),
     E2E_AUTHENTICATED: String(options.authenticated),
     E2E_AUTH_ROLE: options.role,
@@ -1261,6 +1276,7 @@ function readContainerResult(runDirectory) {
 
 function runRelease(options, state = {}) {
   validateRunOptions(options);
+  assertLocalOperatorHostEnvironment(options);
   const prerequisites = assertHostPrerequisites();
   const environment = loadEnvironmentContractFromWorkingTree();
   const candidate = requireCleanCommittedCandidate();
@@ -1726,6 +1742,7 @@ module.exports = {
   RECEIPT_SCHEMA_VERSION,
   ReleaseE2EError,
   acquireInvocationLock,
+  assertLocalOperatorHostEnvironment,
   commandHelp,
   createReceipt,
   dockerRunArguments,
