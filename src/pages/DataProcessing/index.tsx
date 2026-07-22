@@ -818,7 +818,7 @@ const DataProcessing = () => {
       );
       addRow(
         t('pages.dataProcessing.command.workerJobId', 'Worker job ID'),
-        firstString(record?.workerJobId, record?.worker_job_id),
+        firstString(record?.workerJobId, record?.worker_job_id, workerJob?.jobId),
       );
       return rows;
     }
@@ -1029,7 +1029,16 @@ const DataProcessing = () => {
       }),
     );
     if (result && !result.error && result.data) {
-      setClosureCheck(result.data as ClosureCheckSummaryV1);
+      const summary = await getClosureCheck(result.data.closureCheckId);
+      if (summary.error || !summary.data) {
+        setCommandStatus({
+          kind: 'error',
+          message:
+            summary.error?.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
+        });
+        return;
+      }
+      setClosureCheck(summary.data);
       setClosurePrerequisiteUnavailable(false);
       setClosureSelectionKey(selectionKey);
       setCurrentSelectionKey(selectionKey);
@@ -1372,7 +1381,7 @@ const DataProcessing = () => {
                     {closureCheck.scanCompleteness}
                   </Descriptions.Item>
                   <Descriptions.Item label={t('pages.dataProcessing.closure.issues', 'Issues')}>
-                    {`${closureCheck.blockingCount ?? 0} blockers / ${closureCheck.warningCount ?? 0} warnings`}
+                    {`${closureCheck.blockerCodes?.length ?? 0} blockers`}
                   </Descriptions.Item>
                 </Descriptions>
               )}
@@ -1419,7 +1428,7 @@ const DataProcessing = () => {
                 >
                   {t('pages.dataProcessing.action.checkCompleteness', 'Check data completeness')}
                 </Button>
-                {closureCheck?.canDownloadReport ? (
+                {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
                   <Button onClick={handleDownloadClosureReport} icon={<DownloadOutlined />}>
                     {t(
                       'pages.dataProcessing.action.downloadClosureReport',

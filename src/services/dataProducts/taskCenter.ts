@@ -110,6 +110,7 @@ export function decodeDataProductTaskSummary(value: unknown): TaskSummaryV2 | nu
       ? {
           progressCounters: {
             ...(typeof counters.completed === 'number' ? { completed: counters.completed } : {}),
+            ...(typeof counters.scanned === 'number' ? { scanned: counters.scanned } : {}),
             ...(typeof counters.total === 'number' ? { total: counters.total } : {}),
             ...(text(counters.unit) ? { unit: text(counters.unit) } : {}),
           },

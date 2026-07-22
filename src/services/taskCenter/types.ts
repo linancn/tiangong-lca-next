@@ -38,7 +38,7 @@ export type TaskSummaryV2 = {
   workerStatus: TaskRawStatus;
   domainStatus?: string;
   projectionUpdatedAt: string;
-  progressCounters?: { completed?: number; total?: number; unit?: string };
+  progressCounters?: { scanned?: number; completed?: number; total?: number; unit?: string };
   capabilities: {
     canCancel: boolean;
     canDownloadReport: boolean;

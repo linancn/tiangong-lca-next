@@ -221,7 +221,7 @@ describe('DataProcessing page', () => {
     });
     mockGetClosureCheck.mockResolvedValue({
       data: {
-        schemaVersion: 'lcia.scope-closure-summary.v1',
+        schemaVersion: 'lcia.scope-closure-check.v1',
         closureCheckId: 'closure-valid',
         runStatus: 'passed',
         certificateValidity: 'valid',
@@ -233,19 +233,21 @@ describe('DataProcessing page', () => {
     });
     mockCreateClosureCheck.mockResolvedValue({
       data: {
-        schemaVersion: 'lcia.scope-closure-summary.v1',
         closureCheckId: 'closure-new',
-        runStatus: 'passed',
-        certificateValidity: 'valid',
-        scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-new',
         policyFingerprint: 'policy-new',
+        workerJob: { jobId: 'closure-worker-new', status: 'queued' },
+        reused: false,
       },
       error: null,
     });
     mockCreateClosureReportDownload.mockResolvedValue({ data: null, error: null });
     mockListClosureCheckIssues.mockResolvedValue({
-      data: { closureCheckId: 'closure-valid', issues: [] },
+      data: {
+        schemaVersion: 'lcia.scope-closure-issues-page.v1',
+        closureCheckId: 'closure-valid',
+        issues: [],
+      },
       error: null,
     });
     mockDataProductTasks = [
@@ -500,6 +502,18 @@ describe('DataProcessing page', () => {
 
   it('submits build, preview, publish, and unpublish commands for managers', async () => {
     mockLocation = { pathname: '/data-processing', search: '' };
+    mockGetClosureCheck.mockResolvedValueOnce({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-new',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+        requestedScopeHash: 'scope-hash-new',
+        policyFingerprint: 'policy-new',
+      },
+      error: null,
+    });
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
@@ -644,12 +658,12 @@ describe('DataProcessing page', () => {
     mockGetClosureCheck.mockReset();
     mockGetClosureCheck.mockResolvedValue({
       data: {
-        schemaVersion: 'lcia.scope-closure-summary.v1',
+        schemaVersion: 'lcia.scope-closure-check.v1',
         closureCheckId: 'closure-blocked',
         runStatus: 'blocked',
-        certificateValidity: 'none',
+        certificateValidity: 'unavailable',
         scanCompleteness: 'complete',
-        blockingCount: 2,
+        blockerCodes: ['missing_provider', 'missing_reference'],
       },
       error: null,
     });
@@ -659,7 +673,7 @@ describe('DataProcessing page', () => {
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
     expect(screen.getByRole('button', { name: 'Generate result set' })).toBeDisabled();
     expect(await screen.findByText('blocked')).toBeInTheDocument();
-    expect(screen.getByText('2 blockers / 0 warnings')).toBeInTheDocument();
+    expect(screen.getByText('2 blockers')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Generate result set' })).toBeDisabled();
     expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
   });
@@ -702,15 +716,19 @@ describe('DataProcessing page', () => {
     mockListClosureCheckIssues
       .mockResolvedValueOnce({
         data: {
+          schemaVersion: 'lcia.scope-closure-issues-page.v1',
           closureCheckId: 'closure-valid',
           issues: [
             {
               issueId: 'issue-1',
               severity: 'blocking',
+              blocking: true,
               code: 'missing_provider',
               title: 'Missing provider',
               summary: 'A required provider is unavailable.',
               suggestedAction: 'Publish or select a provider.',
+              occurrenceCount: 1,
+              affectedRootCount: 1,
             },
           ],
           nextCursor: 'cursor-2',
@@ -719,19 +737,26 @@ describe('DataProcessing page', () => {
       })
       .mockResolvedValueOnce({
         data: {
+          schemaVersion: 'lcia.scope-closure-issues-page.v1',
           closureCheckId: 'closure-valid',
           issues: [
             {
               issueId: 'issue-1',
               severity: 'blocking',
+              blocking: true,
               code: 'missing_provider',
               title: 'Missing provider',
+              occurrenceCount: 1,
+              affectedRootCount: 1,
             },
             {
               issueId: 'issue-2',
               severity: 'warning',
+              blocking: false,
               code: 'version_ambiguous',
               title: 'Version ambiguity',
+              occurrenceCount: 1,
+              affectedRootCount: 1,
             },
           ],
         },

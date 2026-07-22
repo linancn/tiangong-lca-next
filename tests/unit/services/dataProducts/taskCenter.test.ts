@@ -5,7 +5,9 @@ jest.mock('@/services/dataProducts/api', () => ({
 
 import { invokeDataProductCommand } from '@/services/dataProducts/api';
 import {
+  createClosureCheck,
   createClosureReportDownload,
+  getClosureCheck,
   listClosureCheckIssues,
 } from '@/services/dataProducts/closure';
 import {
@@ -33,6 +35,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       projectionUpdatedAt: '2026-07-22T00:00:00Z',
       title: 'Data completeness check',
       progressFraction: 0.8,
+      progressCounters: { scanned: 8, completed: 7, total: 10, unit: 'documents' },
       capabilities: { canDownloadReport: true },
       deepLink: {
         routeKey: 'data_product.closure_check',
@@ -49,6 +52,7 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       domainStatus: 'passed',
       domainValidity: 'stale',
       progressFraction: 0.8,
+      progressCounters: { scanned: 8, completed: 7, total: 10, unit: 'documents' },
       capabilities: { canDownloadReport: true },
       deepLink: {
         routeKey: 'data_product.closure_check',
@@ -56,6 +60,84 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       },
     });
     expect(summary).not.toHaveProperty('result');
+  });
+
+  it('keeps create receipts separate from full reads and whitelists the worker-job projection', async () => {
+    (invokeDataProductCommand as jest.Mock)
+      .mockResolvedValueOnce({
+        data: {
+          closureCheckId: 'closure-1',
+          requestedScopeHash: 'scope-hash',
+          policyFingerprint: 'policy-hash',
+          reused: false,
+          workerJob: {
+            id: 'job-1',
+            jobKind: 'lcia.scope_closure_check',
+            status: 'queued',
+            progress: 0,
+            payload: { never: 'exposed' },
+            result: { never: 'exposed' },
+          },
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          schemaVersion: 'lcia.scope-closure-check.v1',
+          closureCheckId: 'closure-1',
+          runStatus: 'passed',
+          certificateValidity: 'valid',
+          scanCompleteness: 'complete',
+          requestedScopeHash: 'scope-hash',
+          effectiveScopeHash: 'effective-hash',
+          policyFingerprint: 'policy-hash',
+          dataSnapshotToken: 'snapshot-token',
+          blockerCodes: [],
+          summary: { evidenceHash: 'evidence-hash' },
+          scanExecutionId: 'scan-1',
+          reusedFromCheckId: 'closure-0',
+          createdAt: '2026-07-22T00:00:00Z',
+          updatedAt: '2026-07-22T00:01:00Z',
+          finishedAt: '2026-07-22T00:01:00Z',
+          workerJob: {
+            jobId: 'job-1',
+            status: 'completed',
+            phase: 'complete',
+            progressFraction: 1,
+            result: { never: 'exposed' },
+          },
+        },
+        error: null,
+      });
+
+    const created = await createClosureCheck({
+      requestedScope: { coverageMode: 'global_eligible', lciaMethods: [] },
+      requestIdempotencyToken: 'request-1',
+    });
+    const summary = await getClosureCheck('closure-1');
+
+    expect(created.data).toEqual({
+      closureCheckId: 'closure-1',
+      requestedScopeHash: 'scope-hash',
+      policyFingerprint: 'policy-hash',
+      reused: false,
+      workerJob: {
+        jobId: 'job-1',
+        jobKind: 'lcia.scope_closure_check',
+        status: 'queued',
+        progressFraction: 0,
+      },
+    });
+    expect(created.data?.workerJob).not.toHaveProperty('payload');
+    expect(summary.data).toMatchObject({
+      schemaVersion: 'lcia.scope-closure-check.v1',
+      effectiveScopeHash: 'effective-hash',
+      dataSnapshotToken: 'snapshot-token',
+      scanExecutionId: 'scan-1',
+      reusedFromCheckId: 'closure-0',
+      workerJob: { jobId: 'job-1', status: 'completed', progressFraction: 1 },
+    });
+    expect(summary.data?.workerJob).not.toHaveProperty('result');
   });
 
   it('uses the final list_task_feed contract with category, job kinds, and cursor-ready controls', async () => {
@@ -98,11 +180,29 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
 
   it('keeps closure issue pagination actor-scoped and out of the task feed', async () => {
     (invokeDataProductCommand as jest.Mock).mockResolvedValue({
-      data: { closureCheckId: 'closure-1', issues: [] },
+      data: {
+        schemaVersion: 'lcia.scope-closure-issues-page.v1',
+        closureCheckId: 'closure-1',
+        issues: [
+          {
+            issueId: 'issue-1',
+            severity: 'blocking',
+            blocking: true,
+            code: 'missing_reference',
+            title: 'missing_reference',
+            occurrenceCount: 2,
+            affectedRootCount: 1,
+            affectedProcess: { id: 'must-not-survive' },
+          },
+        ],
+      },
       error: null,
     });
 
-    await listClosureCheckIssues('closure-1', { afterIssueId: 'issue-2', limit: 50 });
+    const result = await listClosureCheckIssues('closure-1', {
+      afterIssueId: 'issue-2',
+      limit: 50,
+    });
 
     expect(invokeDataProductCommand).toHaveBeenCalledWith({
       action: 'list_closure_issues',
@@ -110,6 +210,16 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       afterIssueId: 'issue-2',
       limit: 50,
     });
+    expect(result.data?.issues[0]).toEqual({
+      issueId: 'issue-1',
+      severity: 'blocking',
+      blocking: true,
+      code: 'missing_reference',
+      title: 'missing_reference',
+      occurrenceCount: 2,
+      affectedRootCount: 1,
+    });
+    expect(result.data?.issues[0]).not.toHaveProperty('affectedProcess');
   });
 
   it('whitelists only the safe short-lived report descriptor fields', async () => {
