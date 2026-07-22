@@ -147,6 +147,18 @@ describe('responsive surface evidence contract', () => {
     );
   });
 
+  it('uses the settled locale-menu contract for the narrow query-preservation scenario', () => {
+    const source = readFileSync(
+      path.resolve(process.cwd(), 'tests/e2e/i18n/query-responsive.spec.ts'),
+      'utf8',
+    );
+    expect(source).toContain(
+      'await selectAppLocaleThroughUi(page, localeDefinition.canonicalLocale);',
+    );
+    expect(source).not.toContain("locator('.ant-dropdown-menu-item')");
+    expect(source).not.toContain('readStoredAppLocale');
+  });
+
   it('scopes persisted authoring rows to an exact Ant Card class token', () => {
     const source = readFileSync(
       path.resolve(process.cwd(), 'tests/e2e/i18n/process-persisted-authoring.spec.ts'),
