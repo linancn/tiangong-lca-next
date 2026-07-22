@@ -125,9 +125,11 @@ export type LifeCycleModelGraphNode = {
 export type LifeCycleModelEdgeConnection = {
   outputExchange?: {
     '@flowUUID'?: string;
+    '@version'?: string;
     downstreamProcess?: {
       '@flowUUID'?: string;
       '@id'?: string;
+      '@version'?: string;
     };
   };
   isBalanced?: boolean;

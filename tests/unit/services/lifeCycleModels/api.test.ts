@@ -101,11 +101,21 @@ jest.mock('@/services/auth', () => ({
 
 const mockGenLifeCycleModelJsonOrdered = jest.fn();
 const mockGenReferenceToResultingProcess = jest.fn();
+class MockMissingLifeCycleModelFlowVersionError extends Error {
+  readonly code = 'MISSING_FLOW_VERSION';
+  readonly details: Record<string, unknown>;
+
+  constructor(details: Record<string, unknown>) {
+    super('Missing Flow dataset version for outputExchange.@version');
+    this.details = details;
+  }
+}
 
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelJsonOrdered: (...args: any[]) => mockGenLifeCycleModelJsonOrdered(...args),
   genReferenceToResultingProcess: (...args: any[]) => mockGenReferenceToResultingProcess(...args),
+  MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE: 'MISSING_FLOW_VERSION',
 }));
 
 const mockGenLifeCycleModelProcesses = jest.fn();
@@ -874,6 +884,71 @@ describe('deleteLifeCycleModel', () => {
 });
 
 describe('createLifeCycleModel', () => {
+  it('returns a targeted error before persistence when a connection Flow version is missing', async () => {
+    const details = {
+      edgeId: 'edge-1',
+      fieldPath: 'outputExchange.@version',
+      flowUUID: 'flow-1',
+      role: 'outputExchange',
+    };
+    mockGenLifeCycleModelJsonOrdered.mockImplementationOnce(() => {
+      throw new MockMissingLifeCycleModelFlowVersionError(details);
+    });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockNormalizeLangPayloadForSave).not.toHaveBeenCalled();
+    expect(mockGenLifeCycleModelProcesses).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      ok: false,
+      code: 'MISSING_FLOW_VERSION',
+      message: 'Missing Flow dataset version for outputExchange.@version',
+      details,
+    });
+  });
+
+  it('does not mask unexpected serialization errors', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockImplementationOnce(() => {
+      throw new Error('unexpected serialization failure');
+    });
+
+    await expect(
+      lifeCycleModelsApi.createLifeCycleModel({
+        id: sampleModelId,
+        model: { nodes: [], edges: [] },
+      }),
+    ).rejects.toThrow('unexpected serialization failure');
+  });
+
+  it('returns a targeted Flow version error when structured details are unavailable', async () => {
+    mockGenLifeCycleModelJsonOrdered.mockImplementationOnce(() => {
+      throw {
+        code: 'MISSING_FLOW_VERSION',
+        message: 'Missing Flow dataset version',
+      };
+    });
+
+    const result = await lifeCycleModelsApi.createLifeCycleModel({
+      id: sampleModelId,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MISSING_FLOW_VERSION',
+      message: 'Missing Flow dataset version',
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error('Expected lifecycle model creation to fail');
+    }
+    expect(result.details).toBeUndefined();
+  });
+
   it('returns a language validation error when normalization fails', async () => {
     mockNormalizeLangPayloadForSave.mockResolvedValueOnce({
       payload: { ignored: true },
@@ -1147,6 +1222,32 @@ describe('createLifeCycleModel', () => {
 });
 
 describe('updateLifeCycleModel', () => {
+  it('returns a targeted Flow version error before querying the current model', async () => {
+    const details = {
+      edgeId: 'edge-2',
+      fieldPath: 'outputExchange.downstreamProcess.@version',
+      flowUUID: 'flow-2',
+      role: 'downstreamProcess',
+    };
+    mockGenLifeCycleModelJsonOrdered.mockImplementationOnce(() => {
+      throw new MockMissingLifeCycleModelFlowVersionError(details);
+    });
+
+    const result = await lifeCycleModelsApi.updateLifeCycleModel({
+      id: sampleModelId,
+      version: sampleVersion,
+      model: { nodes: [], edges: [] },
+    });
+
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      ok: false,
+      code: 'MISSING_FLOW_VERSION',
+      details,
+    });
+  });
+
   it('returns MODEL_LOOKUP_FAILED when the current lifecycle model query errors', async () => {
     mockFrom.mockReturnValueOnce(
       createQueryBuilder({

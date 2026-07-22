@@ -20,8 +20,8 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
+lastReviewedAt: 2026-07-22
+lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
 lastReviewedNote: 'Updated for Issue #635: generated subproduct labels now derive every authoring-enabled language and its reviewed prefix from the content-language registry; allocation and LCIA semantics are unchanged.'
 ---
 

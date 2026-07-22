@@ -26,7 +26,7 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29
+lastReviewedCommit: b7f2b671323ced00de79b5424cd3d3747b5b0d7f
 lastReviewedNote: 'Updated for Issue #660: recorded the corrected host-CI/local-container boundary for authenticated release E2E.'
 ---
 

@@ -367,6 +367,9 @@ const mockGenLifeCycleModelData = jest.fn().mockReturnValue({ json: {} });
 const mockGenLifeCycleModelInfoFromData = jest.fn().mockReturnValue({});
 const mockGenNodeLabel = jest.fn().mockReturnValue('Node Label');
 const mockGenPortLabel = jest.fn().mockReturnValue('Port Label');
+const resolveMockPortFlowVersion = (node: any, portId: string) =>
+  node?.ports?.items?.find((port: any) => port.id === portId)?.data?.flowVersion;
+const mockGetLifeCycleModelPortFlowVersion = jest.fn(resolveMockPortFlowVersion);
 
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
@@ -374,6 +377,8 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
   genNodeLabel: (...args: any[]) => mockGenNodeLabel(...args),
   genPortLabel: (...args: any[]) => mockGenPortLabel(...args),
+  getLifeCycleModelPortFlowVersion: (...args: any[]) =>
+    mockGetLifeCycleModelPortFlowVersion(...args),
 }));
 
 const mockGetProcessDetail = jest.fn();
@@ -480,6 +485,7 @@ beforeEach(() => {
   mockUseGraphEvent.mockClear();
   mockGenNodeLabel.mockReset().mockReturnValue('Node Label');
   mockGenPortLabel.mockReset().mockReturnValue('Port Label');
+  mockGetLifeCycleModelPortFlowVersion.mockReset().mockImplementation(resolveMockPortFlowVersion);
   mockGetProcessDetail.mockReset().mockResolvedValue({
     data: {
       version: '2.0',
@@ -2920,6 +2926,21 @@ describe('ToolbarEdit', () => {
       { ignoreHistory: true },
     );
 
+    mockGraphStoreState.nodes[0].ports.items = [
+      {
+        id: 'OUTPUT:flow-a',
+        group: 'groupOutput',
+        data: { flowId: 'flow-a', flowVersion: '01.02.003' },
+      },
+    ];
+    mockGraphStoreState.nodes[1].ports.items = [
+      {
+        id: 'INPUT:flow-a',
+        group: 'groupInput',
+        data: { flowId: 'flow-a', flowVersion: '04.05.006' },
+      },
+    ];
+
     const validEdge = {
       id: 'edge-valid',
       getSourcePortId: () => 'OUTPUT:flow-a',
@@ -2932,7 +2953,16 @@ describe('ToolbarEdit', () => {
       'edge-valid',
       expect.objectContaining({
         data: expect.objectContaining({
-          connection: expect.any(Object),
+          connection: {
+            outputExchange: {
+              '@flowUUID': 'flow-a',
+              '@version': '01.02.003',
+              downstreamProcess: {
+                '@flowUUID': 'flow-a',
+                '@version': '04.05.006',
+              },
+            },
+          },
         }),
       }),
     );

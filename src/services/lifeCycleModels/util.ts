@@ -15,8 +15,112 @@ import {
   removeEmptyObjects,
 } from '../general/util';
 import { genProcessName, genProcessNameJson } from '../processes/util';
-import { FormLifeCycleModel } from './data';
+import type {
+  FormLifeCycleModel,
+  LifeCycleModelGraphEdge,
+  LifeCycleModelGraphNode,
+  LifeCycleModelPortGroup,
+} from './data';
 import { toReferenceProcessKey, toReferenceProcessNumber } from './referenceProcess';
+
+export const MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE = 'MISSING_FLOW_VERSION';
+
+type LifeCycleModelConnectionFlowRole = 'outputExchange' | 'downstreamProcess';
+
+export type MissingLifeCycleModelFlowVersionDetails = {
+  edgeId?: string;
+  fieldPath: 'outputExchange.@version' | 'outputExchange.downstreamProcess.@version';
+  flowUUID: string;
+  nodeId?: string;
+  portId?: string;
+  role: LifeCycleModelConnectionFlowRole;
+};
+
+export class MissingLifeCycleModelFlowVersionError extends Error {
+  readonly code = MISSING_LIFECYCLE_MODEL_FLOW_VERSION_ERROR_CODE;
+  readonly details: MissingLifeCycleModelFlowVersionDetails;
+
+  constructor(details: MissingLifeCycleModelFlowVersionDetails) {
+    super(
+      `Missing Flow dataset version for ${details.fieldPath} on edge "${details.edgeId ?? 'unknown'}" ` +
+        `(Flow "${details.flowUUID}", node "${details.nodeId ?? 'unknown'}", port "${details.portId ?? 'unknown'}"). ` +
+        'Re-select the Flow or restore referenceToFlowDataSet.@version before saving.',
+    );
+    this.name = 'MissingLifeCycleModelFlowVersionError';
+    this.details = details;
+  }
+}
+
+const normalizeFlowVersion = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+};
+
+export const getLifeCycleModelPortFlowVersion = (
+  node: LifeCycleModelGraphNode | undefined,
+  portId: string | undefined,
+  flowUUID: string | undefined,
+  group: LifeCycleModelPortGroup,
+): string | undefined => {
+  const ports = node?.ports?.items ?? [];
+  const direction = group === 'groupOutput' ? 'OUTPUT' : 'INPUT';
+  const exactPort = portId ? ports.find((port) => port.id === portId) : undefined;
+  const flowPort = flowUUID
+    ? ports.find(
+        (port) =>
+          port.group === group &&
+          (port.data?.flowId === flowUUID || port.id === `${direction}:${flowUUID}`),
+      )
+    : undefined;
+
+  return normalizeFlowVersion((exactPort ?? flowPort)?.data?.flowVersion);
+};
+
+const resolveConnectionFlowVersion = ({
+  edge,
+  flowUUID,
+  nodes,
+  role,
+}: {
+  edge: LifeCycleModelGraphEdge;
+  flowUUID: unknown;
+  nodes: LifeCycleModelGraphNode[];
+  role: LifeCycleModelConnectionFlowRole;
+}): string | undefined => {
+  const isOutputExchange = role === 'outputExchange';
+  const nodeId = isOutputExchange ? edge?.source?.cell : edge?.target?.cell;
+  const portId = isOutputExchange ? edge?.source?.port : edge?.target?.port;
+  const edgeVersion = isOutputExchange
+    ? edge?.data?.connection?.outputExchange?.['@version']
+    : edge?.data?.connection?.outputExchange?.downstreamProcess?.['@version'];
+  const version =
+    normalizeFlowVersion(edgeVersion) ??
+    getLifeCycleModelPortFlowVersion(
+      nodes.find((node) => node.id === nodeId),
+      portId,
+      typeof flowUUID === 'string' ? flowUUID : undefined,
+      isOutputExchange ? 'groupOutput' : 'groupInput',
+    );
+
+  if (typeof flowUUID !== 'string' || flowUUID.trim().length === 0 || version) {
+    return version;
+  }
+
+  throw new MissingLifeCycleModelFlowVersionError({
+    edgeId: edge?.id,
+    fieldPath: isOutputExchange
+      ? 'outputExchange.@version'
+      : 'outputExchange.downstreamProcess.@version',
+    flowUUID,
+    nodeId,
+    portId,
+    role,
+  });
+};
 
 export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
   const labelSub = label?.substring(0, nodeWidth / getContentGraphTextWidthDivisor(lang) - 4);
@@ -54,7 +158,7 @@ export const genReferenceToResultingProcess = (
   return data;
 };
 export function genLifeCycleModelJsonOrdered(id: string, data: any) {
-  const nodes = data?.model?.nodes;
+  const nodes = data?.model?.nodes as LifeCycleModelGraphNode[] | undefined;
 
   let referenceToReferenceProcess: number | undefined;
   const processInstance = nodes?.map((n: any) => {
@@ -62,7 +166,9 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
       referenceToReferenceProcess = toReferenceProcessNumber(n?.data?.index);
     }
 
-    const sourceEdges = data?.model?.edges?.filter((e: any) => e?.source?.cell === n?.id);
+    const sourceEdges = ((data?.model?.edges ?? []) as LifeCycleModelGraphEdge[]).filter(
+      (edge) => edge?.source?.cell === n?.id,
+    );
 
     const sourceEdgeGroupeds = sourceEdges.reduce((acc: any, edge: any) => {
       const key = edge?.data?.connection?.outputExchange?.['@flowUUID'];
@@ -73,16 +179,34 @@ export function genLifeCycleModelJsonOrdered(id: string, data: any) {
       return acc;
     }, {});
 
-    const outputExchange = Object.entries(sourceEdgeGroupeds).map(([key, edges]) => {
-      const downstreamProcesses = jsonToList(edges)?.map((e: any) => {
-        const targetNode = nodes?.find((n: any) => n?.id === e?.target?.cell);
+    const outputExchange = Object.entries(sourceEdgeGroupeds).map(([key, groupedEdges]) => {
+      const edges = groupedEdges as LifeCycleModelGraphEdge[];
+      const firstEdge = edges[0];
+      const outputFlowUUID = firstEdge?.data?.connection?.outputExchange?.['@flowUUID'];
+      const outputFlowVersion = resolveConnectionFlowVersion({
+        edge: firstEdge,
+        flowUUID: outputFlowUUID,
+        nodes,
+        role: 'outputExchange',
+      });
+      const downstreamProcesses = edges.map((edge) => {
+        const targetNode = nodes?.find((node) => node?.id === edge?.target?.cell);
+        const downstreamFlowUUID =
+          edge?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'];
         return {
-          '@flowUUID': e?.data?.connection?.outputExchange?.downstreamProcess?.['@flowUUID'],
+          '@flowUUID': downstreamFlowUUID,
+          '@version': resolveConnectionFlowVersion({
+            edge,
+            flowUUID: downstreamFlowUUID,
+            nodes,
+            role: 'downstreamProcess',
+          }),
           '@id': targetNode?.data?.index,
         };
       });
       return {
         '@flowUUID': key,
+        '@version': outputFlowVersion,
         downstreamProcess: listToJson(downstreamProcesses),
       };
     });

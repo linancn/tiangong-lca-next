@@ -1,7 +1,7 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-22'
-lastReviewedCommit: '3c267b24c6ecd7f78e4ec0bcd9e8d4068f29aa29'
+lastReviewedAt: "2026-07-22"
+lastReviewedCommit: "b7f2b671323ced00de79b5424cd3d3747b5b0d7f"
 lastReviewedNote: 'Reviewed for Issue #660; the host/controller CI boundary remains covered by the existing bootstrap and testing/quality contracts, with no routing-rule change required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
