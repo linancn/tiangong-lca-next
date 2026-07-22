@@ -95,7 +95,7 @@
   },
   "routeViewCoverage": {
     "path": "docs/plans/i18n/route-view-coverage.json",
-    "digest": "b808d3bc904f852b471870c5631f527be7cdd642e256d0b629d2f8b0a634b70a",
+    "digest": "c3179125cf59cc3a268b82b23e19f29de57fbe5ad6e83b3f826f60b8d8a92521",
     "requiredRouteViews": ["/", "/welcome", "/welcome?view=carbon-footprint"],
     "derivedEvidence": {
       "schemaVersion": "tiangong.i18n-route-view-derived-evidence.v2",
@@ -113,7 +113,7 @@
         "requiredAssertionCount": 49,
         "executionEvidence": {
           "path": "docs/plans/i18n/semantic-e2e-evidence.json",
-          "sha256": "3c5d622a5857278fc3f5cf921eaccd7b08929a1d75a249772d375f6baf572a04",
+          "sha256": "c9a4ec8dc6333300613834c12d227ebafa97a6b5da1ab7abac6dac8115e0e69a",
           "contractDigest": "b9def444859e8fabbc7abed5c6b274e1c24896dd5de0f0ea38b28aacc0570e5e",
           "assertionCount": 49,
           "internalLocalizationAssertionCount": 42,
@@ -1114,11 +1114,11 @@
     "scripts/i18n/language-hardcoding-allowlist.json": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a",
     "src/components/ImportTidasPackage/reportContent.ts": "b2abf951ea5aad8bc1cb440aba7d771a5344ca1a33f36d502ff1c8c6a2961c6b",
     "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
-    "docs/plans/i18n/route-view-coverage.json": "b808d3bc904f852b471870c5631f527be7cdd642e256d0b629d2f8b0a634b70a",
+    "docs/plans/i18n/route-view-coverage.json": "c3179125cf59cc3a268b82b23e19f29de57fbe5ad6e83b3f826f60b8d8a92521",
     "docs/plans/i18n/fallback-contract.json": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "docs/plans/i18n-en-US/glossary.json": "4b8443ea3f91f15383683e9ece6221e40e24ceb75442ea830964b06c12559970",
     "docs/plans/i18n-en-US/style-guide.md": "be570ee8db2b034dde7274f774730575ad9b9226af7a5ac7ab35a45d1ef2620c"
   },
   "blockedContext": [],
-  "contextDigest": "f845d421ea3e6c33d0c51786e75ab6bdb954e30dabba092c4cb017b200aa05b7"
+  "contextDigest": "d71921ed0337456aa501e643efcc604dddcc7c5410560d47a77d42536251f244"
 }
