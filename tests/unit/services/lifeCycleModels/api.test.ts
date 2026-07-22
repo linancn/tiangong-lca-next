@@ -942,6 +942,10 @@ describe('createLifeCycleModel', () => {
       code: 'MISSING_FLOW_VERSION',
       message: 'Missing Flow dataset version',
     });
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      throw new Error('Expected lifecycle model creation to fail');
+    }
     expect(result.details).toBeUndefined();
   });
 
