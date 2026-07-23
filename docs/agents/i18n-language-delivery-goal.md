@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
-lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; locale delivery, release recovery, and immutable-tag semantics remain current.'
+lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
+lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; package-lock evidence now distinguishes root release metadata from executable dependency drift.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -620,7 +620,7 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 生产写入只允许随机 UUID 且 marker 以 `codex-e2e` 开头的数据。任何 create 之前必须先持久化 ignored intent ledger，绑定精确 `id + table + version + marker + createAttempted`。任何 delete 之前必须按 UUID 读取 production row，并同时验证 `common:UUID` 的确切 ILCD 路径、当前 authenticated owner，以及 `baseName`、`treatmentStandardsRoutes`、`mixAndLocationTypes`、`functionalUnitFlowProperties`、`generalComment` 五个确切字段路径中每个 registry authoring language 的 `@xml:lang`/exact-marker 配对；散落在其他位置的 marker 不构成 attestation。任一不符都拒绝删除，禁止扩大查询或模糊清理。只有完成上述 row attestation 后才能逐个删除 exact-ID versions，并验证 `created=cleaned`、`leaked=0`；前一次 ledger 未清零时不得创建下一条。截图、trace、video、持久化 auth state 和任何 credential-bearing artifact 全部禁用。
 
-tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package lock、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
 ---
 
@@ -801,7 +801,7 @@ tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。
 - 日常 PR/`dev` push 不触发 semantic browser E2E；按需 `workflow_dispatch` 与 exact-release-SHA 强制调用只执行无生产凭据、无写入的三浏览器 public semantics/合同边界矩阵；完整已登录 proof 只允许明确授权的本地 operator session，并对 local `npm run start:main` candidate + production backend 设置 authenticated mode、两个 production-write guards 和 verified-evidence opt-in；
 - 生产数据仅创建 UUID-scoped `codex-e2e` tuple；create 前写 intent ledger，delete 前验证 production row UUID、authenticated owner 和五个 multilingual fields × 全部 registry authoring languages 的 exact marker closure，随后精确清理并证明 `created=cleaned`、`leaked=0`；禁止 screenshot/trace/video/auth artifact；
 - Header 的 Umi `SelectLang` 以 `reload={false}` 在同 document 内切换；验证 document identity/URL 保持、mounted reference label 刷新，以及延迟旧 locale 响应不会覆盖当前 locale；
-- semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale 或任一绑定输入变化后旧证据自动失效；
+- semantic evidence 必须绑定 route contract、49-ID/required-scenario closure、registry locale/browser 集合及 source/test digests；新增 registry locale、可执行依赖 lock 或任一其他绑定输入变化后旧证据自动失效；仅根应用 release version metadata 变化且原始 evidence lock 可从记录 commit 验真、确定性依赖投影完全相同时不失效；
 - 只有真实角色条件分支才扩大角色 smoke；共享路径不重复 Member/Reviewer/Admin；
 - 原生国旗 selector、长文案、明暗主题、窄屏和 RTL 条件 visual smoke。
 
