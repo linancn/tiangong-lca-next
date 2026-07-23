@@ -11,6 +11,7 @@ const RECEIPT_SCHEMA_VERSION = 2;
 const RECEIPT_RELATIVE_PATH = '.local/prepush-gate/failed-transport-receipt.json';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+const CAPTURED_COMMAND_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const ZERO_SHA = '0'.repeat(40);
 const BASE_GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
 const RELEASE_PREFLIGHT_COMMAND = 'npm run release:preflight';
@@ -47,6 +48,7 @@ function run(command, args, options = {}) {
     encoding: 'utf8',
     env: options.env ?? process.env,
     stdio: options.stdio ?? ['ignore', 'pipe', 'pipe'],
+    maxBuffer: CAPTURED_COMMAND_MAX_BUFFER_BYTES,
   });
 
   if (result.error) {

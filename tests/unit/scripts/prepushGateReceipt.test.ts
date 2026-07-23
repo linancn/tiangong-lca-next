@@ -340,6 +340,33 @@ describe('bounded checked-push transport receipt', () => {
     expect(remoteSha(current)).toBe(current.head);
   });
 
+  it('captures dependency trees larger than the Node spawnSync default buffer', () => {
+    const current = fixture();
+    const fakeBin = path.join(current.container, 'large-output-bin');
+    const actualNpm = execFileSync('which', ['npm'], {
+      encoding: 'utf8',
+      env: isolatedEnvironment(),
+    }).trim();
+    writeExecutable(
+      path.join(fakeBin, 'npm'),
+      [
+        '#!/bin/sh',
+        'if [ "$1" = "ls" ] && [ "$2" = "--all" ] && [ "$3" = "--json" ]; then',
+        `  exec node -e "process.stdout.write(JSON.stringify({ padding: 'x'.repeat(2 * 1024 * 1024) }))"`,
+        'fi',
+        `exec ${shellQuote(actualNpm)} "$@"`,
+        '',
+      ].join('\n'),
+    );
+
+    const result = checkedPush(current, 'refs/heads/main', {
+      PATH: `${fakeBin}:${process.env.PATH ?? ''}`,
+    });
+
+    expect(result.status).toBe(0);
+    expect(remoteSha(current)).toBe(current.head);
+  });
+
   it('fails clearly when neither PATH nor NVM can provide Node 24', () => {
     const current = fixture();
     const fakeHome = path.join(current.container, 'home');
