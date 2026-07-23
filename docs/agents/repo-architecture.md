@@ -23,10 +23,12 @@ checkPaths:
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
+  - playwright.docs-capture.config.ts
+  - scripts/docs-screenshots/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Updated for Issue #657 release integration: mapped the data-product closure preflight, unified task-summary feed, and release-E2E read boundary.'
+lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
+lastReviewedNote: 'Updated for Issue #670 on current dev: mapped the isolated docs screenshot capture executor and its read-only trust boundary while preserving the data-product closure, task-summary, and release-E2E boundaries.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -58,6 +60,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
+| `playwright.docs-capture.config.ts`, `scripts/docs-screenshots/**` | local-operator-only, read-only documentation screenshot capture; validated plans, external secret-file loading, mutation interception, 144-DPI PNG output, and sanitized access/result evidence |
 | `icons/**` | packaged app icons and release assets |
 | other `docker/**` paths | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |
@@ -82,6 +85,7 @@ Rules:
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `npm run reference-data:check`
 - cache monitors live near runtime setup, not inside feature pages
+- documentation capture is an evidence adapter, not application runtime or semantic E2E: it uses a fresh browser context, never persists storage state, blocks non-auth mutations, and may write only below caller-declared documentation asset roots
 - language options, labels, resolver priorities, service-query adapters, static resource files, and cache revisions are derived from their owning registry or manifest. `npm run i18n:platform:audit` verifies exact registry joins and `npm run i18n:hardcoding:audit` fails closed on unowned language literals outside a narrow, issue-owned adapter allowlist
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches

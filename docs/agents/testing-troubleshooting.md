@@ -24,9 +24,9 @@ checkPaths:
   - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: stale package-lock binding is resolved by regenerating verified evidence on the final candidate; no troubleshooting change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
+lastReviewedNote: 'Updated for Issue #670 on current dev with focused docs-capture contract and access-preflight diagnosis; existing package-lock evidence troubleshooting remains valid.'
 ---
 
 # Testing Troubleshooting
@@ -43,6 +43,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
+| docs-impact screenshot contracts | `npm run docs:screenshot:test` |
 | release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
 | exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 
@@ -70,6 +71,9 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | teardown reports that the primary ledger has no matching recovery copy | another invocation is active, a stale teardown is reading a newer run's primary ledger, or the protected external recovery file was removed | stop every older E2E runner, verify the exact UUID through audit/read-only checks, and restore only the matching recovery copy; never let the orphaned primary ledger authorize deletion |
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
 | Playwright browser executable is missing | a direct host run lacks binaries, or the release image is absent/mismatched | for `e2e:dev`, run `npx playwright install chromium firefox webkit`; for release proof, run `npm run e2e:env:install` and do not repair browsers one by one on the host |
+| docs capture reports `missing-credentials` or `invalid-authentication` | the secret pointer/file/mode is invalid, identity does not match, or login/MFA/session did not complete | verify only that `DOCS_SCREENSHOT_ENV_FILE` points to the external absolute regular mode-`0600` file; never source or print it, and do not convert this failure into an access-denied Draft |
+| docs capture reports environment failure instead of `verified-access-denied` | the probe returned `401`/`404`/`5xx`, timed out, lacked identity proof, or had only an uncorroborated UI denial | repair the exact authentication/route/locator/environment failure and rerun; only authenticated authoritative denial can enable the Draft exception |
+| docs capture mutation guard reports a blocked request | the selected UI state attempted an application write outside the explicit auth/session allowlist | stop the capture, choose a read-only route/filter or safe fixture, and do not broaden the allowlist to production mutation endpoints |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |

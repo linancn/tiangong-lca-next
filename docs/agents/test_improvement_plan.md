@@ -24,9 +24,9 @@ checkPaths:
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the release recovery refreshes evidence under the existing authenticated E2E strategy; no strategy change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
+lastReviewedNote: 'Reviewed for Issue #670 on current dev: isolated docs-capture contract tests extend maintained proof without changing the authenticated release semantic-E2E strategy.'
 ---
 
 # Testing Strategy
@@ -49,6 +49,7 @@ lastReviewedNote: 'Reviewed for Issue #666: the release recovery refreshes evide
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
+- documentation screenshot capture is a separate, on-demand product-evidence workflow: keep its plan/security/access logic unit-heavy and its synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage
 
@@ -59,7 +60,7 @@ lastReviewedNote: 'Reviewed for Issue #666: the release recovery refreshes evide
 - make strategy changes explicit
 - keep focused Umi-generating tests, coverage, and full gates serial; shared generated state makes parallel execution invalid evidence
 - keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
-- keep browser evidence credential-free and non-visual: screenshots, traces, videos, and persisted auth artifacts are disabled; only non-secret assertion results and digests may become tracked proof
+- keep semantic localization browser evidence credential-free and non-visual: screenshots, traces, videos, and persisted auth artifacts are disabled; the isolated docs-impact capture executor is the only documentation-image surface and never changes those release-E2E defaults
 - dead branches should be removed instead of defended by artificial tests
 
 ## Integration Testing North Star
