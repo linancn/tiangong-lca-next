@@ -95,7 +95,7 @@
   },
   "routeViewCoverage": {
     "path": "docs/plans/i18n/route-view-coverage.json",
-    "digest": "b808d3bc904f852b471870c5631f527be7cdd642e256d0b629d2f8b0a634b70a",
+    "digest": "390fc990816757060f0ddc2756a0afa7ed0ac492c73323c5214aea43cc062216",
     "requiredRouteViews": ["/", "/welcome", "/welcome?view=carbon-footprint"],
     "derivedEvidence": {
       "schemaVersion": "tiangong.i18n-route-view-derived-evidence.v2",
@@ -113,7 +113,7 @@
         "requiredAssertionCount": 49,
         "executionEvidence": {
           "path": "docs/plans/i18n/semantic-e2e-evidence.json",
-          "sha256": "3c5d622a5857278fc3f5cf921eaccd7b08929a1d75a249772d375f6baf572a04",
+          "sha256": "1a23f4a8fec2262d7f127c026a0fd1dde2cc415e4e5a1853f2e94a7729e5f96a",
           "contractDigest": "b9def444859e8fabbc7abed5c6b274e1c24896dd5de0f0ea38b28aacc0570e5e",
           "assertionCount": 49,
           "internalLocalizationAssertionCount": 42,
@@ -1114,11 +1114,11 @@
     "scripts/i18n/language-hardcoding-allowlist.json": "ccf0ec3cf64830f8608ac996bc503237f08628e1acd987eb786cdd24f7394a5a",
     "src/components/ImportTidasPackage/reportContent.ts": "b2abf951ea5aad8bc1cb440aba7d771a5344ca1a33f36d502ff1c8c6a2961c6b",
     "docs/plans/i18n-de-DE/dynamic-families.json": "55e442639615bcf45bcd7ef29996638f366c9614136e8a06df6c85410a99ff67",
-    "docs/plans/i18n/route-view-coverage.json": "b808d3bc904f852b471870c5631f527be7cdd642e256d0b629d2f8b0a634b70a",
+    "docs/plans/i18n/route-view-coverage.json": "390fc990816757060f0ddc2756a0afa7ed0ac492c73323c5214aea43cc062216",
     "docs/plans/i18n/fallback-contract.json": "94c88648a2bc4fa2b3e3dd2b1db476db5a182e8a5dd9dce2140f6faf2cceabe5",
     "docs/plans/i18n-de-DE/glossary.json": "a5fd4e759af2713fbec83f2b95171c7b32206d7218da0401d28d2eecefccce3a",
     "docs/plans/i18n-de-DE/style-guide.md": "b139bb9cc48a23f9b9f69efc44611daba4684c3495aa5cf4fb0ac57e3ab3994f"
   },
   "blockedContext": [],
-  "contextDigest": "26095b07b4e9981a785fedf927c3ed6a12cbdd57130b120083de87771b09a2f4"
+  "contextDigest": "2144d6c04ef36aa1c86615c1da36d99314726e49e9192f225d2f36593ef151df"
 }
