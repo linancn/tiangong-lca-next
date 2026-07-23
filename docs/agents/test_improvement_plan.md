@@ -25,8 +25,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
-lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; runtime dependency proof now excludes only root release-version metadata.'
+lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
+lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; full-closure maintenance strategy remains current.'
 ---
 
 # Testing Strategy

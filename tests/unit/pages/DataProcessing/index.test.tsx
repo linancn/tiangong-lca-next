@@ -8,7 +8,10 @@ import DataProcessing, {
   packageCountLabel,
   packageOptionsFromTaskSummaries,
   parseDataProcessingDeepLink,
+  parseImpactCategoryOptionLabel,
   resolveLocalizedText,
+  scopeSelectionKey,
+  selectedImpactCategoryIdentity,
   stateCodeCountsFromProcesses,
   stateCodeCountsFromScope,
   stateCodeFromProcess,
@@ -375,7 +378,7 @@ describe('DataProcessing page', () => {
         {
           files: [
             { description: 'Missing id' },
-            { id: 'fallback-name' },
+            { id: 'fallback-name', version: '01.00.000' },
             {
               id: 'string-name',
               description: 'String name',
@@ -389,9 +392,27 @@ describe('DataProcessing page', () => {
         'en-US',
       ),
     ).toEqual([
-      { value: 'fallback-name', label: 'fallback-name' },
-      { value: 'string-name', label: 'String name (01.00.000 / kg eq)' },
+      {
+        value: 'fallback-name',
+        version: '01.00.000',
+        label: 'fallback-name (01.00.000)',
+      },
+      {
+        value: 'string-name',
+        version: '01.00.000',
+        label: 'String name (01.00.000 / kg eq)',
+      },
     ]);
+    expect(parseImpactCategoryOptionLabel('Legacy label without metadata')).toEqual({
+      name: 'Legacy label without metadata',
+    });
+    expect(selectedImpactCategoryIdentity('missing-method', [])).toBeNull();
+    expect(scopeSelectionKey({ defaultImpactCategory: 'missing-method' }, [])).toBe(
+      JSON.stringify({
+        coverageMode: 'global_eligible',
+        defaultImpactCategory: { id: 'missing-method', version: null },
+      }),
+    );
   });
 
   it('covers data-processing display helper fallbacks', () => {
@@ -569,7 +590,7 @@ describe('DataProcessing page', () => {
       expect(mockCreateClosureCheck).toHaveBeenCalledWith({
         requestedScope: {
           coverageMode: 'global_eligible',
-          lciaMethods: ['climate-change'],
+          lciaMethods: [{ id: 'climate-change', version: '01.00.000' }],
         },
         requestIdempotencyToken: expect.any(String),
       }),
@@ -1017,6 +1038,24 @@ describe('DataProcessing page', () => {
       'title',
       expect.stringContaining('The selected data scope is not calculable.'),
     );
+  });
+
+  it('does not submit a closure check without a versioned LCIA method selection', async () => {
+    mockLocation = { pathname: '/data-processing', search: '' };
+    render(<DataProcessing />);
+
+    expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Missing LCIA method' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+
+    expect(
+      await screen.findByText(
+        'The selected impact category is unavailable or has no valid version.',
+      ),
+    ).toBeInTheDocument();
+    expect(mockCreateClosureCheck).not.toHaveBeenCalled();
   });
 
   it('renders preview input scope and artifact verification details', async () => {
@@ -1526,7 +1565,7 @@ describe('DataProcessing page', () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        files: [{ id: 'plain-impact', description: 'Plain impact' }],
+        files: [{ id: 'plain-impact', version: '01.00.000', description: 'Plain impact' }],
       }),
     });
     mockPreviewLciaResultPackage.mockResolvedValueOnce({
@@ -1561,7 +1600,7 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
 
     expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
-    await screen.findByText('Plain impact');
+    await screen.findByText('Plain impact (01.00.000)');
     fireEvent.click(screen.getByTestId('tab-preview'));
     fireEvent.change(screen.getByLabelText('Select result set'), {
       target: { value: 'package-1' },
@@ -2010,6 +2049,9 @@ describe('DataProcessing page', () => {
       fireEvent.change(screen.getByLabelText('Result set name'), {
         target: { value: 'Closure summary check' },
       });
+      fireEvent.change(screen.getByLabelText('Default impact category'), {
+        target: { value: 'climate-change' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
 
       expect(await screen.findByText(expectedMessage)).toBeInTheDocument();
@@ -2034,6 +2076,9 @@ describe('DataProcessing page', () => {
       fireEvent.change(screen.getByLabelText('Coverage mode'), {
         target: { value: '' },
       });
+      fireEvent.change(screen.getByLabelText('Default impact category'), {
+        target: { value: 'climate-change' },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
 
       await waitFor(() =>
@@ -2054,7 +2099,7 @@ describe('DataProcessing page', () => {
       );
 
       fireEvent.change(screen.getByLabelText('Default impact category'), {
-        target: { value: 'climate-change' },
+        target: { value: 'acidification' },
       });
       expect(
         await screen.findByText(
