@@ -96,6 +96,7 @@ const createFixture = (): Fixture => {
     scripts: {
       'docpact:gate': 'node scripts/fake-gate.cjs docpact',
       'prepush:gate': 'node scripts/fake-gate.cjs prepush',
+      'release:preflight': 'node scripts/fake-gate.cjs release-preflight',
       'push:checked': 'node scripts/prepush-gate-receipt.cjs checked-push',
       'push:retry': 'node scripts/prepush-gate-receipt.cjs retry',
     },
@@ -221,16 +222,20 @@ const checkedPush = (
   fixture: Fixture,
   remoteRef = 'refs/heads/main',
   env: Record<string, string> = {},
-) =>
-  run(
+) => {
+  const localRef = git(fixture.root, ['symbolic-ref', 'HEAD']);
+  return run(
     fixture.root,
     'npm',
-    ['run', 'push:checked', '--', 'origin', `refs/heads/main:${remoteRef}`],
+    ['run', 'push:checked', '--', 'origin', `${localRef}:${remoteRef}`],
     env,
   );
+};
 
-const rawPush = (fixture: Fixture, remoteRef = 'refs/heads/main') =>
-  run(fixture.root, 'git', ['push', 'origin', `refs/heads/main:${remoteRef}`]);
+const rawPush = (fixture: Fixture, remoteRef = 'refs/heads/main') => {
+  const localRef = git(fixture.root, ['symbolic-ref', 'HEAD']);
+  return run(fixture.root, 'git', ['push', 'origin', `${localRef}:${remoteRef}`]);
+};
 
 const retryPush = (fixture: Fixture, args: string[] = []) =>
   run(fixture.root, 'npm', ['run', 'push:retry', ...(args.length > 0 ? ['--', ...args] : [])]);
@@ -331,7 +336,7 @@ describe('bounded checked-push transport receipt', () => {
     expect({ status: result.status, stdout: result.stdout, stderr: result.stderr }).toEqual(
       expect.objectContaining({ status: 0 }),
     );
-    expect(readGateLog(current)).toHaveLength(2);
+    expect(readGateLog(current)).toHaveLength(3);
     expect(remoteSha(current)).toBe(current.head);
   });
 
@@ -385,7 +390,7 @@ describe('bounded checked-push transport receipt', () => {
     });
 
     expect(result.status).toBe(0);
-    expect(readGateLog(current)).toHaveLength(2);
+    expect(readGateLog(current)).toHaveLength(3);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
 
@@ -464,7 +469,7 @@ describe('bounded checked-push transport receipt', () => {
 
     const result = rawPush(current);
     expect(result.status).not.toBe(0);
-    expect(readGateLog(current)).toHaveLength(2);
+    expect(readGateLog(current)).toHaveLength(3);
     expect(remoteSha(current)).toBe(current.mainBase);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
@@ -496,7 +501,7 @@ describe('bounded checked-push transport receipt', () => {
       RECEIPT_TEST_MUTATE_DURING_GATE: 'prepush',
     });
     expect(result.status).not.toBe(0);
-    expect(readGateLog(current)).toHaveLength(2);
+    expect(readGateLog(current)).toHaveLength(3);
     expect(remoteSha(current)).toBe(current.mainBase);
     expect(fs.existsSync(current.receipt)).toBe(false);
   });
@@ -508,6 +513,11 @@ describe('bounded checked-push transport receipt', () => {
       gate: 'docpact',
       args: ['--base', main.mainBase, '--head', main.head],
     });
+    expect(readGateLog(main).map(({ gate }) => gate)).toEqual([
+      'docpact',
+      'release-preflight',
+      'prepush',
+    ]);
 
     const dev = fixture();
     expect(checkedPush(dev, 'refs/heads/dev').status).toBe(0);
@@ -515,6 +525,7 @@ describe('bounded checked-push transport receipt', () => {
       gate: 'docpact',
       args: ['--base', dev.devBase, '--head', dev.head],
     });
+    expect(readGateLog(dev).map(({ gate }) => gate)).toEqual(['docpact', 'prepush']);
 
     const overridden = fixture();
     expect(
@@ -526,6 +537,29 @@ describe('bounded checked-push transport receipt', () => {
       gate: 'docpact',
       args: ['--base', overridden.head, '--head', overridden.head],
     });
+  });
+
+  it('runs release preflight only for main-semantic branch pushes', () => {
+    const hotfix = fixture();
+    git(hotfix.root, ['branch', '-m', 'codex/hotfix-issue-685']);
+    expect(
+      checkedPush(hotfix, 'refs/heads/codex/hotfix-issue-685').status,
+    ).toBe(0);
+    expect(readGateLog(hotfix).map(({ gate }) => gate)).toEqual([
+      'docpact',
+      'release-preflight',
+      'prepush',
+    ]);
+
+    const feature = fixture();
+    git(feature.root, ['branch', '-m', 'codex/feature-issue-685']);
+    expect(
+      checkedPush(feature, 'refs/heads/codex/feature-issue-685').status,
+    ).toBe(0);
+    expect(readGateLog(feature).map(({ gate }) => gate)).toEqual([
+      'docpact',
+      'prepush',
+    ]);
   });
 
   it('fails closed before gates for a multi-ref push with mixed baselines', () => {

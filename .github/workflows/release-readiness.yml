@@ -1,0 +1,26 @@
+name: Release Readiness
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-readiness-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  main-candidate:
+    name: Main Candidate
+    uses: ./.github/workflows/release-gate.yml
+    with:
+      release_base: ${{ github.event.pull_request.base.sha }}
+      release_head: ${{ github.event.pull_request.head.sha }}

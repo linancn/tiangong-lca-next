@@ -1,0 +1,68 @@
+name: Reusable Release Gate
+
+on:
+  workflow_call:
+    inputs:
+      release_base:
+        description: Base commit for release-range governance checks.
+        required: true
+        type: string
+      release_head:
+        description: Exact candidate commit to validate.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release-gate:
+    name: Release Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release_head }}
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Fetch main
+        run: git fetch --force origin +refs/heads/main:refs/remotes/origin/main
+
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install docpact
+        run: cargo install docpact --version 0.1.9 --force
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify reviewed LCIA cache bundle
+        run: npm run lcia-cache:verify
+
+      - name: Run docpact release gate
+        env:
+          RELEASE_BASE: ${{ inputs.release_base }}
+          RELEASE_HEAD: ${{ inputs.release_head }}
+        run: npm run docpact:gate -- --base "$RELEASE_BASE" --head "$RELEASE_HEAD"
+
+      - name: Verify production readiness
+        run: npm run release:preflight
+
+      - name: Run full release gate
+        run: npm run prepush:gate

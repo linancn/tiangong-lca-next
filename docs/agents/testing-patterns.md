@@ -25,9 +25,11 @@ checkPaths:
   - docker/e2e/**
   - playwright.config.ts
   - package.json
+  - .github/workflows/release-gate.yml
+  - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 strict-command and release-metadata proof while incorporating the Issue #670 isolated docs screenshot contract-test pattern.'
+lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
+lastReviewedNote: 'Reviewed for Issue #685: added contract-test guidance for reusable main-candidate gates, branch-sensitive local preflight, and post-gate tag ordering.'
 ---
 
 # Testing Patterns Reference
@@ -49,6 +51,8 @@ lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 st
 - keep test setup close to the behavior being proved
 - prefer existing helpers over one-off fixtures
 - do not add snapshots when explicit assertions are clearer
+- test release workflow policy at the contract boundary: parse or inspect the reusable gate and caller workflows, assert exact base/head wiring, and prove publication dependencies rather than invoking production actions
+- test branch-sensitive push gates with isolated temporary Git remotes so `dev`, `main`, and main-semantic source branches prove their different command sequences without contacting a real repository
 
 ## Reusable Helpers
 
