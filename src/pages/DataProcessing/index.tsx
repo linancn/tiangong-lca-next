@@ -12,6 +12,7 @@ import {
   unpublishLciaResultPublication,
   type ClosureCheckIssueV1,
   type ClosureCheckSummaryV1,
+  type ClosureScopeIdentityV1,
   type LciaResultPublication,
 } from '@/services/dataProducts';
 import {
@@ -97,6 +98,7 @@ type LciaMethodListPayload = {
 type ImpactCategoryOption = {
   label: string;
   value: string;
+  version: string;
 };
 
 type LciaResultPackageOption = {
@@ -124,10 +126,27 @@ function newIdempotencyToken(): string {
   return `closure-check-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-function scopeSelectionKey(values: Record<string, unknown>): string {
+export function selectedImpactCategoryIdentity(
+  value: unknown,
+  options: ImpactCategoryOption[],
+): ClosureScopeIdentityV1 | null {
+  if (typeof value !== 'string') return null;
+  const option = options.find((candidate) => candidate.value === value);
+  return option ? { id: option.value, version: option.version } : null;
+}
+
+export function scopeSelectionKey(
+  values: Record<string, unknown>,
+  options: ImpactCategoryOption[] = [],
+): string {
+  const selectedIdentity = selectedImpactCategoryIdentity(values.defaultImpactCategory, options);
   return JSON.stringify({
     coverageMode: values.coverageMode ?? 'global_eligible',
-    defaultImpactCategory: values.defaultImpactCategory ?? null,
+    defaultImpactCategory:
+      selectedIdentity ??
+      (typeof values.defaultImpactCategory === 'string'
+        ? { id: values.defaultImpactCategory, version: null }
+        : null),
   });
 }
 
@@ -530,20 +549,38 @@ export function buildImpactCategoryOptions(
   payload: LciaMethodListPayload,
   locale: string,
 ): ImpactCategoryOption[] {
-  return (payload.files ?? [])
-    .filter((file) => file.id)
-    .map((file) => {
-      const name = resolveLocalizedText(file.description, locale) || (file.id as string);
-      const unit = resolveLocalizedText(
-        file.referenceQuantity?.['common:shortDescription'],
-        locale,
-      );
-      const suffix = [file.version, unit].filter(Boolean).join(' / ');
-      return {
-        value: file.id as string,
-        label: suffix ? `${name} (${suffix})` : name,
-      };
-    });
+  return (payload.files ?? []).flatMap((file) => {
+    const id = typeof file.id === 'string' ? file.id.trim() : '';
+    const version = typeof file.version === 'string' ? file.version.trim() : '';
+    if (!id || !/^\d{2}\.\d{2}\.\d{3}$/.test(version)) return [];
+
+    const name = resolveLocalizedText(file.description, locale) || id;
+    const unit = resolveLocalizedText(file.referenceQuantity?.['common:shortDescription'], locale);
+    const suffix = [version, unit].filter(Boolean).join(' / ');
+    return [
+      {
+        value: id,
+        version,
+        label: `${name} (${suffix})`,
+      },
+    ];
+  });
+}
+
+export function parseImpactCategoryOptionLabel(label?: string) {
+  if (!label) {
+    return {};
+  }
+  const match = label.match(/^(.*?)\s*\((.*?)\)\s*$/);
+  if (!match) {
+    return { name: label };
+  }
+  const parts = match[2].split('/').map((part) => part.trim());
+  return {
+    name: match[1].trim(),
+    version: parts[0],
+    unit: parts.slice(1).join(' / '),
+  };
 }
 
 const DataProcessing = () => {
@@ -697,12 +734,21 @@ const DataProcessing = () => {
     void getClosureCheck(deepLink.closureCheckId).then((result) => {
       if (!result.error && result.data) {
         setClosureCheck(result.data);
-        const selectionKey = scopeSelectionKey(buildForm.getFieldsValue?.() ?? {});
+        const selectionKey = scopeSelectionKey(
+          buildForm.getFieldsValue?.() ?? {},
+          impactCategoryOptions,
+        );
         setClosureSelectionKey(selectionKey);
         setCurrentSelectionKey(selectionKey);
       }
     });
-  }, [buildForm, deepLink.closureCheckId, isAuthorized]);
+  }, [buildForm, deepLink.closureCheckId, impactCategoryOptions, isAuthorized]);
+
+  useEffect(() => {
+    setCurrentSelectionKey(
+      scopeSelectionKey(buildForm.getFieldsValue?.() ?? {}, impactCategoryOptions),
+    );
+  }, [buildForm, impactCategoryOptions]);
 
   const loadClosureIssues = useCallback(
     async (afterIssueId?: string) => {
@@ -978,7 +1024,7 @@ const DataProcessing = () => {
 
   const handleCreateBuild = async () => {
     const values = await buildForm.validateFields();
-    const selectionKey = scopeSelectionKey(values);
+    const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
     const closureIsUsable =
       closureCheck?.runStatus === 'passed' &&
       closureCheck.certificateValidity === 'valid' &&
@@ -1019,12 +1065,26 @@ const DataProcessing = () => {
 
   const handleCreateClosureCheck = async () => {
     const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
-    const selectionKey = scopeSelectionKey(values);
+    const selectedLciaMethod = selectedImpactCategoryIdentity(
+      values.defaultImpactCategory,
+      impactCategoryOptions,
+    );
+    if (!selectedLciaMethod) {
+      setCommandStatus({
+        kind: 'error',
+        message: t(
+          'pages.dataProcessing.validation.defaultImpactCategoryInvalid',
+          'The selected impact category is unavailable or has no valid version.',
+        ),
+      });
+      return;
+    }
+    const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
     const result = await runCommand('createClosureCheck', () =>
       createClosureCheck({
         requestedScope: {
           coverageMode: values.coverageMode || 'global_eligible',
-          lciaMethods: values.defaultImpactCategory ? [values.defaultImpactCategory] : [],
+          lciaMethods: [selectedLciaMethod],
         },
         requestIdempotencyToken: newIdempotencyToken(),
       }),
@@ -1309,7 +1369,7 @@ const DataProcessing = () => {
             coverageMode: 'global_eligible',
           }}
           onValuesChange={(_changedValues, allValues) => {
-            setCurrentSelectionKey(scopeSelectionKey(allValues));
+            setCurrentSelectionKey(scopeSelectionKey(allValues, impactCategoryOptions));
           }}
         >
           <Form.Item
@@ -1504,22 +1564,6 @@ const DataProcessing = () => {
   const impactCategoryLabelById = new Map(
     impactCategoryOptions.map((option) => [option.value, option.label]),
   );
-  const parseLocalImpactLabel = (impactCategoryId?: string) => {
-    const label = impactCategoryId ? impactCategoryLabelById.get(impactCategoryId) : undefined;
-    if (!label) {
-      return {};
-    }
-    const match = label.match(/^(.*?)\s*\((.*?)\)\s*$/);
-    if (!match) {
-      return { name: label };
-    }
-    const parts = match[2].split('/').map((part) => part.trim());
-    return {
-      name: match[1].trim(),
-      version: parts[0],
-      unit: parts.slice(1).join(' / '),
-    };
-  };
   const previewImpactOptionRecords = recordArray(previewData?.impactOptions);
   const fallbackPreviewImpactCategoryId = firstString(
     previewDetailPage.impactCategoryId,
@@ -1570,7 +1614,11 @@ const DataProcessing = () => {
     previewDetailPage.impactKey,
     previewImpactCategoryId,
   );
-  const selectedPreviewImpactLocal = parseLocalImpactLabel(selectedPreviewImpactCategoryId);
+  const selectedPreviewImpactLocal = parseImpactCategoryOptionLabel(
+    selectedPreviewImpactCategoryId
+      ? impactCategoryLabelById.get(selectedPreviewImpactCategoryId)
+      : undefined,
+  );
   const previewValueUnit =
     firstDisplayString(previewDetailPage.unit) ?? selectedPreviewImpactLocal.unit;
   const previewValueTitle = previewValueUnit

@@ -126,11 +126,22 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       });
 
     const created = await createClosureCheck({
-      requestedScope: { coverageMode: 'global_eligible', lciaMethods: [] },
+      requestedScope: {
+        coverageMode: 'global_eligible',
+        lciaMethods: [{ id: '11111111-1111-4111-8111-111111111111', version: '01.00.000' }],
+      },
       requestIdempotencyToken: 'request-1',
     });
     const summary = await getClosureCheck('closure-1');
 
+    expect(invokeDataProductCommand).toHaveBeenNthCalledWith(1, {
+      action: 'create_closure_check',
+      requestedScope: {
+        coverageMode: 'global_eligible',
+        lciaMethods: [{ id: '11111111-1111-4111-8111-111111111111', version: '01.00.000' }],
+      },
+      requestIdempotencyToken: 'request-1',
+    });
     expect(created.data).toEqual({
       closureCheckId: 'closure-1',
       requestedScopeHash: 'scope-hash',
@@ -708,7 +719,10 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     });
     await expect(
       createClosureCheck({
-        requestedScope: { coverageMode: 'global_eligible', lciaMethods: [] },
+        requestedScope: {
+          coverageMode: 'global_eligible',
+          lciaMethods: [{ id: '11111111-1111-4111-8111-111111111111', version: '01.00.000' }],
+        },
         requestIdempotencyToken: 'invalid-result',
       }),
     ).resolves.toMatchObject({

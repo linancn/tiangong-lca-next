@@ -25,8 +25,8 @@ checkPaths:
   - tests/e2e/i18n/**
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
-lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; added the version-only package-lock recovery distinction.'
+lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
+lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; existing contract-test and release troubleshooting guidance remains current.'
 ---
 
 # Testing Troubleshooting

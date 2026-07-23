@@ -26,8 +26,8 @@ checkPaths:
   - playwright.config.ts
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
-lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; release proof now tests version-only lock metadata separately from dependency drift.'
+lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
+lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; added exact strict-command payload proof guidance.'
 ---
 
 # Testing Patterns Reference
@@ -82,6 +82,7 @@ Special cases:
 - repo integration matrix pattern: use when one service path branches by source, type, or permission
 - permission and URL-state pattern: use when behavior depends on auth, query params, or navigation state
 - data workflow fixture pattern: keep each `tests/data-workflows/fixtures/result/**` expected-result file aligned with its same-scope `fixtures/data/**` payload, workflow lib default path, and unit proof; the fixture relationship map lives in `tests/data-workflows/fixtures/result/README.md`
+- strict command-contract pattern: type the complete client payload, assert its exact serialized shape at the service boundary, and preserve versioned dataset identities as `{ id, version }` rather than weakening tests to identifier-only fixtures
 - escalate to E2E only when browser-only behavior cannot be proved in Jest
 
 ## Component Pattern

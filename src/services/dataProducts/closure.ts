@@ -57,11 +57,16 @@ export type ClosureCheckSummaryV1 = {
   finishedAt?: string;
 };
 
+export type ClosureScopeIdentityV1 = {
+  id: string;
+  version: string;
+};
+
 export type ClosureCheckRequestV1 = {
   requestedScope: {
     coverageMode: 'global_eligible' | 'subset';
-    processes?: Array<{ id: string; version: string }>;
-    lciaMethods: unknown[];
+    processes?: ClosureScopeIdentityV1[];
+    lciaMethods: ClosureScopeIdentityV1[];
     certificateFreshnessPolicy?: string;
     linkPolicy?: {
       linkSemanticsVersion: string;

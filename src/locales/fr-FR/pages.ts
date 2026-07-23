@@ -258,6 +258,7 @@ export default {
   'pages.dataProcessing.validation.packageNameRequired': 'Le nom du jeu de résultats est obligatoire',
   'pages.dataProcessing.validation.packageIdRequired': 'Le jeu de résultats est obligatoire',
   'pages.dataProcessing.validation.defaultImpactCategoryRequired': 'La catégorie d’impact par défaut est obligatoire',
+  'pages.dataProcessing.validation.defaultImpactCategoryInvalid': 'La catégorie d’impact sélectionnée est indisponible ou ne possède pas de version valide',
   'pages.dataProcessing.validation.publicationIdRequired': 'L’ID de publication est obligatoire',
   'pages.dataProcessing.jobs.title': 'Tâches de génération des résultats',
   'pages.dataProcessing.taskCenter.kind': 'Produit de données',
