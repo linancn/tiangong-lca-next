@@ -13,6 +13,8 @@
     "deploy": "npm run build && npm run gh-pages",
     "dev": "npm run start:dev",
     "docpact:gate": "node scripts/docpact-gate.js",
+    "docs:screenshot:capture": "node --import tsx scripts/docs-screenshots/capture.ts",
+    "docs:screenshot:test": "jest --runInBand --runTestsByPath tests/unit/scripts/docsScreenshotCapture.test.ts --testTimeout=20000 --no-coverage --no-watchman",
     "dist": "npm run build && tsc --project tsconfig.electron.json && electron-builder --config electron-builder.json",
     "electron": "tsc --project tsconfig.electron.json && electron dist-electron/main.js",
     "gh-pages": "gh-pages -d dist",
