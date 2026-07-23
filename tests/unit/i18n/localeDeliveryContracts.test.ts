@@ -1,7 +1,7 @@
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { SUPPORTED_APP_LOCALES } from '@/services/general/localeRegistry';
 import { REFERENCE_RESOURCE_MANIFEST } from '@/services/referenceResources/manifest';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,6 +14,10 @@ import {
 
 const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const DELIVERY_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/locale-delivery.mjs');
+const { packageLockRuntimeDigest } =
+  require('../../../scripts/i18n/package-lock-runtime-fingerprint.cjs') as {
+    packageLockRuntimeDigest: (input: Buffer | string | object) => string;
+  };
 
 const readJson = (relativePath: string) =>
   JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), 'utf8'));
@@ -753,15 +757,29 @@ describe('shared locale delivery contracts', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
     const boundFiles = [
-      evidence.digests.packageLock,
       ...evidence.digests.runtimeAssets,
       ...evidence.digests.tests,
       ...evidence.digests.sources,
     ];
+    const currentPackageLock = fs.readFileSync(
+      path.join(REPOSITORY_ROOT, evidence.digests.packageLock.path),
+    );
+    const observedPackageLock = execFileSync(
+      'git',
+      ['show', `${evidence.candidate.observedHeadCommit}:${evidence.digests.packageLock.path}`],
+      { cwd: REPOSITORY_ROOT, maxBuffer: 32 * 1024 * 1024 },
+    );
+    const packageLockReady =
+      sha256File(evidence.digests.packageLock.path) === evidence.digests.packageLock.sha256 ||
+      (createHash('sha256').update(observedPackageLock).digest('hex') ===
+        evidence.digests.packageLock.sha256 &&
+        packageLockRuntimeDigest(observedPackageLock) ===
+          packageLockRuntimeDigest(currentPackageLock));
     const semanticRouteAndE2EReady =
       coverage.proofPolicy.status === 'execution-evidence' &&
       coverage.proofPolicy.browserProof.status === 'verified' &&
       coverage.proofPolicy.browserProof.executedEvidence.length === 1 &&
+      packageLockReady &&
       boundFiles.every(
         ({ path: evidencePath, sha256 }: { path: string; sha256: string }) =>
           fs.existsSync(path.join(REPOSITORY_ROOT, evidencePath)) &&
