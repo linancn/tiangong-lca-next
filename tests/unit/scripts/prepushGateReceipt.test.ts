@@ -542,9 +542,7 @@ describe('bounded checked-push transport receipt', () => {
   it('runs release preflight only for main-semantic branch pushes', () => {
     const hotfix = fixture();
     git(hotfix.root, ['branch', '-m', 'codex/hotfix-issue-685']);
-    expect(
-      checkedPush(hotfix, 'refs/heads/codex/hotfix-issue-685').status,
-    ).toBe(0);
+    expect(checkedPush(hotfix, 'refs/heads/codex/hotfix-issue-685').status).toBe(0);
     expect(readGateLog(hotfix).map(({ gate }) => gate)).toEqual([
       'docpact',
       'release-preflight',
@@ -553,13 +551,8 @@ describe('bounded checked-push transport receipt', () => {
 
     const feature = fixture();
     git(feature.root, ['branch', '-m', 'codex/feature-issue-685']);
-    expect(
-      checkedPush(feature, 'refs/heads/codex/feature-issue-685').status,
-    ).toBe(0);
-    expect(readGateLog(feature).map(({ gate }) => gate)).toEqual([
-      'docpact',
-      'prepush',
-    ]);
+    expect(checkedPush(feature, 'refs/heads/codex/feature-issue-685').status).toBe(0);
+    expect(readGateLog(feature).map(({ gate }) => gate)).toEqual(['docpact', 'prepush']);
   });
 
   it('fails closed before gates for a multi-ref push with mixed baselines', () => {

@@ -28,9 +28,7 @@ describe('Publication workflow gates', () => {
     );
     expect(releaseGate).not.toContain('run: npm run test:ci');
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
-    expect(workflow).toContain(
-      'release_head: ${{ needs.release-context.outputs.release_head }}',
-    );
+    expect(workflow).toContain('release_head: ${{ needs.release-context.outputs.release_head }}');
 
     const webDeploy = workflow.slice(
       workflow.indexOf('  web-deploy:'),
@@ -97,12 +95,8 @@ describe('Publication workflow gates', () => {
     expect(workflow).toContain('pull_request:');
     expect(workflow).toMatch(/branches:\s*\n\s*- main/);
     expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
-    expect(workflow).toContain(
-      'release_base: ${{ github.event.pull_request.base.sha }}',
-    );
-    expect(workflow).toContain(
-      'release_head: ${{ github.event.pull_request.head.sha }}',
-    );
+    expect(workflow).toContain('release_base: ${{ github.event.pull_request.base.sha }}');
+    expect(workflow).toContain('release_head: ${{ github.event.pull_request.head.sha }}');
   });
 
   it('publishes a release tag only after both release gates pass', () => {

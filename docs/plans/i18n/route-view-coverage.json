@@ -353,7 +353,7 @@
       "executedEvidence": [
         {
           "path": "docs/plans/i18n/semantic-e2e-evidence.json",
-          "sha256": "352f1d8a720d7cf1fac17b19f551082229ab604bf8ab0a56da9dc9bf0eac8db4"
+          "sha256": "bc20c60811119747673b38a5543a856026e081e4bdd9b49a0bd48b5fe73445ae"
         }
       ]
     }
