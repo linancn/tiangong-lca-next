@@ -24,9 +24,9 @@ checkPaths:
   - docker/e2e/**
   - tests/e2e/i18n/**
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: stale package-lock binding is resolved by regenerating verified evidence on the final candidate; no troubleshooting change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; added the release-only missing-review recovery path.'
 ---
 
 # Testing Troubleshooting
@@ -73,6 +73,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
+| feature/dev Docpact passed but the post-merge Release Gate reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while the release gate checks the complete `main` promotion range | reproduce from the intended candidate with `DOCPACT_BASE_REF=origin/main npm run docpact:gate`, genuinely review every required document, publish a new patch version if an immutable release tag already exists, and backmerge the `main` hotfix to `dev` |
 | `i18n:audit` reports missing, duplicate, or computed message IDs | locale topology drift, one key has multiple owners, or a runtime family is not enumerated | inspect the reported key and callsites, update the canonical manifest/decision record, then rerun the audit before translating or adding an allowlist |
 | language-platform or hardcoding audit reports a new locale/language finding | a registry/Manifest join is incomplete, an alias/adapter conflicts, or business code owns a language literal outside the typed boundary | update the owning registry/Manifest and derive the consumer; use only an exact, issue-owned adapter exception when the literal is an unavoidable external boundary |
 | activation reports `platformContractValid` but `productionActivationReady` is false | the platform structure is valid but a required reference resource is missing, development-only, or not yet official/project-reviewed | inspect `referenceResourceBlockers` and complete the owner Issue; do not relabel an English development base as localized data |

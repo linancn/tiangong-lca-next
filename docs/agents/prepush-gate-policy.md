@@ -28,9 +28,9 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the existing gate policy already requires final package-lock-bound semantic E2E evidence; no policy change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; clarified that release-range Docpact proof is distinct from a feature-branch gate.'
 ---
 
 # Pre-Push Gate Policy
@@ -80,6 +80,7 @@ It does not own:
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
 | ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
 | PRs into `dev` or `main` | rely on local test-gate evidence, focused proof, and docpact PR governance; run browser semantic E2E manually only when risk warrants it |
+| `dev -> main` promotion candidate | run Docpact against the current `main` release base and the intended candidate head; a feature-branch or `dev`-relative pass does not close review evidence for the complete release range |
 | semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
 | local authenticated semantic E2E | run `e2e:release` only in an explicitly authorized operator session with a protected runtime-only credential file, archived clean candidate, verified local-bundle/production-backend targeting, explicit authenticated/write/evidence options, and exact cleanup |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests and reusable exact-SHA credential-free semantic E2E, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
@@ -115,6 +116,7 @@ It does not own:
 - a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
+- before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the post-merge Release Gate repeats this proof against the merge commit's first parent
 - protect the actual local and release gates
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs

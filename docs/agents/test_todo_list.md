@@ -25,9 +25,9 @@ checkPaths:
   - tests/**
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the tracked semantic E2E evidence is refreshed and production cleanup is verified; no new testing TODO is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; no coverage queue or testing-state change is required.'
 ---
 
 # Testing Execution State

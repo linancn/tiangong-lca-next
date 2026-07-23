@@ -26,9 +26,9 @@ checkPaths:
   - .husky/pre-push
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the documented release validation commands cover the refreshed production-ready evidence and final package lock; no command change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; added the missing promotion-range Docpact proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -101,6 +101,8 @@ Authenticated setup may create only UUID-scoped `codex-e2e` process data. It wri
 The shared Header wraps Umi `SelectLang` with `reload={false}`. Browser proof must show that locale switching preserves the current URL and document identity, refreshes locale-bound reference labels in the mounted page, and prevents a delayed response for the old locale from overwriting the current locale.
 
 The local `pre-push` hook always runs `npm run docpact:gate` first, then runs the full `npm run prepush:gate` local test gate on every branch. The docpact gate defaults to `origin/dev` and can be redirected with `DOCPACT_BASE_REF=<ref>` for promote or hotfix branches. For a normal delivery, commit the final controlled tracked change and let that hook own the one authoritative full-gate run; do not manually run the same full gate immediately before pushing. Manual full-gate execution is for a no-push evidence handoff.
+
+A passing feature-branch or `dev`-relative Docpact gate proves only that configured comparison range. Before a `dev -> main` promotion, check out the intended candidate head and run `DOCPACT_BASE_REF=origin/main npm run docpact:gate`; this closes the complete release range that the post-merge Release Gate checks from the merge commit's first parent. If that range reports `missing-review`, genuinely review and update every required governed document before promotion; do not hide active findings with a baseline, waiver, or narrower comparison base.
 
 The hook uses an already-active Node.js 24 from `PATH`, including GitHub `setup-node`, before consulting NVM. It sources NVM and runs `nvm use 24` only when the active Node is missing or has another major version, then fails closed with an explicit version error if Node 24 is still unavailable.
 

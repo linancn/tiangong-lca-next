@@ -55,9 +55,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: verified semantic E2E evidence is bound to the v0.0.56 package lock and records one controlled production-data create/cleanup cycle; locale delivery semantics remain unchanged.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; locale delivery, release recovery, and immutable-tag semantics remain current.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
