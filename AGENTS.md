@@ -24,6 +24,8 @@ checkPaths:
   - .github/PULL_REQUEST_TEMPLATE/*.md
   - package.json
   - playwright.config.ts
+  - playwright.docs-capture.config.ts
+  - scripts/docs-screenshots/**
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
@@ -31,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
-lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; repository ownership, release, validation, and backmerge rules remain current.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 production closure, release, validation, and backmerge rules while incorporating the Issue #670 isolated docs screenshot and authorization-denial boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -111,6 +113,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while local release proof uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the three-browser GitHub Actions matrix remains credential-free/read-only and release-required
+- documentation screenshots use the separate `playwright.docs-capture.config.ts` and `scripts/docs-screenshots/**` entrypoint; the executor accepts a validated, read-only capture plan, reads credentials only from the mode-`0600` file named by `DOCS_SCREENSHOT_ENV_FILE`, blocks non-auth mutations, and emits sanitized result/access evidence rather than stored auth state
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
@@ -140,6 +143,8 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
+- governed documentation screenshot capture: `npm run docs:screenshot:capture -- --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>`
+- documentation screenshot contract proof: `npm run docs:screenshot:test`
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
@@ -195,6 +200,8 @@ Use the role table in this file as the update map.
 - do not author schema or migration truth here
 - do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh`
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial
+- do not use the screenshot executor for data creation or mutation; only the explicit authentication/session exchange may use non-GET requests
 - do not treat a merged repo PR here as workspace-delivery complete if the root repo still needs a submodule bump
 
 ## Workspace Integration

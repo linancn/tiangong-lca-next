@@ -26,8 +26,8 @@ checkPaths:
   - playwright.config.ts
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
-lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; added exact strict-command payload proof guidance.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 strict-command and release-metadata proof while incorporating the Issue #670 isolated docs screenshot contract-test pattern.'
 ---
 
 # Testing Patterns Reference
@@ -128,6 +128,16 @@ Browser semantic E2E pattern:
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
 - treat adding a registry locale or changing a bound route/source/test or executable dependency lock as evidence invalidation, not as a request to reuse the old result; a package-lock root application-version-only change may reuse evidence only after the raw evidence lock is verified at its recorded commit and the deterministic dependency projection remains exact
 
+Documentation capture pattern:
+
+- keep docs-impact capture under `scripts/docs-screenshots/**` with its own `playwright.docs-capture.config.ts`; do not reuse semantic localization reporters, auth lifecycle, traces, videos, or stored browser profiles
+- validate plans and access classification in `tests/unit/scripts/docsScreenshotCapture.test.ts`; use a synthetic local Chromium canary only for the browser/image boundary
+- prefer role, label, text, and test-id locators; CSS requires an explicit reason
+- accept only read-only navigation/filter actions, block application mutations outside explicit auth/session paths, and fail when the guard observes a blocked mutation
+- read account values only inside the capture child process from an absolute external regular file with mode no broader than `0600`; plans, results, logs, and tests contain aliases or synthetic values only
+- classify image-free Draft evidence as `verified-access-denied` only after identity confirmation plus an authoritative `403`, capability denial, or fully corroborated UI/source guard; missing credentials, invalid authentication, MFA/session, network, route, and locator failures remain blockers
+- write identical 144-DPI PNG bytes to the declared Chinese and English next-docs asset paths, then require a separate human privacy/content review before the result becomes complete
+
 Gate-bootstrap pattern:
 
 - when a hook supports both `PATH` and a version manager, test the already-correct active runtime while the version-manager fallback is deliberately unusable; the hook must not replace a compatible runner-provided runtime
@@ -142,6 +152,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
+| docs-impact screenshot contract proof | `npm run docs:screenshot:test` |
+| on-demand docs-impact screenshot capture | `npm run docs:screenshot:capture -- --plan <plan> --result <result> --access-report <report> --allowed-output-root <next-docs-root>` |
 | exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
