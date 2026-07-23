@@ -2275,7 +2275,7 @@ const LcaTaskCenter: React.FC = () => {
                           ) : null}
                         </Space>
                         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
-                          {task.subtitle ?? `Worker job ${task.id}`}
+                          {task.progressLabel ?? `Worker job ${task.id}`}
                         </Typography.Text>
                       </Space>
                       <Typography.Text style={{ fontSize: 13 }}>

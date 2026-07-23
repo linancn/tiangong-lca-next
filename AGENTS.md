@@ -31,8 +31,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
-lastReviewedNote: 'Updated for Issue #660: production-data release E2E now rejects host CI before clearing image-inherited CI markers for a local operator run.'
+lastReviewedCommit: ff86b9f7349fd70f8da4852904d48e8948bd2e71
+lastReviewedNote: 'Reviewed for Issue #666: the v0.0.56 release recovery follows the existing production E2E and checked-push contract; no repository entry rule changes are required.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

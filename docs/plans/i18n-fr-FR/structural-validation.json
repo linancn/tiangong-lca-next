@@ -3,7 +3,7 @@
   "locale": "fr-FR",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "05fce063c5756e47a88fdbb5a40ba51275d3cc84144a0b795e80fa3b4a8f9822",
+    "auditedInputDigest": "925c13d12607859bd96e18491e7bfe7fb6521be7209f0b2b59261ebb402ee79f",
     "validatedMessageCount": 3061,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1352,
     "highRiskMessageDigest": "296a58c6f60307c87c5f5dd4f686d97294d286a59ab9d74c9c1ee46cf65e5b7e",
     "catalogDigest": "1bba910bf37f4fd1b6e4d4a07b8dbed5fff4761d4580c27e3cca1c857152d485",
-    "dossierDigest": "7126061fb9c41013b9dca3ca19dc91d787a3dd3276026ff83e99aaa7b87b829b",
+    "dossierDigest": "62e4f639e2720b4306ac0a71fbd066bde396d2d6188ef8964042d07a5bd5b29a",
     "typedContentDossierDigest": "b17812f17c66806d74ac991e03c9a719de58ae79adf6eed26e8b0852c98d0680",
-    "routeEvidenceDigest": "770c14e150ab3b16fcbccc6df6d4fb8ee4ad6cc51e8047ca69ddd6e773043fe3",
+    "routeEvidenceDigest": "a3f03149e7609baead759dfb6b5068988a7731f20c87e8d4a9587a00c3f6505c",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "d1e9755caac11fd5d5c5059aa96b7ada7de3435e596a82dfab52f046f14fcbf7",
         "highRiskMessageCount": 1352,
         "highRiskMessageDigest": "296a58c6f60307c87c5f5dd4f686d97294d286a59ab9d74c9c1ee46cf65e5b7e",
-        "dossierDigest": "7126061fb9c41013b9dca3ca19dc91d787a3dd3276026ff83e99aaa7b87b829b",
+        "dossierDigest": "62e4f639e2720b4306ac0a71fbd066bde396d2d6188ef8964042d07a5bd5b29a",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "fd8b67e8a57be896bf11079412b46bd4cb7ce998188e6a6ebcb29e8f122867a7"
+  "validationDigest": "8e3c07eacd8088af9eeccce29e0796717c894cc82b4772c3465d8d10aa00cf5b"
 }

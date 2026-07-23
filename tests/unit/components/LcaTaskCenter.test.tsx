@@ -1507,4 +1507,100 @@ describe('LcaTaskCenter', () => {
     });
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
   });
+
+  it('renders and filters every safe data-product task state and deep-link shape', () => {
+    const base = {
+      schemaVersion: 'task-summary.v2',
+      category: 'data_product',
+      workerStatus: 'running',
+      domainValidity: 'none',
+      projectionUpdatedAt: '2026-07-22T00:00:00Z',
+      progressFraction: 0.25,
+      capabilities: {
+        canCancel: false,
+        canDownloadReport: false,
+        canOpenWorkbench: true,
+        canPreviewResult: false,
+      },
+      createdAt: '2026-07-22T00:00:00Z',
+      updatedAt: '2026-07-22T00:00:00Z',
+    };
+    mockDataProductTasks = [
+      {
+        ...base,
+        jobId: 'closure-job',
+        id: 'closure-job',
+        jobKind: 'lcia.scope_closure_check',
+        title: 'Closure passed',
+        workerStatus: 'completed',
+        runState: 'succeeded',
+        domainValidity: 'valid',
+        phase: 'complete',
+        progressLabel: 'All rows scanned',
+        deepLink: {
+          routeKey: 'data_product.closure_check',
+          params: { closureCheckId: 'closure-1' },
+        },
+      },
+      {
+        ...base,
+        jobId: 'package-job',
+        id: 'package-job',
+        jobKind: 'lcia_result.package_build',
+        title: 'Package blocked',
+        workerStatus: 'blocked',
+        runState: 'blocked',
+        deepLink: {
+          routeKey: 'data_product.package',
+          params: { packageId: 'package-1' },
+        },
+        updatedAt: '2026-07-22T00:01:00Z',
+      },
+      {
+        ...base,
+        jobId: 'failed-job',
+        id: 'failed-job',
+        jobKind: 'lcia_result.package_build',
+        title: 'Package failed',
+        workerStatus: 'failed',
+        runState: 'failed',
+        updatedAt: '2026-07-22T00:02:00Z',
+      },
+      {
+        ...base,
+        jobId: 'cancelled-job',
+        id: 'cancelled-job',
+        jobKind: 'lcia_result.package_build',
+        title: 'Package cancelled',
+        workerStatus: 'cancelled',
+        runState: 'cancelled',
+        updatedAt: '2026-07-22T00:03:00Z',
+      },
+      {
+        ...base,
+        jobId: 'active-job',
+        id: 'active-job',
+        jobKind: 'lcia_result.package_build',
+        title: 'Package running',
+        runState: 'active',
+        updatedAt: '2026-07-22T00:04:00Z',
+      },
+    ];
+
+    render(<LcaTaskCenter />);
+    expect(screen.getByTestId('badge-count')).toHaveTextContent('1');
+    fireEvent.click(screen.getByRole('button', { name: 'open-lca-task-center' }));
+
+    expect(screen.getByText('Closure passed')).toBeInTheDocument();
+    expect(screen.getByText('Certificate: valid')).toBeInTheDocument();
+    expect(screen.getByText('All rows scanned')).toBeInTheDocument();
+    expect(screen.getByText('Worker job package-job')).toBeInTheDocument();
+    expect(screen.getAllByText('Queued')).toHaveLength(4);
+    expect(screen.getAllByRole('progressbar')).toHaveLength(5);
+
+    fireEvent.click(screen.getByRole('tab', { name: 'LCA Calculation' }));
+    expect(screen.queryByText('Closure passed')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Data Product' }));
+    expect(screen.getByText('Package running')).toBeInTheDocument();
+  });
 });

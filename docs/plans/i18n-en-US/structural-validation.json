@@ -3,7 +3,7 @@
   "locale": "en-US",
   "validationClosure": {
     "baselineSha": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "05fce063c5756e47a88fdbb5a40ba51275d3cc84144a0b795e80fa3b4a8f9822",
+    "auditedInputDigest": "925c13d12607859bd96e18491e7bfe7fb6521be7209f0b2b59261ebb402ee79f",
     "validatedMessageCount": 3061,
     "validatedModules": [
       "$entry",
@@ -41,9 +41,9 @@
     "highRiskMessageCount": 1352,
     "highRiskMessageDigest": "296a58c6f60307c87c5f5dd4f686d97294d286a59ab9d74c9c1ee46cf65e5b7e",
     "catalogDigest": "4c09464d67b9012bef8d17149ae75fe0c7d0fa95e84df21f0f95b56b6b9d3af8",
-    "dossierDigest": "99202414f623e75b342ea3c81ecf58f595862bed9b202a754becd2169a93502b",
+    "dossierDigest": "ac2d7b0afc076cb20f33c32a181dfb7092f147d656cd1cd9fd65e0e3c3947476",
     "typedContentDossierDigest": "5bee69a379711b6c87e9d7d5ec71180ff52c44c9700ccb0f81f9ae1daf4a1af8",
-    "routeEvidenceDigest": "770c14e150ab3b16fcbccc6df6d4fb8ee4ad6cc51e8047ca69ddd6e773043fe3",
+    "routeEvidenceDigest": "a3f03149e7609baead759dfb6b5068988a7731f20c87e8d4a9587a00c3f6505c",
     "scope": "deterministic structure only; semantic translation and rendered route review are separate production blockers owned by #635"
   },
   "validationLanes": [
@@ -96,7 +96,7 @@
         "messageDigest": "d1e9755caac11fd5d5c5059aa96b7ada7de3435e596a82dfab52f046f14fcbf7",
         "highRiskMessageCount": 1352,
         "highRiskMessageDigest": "296a58c6f60307c87c5f5dd4f686d97294d286a59ab9d74c9c1ee46cf65e5b7e",
-        "dossierDigest": "99202414f623e75b342ea3c81ecf58f595862bed9b202a754becd2169a93502b",
+        "dossierDigest": "ac2d7b0afc076cb20f33c32a181dfb7092f147d656cd1cd9fd65e0e3c3947476",
         "checks": {
           "nonEmptyTargets": true,
           "icuArgumentSignatureParity": true,
@@ -111,5 +111,5 @@
     }
   ],
   "blockedItems": [],
-  "validationDigest": "18a74e499f5c6f292f2778e61f8c7e20248537e880b31320b96058834e535069"
+  "validationDigest": "439501d086f36a5e5d96a6585b6f8758f838937483dd9ab773dac1b6d2c60995"
 }

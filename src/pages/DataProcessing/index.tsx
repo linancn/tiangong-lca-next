@@ -706,23 +706,24 @@ const DataProcessing = () => {
 
   const loadClosureIssues = useCallback(
     async (afterIssueId?: string) => {
-      if (!closureCheck?.closureCheckId) return;
+      const closureCheckId = closureCheck!.closureCheckId;
       setClosureIssuesLoading(true);
       setClosureIssuesError(null);
-      const result = await listClosureCheckIssues(closureCheck.closureCheckId, {
+      const result = await listClosureCheckIssues(closureCheckId, {
         ...(afterIssueId ? { afterIssueId } : {}),
         limit: 50,
       });
-      if (result.error || !result.data) {
+      const page = result.data;
+      if (result.error || !page) {
         setClosureIssuesError(result.error?.message ?? 'Unable to load issues.');
       } else {
         setClosureIssues((previous) => {
           const rows = new Map<string, ClosureCheckIssueV1>();
           (afterIssueId ? previous : []).forEach((issue) => rows.set(issue.issueId, issue));
-          result.data.issues.forEach((issue) => rows.set(issue.issueId, issue));
+          page.issues.forEach((issue) => rows.set(issue.issueId, issue));
           return [...rows.values()];
         });
-        setClosureIssuesAfterIssueId(result.data.nextCursor);
+        setClosureIssuesAfterIssueId(page.nextCursor);
       }
       setClosureIssuesLoading(false);
     },
@@ -955,9 +956,9 @@ const DataProcessing = () => {
     });
   };
 
-  const runCommand = async (
+  const runCommand = async <T,>(
     action: CommandAction,
-    command: () => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>,
+    command: () => Promise<{ data: T | null; error: { message?: string; code?: string } | null }>,
   ) => {
     setSubmittingAction(action);
     try {
@@ -1057,8 +1058,7 @@ const DataProcessing = () => {
   };
 
   const handleDownloadClosureReport = async () => {
-    if (!closureCheck?.closureCheckId) return;
-    const result = await createClosureReportDownload(closureCheck.closureCheckId);
+    const result = await createClosureReportDownload(closureCheck!.closureCheckId);
     if (result.error || !result.data?.signedDownloadUrl) {
       setCommandStatus({
         kind: 'error',
@@ -1211,16 +1211,14 @@ const DataProcessing = () => {
                 </span>
                 <span role='columnheader'>{t('pages.dataProcessing.jobs.action', 'Action')}</span>
               </div>
-              {visibleBuildJobs.map((job, index) => {
-                const jobId = job.jobId || `job-${index}`;
+              {visibleBuildJobs.map((job) => {
+                const jobId = job.jobId;
                 const packageOption = packageOptionFromTaskSummary(job);
                 const packageInputs = packageOption ? packageCountLabel(packageOption) : undefined;
                 const failureSummary = job.errorSummary;
                 const resultSetLabel =
                   job.title ||
-                  packageOption?.packageName ||
                   t('pages.dataProcessing.jobs.pendingResultSet', 'Result set generation');
-                const resultSetVersion = packageOption?.packageVersion;
                 const jobPhaseLabel = renderJobPhase(job.phase);
                 const previewPackageLabel = t(
                   'pages.dataProcessing.action.previewPackage',
@@ -1236,9 +1234,6 @@ const DataProcessing = () => {
                   >
                     <div className={styles.jobTableCell} role='cell'>
                       <strong>{resultSetLabel}</strong>
-                      {resultSetVersion && resultSetVersion !== resultSetLabel ? (
-                        <span className={styles.jobSecondary}>{resultSetVersion}</span>
-                      ) : null}
                       {jobPhaseLabel ? (
                         <span className={styles.jobSecondary}>{jobPhaseLabel}</span>
                       ) : null}

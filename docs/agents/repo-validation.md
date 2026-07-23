@@ -27,8 +27,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
-lastReviewedNote: 'Updated for Issue #660: added proof requirements for the host-CI refusal and local container CI-marker boundary.'
+lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
+lastReviewedNote: 'Reviewed for Issue #666: the documented release validation commands cover the refreshed production-ready evidence and final package lock; no command change is required.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
