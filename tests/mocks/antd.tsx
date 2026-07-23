@@ -578,109 +578,123 @@ export const createAntdMock = () => {
 
   const FormContext = React.createContext<any>(null);
 
-  const Form = React.forwardRef(({ children, initialValues = {}, form }: any, ref: any) => {
-    const [values, setValues] = React.useState<Record<string, any>>(initialValues ?? {});
-    const rulesRef = React.useRef<Record<string, any[]>>({});
+  const Form = React.forwardRef(
+    ({ children, initialValues = {}, form, onValuesChange }: any, ref: any) => {
+      const [values, setValues] = React.useState<Record<string, any>>(initialValues ?? {});
+      const rulesRef = React.useRef<Record<string, any[]>>({});
 
-    const registerRules = React.useCallback((name: string, rules: any[] = []) => {
-      if (!name) return;
-      rulesRef.current[name] = rules;
-    }, []);
+      const registerRules = React.useCallback((name: string, rules: any[] = []) => {
+        if (!name) return;
+        rulesRef.current[name] = rules;
+      }, []);
 
-    const setFieldValue = React.useCallback((name: string, value: any) => {
-      if (!name) return;
-      setValues((previous) => ({ ...previous, [name]: value }));
-    }, []);
+      const setFieldValue = React.useCallback((name: string, value: any) => {
+        if (!name) return;
+        setValues((previous) => ({ ...previous, [name]: value }));
+      }, []);
 
-    const resetFields = React.useCallback(() => {
-      setValues(initialValues ?? {});
-    }, [initialValues]);
+      const changeFieldValue = React.useCallback(
+        (name: string, value: any) => {
+          if (!name) return;
+          setValues((previous) => {
+            const nextValues = { ...previous, [name]: value };
+            onValuesChange?.({ [name]: value }, nextValues);
+            return nextValues;
+          });
+        },
+        [onValuesChange],
+      );
 
-    const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
-      setValues((previous) => ({ ...previous, ...fields }));
-    }, []);
+      const resetFields = React.useCallback(() => {
+        setValues(initialValues ?? {});
+      }, [initialValues]);
 
-    const getFieldValue = React.useCallback(
-      (name: string) => (name ? values[name] : undefined),
-      [values],
-    );
+      const setFieldsValue = React.useCallback((fields: Record<string, any> = {}) => {
+        setValues((previous) => ({ ...previous, ...fields }));
+      }, []);
 
-    const validateFields = React.useCallback(async () => {
-      const errors: any[] = [];
-      for (const [field, rules] of Object.entries(rulesRef.current)) {
-        const value = values[field];
-        for (const rule of rules ?? []) {
-          const messageText = toText(rule?.message) || 'Validation failed';
-          if (
-            rule?.required &&
-            (value === undefined || value === null || value === '' || Number.isNaN(value))
-          ) {
-            errors.push({ name: [field], errors: [messageText] });
-          }
-          if (rule?.type === 'email' && value) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(String(value))) {
+      const getFieldValue = React.useCallback(
+        (name: string) => (name ? values[name] : undefined),
+        [values],
+      );
+
+      const validateFields = React.useCallback(async () => {
+        const errors: any[] = [];
+        for (const [field, rules] of Object.entries(rulesRef.current)) {
+          const value = values[field];
+          for (const rule of rules ?? []) {
+            const messageText = toText(rule?.message) || 'Validation failed';
+            if (
+              rule?.required &&
+              (value === undefined || value === null || value === '' || Number.isNaN(value))
+            ) {
               errors.push({ name: [field], errors: [messageText] });
             }
-          }
-          if (rule?.validator) {
-            try {
-              const maybePromise = rule.validator(undefined, value);
-              if (maybePromise && typeof maybePromise.then === 'function') {
-                await maybePromise;
+            if (rule?.type === 'email' && value) {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(String(value))) {
+                errors.push({ name: [field], errors: [messageText] });
               }
-            } catch (error: any) {
-              errors.push({
-                name: [field],
-                errors: [(error as Error)?.message || messageText],
-              });
+            }
+            if (rule?.validator) {
+              try {
+                const maybePromise = rule.validator(undefined, value);
+                if (maybePromise && typeof maybePromise.then === 'function') {
+                  await maybePromise;
+                }
+              } catch (error: any) {
+                errors.push({
+                  name: [field],
+                  errors: [(error as Error)?.message || messageText],
+                });
+              }
             }
           }
         }
-      }
-      if (errors.length) {
-        const submitError: any = new Error('Validation failed');
-        submitError.errorFields = errors;
-        throw submitError;
-      }
-      return values;
-    }, [values]);
+        if (errors.length) {
+          const submitError: any = new Error('Validation failed');
+          submitError.errorFields = errors;
+          throw submitError;
+        }
+        return values;
+      }, [values]);
 
-    const api = React.useMemo(
-      () => ({
-        validateFields,
-        resetFields,
-        setFieldsValue,
-        setFieldValue,
-        getFieldValue,
-        getFieldsValue: () => ({ ...values }),
-      }),
-      [getFieldValue, resetFields, setFieldValue, setFieldsValue, validateFields, values],
-    );
+      const api = React.useMemo(
+        () => ({
+          validateFields,
+          resetFields,
+          setFieldsValue,
+          setFieldValue,
+          getFieldValue,
+          getFieldsValue: () => ({ ...values }),
+        }),
+        [getFieldValue, resetFields, setFieldValue, setFieldsValue, validateFields, values],
+      );
 
-    React.useImperativeHandle(ref, () => api, [api]);
+      React.useImperativeHandle(ref, () => api, [api]);
 
-    React.useEffect(() => {
-      if (form && typeof form === 'object') {
-        Object.assign(form, api);
-      }
-    }, [form, api]);
+      React.useEffect(() => {
+        if (form && typeof form === 'object') {
+          Object.assign(form, api);
+        }
+      }, [form, api]);
 
-    const contextValue = React.useMemo(
-      () => ({
-        values,
-        setFieldValue,
-        registerRules,
-      }),
-      [values, setFieldValue, registerRules],
-    );
+      const contextValue = React.useMemo(
+        () => ({
+          values,
+          setFieldValue: changeFieldValue,
+          registerRules,
+        }),
+        [changeFieldValue, values, registerRules],
+      );
 
-    return (
-      <FormContext.Provider value={contextValue}>
-        <form data-testid='form'>{children}</form>
-      </FormContext.Provider>
-    );
-  });
+      return (
+        <FormContext.Provider value={contextValue}>
+          <form data-testid='form'>{children}</form>
+        </FormContext.Provider>
+      );
+    },
+  );
   Form.displayName = 'MockForm';
   (Form as any).__Context = FormContext;
 

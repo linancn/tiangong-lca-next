@@ -24,9 +24,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
-lastReviewedNote: 'Updated for Issue #654: mapped the isolated release-E2E controller/container while preserving the test-only Supabase and shipped-service ownership boundaries.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
+lastReviewedNote: 'Updated for Issue #657 release integration: mapped the data-product closure preflight, unified task-summary feed, and release-E2E read boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -51,6 +51,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `src/pages/*/sdkValidation.ts`, `src/pages/Utils/validation/**` | page-level SDK-code adapters plus shared localized validation messages, detail mapping, and form-support helpers |
 | `src/components/**` | shared UI and reusable flows |
 | `src/services/**` | app-side Supabase/API access, ordered-dataset shaping, typed locale normalization and runtime fallback for Node-loaded services, explicit anonymous-route policy, and service logic |
+| `src/services/dataProducts/**` | authenticated data-product commands, closure-check projections, result-package requests, and the curated `task-summary.v2` feed consumed by the global task center |
 | `src/locales/**` | UI strings; every supported locale follows one canonical message manifest, with leaf topology, key ownership, placeholders, and dynamic families kept aligned |
 | `src/global.less`, `src/style/**`, `src/manifest.json`, `src/service-worker.js`, `src/utils/appUrl.ts`, `src/utils/ruleVerification.ts`, `src/typings.d.ts` | browser shell support, global styling, and support utilities |
 | `public/**` | generated or reviewed static resource bundles consumed by the app |
@@ -85,6 +86,20 @@ Rules:
 - shared service code that can be loaded by Node smoke scripts must tolerate a missing initialized Umi runtime and fall back without crossing the `src/services/**` data boundary
 - structured non-React content, such as the TIDAS import report descriptor, belongs in a typed pure module that consumes the registry's exact adapter topology; UI components render the descriptor instead of duplicating locale branches
 - semantic localization E2E serves the candidate frontend on loopback with the existing `main` environment configuration. Direct development mode uses `npm run start:main`; release mode exports a clean commit, builds and serves its static production bundle in the isolated container, and receives only a read-only tracked-main environment proof plus an optional protected users file and exact recovery-ledger mount. Its direct Supabase client remains a test-only setup/teardown boundary under `tests/e2e/**`, uses the supplied user session rather than service-role authority, and may touch only the exact UUID-scoped `codex-e2e` tuple recorded in its ignored ledger; shipped app-side data access remains in `src/services/**`
+
+### Data Product Closure Preflight And Task Feed
+
+The closure-check and result-package command path is:
+
+`src/pages/DataProcessing/index.tsx -> src/services/dataProducts/{closure,api}.ts -> app_data_product_commands`
+
+The task-center recovery path is:
+
+`src/components/LcaTaskCenter/index.tsx -> src/services/dataProducts/taskCenter.ts -> app_data_product_commands:list_task_feed`
+
+Next owns scope selection, command orchestration, curated closure-issue presentation, report download initiation, task-summary rendering, and deep-link navigation. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+
+The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 
 ### Process Review-Submit Gate
 

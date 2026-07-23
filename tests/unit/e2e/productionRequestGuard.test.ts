@@ -334,7 +334,31 @@ describe('production browser request guard', () => {
     ).toBe('block');
   });
 
-  it('allows only the exact read-only data-product publication list command', () => {
+  it('allows only the exact read-only data-product commands', () => {
+    const taskFeedBody = {
+      action: 'list_task_feed',
+      category: 'data_product',
+      jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
+      limit: 50,
+      rootOnly: false,
+    };
+    expect(
+      classify('POST', '/functions/v1/app_data_product_commands', JSON.stringify(taskFeedBody)),
+    ).toBe('allow');
+    expect(
+      classify(
+        'POST',
+        '/functions/v1/app_data_product_commands',
+        JSON.stringify({ ...taskFeedBody, rootOnly: true }),
+      ),
+    ).toBe('block');
+    expect(
+      classify(
+        'POST',
+        '/functions/v1/app_data_product_commands',
+        JSON.stringify({ ...taskFeedBody, write: true }),
+      ),
+    ).toBe('block');
     expect(
       classify(
         'POST',

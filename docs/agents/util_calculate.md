@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
-lastReviewedNote: 'Updated for Issue #635: generated subproduct labels now derive every authoring-enabled language and its reviewed prefix from the content-language registry; allocation and LCIA semantics are unchanged.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
+lastReviewedNote: 'Reviewed for Issue #657 release integration: the closure preflight and service-backed task feed do not change frontend-side allocation, scaling, or LCIA semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

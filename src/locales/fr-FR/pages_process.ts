@@ -45,6 +45,7 @@ export default {
   'pages.process.lca.taskCenter.remove': 'Supprimer',
   'pages.process.lca.taskCenter.details': 'Détails',
   'pages.process.lca.taskCenter.view': 'Afficher',
+  'pages.process.lca.taskCenter.openWorkbench': 'Ouvrir',
   'pages.process.lca.taskCenter.diagnostics': 'Diagnostics',
   'pages.process.lca.taskCenter.filter.all': 'Tous',
   'pages.process.lca.taskCenter.type.lca': 'Calcul d’ACV',

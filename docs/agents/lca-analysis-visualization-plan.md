@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
-lastReviewedNote: 'Reviewed for Issue #633: registry-driven lifecycle-model labels do not change the proposed analysis views, chart rules, or traceability contract.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
+lastReviewedNote: 'Reviewed for Issue #657 release integration: the data-product closure preflight and unified task feed do not change the proposed analysis views, chart rules, or traceability contract.'
 ---
 
 # LCA Analysis And Visualization Plan

@@ -212,14 +212,32 @@ async function fulfillEmptyBuildJobs(route: Route): Promise<AuditedWorkerReadKin
   return readKind;
 }
 
-async function fulfillEmptyPublications(route: Route): Promise<boolean> {
+type AuditedDataProductReadKind = 'publications' | 'task-feed';
+
+async function fulfillEmptyDataProductRead(
+  route: Route,
+): Promise<AuditedDataProductReadKind | undefined> {
   if (await fallbackVerifiedPreflight(route, '/functions/v1/app_data_product_commands')) {
-    return false;
+    return undefined;
   }
-  const body = {
-    action: 'list_publications',
-    limit: 50,
-  };
+  const requestBody = route.request().postDataJSON() as unknown;
+  const isTaskFeedRead =
+    typeof requestBody === 'object' &&
+    requestBody !== null &&
+    !Array.isArray(requestBody) &&
+    (requestBody as Record<string, unknown>).action === 'list_task_feed';
+  const body = isTaskFeedRead
+    ? {
+        action: 'list_task_feed',
+        category: 'data_product',
+        jobKinds: ['lcia.scope_closure_check', 'lcia_result.package_build'],
+        limit: 50,
+        rootOnly: false,
+      }
+    : {
+        action: 'list_publications',
+        limit: 50,
+      };
   assertAuditedSyntheticReadRequest(route.request(), {
     expectedOrigin: productionBackendTarget.origin,
     expectedPublishableKey: productionBackendTarget.publishableKey,
@@ -229,12 +247,12 @@ async function fulfillEmptyPublications(route: Route): Promise<boolean> {
     searchParams: { forceFunctionRegion: 'us-east-1' },
   });
   await route.fulfill({
-    body: JSON.stringify({ data: [], ok: true }),
+    body: JSON.stringify({ data: isTaskFeedRead ? { items: [] } : [], ok: true }),
     contentType: 'application/json',
     headers: { 'access-control-allow-origin': '*' },
     status: 200,
   });
-  return true;
+  return isTaskFeedRead ? 'task-feed' : 'publications';
 }
 
 async function expectSelectedDataProcessingTab(
@@ -291,14 +309,18 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
       fulfilledWorkerReads[readKind] += 1;
     }
   });
-  let fulfilledPublicationReads = 0;
+  const fulfilledDataProductReads: Record<AuditedDataProductReadKind, number> = {
+    publications: 0,
+    'task-feed': 0,
+  };
   await page.route(DATA_PRODUCT_COMMANDS_API_PATTERN, async (route) => {
-    if (await fulfillEmptyPublications(route)) {
-      fulfilledPublicationReads += 1;
+    const readKind = await fulfillEmptyDataProductRead(route);
+    if (readKind) {
+      fulfilledDataProductReads[readKind] += 1;
     }
   });
   const readFulfilledRoleReads = () => fulfilledRoleReads;
-  const readFulfilledPublicationReads = () => fulfilledPublicationReads;
+  const readFulfilledPublicationReads = () => fulfilledDataProductReads.publications;
 
   try {
     for (const variant of DATA_PROCESSING_VARIANTS) {
@@ -312,7 +334,7 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
         // eslint-disable-next-line @typescript-eslint/no-loop-func
         await test.step(`${variant.id} ${locale}`, async () => {
           const roleReadsBeforeNavigation = fulfilledRoleReads;
-          const publicationReadsBeforeNavigation = fulfilledPublicationReads;
+          const publicationReadsBeforeNavigation = fulfilledDataProductReads.publications;
           await page.goto(spaLocationToCandidateUrl(baseURL!, location), {
             waitUntil: 'domcontentloaded',
           });
@@ -340,9 +362,10 @@ test('Data Processing typed tabs survive locale switches and reloads', async ({
       }
     }
     expect(fulfilledWorkerReads['lca-job']).toBeGreaterThan(0);
-    expect(fulfilledWorkerReads['lcia-result-build']).toBeGreaterThan(0);
+    expect(fulfilledWorkerReads['lcia-result-build']).toBe(0);
     expect(fulfilledWorkerReads['lcia-package-job']).toBeGreaterThan(0);
     expect(fulfilledWorkerReads['review-submit']).toBeGreaterThan(0);
+    expect(fulfilledDataProductReads['task-feed']).toBeGreaterThan(0);
   } finally {
     // Closing the page aborts all mounted effects before the context-level production guard
     // performs its final no-blocked-request assertion.
