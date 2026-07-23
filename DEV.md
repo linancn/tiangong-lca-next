@@ -25,9 +25,9 @@ checkPaths:
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: ff86b9f7349fd70f8da4852904d48e8948bd2e71
-lastReviewedNote: 'Reviewed for Issue #666: the existing development bootstrap already covers production evidence refresh, validation, and checked push; no command changes are required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; development bootstrap and checked-push commands remain current.'
 ---
 
 # Development Bootstrap

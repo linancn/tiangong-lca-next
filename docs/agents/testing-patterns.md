@@ -25,9 +25,9 @@ checkPaths:
   - docker/e2e/**
   - playwright.config.ts
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the controlled production E2E followed the existing create/cleanup evidence pattern; no pattern change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; test-selection and release-proof patterns remain current.'
 ---
 
 # Testing Patterns Reference

@@ -30,9 +30,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: ff86b9f7349fd70f8da4852904d48e8948bd2e71
-lastReviewedNote: 'Reviewed for Issue #666: the v0.0.56 release recovery follows the existing production E2E and checked-push contract; no repository entry rule changes are required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; repository entry, branch, release, and backmerge rules remain current.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

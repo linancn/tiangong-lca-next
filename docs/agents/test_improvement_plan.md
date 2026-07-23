@@ -24,9 +24,9 @@ checkPaths:
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
-lastReviewedAt: 2026-07-22
-lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
-lastReviewedNote: 'Reviewed for Issue #666: the release recovery refreshes evidence under the existing authenticated E2E strategy; no strategy change is required.'
+lastReviewedAt: 2026-07-23
+lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
+lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; the maintained testing strategy remains unchanged.'
 ---
 
 # Testing Strategy
