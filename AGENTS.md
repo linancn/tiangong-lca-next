@@ -31,8 +31,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
-lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; repository entry, branch, release, and backmerge rules remain current.'
+lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
+lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; repository entry, branch, release, and backmerge rules remain current.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

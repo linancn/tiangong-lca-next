@@ -26,8 +26,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
-lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; development bootstrap and checked-push commands remain current.'
+lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
+lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; development bootstrap and checked-push commands remain current.'
 ---
 
 # Development Bootstrap

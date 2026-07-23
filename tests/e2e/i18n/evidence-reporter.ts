@@ -188,6 +188,7 @@ const CRITICAL_SOURCE_PATHS = [
 const CRITICAL_TEST_PATHS = [
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
+  'scripts/i18n/package-lock-runtime-fingerprint.cjs',
   'tests/data-workflows/data-workflow-paths.ts',
   'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
@@ -195,6 +196,7 @@ const CRITICAL_TEST_PATHS = [
   'tests/unit/e2e/evidenceReporter.test.ts',
   'tests/unit/e2e/productionDataLedger.test.ts',
   'tests/unit/e2e/productionRequestGuard.test.ts',
+  'tests/unit/i18n/packageLockRuntimeFingerprint.test.js',
   'tests/unit/services/general/routeViewStateRegistry.test.ts',
 ] as const;
 const SEMANTIC_E2E_IGNORED_RUNTIME_DIRECTORIES = new Set([

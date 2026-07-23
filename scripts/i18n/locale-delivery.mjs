@@ -25,6 +25,7 @@ import {
 const require = createRequire(import.meta.url);
 const prettier = require('prettier');
 const ts = require('typescript');
+const { packageLockRuntimeDigest } = require('./package-lock-runtime-fingerprint.cjs');
 
 const AUDIT_SCRIPT = 'scripts/i18n/audit-locales.mjs';
 const CANONICAL_MANIFEST = 'docs/plans/i18n-de-DE/manifest.json';
@@ -88,6 +89,7 @@ const SEMANTIC_E2E_CRITICAL_SOURCE_PATHS = Object.freeze([
 const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
   'docs/plans/i18n/semantic-e2e-evidence.schema.json',
   'scripts/i18n/locale-delivery.mjs',
+  'scripts/i18n/package-lock-runtime-fingerprint.cjs',
   'tests/data-workflows/data-workflow-paths.ts',
   'tests/data-workflows/workflows/workflow-shared.ts',
   'tests/unit/components/LocationTextItemDescription.test.tsx',
@@ -95,6 +97,7 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
   'tests/unit/e2e/evidenceReporter.test.ts',
   'tests/unit/e2e/productionDataLedger.test.ts',
   'tests/unit/e2e/productionRequestGuard.test.ts',
+  'tests/unit/i18n/packageLockRuntimeFingerprint.test.js',
   'tests/unit/services/general/routeViewStateRegistry.test.ts',
 ]);
 const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
@@ -269,6 +272,26 @@ function gitLocaleCatalogDigest(root, commit, locale) {
     hash.update('\0');
   }
   return hash.digest('hex');
+}
+
+function packageLockBindingMatchesCurrentRuntime(root, evidence, expectedPackageLock) {
+  if (evidence.digests.packageLock.sha256 === expectedPackageLock.sha256) {
+    return true;
+  }
+  try {
+    const observedPackageLock = gitText(
+      root,
+      evidence.candidate.observedHeadCommit,
+      SEMANTIC_E2E_PACKAGE_LOCK,
+    );
+    return (
+      sha256(observedPackageLock) === evidence.digests.packageLock.sha256 &&
+      packageLockRuntimeDigest(observedPackageLock) ===
+        packageLockRuntimeDigest(readText(root, SEMANTIC_E2E_PACKAGE_LOCK))
+    );
+  } catch {
+    return false;
+  }
 }
 
 function planDirectory(locale) {
@@ -881,12 +904,7 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
   };
 }
 
-function assertExactFileDigests(
-  actual,
-  expected,
-  label,
-  { requireCurrentBindings = true } = {},
-) {
+function assertExactFileDigests(actual, expected, label, { requireCurrentBindings = true } = {}) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
   if (
     JSON.stringify(actual.map((entry) => entry?.path)) !==
@@ -1122,12 +1140,8 @@ function validateSemanticE2EEvidence(
   if (
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendObservedOriginSha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendTrackedOriginSha256 ?? '') ||
-    !/^[0-9a-f]{64}$/u.test(
-      evidence.target.proof.backendObservedPublishableKeySha256 ?? '',
-    ) ||
-    !/^[0-9a-f]{64}$/u.test(
-      evidence.target.proof.backendTrackedPublishableKeySha256 ?? '',
-    ) ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendObservedPublishableKeySha256 ?? '') ||
+    !/^[0-9a-f]{64}$/u.test(evidence.target.proof.backendTrackedPublishableKeySha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.candidateEnvironmentSha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.trackedMainEnvironmentSha256 ?? '') ||
     !/^[0-9a-f]{64}$/u.test(evidence.target.proof.frontendOriginSha256 ?? '') ||
@@ -1192,9 +1206,11 @@ function validateSemanticE2EEvidence(
     evidence.digests.packageLock.path !== expectedDigests.packageLock.path ||
     !/^[0-9a-f]{64}$/u.test(evidence.digests.packageLock.sha256 ?? '') ||
     (requireCurrentBindings &&
-      evidence.digests.packageLock.sha256 !== expectedDigests.packageLock.sha256)
+      !packageLockBindingMatchesCurrentRuntime(root, evidence, expectedDigests.packageLock))
   ) {
-    throw new Error('Semantic E2E evidence is not bound to the current package lock.');
+    throw new Error(
+      'Semantic E2E evidence is not bound to the current executable package-lock semantics.',
+    );
   }
   assertExactFileDigests(
     evidence.digests.runtimeAssets,
@@ -1667,11 +1683,7 @@ function validateViewStateRegistry(root, coverage, routeRows, manifest) {
   };
 }
 
-function validateRouteCoverage(
-  root,
-  manifest,
-  { requireCurrentSemanticEvidence = false } = {},
-) {
+function validateRouteCoverage(root, manifest, { requireCurrentSemanticEvidence = false } = {}) {
   const coverage = readJson(root, ROUTE_VIEW_COVERAGE);
   if (coverage.sourceRouteConfig !== 'config/routes.ts') {
     throw new Error('Route-view coverage must identify config/routes.ts as its route source.');
@@ -3484,11 +3496,7 @@ async function main() {
   }
 
   if (options.requireProductionReady) {
-    assertCurrentSemanticEvidenceReady(
-      root,
-      locale ?? SUPPORTED_APP_LOCALES[0],
-      manifest,
-    );
+    assertCurrentSemanticEvidenceReady(root, locale ?? SUPPORTED_APP_LOCALES[0], manifest);
   }
 
   if (action === 'all') {

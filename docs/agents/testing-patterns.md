@@ -26,8 +26,8 @@ checkPaths:
   - playwright.config.ts
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
-lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; test-selection and release-proof patterns remain current.'
+lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
+lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; release proof now tests version-only lock metadata separately from dependency drift.'
 ---
 
 # Testing Patterns Reference
@@ -125,7 +125,7 @@ Browser semantic E2E pattern:
 - keep Header Umi `SelectLang` at `reload={false}` and prove locale switching within the same document: URL/document identity persist, mounted locale state refreshes, and a delayed old-locale reference response cannot overwrite the current selection
 - stage deliberately stale IndexedDB/localStorage fixtures on a same-origin static document before navigating to the tested deep link, and send menu-dismissal keys to the visible menu/trigger rather than ambient page focus; Firefox may retry one exact navigation only after its known cancellation failed to commit that target
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
-- treat adding a registry locale or changing a bound route/source/test as evidence invalidation, not as a request to reuse the old result
+- treat adding a registry locale or changing a bound route/source/test or executable dependency lock as evidence invalidation, not as a request to reuse the old result; a package-lock root application-version-only change may reuse evidence only after the raw evidence lock is verified at its recorded commit and the deterministic dependency projection remains exact
 
 Gate-bootstrap pattern:
 

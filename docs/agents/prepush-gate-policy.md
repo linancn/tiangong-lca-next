@@ -29,8 +29,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 578438724501bcfd561c496d09240766b5f9b2c8
-lastReviewedNote: 'Reviewed for Issue #674 across the complete v0.0.57 main release range; clarified that release-range Docpact proof is distinct from a feature-branch gate.'
+lastReviewedCommit: 8d4f4a489484c56068ba54936209127568cf992b
+lastReviewedNote: 'Reviewed for Issue #676 after the v0.0.58 production-readiness failure; package-lock evidence now binds executable semantics instead of root release metadata.'
 ---
 
 # Pre-Push Gate Policy
@@ -59,7 +59,7 @@ Production-effective workflows separately run `npm run reference-data:production
 
 Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
-Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, package-lock, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
+Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
 ## Scope
 
