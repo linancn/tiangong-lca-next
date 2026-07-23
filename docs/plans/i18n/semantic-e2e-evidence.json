@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-23T07:28:54.904Z",
-  "runId": "local-2db42917-aa87-40bb-9ff1-22289e18c52c",
+  "generatedAt": "2026-07-23T13:37:22.258Z",
+  "runId": "local-eb9d0f81-fecf-46a5-8681-b19b060ed0bd",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "5a2921c657fb525468c6cc7bba550394ac890c9c",
-    "packageManifestDigest": "b11838f95fe0190996d0fcc5ad9c4fbfe886ddb8f7bf60be6e2be0e8f468e97a",
-    "sourceTreeDigest": "e4613a4e5a7af482e8b8b9e291c4e311180b4805fe6fa23c816db61b1d642c2d",
-    "unitTestTreeDigest": "f0d705f8820604b13b48403739a0acf70a67d1f6d8e115acfd67f67eee42c435"
+    "observedHeadCommit": "72fe67ffa46cd5d019e84eb0c5cf835f7f5c4635",
+    "packageManifestDigest": "2c63d81affe78c76d12b86d6bd8b5bf8aca7259b6bb7bdface938a575217996a",
+    "sourceTreeDigest": "8644422e22f68a29d16621dffc8fad27e1c766e3f5b2a6885df3959a507461c0",
+    "unitTestTreeDigest": "9dc5c251e9177fa1c27556dba06e8b5f41ffce8426172a910b018cfe66b03cc0"
   },
   "target": {
     "frontend": "candidate-local",
@@ -25,8 +25,17 @@
       "trackedMainEnvironmentSha256": "e8e821970e6b99bc30b13f7b142b6db5afce7480238f7b178dd67d32fadb4174"
     }
   },
-  "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-  "browsers": ["chromium", "firefox", "webkit"],
+  "locales": [
+    "zh-CN",
+    "en-US",
+    "de-DE",
+    "fr-FR"
+  ],
+  "browsers": [
+    "chromium",
+    "firefox",
+    "webkit"
+  ],
   "routeCoverage": {
     "path": "docs/plans/i18n/route-view-coverage.json",
     "contractDigest": "b9def444859e8fabbc7abed5c6b274e1c24896dd5de0f0ea38b28aacc0570e5e"
@@ -34,7 +43,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "eaf9549bcef004be8626c2bba919a4b4c6595bfaee6f32bd799ee4ec39a55845"
+      "sha256": "34c5a57f539d4ccb0f8593a7e2de7ed2cb1b6ff52f0301d23d0e839577998f27"
     },
     "runtimeAssets": [
       {
@@ -241,7 +250,7 @@
       },
       {
         "path": "tests/e2e/i18n/reference-refresh.spec.ts",
-        "sha256": "97a631d4d4d2c6e37230e6b839e5efced1d745af98baf52fc619e3afe7c7bf6f"
+        "sha256": "15448007da83a3d7869714e3f6c73d219746ddbc44694a175d9d185881701eab"
       },
       {
         "path": "tests/e2e/i18n/responsive-layout.spec.ts",
@@ -341,7 +350,7 @@
       },
       {
         "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-        "sha256": "0b315e91799a34fb8c0eb237f0be29624faed5382f5f20ffd173149c08d7d42c"
+        "sha256": "21267e66358f2ba53c054097ca7170290ba442a5000b538526ca8a360573c4ac"
       },
       {
         "path": "tests/unit/i18n/packageLockRuntimeFingerprint.test.js",
@@ -361,7 +370,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "c1ad09e79b94469bc0307033fd3685d1ef83e672c3061d6f87d7e597bd631ce2"
+        "sha256": "6435d8436134faf8509900e956a598b1d0fa752479df5ee3ff2060ddaca80c44"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -503,7 +512,7 @@
       },
       {
         "path": "src/locales/en-US/pages.ts",
-        "sha256": "bc0f23a67d8d303f042d9b2cff859c08b5e1610d4cb6e8856dfef1d6cc4a47c3"
+        "sha256": "63dc01cee653095bc6724a3a0e985933b9e2455db0a6ca32c159ea851aef1bfe"
       },
       {
         "path": "src/locales/en-US/pages_general.ts",
@@ -527,7 +536,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "2788a46948043388425a984fe3a97a70b3f3b454e9485b9012f097a6f6921008"
+        "sha256": "00fe18e13bbf7479a719d0fe4b23c544845b9d460255ad7731474f8587a54b65"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",
@@ -642,19 +651,47 @@
       "viewState": "configured-redirect",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -664,19 +701,47 @@
       "viewState": "configured-redirect",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -686,19 +751,47 @@
       "viewState": "configured-redirect",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -708,19 +801,47 @@
       "viewState": "configured-redirect",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -730,14 +851,30 @@
       "viewState": "anonymous-login-flow-redirect",
       "result": "passed",
       "proofScope": "access-boundary-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium"],
-      "scenarios": ["route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium"
+      ],
+      "scenarios": [
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -747,19 +884,47 @@
       "viewState": "team-management",
       "result": "passed",
       "proofScope": "access-boundary-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -769,19 +934,47 @@
       "viewState": "review-workbench",
       "result": "passed",
       "proofScope": "access-boundary-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -791,19 +984,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -813,19 +1034,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -835,24 +1084,60 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "responsive-surface-matrix", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "responsive-surface-matrix",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "responsive-surface-matrix",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -862,19 +1147,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -884,19 +1197,47 @@
       "viewState": "process-analysis",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -906,19 +1247,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -928,19 +1297,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -950,8 +1347,17 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
       "scenarios": [
         "anonymous-protection",
         "persisted-multilingual-authoring",
@@ -966,48 +1372,119 @@
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "persisted-multilingual-authoring",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "persisted-multilingual-content",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "reference-refresh",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "reference-refresh-cache",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "responsive-surface-matrix",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-process-drawer-mode",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-process-required-state",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1017,19 +1494,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1039,19 +1544,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1061,19 +1594,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1083,19 +1644,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1105,19 +1694,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1127,19 +1744,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1149,19 +1794,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1171,19 +1844,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1193,19 +1894,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1215,19 +1944,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1237,19 +1994,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1259,19 +2044,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1281,19 +2094,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1303,19 +2144,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1325,19 +2194,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1347,19 +2244,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1369,19 +2294,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1391,19 +2344,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1413,19 +2394,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1435,19 +2444,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1457,19 +2494,47 @@
       "viewState": "dataset-list-and-drawers",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1479,24 +2544,60 @@
       "viewState": "build-preview-publication-tabs",
       "result": "passed",
       "proofScope": "access-boundary-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route", "typed-data-processing-tabs"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route",
+        "typed-data-processing-tabs"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-data-processing-tabs",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1506,19 +2607,47 @@
       "viewState": "account-profile",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1528,8 +2657,17 @@
       "viewState": "team-membership",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
       "scenarios": [
         "anonymous-protection",
         "authoring-options",
@@ -1541,33 +2679,79 @@
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "authoring-options",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "responsive-layout",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "responsive-surface-matrix",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-action-variants",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1577,19 +2761,47 @@
       "viewState": "redirect-to-welcome",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1599,8 +2811,17 @@
       "viewState": "overview",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
       "scenarios": [
         "anonymous-protection",
         "modal-state-machine",
@@ -1611,28 +2832,65 @@
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "modal-state-machine",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "responsive-surface-matrix",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-view-variants",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1642,8 +2900,17 @@
       "viewState": "carbon-footprint-guide",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
       "scenarios": [
         "anonymous-protection",
         "carbon-guide-state-machine",
@@ -1653,23 +2920,53 @@
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "carbon-guide-state-machine",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         },
         {
           "scenario": "typed-view-variants",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1679,29 +2976,77 @@
       "viewState": "login-and-register",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["locale-fallback-refresh", "query-responsive", "registry-selector", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "locale-fallback-refresh",
+        "query-responsive",
+        "registry-selector",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "locale-fallback-refresh",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "query-responsive",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "registry-selector",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1711,14 +3056,30 @@
       "viewState": "password-forgot",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium"],
-      "scenarios": ["route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium"
+      ],
+      "scenarios": [
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1728,14 +3089,30 @@
       "viewState": "password-reset",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium"],
-      "scenarios": ["route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium"
+      ],
+      "scenarios": [
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1745,19 +3122,47 @@
       "viewState": "national-carbon-dashboard",
       "result": "passed",
       "proofScope": "access-boundary-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1767,14 +3172,30 @@
       "viewState": "static-legal-English-fallback",
       "result": "passed",
       "proofScope": "declared-fallback-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium"],
-      "scenarios": ["route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium"
+      ],
+      "scenarios": [
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1784,14 +3205,30 @@
       "viewState": "static-legal-English-fallback",
       "result": "passed",
       "proofScope": "declared-fallback-observed",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium"],
-      "scenarios": ["route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium"
+      ],
+      "scenarios": [
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     },
@@ -1801,19 +3238,47 @@
       "viewState": "not-found",
       "result": "passed",
       "proofScope": "internal-localization",
-      "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-      "browsers": ["chromium", "firefox", "webkit"],
-      "scenarios": ["anonymous-protection", "route"],
+      "locales": [
+        "zh-CN",
+        "en-US",
+        "de-DE",
+        "fr-FR"
+      ],
+      "browsers": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "scenarios": [
+        "anonymous-protection",
+        "route"
+      ],
       "scenarioCoverage": [
         {
           "scenario": "anonymous-protection",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium", "firefox", "webkit"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ]
         },
         {
           "scenario": "route",
-          "locales": ["zh-CN", "en-US", "de-DE", "fr-FR"],
-          "browsers": ["chromium"]
+          "locales": [
+            "zh-CN",
+            "en-US",
+            "de-DE",
+            "fr-FR"
+          ],
+          "browsers": [
+            "chromium"
+          ]
         }
       ]
     }
