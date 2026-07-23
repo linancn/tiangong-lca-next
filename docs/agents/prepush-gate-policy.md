@@ -29,8 +29,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
-lastReviewedNote: 'Reviewed for Issue #670 on current dev: the isolated docs-capture test/command remains outside the routine pre-push and release semantic-E2E gates, whose current release-evidence rules are preserved.'
+lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
+lastReviewedNote: 'Reviewed on current dev for Issue #670: kept docs capture outside routine gates while retaining the Issue #676 executable package-lock evidence boundary.'
 ---
 
 # Pre-Push Gate Policy
@@ -61,7 +61,7 @@ Playwright semantic localization proof remains separate from `prepush:gate`. Foc
 
 The docs-impact screenshot executor is a third, isolated Playwright surface. `npm run docs:screenshot:test` protects its plan, secret-file, path, read-only action, and access-classification contracts; the on-demand `docs:screenshot:capture` command uses `playwright.docs-capture.config.ts`. Neither command joins the routine pre-push/release gate, and neither changes semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
-Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, package-lock, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
+Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
 ## Scope
 
@@ -82,6 +82,7 @@ It does not own:
 | same-push transport retry | permit the repo-owned retry helper only when a managed original push failed after its hook completed and the ignored bounded receipt proves the exact clean HEAD, branch, ref update, remote, toolchain, dependency tree, gate inputs, and Docpact base are unchanged |
 | ordinary GitHub branch pushes | do not run broad duplicate remote test jobs or the Playwright browser matrix |
 | PRs into `dev` or `main` | rely on local test-gate evidence, focused proof, and docpact PR governance; run browser semantic E2E manually only when risk warrants it |
+| `dev -> main` promotion candidate | run Docpact against the current `main` release base and the intended candidate head; a feature-branch or `dev`-relative pass does not close review evidence for the complete release range |
 | semantic E2E `workflow_dispatch` | remains credential-free/read-only and runs the same contract/public browser boundary; it never receives production credentials or authorizes production writes |
 | local authenticated semantic E2E | run `e2e:release` only in an explicitly authorized operator session with a protected runtime-only credential file, archived clean candidate, verified local-bundle/production-backend targeting, explicit authenticated/write/evidence options, and exact cleanup |
 | canonical post-merge `main` pushes | read `package.json.version`, create the matching `v*` tag when missing, run release-gate tests and reusable exact-SHA credential-free semantic E2E, pre-create exactly one tag-scoped draft, then run web deploy and the Electron matrix; the workflow succeeds only after one draft contains the exact 12 expected non-empty assets |
@@ -118,6 +119,7 @@ It does not own:
 - a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
 - never invoke `git push --no-verify` or `HUSKY=0` manually; a missing or invalidated receipt requires a new managed push and hook-owned gate run
 - run the lightweight docpact gate before the full local test gate so governed-doc review failures surface early
+- before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the post-merge Release Gate repeats this proof against the merge commit's first parent
 - protect the actual local and release gates
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs

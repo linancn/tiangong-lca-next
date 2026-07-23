@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-23'
-lastReviewedCommit: '2d9bf46e2852e9bde0bee769470ad2e995af06b6'
-lastReviewedNote: 'Updated for Issue #670 on current dev: the repo owns an isolated, read-only docs screenshot executor with explicit secret, access-denial, output, and network boundaries; recent release-evidence routing remains unchanged.'
+lastReviewedCommit: '4b505dcaf16e034f1faaaa4498b3bddeea4dce84'
+lastReviewedNote: 'Reviewed on current dev for Issue #670: added ownership and routing for the isolated, read-only docs screenshot executor while retaining the Issue #676 release-evidence boundaries.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

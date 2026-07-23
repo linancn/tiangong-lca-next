@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
-lastReviewedNote: 'Updated for Issue #670 on current dev: added the isolated, read-only docs screenshot capture boundary and verified authorization-denial contract while preserving the release E2E and checked-push rules.'
+lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
+lastReviewedNote: 'Reviewed on current dev for Issue #670: added the isolated, read-only docs screenshot capture and authorization-denial boundaries while retaining the Issue #676 release, backmerge, E2E, and checked-push rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -25,8 +25,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 2d9bf46e2852e9bde0bee769470ad2e995af06b6
-lastReviewedNote: 'Reviewed for Issue #670 on current dev: isolated docs-capture contract tests extend maintained proof without changing the authenticated release semantic-E2E strategy.'
+lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
+lastReviewedNote: 'Reviewed on current dev for Issue #670: added isolated docs-capture contract proof while retaining the Issue #676 runtime dependency rule that excludes only root release-version metadata.'
 ---
 
 # Testing Strategy
@@ -42,7 +42,7 @@ lastReviewedNote: 'Reviewed for Issue #670 on current dev: isolated docs-capture
 - shared validation adapters and helper modules should stay unit-heavy; do not expand wrapper-only branch testing unless the user-visible contract actually changes
 - data workflow smoke coverage should grow through paired data/result fixtures and workflow-lib unit proof only when the workflow phase or backend-facing assertion changes
 - localization quality should combine deterministic topology, context, terminology-token, route-view, fallback, correction, and activation gates with a separately produced semantic/route/E2E proof; the deterministic structural artifact must not present itself as independent semantic review, and delivery does not create a human translation-approval state
-- the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and digest-bound evidence that invalidates itself when a locale or covered input changes
+- the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes; root application release-version metadata is excluded only after the evidence's raw lock is proven at its recorded commit
 - production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; GitHub Actions runs the credential-free/read-only browser matrix only on demand and for the exact release SHA, while host `CI`/`GITHUB_ACTIONS` rejects production-data mode before Docker. After that local check passes, the controller clears only image-inherited CI markers and still requires authenticated mode plus the two explicit production-write guards (and a separate verified-evidence opt-in), writes intent before create, verifies UUID/owner/five-field registry markers before delete, and ends with `created=cleaned`, `leaked=0`
 - local release proof now treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
