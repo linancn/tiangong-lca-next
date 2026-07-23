@@ -1,13 +1,25 @@
 import AccessDenied from '@/components/AccessDenied';
 import LcaReleaseReadPanel from '@/components/LcaReleaseReadPanel';
 import {
+  createClosureCheck,
+  createClosureReportDownload,
   createLciaResultBuildRequest,
+  getClosureCheck,
+  listClosureCheckIssues,
   listLciaResultPublications,
   previewLciaResultPackage,
   publishLciaResultPackage,
   unpublishLciaResultPublication,
+  type ClosureCheckIssueV1,
+  type ClosureCheckSummaryV1,
   type LciaResultPublication,
 } from '@/services/dataProducts';
+import {
+  listDataProductTasks,
+  refreshDataProductTasks,
+  subscribeDataProductTasks,
+  upsertDataProductTasks,
+} from '@/services/dataProducts/taskCenter';
 import { resolveContentLanguages } from '@/services/general/contentLanguageRegistry';
 import { resolveRouteViewState } from '@/services/general/routeViewState';
 import {
@@ -15,7 +27,7 @@ import {
   normalizeRuntimeLocale,
 } from '@/services/general/runtimeLocale';
 import { getSystemUserRoleApi } from '@/services/roles/api';
-import { requestWorkerJobsApi, type WorkerJobResult } from '@/services/workerJobs/api';
+import { taskProgressPercent, type TaskSummaryV2 } from '@/services/taskCenter/types';
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -43,7 +55,14 @@ import {
   Tabs,
   Tooltip,
 } from 'antd';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import CalculationBundlePanel from './CalculationBundlePanel';
 import styles from './index.less';
 
@@ -52,7 +71,12 @@ type CommandStatus = {
   message: ReactNode;
 };
 
-type CommandAction = 'createBuild' | 'previewPackage' | 'publishPackage' | 'unpublishPublication';
+type CommandAction =
+  | 'createClosureCheck'
+  | 'createBuild'
+  | 'previewPackage'
+  | 'publishPackage'
+  | 'unpublishPublication';
 
 type CommandSummaryRow = {
   label: string;
@@ -93,11 +117,27 @@ const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
 const previewExportPageSize = 100;
 
+function newIdempotencyToken(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `closure-check-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function scopeSelectionKey(values: Record<string, unknown>): string {
+  return JSON.stringify({
+    coverageMode: values.coverageMode ?? 'global_eligible',
+    defaultImpactCategory: values.defaultImpactCategory ?? null,
+  });
+}
+
 export function parseDataProcessingDeepLink(search: string): {
   activeTabKey: 'builds' | 'preview' | 'publication';
   packageId?: string;
   processId?: string;
   processVersion?: string;
+  closureCheckId?: string;
+  resultBuildId?: string;
 } {
   const params = new URLSearchParams(search);
   const activeTabKey = resolveRouteViewState('data-processing-tab', params.get('tab')) as
@@ -108,6 +148,8 @@ export function parseDataProcessingDeepLink(search: string): {
     packageId: value('packageId'),
     processId: value('processId'),
     processVersion: value('processVersion'),
+    closureCheckId: value('closureCheckId'),
+    resultBuildId: value('resultBuildId'),
   };
 }
 
@@ -394,191 +436,61 @@ function summarizeSnapshotCoverage(stdoutTail: unknown): string | undefined {
   return line?.match(/unique_match=\S+\s+any_match=\S+\s+singular_risk=\S+/)?.[0] ?? line;
 }
 
-function compactWorkerLogText(value: string): string {
-  return value.replace(/\s+/g, ' ').trim();
-}
-
-function truncateWorkerLogText(value: string, maxLength = 220): string {
-  return value.length <= maxLength ? value : `${value.slice(0, maxLength - 1).trimEnd()}...`;
-}
-
-type Translate = (id: string, defaultMessage: string) => string;
-
-function summarizeWorkerJobFailure(job: WorkerJobResult, t: Translate): string | null {
-  const raw = firstString(job.errorMessage, job.errorCode);
-  if (!raw) {
-    return null;
-  }
-
-  const stderrMatch = raw.match(/stderr_tail=(.*?)(?:\s+Stack backtrace:|$)/s);
-  const fromStderr = stderrMatch?.[1];
-  const withoutTechnicalTail = (fromStderr ?? raw)
-    .replace(/\s+Stack backtrace:.*$/s, '')
-    .replace(/\s+stdout_tail=.*$/s, '')
-    .replace(/\s+cmd=.*$/s, '');
-  const compacted = compactWorkerLogText(withoutTechnicalTail);
-
-  if (/unsupported solver worker job kind:\s*lcia_result\.package_build/i.test(compacted)) {
-    return t(
-      'pages.dataProcessing.jobs.error.unsupportedWorkerVersion',
-      'Worker has not picked up result generation support yet.',
-    );
-  }
-
-  const missingScopeMatch = compacted.match(/request root not found in candidate scope:\s*(\S+)/i);
-  if (missingScopeMatch) {
-    return `${t(
-      'pages.dataProcessing.jobs.error.processOutOfScope',
-      'Target process is outside the calculable input scope',
-    )}: ${missingScopeMatch[1]}`;
-  }
-
-  return truncateWorkerLogText(compacted);
-}
-
-export function packageOptionFromBuildJob(job: WorkerJobResult): LciaResultPackageOption | null {
-  const result = isRecord(job.result) ? job.result : null;
-  const resultRef = isRecord(job.resultRef) ? job.resultRef : null;
-  const payload = isRecord(job.payload) ? job.payload : null;
-  const resultPackage = isRecord(result?.package) ? result.package : null;
-  const resultRefPackage = isRecord(resultRef?.package) ? resultRef.package : null;
-
-  const packageId = firstString(
-    resultPackage?.packageId,
-    resultPackage?.package_id,
-    resultPackage?.id,
-    resultRefPackage?.packageId,
-    resultRefPackage?.package_id,
-    resultRefPackage?.id,
-  );
-  if (!packageId) {
-    return null;
-  }
-
-  const packageVersion = firstString(
-    resultPackage?.packageVersion,
-    resultPackage?.package_version,
-    result?.packageVersion,
-    result?.package_version,
-  );
-  const packageName = firstString(
-    job.resultSetName,
-    job.result_set_name,
-    job.packageName,
-    job.package_name,
-    payload?.packageName,
-    payload?.package_name,
-    payload?.name,
-    resultPackage?.packageName,
-    resultPackage?.package_name,
-    resultPackage?.name,
-    result?.packageName,
-    result?.package_name,
-    result?.name,
-  );
-  const status = firstString(resultPackage?.status, result?.packageStatus, job.status);
-  const buildId = firstString(
-    resultPackage?.buildId,
-    resultPackage?.build_id,
-    result?.buildId,
-    result?.build_id,
-    resultRef?.buildId,
-    resultRef?.build_id,
-    job.subjectId,
-  );
-  const includedInputCount = firstNumberText(
-    resultPackage?.includedInputCount,
-    resultPackage?.included_input_count,
-    result?.includedInputCount,
-    result?.included_input_count,
-  );
-  const eligibleInputCount = firstNumberText(
-    resultPackage?.eligibleInputCount,
-    resultPackage?.eligible_input_count,
-    result?.eligibleInputCount,
-    result?.eligible_input_count,
-  );
-  const option: LciaResultPackageOption = {
-    value: packageId,
-    label: '',
-    packageId,
-    packageName,
-    packageVersion,
-    buildId,
-    status,
-    includedInputCount,
-    eligibleInputCount,
-  };
-  option.label = [
-    packageName ?? packageVersion ?? packageId,
-    packageName && packageVersion ? packageVersion : undefined,
-    packageCountLabel(option),
-    status,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-  return option;
-}
-
-export function packageOptionsFromBuildJobs(jobs: WorkerJobResult[]): LciaResultPackageOption[] {
-  const options = new Map<string, LciaResultPackageOption>();
-  jobs.forEach((job) => {
-    const option = packageOptionFromBuildJob(job);
-    if (option) {
-      options.set(option.packageId, option);
-    }
-  });
-  return Array.from(options.values());
-}
-
-export function createSubmittedBuildJob(data: unknown): WorkerJobResult | null {
+/** Safe local projection used only while the task feed has not observed a new build yet. */
+export function createSubmittedBuildTask(data: unknown): TaskSummaryV2 | null {
   const record = isRecord(data) ? data : null;
-  const workerJob = isRecord(record?.workerJob) ? record.workerJob : null;
-  const buildId = firstString(
-    record?.buildId,
-    record?.build_id,
-    record?.id,
-    workerJob?.subjectId,
-    workerJob?.subject_id,
-  );
-  const workerJobId = firstString(
-    record?.workerJobId,
-    record?.worker_job_id,
-    workerJob?.id,
-    workerJob?.workerJobId,
-    workerJob?.worker_job_id,
-  );
-  const jobId = workerJobId ?? buildId;
-  const payload = isRecord(workerJob?.payload) ? workerJob.payload : null;
-
-  if (!jobId) {
-    return null;
-  }
-
+  const jobId = firstString(record?.workerJobId, record?.worker_job_id);
+  if (!jobId) return null;
+  const buildId = firstString(record?.buildId, record?.build_id);
+  const timestamp = new Date().toISOString();
   return {
+    schemaVersion: 'task-summary.v2',
+    jobId,
+    jobKind: 'lcia_result.package_build',
+    workerStatus: 'queued',
+    domainValidity: 'none',
+    projectionUpdatedAt: timestamp,
+    capabilities: {
+      canCancel: false,
+      canDownloadReport: false,
+      canOpenWorkbench: true,
+      canPreviewResult: false,
+    },
     id: jobId,
-    jobKind: firstString(workerJob?.jobKind, workerJob?.job_kind) ?? 'lcia_result.package_build',
-    subjectType:
-      firstString(workerJob?.subjectType, workerJob?.subject_type) ?? 'lcia_result_build',
-    subjectId: buildId,
-    status: (firstString(workerJob?.status) as WorkerJobResult['status'] | undefined) ?? 'queued',
-    phase: firstString(workerJob?.phase) ?? submittedBuildPendingPhase,
-    packageName: firstString(record?.packageName, record?.package_name, payload?.name),
-    resultSetName: firstString(record?.resultSetName, record?.result_set_name, payload?.name),
-    createdAt: firstString(workerJob?.createdAt, workerJob?.created_at),
-    updatedAt: firstString(workerJob?.updatedAt, workerJob?.updated_at),
+    category: 'data_product',
+    title: firstString(record?.name, record?.packageName) ?? 'Result set generation',
+    runState: 'active',
+    phase: submittedBuildPendingPhase,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    ...(buildId ? { deepLink: { routeKey: 'data_product.package', params: {} } } : {}),
   };
 }
 
-export function mergeSubmittedBuildJobs(
-  submittedJobs: WorkerJobResult[],
-  serverJobs: WorkerJobResult[],
-): WorkerJobResult[] {
-  const rows = new Map<string, WorkerJobResult>();
-  [...submittedJobs, ...serverJobs].forEach((job, index) => {
-    rows.set(firstString(job.id, job.subjectId) ?? `job-${index}`, job);
+export function packageOptionFromTaskSummary(task: TaskSummaryV2): LciaResultPackageOption | null {
+  if (!task.resultPackageId) return null;
+  return {
+    value: task.resultPackageId,
+    label: task.title || task.resultPackageId,
+    packageId: task.resultPackageId,
+    packageName: task.title,
+    status: task.domainStatus,
+    ...(typeof task.progressCounters?.completed === 'number'
+      ? { includedInputCount: String(task.progressCounters.completed) }
+      : {}),
+    ...(typeof task.progressCounters?.total === 'number'
+      ? { eligibleInputCount: String(task.progressCounters.total) }
+      : {}),
+  };
+}
+
+export function packageOptionsFromTaskSummaries(tasks: TaskSummaryV2[]): LciaResultPackageOption[] {
+  const options = new Map<string, LciaResultPackageOption>();
+  tasks.forEach((task) => {
+    const option = packageOptionFromTaskSummary(task);
+    if (option) options.set(option.packageId, option);
   });
-  return Array.from(rows.values());
+  return [...options.values()];
 }
 
 export function resolveLocalizedText(value: unknown, locale: string): string {
@@ -651,8 +563,23 @@ const DataProcessing = () => {
   const [submittingAction, setSubmittingAction] = useState<CommandAction | null>(null);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
   const [impactCategoryOptions, setImpactCategoryOptions] = useState<ImpactCategoryOption[]>([]);
-  const [buildJobs, setBuildJobs] = useState<WorkerJobResult[]>([]);
-  const [submittedBuildJobs, setSubmittedBuildJobs] = useState<WorkerJobResult[]>([]);
+  const dataProductTasks = useSyncExternalStore(
+    subscribeDataProductTasks,
+    listDataProductTasks,
+    listDataProductTasks,
+  );
+  const buildJobs = useMemo(
+    () => dataProductTasks.filter((job) => job.jobKind === 'lcia_result.package_build'),
+    [dataProductTasks],
+  );
+  const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
+  const [closurePrerequisiteUnavailable, setClosurePrerequisiteUnavailable] = useState(false);
+  const [closureIssues, setClosureIssues] = useState<ClosureCheckIssueV1[]>([]);
+  const [closureIssuesAfterIssueId, setClosureIssuesAfterIssueId] = useState<string | undefined>();
+  const [closureIssuesLoading, setClosureIssuesLoading] = useState(false);
+  const [closureIssuesError, setClosureIssuesError] = useState<string | null>(null);
+  const [closureSelectionKey, setClosureSelectionKey] = useState<string | null>(null);
+  const [currentSelectionKey, setCurrentSelectionKey] = useState<string>(scopeSelectionKey({}));
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
     deepLink.packageId,
   );
@@ -732,15 +659,13 @@ const DataProcessing = () => {
   const loadBuildJobs = useCallback(async () => {
     setBuildJobsLoading(true);
     setBuildJobsError(null);
-    const result = await requestWorkerJobsApi({
-      action: 'list',
-      subjectType: 'lcia_result_build',
-      visibility: 'operator',
-      limit: 50,
-    });
-    setBuildJobs(result.data ?? []);
-    setBuildJobsError(result.error?.message ?? null);
-    setBuildJobsLoading(false);
+    try {
+      await refreshDataProductTasks();
+    } catch (error) {
+      setBuildJobsError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setBuildJobsLoading(false);
+    }
   }, []);
 
   const loadPublications = useCallback(async () => {
@@ -768,17 +693,61 @@ const DataProcessing = () => {
   }, [isAuthorized, loadBuildJobs]);
 
   useEffect(() => {
+    if (!isAuthorized || !deepLink.closureCheckId) return;
+    void getClosureCheck(deepLink.closureCheckId).then((result) => {
+      if (!result.error && result.data) {
+        setClosureCheck(result.data);
+        const selectionKey = scopeSelectionKey(buildForm.getFieldsValue?.() ?? {});
+        setClosureSelectionKey(selectionKey);
+        setCurrentSelectionKey(selectionKey);
+      }
+    });
+  }, [buildForm, deepLink.closureCheckId, isAuthorized]);
+
+  const loadClosureIssues = useCallback(
+    async (afterIssueId?: string) => {
+      if (!closureCheck?.closureCheckId) return;
+      setClosureIssuesLoading(true);
+      setClosureIssuesError(null);
+      const result = await listClosureCheckIssues(closureCheck.closureCheckId, {
+        ...(afterIssueId ? { afterIssueId } : {}),
+        limit: 50,
+      });
+      if (result.error || !result.data) {
+        setClosureIssuesError(result.error?.message ?? 'Unable to load issues.');
+      } else {
+        setClosureIssues((previous) => {
+          const rows = new Map<string, ClosureCheckIssueV1>();
+          (afterIssueId ? previous : []).forEach((issue) => rows.set(issue.issueId, issue));
+          result.data.issues.forEach((issue) => rows.set(issue.issueId, issue));
+          return [...rows.values()];
+        });
+        setClosureIssuesAfterIssueId(result.data.nextCursor);
+      }
+      setClosureIssuesLoading(false);
+    },
+    [closureCheck?.closureCheckId],
+  );
+
+  useEffect(() => {
+    if (!closureCheck?.closureCheckId) {
+      setClosureIssues([]);
+      setClosureIssuesAfterIssueId(undefined);
+      setClosureIssuesError(null);
+      return;
+    }
+    void loadClosureIssues();
+  }, [closureCheck?.closureCheckId, loadClosureIssues]);
+
+  useEffect(() => {
     if (isAuthorized && activeTabKey === 'publication') {
       void loadPublications();
     }
   }, [activeTabKey, isAuthorized, loadPublications]);
 
-  const visibleBuildJobs = useMemo(
-    () => mergeSubmittedBuildJobs(submittedBuildJobs, buildJobs),
-    [buildJobs, submittedBuildJobs],
-  );
+  const visibleBuildJobs = useMemo(() => buildJobs, [buildJobs]);
   const packageOptions = useMemo(
-    () => packageOptionsFromBuildJobs(visibleBuildJobs),
+    () => packageOptionsFromTaskSummaries(visibleBuildJobs),
     [visibleBuildJobs],
   );
 
@@ -807,6 +776,10 @@ const DataProcessing = () => {
 
   const commandSuccessTitle = (action: CommandAction) => {
     const messages: Record<CommandAction, { defaultMessage: string; id: string }> = {
+      createClosureCheck: {
+        id: 'pages.dataProcessing.command.createClosureCheckSuccess',
+        defaultMessage: 'Data completeness check submitted',
+      },
       createBuild: {
         id: 'pages.dataProcessing.command.createBuildSuccess',
         defaultMessage: 'Result generation request submitted',
@@ -837,6 +810,18 @@ const DataProcessing = () => {
         rows.push({ label, value });
       }
     };
+
+    if (action === 'createClosureCheck') {
+      addRow(
+        t('pages.dataProcessing.command.closureCheckId', 'Closure check ID'),
+        firstString(record?.closureCheckId, record?.closure_check_id, record?.id),
+      );
+      addRow(
+        t('pages.dataProcessing.command.workerJobId', 'Worker job ID'),
+        firstString(record?.workerJobId, record?.worker_job_id, workerJob?.jobId),
+      );
+      return rows;
+    }
 
     if (action === 'createBuild') {
       addRow(
@@ -905,12 +890,61 @@ const DataProcessing = () => {
 
   const showResult = (
     action: CommandAction,
-    result: { data: unknown; error: { message?: string } | null },
+    result: { data: unknown; error: { message?: string; code?: string } | null },
   ) => {
     if (result.error) {
+      const closureErrorMessages: Record<string, string> = {
+        closure_check_required: t(
+          'pages.dataProcessing.closure.error.required',
+          'A closure check is required.',
+        ),
+        closure_check_not_found: t(
+          'pages.dataProcessing.closure.error.notFound',
+          'The selected closure check was not found.',
+        ),
+        closure_check_not_passed: t(
+          'pages.dataProcessing.closure.error.notPassed',
+          'The closure check has not passed.',
+        ),
+        closure_check_incomplete: t(
+          'pages.dataProcessing.closure.error.incomplete',
+          'The closure scan is incomplete.',
+        ),
+        closure_check_scope_mismatch: t(
+          'pages.dataProcessing.closure.error.scopeMismatch',
+          'The current selection does not match this closure check.',
+        ),
+        closure_check_policy_mismatch: t(
+          'pages.dataProcessing.closure.error.policyMismatch',
+          'The current policy does not match this closure check.',
+        ),
+        closure_check_stale: t(
+          'pages.dataProcessing.closure.error.stale',
+          'The closure certificate is stale.',
+        ),
+        closure_check_revoked: t(
+          'pages.dataProcessing.closure.error.revoked',
+          'The closure certificate was revoked.',
+        ),
+        closure_evidence_unavailable: t(
+          'pages.dataProcessing.closure.error.evidenceUnavailable',
+          'The current public release or snapshot is unavailable; a certificate cannot be issued.',
+        ),
+        current_release_required: t(
+          'pages.dataProcessing.closure.error.currentReleaseRequired',
+          'The current public release or snapshot is unavailable; a certificate cannot be issued.',
+        ),
+        closure_evidence_hash_mismatch: t(
+          'pages.dataProcessing.closure.error.evidenceHashMismatch',
+          'Closure evidence integrity verification failed.',
+        ),
+      };
       setCommandStatus({
         kind: 'error',
-        message: result.error.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
+        message:
+          (result.error.code ? closureErrorMessages[result.error.code] : undefined) ??
+          result.error.message ??
+          t('pages.dataProcessing.command.failed', 'Command failed'),
       });
       return;
     }
@@ -923,7 +957,7 @@ const DataProcessing = () => {
 
   const runCommand = async (
     action: CommandAction,
-    command: () => Promise<{ data: unknown; error: { message?: string } | null }>,
+    command: () => Promise<{ data: unknown; error: { message?: string; code?: string } | null }>,
   ) => {
     setSubmittingAction(action);
     try {
@@ -943,6 +977,22 @@ const DataProcessing = () => {
 
   const handleCreateBuild = async () => {
     const values = await buildForm.validateFields();
+    const selectionKey = scopeSelectionKey(values);
+    const closureIsUsable =
+      closureCheck?.runStatus === 'passed' &&
+      closureCheck.certificateValidity === 'valid' &&
+      closureCheck.scanCompleteness === 'complete' &&
+      closureSelectionKey === selectionKey;
+    if (!closureIsUsable || !closureCheck?.requestedScopeHash || !closureCheck.policyFingerprint) {
+      setCommandStatus({
+        kind: 'error',
+        message: t(
+          'pages.dataProcessing.closure.buildRequiresValidCertificate',
+          'Run a complete data check for the current selection before generating a result set.',
+        ),
+      });
+      return;
+    }
     const result = await runCommand('createBuild', () =>
       createLciaResultBuildRequest({
         name: values.name,
@@ -951,18 +1001,74 @@ const DataProcessing = () => {
           ? { defaultImpactCategory: values.defaultImpactCategory }
           : {}),
         lciaMethodSet: [],
+        closureCheckId: closureCheck.closureCheckId,
+        requestedScopeHash: closureCheck.requestedScopeHash,
+        policyFingerprint: closureCheck.policyFingerprint,
       }),
     );
 
     if (result && !result.error) {
-      const submittedJob = createSubmittedBuildJob(result.data);
-      if (submittedJob) {
-        setSubmittedBuildJobs((currentJobs) =>
-          mergeSubmittedBuildJobs([submittedJob], currentJobs),
-        );
+      const submittedTask = createSubmittedBuildTask(result.data);
+      if (submittedTask) {
+        upsertDataProductTasks([submittedTask]);
       }
       void loadBuildJobs();
     }
+  };
+
+  const handleCreateClosureCheck = async () => {
+    const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
+    const selectionKey = scopeSelectionKey(values);
+    const result = await runCommand('createClosureCheck', () =>
+      createClosureCheck({
+        requestedScope: {
+          coverageMode: values.coverageMode || 'global_eligible',
+          lciaMethods: values.defaultImpactCategory ? [values.defaultImpactCategory] : [],
+        },
+        requestIdempotencyToken: newIdempotencyToken(),
+      }),
+    );
+    if (result && !result.error && result.data) {
+      const summary = await getClosureCheck(result.data.closureCheckId);
+      if (summary.error || !summary.data) {
+        setCommandStatus({
+          kind: 'error',
+          message:
+            summary.error?.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
+        });
+        return;
+      }
+      setClosureCheck(summary.data);
+      setClosurePrerequisiteUnavailable(false);
+      setClosureSelectionKey(selectionKey);
+      setCurrentSelectionKey(selectionKey);
+      void loadBuildJobs();
+    } else if (
+      result?.error?.code === 'current_release_required' ||
+      result?.error?.code === 'closure_evidence_unavailable'
+    ) {
+      // This is an execution-environment prerequisite, not a data-quality
+      // blocker.  A formerly displayed certificate must not keep result
+      // generation enabled after the server says current evidence is absent.
+      setClosureCheck(null);
+      setClosureSelectionKey(null);
+      setClosurePrerequisiteUnavailable(true);
+    }
+  };
+
+  const handleDownloadClosureReport = async () => {
+    if (!closureCheck?.closureCheckId) return;
+    const result = await createClosureReportDownload(closureCheck.closureCheckId);
+    if (result.error || !result.data?.signedDownloadUrl) {
+      setCommandStatus({
+        kind: 'error',
+        message:
+          result.error?.message ??
+          t('pages.dataProcessing.closure.reportUnavailable', 'Report is unavailable'),
+      });
+      return;
+    }
+    window.open(result.data.signedDownloadUrl, '_blank', 'noopener,noreferrer');
   };
 
   const previewPackageById = async (
@@ -1057,21 +1163,11 @@ const DataProcessing = () => {
       />
     ) : null;
 
-  const renderJobProgress = (job: WorkerJobResult) => {
-    const numericProgress = typeof job.progress === 'number' ? job.progress : Number(job.progress);
-    if (!Number.isFinite(numericProgress)) {
-      return null;
-    }
+  const renderJobProgress = (job: TaskSummaryV2) => (
+    <Progress percent={taskProgressPercent(job)} showInfo={false} />
+  );
 
-    return (
-      <Progress
-        percent={Math.max(0, Math.min(100, Math.round(numericProgress)))}
-        showInfo={false}
-      />
-    );
-  };
-
-  const renderJobPhase = (phase: WorkerJobResult['phase']) =>
+  const renderJobPhase = (phase: string | null | undefined) =>
     phase === submittedBuildPendingPhase
       ? t('pages.dataProcessing.jobs.waitingForWorker', 'Waiting for worker processing')
       : null;
@@ -1116,21 +1212,13 @@ const DataProcessing = () => {
                 <span role='columnheader'>{t('pages.dataProcessing.jobs.action', 'Action')}</span>
               </div>
               {visibleBuildJobs.map((job, index) => {
-                const jobId = job.id ?? `${job.subjectId ?? 'job'}-${index}`;
-                const packageOption = packageOptionFromBuildJob(job);
+                const jobId = job.jobId || `job-${index}`;
+                const packageOption = packageOptionFromTaskSummary(job);
                 const packageInputs = packageOption ? packageCountLabel(packageOption) : undefined;
-                const failureSummary = summarizeWorkerJobFailure(job, t);
-                const payload = isRecord(job.payload) ? job.payload : {};
+                const failureSummary = job.errorSummary;
                 const resultSetLabel =
-                  firstString(
-                    job.resultSetName,
-                    job.result_set_name,
-                    job.packageName,
-                    job.package_name,
-                  ) ??
-                  packageOption?.packageName ??
-                  firstString(payload.name) ??
-                  packageOption?.packageVersion ??
+                  job.title ||
+                  packageOption?.packageName ||
                   t('pages.dataProcessing.jobs.pendingResultSet', 'Result set generation');
                 const resultSetVersion = packageOption?.packageVersion;
                 const jobPhaseLabel = renderJobPhase(job.phase);
@@ -1157,7 +1245,7 @@ const DataProcessing = () => {
                       {renderJobProgress(job)}
                     </div>
                     <div className={styles.jobTableCell} role='cell'>
-                      {renderStatusIcon(job.status, failureSummary ?? undefined)}
+                      {renderStatusIcon(job.workerStatus, failureSummary ?? undefined)}
                     </div>
                     <div className={styles.jobTableCell} role='cell'>
                       {packageInputs ?? '-'}
@@ -1225,6 +1313,9 @@ const DataProcessing = () => {
           initialValues={{
             coverageMode: 'global_eligible',
           }}
+          onValuesChange={(_changedValues, allValues) => {
+            setCurrentSelectionKey(scopeSelectionKey(allValues));
+          }}
         >
           <Form.Item
             label={t('pages.dataProcessing.form.packageName', 'Result set name')}
@@ -1258,9 +1349,106 @@ const DataProcessing = () => {
               t('pages.dataProcessing.form.defaultImpactCategory', 'Default impact category'),
             )}
           </Form.Item>
+          <Card
+            size='small'
+            title={t('pages.dataProcessing.closure.title', 'Data completeness preflight')}
+            className={styles.closureCard}
+          >
+            <Space direction='vertical' size='small'>
+              {!closureCheck ? (
+                <Alert
+                  type='info'
+                  message={t(
+                    'pages.dataProcessing.closure.notChecked',
+                    'Check data completeness before generation.',
+                  )}
+                />
+              ) : (
+                <Descriptions size='small' column={1} bordered>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.status', 'Check status')}
+                  >
+                    {closureCheck.runStatus}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.certificate', 'Certificate')}
+                  >
+                    {closureCheck.certificateValidity}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={t('pages.dataProcessing.closure.completeness', 'Scan completeness')}
+                  >
+                    {closureCheck.scanCompleteness}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={t('pages.dataProcessing.closure.issues', 'Issues')}>
+                    {`${closureCheck.blockerCodes?.length ?? 0} blockers`}
+                  </Descriptions.Item>
+                </Descriptions>
+              )}
+              {closureCheck && closureSelectionKey !== currentSelectionKey ? (
+                <Alert
+                  type='warning'
+                  message={t(
+                    'pages.dataProcessing.closure.scopeMismatch',
+                    'The current selection differs from this check. Run a new check before generating.',
+                  )}
+                />
+              ) : null}
+              {closureCheck ? (
+                <div className={styles.closureIssues} data-testid='closure-issues'>
+                  <strong>{t('pages.dataProcessing.closure.issueList', 'Closure issues')}</strong>
+                  {closureIssuesError ? <Alert type='error' message={closureIssuesError} /> : null}
+                  {!closureIssuesLoading && !closureIssuesError && closureIssues.length === 0 ? (
+                    <div>
+                      {t('pages.dataProcessing.closure.issuesEmpty', 'No closure issues found.')}
+                    </div>
+                  ) : null}
+                  {closureIssues.map((issue) => (
+                    <div key={issue.issueId} data-testid={`closure-issue-${issue.issueId}`}>
+                      <strong>{issue.title}</strong>
+                      <span>{` · ${issue.severity}`}</span>
+                      {issue.summary ? <div>{issue.summary}</div> : null}
+                      {issue.suggestedAction ? <div>{issue.suggestedAction}</div> : null}
+                    </div>
+                  ))}
+                  {closureIssuesAfterIssueId ? (
+                    <Button
+                      loading={closureIssuesLoading}
+                      onClick={() => void loadClosureIssues(closureIssuesAfterIssueId)}
+                    >
+                      {t('pages.dataProcessing.closure.loadMoreIssues', 'Load more issues')}
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+              <Space wrap>
+                <Button
+                  loading={submittingAction === 'createClosureCheck'}
+                  onClick={handleCreateClosureCheck}
+                >
+                  {t('pages.dataProcessing.action.checkCompleteness', 'Check data completeness')}
+                </Button>
+                {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
+                  <Button onClick={handleDownloadClosureReport} icon={<DownloadOutlined />}>
+                    {t(
+                      'pages.dataProcessing.action.downloadClosureReport',
+                      'Download issue report',
+                    )}
+                  </Button>
+                ) : null}
+              </Space>
+            </Space>
+          </Card>
           <Button
             type='primary'
             loading={submittingAction === 'createBuild'}
+            disabled={
+              closurePrerequisiteUnavailable ||
+              closureCheck?.runStatus !== 'passed' ||
+              closureCheck?.certificateValidity !== 'valid' ||
+              closureCheck?.scanCompleteness !== 'complete' ||
+              closureSelectionKey !== currentSelectionKey
+            }
             onClick={handleCreateBuild}
           >
             {t('pages.dataProcessing.action.createBuild', 'Generate result set')}

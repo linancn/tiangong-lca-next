@@ -16,6 +16,10 @@ export type LciaResultBuildRequest = {
   defaultImpactCategory?: string;
   lciaMethodSet: unknown[];
   idempotencyKey?: string;
+  /** Required by the v2 command; optional here only while the legacy command remains deployed. */
+  closureCheckId?: string;
+  requestedScopeHash?: string;
+  policyFingerprint?: string;
 };
 
 export type PublishLciaResultPackageRequest = {
@@ -284,7 +288,7 @@ async function invokeDataProductFunction<T>(
   };
 }
 
-function invokeDataProductCommand<T>(body: Record<string, unknown>) {
+export function invokeDataProductCommand<T>(body: Record<string, unknown>) {
   return invokeDataProductFunction<T>('app_data_product_commands', body, { requireAuth: true });
 }
 

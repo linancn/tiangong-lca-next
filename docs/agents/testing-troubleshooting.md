@@ -25,7 +25,7 @@ checkPaths:
   - tests/e2e/i18n/**
   - package.json
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
+lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
 lastReviewedNote: 'Updated for Issue #660: added diagnosis for host-CI refusal versus inherited container CI markers.'
 ---
 

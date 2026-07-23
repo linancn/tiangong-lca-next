@@ -31,7 +31,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 0e23b8ed92a72d5d6554b8eefeb26c549e4e7191
+lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
 lastReviewedNote: 'Updated for Issue #660: production-data release E2E now rejects host CI before clearing image-inherited CI markers for a local operator run.'
 related:
   - .docpact/config.yaml
