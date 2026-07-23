@@ -26,8 +26,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/test-coverage-report.js
 lastReviewedAt: 2026-07-22
-lastReviewedCommit: 30edf6e833ca69c80c765b76c893d84ad72d9634
-lastReviewedNote: 'Updated for Issue #660: recorded the corrected host-CI/local-container boundary for authenticated release E2E.'
+lastReviewedCommit: 6c2f93fa6fda6ff220c9c5975241bc5739e0b89d
+lastReviewedNote: 'Reviewed for Issue #666: the tracked semantic E2E evidence is refreshed and production cleanup is verified; no new testing TODO is required.'
 ---
 
 # Testing Execution State

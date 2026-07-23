@@ -302,19 +302,19 @@ export function decodeClosureReportDownloadDescriptor(
   const signedDownloadUrl = row.signedDownloadUrl;
   const artifactId = row.artifactId;
   const mediaType = row.mediaType;
-  const size = row.size;
+  const size = numberValue(row.size);
   const checksumSha256 = row.checksumSha256;
-  const expiresInSeconds = row.expiresInSeconds;
+  const expiresInSeconds = numberValue(row.expiresInSeconds);
 
   if (
     !isNonEmptyString(signedDownloadUrl) ||
     !isHttpUrl(signedDownloadUrl) ||
     !isNonEmptyString(artifactId) ||
     !isNonEmptyString(mediaType) ||
-    !Number.isFinite(size) ||
+    size === undefined ||
     size < 0 ||
     !isNonEmptyString(checksumSha256) ||
-    !Number.isFinite(expiresInSeconds) ||
+    expiresInSeconds === undefined ||
     expiresInSeconds <= 0
   ) {
     return null;

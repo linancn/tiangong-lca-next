@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-22"
-lastReviewedCommit: "30edf6e833ca69c80c765b76c893d84ad72d9634"
-lastReviewedNote: 'Reviewed for Issue #660; the host/controller CI boundary remains covered by the existing bootstrap and testing/quality contracts, with no routing-rule change required.'
+lastReviewedCommit: "6c2f93fa6fda6ff220c9c5975241bc5739e0b89d"
+lastReviewedNote: 'Reviewed for Issue #666; the release recovery changes the package version and tracked i18n evidence/artifacts only, with no routing or ownership change required.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

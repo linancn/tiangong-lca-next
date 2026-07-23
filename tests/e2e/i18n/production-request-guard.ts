@@ -186,9 +186,20 @@ function isExactReviewSubmitJobReadBody(postData: string | null | undefined): bo
   }
 }
 
-function isExactPublicationListBody(postData: string | null | undefined): boolean {
+function isExactDataProductReadBody(postData: string | null | undefined): boolean {
   try {
     const body = JSON.parse(postData ?? '');
+    if (body.action === 'list_task_feed') {
+      return (
+        hasExactObjectKeys(body, ['action', 'category', 'jobKinds', 'limit', 'rootOnly']) &&
+        body.category === 'data_product' &&
+        Array.isArray(body.jobKinds) &&
+        JSON.stringify(body.jobKinds) ===
+          JSON.stringify(['lcia.scope_closure_check', 'lcia_result.package_build']) &&
+        body.limit === 50 &&
+        body.rootOnly === false
+      );
+    }
     return (
       hasExactObjectKeys(body, ['action', 'limit']) &&
       body.action === 'list_publications' &&
@@ -312,7 +323,7 @@ export function classifyProductionRequest(
       return isExactReviewSubmitJobReadBody(postData) ? 'allow' : 'block';
     }
     if (functionName === 'app_data_product_commands') {
-      return isExactPublicationListBody(postData) ? 'allow' : 'block';
+      return isExactDataProductReadBody(postData) ? 'allow' : 'block';
     }
     return 'block';
   }

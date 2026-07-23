@@ -137,7 +137,7 @@ const mockLciaMethodList = {
 jest.mock('@umijs/max', () => ({
   __esModule: true,
   FormattedMessage: ({ defaultMessage, id }: any) => defaultMessage ?? id,
-  history: { replace: (...args: any[]) => mockHistoryReplace(...args) },
+  history: { replace: (...args: any[]) => Reflect.apply(mockHistoryReplace, undefined, args) },
   useIntl: () => ({
     formatMessage: mockFormatMessage,
     locale: mockLocale,
@@ -147,37 +147,54 @@ jest.mock('@umijs/max', () => ({
 
 jest.mock('@/services/roles/api', () => ({
   __esModule: true,
-  getSystemUserRoleApi: (...args: any[]) => mockGetSystemUserRoleApi(...args),
+  getSystemUserRoleApi: (...args: any[]) =>
+    Reflect.apply(mockGetSystemUserRoleApi, undefined, args),
 }));
 
 jest.mock('@/services/dataProducts', () => ({
   __esModule: true,
-  createLciaResultBuildRequest: (...args: any[]) => mockCreateLciaResultBuildRequest(...args),
-  previewLciaResultPackage: (...args: any[]) => mockPreviewLciaResultPackage(...args),
-  publishLciaResultPackage: (...args: any[]) => mockPublishLciaResultPackage(...args),
-  unpublishLciaResultPublication: (...args: any[]) => mockUnpublishLciaResultPublication(...args),
-  listLciaResultPublications: (...args: any[]) => mockListLciaResultPublications(...args),
-  getClosureCheck: (...args: any[]) => mockGetClosureCheck(...args),
-  listClosureCheckIssues: (...args: any[]) => mockListClosureCheckIssues(...args),
-  createClosureCheck: (...args: any[]) => mockCreateClosureCheck(...args),
-  createClosureReportDownload: (...args: any[]) => mockCreateClosureReportDownload(...args),
-  refreshDataProductTasks: (...args: any[]) => mockRefreshDataProductTasks(...args),
-  listDataProductTasks: (...args: any[]) => mockListDataProductTasks(...args),
-  subscribeDataProductTasks: (...args: any[]) => mockSubscribeDataProductTasks(...args),
-  upsertDataProductTasks: (...args: any[]) => mockUpsertDataProductTasks(...args),
+  createLciaResultBuildRequest: (...args: any[]) =>
+    Reflect.apply(mockCreateLciaResultBuildRequest, undefined, args),
+  previewLciaResultPackage: (...args: any[]) =>
+    Reflect.apply(mockPreviewLciaResultPackage, undefined, args),
+  publishLciaResultPackage: (...args: any[]) =>
+    Reflect.apply(mockPublishLciaResultPackage, undefined, args),
+  unpublishLciaResultPublication: (...args: any[]) =>
+    Reflect.apply(mockUnpublishLciaResultPublication, undefined, args),
+  listLciaResultPublications: (...args: any[]) =>
+    Reflect.apply(mockListLciaResultPublications, undefined, args),
+  getClosureCheck: (...args: any[]) => Reflect.apply(mockGetClosureCheck, undefined, args),
+  listClosureCheckIssues: (...args: any[]) =>
+    Reflect.apply(mockListClosureCheckIssues, undefined, args),
+  createClosureCheck: (...args: any[]) => Reflect.apply(mockCreateClosureCheck, undefined, args),
+  createClosureReportDownload: (...args: any[]) =>
+    Reflect.apply(mockCreateClosureReportDownload, undefined, args),
+  refreshDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockRefreshDataProductTasks, undefined, args),
+  listDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockListDataProductTasks, undefined, args),
+  subscribeDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockSubscribeDataProductTasks, undefined, args),
+  upsertDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockUpsertDataProductTasks, undefined, args),
 }));
 
 jest.mock('@/services/dataProducts/taskCenter', () => ({
   __esModule: true,
-  refreshDataProductTasks: (...args: any[]) => mockRefreshDataProductTasks(...args),
-  listDataProductTasks: (...args: any[]) => mockListDataProductTasks(...args),
-  subscribeDataProductTasks: (...args: any[]) => mockSubscribeDataProductTasks(...args),
-  upsertDataProductTasks: (...args: any[]) => mockUpsertDataProductTasks(...args),
+  refreshDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockRefreshDataProductTasks, undefined, args),
+  listDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockListDataProductTasks, undefined, args),
+  subscribeDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockSubscribeDataProductTasks, undefined, args),
+  upsertDataProductTasks: (...args: any[]) =>
+    Reflect.apply(mockUpsertDataProductTasks, undefined, args),
 }));
 
 jest.mock('@/services/workerJobs/api', () => ({
   __esModule: true,
-  requestWorkerJobsApi: (...args: any[]) => mockRequestWorkerJobsApi(...args),
+  requestWorkerJobsApi: (...args: any[]) =>
+    Reflect.apply(mockRequestWorkerJobsApi, undefined, args),
 }));
 
 describe('DataProcessing page', () => {
@@ -259,7 +276,7 @@ describe('DataProcessing page', () => {
         workerStatus: 'running',
         domainValidity: 'none',
         projectionUpdatedAt: '2026-06-23T10:00:00Z',
-        title: 'Result set generation',
+        title: '',
         phase: 'materializing',
         progressFraction: 0.35,
         capabilities: {
@@ -470,6 +487,9 @@ describe('DataProcessing page', () => {
 
   it('normalizes a locally submitted safe build task before the feed observes it', () => {
     expect(createSubmittedBuildTask(null)).toBeNull();
+    expect(createSubmittedBuildTask({ workerJobId: 'worker-without-build' })).not.toHaveProperty(
+      'deepLink',
+    );
     expect(
       createSubmittedBuildTask({ workerJobId: 'worker-safe', buildId: 'build-safe' }),
     ).toMatchObject({
@@ -498,11 +518,27 @@ describe('DataProcessing page', () => {
         },
       ] as any),
     ).toEqual([expect.objectContaining({ packageId: 'package-safe' })]);
+    expect(
+      packageOptionsFromTaskSummaries([
+        {
+          schemaVersion: 'task-summary.v2',
+          jobId: 'safe-ready-fallback',
+          jobKind: 'lcia_result.package_build',
+          category: 'data_product',
+          workerStatus: 'completed',
+          domainValidity: 'none',
+          projectionUpdatedAt: '2026-06-23T10:00:00Z',
+          title: '',
+          resultPackageId: 'package-fallback',
+          capabilities: {},
+        },
+      ] as any),
+    ).toEqual([expect.objectContaining({ label: 'package-fallback' })]);
   });
 
   it('submits build, preview, publish, and unpublish commands for managers', async () => {
     mockLocation = { pathname: '/data-processing', search: '' };
-    mockGetClosureCheck.mockResolvedValueOnce({
+    mockGetClosureCheck.mockResolvedValue({
       data: {
         schemaVersion: 'lcia.scope-closure-check.v1',
         closureCheckId: 'closure-new',
@@ -794,6 +830,15 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
     expect(await screen.findByText('issue page failed')).toBeInTheDocument();
     expect(screen.getByTestId('data-product-job-worker-job-1')).toBeInTheDocument();
+  });
+
+  it('uses the closure-issue fallback when the page is unavailable without an error detail', async () => {
+    mockListClosureCheckIssues.mockResolvedValueOnce({
+      data: null,
+      error: null,
+    });
+    render(<DataProcessing />);
+    expect(await screen.findByText('Unable to load issues.')).toBeInTheDocument();
   });
 
   it('summarizes successful build responses without rendering the raw worker payload', async () => {
@@ -1910,6 +1955,150 @@ describe('DataProcessing page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preview result set' }));
 
     expect(await screen.findByText('plain preview failure')).toBeInTheDocument();
+  });
+
+  it('surfaces non-Error task refresh failures and rejects a certificate without binding hashes', async () => {
+    mockRefreshDataProductTasks.mockRejectedValueOnce('task feed unavailable');
+    mockGetClosureCheck.mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByText('task feed unavailable')).toBeInTheDocument();
+    mockRefreshDataProductTasks.mockRejectedValueOnce(new Error('task feed exploded'));
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh jobs' }));
+    expect(await screen.findByText('task feed exploded')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Generate result set' })).not.toBeDisabled(),
+    );
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Unbound certificate' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Generate result set' }));
+
+    expect(
+      await screen.findByText(
+        'Run a complete data check for the current selection before generating a result set.',
+      ),
+    ).toBeInTheDocument();
+    expect(mockCreateLciaResultBuildRequest).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [{ message: 'closure summary failed' }, 'closure summary failed'],
+    [null, 'Command failed'],
+  ])(
+    'surfaces an unavailable post-create closure summary',
+    async (summaryError, expectedMessage) => {
+      mockLocation = { pathname: '/data-processing', search: '' };
+      mockGetClosureCheck.mockResolvedValueOnce({
+        data: null,
+        error: summaryError,
+      });
+
+      render(<DataProcessing />);
+
+      expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+      fireEvent.change(screen.getByLabelText('Result set name'), {
+        target: { value: 'Closure summary check' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+
+      expect(await screen.findByText(expectedMessage)).toBeInTheDocument();
+    },
+  );
+
+  it('uses the idempotency fallback and invalidates the certificate when selection changes', async () => {
+    mockLocation = { pathname: '/data-processing', search: '' };
+    const originalRandomUuid = globalThis.crypto.randomUUID;
+    Object.defineProperty(globalThis.crypto, 'randomUUID', {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      render(<DataProcessing />);
+
+      expect(await screen.findByTestId('page-title')).toHaveTextContent('Data Processing');
+      fireEvent.change(screen.getByLabelText('Result set name'), {
+        target: { value: 'Fallback token check' },
+      });
+      fireEvent.change(screen.getByLabelText('Coverage mode'), {
+        target: { value: '' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+
+      await waitFor(() =>
+        expect(mockCreateClosureCheck).toHaveBeenCalledWith(
+          expect.objectContaining({
+            requestIdempotencyToken: expect.stringMatching(/^closure-check-\d+-[a-z0-9]+$/),
+          }),
+        ),
+      );
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Generate result set' })).not.toBeDisabled(),
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Generate result set' }));
+      await waitFor(() =>
+        expect(mockCreateLciaResultBuildRequest).toHaveBeenCalledWith(
+          expect.objectContaining({ coverageMode: 'global_eligible' }),
+        ),
+      );
+
+      fireEvent.change(screen.getByLabelText('Default impact category'), {
+        target: { value: 'climate-change' },
+      });
+      expect(
+        await screen.findByText(
+          'The current selection differs from this check. Run a new check before generating.',
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Generate result set' })).toBeDisabled();
+    } finally {
+      Object.defineProperty(globalThis.crypto, 'randomUUID', {
+        configurable: true,
+        value: originalRandomUuid,
+      });
+    }
+  });
+
+  it('reports unavailable closure downloads and opens a valid signed report', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    mockCreateClosureReportDownload
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: null, error: { message: 'closure report failed' } })
+      .mockResolvedValueOnce({
+        data: { signedDownloadUrl: 'https://storage.example.test/closure.xlsx' },
+        error: null,
+      });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+    const downloadButton = await screen.findByRole('button', { name: 'Download issue report' });
+
+    fireEvent.click(downloadButton);
+    expect(await screen.findByText('Report is unavailable')).toBeInTheDocument();
+
+    fireEvent.click(downloadButton);
+    expect(await screen.findByText('closure report failed')).toBeInTheDocument();
+
+    fireEvent.click(downloadButton);
+    await waitFor(() =>
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://storage.example.test/closure.xlsx',
+        '_blank',
+        'noopener,noreferrer',
+      ),
+    );
+    openSpy.mockRestore();
   });
 
   it('renders access denied for non-manager users', async () => {
