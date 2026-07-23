@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-23T05:08:41.197Z",
-  "runId": "local-1e1e323b-733e-40de-9403-2bec457f7f7d",
+  "generatedAt": "2026-07-23T07:28:54.904Z",
+  "runId": "local-2db42917-aa87-40bb-9ff1-22289e18c52c",
   "candidate": {
     "configTreeDigest": "a5f819459fba99fbf639dbbfd9c6b863672bb2356203113c736ba508b2c8a176",
-    "observedHeadCommit": "39589a526face7586c780a01ba7eeb2bf4dfc535",
-    "packageManifestDigest": "aaad56dba2758ccd5baed28f95ae7dc43d5bf86c28650c2cd72b7bb9a9e42355",
+    "observedHeadCommit": "5a2921c657fb525468c6cc7bba550394ac890c9c",
+    "packageManifestDigest": "b11838f95fe0190996d0fcc5ad9c4fbfe886ddb8f7bf60be6e2be0e8f468e97a",
     "sourceTreeDigest": "e4613a4e5a7af482e8b8b9e291c4e311180b4805fe6fa23c816db61b1d642c2d",
-    "unitTestTreeDigest": "59b302dc7f3d488e3546f743b17e98febadef8be39b45db42210b45052da7fc0"
+    "unitTestTreeDigest": "f0d705f8820604b13b48403739a0acf70a67d1f6d8e115acfd67f67eee42c435"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "ccfbdb073e16e9f0ada3144b272fabb847ed653ef8ffbc16c03c9d29aa3b48e1"
+      "sha256": "eaf9549bcef004be8626c2bba919a4b4c6595bfaee6f32bd799ee4ec39a55845"
     },
     "runtimeAssets": [
       {
@@ -141,7 +141,11 @@
       },
       {
         "path": "scripts/i18n/locale-delivery.mjs",
-        "sha256": "0357f20b041722e07c53d65eb25d40909f0b784fdc1d81775628a4e6fc6e9aa9"
+        "sha256": "25ae10918bd81a9c7531fcc153417c87e0fa189a5a1a95ce08f2fb0c0af2f06d"
+      },
+      {
+        "path": "scripts/i18n/package-lock-runtime-fingerprint.cjs",
+        "sha256": "0baea9726a392f83c1be185b17aa33e10e2950b18e345333db73db93cc2c1a31"
       },
       {
         "path": "tests/data-workflows/data-workflow-paths.ts",
@@ -177,7 +181,7 @@
       },
       {
         "path": "tests/e2e/i18n/evidence-reporter.ts",
-        "sha256": "cb4f29bb95afb916d62b4c81e6f35855eb880ce1da8691d9b90b78c48611d833"
+        "sha256": "b44f4eb2e2370eeeb124417155d810f78ba53b59717c5232785c0132f529bc1c"
       },
       {
         "path": "tests/e2e/i18n/fixtures.ts",
@@ -337,7 +341,11 @@
       },
       {
         "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-        "sha256": "df14008044560c174f3613365002d7424a277e75d9dc6437d964b04a9be9a486"
+        "sha256": "0b315e91799a34fb8c0eb237f0be29624faed5382f5f20ffd173149c08d7d42c"
+      },
+      {
+        "path": "tests/unit/i18n/packageLockRuntimeFingerprint.test.js",
+        "sha256": "ab720ec223bd7b15861b6567da037e85bb7b78a67300d8a87f8b6a5ca0e48d50"
       },
       {
         "path": "tests/unit/pages/404.test.tsx",
