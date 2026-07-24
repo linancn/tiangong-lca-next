@@ -28,6 +28,16 @@ const sha256File = (relativePath: string) =>
     .digest('hex');
 
 describe('shared locale delivery contracts', () => {
+  it('generates every locale artifact twice without changing the repository', () => {
+    expect(
+      execFileSync(process.execPath, ['scripts/i18n/check-artifact-idempotence.mjs'], {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+        timeout: 180_000,
+      }),
+    ).toContain('"artifactGenerations":2');
+  }, 190_000);
+
   it('covers every registry locale and mandatory route view without granting anonymous access', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);
@@ -814,11 +824,20 @@ describe('shared locale delivery contracts', () => {
 
   it('requires the production locale gate in the release workflow', () => {
     const releaseWorkflow = fs.readFileSync(
-      path.join(REPOSITORY_ROOT, '.github/workflows/build.yml'),
+      path.join(REPOSITORY_ROOT, '.github/workflows/release-gate.yml'),
       'utf8',
     );
-    expect(releaseWorkflow).toContain('npm run i18n:locale:all:production:check');
-    expect(releaseWorkflow).toContain('npm run reference-data:production:check');
+    expect(releaseWorkflow).toContain('npm run release:preflight');
+
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json'), 'utf8'),
+    ) as { scripts: Record<string, string> };
+    expect(packageJson.scripts['release:preflight']).toContain(
+      'npm run i18n:locale:all:production:check',
+    );
+    expect(packageJson.scripts['release:preflight']).toContain(
+      'npm run reference-data:production:check',
+    );
 
     const manualWorkflow = fs.readFileSync(
       path.join(REPOSITORY_ROOT, '.github/workflows/ci.yml'),

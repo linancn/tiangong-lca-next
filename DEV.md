@@ -26,10 +26,12 @@ checkPaths:
   - docker/e2e/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
+  - .github/workflows/release-gate.yml
+  - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 bootstrap and checked-push rules while incorporating the Issue #670 isolated docs screenshot command, secret file, and denial evidence.'
+lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
+lastReviewedNote: 'Reviewed for Issue #685: documented conditional local production preflight and the reusable main-target release-readiness gate.'
 ---
 
 # Development Bootstrap
@@ -129,6 +131,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | check one locale's activation boundary | `npm run i18n:locale:activation:check -- --locale <canonical-locale>` |
 | check every active locale's activation boundary | `npm run i18n:locale:all:check` |
 | require every active locale to be production-ready | `npm run i18n:locale:all:production:check` (fails while any owned blocker remains) |
+| run the combined credential-free production preflight | `npm run release:preflight` |
 | enforce active German runtime assembly | `npm run i18n:de:audit` |
 | validate the historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
@@ -177,7 +180,8 @@ The controller first refuses this production-data command when the host has `CI`
 - prefer `npm run test:ci -- <jest-args>` over stacking flags after `npm test`
 - use `npm run test:workflows -- --processes:create --frontend-url <url> --supabase-url <url> --supabase-publishable-key <key>` for one live data workflow script; use `--processes:all` or `--teams:all` when a full workflow suite is needed
 - run `npm run test:api:smoke -- <workflow-args>` only with a target Supabase environment and configured test users; inspect its summary because child workflow failures are reported without making the command exit non-zero
-- local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` and then `npm run prepush:gate`
+- local pushes run the Husky pre-push hook, which runs `npm run docpact:gate` first and `npm run prepush:gate` last; main-semantic pushes additionally run `npm run release:preflight` between them, while `dev` pushes keep the two-gate path
+- PRs targeting `main` run the reusable clean-runner Release Gate against the exact PR base/head before merge; the post-merge workflow revalidates the exact release SHA and creates the tag only after both release jobs succeed
 - the hook keeps an already-active Node.js 24 from `PATH`, including a CI `setup-node` runtime; it sources local NVM and runs `nvm use 24` only when the active Node is absent or has another major version
 - treat `npm run prepush:gate` as the authoritative local test gate
 - during normal delivery, use `npm run push:checked -- <normal-git-push-args>` and do not run the full gate manually immediately before its ordinary hook repeats it; focused proof belongs in the edit loop and the hook owns the final committed checkpoint

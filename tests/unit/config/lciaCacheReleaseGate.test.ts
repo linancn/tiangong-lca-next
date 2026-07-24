@@ -16,16 +16,22 @@ describe('Publication workflow gates', () => {
 
   it('makes the release gate verify the bundle before any web or Electron publication job', () => {
     const workflow = read('.github/workflows/build.yml');
-    const releaseGate = workflow.slice(
-      workflow.indexOf('  release-gate:'),
-      workflow.indexOf('  release-draft:'),
-    );
+    const releaseGate = read('.github/workflows/release-gate.yml');
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
+    expect(releaseGate).toContain('run: npm run release:preflight');
     expect(releaseGate).toContain('run: npm run prepush:gate');
+    expect(releaseGate).toContain("TIANGONG_AGENT_MODE: '1'");
+    expect(releaseGate).toContain('uses: actions/upload-artifact@v6');
+    expect(releaseGate).toContain('path: .local/test-logs/**');
     expect(releaseGate.indexOf('npm run lcia-cache:verify')).toBeLessThan(
+      releaseGate.indexOf('npm run release:preflight'),
+    );
+    expect(releaseGate.indexOf('npm run release:preflight')).toBeLessThan(
       releaseGate.indexOf('npm run prepush:gate'),
     );
     expect(releaseGate).not.toContain('run: npm run test:ci');
+    expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
+    expect(workflow).toContain('release_head: ${{ needs.release-context.outputs.release_head }}');
 
     const webDeploy = workflow.slice(
       workflow.indexOf('  web-deploy:'),
@@ -36,7 +42,9 @@ describe('Publication workflow gates', () => {
       workflow.indexOf('  verify-release:'),
     );
     expect(webDeploy).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(webDeploy).toMatch(/needs:[\s\S]*- release-tag/);
     expect(electronRelease).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(electronRelease).toMatch(/needs:[\s\S]*- release-tag/);
   });
 
   it('keeps the local pre-push gate aligned with the release gate', () => {
@@ -59,7 +67,7 @@ describe('Publication workflow gates', () => {
     const releaseWorkflow = read('.github/workflows/build.yml');
     const semanticJob = releaseWorkflow.slice(
       releaseWorkflow.indexOf('  release-semantic-e2e:'),
-      releaseWorkflow.indexOf('  release-draft:'),
+      releaseWorkflow.indexOf('  release-tag:'),
     );
     expect(semanticJob).toContain('uses: ./.github/workflows/i18n-semantic-e2e.yml');
     expect(semanticJob).toContain('ref: ${{ needs.release-context.outputs.release_head }}');
@@ -81,6 +89,35 @@ describe('Publication workflow gates', () => {
     ];
     for (const publicationJob of publicationJobs) {
       expect(publicationJob).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
+      expect(publicationJob).toMatch(/needs:[\s\S]*- release-tag/);
     }
+  });
+
+  it('validates every main-target PR with the reusable release gate', () => {
+    const workflow = read('.github/workflows/release-readiness.yml');
+    expect(workflow).toContain('pull_request:');
+    expect(workflow).toMatch(/branches:\s*\n\s*- main/);
+    expect(workflow).toContain('uses: ./.github/workflows/release-gate.yml');
+    expect(workflow).toContain('release_base: ${{ github.event.pull_request.base.sha }}');
+    expect(workflow).toContain('release_head: ${{ github.event.pull_request.head.sha }}');
+  });
+
+  it('publishes a release tag only after both release gates pass', () => {
+    const workflow = read('.github/workflows/build.yml');
+    const releaseContext = workflow.slice(
+      workflow.indexOf('  release-context:'),
+      workflow.indexOf('  release-gate:'),
+    );
+    const releaseTag = workflow.slice(
+      workflow.indexOf('  release-tag:'),
+      workflow.indexOf('  release-draft:'),
+    );
+
+    expect(releaseContext).not.toContain('git tag "${tag_name}"');
+    expect(releaseContext).not.toContain('git push origin "refs/tags/${tag_name}"');
+    expect(releaseTag).toMatch(/needs:[\s\S]*- release-gate/);
+    expect(releaseTag).toMatch(/needs:[\s\S]*- release-semantic-e2e/);
+    expect(releaseTag).toContain('git tag "${TAG_NAME}" "${RELEASE_HEAD}"');
+    expect(releaseTag).toContain('git push origin "refs/tags/${TAG_NAME}"');
   });
 });

@@ -76,5 +76,8 @@ docker/.env.deploy.local
 # bounded failed-transport push receipt (never commit or upload)
 /.local/prepush-gate/
 
+# full local/agent Jest logs (CI uploads these as bounded artifacts)
+/.local/test-logs/
+
 # isolated release E2E images, manifests, reports, and bounded continuation receipt
 /.local/e2e-release/

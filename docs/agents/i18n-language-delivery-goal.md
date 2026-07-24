@@ -58,8 +58,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
-lastReviewedNote: 'Reviewed on current dev for Issue #670: kept docs-impact screenshots outside i18n semantic E2E evidence while retaining the Issue #676 distinction between root release metadata and executable package-lock drift.'
+lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
+lastReviewedNote: 'Reviewed for Issue #685: added the main-target clean-runner gate and made release-tag creation depend on both exact-release gates without moving the production-effective confirmation boundary.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -180,7 +180,7 @@ related:
 
 唯一需要人工确认的正常动作是：执行当前 workflow 中真正使 production URL 生效的动作。这里的 production-effective action 定义为“第一个可能改变任何真实生产用户可见服务状态，或启动不可撤销/外部可见生产 rollout 的动作”。
 
-如果当前 Next workflow 在 `main` push 后自动创建 tag、执行 Release Gate、部署 Web 并准备 Draft Release，那么这些副作用与 `main` 合并是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
+如果当前 Next workflow 在 `main` push 后自动执行 Release Gate 与 credential-free semantic E2E，并仅在两者通过后创建 tag、部署 Web 和准备 Draft Release，那么这些副作用与 `main` 合并仍是一个不可拆分的发布单元，唯一确认位于 promote PR 合并前。main-target PR 上的可复用 Release Gate 是合并前阻断证据，不改变 production-effective action 的位置。若未来 `main` 合并不再使线上生效，则 main 合并继续自主执行，并把唯一确认移动到真正的 production deploy/promote/publish 动作之前。执行者必须先只读审计 workflow，不能猜测线上生效点。
 
 如果 feature、promote、release 或 root integration 的 branch protection 强制人工批准，这属于仓库外部治理阻塞，不是本 Goal 设计的正常确认节点。不得主动增加这类 gate，也不得绕过已存在的保护规则。
 
@@ -899,8 +899,8 @@ npm run push:retry
 
 最终发布确认后不再请求其他正常确认：
 
-1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`，触发 canonical tag/Release Gate/Web/Draft Release workflow；若 workflow 已变化，执行阶段 J 绑定的真实动作。
-2. 监控全部 jobs 到终态。本地 final gate 与 clean-runner Release Gate 是不同信任边界，正常各一次。
+1. 执行已确认的 production-effective action。按当前观察 workflow，即合并 promote PR 到 `main`，触发 canonical Release Gate/semantic E2E；两者成功后才创建 tag，并继续 Web/Draft Release workflow。若 workflow 已变化，执行阶段 J 绑定的真实动作。
+2. 监控全部 jobs 到终态。本地 final gate、main-target PR clean-runner gate 与 post-merge exact-release clean-runner gate 是不同信任边界，各自保留。
 3. 同一 SHA 的瞬时 cache/network/job 失败只重跑失败 job；不重跑已成功 Gate/资产 job。
 4. 若需要 tracked 修复或新 patch，回到受影响检查点并为新的线上候选再次执行阶段 J。
 5. tag 一旦创建不可移动或复用。
@@ -938,7 +938,7 @@ npm run push:retry
 | tree-identical merge | 核对 tree/CI | 永不需要 | 不重跑 | 不失效 |
 | root pointer 集成 | exact child main SHA validation | 永不需要 | Next gate 不重跑 | 发布后不再确认 |
 
-正常 broad-gate 预算：迭代期 0 次；不可变本地 delivery HEAD 1 次；`main` clean-runner Release Gate 1 次。两者是不同信任环境，均保留；其他无受控内容变化的事件不增加次数。
+正常 broad-gate 预算：迭代期 0 次；不可变本地 delivery HEAD 1 次；main-target PR clean-runner Release Gate 1 次；`main` exact-release clean-runner Release Gate 1 次。三者覆盖本地交付、合并前阻断和最终 release SHA 三个不同信任边界，均保留；其他无受控内容变化的事件不增加次数。
 
 ---
 
@@ -1063,7 +1063,7 @@ npm run push:retry
 - [ ] `npm run test:e2e:i18n` 使用 `@playwright/test` `1.61.1`、`playwright.config.ts` 和 `tests/e2e/i18n/**`，local `npm run start:main` candidate 指向 production backend 且 Playwright base URL 只允许 loopback。
 - [ ] 49 个稳定 route/view assertion ID 及其 target-declared required scenarios 全部闭合；Chromium 完成全矩阵，登录/selector、team authoring 和 process lifecycle 关键场景在 Chromium/Firefox/WebKit 通过。
 - [ ] locale/content-language 循环从 registries 派生；新增语言无需改业务硬编码，并会自动使旧 semantic evidence 失效。
-- [ ] 日常 PR/`dev` push 不触发浏览器矩阵；按需 `workflow_dispatch` 与 exact-release-SHA release gate 无生产凭据、无生产写，只运行三浏览器 public semantics/合同；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
+- [ ] 日常 PR/`dev` push 不触发浏览器矩阵；main-target PR 运行可复用 Release Gate 但不获得生产凭据或写权限；按需 `workflow_dispatch` 与 post-merge exact-release-SHA semantic gate 同样无生产凭据、无生产写，只运行三浏览器 public semantics/合同；完整 authenticated closure 只在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行。
 - [ ] 只创建 UUID-scoped `codex-e2e` 数据；create 前已写 intent ledger，delete 前已验证 production row UUID、authenticated owner 及五个 multilingual fields × 全 registry authoring languages exact markers，精确删除后 `created=cleaned`、`leaked=0`；没有 screenshot/trace/video/auth artifact。
 - [ ] tracked evidence 的 schema、ID/locale/browser closure 和 cleanup counts 通过常规结构校验；显式 production readiness 对当前 backend/route/source/test bindings 全部 fail-closed 校验通过。
 
@@ -1077,9 +1077,10 @@ npm run push:retry
 - [ ] “语言平台化、分类资源本地化、页面清扫与 E2E”三个 Issue 及对应 PR 全部完成，并在 Project 中分类和闭合依赖。
 - [ ] delivery HEAD 通过一次 `push:checked`；transport failure 只用 `push:retry`。
 - [ ] feature PR 自主合并到 routine target，promote PR/候选已冻结。
+- [ ] main-target PR 的可复用 Release Gate 已对 exact base/head 通过，任何 production-readiness evidence 漂移在合并前阻断。
 - [ ] 只在最终线上发布前请求一次人工确认，且绑定 exact release tuple。
 - [ ] 唯一确认紧邻真实 production-effective action；workflow 漂移时没有机械停在错误的 Git 步骤。
-- [ ] 确认后 production-effective action、main/tag/Release Gate/Web/assets/production smoke 完成，未增加正常确认点。
+- [ ] 确认后 production-effective action、main/Release Gate/semantic E2E/tag/Web/assets/production smoke 完成，且 tag 只在两类 exact-release gate 通过后创建，未增加正常确认点。
 - [ ] root workspace 指向 Next `main` exact release SHA，Project/Issue/PR 状态完成。
 - [ ] 分支/临时文件已清理，workspace 已同步，无关用户内容保留。
 
@@ -1122,7 +1123,7 @@ npm run push:retry
 - 翻译或已有译文修订是否需要任何人工审核？
 - 唯一人工确认发生在哪里，绑定哪些 release facts？
 - workflow 漂移后，如何把唯一确认移动到真正使线上生效的动作之前？
-- main 合并与自动 tag/Release Gate/Web/Draft Release 为什么是一个确认单元？
+- main 合并与自动 Release Gate/semantic E2E、门禁后 tag、Web/Draft Release 为什么仍是一个确认单元？
 - 每条消息的完整 LCA 平台上下文包括什么？
 - 如何在不改变认证合同的前提下，证明已登录 `/welcome`、`/welcome?view=carbon-footprint` 及其他 route/static query view 都已翻译，而不只依赖 locale key parity？
 - 如何证明匿名访问受保护路由只会到 canonical login，且 i18n 证据没有成为授权来源？
