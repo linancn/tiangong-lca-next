@@ -31,7 +31,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
 lastReviewedNote: 'Reviewed for Issue #688: documented canonical semantic evidence, topological one-shot locale artifact generation, idempotence proof, compact agent output, and retained CI Jest artifacts.'
 related:
   - ../AGENTS.md

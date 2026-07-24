@@ -30,7 +30,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
 lastReviewedNote: 'Reviewed for Issue #688: full Jest output is retained in bounded log artifacts while agent/CI consoles show only stages, failures, and final summaries; checked-push transport failure names the exact retry command.'
 ---
 

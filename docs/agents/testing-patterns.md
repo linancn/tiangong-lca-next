@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
 lastReviewedNote: 'Reviewed for Issue #688: added canonical evidence output, topological one-shot locale summaries, double-generation idempotence, and compact agent Jest output with retained logs.'
 ---
 

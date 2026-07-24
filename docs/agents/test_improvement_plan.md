@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: moved production-readiness failure discovery to both main-semantic local push and main-target CI while preserving exact-release revalidation.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
+lastReviewedNote: 'Reviewed for promotion #690: strategy now keeps generated evidence canonical and idempotent while bounding Agent/CI console output without discarding complete logs.'
 ---
 
 # Testing Strategy
@@ -55,6 +55,8 @@ lastReviewedNote: 'Reviewed for Issue #685: moved production-readiness failure d
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
+- generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged
+- agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
 
 ## Operating Principles
 

@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: main-target PRs and main-semantic pushes now close production readiness before merge, and release tags are created only after both exact-release gates pass.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
+lastReviewedNote: 'Reviewed for promotion #690: repo ownership, branch policy, minimal execution facts, and documentation routing remain aligned with the deterministic release-harness changes.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

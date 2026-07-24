@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: added the shortest recovery path for stale production-readiness evidence before main merge and clarified that failed gates must not leave a release tag.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
+lastReviewedNote: 'Reviewed for promotion #690: added direct recovery paths for compact Agent-mode logs and non-idempotent locale artifact generation.'
 ---
 
 # Testing Troubleshooting
@@ -80,6 +80,8 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | docs capture reports environment failure instead of `verified-access-denied` | the probe returned `401`/`404`/`5xx`, timed out, lacked identity proof, or had only an uncorroborated UI denial | repair the exact authentication/route/locator/environment failure and rerun; only authenticated authoritative denial can enable the Draft exception |
 | docs capture mutation guard reports a blocked request | the selected UI state attempted an application write outside the explicit auth/session allowlist | stop the capture, choose a read-only route/filter or safe fixture, and do not broaden the allowlist to production mutation endpoints |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
+| Agent/CI full-gate output shows only a stage or failure summary and more Jest detail is needed | compact mode intentionally keeps the console bounded while retaining complete logs | inspect `.local/test-logs/**` locally or download the seven-day `release-gate-jest-logs-*` artifact from the Release Gate run; do not disable compact mode just to expand the CI console |
+| locale artifact generation changes tracked summaries on a second identical run | the writer emitted non-canonical output, used the wrong dependency order, or retained ambient state | run `npm run i18n:locale:artifacts:write`, then `npm run i18n:locale:artifacts:idempotence`; fix the first non-idempotent writer or input instead of committing a second wave of generated hashes |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | feature/dev Docpact passed but the post-merge Release Gate reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while the release gate checks the complete `main` promotion range | reproduce from the intended candidate with `DOCPACT_BASE_REF=origin/main npm run docpact:gate`, genuinely review every required document, publish a new patch version if an immutable release tag already exists, and backmerge the `main` hotfix to `dev` |
