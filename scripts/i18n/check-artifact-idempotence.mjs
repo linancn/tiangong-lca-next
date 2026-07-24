@@ -8,6 +8,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const MAX_BUFFER_BYTES = 64 * 1024 * 1024;
+const REQUIRED_REMOTE_REFS = Object.freeze(['refs/remotes/origin/main']);
 const require = createRequire(import.meta.url);
 const installedNodeModules = path.dirname(path.dirname(require.resolve('tsx/package.json')));
 
@@ -50,6 +51,13 @@ function runArtifactGeneration(root) {
   );
 }
 
+function reproduceRequiredRemoteRefs(sourceRoot, cloneRoot) {
+  for (const ref of REQUIRED_REMOTE_REFS) {
+    const commit = git(sourceRoot, ['rev-parse', '--verify', `${ref}^{commit}`]).trim();
+    git(cloneRoot, ['update-ref', ref, commit]);
+  }
+}
+
 const sourceRoot = git(process.cwd(), ['rev-parse', '--show-toplevel']).trim();
 const temporaryRoot = mkdtempSync(path.join(os.tmpdir(), 'tiangong-locale-idempotence-'));
 const cloneRoot = path.join(temporaryRoot, 'repository');
@@ -60,6 +68,7 @@ try {
     maxBuffer: MAX_BUFFER_BYTES,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
+  reproduceRequiredRemoteRefs(sourceRoot, cloneRoot);
   git(cloneRoot, ['checkout', '--detach', 'HEAD']);
 
   const workingTreePatch = spawnSync('git', ['diff', '--binary', '--no-ext-diff', 'HEAD', '--'], {

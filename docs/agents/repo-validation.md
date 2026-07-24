@@ -31,8 +31,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: added exact, fail-closed semantic E2E digest compatibility for non-browser-semantic release-harness changes.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: locale artifact idempotence now carries required remote refs into its isolated detached clone.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: repo ownership, branch policy, and document routing remain accurate; exact digest compatibility stays in the validation owner docs.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: repo ownership, branch policy, and routing remain accurate for the detached artifact-idempotence CI fix.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

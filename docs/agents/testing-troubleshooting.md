@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: added the bounded compatibility recovery path for harness-only semantic evidence digest mismatches.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: added the detached-CI recovery path for missing generator-required remote refs in artifact idempotence.'
 ---
 
 # Testing Troubleshooting
@@ -83,6 +83,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |
 | Agent/CI full-gate output shows only a stage or failure summary and more Jest detail is needed | compact mode intentionally keeps the console bounded while retaining complete logs | inspect `.local/test-logs/**` locally or download the seven-day `release-gate-jest-logs-*` artifact from the Release Gate run; do not disable compact mode just to expand the CI console |
 | locale artifact generation changes tracked summaries on a second identical run | the writer emitted non-canonical output, used the wrong dependency order, or retained ambient state | run `npm run i18n:locale:artifacts:write`, then `npm run i18n:locale:artifacts:idempotence`; fix the first non-idempotent writer or input instead of committing a second wave of generated hashes |
+| locale artifact idempotence fails only in CI with `invalid object name 'origin/main'` | the isolated clone did not reproduce the remote ref consumed by the semantic backend-target check; a detached checkout has no accidental local `main` branch to mask it | copy the exact source `refs/remotes/origin/main` commit into the isolated clone before generation; do not weaken the backend-target check or depend on a local branch |
 | Jest exits non-zero without a failure or final summary and macOS writes a Node `.ips` report with `ClearStaleLeftTrimmedPointerVisitor` | native Node/V8 GC crash in the long-lived in-band coverage process, not a Jest assertion failure | confirm the crash signature once; keep `prepushGateReceipt.test.ts` in its repo-owned no-coverage process and run the remaining coverage suites through one worker at a time with the `64MB` idle-memory recycle boundary; do not rerun the unchanged monolithic gate |
 | local `docpact:gate` or manual `ai-doc-lint` fails with `missing-review` after runtime, service, or test changes | required governed docs were not reviewed in the same PR | rerun `npm run docpact:gate`, inspect the required docs from `.docpact/config.yaml`, and touch the owning docs with a real review/update |
 | feature/dev Docpact passed but the post-merge Release Gate reports `missing-review` | the earlier gate used a narrower feature or `dev` base, while the release gate checks the complete `main` promotion range | reproduce from the intended candidate with `DOCPACT_BASE_REF=origin/main npm run docpact:gate`, genuinely review every required document, publish a new patch version if an immutable release tag already exists, and backmerge the `main` hotfix to `dev` |

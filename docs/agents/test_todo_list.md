@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: recorded four exact harness-only digest compatibility pairs and their fail-closed future-drift behavior.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: confirmed detached-CI parity for the locale artifact idempotence gate by reproducing its required tracked-main ref.'
 ---
 
 # Testing Execution State

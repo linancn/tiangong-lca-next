@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: semantic evidence invalidation now follows behavior boundaries through exact fail-closed harness compatibility pairs.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: canonical artifact idempotence remains isolated while reproducing generator-required Git reference context.'
 ---
 
 # Testing Strategy
@@ -55,7 +55,7 @@ lastReviewedNote: 'Reviewed for promotion #690: semantic evidence invalidation n
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
-- generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged
+- generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
 - semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, but any future digest drift or route/source/runtime/auth/cleanup change must still fail closed
 

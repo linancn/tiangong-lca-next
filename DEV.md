@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: canonical, idempotence, Agent-mode, focused-test, and release-preflight commands fully cover the exact digest compatibility workflow.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: locale artifact idempotence reproduces required remote refs so the same command works in detached CI and developer checkouts.'
 ---
 
 # Development Bootstrap
@@ -126,7 +126,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | regenerate reference-resource assets and manifest from reviewed sources | `npm run reference-data:write` |
 | audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
 | generate every locale's canonical context, structural-validation, quality, and activation artifacts once in dependency order | `npm run i18n:locale:artifacts:write` |
-| prove two consecutive locale-artifact generations preserve the exact Git diff | `npm run i18n:locale:artifacts:idempotence` |
+| prove two consecutive locale-artifact generations preserve the exact Git diff | `npm run i18n:locale:artifacts:idempotence` (its isolated clone reproduces generator-required remote refs, including tracked `origin/main`) |
 | verify tracked semantic evidence is already in canonical repository format | `npm run i18n:evidence:canonical:check` |
 | check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | check tracked existing-translation corrections | `npm run i18n:corrections:check` |

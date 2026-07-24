@@ -58,8 +58,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: the Goal permits only exact reviewed harness-only digest compatibility while retaining all browser-semantic invalidation boundaries.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: detached artifact-idempotence clones must reproduce every remote ref consumed by the generator, including tracked main.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -536,7 +536,7 @@ npm run i18n:hardcoding:audit
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
 
-tracked semantic evidence reporter 必须直接写出仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。
+tracked semantic evidence reporter 必须直接写出仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
 
 CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二元条件、固定 supported-locale union、手写语言下拉数组、缓存资产数组、`locale || 'en-US'` / `locale ?? 'zh-CN'` 一类逻辑或空值默认，以及“非 zh 即 en”归一逻辑。下载报告等导出完整 HTML 文档的根 `<html lang>` 与 `dir` 也属于运行时语言能力，必须从 registry/runtime policy 动态派生；门禁必须拒绝嵌入模板中的固定根语言元数据。允许项必须落在最小 allowlist，并说明它是外部 adapter、canonical source、历史冻结验证，或故意 fail-closed 的产品支持语言快照门禁；新增语言后，不修改业务页面即可让 registry 驱动的测试发现其所有必需能力。
 

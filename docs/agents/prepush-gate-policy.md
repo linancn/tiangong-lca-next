@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: exact reviewed harness-only digest compatibility may reuse browser evidence without weakening other production bindings.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: the full gate idempotence clone now reproduces generator-required remote refs under detached CI checkout.'
 ---
 
 # Pre-Push Gate Policy

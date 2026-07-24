@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
-lastReviewedNote: 'Reviewed for promotion #690: added the exact old/current digest-pair pattern for reviewed non-browser-semantic harness changes.'
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: isolated idempotence clones copy generator-required remote refs instead of relying on local branch accidents.'
 ---
 
 # Testing Patterns Reference
@@ -167,7 +167,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
-| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence` |
+| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
 | canonical semantic evidence format | `npm run i18n:evidence:canonical:check` |
 | language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
 | all-active-locale activation | `npm run i18n:locale:all:check` |
