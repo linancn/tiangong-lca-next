@@ -1,7 +1,7 @@
 name: Build/release
 
 # Releases normally start from a main push whose package.json version is new.
-# The workflow creates the matching v* tag and runs the release in the same run.
+# The workflow creates the matching v* tag only after both release gates pass.
 # Manual v* tag pushes and workflow_dispatch runs remain supported for recovery/backfill releases.
 on:
   workflow_dispatch:
@@ -31,7 +31,6 @@ jobs:
       release_base: ${{ steps.release.outputs.release_base }}
       release_head: ${{ steps.release.outputs.release_head }}
       should_release: ${{ steps.release.outputs.should_release }}
-      tag_created: ${{ steps.release.outputs.tag_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
@@ -58,7 +57,6 @@ jobs:
 
           if [ "${GITHUB_REPOSITORY}" != "linancn/tiangong-lca-next" ]; then
             echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "tag_created=false" >> "$GITHUB_OUTPUT"
             echo "::notice::Skipping release outside canonical repository: ${GITHUB_REPOSITORY}."
             exit 0
           fi
@@ -66,8 +64,6 @@ jobs:
           read_package_version() {
             git show "${1}:package.json" | node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync(0, 'utf8')); console.log(pkg.version);"
           }
-
-          tag_created=false
 
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             tag_name="${REQUESTED_TAG_NAME}"
@@ -119,7 +115,6 @@ jobs:
               if [ "${existing_tag_commit}" != "${release_head}" ]; then
                 if [ "${package_version_changed}" = "false" ]; then
                   echo "should_release=false" >> "$GITHUB_OUTPUT"
-                  echo "tag_created=false" >> "$GITHUB_OUTPUT"
                   echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
                   echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
                   echo "::notice::${tag_name} already points to ${existing_tag_commit}; package.json version was unchanged in this main push, so this workflow hotfix is not a new release."
@@ -130,17 +125,11 @@ jobs:
                 exit 1
               fi
               echo "::notice::${tag_name} already exists on current main commit ${release_head}; continuing release."
-            else
-              git tag "${tag_name}" "${release_head}"
-              git push origin "refs/tags/${tag_name}"
-              tag_created=true
-              echo "::notice::Created ${tag_name} on ${release_head}."
             fi
           fi
 
           if ! git merge-base --is-ancestor "${release_head}" origin/main; then
             echo "should_release=false" >> "$GITHUB_OUTPUT"
-            echo "tag_created=${tag_created}" >> "$GITHUB_OUTPUT"
             echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
             echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
             echo "::notice::Release target ${tag_name} points to ${release_head}, which is not on origin/main. Skipping web deploy and Electron release."
@@ -152,7 +141,6 @@ jobs:
           echo "release_base=${release_base}" >> "$GITHUB_OUTPUT"
           echo "release_head=${release_head}" >> "$GITHUB_OUTPUT"
           echo "should_release=true" >> "$GITHUB_OUTPUT"
-          echo "tag_created=${tag_created}" >> "$GITHUB_OUTPUT"
           echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
 
           {
@@ -161,65 +149,17 @@ jobs:
             echo "- head: \`${release_head}\`"
             echo "- base: \`${release_base}\`"
             echo "- package version: \`${package_version}\`"
-            echo "- tag created: \`${tag_created}\`"
+            echo "- tag publication: deferred until all release gates pass"
           } >> "$GITHUB_STEP_SUMMARY"
 
   release-gate:
     name: Release Gate
     needs: release-context
     if: needs.release-context.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.release-context.outputs.release_head }}
-          fetch-depth: 0
-
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-
-      - name: Fetch main
-        run: git fetch --force origin +refs/heads/main:refs/remotes/origin/main
-
-      - name: Install stable Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install docpact
-        run: cargo install docpact --version 0.1.9 --force
-
-      - name: Cache npm
-        uses: actions/cache@v5
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') || hashFiles('npm-shrinkwrap.json') || hashFiles('package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Verify reviewed LCIA cache bundle
-        run: npm run lcia-cache:verify
-
-      - name: Run docpact release gate
-        run: |
-          set -euo pipefail
-          release_head="${{ needs.release-context.outputs.release_head }}"
-          release_base="${{ needs.release-context.outputs.release_base }}"
-          npm run docpact:gate -- --base "$release_base" --head "$release_head"
-
-      - name: Verify all-locale production readiness
-        run: npm run i18n:locale:all:production:check
-
-      - name: Verify reference-resource production readiness
-        run: npm run reference-data:production:check
-
-      - name: Run full release gate
-        run: npm run prepush:gate
+    uses: ./.github/workflows/release-gate.yml
+    with:
+      release_base: ${{ needs.release-context.outputs.release_base }}
+      release_head: ${{ needs.release-context.outputs.release_head }}
 
   release-semantic-e2e:
     name: Release Semantic E2E
@@ -229,12 +169,69 @@ jobs:
     with:
       ref: ${{ needs.release-context.outputs.release_head }}
 
+  release-tag:
+    name: Publish Release Tag
+    needs:
+      - release-context
+      - release-gate
+      - release-semantic-e2e
+    if: needs.release-context.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out exact release candidate
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release-context.outputs.release_head }}
+          fetch-depth: 0
+
+      - name: Create or verify release tag
+        env:
+          RELEASE_HEAD: ${{ needs.release-context.outputs.release_head }}
+          TAG_NAME: ${{ needs.release-context.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          git fetch --force origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor "${RELEASE_HEAD}" origin/main; then
+            echo "::error::Release head ${RELEASE_HEAD} is no longer on origin/main."
+            exit 1
+          fi
+
+          existing_tag_sha="$(git ls-remote --tags origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
+          if [ -n "${existing_tag_sha}" ]; then
+            git fetch --force origin "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+            existing_tag_commit="$(git rev-list -n 1 "${TAG_NAME}")"
+            if [ "${existing_tag_commit}" != "${RELEASE_HEAD}" ]; then
+              echo "::error::${TAG_NAME} points to ${existing_tag_commit}, expected ${RELEASE_HEAD}."
+              exit 1
+            fi
+            echo "::notice::${TAG_NAME} already points to the exact gated release head."
+            exit 0
+          fi
+
+          git tag "${TAG_NAME}" "${RELEASE_HEAD}"
+          if git push origin "refs/tags/${TAG_NAME}"; then
+            echo "::notice::Created ${TAG_NAME} on gated release head ${RELEASE_HEAD}."
+            exit 0
+          fi
+
+          git tag -d "${TAG_NAME}"
+          git fetch --force origin "refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}"
+          observed_tag_commit="$(git rev-list -n 1 "${TAG_NAME}")"
+          if [ "${observed_tag_commit}" != "${RELEASE_HEAD}" ]; then
+            echo "::error::Concurrent tag publication resolved ${TAG_NAME} to ${observed_tag_commit}, expected ${RELEASE_HEAD}."
+            exit 1
+          fi
+          echo "::notice::A concurrent run created the exact gated release tag ${TAG_NAME}."
+
   release-draft:
     name: Prepare Unique Draft Release
     needs:
       - release-context
       - release-gate
       - release-semantic-e2e
+      - release-tag
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     outputs:
@@ -308,6 +305,7 @@ jobs:
       - release-context
       - release-gate
       - release-semantic-e2e
+      - release-tag
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     env:
@@ -400,6 +398,7 @@ jobs:
       - release-gate
       - release-draft
       - release-semantic-e2e
+      - release-tag
     if: needs.release-context.outputs.should_release == 'true'
     runs-on: ${{ matrix.os }}
 

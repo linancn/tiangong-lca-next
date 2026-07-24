@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 production closure, release, validation, and backmerge rules while incorporating the Issue #670 isolated docs screenshot and authorization-denial boundaries.'
+lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
+lastReviewedNote: 'Reviewed for Issue #685: main-target PRs and main-semantic pushes now close production readiness before merge, and release tags are created only after both exact-release gates pass.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -148,6 +148,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`
+- credential-free production preflight for main candidates: `npm run release:preflight`
 - app-side Supabase and API access belongs only in `src/services/**`
 
 ## Ownership Boundaries
@@ -179,7 +180,8 @@ Route those tasks to:
 - routine branch base: `dev`
 - routine PR base: `dev`
 - promote path: `dev -> main`
-- canonical `main` branch pushes read `package.json.version`, create the matching `v*` tag when missing, run the release gate plus exact-SHA credential-free semantic E2E, then deploy the web app and build draft Electron releases in the same workflow run
+- PRs targeting `main` run the reusable Release Gate against their exact base/head; local main-semantic pushes run the same credential-free production preflight between Docpact and the full test gate
+- canonical `main` branch pushes read `package.json.version`, run the reusable Release Gate plus exact-SHA credential-free semantic E2E, create or verify the matching `v*` tag only after both pass, then deploy the web app and build draft Electron releases in the same workflow run
 - canonical `main` branch pushes whose `package.json` is unchanged and whose matching `v*` tag already points to an older `main` commit skip release instead of requiring a version bump
 - manual `v*` tag pushes and `workflow_dispatch` runs for an existing `v*` tag whose target commit is already on `main` remain supported for recovery/backfill releases
 

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-23'
-lastReviewedCommit: '0e35be718eb5c16267f25035140447053669b567'
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 production closure rules and the Issue #670 isolated, read-only docs screenshot ownership and routing.'
+lastReviewedCommit: 'fc41c27e32d75dad87a286dd190071a5068bcc25'
+lastReviewedNote: 'Reviewed for Issue #685: retained ownership and routing while adding a reusable main-candidate release gate, conditional local production preflight, and post-gate tag publication.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
