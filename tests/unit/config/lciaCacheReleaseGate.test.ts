@@ -20,6 +20,9 @@ describe('Publication workflow gates', () => {
     expect(releaseGate).toContain('run: npm run lcia-cache:verify');
     expect(releaseGate).toContain('run: npm run release:preflight');
     expect(releaseGate).toContain('run: npm run prepush:gate');
+    expect(releaseGate).toContain("TIANGONG_AGENT_MODE: '1'");
+    expect(releaseGate).toContain('uses: actions/upload-artifact@v6');
+    expect(releaseGate).toContain('path: .local/test-logs/**');
     expect(releaseGate.indexOf('npm run lcia-cache:verify')).toBeLessThan(
       releaseGate.indexOf('npm run release:preflight'),
     );

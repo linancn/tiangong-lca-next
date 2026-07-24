@@ -102,6 +102,44 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
 ]);
 const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
 const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
+const LOCALE_ARTIFACT_DEPENDENCIES = Object.freeze({
+  context: Object.freeze([]),
+  structuralValidation: Object.freeze(['context']),
+  quality: Object.freeze(['context', 'structuralValidation']),
+  activation: Object.freeze(['context', 'quality']),
+});
+
+function topologicalArtifactOrder(dependencies) {
+  const order = [];
+  const visiting = new Set();
+  const visited = new Set();
+
+  const visit = (artifact) => {
+    if (visited.has(artifact)) return;
+    if (visiting.has(artifact)) {
+      throw new Error(`Locale artifact dependency cycle detected at ${artifact}.`);
+    }
+    const artifactDependencies = dependencies[artifact];
+    if (!artifactDependencies) {
+      throw new Error(`Unknown locale artifact dependency: ${artifact}.`);
+    }
+    visiting.add(artifact);
+    for (const dependency of artifactDependencies) {
+      if (!Object.hasOwn(dependencies, dependency)) {
+        throw new Error(`${artifact} depends on unknown locale artifact ${dependency}.`);
+      }
+      visit(dependency);
+    }
+    visiting.delete(artifact);
+    visited.add(artifact);
+    order.push(artifact);
+  };
+
+  for (const artifact of Object.keys(dependencies)) visit(artifact);
+  return Object.freeze(order);
+}
+
+const LOCALE_ARTIFACT_TOPOLOGICAL_ORDER = topologicalArtifactOrder(LOCALE_ARTIFACT_DEPENDENCIES);
 
 const ACTIONS = new Set([
   'audit',
@@ -3408,46 +3446,64 @@ async function loadCheckedArtifact(root, relativeFile, builder, options) {
   return { value, status };
 }
 
-async function writeOrCheckLocaleArtifacts(root, locale, manifest, correctionSummary, options) {
-  const paths = localePaths(locale);
-  const context = await loadCheckedArtifact(
-    root,
-    paths.context,
-    () => buildContextManifest(root, locale, manifest),
-    options,
-  );
-  const structuralValidation = await loadCheckedArtifact(
-    root,
-    paths.structuralValidation,
-    () => buildStructuralValidation(root, locale, manifest, context.value),
-    options,
-  );
-  const quality = await loadCheckedArtifact(
-    root,
-    paths.quality,
-    () => buildQualityManifest(root, locale, manifest, context.value),
-    options,
-  );
-  const activation = await loadCheckedArtifact(
-    root,
-    paths.activation,
-    () =>
-      buildActivationManifest(
-        root,
+function buildLocaleArtifact(artifact, root, locale, manifest, correctionSummary, values) {
+  if (artifact === 'context') {
+    return buildContextManifest(root, locale, manifest);
+  }
+  if (artifact === 'structuralValidation') {
+    return buildStructuralValidation(root, locale, manifest, values.context);
+  }
+  if (artifact === 'quality') {
+    return buildQualityManifest(root, locale, manifest, values.context);
+  }
+  if (artifact === 'activation') {
+    return buildActivationManifest(
+      root,
+      locale,
+      manifest,
+      values.context,
+      values.quality,
+      correctionSummary,
+    );
+  }
+  throw new Error(`Unsupported locale artifact: ${artifact}.`);
+}
+
+async function writeOrCheckLocaleArtifacts(root, locales, manifest, correctionSummary, options) {
+  const states = new Map(
+    locales.map((locale) => [
+      locale,
+      {
         locale,
-        manifest,
-        context.value,
-        quality.value,
-        correctionSummary,
-      ),
-    options,
+        paths: localePaths(locale),
+        statuses: {},
+        values: {},
+      },
+    ]),
   );
+
+  for (const artifact of LOCALE_ARTIFACT_TOPOLOGICAL_ORDER) {
+    for (const locale of locales) {
+      const state = states.get(locale);
+      const result = await loadCheckedArtifact(
+        root,
+        state.paths[artifact],
+        () =>
+          buildLocaleArtifact(artifact, root, locale, manifest, correctionSummary, state.values),
+        options,
+      );
+      state.values[artifact] = result.value;
+      state.statuses[artifact] = result.status;
+    }
+  }
+
+  return locales.map((locale) => states.get(locale));
+}
+
+function summarizeLocaleArtifactState(state) {
   return {
-    locale,
-    context: context.status,
-    structuralValidation: structuralValidation.status,
-    quality: quality.status,
-    activation: activation.status,
+    locale: state.locale,
+    ...state.statuses,
   };
 }
 
@@ -3500,51 +3556,25 @@ async function main() {
   }
 
   if (action === 'all') {
-    const locales = [];
-    for (const activeLocale of SUPPORTED_APP_LOCALES) {
-      const activePaths = localePaths(activeLocale);
-      const context = await loadCheckedArtifact(
-        root,
-        activePaths.context,
-        () => buildContextManifest(root, activeLocale, manifest),
-        { ...options, write: false, check: true },
-      );
-      const quality = await loadCheckedArtifact(
-        root,
-        activePaths.quality,
-        () => buildQualityManifest(root, activeLocale, manifest, context.value),
-        { ...options, write: false, check: true },
-      );
-      const activation = await loadCheckedArtifact(
-        root,
-        activePaths.activation,
-        () =>
-          buildActivationManifest(
-            root,
-            activeLocale,
-            manifest,
-            context.value,
-            quality.value,
-            correctionSummary,
-          ),
-        { ...options, write: false, check: true },
-      );
+    const states = await writeOrCheckLocaleArtifacts(
+      root,
+      SUPPORTED_APP_LOCALES,
+      manifest,
+      correctionSummary,
+      { ...options, write: false, check: true },
+    );
+    for (const state of states) {
       if (options.requireProductionReady) {
-        assertProductionActivationReady(activation.value);
+        assertProductionActivationReady(state.values.activation);
       }
-      locales.push({
-        locale: activeLocale,
-        context: context.status,
-        quality: quality.status,
-        activation: activation.status,
-      });
     }
     process.stdout.write(
       `${JSON.stringify(
         {
           action,
+          dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
           registryLocaleCount: SUPPORTED_APP_LOCALES.length,
-          locales,
+          locales: states.map(summarizeLocaleArtifactState),
           privateConfirmationDependencies: [],
         },
         null,
@@ -3556,18 +3586,26 @@ async function main() {
 
   if (action === 'artifacts') {
     const targetLocales = resolveLocaleArtifactTargets(locale, SUPPORTED_APP_LOCALES);
-    const locales = [];
-    for (const targetLocale of targetLocales) {
-      locales.push(
-        await writeOrCheckLocaleArtifacts(root, targetLocale, manifest, correctionSummary, options),
-      );
-    }
+    const states = await writeOrCheckLocaleArtifacts(
+      root,
+      targetLocales,
+      manifest,
+      correctionSummary,
+      options,
+    );
+    const locales = states.map(summarizeLocaleArtifactState);
     process.stdout.write(
       `${JSON.stringify(
         locale
-          ? { action, ...locales[0], privateConfirmationDependencies: [] }
+          ? {
+              action,
+              dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
+              ...locales[0],
+              privateConfirmationDependencies: [],
+            }
           : {
               action,
+              dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
               registryLocaleCount: SUPPORTED_APP_LOCALES.length,
               locales,
               privateConfirmationDependencies: [],

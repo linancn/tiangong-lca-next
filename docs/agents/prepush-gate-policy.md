@@ -26,11 +26,12 @@ checkPaths:
   - scripts/docpact
   - scripts/docpact-gate.js
   - scripts/prepush-gate-receipt.cjs
+  - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: main-semantic pushes add production preflight, main PRs reuse the release gate, and immutable tags are published only after both release checks pass.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
+lastReviewedNote: 'Reviewed for Issue #688: full Jest output is retained in bounded log artifacts while agent/CI consoles show only stages, failures, and final summaries; checked-push transport failure names the exact retry command.'
 ---
 
 # Pre-Push Gate Policy
@@ -54,6 +55,8 @@ npm run prepush:gate
 ```
 
 The full gate runs LCIA verification, `npm run reference-data:check`, lint/type checks, complete coverage, and the unchanged 100% coverage assertion in that order. Reference-data verification fails before the expensive suite when the source manifest, evidence, content-addressed filenames, generated registry, or gzip outputs drift.
+
+`npm run prepush:gate:agent` enables the same gate with compact agent output. Jest writes its complete stdout/stderr and structured result JSON under `.local/test-logs/**`; the console contains only stage starts, failed suites/assertions, and final summaries. The reusable Release Gate enables this mode and uploads those files as a seven-day CI artifact even on failure, so compact output does not discard diagnostic evidence.
 
 Production-effective workflows separately run `npm run reference-data:production:check`. This read-only gate includes reproducibility verification and then rejects any required resource without an `official`/`project-reviewed` native asset for every registry language or without explicit production clearance. It is not part of the normal pre-push gate because tracked rights blockers may remain while reviewed work is integrated on `dev`.
 
@@ -117,6 +120,7 @@ It does not own:
 - hook completion alone never creates a reusable receipt: a successful managed original push leaves no receipt, and only a non-zero original push after a valid hook payload activates an ignored, one-hour, bounded single-push-intent receipt under `.local/prepush-gate/`
 - the checked-push session directory and nonce remain private to the hook coordinator and are removed from Docpact and test-gate subprocess environments, so nested tests or helper pushes cannot forge the outer session's successful-gate payload
 - after that uncertain or failed transport, use `npm run push:retry` with no arguments; remote, ref, and commit come only from the receipt, and any operator-supplied target argument is rejected
+- when the original checked transport fails after both gates passed, the wrapper prints the exact standalone next action `Next: npm run push:retry`
 - the helper rechecks the remote/refspec, HEAD/tree/branch, clean worktree, Node/npm, lockfiles and installed dependency tree, hook/gate inputs, and resolved Docpact base before it internally performs the receipt-bound exact-SHA `--no-verify` transport; this internal helper call is the only bypass authority
 - if the remote already equals the receipt-bound target SHA, the helper clears the receipt and succeeds idempotently without another push or gate run
 - a successful helper transport deletes the receipt; a retry transport failure may retain it only while the remote remains at the bound pre-push SHA and the one-hour TTL is valid, and a pre-transport verification outage performs no push and leaves the bounded receipt available until verification recovers or the TTL expires; expiry, malformed state, controlled-input drift, or any other verified remote state fails closed and invalidates it
@@ -125,6 +129,7 @@ It does not own:
 - before a `dev -> main` promotion, run `DOCPACT_BASE_REF=origin/main npm run docpact:gate` from the intended candidate head; the main-target PR Release Gate repeats this proof before merge and the post-merge Release Gate verifies the exact release commit again
 - protect the actual local and release gates
 - keep one logical full-suite execution inside each production release workflow; `prepush:gate` runs the receipt suite once in an isolated no-coverage Jest process and every remaining suite once through a coverage-enabled coordinator with only one worker active at a time and a `64MB` idle-memory recycle boundary, so do not precede it with a second standalone `test:ci` or coverage run
+- keep agent/CI console output bounded to stage, failure item, and final summary lines while preserving full Jest logs and structured results under `.local/test-logs/**` for artifact upload
 - avoid spending GitHub Actions minutes on ordinary push-triggered test jobs
 - keep semantic E2E independent from `prepush:gate`: routine PR/dev events do not trigger it, manual and release invocations have no production credentials or writes, and only an explicitly authorized local operator run may close the authenticated 49-ID digest-bound proof
 - keep routine locale/pre-push validation structural and deterministic; revalidate current semantic evidence file hashes only in the explicit production-readiness gate

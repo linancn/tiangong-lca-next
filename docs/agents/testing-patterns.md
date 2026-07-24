@@ -21,15 +21,17 @@ checkPaths:
   - tests/helpers/**
   - tests/data-workflows/**
   - tests/e2e/i18n/**
+  - scripts/i18n/**
+  - scripts/test-runner.cjs
   - scripts/e2e/**
   - docker/e2e/**
   - playwright.config.ts
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: added contract-test guidance for reusable main-candidate gates, branch-sensitive local preflight, and post-gate tag ordering.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
+lastReviewedNote: 'Reviewed for Issue #688: added canonical evidence output, topological one-shot locale summaries, double-generation idempotence, and compact agent Jest output with retained logs.'
 ---
 
 # Testing Patterns Reference
@@ -111,6 +113,8 @@ Special cases:
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
+15. make the semantic evidence reporter write repository-canonical JSON directly; then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
+16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
 
 Browser semantic E2E pattern:
 
@@ -162,12 +166,15 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
+| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence` |
+| canonical semantic evidence format | `npm run i18n:evidence:canonical:check` |
 | language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
 | all-active-locale activation | `npm run i18n:locale:all:check` |
 | existing-translation correction overlay | `npm run i18n:corrections:check` |
 | historical Issue #606 snapshot only | `npm run i18n:de:delta:review:check` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | receipt-bound transport retry | `npm run push:retry` |
+| compact agent full gate | `npm run prepush:gate:agent` (full logs under `.local/test-logs/**`) |
 
 - run Umi-generating focused tests, coverage commands, and `npm run prepush:gate` serially because they share `.umi-test`; finish focused diagnosis before the one final full gate
 

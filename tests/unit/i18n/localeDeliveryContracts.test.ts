@@ -28,6 +28,16 @@ const sha256File = (relativePath: string) =>
     .digest('hex');
 
 describe('shared locale delivery contracts', () => {
+  it('generates every locale artifact twice without changing the repository', () => {
+    expect(
+      execFileSync(process.execPath, ['scripts/i18n/check-artifact-idempotence.mjs'], {
+        cwd: REPOSITORY_ROOT,
+        encoding: 'utf8',
+        timeout: 180_000,
+      }),
+    ).toContain('"artifactGenerations":2');
+  }, 190_000);
+
   it('covers every registry locale and mandatory route view without granting anonymous access', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     expect(coverage.supportedLocales).toEqual(SUPPORTED_APP_LOCALES);
