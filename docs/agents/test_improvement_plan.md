@@ -23,10 +23,12 @@ checkPaths:
   - scripts/e2e/**
   - docker/e2e/**
   - .github/workflows/i18n-semantic-e2e.yml
+  - .github/workflows/release-gate.yml
+  - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 full-closure and release-metadata strategy while incorporating the Issue #670 isolated docs-capture contract proof.'
+lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
+lastReviewedNote: 'Reviewed for Issue #685: moved production-readiness failure discovery to both main-semantic local push and main-target CI while preserving exact-release revalidation.'
 ---
 
 # Testing Strategy
@@ -51,7 +53,8 @@ lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 fu
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
 - documentation screenshot capture is a separate, on-demand product-evidence workflow: keep its plan/security/access logic unit-heavy and its synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
-- each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage
+- release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
+- each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
 
 ## Operating Principles
 

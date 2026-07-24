@@ -11,8 +11,10 @@ const RECEIPT_SCHEMA_VERSION = 2;
 const RECEIPT_RELATIVE_PATH = '.local/prepush-gate/failed-transport-receipt.json';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
 const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+const CAPTURED_COMMAND_MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const ZERO_SHA = '0'.repeat(40);
-const GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
+const BASE_GATE_COMMANDS = ['npm run docpact:gate', 'npm run prepush:gate'];
+const RELEASE_PREFLIGHT_COMMAND = 'npm run release:preflight';
 const ACTIVE_RECEIPT_KIND = 'tiangong-bounded-failed-transport-receipt';
 const PENDING_PAYLOAD_KIND = 'tiangong-prepush-gate-pending-payload';
 const NO_UPDATE_PAYLOAD_KIND = 'tiangong-prepush-no-update-payload';
@@ -46,6 +48,7 @@ function run(command, args, options = {}) {
     encoding: 'utf8',
     env: options.env ?? process.env,
     stdio: options.stdio ?? ['ignore', 'pipe', 'pipe'],
+    maxBuffer: CAPTURED_COMMAND_MAX_BUFFER_BYTES,
   });
 
   if (result.error) {
@@ -147,7 +150,21 @@ function hasMainSemantics(ref) {
   return (
     ref === 'refs/heads/main' ||
     ref === 'refs/heads/master' ||
-    /^refs\/heads\/(?:hotfix|promote|release)\//u.test(ref)
+    /^refs\/heads\/(?:codex\/)?(?:hotfix|promote|release)(?:\/|-)/u.test(ref)
+  );
+}
+
+function requiresReleasePreflight(update, currentBranchRef) {
+  if (update.remoteRef === 'refs/heads/main' || update.remoteRef === 'refs/heads/master') {
+    return true;
+  }
+  if (update.remoteRef === 'refs/heads/dev') {
+    return false;
+  }
+  return (
+    hasMainSemantics(update.remoteRef) ||
+    hasMainSemantics(update.localRef) ||
+    hasMainSemantics(currentBranchRef)
   );
 }
 
@@ -445,20 +462,31 @@ function authoritativeGateEnvironment() {
   return environment;
 }
 
-function runAuthoritativeGates({ root, head, mergeBase }) {
+function runAuthoritativeGates({ root, head, mergeBase, releasePreflight }) {
   const environment = authoritativeGateEnvironment();
+  const commands = [...BASE_GATE_COMMANDS];
   process.stdout.write(`Running docpact gate against immutable ${mergeBase}..${head}.\n`);
   run('npm', ['run', 'docpact:gate', '--', '--base', mergeBase, '--head', head], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
   });
+  if (releasePreflight) {
+    process.stdout.write('Running main-candidate release preflight.\n');
+    run('npm', ['run', 'release:preflight'], {
+      cwd: root,
+      env: environment,
+      stdio: 'inherit',
+    });
+    commands.splice(1, 0, RELEASE_PREFLIGHT_COMMAND);
+  }
   process.stdout.write('Running local test gate.\n');
   run('npm', ['run', 'prepush:gate'], {
     cwd: root,
     env: environment,
     stdio: 'inherit',
   });
+  return commands;
 }
 
 function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, updatesFile }) {
@@ -472,6 +500,12 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
 
   invalidateReceipt(root);
   const docpactBaseRef = selectDocpactBaseRef(root, updates, docpactBaseOverride);
+  const currentBranchRef = git(root, ['symbolic-ref', '--quiet', 'HEAD'], {
+    allowFailure: true,
+  }).stdout.trim();
+  const releasePreflight = updates.some((update) =>
+    requiresReleasePreflight(update, currentBranchRef),
+  );
   let before;
   try {
     before = collectCheckpoint(root, docpactBaseRef);
@@ -499,11 +533,13 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
     ineligibleReason = error instanceof Error ? error.message : String(error);
   }
 
+  let gateCommands;
   try {
-    runAuthoritativeGates({
+    gateCommands = runAuthoritativeGates({
       root,
       head: before.head,
       mergeBase: before.docpactMergeBase,
+      releasePreflight,
     });
   } catch (error) {
     invalidateReceipt(root);
@@ -549,7 +585,7 @@ function runHookGates({ root, remoteName, remoteUrl, docpactBaseOverride, update
     remote,
     update,
     checkpoint: after,
-    gates: GATE_COMMANDS,
+    gates: gateCommands,
   });
   return path.join(session.directory, SESSION_PAYLOAD_FILE);
 }

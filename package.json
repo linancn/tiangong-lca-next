@@ -1,6 +1,6 @@
 {
   "name": "tiangong-lca-next",
-  "version": "0.0.60",
+  "version": "0.0.61",
   "private": true,
   "description": "An out-of-box LCA Data solution",
   "homepage": "./",
@@ -36,6 +36,7 @@
     "i18n:locale:production:check": "node --import tsx scripts/i18n/locale-delivery.mjs activation --check --require-production-ready",
     "i18n:locale:all:production:check": "node --import tsx scripts/i18n/locale-delivery.mjs all --check --require-production-ready",
     "i18n:locale:artifacts:write": "node --import tsx scripts/i18n/locale-delivery.mjs artifacts --write",
+    "release:preflight": "npm run i18n:locale:all:production:check && npm run reference-data:production:check",
     "i18n:de:audit": "node --import tsx scripts/i18n/locale-delivery.mjs activation --locale de-DE --check",
     "i18n:de:audit:write": "node --import tsx scripts/i18n/locale-delivery.mjs artifacts --locale de-DE --write",
     "i18n:de:runtime:manifest:check": "node --import tsx scripts/i18n/locale-delivery.mjs activation --locale de-DE --check",

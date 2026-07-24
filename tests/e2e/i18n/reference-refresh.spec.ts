@@ -566,6 +566,10 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
+          // A search/hash-only navigation may restore Firefox's current document runtime and its
+          // in-memory reference cache. Cross a neutral document boundary so every iteration must
+          // bootstrap a fresh candidate runtime and exercise the intercepted stale asset request.
+          await page.goto('about:blank', { waitUntil: 'load' });
           await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state, {
             waitForDrawerIdle: false,
           });
