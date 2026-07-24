@@ -25,8 +25,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - package.json
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
-lastReviewedNote: 'Reviewed on current dev for Issue #670: added isolated docs-capture contract proof while retaining the Issue #676 runtime dependency rule that excludes only root release-version metadata.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 full-closure and release-metadata strategy while incorporating the Issue #670 isolated docs-capture contract proof.'
 ---
 
 # Testing Strategy

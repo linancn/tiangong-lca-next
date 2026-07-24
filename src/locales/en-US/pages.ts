@@ -258,6 +258,7 @@ export default {
   'pages.dataProcessing.validation.packageNameRequired': 'Result set name is required',
   'pages.dataProcessing.validation.packageIdRequired': 'Result set is required',
   'pages.dataProcessing.validation.defaultImpactCategoryRequired': 'Default impact category is required',
+  'pages.dataProcessing.validation.defaultImpactCategoryInvalid': 'The selected impact category is unavailable or has no valid version.',
   'pages.dataProcessing.validation.publicationIdRequired': 'Publication id is required',
   'pages.dataProcessing.jobs.title': 'Result generation tasks',
   'pages.dataProcessing.taskCenter.kind': 'Data Product',

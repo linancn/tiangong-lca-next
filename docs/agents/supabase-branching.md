@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Updated for Issue #657 release integration: documented the authenticated data-product command/task-feed boundary and its exact release-E2E read contract.'
+lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
+lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; clarified the existing versioned LCIA method command boundary.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -67,7 +67,7 @@ Rules:
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
-- closure checks, closure reports, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; Next consumes curated closure and `task-summary.v2` projections rather than worker rows or private artifact locators
+- closure checks, closure reports, result-package commands, publication reads, and the unified data-product task feed go through `src/services/dataProducts/**` and authenticated `app_data_product_commands`; closure requests preserve exact LCIA method `{ id, version }` identities from the reviewed static catalog, and Next consumes curated closure and `task-summary.v2` projections rather than worker rows or private artifact locators
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger

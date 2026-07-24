@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .nvmrc
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
-lastReviewedNote: 'Reviewed on current dev for Issue #670: documented the isolated docs screenshot capture command, secret file, and denial evidence while retaining the Issue #676 bootstrap and checked-push behavior.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 bootstrap and checked-push rules while incorporating the Issue #670 isolated docs screenshot command, secret file, and denial evidence.'
 ---
 
 # Development Bootstrap

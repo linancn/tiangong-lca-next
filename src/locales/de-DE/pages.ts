@@ -258,6 +258,7 @@ export default {
   'pages.dataProcessing.validation.packageNameRequired': 'Der Name des Ergebnisdatensatzes ist erforderlich.',
   'pages.dataProcessing.validation.packageIdRequired': 'Ein Ergebnisdatensatz ist erforderlich.',
   'pages.dataProcessing.validation.defaultImpactCategoryRequired': 'Eine Standard-Wirkungskategorie ist erforderlich.',
+  'pages.dataProcessing.validation.defaultImpactCategoryInvalid': 'Die ausgewählte Wirkungskategorie ist nicht verfügbar oder hat keine gültige Version.',
   'pages.dataProcessing.validation.publicationIdRequired': 'Eine Veröffentlichungs-ID ist erforderlich.',
   'pages.dataProcessing.jobs.title': 'Aufgaben zur Ergebnisgenerierung',
   'pages.dataProcessing.taskCenter.kind': 'Datenprodukt',

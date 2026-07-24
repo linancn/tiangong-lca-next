@@ -29,8 +29,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
-lastReviewedNote: 'Reviewed on current dev for Issue #670: kept docs capture outside routine gates while retaining the Issue #676 executable package-lock evidence boundary.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 release-version trigger and package-lock evidence boundaries while keeping the Issue #670 docs capture outside routine gates.'
 ---
 
 # Pre-Push Gate Policy

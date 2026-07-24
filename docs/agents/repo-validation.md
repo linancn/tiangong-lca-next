@@ -29,8 +29,8 @@ checkPaths:
   - scripts/prepush-gate-receipt.cjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-23
-lastReviewedCommit: 4b505dcaf16e034f1faaaa4498b3bddeea4dce84
-lastReviewedNote: 'Reviewed on current dev for Issue #670: added docs screenshot safety and denial proof while retaining the Issue #676 package-lock release-metadata distinction.'
+lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
+lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 page, service, and release-gate proof while incorporating the Issue #670 docs screenshot safety and denial evidence.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

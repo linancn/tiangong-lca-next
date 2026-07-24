@@ -258,6 +258,7 @@ export default {
   'pages.dataProcessing.validation.packageNameRequired': '请输入结果集名称',
   'pages.dataProcessing.validation.packageIdRequired': '请选择结果集',
   'pages.dataProcessing.validation.defaultImpactCategoryRequired': '请选择默认影响类别',
+  'pages.dataProcessing.validation.defaultImpactCategoryInvalid': '所选影响类别不可用或缺少有效版本',
   'pages.dataProcessing.validation.publicationIdRequired': '请输入发布 ID',
   'pages.dataProcessing.jobs.title': '结果生成任务',
   'pages.dataProcessing.taskCenter.kind': '数据产品',
