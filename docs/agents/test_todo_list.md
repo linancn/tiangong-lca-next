@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: recorded main-target release-readiness CI, conditional local production preflight, and tag publication after both release gates.'
+lastReviewedAt: 2026-07-24
+lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
+lastReviewedNote: 'Reviewed for promotion #690: confirmed detached-CI parity for the locale artifact idempotence gate by reproducing its required tracked-main ref.'
 ---
 
 # Testing Execution State
@@ -40,10 +40,10 @@ lastReviewedNote: 'Reviewed for Issue #685: recorded main-target release-readine
 ## Checked-In Reference Baseline
 
 - reference full run: `npm run prepush:gate`
-- verified commit: `e112fa85f4138b5094c965bd010825d8267ee75d`
-- suites: `357`
-- tests: `4464`
-- tracked source files: `369`
+- verified commit: `26ae31317d885ec6dc6879066c0e212f526f1a8e`
+- suites: `403`
+- tests: `5438`
+- tracked source files: `454`
 - coverage: `100%` statements, branches, functions, and lines
 
 This is a checked-in reference, not a per-PR execution ledger. A delivery's post-commit, hook-owned full-gate result belongs in its PR validation evidence; update this section when the reference counts, coverage policy, or queue state materially changes.
@@ -65,6 +65,9 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Header locale switching now keeps Umi `SelectLang` at `reload={false}`; focused proof covers same-document identity, URL retention, live reference-label refresh, and rejection of a delayed old-locale response
 - clean-checkout active German and new-locale suites require zero confirmation-file dependencies; only explicit historical compatibility tests may exercise generated private fixtures
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
+- Issue #688 makes semantic evidence and locale summaries deterministic at the writer boundary: evidence is emitted in canonical JSON, all locale summaries are generated once in dependency order, and the isolated double-generation check requires the second run to preserve the exact Git diff
+- Issue #688 also adds compact Agent/CI full-gate output while retaining complete Jest stdout/stderr and structured results under `.local/test-logs/**`; the Release Gate uploads those files for seven days on success or failure
+- Issue #688 records four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; production readiness accepts only those reviewed pairs and automatically fails again on any later drift or unlisted evidence input
 - main-target PRs run the reusable Release Gate against their exact base/head, and main-semantic local pushes add `release:preflight` between Docpact and the full test gate; `dev` pushes retain the normal two-gate path
 - the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate

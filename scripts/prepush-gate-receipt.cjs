@@ -658,6 +658,7 @@ function checkedPush(root, pushArgs) {
       process.stderr.write(
         `Git transport failed after both gates passed. Bounded retry receipt activated at ${target}.\n`,
       );
+      process.stderr.write('Next: npm run push:retry\n');
     } else {
       invalidateReceipt(root);
       process.stderr.write(

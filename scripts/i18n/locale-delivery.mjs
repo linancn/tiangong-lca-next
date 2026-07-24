@@ -102,6 +102,45 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
 ]);
 const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
 const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
+const SEMANTIC_E2E_DIGEST_COMPATIBILITY = 'docs/plans/i18n/semantic-e2e-digest-compatibility.json';
+const LOCALE_ARTIFACT_DEPENDENCIES = Object.freeze({
+  context: Object.freeze([]),
+  structuralValidation: Object.freeze(['context']),
+  quality: Object.freeze(['context', 'structuralValidation']),
+  activation: Object.freeze(['context', 'quality']),
+});
+
+function topologicalArtifactOrder(dependencies) {
+  const order = [];
+  const visiting = new Set();
+  const visited = new Set();
+
+  const visit = (artifact) => {
+    if (visited.has(artifact)) return;
+    if (visiting.has(artifact)) {
+      throw new Error(`Locale artifact dependency cycle detected at ${artifact}.`);
+    }
+    const artifactDependencies = dependencies[artifact];
+    if (!artifactDependencies) {
+      throw new Error(`Unknown locale artifact dependency: ${artifact}.`);
+    }
+    visiting.add(artifact);
+    for (const dependency of artifactDependencies) {
+      if (!Object.hasOwn(dependencies, dependency)) {
+        throw new Error(`${artifact} depends on unknown locale artifact ${dependency}.`);
+      }
+      visit(dependency);
+    }
+    visiting.delete(artifact);
+    visited.add(artifact);
+    order.push(artifact);
+  };
+
+  for (const artifact of Object.keys(dependencies)) visit(artifact);
+  return Object.freeze(order);
+}
+
+const LOCALE_ARTIFACT_TOPOLOGICAL_ORDER = topologicalArtifactOrder(LOCALE_ARTIFACT_DEPENDENCIES);
 
 const ACTIONS = new Set([
   'audit',
@@ -904,7 +943,77 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
   };
 }
 
-function assertExactFileDigests(actual, expected, label, { requireCurrentBindings = true } = {}) {
+function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry) {
+  if (!fs.existsSync(path.resolve(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY))) return false;
+  const manifest = readJson(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY);
+  assertRecordShape(
+    manifest,
+    ['schemaVersion', 'entries'],
+    [],
+    'Semantic E2E digest compatibility manifest',
+  );
+  if (
+    manifest.schemaVersion !== 'tiangong.i18n-semantic-e2e-digest-compatibility.v1' ||
+    !Array.isArray(manifest.entries)
+  ) {
+    throw new Error('Semantic E2E digest compatibility manifest is invalid.');
+  }
+  const seen = new Set();
+  for (const [index, entry] of manifest.entries.entries()) {
+    assertRecordShape(
+      entry,
+      [
+        'path',
+        'evidenceObservedHeadCommit',
+        'evidenceSha256',
+        'compatibleSha256',
+        'scope',
+        'ownerIssue',
+        'reviewedAt',
+        'sunset',
+        'proofCommands',
+      ],
+      [],
+      `Semantic E2E digest compatibility manifest entries[${index}]`,
+    );
+    if (
+      typeof entry.path !== 'string' ||
+      !/^[0-9a-f]{40}$/u.test(entry.evidenceObservedHeadCommit ?? '') ||
+      !/^[0-9a-f]{64}$/u.test(entry.evidenceSha256 ?? '') ||
+      !/^[0-9a-f]{64}$/u.test(entry.compatibleSha256 ?? '') ||
+      entry.scope !== 'non-browser-semantic-release-harness-only' ||
+      !/^#[0-9]+$/u.test(entry.ownerIssue ?? '') ||
+      !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u.test(entry.reviewedAt ?? '') ||
+      entry.sunset !== 'next-verified-evidence-for-compatible-sha' ||
+      !Array.isArray(entry.proofCommands) ||
+      entry.proofCommands.length === 0 ||
+      entry.proofCommands.some((command) => typeof command !== 'string' || command.length === 0)
+    ) {
+      throw new Error(
+        `Semantic E2E digest compatibility manifest entry is invalid for ${entry.path ?? index}.`,
+      );
+    }
+    const key = `${entry.path}\0${entry.evidenceObservedHeadCommit}\0${entry.evidenceSha256}`;
+    if (seen.has(key)) {
+      throw new Error(`Semantic E2E digest compatibility manifest duplicates ${entry.path}.`);
+    }
+    seen.add(key);
+  }
+  return manifest.entries.some(
+    (entry) =>
+      entry.path === expectedEntry.path &&
+      entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
+      entry.evidenceSha256 === actualEntry.sha256 &&
+      entry.compatibleSha256 === expectedEntry.sha256,
+  );
+}
+
+function assertExactFileDigests(
+  actual,
+  expected,
+  label,
+  { requireCurrentBindings = true, digestCompatibility = null } = {},
+) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
   if (
     JSON.stringify(actual.map((entry) => entry?.path)) !==
@@ -916,10 +1025,11 @@ function assertExactFileDigests(actual, expected, label, { requireCurrentBinding
     const actualEntry = actual[index];
     const expectedEntry = expected[index];
     assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
-    if (
-      !/^[0-9a-f]{64}$/u.test(actualEntry.sha256) ||
-      (requireCurrentBindings && actualEntry.sha256 !== expectedEntry.sha256)
-    ) {
+    const digestMatches =
+      actualEntry.sha256 === expectedEntry.sha256 ||
+      (typeof digestCompatibility === 'function' &&
+        digestCompatibility(actualEntry, expectedEntry));
+    if (!/^[0-9a-f]{64}$/u.test(actualEntry.sha256) || (requireCurrentBindings && !digestMatches)) {
       throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
     }
   }
@@ -1222,7 +1332,11 @@ function validateSemanticE2EEvidence(
     evidence.digests.tests,
     expectedDigests.tests,
     'Semantic E2E test digests',
-    { requireCurrentBindings },
+    {
+      requireCurrentBindings,
+      digestCompatibility: (actualEntry, expectedEntry) =>
+        reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry),
+    },
   );
   assertExactFileDigests(
     evidence.digests.sources,
@@ -3408,46 +3522,64 @@ async function loadCheckedArtifact(root, relativeFile, builder, options) {
   return { value, status };
 }
 
-async function writeOrCheckLocaleArtifacts(root, locale, manifest, correctionSummary, options) {
-  const paths = localePaths(locale);
-  const context = await loadCheckedArtifact(
-    root,
-    paths.context,
-    () => buildContextManifest(root, locale, manifest),
-    options,
-  );
-  const structuralValidation = await loadCheckedArtifact(
-    root,
-    paths.structuralValidation,
-    () => buildStructuralValidation(root, locale, manifest, context.value),
-    options,
-  );
-  const quality = await loadCheckedArtifact(
-    root,
-    paths.quality,
-    () => buildQualityManifest(root, locale, manifest, context.value),
-    options,
-  );
-  const activation = await loadCheckedArtifact(
-    root,
-    paths.activation,
-    () =>
-      buildActivationManifest(
-        root,
+function buildLocaleArtifact(artifact, root, locale, manifest, correctionSummary, values) {
+  if (artifact === 'context') {
+    return buildContextManifest(root, locale, manifest);
+  }
+  if (artifact === 'structuralValidation') {
+    return buildStructuralValidation(root, locale, manifest, values.context);
+  }
+  if (artifact === 'quality') {
+    return buildQualityManifest(root, locale, manifest, values.context);
+  }
+  if (artifact === 'activation') {
+    return buildActivationManifest(
+      root,
+      locale,
+      manifest,
+      values.context,
+      values.quality,
+      correctionSummary,
+    );
+  }
+  throw new Error(`Unsupported locale artifact: ${artifact}.`);
+}
+
+async function writeOrCheckLocaleArtifacts(root, locales, manifest, correctionSummary, options) {
+  const states = new Map(
+    locales.map((locale) => [
+      locale,
+      {
         locale,
-        manifest,
-        context.value,
-        quality.value,
-        correctionSummary,
-      ),
-    options,
+        paths: localePaths(locale),
+        statuses: {},
+        values: {},
+      },
+    ]),
   );
+
+  for (const artifact of LOCALE_ARTIFACT_TOPOLOGICAL_ORDER) {
+    for (const locale of locales) {
+      const state = states.get(locale);
+      const result = await loadCheckedArtifact(
+        root,
+        state.paths[artifact],
+        () =>
+          buildLocaleArtifact(artifact, root, locale, manifest, correctionSummary, state.values),
+        options,
+      );
+      state.values[artifact] = result.value;
+      state.statuses[artifact] = result.status;
+    }
+  }
+
+  return locales.map((locale) => states.get(locale));
+}
+
+function summarizeLocaleArtifactState(state) {
   return {
-    locale,
-    context: context.status,
-    structuralValidation: structuralValidation.status,
-    quality: quality.status,
-    activation: activation.status,
+    locale: state.locale,
+    ...state.statuses,
   };
 }
 
@@ -3500,51 +3632,25 @@ async function main() {
   }
 
   if (action === 'all') {
-    const locales = [];
-    for (const activeLocale of SUPPORTED_APP_LOCALES) {
-      const activePaths = localePaths(activeLocale);
-      const context = await loadCheckedArtifact(
-        root,
-        activePaths.context,
-        () => buildContextManifest(root, activeLocale, manifest),
-        { ...options, write: false, check: true },
-      );
-      const quality = await loadCheckedArtifact(
-        root,
-        activePaths.quality,
-        () => buildQualityManifest(root, activeLocale, manifest, context.value),
-        { ...options, write: false, check: true },
-      );
-      const activation = await loadCheckedArtifact(
-        root,
-        activePaths.activation,
-        () =>
-          buildActivationManifest(
-            root,
-            activeLocale,
-            manifest,
-            context.value,
-            quality.value,
-            correctionSummary,
-          ),
-        { ...options, write: false, check: true },
-      );
+    const states = await writeOrCheckLocaleArtifacts(
+      root,
+      SUPPORTED_APP_LOCALES,
+      manifest,
+      correctionSummary,
+      { ...options, write: false, check: true },
+    );
+    for (const state of states) {
       if (options.requireProductionReady) {
-        assertProductionActivationReady(activation.value);
+        assertProductionActivationReady(state.values.activation);
       }
-      locales.push({
-        locale: activeLocale,
-        context: context.status,
-        quality: quality.status,
-        activation: activation.status,
-      });
     }
     process.stdout.write(
       `${JSON.stringify(
         {
           action,
+          dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
           registryLocaleCount: SUPPORTED_APP_LOCALES.length,
-          locales,
+          locales: states.map(summarizeLocaleArtifactState),
           privateConfirmationDependencies: [],
         },
         null,
@@ -3556,18 +3662,26 @@ async function main() {
 
   if (action === 'artifacts') {
     const targetLocales = resolveLocaleArtifactTargets(locale, SUPPORTED_APP_LOCALES);
-    const locales = [];
-    for (const targetLocale of targetLocales) {
-      locales.push(
-        await writeOrCheckLocaleArtifacts(root, targetLocale, manifest, correctionSummary, options),
-      );
-    }
+    const states = await writeOrCheckLocaleArtifacts(
+      root,
+      targetLocales,
+      manifest,
+      correctionSummary,
+      options,
+    );
+    const locales = states.map(summarizeLocaleArtifactState);
     process.stdout.write(
       `${JSON.stringify(
         locale
-          ? { action, ...locales[0], privateConfirmationDependencies: [] }
+          ? {
+              action,
+              dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
+              ...locales[0],
+              privateConfirmationDependencies: [],
+            }
           : {
               action,
+              dependencyOrder: LOCALE_ARTIFACT_TOPOLOGICAL_ORDER,
               registryLocaleCount: SUPPORTED_APP_LOCALES.length,
               locales,
               privateConfirmationDependencies: [],

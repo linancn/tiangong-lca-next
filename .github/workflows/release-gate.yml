@@ -65,4 +65,16 @@ jobs:
         run: npm run release:preflight
 
       - name: Run full release gate
+        env:
+          TIANGONG_AGENT_MODE: '1'
+          TIANGONG_TEST_LOG_DIR: .local/test-logs/release-gate-${{ github.run_id }}-${{ github.run_attempt }}
         run: npm run prepush:gate
+
+      - name: Upload full Jest logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-gate-jest-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/test-logs/**
+          if-no-files-found: ignore
+          retention-days: 7

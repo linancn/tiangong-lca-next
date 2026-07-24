@@ -12,7 +12,6 @@ import type {
   TestCase,
   TestResult,
 } from '@playwright/test/reporter';
-
 import { signInViaUi } from './auth';
 import {
   APP_LOCALES,
@@ -41,6 +40,18 @@ export type ScenarioCoverage = {
   locales: readonly string[];
   browsers: readonly string[];
 };
+
+export async function formatCanonicalEvidenceJson(
+  targetPath: string,
+  value: unknown,
+): Promise<string> {
+  const prettier = await import('prettier');
+  const resolvedConfig = await prettier.resolveConfig(targetPath);
+  return prettier.format(JSON.stringify(value, null, 2), {
+    ...(resolvedConfig ?? {}),
+    filepath: targetPath,
+  });
+}
 
 type RouteCoverageDigestInput = {
   assertionSemantics?: unknown;
@@ -741,6 +752,10 @@ export default class I18nEvidenceReporter implements Reporter {
     };
 
     await mkdir(path.dirname(E2E_EVIDENCE_PATH), { recursive: true });
-    await writeFile(E2E_EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+    await writeFile(
+      E2E_EVIDENCE_PATH,
+      await formatCanonicalEvidenceJson(E2E_EVIDENCE_PATH, evidence),
+      'utf8',
+    );
   }
 }

@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -39,6 +40,27 @@ type EvidenceRecord = {
 };
 
 describe('i18n evidence reporter', () => {
+  it('renders checked-in evidence in the repository canonical format', () => {
+    const reporterSource = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
+      'utf8',
+    );
+    expect(reporterSource).toContain('prettier.format(JSON.stringify(value, null, 2)');
+    expect(reporterSource).toContain(
+      'await formatCanonicalEvidenceJson(E2E_EVIDENCE_PATH, evidence)',
+    );
+    expect(
+      execFileSync(
+        process.execPath,
+        ['--import', 'tsx', 'scripts/i18n/check-semantic-evidence-format.mjs'],
+        {
+          cwd: REPOSITORY_ROOT,
+          encoding: 'utf8',
+        },
+      ),
+    ).toBe('Semantic E2E evidence is canonical.\n');
+  });
+
   it('reads exact candidate identity from the host manifest when container Git is absent', () => {
     const directory = mkdtempSync(path.join(os.tmpdir(), 'e2e-evidence-manifest-'));
     const manifestPath = path.join(directory, 'candidate-manifest.json');

@@ -244,6 +244,7 @@ const activateFailedTransportReceipt = (fixture: Fixture) => {
   installRemoteRejection(fixture);
   const result = checkedPush(fixture);
   expect(result.status).not.toBe(0);
+  expect(result.stderr.split(/\r?\n/u)).toContain('Next: npm run push:retry');
   expect(fs.existsSync(fixture.receipt)).toBe(true);
   expect(remoteSha(fixture)).toBe(fixture.mainBase);
   removeRemoteRejection(fixture);
@@ -303,10 +304,10 @@ describe('bounded checked-push transport receipt', () => {
     );
     expect(packageJson.scripts['push:retry']).toBe('node scripts/prepush-gate-receipt.cjs retry');
     expect(packageJson.scripts['test:prepush-receipt']).toBe(
-      'cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --runInBand --runTestsByPath tests/unit/scripts/prepushGateReceipt.test.ts --testTimeout=20000 --no-coverage',
+      'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage prepush-receipt --runInBand --runTestsByPath tests/unit/scripts/prepushGateReceipt.test.ts --testTimeout=20000 --no-coverage',
     );
     expect(packageJson.scripts['test:coverage:collect']).toBe(
-      'cross-env NODE_OPTIONS=--max-old-space-size=8192 jest --maxWorkers=1 --workerIdleMemoryLimit=64MB --testTimeout=20000 --coverage --testPathIgnorePatterns="<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$"',
+      'cross-env NODE_OPTIONS=--max-old-space-size=8192 node scripts/test-runner.cjs --stage coverage --maxWorkers=1 --workerIdleMemoryLimit=64MB --testTimeout=20000 --coverage --testPathIgnorePatterns="<rootDir>/tests/unit/scripts/prepushGateReceipt[.]test[.]ts$"',
     );
     expect(packageJson.scripts['test:coverage']).toBe(
       'npm run test:prepush-receipt && npm run test:coverage:collect',
