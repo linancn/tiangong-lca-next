@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
-lastReviewedNote: 'Reviewed for promotion #690: added canonical evidence, dependency-ordered locale artifact idempotence, and compact Agent-mode gate commands to the local command surface.'
+lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
+lastReviewedNote: 'Reviewed for promotion #690: canonical, idempotence, Agent-mode, focused-test, and release-preflight commands fully cover the exact digest compatibility workflow.'
 ---
 
 # Development Bootstrap

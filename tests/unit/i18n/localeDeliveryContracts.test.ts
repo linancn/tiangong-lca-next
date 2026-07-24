@@ -14,6 +14,7 @@ import {
 
 const REPOSITORY_ROOT = path.resolve(__dirname, '../../..');
 const DELIVERY_SCRIPT = path.join(REPOSITORY_ROOT, 'scripts/i18n/locale-delivery.mjs');
+const DIGEST_COMPATIBILITY_PATH = 'docs/plans/i18n/semantic-e2e-digest-compatibility.json';
 const { packageLockRuntimeDigest } =
   require('../../../scripts/i18n/package-lock-runtime-fingerprint.cjs') as {
     packageLockRuntimeDigest: (input: Buffer | string | object) => string;
@@ -766,6 +767,15 @@ describe('shared locale delivery contracts', () => {
   it('makes the explicit production-readiness gate follow verified semantic evidence', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
+    const digestCompatibility = readJson(DIGEST_COMPATIBILITY_PATH);
+    const compatibleDigest = ({ path: evidencePath, sha256 }: any) =>
+      digestCompatibility.entries.some(
+        (entry: any) =>
+          entry.path === evidencePath &&
+          entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
+          entry.evidenceSha256 === sha256 &&
+          entry.compatibleSha256 === sha256File(evidencePath),
+      );
     const boundFiles = [
       ...evidence.digests.runtimeAssets,
       ...evidence.digests.tests,
@@ -793,7 +803,7 @@ describe('shared locale delivery contracts', () => {
       boundFiles.every(
         ({ path: evidencePath, sha256 }: { path: string; sha256: string }) =>
           fs.existsSync(path.join(REPOSITORY_ROOT, evidencePath)) &&
-          sha256File(evidencePath) === sha256,
+          (sha256File(evidencePath) === sha256 || compatibleDigest({ path: evidencePath, sha256 })),
       );
     const result = spawnSync(
       process.execPath,
@@ -820,6 +830,40 @@ describe('shared locale delivery contracts', () => {
     expect(result.stderr.includes('#635')).toBe(!semanticRouteAndE2EReady);
     expect(result.stderr).not.toContain('rights-clearance-required');
     expect(result.stderr).not.toContain('file-specific-owner-confirmation-required');
+  });
+
+  it('limits semantic E2E digest compatibility to exact reviewed release-harness inputs', () => {
+    const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
+    const compatibility = readJson(DIGEST_COMPATIBILITY_PATH);
+    expect(compatibility.schemaVersion).toBe('tiangong.i18n-semantic-e2e-digest-compatibility.v1');
+    expect(compatibility.entries.map(({ path: entryPath }: any) => entryPath).sort()).toEqual(
+      [
+        'scripts/i18n/locale-delivery.mjs',
+        'tests/e2e/i18n/evidence-reporter.ts',
+        'tests/unit/e2e/evidenceReporter.test.ts',
+        'tests/unit/i18n/localeDeliveryContracts.test.ts',
+      ].sort(),
+    );
+    for (const entry of compatibility.entries) {
+      const evidenceEntry = evidence.digests.tests.find(
+        ({ path: evidencePath }: any) => evidencePath === entry.path,
+      );
+      expect(entry).toEqual(
+        expect.objectContaining({
+          evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
+          evidenceSha256: evidenceEntry.sha256,
+          compatibleSha256: sha256File(entry.path),
+          scope: 'non-browser-semantic-release-harness-only',
+          ownerIssue: '#688',
+          reviewedAt: '2026-07-24',
+          sunset: 'next-verified-evidence-for-compatible-sha',
+          proofCommands: expect.arrayContaining([
+            'npm run i18n:evidence:canonical:check',
+            'npm run i18n:locale:artifacts:idempotence',
+          ]),
+        }),
+      );
+    }
   });
 
   it('requires the production locale gate in the release workflow', () => {

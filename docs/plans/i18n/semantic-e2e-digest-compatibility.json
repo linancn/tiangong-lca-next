@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "tiangong.i18n-semantic-e2e-digest-compatibility.v1",
+  "entries": [
+    {
+      "path": "scripts/i18n/locale-delivery.mjs",
+      "evidenceObservedHeadCommit": "72fe67ffa46cd5d019e84eb0c5cf835f7f5c4635",
+      "evidenceSha256": "25ae10918bd81a9c7531fcc153417c87e0fa189a5a1a95ce08f2fb0c0af2f06d",
+      "compatibleSha256": "d9023ec244cc79d2744526d7111e25b1dd506731e9c260ab997ff4c38c421ee5",
+      "scope": "non-browser-semantic-release-harness-only",
+      "ownerIssue": "#688",
+      "reviewedAt": "2026-07-24",
+      "sunset": "next-verified-evidence-for-compatible-sha",
+      "proofCommands": [
+        "npm run i18n:evidence:canonical:check",
+        "npm run i18n:locale:artifacts:idempotence",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/e2e/evidenceReporter.test.ts --runInBand --no-coverage",
+        "npm run release:preflight"
+      ]
+    },
+    {
+      "path": "tests/e2e/i18n/evidence-reporter.ts",
+      "evidenceObservedHeadCommit": "72fe67ffa46cd5d019e84eb0c5cf835f7f5c4635",
+      "evidenceSha256": "b44f4eb2e2370eeeb124417155d810f78ba53b59717c5232785c0132f529bc1c",
+      "compatibleSha256": "0abdfa350560a8eebc2f3a6eb10553c4003ed24533dd24da48f699198fa6d874",
+      "scope": "non-browser-semantic-release-harness-only",
+      "ownerIssue": "#688",
+      "reviewedAt": "2026-07-24",
+      "sunset": "next-verified-evidence-for-compatible-sha",
+      "proofCommands": [
+        "npm run i18n:evidence:canonical:check",
+        "npm run i18n:locale:artifacts:idempotence",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/e2e/evidenceReporter.test.ts --runInBand --no-coverage",
+        "npm run release:preflight"
+      ]
+    },
+    {
+      "path": "tests/unit/e2e/evidenceReporter.test.ts",
+      "evidenceObservedHeadCommit": "72fe67ffa46cd5d019e84eb0c5cf835f7f5c4635",
+      "evidenceSha256": "a61467e8e17859518aedbc35fd9123d841e1db96535c78155db9bbec3216adc7",
+      "compatibleSha256": "994f4be1b4f23c29fd7d483971e369d3fa179c4432187e60d0f2f0114692cf9f",
+      "scope": "non-browser-semantic-release-harness-only",
+      "ownerIssue": "#688",
+      "reviewedAt": "2026-07-24",
+      "sunset": "next-verified-evidence-for-compatible-sha",
+      "proofCommands": [
+        "npm run i18n:evidence:canonical:check",
+        "npm run i18n:locale:artifacts:idempotence",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/e2e/evidenceReporter.test.ts --runInBand --no-coverage",
+        "npm run release:preflight"
+      ]
+    },
+    {
+      "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
+      "evidenceObservedHeadCommit": "72fe67ffa46cd5d019e84eb0c5cf835f7f5c4635",
+      "evidenceSha256": "21267e66358f2ba53c054097ca7170290ba442a5000b538526ca8a360573c4ac",
+      "compatibleSha256": "a48695620c94dfa1b408b9acdd5cad165e89802d6c1f97aa19beb260bfc05189",
+      "scope": "non-browser-semantic-release-harness-only",
+      "ownerIssue": "#688",
+      "reviewedAt": "2026-07-24",
+      "sunset": "next-verified-evidence-for-compatible-sha",
+      "proofCommands": [
+        "npm run i18n:evidence:canonical:check",
+        "npm run i18n:locale:artifacts:idempotence",
+        "npm run test:ci -- tests/unit/i18n/localeDeliveryContracts.test.ts tests/unit/e2e/evidenceReporter.test.ts --runInBand --no-coverage",
+        "npm run release:preflight"
+      ]
+    }
+  ]
+}

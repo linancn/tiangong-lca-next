@@ -58,8 +58,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
-lastReviewedNote: 'Reviewed for promotion #690: the reusable Goal now requires canonical semantic evidence plus dependency-ordered, double-generation-idempotent locale artifacts.'
+lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
+lastReviewedNote: 'Reviewed for promotion #690: the Goal permits only exact reviewed harness-only digest compatibility while retaining all browser-semantic invalidation boundaries.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -630,6 +630,8 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
+只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
+
 ---
 
 ## 6. 证据与检查点
@@ -932,6 +934,7 @@ npm run push:retry
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
+| 仅 canonical evidence formatting / locale artifact orchestration 变化，且 focused proof 证明 browser 语义不变 | 记录精确旧/新 digest compatibility，运行 canonical check、双生成幂等、focused contracts 和 production preflight | 永不需要 | tracked HEAD 变化则一次 | 精确兼容 pair 内不失效；任何后续漂移立即失效 |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + affected proof | 永不需要 | tracked HEAD 变化则一次 | 已有确认失效，发布前重确认一次 |

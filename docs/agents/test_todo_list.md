@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
-lastReviewedNote: 'Reviewed for promotion #690: refreshed the full-gate baseline and recorded deterministic evidence generation, artifact idempotence, and retained compact-mode logs.'
+lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
+lastReviewedNote: 'Reviewed for promotion #690: recorded four exact harness-only digest compatibility pairs and their fail-closed future-drift behavior.'
 ---
 
 # Testing Execution State
@@ -67,6 +67,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - Issue #688 makes semantic evidence and locale summaries deterministic at the writer boundary: evidence is emitted in canonical JSON, all locale summaries are generated once in dependency order, and the isolated double-generation check requires the second run to preserve the exact Git diff
 - Issue #688 also adds compact Agent/CI full-gate output while retaining complete Jest stdout/stderr and structured results under `.local/test-logs/**`; the Release Gate uploads those files for seven days on success or failure
+- Issue #688 records four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; production readiness accepts only those reviewed pairs and automatically fails again on any later drift or unlisted evidence input
 - main-target PRs run the reusable Release Gate against their exact base/head, and main-semantic local pushes add `release:preflight` between Docpact and the full test gate; `dev` pushes retain the normal two-gate path
 - the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate

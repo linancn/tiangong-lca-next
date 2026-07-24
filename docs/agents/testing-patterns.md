@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
-lastReviewedNote: 'Reviewed for Issue #688: added canonical evidence output, topological one-shot locale summaries, double-generation idempotence, and compact agent Jest output with retained logs.'
+lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
+lastReviewedNote: 'Reviewed for promotion #690: added the exact old/current digest-pair pattern for reviewed non-browser-semantic harness changes.'
 ---
 
 # Testing Patterns Reference
@@ -115,6 +115,7 @@ Special cases:
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter write repository-canonical JSON directly; then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
+17. when a digest-bound change is proven to affect only release-harness generation/formatting and not browser semantics, record only its exact evidence/current digest pair in the reviewed compatibility manifest; never exclude the path or accept future drift
 
 Browser semantic E2E pattern:
 

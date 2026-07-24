@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: "2026-07-24"
-lastReviewedCommit: "0a062e45295919dddd001b8f3d83dace10615497"
-lastReviewedNote: 'Reviewed for promotion #690: existing ownership, routing, and testing/i18n review-or-update rules correctly cover the deterministic release-harness changes.'
+lastReviewedAt: '2026-07-24'
+lastReviewedCommit: 'e537f1de3c5b08257d994ff37a6317eacadc0ae1'
+lastReviewedNote: 'Reviewed for promotion #690: existing ownership, routing, and review-or-update rules cover the exact semantic E2E digest compatibility contract without a new rule.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

@@ -33,8 +33,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-24
-lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
-lastReviewedNote: 'Reviewed for promotion #690: repo ownership, branch policy, minimal execution facts, and documentation routing remain aligned with the deterministic release-harness changes.'
+lastReviewedCommit: e537f1de3c5b08257d994ff37a6317eacadc0ae1
+lastReviewedNote: 'Reviewed for promotion #690: repo ownership, branch policy, and document routing remain accurate; exact digest compatibility stays in the validation owner docs.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
