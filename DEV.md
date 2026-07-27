@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: Next now owns only its source-bound declarative docs-capture profile; workspace owns capture execution.'
+lastReviewedCommit: b0cf14d4ac66553cdf4cb0b430eb5001af35a0fb
+lastReviewedNote: 'Reviewed for Issue #696: lifecycle-model node label compatibility uses the existing setup, focused validation, build, and managed-push workflow.'
 ---
 
 # Development Bootstrap
