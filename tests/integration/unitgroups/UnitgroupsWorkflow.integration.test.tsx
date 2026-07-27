@@ -2,12 +2,12 @@
  * Unitgroups read-only workflow integration test.
  * Covers src/pages/Unitgroups/index.tsx with focus on:
  * - Initial table load via getUnitGroupTableAll.
- * - Search behaviour delegating to getUnitGroupTablePgroongaSearch.
+ * - Search behaviour delegating to unitgroup_hybrid_search.
  * - My Data unit groups expose existing rows without create/edit/delete controls.
  * - Open-data users land on /tgdata unit groups and only see the read-only source matrix.
  *
  * Service mocks:
- * - getUnitGroupTableAll, getUnitGroupTablePgroongaSearch
+ * - getUnitGroupTableAll, unitgroup_hybrid_search
  * Ancillary mocks:
  * - getRoleByUserId (ensures admin access), getTeamById, contributeSource
  */
@@ -265,7 +265,7 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: jest.fn(),
-  getUnitGroupTablePgroongaSearch: jest.fn(),
+  unitgroup_hybrid_search: jest.fn(),
   createUnitGroup: jest.fn(),
   updateUnitGroup: jest.fn(),
   deleteUnitGroup: jest.fn(),
@@ -319,7 +319,7 @@ jest.mock('@ant-design/pro-components', () => {
   return { ...proComponents, ProTable };
 });
 
-const { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } = jest.requireMock(
+const { getUnitGroupTableAll, unitgroup_hybrid_search } = jest.requireMock(
   '@/services/unitgroups/api',
 );
 const { genUnitGroupFromData: mockGenUnitGroupFromData } = jest.requireMock(
@@ -347,7 +347,7 @@ describe('Unitgroups Workflow Integration', () => {
       success: true,
       total: 1,
     });
-    getUnitGroupTablePgroongaSearch.mockResolvedValue({
+    unitgroup_hybrid_search.mockResolvedValue({
       data: [
         {
           ...baseUnitGroupRow,
@@ -402,7 +402,7 @@ describe('Unitgroups Workflow Integration', () => {
     await user.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
-      expect(getUnitGroupTablePgroongaSearch).toHaveBeenCalled();
+      expect(unitgroup_hybrid_search).toHaveBeenCalled();
     });
     await waitFor(() => {
       expect(screen.getByText('Heat units')).toBeInTheDocument();
@@ -421,7 +421,7 @@ describe('Unitgroups Workflow Integration', () => {
 
     await user.selectOptions(screen.getByLabelText('state-filter'), '100');
     await waitFor(() => {
-      expect(getUnitGroupTablePgroongaSearch).toHaveBeenLastCalledWith(
+      expect(unitgroup_hybrid_search).toHaveBeenLastCalledWith(
         { pageSize: 10, current: 1 },
         'en',
         'my',
