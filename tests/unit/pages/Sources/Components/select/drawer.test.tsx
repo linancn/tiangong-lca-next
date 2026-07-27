@@ -137,7 +137,7 @@ const mockGetSourceTablePgroongaSearch = jest.fn(
 jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
-  getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  source_hybrid_search: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
 }));
 
 jest.mock('antd', () => {
@@ -360,6 +360,7 @@ describe('SourceSelectDrawer', () => {
         'te',
         'delta',
         {},
+        0,
       ),
     );
 
@@ -497,6 +498,7 @@ describe('SourceSelectDrawer', () => {
         'my',
         'mine',
         {},
+        undefined,
       ),
     );
 

@@ -118,7 +118,7 @@ const mockGetUnitGroupTablePgroongaSearch = jest.fn(
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
-  getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  unitgroup_hybrid_search: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
 }));
 
 jest.mock('antd', () => {
@@ -394,6 +394,41 @@ describe('UnitgroupsSelectDrawer', () => {
     await userEvent.click(screen.getByRole('button', { name: /^submit$/i }));
 
     expect(onData).toHaveBeenCalledWith('unit-group-my-search', '2.0.0');
+  });
+
+  it('loads and searches the selected Team Data scope', async () => {
+    renderWithProviders(<UnitgroupsSelectDrawer buttonType='text' lang='en' onData={jest.fn()} />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^select$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTableAll).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        {},
+        'en',
+        'te',
+        '',
+      ),
+    );
+    expect(screen.getByRole('button', { name: /Team Data/i })).toHaveAttribute(
+      'data-active',
+      'true',
+    );
+
+    await userEvent.type(screen.getByLabelText('te'), 'team-unit');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+
+    await waitFor(() =>
+      expect(mockGetUnitGroupTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'te',
+        'team-unit',
+        {},
+      ),
+    );
+    expect(screen.getByRole('button', { name: 'te:team-unit' })).toBeInTheDocument();
   });
 
   it('supports icon trigger, tg search, reopen reset, and all close paths', async () => {

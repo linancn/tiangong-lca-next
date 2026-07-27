@@ -26,6 +26,7 @@ import {
   getSourceTableAll,
   getSourceTablePgroongaSearch,
   getSourceTableUuidMentionSearch,
+  source_hybrid_search,
   updateSource,
 } from '@/services/sources/api';
 import {
@@ -862,6 +863,36 @@ describe('Sources API Service (src/services/sources/api.ts)', () => {
       ...mockSource,
       total_count: 1,
       ...overrides,
+    });
+
+    it('routes Source Hybrid Search through the reviewed Edge Function', async () => {
+      supabase.functions.invoke.mockResolvedValue({ data: [], error: null });
+
+      const result = await source_hybrid_search(
+        { current: 4, pageSize: 20 },
+        'en',
+        'tg',
+        'source query',
+        { publicationType: 'report' },
+        100,
+        'c3000000-0000-4000-8000-000000000297',
+      );
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'source_hybrid_search',
+        expect.objectContaining({
+          body: {
+            query: 'source query',
+            filter_condition: { publicationType: 'report' },
+            data_source: 'tg',
+            page_size: 20,
+            page_current: 4,
+            state_code: 100,
+            team_id: 'c3000000-0000-4000-8000-000000000297',
+          },
+        }),
+      );
+      expect(result).toEqual({ data: [], page: 4, success: true, total: 0 });
     });
 
     it('should perform full-text search', async () => {

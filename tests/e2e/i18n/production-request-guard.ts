@@ -56,8 +56,10 @@ export const AUDITED_READ_ONLY_RPC_NAMES = [
 ] as const;
 const READ_ONLY_RPC_NAMES = new Set<string>(AUDITED_READ_ONLY_RPC_NAMES);
 const READ_ONLY_EDGE_FUNCTIONS = new Set([
+  'contact_hybrid_search',
   'data_product_results',
   'flow_hybrid_search',
+  'flowproperty_hybrid_search',
   'lca_contribution_path_result',
   'lca_query_results',
   'lca_release_results',
@@ -66,6 +68,8 @@ const READ_ONLY_EDGE_FUNCTIONS = new Set([
   'process_hybrid_search',
   'query_calculation_results',
   'query_calculation_status',
+  'source_hybrid_search',
+  'unitgroup_hybrid_search',
 ]);
 function hasExactObjectKeys(
   value: unknown,

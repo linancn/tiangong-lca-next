@@ -55,7 +55,7 @@ jest.mock('umi', () => ({
 jest.mock('@/services/contacts/api', () => ({
   __esModule: true,
   getContactTableAll: (...args: any[]) => mockGetContactTableAll(...args),
-  getContactTablePgroongaSearch: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
+  contact_hybrid_search: (...args: any[]) => mockGetContactTablePgroongaSearch(...args),
   getContactTableUuidMentionSearch: (...args: any[]) =>
     mockGetContactTableUuidMentionSearch(...args),
 }));

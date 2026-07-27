@@ -25,6 +25,7 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
+import { invokeFoundationHybridSearch } from '../general/hybridSearch';
 import { genSourceJsonOrdered } from './util';
 
 type SourceListRpcRow = {
@@ -403,6 +404,28 @@ export async function getSourceTablePgroongaSearch(
   }
 
   return result;
+}
+
+export async function source_hybrid_search(
+  params: { current?: number; pageSize?: number },
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: unknown,
+  stateCode?: string | number,
+  tid: string | [] = [],
+) {
+  return invokeFoundationHybridSearch({
+    dataSource,
+    filterCondition,
+    functionName: 'source_hybrid_search',
+    lang,
+    mapRows: mapSourceListRows,
+    params,
+    queryText,
+    stateCode,
+    teamId: await getSourceTeamFilter(dataSource, tid),
+  });
 }
 
 export async function getSourceTableUuidMentionSearch(

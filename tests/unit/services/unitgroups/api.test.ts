@@ -13,6 +13,7 @@ import {
   getUnitGroupTableAll,
   getUnitGroupTablePgroongaSearch,
   getUnitGroupTableUuidMentionSearch,
+  unitgroup_hybrid_search,
   updateUnitGroup,
 } from '@/services/unitgroups/api';
 
@@ -1159,6 +1160,36 @@ describe('getUnitGroupTableAll', () => {
 });
 
 describe('getUnitGroupTablePgroongaSearch', () => {
+  it('routes UnitGroup Hybrid Search through the reviewed Edge Function', async () => {
+    mockFunctionsInvoke.mockResolvedValueOnce({ data: [], error: null });
+
+    const result = await unitgroup_hybrid_search(
+      { current: 5, pageSize: 30 },
+      'en',
+      'tg',
+      'unit query',
+      { unit: 'kg' },
+      100,
+      'c3000000-0000-4000-8000-000000000297',
+    );
+
+    expect(mockFunctionsInvoke).toHaveBeenCalledWith(
+      'unitgroup_hybrid_search',
+      expect.objectContaining({
+        body: {
+          query: 'unit query',
+          filter_condition: { unit: 'kg' },
+          data_source: 'tg',
+          page_size: 30,
+          page_current: 5,
+          state_code: 100,
+          team_id: 'c3000000-0000-4000-8000-000000000297',
+        },
+      }),
+    );
+    expect(result).toEqual({ data: [], page: 5, success: true, total: 0 });
+  });
+
   it('maps rpc search results to table rows', async () => {
     const rpcResult = {
       data: [

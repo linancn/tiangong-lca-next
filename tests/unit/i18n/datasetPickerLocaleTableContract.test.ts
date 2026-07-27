@@ -9,7 +9,7 @@ const DATASET_PICKERS = [
     rowType: 'ContactTable',
     tableCount: 4,
     serviceCallCounts: {
-      getContactTablePgroongaSearch: 4,
+      contact_hybrid_search: 4,
       getContactTableAll: 4,
     },
   },
@@ -18,7 +18,7 @@ const DATASET_PICKERS = [
     rowType: 'FlowpropertyTable',
     tableCount: 4,
     serviceCallCounts: {
-      getFlowpropertyTablePgroongaSearch: 4,
+      flowproperty_hybrid_search: 4,
       getFlowpropertyTableAll: 4,
     },
   },
@@ -37,17 +37,17 @@ const DATASET_PICKERS = [
     rowType: 'SourceTable',
     tableCount: 4,
     serviceCallCounts: {
-      getSourceTablePgroongaSearch: 4,
+      source_hybrid_search: 4,
       getSourceTableAll: 4,
     },
   },
   {
     file: 'src/pages/Unitgroups/Components/select/drawer.tsx',
     rowType: 'UnitGroupTable',
-    tableCount: 3,
+    tableCount: 4,
     serviceCallCounts: {
-      getUnitGroupTablePgroongaSearch: 3,
-      getUnitGroupTableAll: 3,
+      unitgroup_hybrid_search: 4,
+      getUnitGroupTableAll: 4,
     },
   },
 ] as const;

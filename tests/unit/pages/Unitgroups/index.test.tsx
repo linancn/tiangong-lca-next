@@ -73,7 +73,7 @@ jest.mock('@/services/teams/api', () => ({
 jest.mock('@/services/unitgroups/api', () => ({
   __esModule: true,
   getUnitGroupTableAll: (...args: any[]) => mockGetUnitGroupTableAll(...args),
-  getUnitGroupTablePgroongaSearch: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
+  unitgroup_hybrid_search: (...args: any[]) => mockGetUnitGroupTablePgroongaSearch(...args),
   getUnitGroupTableUuidMentionSearch: (...args: any[]) =>
     mockGetUnitGroupTableUuidMentionSearch(...args),
 }));
