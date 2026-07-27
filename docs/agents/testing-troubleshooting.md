@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: added the shortest recovery path for stale production-readiness evidence before main merge and clarified that failed gates must not leave a release tag.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedNote: 'Reviewed for Issue #693: the focused Next troubleshooting entry now validates only the source-bound capture profile; browser execution diagnostics belong to workspace tooling.'
 ---
 
 # Testing Troubleshooting
@@ -45,7 +45,6 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
-| docs-impact screenshot contracts | `npm run docs:screenshot:test` |
 | release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
 | exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 
@@ -77,6 +76,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
 | Playwright browser executable is missing | a direct host run lacks binaries, or the release image is absent/mismatched | for `e2e:dev`, run `npx playwright install chromium firefox webkit`; for release proof, run `npm run e2e:env:install` and do not repair browsers one by one on the host |
 | docs capture reports `missing-credentials` or `invalid-authentication` | the secret pointer/file/mode is invalid, identity does not match, or login/MFA/session did not complete | verify only that `DOCS_SCREENSHOT_ENV_FILE` points to the external absolute regular mode-`0600` file; never source or print it, and do not convert this failure into an access-denied Draft |
+| docs capture rejects `--base-url` before browser launch | the caller omitted the run-scoped origin or supplied credentials, a path, query, fragment, or non-HTTP(S) URL | rerun through the workspace runtime wrapper for a local candidate, or pass the explicitly approved production origin; never restore `DOCS_SCREENSHOT_BASE_URL` to the account file |
 | docs capture reports environment failure instead of `verified-access-denied` | the probe returned `401`/`404`/`5xx`, timed out, lacked identity proof, or had only an uncorroborated UI denial | repair the exact authentication/route/locator/environment failure and rerun; only authenticated authoritative denial can enable the Draft exception |
 | docs capture mutation guard reports a blocked request | the selected UI state attempted an application write outside the explicit auth/session allowlist | stop the capture, choose a read-only route/filter or safe fixture, and do not broaden the allowlist to production mutation endpoints |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |

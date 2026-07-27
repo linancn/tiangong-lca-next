@@ -23,12 +23,11 @@ checkPaths:
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
-  - playwright.docs-capture.config.ts
-  - scripts/docs-screenshots/**
+  - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 exact LCIA identity and release boundaries while incorporating the Issue #670 isolated docs screenshot executor and read-only trust boundary.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedNote: 'Reviewed for Issue #693: Next retains only the source-bound docs capture profile; workspace tooling owns the generic executor and capture trust boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -60,7 +59,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
-| `playwright.docs-capture.config.ts`, `scripts/docs-screenshots/**` | local-operator-only, read-only documentation screenshot capture; validated plans, external secret-file loading, mutation interception, 144-DPI PNG output, and sanitized access/result evidence |
+| `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
 | other `docker/**` paths | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |

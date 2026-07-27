@@ -3,7 +3,7 @@
   "source": {
     "baseRef": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
     "baseCommit": "c26f306e82ac66f50a56aafe8f89ea96c0b0c67d",
-    "auditedInputDigest": "bdab8d5ce5f62c4c19271970ba58111f469a1bb3445bd55c834c36fc6a76678f",
+    "auditedInputDigest": "db26b4847ee154d0a18d5ff8c66e5a0c4b99cdbbb9ccd44f0c8fc16dfb9cde34",
     "auditedInputDigestAlgorithm": "sha256(path\\0content\\0)",
     "repository": "linancn/tiangong-lca-next"
   },
@@ -13724,7 +13724,7 @@
         {
           "kind": "formatMessage",
           "path": "src/app.tsx",
-          "line": 225,
+          "line": 228,
           "column": 16,
           "symbol": "layout",
           "defaultMessage": "OpenAPI documentation",
@@ -13737,7 +13737,7 @@
           "argumentSignature": [],
           "placeholders": [],
           "locations": [
-            { "path": "src/app.tsx", "line": 225, "column": 16, "kind": "formatMessage" }
+            { "path": "src/app.tsx", "line": 228, "column": 16, "kind": "formatMessage" }
           ]
         }
       ]
@@ -123944,7 +123944,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 496,
+          "line": 499,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Confirm Password",
@@ -123959,7 +123959,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 496,
+              "line": 499,
               "column": 36,
               "kind": "formatMessage"
             }
@@ -124027,7 +124027,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 504,
+          "line": 507,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please confirm your password!",
@@ -124051,7 +124051,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 504,
+              "line": 507,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -124184,7 +124184,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 304,
+          "line": 306,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -124193,7 +124193,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 384,
+          "line": 387,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Email",
@@ -124226,13 +124226,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 304,
+              "line": 306,
               "column": 36,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 384,
+              "line": 387,
               "column": 36,
               "kind": "formatMessage"
             },
@@ -124312,7 +124312,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 321,
+          "line": 323,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -124321,7 +124321,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 401,
+          "line": 404,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your email!",
@@ -124345,13 +124345,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 321,
+              "line": 323,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 401,
+              "line": 404,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -124567,7 +124567,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 312,
+          "line": 314,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -124576,7 +124576,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 392,
+          "line": 395,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "The email format is incorrect!",
@@ -124600,13 +124600,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 312,
+              "line": 314,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 392,
+              "line": 395,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -124763,7 +124763,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 368,
+          "line": 371,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Forgot password?",
@@ -124778,7 +124778,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 368,
+              "line": 371,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -124846,7 +124846,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 266,
+          "line": 267,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Login",
@@ -124861,7 +124861,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 266,
+              "line": 267,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -125154,7 +125154,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 517,
+          "line": 520,
           "column": 33,
           "symbol": "validator",
           "defaultMessage": "The two passwords do not match!",
@@ -125178,7 +125178,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 517,
+              "line": 520,
               "column": 33,
               "kind": "formatMessage"
             },
@@ -125433,7 +125433,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 335,
+          "line": 338,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -125442,7 +125442,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 461,
+          "line": 464,
           "column": 36,
           "symbol": "Login",
           "defaultMessage": "Password",
@@ -125457,13 +125457,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 335,
+              "line": 338,
               "column": 36,
               "kind": "formatMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 461,
+              "line": 464,
               "column": 36,
               "kind": "formatMessage"
             }
@@ -125531,7 +125531,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 343,
+          "line": 346,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -125540,7 +125540,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 469,
+          "line": 472,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Please input your password!",
@@ -125564,13 +125564,13 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 343,
+              "line": 346,
               "column": 29,
               "kind": "FormattedMessage"
             },
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 469,
+              "line": 472,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -125810,7 +125810,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 434,
+          "line": 437,
           "column": 33,
           "symbol": "Login",
           "defaultMessage": "Strength: Medium",
@@ -125834,7 +125834,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 434,
+              "line": 437,
               "column": 33,
               "kind": "FormattedMessage"
             },
@@ -125908,7 +125908,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 444,
+          "line": 447,
           "column": 33,
           "symbol": "Login",
           "defaultMessage": "Strength: Strong",
@@ -125932,7 +125932,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 444,
+              "line": 447,
               "column": 33,
               "kind": "FormattedMessage"
             },
@@ -126006,7 +126006,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 415,
+          "line": 418,
           "column": 27,
           "symbol": "Login",
           "defaultMessage": "Password must contain at least 8 characters, including lowercase and uppercase letters, digits, and symbols.",
@@ -126030,7 +126030,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 415,
+              "line": 418,
               "column": 27,
               "kind": "FormattedMessage"
             },
@@ -126104,7 +126104,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 453,
+          "line": 456,
           "column": 31,
           "symbol": "Login",
           "defaultMessage": "Strength: Weak",
@@ -126128,7 +126128,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 453,
+              "line": 456,
               "column": 31,
               "kind": "FormattedMessage"
             },
@@ -126202,7 +126202,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 479,
+          "line": 482,
           "column": 29,
           "symbol": "Login",
           "defaultMessage": "Password is invalid!",
@@ -126226,7 +126226,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 479,
+              "line": 482,
               "column": 29,
               "kind": "FormattedMessage"
             },
@@ -126383,7 +126383,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 282,
+          "line": 283,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Incorrect username/password",
@@ -126398,7 +126398,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 282,
+              "line": 283,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -127373,7 +127373,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 559,
+          "line": 562,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -127388,7 +127388,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 559,
+              "line": 562,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -127456,7 +127456,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 273,
+          "line": 274,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Sign Up",
@@ -127471,7 +127471,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 273,
+              "line": 274,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -127598,7 +127598,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 357,
+          "line": 360,
           "column": 25,
           "symbol": "Login",
           "defaultMessage": "Remember me",
@@ -127613,7 +127613,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 357,
+              "line": 360,
               "column": 25,
               "kind": "FormattedMessage"
             }
@@ -127681,7 +127681,7 @@
         {
           "kind": "formatMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 290,
+          "line": 291,
           "column": 30,
           "symbol": "Login",
           "defaultMessage": "Validation email failed to send.",
@@ -127696,7 +127696,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 290,
+              "line": 291,
               "column": 30,
               "kind": "formatMessage"
             }
@@ -128112,7 +128112,7 @@
         {
           "kind": "FormattedMessage",
           "path": "src/pages/User/Login/index.tsx",
-          "line": 534,
+          "line": 537,
           "column": 23,
           "symbol": "Login",
           "defaultMessage": "By signing up, you agree to our {termsOfService} and {privacyPolicy}",
@@ -128130,7 +128130,7 @@
           "locations": [
             {
               "path": "src/pages/User/Login/index.tsx",
-              "line": 534,
+              "line": 537,
               "column": 23,
               "kind": "FormattedMessage"
             }

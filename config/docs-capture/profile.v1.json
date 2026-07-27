@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "next-docs-capture-profile.v1",
+  "productRepo": "linancn/tiangong-lca-next",
+  "supportedIntentSchemas": ["docs-impact-capture-intent.v2"],
+  "runtime": {
+    "command": ["npm", "run", "start:main"],
+    "readinessPath": "/"
+  },
+  "authentication": {
+    "mode": "credentials",
+    "loginPath": "/#/user/login",
+    "emailLocator": {
+      "kind": "testId",
+      "value": "docs-capture-login-email"
+    },
+    "passwordLocator": {
+      "kind": "testId",
+      "value": "docs-capture-login-password"
+    },
+    "submitLocator": {
+      "kind": "testId",
+      "value": "docs-capture-login-submit"
+    },
+    "authenticatedLocator": {
+      "kind": "testId",
+      "value": "docs-capture-authenticated"
+    },
+    "identityProbe": {
+      "kind": "locator-text",
+      "locator": {
+        "kind": "testId",
+        "value": "docs-capture-authenticated"
+      },
+      "matchSecret": "accountAlias"
+    },
+    "mutationAllowlist": ["https://qgzvkongdjqiiamzbbts.supabase.co/auth/v1/*"]
+  },
+  "authorization": {
+    "probes": {
+      "public-route": {
+        "kind": "public"
+      },
+      "protected-route-ui": {
+        "kind": "ui-denial",
+        "pathSource": "intent",
+        "deniedLocator": {
+          "kind": "testId",
+          "value": "access-denied"
+        },
+        "sourceGuardReference": "src/access.ts"
+      }
+    }
+  },
+  "locatorPolicy": {
+    "allowedKinds": ["role", "label", "text", "testId"],
+    "cssAllowed": false
+  }
+}

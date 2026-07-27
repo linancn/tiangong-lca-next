@@ -19,8 +19,7 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - playwright.config.ts
-  - playwright.docs-capture.config.ts
-  - scripts/docs-screenshots/**
+  - config/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
@@ -30,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
-lastReviewedNote: 'Reviewed for Issue #688: documented canonical semantic evidence, topological one-shot locale artifact generation, idempotence proof, compact agent output, and retained CI Jest artifacts.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedNote: 'Reviewed for Issue #693: the generic docs screenshot executor moved to workspace tooling; Next validation now proves only the source-bound profile and its stable product locators.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -80,7 +79,7 @@ npm run prepush:gate
 | sync helpers under `docker/**` | `npm run lint`; `npm run build` | run the exact helper only when the task includes it | do not hand-edit synced mirrors |
 | tests, coverage, or gate scripts | `npm run docpact:gate`; `npm run lint`; focused contract proof for the changed runner or script; exercise `TIANGONG_AGENT_MODE=1` when compact output changes | final `npm run prepush:gate` through `push:checked` | do not precede the final gate with a duplicate full-suite or coverage run; agent mode writes full logs and structured results under `.local/test-logs/**`; coverage expectations remain strict |
 | Playwright semantic localization E2E, release runner, route/view assertion contract, or evidence schema | `npm run i18n:evidence:canonical:check`; focused `npm run e2e:dev -- --list` / affected browser project; focused runner unit tests; `npm run e2e:env:doctor` when the pinned image is already installed; `npm run lint` | exact clean-candidate `npm run e2e:release`; add `--authenticated --allow-production-data --write-verified-evidence --users-env-file <0600-file>` only in an explicitly authorized local operator session | the evidence reporter writes Prettier-canonical JSON directly; no semantic E2E GitHub Actions event may receive production credentials or write production; authenticated proof is role-neutral globally, must close all 49 assertion IDs, and must finish with exact verified-row cleanup plus `created=cleaned`, `leaked=0` |
-| docs screenshot capture config, plan/result/access schema, or executor | `npm run docs:screenshot:test`; `npm run lint`; `npm run docs:screenshot:capture -- --help` | one authorized canary capture against the intended environment, followed by privacy review and the paired `next-docs` screenshot validator | credentials come only from the external mode-`0600` file named by `DOCS_SCREENSHOT_ENV_FILE`; all planned actions are read-only, non-auth mutations are blocked, output stays below declared roots, and missing/invalid authentication never counts as verified authorization denial |
+| source-bound docs capture profile, login/identity test IDs, runtime/readiness contract, or access-denied marker | focused `npm run lint`; `npm run build` when shipped markup changes | workspace v2 compiler tests plus one authorized end-to-end canary capture, privacy review, and paired `next-docs` asset validation | Next owns only facts that must evolve with the rendered commit. The workspace engine owns profile validation, plan/result/access schemas, credentials, read-only enforcement, dynamic origin, and Draft/evidence policy. A missing or incompatible profile is a blocker, never verified access denial. |
 | locale bundles, language capabilities, message IDs, or localized runtime copy | `npm run i18n:audit`; `npm run i18n:platform:audit`; `npm run i18n:hardcoding:audit`; `npm run reference-data:check`; generate all registry summaries once with `npm run i18n:locale:artifacts:write`; prove a second generation is a no-op with `npm run i18n:locale:artifacts:idempotence`; `npm run i18n:corrections:check`; focused locale/runtime tests; `npm run lint`; `npm run build` | `npm run i18n:locale:all:production:check` for a release candidate; `npm run prepush:gate`; route-view browser smoke for selector, persistence, content-language read/write, framework copy, declared service/reference fallbacks, route/static views under their existing access context, and long-text layout | the one-shot generator processes every locale in explicit `context -> structuralValidation -> quality -> activation` dependency order and emits canonical JSON; every registry locale must match the canonical topology/key/ICU and independently declared UI/content/service/reference capability contracts; production readiness must fail closed while any reference-resource or other activation blocker remains |
 | historical German human-review evidence only | use `i18n:de:pilot`, `i18n:de:review:*`, and `i18n:de:delta:review:*` only to validate the immutable Issue #601/#602/#606 snapshot they own | focused historical checker/renderer tests only when that compatibility implementation changes | these commands are outside active German and full-gate dependency paths; do not regenerate a form for a post-baseline correction, and never commit reviewer data |
 | active German runtime or post-baseline correction | run `npm run i18n:audit`, `npm run i18n:context:check -- --locale de-DE`, `npm run i18n:corrections:check`, `npm run i18n:locale:quality:check -- --locale de-DE`, final `npm run i18n:de:audit`, and focused runtime tests | `npm run build`; applicable route-view/browser smoke; final `npm run prepush:gate` through `push:checked` | baseline `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d` pins the accepted 2,737-message German catalog/runtime state; new source messages use the normal source-context closure, while a changed existing German value requires an exact tracked correction dossier and never a private confirmation |
