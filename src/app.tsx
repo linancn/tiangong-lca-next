@@ -198,7 +198,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
           render: () => {
             return (
               <AvatarDropdown>
-                <div className='tg-global-header-avatar-trigger'>
+                <div
+                  className='tg-global-header-avatar-trigger'
+                  data-testid='docs-capture-authenticated'
+                >
                   <AvatarName />
                 </div>
               </AvatarDropdown>

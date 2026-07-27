@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 00e8724e79463bf62e83158622781f68e3bc5d72
-lastReviewedNote: 'Reviewed for Issue #688: added canonical evidence output, topological one-shot locale summaries, double-generation idempotence, and compact agent Jest output with retained logs.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedNote: 'Reviewed for Issue #693: replaced the Next-owned screenshot executor pattern with source-bound profile proof and workspace-owned browser execution.'
 ---
 
 # Testing Patterns Reference
@@ -136,15 +136,13 @@ Browser semantic E2E pattern:
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
 - treat adding a registry locale or changing a bound route/source/test or executable dependency lock as evidence invalidation, not as a request to reuse the old result; a package-lock root application-version-only change may reuse evidence only after the raw evidence lock is verified at its recorded commit and the deterministic dependency projection remains exact
 
-Documentation capture pattern:
+Documentation capture profile pattern:
 
-- keep docs-impact capture under `scripts/docs-screenshots/**` with its own `playwright.docs-capture.config.ts`; do not reuse semantic localization reporters, auth lifecycle, traces, videos, or stored browser profiles
-- validate plans and access classification in `tests/unit/scripts/docsScreenshotCapture.test.ts`; use a synthetic local Chromium canary only for the browser/image boundary
-- prefer role, label, text, and test-id locators; CSS requires an explicit reason
-- accept only read-only navigation/filter actions, block application mutations outside explicit auth/session paths, and fail when the guard observes a blocked mutation
-- read account values only inside the capture child process from an absolute external regular file with mode no broader than `0600`; plans, results, logs, and tests contain aliases or synthetic values only
-- classify image-free Draft evidence as `verified-access-denied` only after identity confirmation plus an authoritative `403`, capability denial, or fully corroborated UI/source guard; missing credentials, invalid authentication, MFA/session, network, route, and locator failures remain blockers
-- write identical 144-DPI PNG bytes to the declared Chinese and English next-docs asset paths, then require a separate human privacy/content review before the result becomes complete
+- keep only source-version facts under `config/docs-capture/**`: runtime/readiness, login/identity, allowed auth/session mutations, denial probes, and stable locator policy
+- validate every profile-owned locator against the current source in `tests/docs-capture/**`
+- prefer role, label, text, and test-id locators; the current profile intentionally rejects CSS
+- never add the generic executor, account secret handling, dynamic origin, screenshot output, or Draft/evidence policy to Next; those belong to workspace tooling
+- use a synthetic local Chromium canary only as cross-repo workspace proof after the exact Next profile and render-target commit are bound
 
 Gate-bootstrap pattern:
 
@@ -160,8 +158,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
-| docs-impact screenshot contract proof | `npm run docs:screenshot:test` |
-| on-demand docs-impact screenshot capture | `npm run docs:screenshot:capture -- --base-url <runtime-origin> --plan <plan> --result <result> --access-report <report> --allowed-output-root <next-docs-root>` |
+| source-bound docs capture profile proof | `npm run docs:capture-profile:test` |
 | exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |

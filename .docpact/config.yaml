@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-27'
-lastReviewedCommit: '0a062e45295919dddd001b8f3d83dace10615497'
-lastReviewedNote: 'Reviewed for Issue #670 dynamic-port follow-up: retained ownership and routing while moving the screenshot base origin out of the account secret file and into a mandatory per-run CLI input.'
+lastReviewedCommit: '326b9e5eb522341905c47c9295b932f8e257a397'
+lastReviewedNote: 'Reviewed for Issue #693: generic docs screenshot execution moves to workspace tooling; Next retains source-bound profile ownership and compatibility proof.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -53,7 +53,7 @@ ownership:
           - tests/e2e/**
           - .gitignore
           - playwright.config.ts
-          - playwright.docs-capture.config.ts
+          - config/docs-capture/**
           - package.json
           - .nvmrc
           - jest.config.cjs
@@ -66,7 +66,7 @@ ownership:
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
           - scripts/e2e/**
-          - scripts/docs-screenshots/**
+          - tests/docs-capture/**
           - scripts/i18n/**
           - scripts/reference-data/**
       ownerRepo: next
@@ -107,7 +107,7 @@ coverage:
     - tests/e2e/**
     - .gitignore
     - playwright.config.ts
-    - playwright.docs-capture.config.ts
+    - config/docs-capture/**
     - package.json
     - .nvmrc
     - jest.config.cjs
@@ -120,7 +120,7 @@ coverage:
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
     - scripts/e2e/**
-    - scripts/docs-screenshots/**
+    - tests/docs-capture/**
     - scripts/i18n/**
     - scripts/reference-data/**
   exclude:
@@ -164,7 +164,7 @@ routing:
       paths:
         - package.json
         - playwright.config.ts
-        - playwright.docs-capture.config.ts
+        - config/docs-capture/**
         - .nvmrc
         - jest.config.cjs
         - .husky/pre-push
@@ -177,7 +177,7 @@ routing:
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - scripts/reference-data/**
-        - scripts/docs-screenshots/**
+        - tests/docs-capture/**
         - tests/**
         - tests/e2e/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -423,8 +423,6 @@ rules:
         kind: locale-fallback-contract
       - path: playwright.config.ts
         kind: semantic-e2e-config
-      - path: playwright.docs-capture.config.ts
-        kind: docs-screenshot-config
       - path: tests/e2e/i18n/**
         kind: semantic-e2e-proof
       - path: .github/workflows/i18n-semantic-e2e.yml
@@ -601,8 +599,10 @@ rules:
         kind: test-gate
       - path: scripts/e2e/**
         kind: semantic-e2e-runner
-      - path: scripts/docs-screenshots/**
-        kind: docs-screenshot-runner
+      - path: config/docs-capture/**
+        kind: source-bound-docs-capture-profile
+      - path: tests/docs-capture/**
+        kind: source-bound-docs-capture-profile-proof
       - path: scripts/i18n/**
         kind: test-gate
       - path: scripts/reference-data/**

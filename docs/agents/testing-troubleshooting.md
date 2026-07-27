@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: added the shortest recovery path for stale production-readiness evidence before main merge and clarified that failed gates must not leave a release tag.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedNote: 'Reviewed for Issue #693: the focused Next troubleshooting entry now validates only the source-bound capture profile; browser execution diagnostics belong to workspace tooling.'
 ---
 
 # Testing Troubleshooting
@@ -45,7 +45,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
-| docs-impact screenshot contracts | `npm run docs:screenshot:test` |
+| source-bound docs capture profile | `npm run docs:capture-profile:test` |
 | release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
 | exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 
