@@ -58,7 +58,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: e83846b3db10a9b2a9a6f080c076160cda754ed9
+lastReviewedCommit: 276d25a97856af5b722e2a7a4be1cfc43ac54a7e
 lastReviewedNote: 'Reviewed for Issue #691: locale artifact Git subprocesses now clear inherited repository-local hook variables; generated artifact, activation, and production-effective confirmation contracts are unchanged.'
 baselineObservedAt: 2026-07-18
 related:
