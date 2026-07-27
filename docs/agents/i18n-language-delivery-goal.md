@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedCommit: b7eff6c1644af4009bafe3f5ee4d031fd4109bbe
 lastReviewedNote: 'Reviewed for Issue #693: docs-impact capture execution moves to workspace tooling while this Goal keeps its credential-free, non-visual semantic E2E evidence boundary unchanged.'
 baselineObservedAt: 2026-07-18
 related:

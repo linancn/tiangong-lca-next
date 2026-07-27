@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: Next now owns only its source-bound declarative docs-capture profile; workspace owns capture execution.'
+lastReviewedCommit: b7eff6c1644af4009bafe3f5ee4d031fd4109bbe
+lastReviewedNote: 'Reviewed for Issue #698: foundation-dataset Hybrid Search uses the existing Node 24, lint, focused Jest, build, and managed pre-push workflow; bootstrap commands are unchanged.'
 ---
 
 # Development Bootstrap
