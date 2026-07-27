@@ -13,6 +13,11 @@ import {
   genLifeCycleModelNodeName,
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
+import {
+  getLifeCycleModelGraphProcessReferences,
+  normalizeLifeCycleModelGraphForDisplay,
+} from '@/services/lifeCycleModels/viewCompatibility';
+import { getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
@@ -469,7 +474,17 @@ const ToolbarView: FC<Props> = ({
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setInfoData({ ...fromData, id: id, version: version });
-        const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
+        const rawJsonTg = result.data?.json_tg ?? {};
+        const processReferences = getLifeCycleModelGraphProcessReferences(rawJsonTg);
+        const processDetailsResult = await getProcessDetailByIdAndVersion(processReferences).catch(
+          () => ({ data: [] }),
+        );
+        const displayJsonTg = normalizeLifeCycleModelGraphForDisplay({
+          jsonTg: rawJsonTg,
+          lifeCycleModelDataSet: result.data?.json?.lifeCycleModelDataSet,
+          processDetails: processDetailsResult.data ?? [],
+        });
+        const model = genLifeCycleModelData(displayJsonTg, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,

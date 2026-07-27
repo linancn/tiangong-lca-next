@@ -21,7 +21,15 @@ import {
   genLifeCycleModelNodeName,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
-import { getProcessesByIdAndVersion } from '@/services/processes/api';
+import {
+  getLifeCycleModelGraphProcessReferences,
+  normalizeLifeCycleModelGraphForDisplay,
+} from '@/services/lifeCycleModels/viewCompatibility';
+import {
+  getProcessDetailByIdAndVersion,
+  getProcessesByIdAndVersion,
+} from '@/services/processes/api';
+import type { ProcessDetailByVersionItem } from '@/services/processes/data';
 import { ActionType } from '@ant-design/pro-components';
 import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
@@ -425,25 +433,26 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     }, 0);
   });
 
-  const getProcessInstances = async (
+  const getProcessDisplayData = async (
     jsonTg: LifeCycleModelJsonTg,
-  ): Promise<LifeCycleModelProcessInstance[]> => {
-    const params: { id: string; version: string }[] = [];
-    jsonTg?.xflow?.nodes?.forEach((node) => {
-      const nodeId = node?.data?.id;
-      const nodeVersion = node?.data?.version;
-      if (nodeId && nodeVersion) {
-        params.push({
-          id: nodeId,
-          version: nodeVersion,
-        });
-      }
-    });
-    if (params.length > 0) {
-      const procresses = await getProcessesByIdAndVersion(params);
-      return (procresses.data ?? []) as LifeCycleModelProcessInstance[];
+  ): Promise<{
+    processInstances: LifeCycleModelProcessInstance[];
+    processDetails: ProcessDetailByVersionItem[];
+  }> => {
+    const params = getLifeCycleModelGraphProcessReferences(jsonTg);
+    if (params.length === 0) {
+      return { processInstances: [], processDetails: [] };
     }
-    return [];
+
+    const [processInstancesResult, processDetailsResult] = await Promise.all([
+      getProcessesByIdAndVersion(params).catch(() => ({ data: [] })),
+      getProcessDetailByIdAndVersion(params).catch(() => ({ data: [] })),
+    ]);
+
+    return {
+      processInstances: (processInstancesResult.data ?? []) as LifeCycleModelProcessInstance[],
+      processDetails: (processDetailsResult.data ?? []) as ProcessDetailByVersionItem[],
+    };
   };
 
   const canonicalAppLocale =
@@ -489,7 +498,17 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           const nextJsonTg = result.data?.json_tg ?? {};
           setInfoData({ ...fromData, id: id });
           setJsonTg(nextJsonTg);
-          const model = genLifeCycleModelData(nextJsonTg, lang);
+          const { processInstances: nextProcessInstances, processDetails } =
+            await getProcessDisplayData(nextJsonTg);
+          if (!isCurrentResolution()) {
+            return;
+          }
+          const displayJsonTg = normalizeLifeCycleModelGraphForDisplay({
+            jsonTg: nextJsonTg,
+            lifeCycleModelDataSet: result.data?.json?.lifeCycleModelDataSet,
+            processDetails,
+          });
+          const model = genLifeCycleModelData(displayJsonTg, lang);
           const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
             return {
               ...node,
@@ -583,11 +602,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             edges: initEdges,
           });
           setNodeCount(initNodes.length);
-
-          const nextProcessInstances = await getProcessInstances(nextJsonTg);
-          if (isCurrentResolution()) {
-            setProcessInstances(nextProcessInstances);
-          }
+          setProcessInstances(nextProcessInstances);
         })
         .finally(() => {
           if (isCurrentResolution()) {

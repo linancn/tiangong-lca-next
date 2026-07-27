@@ -128,6 +128,26 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
 }));
 
+const mockGetLifeCycleModelGraphProcessReferences = jest.fn((jsonTg: any) =>
+  (jsonTg?.xflow?.nodes ?? [])
+    .map((node: any) => ({ id: node?.data?.id, version: node?.data?.version }))
+    .filter((item: any) => item.id && item.version),
+);
+const mockNormalizeLifeCycleModelGraphForDisplay = jest.fn(({ jsonTg }: any) => jsonTg);
+jest.mock('@/services/lifeCycleModels/viewCompatibility', () => ({
+  __esModule: true,
+  getLifeCycleModelGraphProcessReferences: (...args: any[]) =>
+    mockGetLifeCycleModelGraphProcessReferences(...args),
+  normalizeLifeCycleModelGraphForDisplay: (...args: any[]) =>
+    mockNormalizeLifeCycleModelGraphForDisplay(...args),
+}));
+
+const mockGetProcessDetailByIdAndVersion = jest.fn();
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
+}));
+
 const mockGenLifeCycleModelInfoFromData = jest.fn((dataset: any) => dataset);
 const mockGenLifeCycleModelData = jest.fn();
 const mockGenLifeCycleModelNodeName = jest.fn((nodeData: any) => nodeData?.label ?? 'process-name');
@@ -244,6 +264,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       ],
       error: null,
     });
+    mockGetProcessDetailByIdAndVersion.mockResolvedValue({ data: [] });
     mockGenLifeCycleModelData.mockReturnValue({
       nodes: [
         {
@@ -655,6 +676,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
   });
 
   it('merges comment-only review data when the base review payload is missing', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({});
     mockGetLifeCycleModelDetail.mockResolvedValue({
       data: {
         json: {
@@ -696,6 +718,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       data: [],
       error: null,
     });
+    mockGetProcessDetailByIdAndVersion.mockRejectedValueOnce(new Error('detail lookup failed'));
     mockGenLifeCycleModelData.mockReturnValue(undefined);
 
     render(

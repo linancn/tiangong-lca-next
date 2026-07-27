@@ -134,6 +134,20 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
 }));
 
+const mockGetLifeCycleModelGraphProcessReferences = jest.fn((jsonTg: any) =>
+  (jsonTg?.xflow?.nodes ?? [])
+    .map((node: any) => ({ id: node?.data?.id, version: node?.data?.version }))
+    .filter((item: any) => item.id && item.version),
+);
+const mockNormalizeLifeCycleModelGraphForDisplay = jest.fn(({ jsonTg }: any) => jsonTg);
+jest.mock('@/services/lifeCycleModels/viewCompatibility', () => ({
+  __esModule: true,
+  getLifeCycleModelGraphProcessReferences: (...args: any[]) =>
+    mockGetLifeCycleModelGraphProcessReferences(...args),
+  normalizeLifeCycleModelGraphForDisplay: (...args: any[]) =>
+    mockNormalizeLifeCycleModelGraphForDisplay(...args),
+}));
+
 const mockGenLifeCycleModelInfoFromData = jest.fn();
 const mockGenLifeCycleModelData = jest.fn();
 const mockGenLifeCycleModelNodeName = jest.fn();
@@ -151,9 +165,11 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
 }));
 
 const mockGetProcessesByIdAndVersion = jest.fn();
+const mockGetProcessDetailByIdAndVersion = jest.fn();
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion(...args),
+  getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -334,6 +350,9 @@ describe('ToolbarView', () => {
     mockGetProcessesByIdAndVersion.mockResolvedValue({
       data: [{ id: 'proc-1', version: '1.0' }],
     });
+    mockGetProcessDetailByIdAndVersion.mockResolvedValue({
+      data: [{ id: 'proc-1', version: '1.0', json: { processDataSet: {} } }],
+    });
   });
 
   it('loads graph data and renders process-oriented tools when the drawer is visible', async () => {
@@ -347,6 +366,19 @@ describe('ToolbarView', () => {
       expect(mockGetProcessesByIdAndVersion).toHaveBeenCalledWith([
         { id: 'proc-1', version: '1.0' },
       ]),
+    );
+    expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalledWith([
+      { id: 'proc-1', version: '1.0' },
+    ]);
+    expect(mockNormalizeLifeCycleModelGraphForDisplay).toHaveBeenCalledWith(
+      expect.objectContaining({
+        jsonTg: expect.objectContaining({
+          xflow: expect.objectContaining({
+            nodes: [{ data: { id: 'proc-1', version: '1.0' } }],
+          }),
+        }),
+        processDetails: [{ id: 'proc-1', version: '1.0', json: { processDataSet: {} } }],
+      }),
     );
 
     expect(screen.getByTestId('toolbar-view-info')).toHaveTextContent('en:model-1');
@@ -565,6 +597,7 @@ describe('ToolbarView', () => {
       },
     });
     mockGetProcessesByIdAndVersion.mockResolvedValueOnce({});
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({});
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGetPortLabelWithAllocation.mockReturnValueOnce(undefined);
     mockGenLifeCycleModelNodeName.mockReturnValue(undefined);
@@ -624,6 +657,20 @@ describe('ToolbarView', () => {
       }),
     );
     expect(mockGetProcessesByIdAndVersion).not.toHaveBeenCalled();
+  });
+
+  it('fails soft when process display lookups reject', async () => {
+    mockGetProcessesByIdAndVersion.mockRejectedValueOnce(new Error('table lookup failed'));
+    mockGetProcessDetailByIdAndVersion.mockRejectedValueOnce(new Error('detail lookup failed'));
+
+    render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockInitData).toHaveBeenCalled());
+    expect(mockNormalizeLifeCycleModelGraphForDisplay).toHaveBeenCalledWith(
+      expect.objectContaining({
+        processDetails: [],
+      }),
+    );
   });
 
   it('falls back to an empty selected version when the chosen process instance points to a submodel', async () => {
@@ -1010,5 +1057,27 @@ describe('ToolbarView', () => {
 
     expect(mockGenLifeCycleModelData).toHaveBeenCalledTimes(1);
     expect(mockInitData).not.toHaveBeenCalled();
+  });
+
+  it('abandons graph materialization when process display loading becomes stale', async () => {
+    const processInstancesResolution = createDeferred();
+    const processDetailsResolution = createDeferred();
+    mockGetProcessesByIdAndVersion.mockReturnValueOnce(processInstancesResolution.promise);
+    mockGetProcessDetailByIdAndVersion.mockReturnValueOnce(processDetailsResolution.promise);
+    mockNormalizeLifeCycleModelGraphForDisplay.mockClear();
+
+    const rendered = render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
+
+    await waitFor(() => expect(mockGetProcessDetailByIdAndVersion).toHaveBeenCalled());
+    rendered.unmount();
+
+    await act(async () => {
+      processInstancesResolution.resolve({ data: [] });
+      processDetailsResolution.resolve({ data: [] });
+      await Promise.all([processInstancesResolution.promise, processDetailsResolution.promise]);
+      await Promise.resolve();
+    });
+
+    expect(mockNormalizeLifeCycleModelGraphForDisplay).not.toHaveBeenCalled();
   });
 });
