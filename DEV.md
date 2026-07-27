@@ -23,7 +23,6 @@ checkPaths:
   - config/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
-  - tests/docs-capture/**
   - tests/e2e/i18n/**
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/release-gate.yml
@@ -104,7 +103,6 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
-| validate the source-bound docs capture profile | `npm run docs:capture-profile:test` |
 | install the isolated release E2E environment | `npm run e2e:env:install` |
 | read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
 | run an exact committed release candidate | `npm run e2e:release -- <release options>` |
@@ -160,7 +158,7 @@ The controller first refuses this production-data command when the host has `CI`
 - the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces
 - the workspace wrapper must load the profile from the same exact Next commit that it starts as the render target; a profile from current `main` must not control a historical UI
 - the profile is declarative and contains no account values, ports, browser state, output paths, or executable screenshot code
-- changing a profile locator, login contract, authorization probe, readiness path, or runtime command requires `npm run docs:capture-profile:test`
+- changing a profile locator, login contract, authorization probe, readiness path, or runtime command requires the workspace v2 compiler tests and an authorized end-to-end canary
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - direct semantic E2E development is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and serves the local worktree with `npm run start:main`; `E2E_BASE_URL` must remain a loopback URL
 - release E2E accepts only a clean committed Next candidate, exports it with `git archive`, builds one production bundle in the digest-pinned Playwright image, serves that immutable bundle internally, and never mounts `lca-workspace`, `.git`, unrelated submodules, host dependencies, or browser profiles

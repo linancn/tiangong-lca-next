@@ -45,7 +45,6 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
-| source-bound docs capture profile | `npm run docs:capture-profile:test` |
 | release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
 | exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 

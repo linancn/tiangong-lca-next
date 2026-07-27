@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
 lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: only the source-bound capture-profile proof remains in Next; workspace screenshot execution stays outside routine pre-push, release, and semantic E2E surfaces.'
+lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace screenshot proof stays outside routine pre-push, release, and semantic E2E surfaces.'
 ---
 
 # Pre-Push Gate Policy
@@ -64,7 +64,7 @@ Production-effective workflows separately run `npm run reference-data:production
 
 Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
-Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`, protected by `npm run docs:capture-profile:test`; the workspace package owns plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. The profile proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
+Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
 Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 

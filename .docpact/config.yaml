@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-27'
 lastReviewedCommit: '326b9e5eb522341905c47c9295b932f8e257a397'
-lastReviewedNote: 'Reviewed for Issue #693: generic docs screenshot execution moves to workspace tooling; Next retains source-bound profile ownership and compatibility proof.'
+lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace tooling owns profile compilation and capture compatibility proof.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -66,7 +66,6 @@ ownership:
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
           - scripts/e2e/**
-          - tests/docs-capture/**
           - scripts/i18n/**
           - scripts/reference-data/**
       ownerRepo: next
@@ -120,7 +119,6 @@ coverage:
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
     - scripts/e2e/**
-    - tests/docs-capture/**
     - scripts/i18n/**
     - scripts/reference-data/**
   exclude:
@@ -177,7 +175,6 @@ routing:
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - scripts/reference-data/**
-        - tests/docs-capture/**
         - tests/**
         - tests/e2e/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -601,8 +598,6 @@ rules:
         kind: semantic-e2e-runner
       - path: config/docs-capture/**
         kind: source-bound-docs-capture-profile
-      - path: tests/docs-capture/**
-        kind: source-bound-docs-capture-profile-proof
       - path: scripts/i18n/**
         kind: test-gate
       - path: scripts/reference-data/**

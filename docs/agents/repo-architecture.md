@@ -24,7 +24,6 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - config/docs-capture/**
-  - tests/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-27
 lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
@@ -60,7 +59,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
-| `config/docs-capture/profile.v1.json`, `tests/docs-capture/**` | source-bound product adapter facts for workspace-owned documentation capture: runtime/readiness, login/identity, auth mutation allowlist, denial marker, locator policy, and compatibility proof |
+| `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
 | other `docker/**` paths | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |

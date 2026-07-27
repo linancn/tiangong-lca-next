@@ -31,7 +31,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-27
 lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: replaced the Next-owned screenshot executor pattern with source-bound profile proof and workspace-owned browser execution.'
+lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test pattern; workspace owns profile compilation and browser proof.'
 ---
 
 # Testing Patterns Reference
@@ -139,7 +139,7 @@ Browser semantic E2E pattern:
 Documentation capture profile pattern:
 
 - keep only source-version facts under `config/docs-capture/**`: runtime/readiness, login/identity, allowed auth/session mutations, denial probes, and stable locator policy
-- validate every profile-owned locator against the current source in `tests/docs-capture/**`
+- let the workspace compiler fail closed when the exact render-target profile is missing or incompatible
 - prefer role, label, text, and test-id locators; the current profile intentionally rejects CSS
 - never add the generic executor, account secret handling, dynamic origin, screenshot output, or Draft/evidence policy to Next; those belong to workspace tooling
 - use a synthetic local Chromium canary only as cross-repo workspace proof after the exact Next profile and render-target commit are bound
@@ -158,7 +158,6 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component run | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
-| source-bound docs capture profile proof | `npm run docs:capture-profile:test` |
 | exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |

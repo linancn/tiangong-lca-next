@@ -25,7 +25,6 @@ checkPaths:
   - package.json
   - playwright.config.ts
   - config/docs-capture/**
-  - tests/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
@@ -143,7 +142,6 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
-- source-bound documentation capture-profile proof: `npm run docs:capture-profile:test`
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`
 - protected-branch parity gate: `npm run prepush:gate`

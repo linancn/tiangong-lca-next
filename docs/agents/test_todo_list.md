@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-27
 lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: replaced the historical Next executor-test note with the current source-bound profile proof; the ordered coverage queue remains empty.'
+lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; the ordered coverage queue remains empty.'
 ---
 
 # Testing Execution State
@@ -53,7 +53,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
-- Issue #693 moves the generic visual-plan, account-secret, run-scoped origin, output-containment, and access-classification proof to workspace tooling. Next retains the focused `docs:capture-profile:test` proof for runtime/readiness, login/identity locators, auth mutation allowlist, and denial markers bound to this source commit.
+- Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
