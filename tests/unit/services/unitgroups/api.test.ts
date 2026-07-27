@@ -1188,6 +1188,14 @@ describe('getUnitGroupTablePgroongaSearch', () => {
       }),
     );
     expect(result).toEqual({ data: [], page: 5, success: true, total: 0 });
+
+    await unitgroup_hybrid_search({ current: 1 }, 'en', 'my', 'owner query', {}, 0);
+    expect(mockFunctionsInvoke).toHaveBeenLastCalledWith(
+      'unitgroup_hybrid_search',
+      expect.objectContaining({
+        body: expect.not.objectContaining({ team_id: expect.anything() }),
+      }),
+    );
   });
 
   it('maps rpc search results to table rows', async () => {

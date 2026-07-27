@@ -1090,6 +1090,14 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
         }),
       );
       expect(result).toEqual({ data: [], page: 3, success: true, total: 0 });
+
+      await flowproperty_hybrid_search({ current: 1 }, 'en', 'my', 'owner query', {}, 0);
+      expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+        'flowproperty_hybrid_search',
+        expect.objectContaining({
+          body: expect.not.objectContaining({ team_id: expect.anything() }),
+        }),
+      );
     });
 
     it('should perform full-text search', async () => {

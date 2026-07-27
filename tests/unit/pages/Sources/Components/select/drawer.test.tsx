@@ -337,6 +337,19 @@ describe('SourceSelectDrawer', () => {
     expect(screen.getByText('create-source')).toBeInTheDocument();
     expect(screen.getByText('view source-my:0.0.1')).toBeInTheDocument();
 
+    await userEvent.type(screen.getByLabelText('my'), 'review');
+    await userEvent.click(screen.getByRole('button', { name: 'search-my' }));
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'my',
+        'review',
+        {},
+        0,
+      ),
+    );
+
     await userEvent.click(screen.getByRole('button', { name: /Team Data/i }));
 
     await waitFor(() =>
@@ -536,6 +549,19 @@ describe('SourceSelectDrawer', () => {
         'en',
         'te',
         [],
+        undefined,
+      ),
+    );
+
+    await userEvent.type(screen.getByLabelText('te'), 'shared');
+    await userEvent.click(screen.getByRole('button', { name: 'search-te' }));
+    await waitFor(() =>
+      expect(mockGetSourceTablePgroongaSearch).toHaveBeenCalledWith(
+        expect.objectContaining({ current: 1, pageSize: 10 }),
+        'en',
+        'te',
+        'shared',
+        {},
         undefined,
       ),
     );

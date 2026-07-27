@@ -892,6 +892,14 @@ describe('Contacts API Service', () => {
       );
       expect(result).toMatchObject({ page: 2, success: true, total: 1 });
       expect(result.data[0]).toMatchObject({ id: 'contact-1', email: 'search@example.com' });
+
+      await contact_hybrid_search({ current: 1 }, 'en', 'my', 'owner query', {}, 0);
+      expect(mockFunctions).toHaveBeenLastCalledWith(
+        'contact_hybrid_search',
+        expect.objectContaining({
+          body: expect.not.objectContaining({ team_id: expect.anything() }),
+        }),
+      );
     });
 
     it('should perform latest-version full-text search with pgroonga', async () => {
