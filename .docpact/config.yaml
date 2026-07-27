@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-27'
-lastReviewedCommit: 'ba4f575410b0604198422b1d7ee2564f591da9c7'
-lastReviewedNote: 'Reviewed for Issue #698: existing frontend, service, test, locale, Supabase, and pre-push routing covers foundation-dataset Hybrid Search without a governance-rule change.'
+lastReviewedAt: '2026-07-28'
+lastReviewedCommit: '318d7e87de3dc0890c34cd73893d73a5816b6f90'
+lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: preserve the #690 detached-idempotence Git-context rules together with the later Hybrid Search, docs-capture, locale, and testing routes already on dev.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

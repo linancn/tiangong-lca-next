@@ -31,9 +31,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: ba4f575410b0604198422b1d7ee2564f591da9c7
-lastReviewedNote: 'Reviewed for Issue #698: Next owns the four foundation-dataset Hybrid Search entrypoints and JWT request shaping, while database visibility and Edge runtime orchestration remain in their owning repos.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
+lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: retain the #690 detached artifact-idempotence fix without changing current Next ownership, Hybrid Search boundaries, docs-capture boundaries, or branch policy.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
