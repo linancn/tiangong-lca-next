@@ -136,7 +136,7 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGenLifeCycleModelInfoFromData = jest.fn();
 const mockGenLifeCycleModelData = jest.fn();
-const mockGenProcessName = jest.fn();
+const mockGenLifeCycleModelNodeName = jest.fn();
 const mockGetLangText = jest.fn();
 const mockGetPortLabelWithAllocation = jest.fn();
 const mockGetPortTextColor = jest.fn();
@@ -146,6 +146,7 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
   genLifeCycleModelData: (...args: any[]) => mockGenLifeCycleModelData(...args),
+  genLifeCycleModelNodeName: (...args: any[]) => mockGenLifeCycleModelNodeName(...args),
   genPortLabel: jest.fn((label: string) => label),
 }));
 
@@ -153,11 +154,6 @@ const mockGetProcessesByIdAndVersion = jest.fn();
 jest.mock('@/services/processes/api', () => ({
   __esModule: true,
   getProcessesByIdAndVersion: (...args: any[]) => mockGetProcessesByIdAndVersion(...args),
-}));
-
-jest.mock('@/services/processes/util', () => ({
-  __esModule: true,
-  genProcessName: (...args: any[]) => mockGenProcessName(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -187,7 +183,9 @@ jest.mock('@/pages/LifeCycleModels/Components/toolbar/utils/node', () => ({
 describe('ToolbarView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGenProcessName.mockImplementation((label: any) => label ?? 'process-name');
+    mockGenLifeCycleModelNodeName.mockImplementation(
+      (nodeData: any) => nodeData?.label ?? 'process-name',
+    );
     mockGetLangText.mockReturnValue('Flow label');
     mockGetPortLabelWithAllocation.mockImplementation((label: string) => label);
     mockGetPortTextColor.mockReturnValue('#1677ff');
@@ -569,7 +567,7 @@ describe('ToolbarView', () => {
     mockGetProcessesByIdAndVersion.mockResolvedValueOnce({});
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGetPortLabelWithAllocation.mockReturnValueOnce(undefined);
-    mockGenProcessName.mockReturnValue(undefined);
+    mockGenLifeCycleModelNodeName.mockReturnValue(undefined);
 
     render(<ToolbarView id='model-1' version='1.0.0' lang='en' drawerVisible />);
 

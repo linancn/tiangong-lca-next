@@ -18,10 +18,10 @@ import type {
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
+  genLifeCycleModelNodeName,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
 import { getProcessesByIdAndVersion } from '@/services/processes/api';
-import { genProcessName } from '@/services/processes/util';
 import { ActionType } from '@ant-design/pro-components';
 import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
@@ -302,9 +302,19 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     items: [],
   };
 
-  const buildReadOnlyNodeTools = (nodeWidth: number, nodeLabel: unknown, isReference: boolean) => [
+  const buildReadOnlyNodeTools = (
+    nodeWidth: number,
+    nodeData: LifeCycleModelGraphNode['data'],
+    isReference: boolean,
+  ) => [
     isReference ? refTool : '',
-    nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang, readOnlyCursor),
+    nodeTitleTool(
+      nodeWidth,
+      genLifeCycleModelNodeName(nodeData, lang) ?? '',
+      token,
+      lang,
+      readOnlyCursor,
+    ),
     inputFlowTool,
     outputFlowTool,
   ];
@@ -408,11 +418,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     resizeToolRefreshTimerRef.current = setTimeout(() => {
       node.removeTools?.();
       node.addTools(
-        buildReadOnlyNodeTools(
-          nodeWidth,
-          node?.data?.label,
-          node?.data?.quantitativeReference === '1',
-        ),
+        buildReadOnlyNodeTools(nodeWidth, node?.data, node?.data?.quantitativeReference === '1'),
         { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
       );
       resizeToolRefreshTimerRef.current = null;
@@ -533,7 +539,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               },
               tools: buildReadOnlyNodeTools(
                 node?.size?.width ?? node?.width ?? 350,
-                node?.data?.label,
+                node?.data,
                 node?.data?.quantitativeReference === '1',
               ),
             };
@@ -618,7 +624,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       updateNode(node.id ?? '', {
         tools: buildReadOnlyNodeTools(
           node?.size?.width ?? node?.width ?? 350,
-          node?.data?.label,
+          node?.data,
           node?.data?.quantitativeReference === '1',
         ),
       });

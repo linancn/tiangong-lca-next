@@ -130,18 +130,13 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGenLifeCycleModelInfoFromData = jest.fn((dataset: any) => dataset);
 const mockGenLifeCycleModelData = jest.fn();
+const mockGenLifeCycleModelNodeName = jest.fn((nodeData: any) => nodeData?.label ?? 'process-name');
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
   genLifeCycleModelData: (...args: any[]) => mockGenLifeCycleModelData(...args),
+  genLifeCycleModelNodeName: (...args: any[]) => mockGenLifeCycleModelNodeName(...args),
   genNodeLabel: jest.fn((label: string) => label),
-}));
-
-const mockGenProcessName = jest.fn((label: any) => label ?? 'process-name');
-
-jest.mock('@/services/processes/util', () => ({
-  __esModule: true,
-  genProcessName: (...args: any[]) => mockGenProcessName(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -157,7 +152,9 @@ jest.mock('@/services/general/util', () => ({
 describe('ReviewLifeCycleModelToolbarView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGenProcessName.mockImplementation((label: any) => label ?? 'process-name');
+    mockGenLifeCycleModelNodeName.mockImplementation(
+      (nodeData: any) => nodeData?.label ?? 'process-name',
+    );
     mockGraphStoreState = {
       initData: mockInitData,
       updateNode: mockUpdateNode,
@@ -518,7 +515,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       data: [{ json: {} }],
       error: null,
     });
-    mockGenProcessName.mockImplementation((label: any) => label);
+    mockGenLifeCycleModelNodeName.mockImplementation((nodeData: any) => nodeData?.label);
     mockGenLifeCycleModelData.mockReturnValue({
       nodes: [
         {
@@ -794,8 +791,8 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
   });
 
-  it('falls back to empty tool labels when genProcessName returns undefined', async () => {
-    mockGenProcessName.mockImplementation(() => undefined);
+  it('falls back to empty tool labels when node-name resolution returns undefined', async () => {
+    mockGenLifeCycleModelNodeName.mockImplementation(() => undefined);
 
     render(
       <ToolbarView
