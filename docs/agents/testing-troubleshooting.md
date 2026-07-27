@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: b08866158dab28855ae5d8a83a1a199d0c15c708
+lastReviewedCommit: ba4f575410b0604198422b1d7ee2564f591da9c7
 lastReviewedNote: 'Reviewed for Issue #693: the focused Next troubleshooting entry now validates only the source-bound capture profile; browser execution diagnostics belong to workspace tooling.'
 ---
 
