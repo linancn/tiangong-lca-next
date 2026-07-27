@@ -30,7 +30,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
+lastReviewedCommit: ba4f575410b0604198422b1d7ee2564f591da9c7
 lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace screenshot proof stays outside routine pre-push, release, and semantic E2E surfaces.'
 ---
 

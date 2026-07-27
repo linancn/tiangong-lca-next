@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: Next now owns only the source-bound declarative docs-capture profile and stable product locators; workspace tooling owns the generic executor, credentials, runtime origin, and evidence execution.'
+lastReviewedCommit: ba4f575410b0604198422b1d7ee2564f591da9c7
+lastReviewedNote: 'Reviewed for Issue #698: Next owns the four foundation-dataset Hybrid Search entrypoints and JWT request shaping, while database visibility and Edge runtime orchestration remain in their owning repos.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

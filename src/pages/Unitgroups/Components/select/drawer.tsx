@@ -8,7 +8,7 @@ import {
   type ContentLanguageAwareTableParams,
   type DataTabKey,
 } from '@/services/general/data';
-import { getUnitGroupTableAll, getUnitGroupTablePgroongaSearch } from '@/services/unitgroups/api';
+import { getUnitGroupTableAll, unitgroup_hybrid_search } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -28,32 +28,31 @@ type Props = {
   onData: (rowKey: string, version: string) => void;
 };
 
-type UnitGroupDataTabKey = Exclude<DataTabKey, 'te'>;
-
 const { Search } = Input;
 
 const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData }) => {
   const [tgKeyWord, setTgKeyWord] = useState<string>('');
   const [coKeyWord, setCoKeyWord] = useState<string>('');
   const [myKeyWord, setMyKeyWord] = useState<string>('');
-  // const [teKeyWord, setTeKeyWord] = useState<string>('');
+  const [teKeyWord, setTeKeyWord] = useState<string>('');
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-  const [activeTabKey, setActiveTabKey] = useState<UnitGroupDataTabKey>('tg');
+  const [activeTabKey, setActiveTabKey] = useState<DataTabKey>('tg');
   const tgActionRefSelect = useRef<ActionType>();
   const coActionRefSelect = useRef<ActionType>();
   const myActionRefSelect = useRef<ActionType>();
-  // const teActionRefSelect = useRef<ActionType>();
+  const teActionRefSelect = useRef<ActionType>();
   const intl = useIntl();
   const contentLanguageAwareTableParams = getContentLanguageAwareTableParams(lang);
   const currentContentLanguageRef = useRef(contentLanguageAwareTableParams.contentLanguage);
   const myRequestEpochRef = useRef(0);
   const tgRequestEpochRef = useRef(0);
   const coRequestEpochRef = useRef(0);
+  const teRequestEpochRef = useRef(0);
   syncLocaleMaterializedTableRequestEpochs(
     currentContentLanguageRef,
     contentLanguageAwareTableParams.contentLanguage,
-    [myRequestEpochRef, tgRequestEpochRef, coRequestEpochRef],
+    [myRequestEpochRef, tgRequestEpochRef, coRequestEpochRef, teRequestEpochRef],
   );
   const tableAlertOptionRender = renderTableSelectionClearAction(
     <FormattedMessage id='pages.searchTable.clearSelection' defaultMessage='Clear selection' />,
@@ -92,7 +91,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
   };
 
   const onTabChange = async (key: string) => {
-    const tabKey = key as UnitGroupDataTabKey;
+    const tabKey = key as DataTabKey;
     await setActiveTabKey(tabKey);
     if (tabKey === 'tg') {
       await tgActionRefSelect.current?.setPageInfo?.({ current: 1 });
@@ -106,10 +105,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
       await myActionRefSelect.current?.setPageInfo?.({ current: 1 });
       myActionRefSelect.current?.reload();
     }
-    // if (key === 'te') {
-    //   teActionRefSelect.current?.setPageInfo?.({ current: 1 });
-    //   teActionRefSelect.current?.reload();
-    // }
+    if (tabKey === 'te') {
+      teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+      teActionRefSelect.current?.reload();
+    }
   };
 
   const onTgSearch: SearchProps['onSearch'] = async (value) => {
@@ -130,11 +129,11 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     myActionRefSelect.current?.reload();
   };
 
-  // const onTeSearch: SearchProps['onSearch'] = async (value) => {
-  //   await setTeKeyWord(value);
-  //   teActionRefSelect.current?.setPageInfo?.({ current: 1 });
-  //   teActionRefSelect.current?.reload();
-  // };
+  const onTeSearch: SearchProps['onSearch'] = async (value) => {
+    await setTeKeyWord(value);
+    teActionRefSelect.current?.setPageInfo?.({ current: 1 });
+    teActionRefSelect.current?.reload();
+  };
 
   const handleTgKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTgKeyWord(e.target.value);
@@ -148,9 +147,9 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     setMyKeyWord(e.target.value);
   };
 
-  // const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setTeKeyWord(e.target.value);
-  // };
+  const handleTeKeyWordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTeKeyWord(e.target.value);
+  };
 
   const unitGroupColumns: ProColumns<UnitGroupTable>[] = [
     {
@@ -270,10 +269,10 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
     },
     { key: 'co', tab: <FormattedMessage id='pages.tab.title.co' defaultMessage='Business Data' /> },
     { key: 'my', tab: <FormattedMessage id='pages.tab.title.mydata' defaultMessage='My Data' /> },
-    // { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='TE Data' /> },
+    { key: 'te', tab: <FormattedMessage id='pages.tab.title.tedata' defaultMessage='Team Data' /> },
   ];
 
-  const databaseList: Record<UnitGroupDataTabKey, ReactNode> = {
+  const databaseList: Record<DataTabKey, ReactNode> = {
     my: (
       <>
         <Card>
@@ -308,7 +307,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               myRequestEpochRef,
               async () => {
                 if (myKeyWord.length > 0) {
-                  return getUnitGroupTablePgroongaSearch(
+                  return unitgroup_hybrid_search(
                     params,
                     params.contentLanguage,
                     'my',
@@ -366,7 +365,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               tgRequestEpochRef,
               async () => {
                 if (tgKeyWord.length > 0) {
-                  return getUnitGroupTablePgroongaSearch(
+                  return unitgroup_hybrid_search(
                     params,
                     params.contentLanguage,
                     'tg',
@@ -423,7 +422,7 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
               coRequestEpochRef,
               async () => {
                 if (coKeyWord.length > 0) {
-                  return getUnitGroupTablePgroongaSearch(
+                  return unitgroup_hybrid_search(
                     params,
                     params.contentLanguage,
                     'co',
@@ -446,48 +445,63 @@ const UnitgroupsSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onDat
         />
       </>
     ),
-    // te: (
-    //   <>
-    //     <Card>
-    //       <Search
-    //         name={'te'}
-    //         size={'large'}
-    //         placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
-    //         value={teKeyWord}
-    //         onChange={handleTeKeyWordChange}
-    //         onSearch={onTeSearch}
-    //         enterButton
-    //       />
-    //     </Card>
-    //     <ProTable<UnitGroupTable, ListPagination>
-    //       actionRef={teActionRefSelect}
-    //       search={false}
-    //       pagination={{
-    //         showSizeChanger: false,
-    //         pageSize: 10,
-    //       }}
-    //       request={async (
-    //         params: {
-    //           pageSize: number;
-    //           current: number;
-    //         },
-    //         sort,
-    //       ) => {
-    //         if (teKeyWord.length > 0) {
-    //           return getUnitGroupTablePgroongaSearch(params, lang, 'te', teKeyWord, {});
-    //         }
-    //         return getUnitGroupTableAll(params, sort, lang, 'te', '');
-    //       }}
-    //       columns={unitGroupColumns}
-    //       rowSelection={{
-    //         type: 'radio',
-    //         alwaysShowAlert: true,
-    //         selectedRowKeys,
-    //         onChange: onSelectChange,
-    //       }}
-    //     />
-    //   </>
-    // ),
+    te: (
+      <>
+        <Card>
+          <Search
+            name={'te'}
+            size={'large'}
+            placeholder={intl.formatMessage({ id: 'pages.search.keyWord' })}
+            value={teKeyWord}
+            onChange={handleTeKeyWordChange}
+            onSearch={onTeSearch}
+            enterButton
+          />
+        </Card>
+        <ProTable<UnitGroupTable, ContentLanguageAwareTableParams>
+          actionRef={teActionRefSelect}
+          params={contentLanguageAwareTableParams}
+          search={false}
+          pagination={{
+            showSizeChanger: false,
+            pageSize: 10,
+          }}
+          request={async (
+            params: ContentLanguageAwareTableParams & {
+              pageSize?: number;
+              current?: number;
+            },
+            sort,
+          ) =>
+            guardLocaleMaterializedTableRequest(
+              params.contentLanguage,
+              () => currentContentLanguageRef.current,
+              teRequestEpochRef,
+              async () => {
+                if (teKeyWord.length > 0) {
+                  return unitgroup_hybrid_search(
+                    params,
+                    params.contentLanguage,
+                    'te',
+                    teKeyWord,
+                    {},
+                  );
+                }
+                return getUnitGroupTableAll(params, sort, params.contentLanguage, 'te', '');
+              },
+            )
+          }
+          columns={unitGroupColumns}
+          tableAlertOptionRender={tableAlertOptionRender}
+          rowSelection={{
+            type: 'radio',
+            alwaysShowAlert: true,
+            selectedRowKeys,
+            onChange: onSelectChange,
+          }}
+        />
+      </>
+    ),
   };
 
   useEffect(() => {

@@ -32,8 +32,8 @@ import { getTeamById } from '@/services/teams/api';
 import { TeamTable } from '@/services/teams/data';
 import {
   getUnitGroupTableAll,
-  getUnitGroupTablePgroongaSearch,
   getUnitGroupTableUuidMentionSearch,
+  unitgroup_hybrid_search,
 } from '@/services/unitgroups/api';
 import { UnitGroupTable } from '@/services/unitgroups/data';
 import { InfoCircleOutlined } from '@ant-design/icons';
@@ -443,7 +443,7 @@ const TableList: FC = () => {
               }
               if (currentKeyWord.length > 0) {
                 return attachReviewState(
-                  await getUnitGroupTablePgroongaSearch(
+                  await unitgroup_hybrid_search(
                     requestParams,
                     lang,
                     dataSource,

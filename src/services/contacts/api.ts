@@ -25,6 +25,7 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
+import { invokeFoundationHybridSearch } from '../general/hybridSearch';
 import { genContactJsonOrdered } from './util';
 
 type ContactListRpcRow = {
@@ -389,6 +390,28 @@ export async function getContactTablePgroongaSearch(
     });
   }
   return result;
+}
+
+export async function contact_hybrid_search(
+  params: { current?: number; pageSize?: number },
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: unknown,
+  stateCode?: string | number,
+  tid: string | [] = [],
+) {
+  return invokeFoundationHybridSearch({
+    dataSource,
+    filterCondition,
+    functionName: 'contact_hybrid_search',
+    lang,
+    mapRows: mapContactListRows,
+    params,
+    queryText,
+    stateCode,
+    teamId: await getContactTeamFilter(dataSource, tid),
+  });
 }
 
 export async function getContactTableUuidMentionSearch(

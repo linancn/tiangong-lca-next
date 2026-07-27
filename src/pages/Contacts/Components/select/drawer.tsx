@@ -1,6 +1,6 @@
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
-import { getContactTableAll, getContactTablePgroongaSearch } from '@/services/contacts/api';
+import { contact_hybrid_search, getContactTableAll } from '@/services/contacts/api';
 import { ContactTable } from '@/services/contacts/data';
 import {
   getContentLanguageAwareTableParams,
@@ -327,13 +327,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
               tgRequestEpochRef,
               async () => {
                 if (tgKeyWord.length > 0) {
-                  return getContactTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  );
+                  return contact_hybrid_search(params, params.contentLanguage, 'tg', tgKeyWord, {});
                 }
                 return getContactTableAll(params, sort, params.contentLanguage, 'tg', []);
               },
@@ -384,13 +378,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
               coRequestEpochRef,
               async () => {
                 if (coKeyWord.length > 0) {
-                  return getContactTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {},
-                  );
+                  return contact_hybrid_search(params, params.contentLanguage, 'co', coKeyWord, {});
                 }
                 return getContactTableAll(params, sort, params.contentLanguage, 'co', []);
               },
@@ -441,13 +429,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
               myRequestEpochRef,
               async () => {
                 if (myKeyWord.length > 0) {
-                  return getContactTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'my',
-                    myKeyWord,
-                    {},
-                  );
+                  return contact_hybrid_search(params, params.contentLanguage, 'my', myKeyWord, {});
                 }
                 return getContactTableAll(params, sort, params.contentLanguage, 'my', []);
               },
@@ -501,7 +483,7 @@ const ContactSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, 
               teamRequestEpochRef,
               async () => {
                 if (teamKeyWord.length > 0) {
-                  return getContactTablePgroongaSearch(
+                  return contact_hybrid_search(
                     params,
                     params.contentLanguage,
                     'te',

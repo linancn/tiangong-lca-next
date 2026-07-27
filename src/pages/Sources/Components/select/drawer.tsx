@@ -7,7 +7,7 @@ import {
   type ContentLanguageAwareTableParams,
   type DataTabKey,
 } from '@/services/general/data';
-import { getSourceTableAll, getSourceTablePgroongaSearch } from '@/services/sources/api';
+import { getSourceTableAll, source_hybrid_search } from '@/services/sources/api';
 import { SourceTable } from '@/services/sources/data';
 import styles from '@/style/custom.less';
 import { CloseOutlined, DatabaseOutlined } from '@ant-design/icons';
@@ -312,12 +312,13 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               myRequestEpochRef,
               async () => {
                 if (myKeyWord.length > 0) {
-                  return getSourceTablePgroongaSearch(
+                  return source_hybrid_search(
                     params,
                     params.contentLanguage,
                     'my',
                     myKeyWord,
                     {},
+                    type === 'reviewReport' ? 0 : undefined,
                   );
                 }
                 return getSourceTableAll(
@@ -376,13 +377,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               tgRequestEpochRef,
               async () => {
                 if (tgKeyWord.length > 0) {
-                  return getSourceTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'tg',
-                    tgKeyWord,
-                    {},
-                  );
+                  return source_hybrid_search(params, params.contentLanguage, 'tg', tgKeyWord, {});
                 }
                 return getSourceTableAll(params, sort, params.contentLanguage, 'tg', []);
               },
@@ -433,13 +428,7 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               coRequestEpochRef,
               async () => {
                 if (coKeyWord.length > 0) {
-                  return getSourceTablePgroongaSearch(
-                    params,
-                    params.contentLanguage,
-                    'co',
-                    coKeyWord,
-                    {},
-                  );
+                  return source_hybrid_search(params, params.contentLanguage, 'co', coKeyWord, {});
                 }
                 return getSourceTableAll(params, sort, params.contentLanguage, 'co', []);
               },
@@ -490,12 +479,13 @@ const SourceSelectDrawer: FC<Props> = ({ buttonType, buttonText, lang, onData, t
               teRequestEpochRef,
               async () => {
                 if (teKeyWord.length > 0) {
-                  return getSourceTablePgroongaSearch(
+                  return source_hybrid_search(
                     params,
                     params.contentLanguage,
                     'te',
                     teKeyWord,
                     {},
+                    type === 'reviewReport' ? 0 : undefined,
                   );
                 }
                 return getSourceTableAll(

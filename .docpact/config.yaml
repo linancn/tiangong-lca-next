@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-27'
-lastReviewedCommit: '326b9e5eb522341905c47c9295b932f8e257a397'
-lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace tooling owns profile compilation and capture compatibility proof.'
+lastReviewedCommit: 'ba4f575410b0604198422b1d7ee2564f591da9c7'
+lastReviewedNote: 'Reviewed for Issue #698: existing frontend, service, test, locale, Supabase, and pre-push routing covers foundation-dataset Hybrid Search without a governance-rule change.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

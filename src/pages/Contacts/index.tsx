@@ -22,8 +22,8 @@ import {
 } from '@/components/ResponsiveDataList';
 import TableFilter from '@/components/TableFilter';
 import {
+  contact_hybrid_search,
   getContactTableAll,
-  getContactTablePgroongaSearch,
   getContactTableUuidMentionSearch,
 } from '@/services/contacts/api';
 import { ContactImportData, ContactTable } from '@/services/contacts/data';
@@ -471,7 +471,7 @@ const TableList: FC = () => {
               }
               if (currentKeyWord.length > 0) {
                 return attachReviewState(
-                  await getContactTablePgroongaSearch(
+                  await contact_hybrid_search(
                     requestParams,
                     lang,
                     dataSource,
