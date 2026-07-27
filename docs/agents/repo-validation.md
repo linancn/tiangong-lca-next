@@ -30,7 +30,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: b7eff6c1644af4009bafe3f5ee4d031fd4109bbe
+lastReviewedCommit: b08866158dab28855ae5d8a83a1a199d0c15c708
 lastReviewedNote: 'Reviewed for Issue #698: foundation-dataset Hybrid Search requires shared-service failure proof, all four pages and pickers, state/team routing, production-request allowlisting, lint, build, and the managed pre-push gate.'
 related:
   - ../AGENTS.md
