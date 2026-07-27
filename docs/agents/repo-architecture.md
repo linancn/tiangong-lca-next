@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: Next retains only the source-bound docs capture profile; workspace tooling owns the generic executor and capture trust boundary.'
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: the dedicated lifecycle-model node-name resolver remains inside the existing service and page layers with no ownership change.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

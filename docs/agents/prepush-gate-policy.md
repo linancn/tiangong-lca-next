@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace screenshot proof stays outside routine pre-push, release, and semantic E2E surfaces.'
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: the lifecycle-model compatibility fix uses the existing Docpact and full pre-push gate without changing trigger policy.'
 ---
 
 # Pre-Push Gate Policy

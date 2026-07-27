@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: the focused Next troubleshooting entry now validates only the source-bound capture profile; browser execution diagnostics belong to workspace tooling.'
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: the Watchman fallback and focused coverage recovery use existing troubleshooting guidance with no runbook change.'
 ---
 
 # Testing Troubleshooting

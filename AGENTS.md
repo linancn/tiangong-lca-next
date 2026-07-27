@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: Next now owns only the source-bound declarative docs-capture profile and stable product locators; workspace tooling owns the generic executor, credentials, runtime origin, and evidence execution.'
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: lifecycle-model node label compatibility stays within the existing Next page/service boundary and preserves the dev-to-main integration workflow.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

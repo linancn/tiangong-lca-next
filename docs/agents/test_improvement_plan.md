@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: removed the unused Next-owned capture-profile test surface; workspace owns profile compilation and synthetic capture proof.'
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: focused utility and component regression tests preserve the existing full-closure testing strategy.'
 ---
 
 # Testing Strategy

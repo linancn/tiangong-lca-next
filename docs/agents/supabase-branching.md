@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0706ad1c9808e90c48a029c6e09af04d0b72698f
-lastReviewedNote: 'Reviewed for Issue #680 production closure payload hotfix; clarified the existing versioned LCIA method command boundary.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: read-only lifecycle-model graph rendering does not change frontend environment selection or database and Edge ownership boundaries.'
 ---
 
 # Supabase Environment And Database Workflow
