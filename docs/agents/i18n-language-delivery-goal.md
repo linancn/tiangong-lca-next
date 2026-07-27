@@ -57,9 +57,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: added the main-target clean-runner gate and made release-tag creation depend on both exact-release gates without moving the production-effective confirmation boundary.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: e83846b3db10a9b2a9a6f080c076160cda754ed9
+lastReviewedNote: 'Reviewed for Issue #691: locale artifact Git subprocesses now clear inherited repository-local hook variables; generated artifact, activation, and production-effective confirmation contracts are unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

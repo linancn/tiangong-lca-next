@@ -28,11 +28,25 @@ const sha256File = (relativePath: string) =>
     .digest('hex');
 
 describe('shared locale delivery contracts', () => {
-  it('generates every locale artifact twice without changing the repository', () => {
+  it('generates every locale artifact twice without inheriting source Git state', () => {
+    const gitDir = execFileSync('git', ['rev-parse', '--absolute-git-dir'], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    }).trim();
+    const gitIndex = execFileSync('git', ['rev-parse', '--git-path', 'index'], {
+      cwd: REPOSITORY_ROOT,
+      encoding: 'utf8',
+    }).trim();
     expect(
       execFileSync(process.execPath, ['scripts/i18n/check-artifact-idempotence.mjs'], {
         cwd: REPOSITORY_ROOT,
         encoding: 'utf8',
+        env: {
+          ...process.env,
+          GIT_DIR: gitDir,
+          GIT_INDEX_FILE: path.resolve(REPOSITORY_ROOT, gitIndex),
+          GIT_WORK_TREE: REPOSITORY_ROOT,
+        },
         timeout: 180_000,
       }),
     ).toContain('"artifactGenerations":2');
