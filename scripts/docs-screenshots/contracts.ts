@@ -126,7 +126,6 @@ export type SecretValues = {
   accountAlias: string;
   email: string;
   password: string;
-  baseUrl: string;
 };
 
 export type AccessObservation = {
@@ -188,7 +187,6 @@ export function secretValuesFromEnv(values: Record<string, string>): SecretValue
     'DOCS_SCREENSHOT_ACCOUNT_ALIAS',
     'DOCS_SCREENSHOT_ACCOUNT_EMAIL',
     'DOCS_SCREENSHOT_ACCOUNT_PASSWORD',
-    'DOCS_SCREENSHOT_BASE_URL',
   ];
   const missing = required.filter((key) => !values[key]?.trim());
   if (missing.length > 0) {
@@ -198,16 +196,33 @@ export function secretValuesFromEnv(values: Record<string, string>): SecretValue
   if (unknown.length > 0) {
     throw new Error(`secret file contains unsupported variables: ${unknown.join(', ')}`);
   }
-  const url = new URL(values.DOCS_SCREENSHOT_BASE_URL);
-  if (!['http:', 'https:'].includes(url.protocol)) {
-    throw new Error('DOCS_SCREENSHOT_BASE_URL must use http or https');
-  }
   return {
     accountAlias: values.DOCS_SCREENSHOT_ACCOUNT_ALIAS.trim(),
     email: values.DOCS_SCREENSHOT_ACCOUNT_EMAIL,
     password: values.DOCS_SCREENSHOT_ACCOUNT_PASSWORD,
-    baseUrl: url.toString(),
   };
+}
+
+export function normalizeBaseUrl(value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('--base-url must be an absolute http or https origin');
+  }
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    throw new Error('--base-url must use http or https');
+  }
+  if (url.username || url.password) {
+    throw new Error('--base-url must not contain credentials');
+  }
+  if (url.search || url.hash) {
+    throw new Error('--base-url must not contain a query or fragment');
+  }
+  if (url.pathname !== '/') {
+    throw new Error('--base-url must be an origin without a path');
+  }
+  return `${url.origin}/`;
 }
 
 export function validateSecretMode(mode: number, regularFile: boolean): void {

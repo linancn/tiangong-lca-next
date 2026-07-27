@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: moved production-readiness failure discovery to both main-semantic local push and main-target CI while preserving exact-release revalidation.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
+lastReviewedNote: 'Reviewed for Issue #670 dynamic-port follow-up: run-scoped base-origin validation remains focused screenshot-tooling proof and does not expand semantic localization or release matrices.'
 ---
 
 # Testing Strategy
@@ -51,7 +51,7 @@ lastReviewedNote: 'Reviewed for Issue #685: moved production-readiness failure d
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
-- documentation screenshot capture is a separate, on-demand product-evidence workflow: keep its plan/security/access logic unit-heavy and its synthetic Chromium canary outside the semantic localization proof and release matrix
+- documentation screenshot capture is a separate, on-demand product-evidence workflow: keep its plan/security/access and run-scoped base-origin logic unit-heavy, and keep its synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs

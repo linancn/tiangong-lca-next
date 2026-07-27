@@ -11,6 +11,7 @@ import { DOCS_CAPTURE_DEFAULTS } from '../../playwright.docs-capture.config';
 import {
   ACCESS_REPORT_SCHEMA,
   classifyAccess,
+  normalizeBaseUrl,
   normalizeOutputPath,
   parseEnvFile,
   redactRoute,
@@ -29,6 +30,7 @@ import {
 process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
 
 type CliOptions = {
+  baseUrl?: string;
   plan?: string;
   result?: string;
   accessReport?: string;
@@ -52,7 +54,8 @@ function parseArgs(argv: string[]): CliOptions {
   };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === '--plan') options.plan = argv[++index];
+    if (argument === '--base-url') options.baseUrl = argv[++index];
+    else if (argument === '--plan') options.plan = argv[++index];
     else if (argument === '--result') options.result = argv[++index];
     else if (argument === '--access-report') options.accessReport = argv[++index];
     else if (argument === '--allowed-output-root') {
@@ -60,17 +63,20 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (argument === '--headed') options.headed = true;
     else if (argument === '--help' || argument === '-h') {
       process.stdout.write(`Usage:
-  npm run docs:screenshot:capture -- --plan PLAN --result RESULT
+  npm run docs:screenshot:capture -- --base-url ORIGIN --plan PLAN --result RESULT
     --access-report ACCESS_REPORT --allowed-output-root NEXT_DOCS_ROOT
     [--headed]
 
 Credentials are read only by this child process from DOCS_SCREENSHOT_ENV_FILE.
+The run-scoped base URL is not a credential and must be passed explicitly.
 Never pass account values on the command line or in the plan.\n`);
       process.exit(0);
     } else {
       throw new Error(`unknown argument: ${argument}`);
     }
   }
+  if (!options.baseUrl) throw new Error('--base-url is required');
+  options.baseUrl = normalizeBaseUrl(options.baseUrl);
   if (!options.plan) throw new Error('--plan is required');
   if (!options.result) throw new Error('--result is required');
   if (!options.accessReport) throw new Error('--access-report is required');
@@ -170,6 +176,7 @@ async function authenticate(
   context: BrowserContext,
   plan: VisualPlan,
   secrets: SecretValues,
+  baseUrl: string,
 ): Promise<AccessObservation> {
   if (plan.authentication.mode === 'public') {
     return {
@@ -180,7 +187,7 @@ async function authenticate(
   }
 
   try {
-    await page.goto(sameOriginUrl(secrets.baseUrl, plan.authentication.loginPath).toString(), {
+    await page.goto(sameOriginUrl(baseUrl, plan.authentication.loginPath).toString(), {
       waitUntil: 'domcontentloaded',
     });
     await locatorFromSpec(page, plan.authentication.emailLocator).fill(secrets.email);
@@ -192,7 +199,7 @@ async function authenticate(
       });
     }
 
-    const identityUrl = sameOriginUrl(secrets.baseUrl, plan.authentication.identityProbe.path);
+    const identityUrl = sameOriginUrl(baseUrl, plan.authentication.identityProbe.path);
     const identityResponse = await context.request.get(identityUrl.toString(), {
       failOnStatusCode: false,
     });
@@ -235,6 +242,7 @@ async function authorize(
   plan: VisualPlan,
   secrets: SecretValues,
   authentication: AccessObservation,
+  baseUrl: string,
 ): Promise<AuthorizationResult> {
   if (
     authentication.authenticationStatus !== 'authenticated' ||
@@ -255,10 +263,9 @@ async function authorize(
 
   try {
     if (probe.kind === 'http-status') {
-      const response = await context.request.get(
-        sameOriginUrl(secrets.baseUrl, probe.path).toString(),
-        { failOnStatusCode: false },
-      );
+      const response = await context.request.get(sameOriginUrl(baseUrl, probe.path).toString(), {
+        failOnStatusCode: false,
+      });
       const status = response.status();
       if (status === 403) {
         observation = {
@@ -282,10 +289,9 @@ async function authorize(
         };
       }
     } else if (probe.kind === 'capability-json') {
-      const response = await context.request.get(
-        sameOriginUrl(secrets.baseUrl, probe.path).toString(),
-        { failOnStatusCode: false },
-      );
+      const response = await context.request.get(sameOriginUrl(baseUrl, probe.path).toString(), {
+        failOnStatusCode: false,
+      });
       if (response.status() < 200 || response.status() >= 300) {
         observation = {
           ...observation,
@@ -317,7 +323,7 @@ async function authorize(
         }
       }
     } else {
-      await page.goto(sameOriginUrl(secrets.baseUrl, probe.path).toString(), {
+      await page.goto(sameOriginUrl(baseUrl, probe.path).toString(), {
         waitUntil: 'domcontentloaded',
       });
       const denied = await locatorFromSpec(page, probe.deniedLocator)
@@ -534,15 +540,15 @@ async function captureOne(
   page: Page,
   capture: CapturePlan,
   plan: VisualPlan,
-  secrets: SecretValues,
+  baseUrl: string,
   allowedOutputRoots: string[],
   blockedMutations: Array<{ method: string; routePattern: string }>,
 ) {
-  await page.goto(sameOriginUrl(secrets.baseUrl, capture.routePath).toString(), {
+  await page.goto(sameOriginUrl(baseUrl, capture.routePath).toString(), {
     waitUntil: 'domcontentloaded',
   });
   for (const action of capture.actions || []) {
-    await runControlledAction(page, action, secrets.baseUrl);
+    await runControlledAction(page, action, baseUrl);
   }
   if (blockedMutations.length > 0) {
     throw new Error(
@@ -688,8 +694,15 @@ async function run() {
         plan.authentication.mode === 'credentials' ? plan.authentication.mutationAllowlist : [];
       const blockedMutations = await installMutationGuard(context, allowlist);
       const page = await context.newPage();
-      const authentication = await authenticate(page, context, plan, secrets);
-      const authorization = await authorize(page, context, plan, secrets, authentication);
+      const authentication = await authenticate(page, context, plan, secrets, options.baseUrl!);
+      const authorization = await authorize(
+        page,
+        context,
+        plan,
+        secrets,
+        authentication,
+        options.baseUrl!,
+      );
 
       if (authorization.status === 'verified-access-denied') {
         const signals = authorization.observation.signals || [];
@@ -766,7 +779,7 @@ async function run() {
             page,
             capture,
             plan,
-            secrets,
+            options.baseUrl!,
             options.allowedOutputRoots,
             blockedMutations,
           ),

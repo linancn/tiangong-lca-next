@@ -161,7 +161,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused integration run | `npm run test:ci -- tests/integration/<feature>/ --runInBand --testTimeout=20000 --no-coverage` |
 | focused semantic localization browser proof | `npm run e2e:dev -- <Playwright arguments>` |
 | docs-impact screenshot contract proof | `npm run docs:screenshot:test` |
-| on-demand docs-impact screenshot capture | `npm run docs:screenshot:capture -- --plan <plan> --result <result> --access-report <report> --allowed-output-root <next-docs-root>` |
+| on-demand docs-impact screenshot capture | `npm run docs:screenshot:capture -- --base-url <runtime-origin> --plan <plan> --result <result> --access-report <report> --allowed-output-root <next-docs-root>` |
 | exact-candidate release browser proof | `npm run e2e:env:doctor` then `npm run e2e:release -- <release options>` |
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |

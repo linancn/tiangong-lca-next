@@ -32,9 +32,9 @@ checkPaths:
   - .nvmrc
   - .husky/pre-push
   - .github/workflows/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: fc41c27e32d75dad87a286dd190071a5068bcc25
-lastReviewedNote: 'Reviewed for Issue #685: main-target PRs and main-semantic pushes now close production readiness before merge, and release tags are created only after both exact-release gates pass.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 0a062e45295919dddd001b8f3d83dace10615497
+lastReviewedNote: 'Reviewed for Issue #670 dynamic-port follow-up: screenshot credentials contain only account identity secrets, while every capture receives a validated run-scoped base origin explicitly.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -113,7 +113,7 @@ Do not start from additional governed source docs, proposal docs, or README-leve
 - locale identity and runtime adapters live in `src/services/general/localeRegistry.ts`; shared topology, canonical-message ownership, and dynamic-message audit rules live in `docs/plans/i18n-de-DE/manifest.json` plus the owning audit commands documented in `docs/agents/repo-validation.md`
 - the reusable autonomous Goal for adding or backfilling one product language lives in `docs/agents/i18n-language-delivery-goal.md`; it preserves Umi's native flag icons, separates UI/content/reference-resource capabilities, audits every active registry locale, requires official-first classification/location localization, and keeps country/region variants outside the single-language product contract
 - semantic localization E2E uses `playwright.config.ts` and `tests/e2e/i18n/**`; direct focused work uses `npm run e2e:dev`, while local release proof uses the repository-owned `e2e:env:install` / `e2e:env:doctor` / `e2e:release` controller against an archived clean commit and an isolated production bundle without mounting the parent workspace; the three-browser GitHub Actions matrix remains credential-free/read-only and release-required
-- documentation screenshots use the separate `playwright.docs-capture.config.ts` and `scripts/docs-screenshots/**` entrypoint; the executor accepts a validated, read-only capture plan, reads credentials only from the mode-`0600` file named by `DOCS_SCREENSHOT_ENV_FILE`, blocks non-auth mutations, and emits sanitized result/access evidence rather than stored auth state
+- documentation screenshots use the separate `playwright.docs-capture.config.ts` and `scripts/docs-screenshots/**` entrypoint; the executor accepts a validated, read-only capture plan plus an explicit run-scoped `--base-url`, reads only account identity secrets from the mode-`0600` file named by `DOCS_SCREENSHOT_ENV_FILE`, blocks non-auth mutations, and emits sanitized result/access evidence rather than stored auth state
 - the shared Header keeps Umi `SelectLang` mounted with `reload={false}` so locale changes refresh the current document in place; browser proof must cover same-document identity plus stale-reference-response race rejection
 - the unified-German historical review record lives in `docs/plans/i18n-de-DE/README.md`; Pilot/catalog/delta confirmations validate only their frozen snapshots, while current `de-DE` copy is governed by the tracked baseline and automated correction overlay in `docs/plans/i18n/corrections.json` plus the shared context/quality/activation gate
 - repo-local documentation maintenance is enforced locally by the pre-push docpact gate; `.github/workflows/ai-doc-lint.yml` is manual-dispatch fallback
@@ -143,7 +143,7 @@ Keep these entry-level facts in `AGENTS.md`. Use `DEV.md` and `docs/agents/repo-
 - local documentation gate before push: `npm run docpact:gate`, backed by `scripts/docpact` for local CLI discovery
 - default CI-style test entry: `npm test`
 - direct semantic localization E2E: `npm run e2e:dev` (`npm run test:e2e:i18n` remains the CI-compatible alias)
-- governed documentation screenshot capture: `npm run docs:screenshot:capture -- --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>`
+- governed documentation screenshot capture: `npm run docs:screenshot:capture -- --base-url <runtime-origin> --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>`
 - documentation screenshot contract proof: `npm run docs:screenshot:test`
 - exact-candidate local release E2E: `npm run e2e:env:install`, `npm run e2e:env:doctor`, then `npm run e2e:release`
 - build when shipped behavior, branding/package surfaces, or static assets change: `npm run build`

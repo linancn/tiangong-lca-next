@@ -105,7 +105,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
 | validate docs screenshot capture contracts | `npm run docs:screenshot:test` |
-| capture governed docs screenshots | `npm run docs:screenshot:capture -- --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>` |
+| capture governed docs screenshots | `npm run docs:screenshot:capture -- --base-url <runtime-origin> --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>` |
 | install the isolated release E2E environment | `npm run e2e:env:install` |
 | read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
 | run an exact committed release candidate | `npm run e2e:release -- <release options>` |
@@ -158,7 +158,8 @@ The controller first refuses this production-data command when the host has `CI`
 
 - `npm start` and `npm run start:dev` are equivalent
 - documentation capture is a separate local operator workflow configured by `playwright.docs-capture.config.ts`; it must not inherit semantic-E2E credentials, fixtures, release evidence, or browser profiles
-- set `DOCS_SCREENSHOT_ENV_FILE` to an external regular file with mode `0600`; that file may contain only the fixed login keys accepted by the capture contract and must never be committed, copied into a worktree, or named in a command argument
+- set `DOCS_SCREENSHOT_ENV_FILE` to an external regular file with mode `0600`; that file may contain exactly `DOCS_SCREENSHOT_ACCOUNT_ALIAS`, `DOCS_SCREENSHOT_ACCOUNT_EMAIL`, and `DOCS_SCREENSHOT_ACCOUNT_PASSWORD`, and must never be committed, copied into a worktree, or named in a command argument
+- pass the current run's application origin through `--base-url`; for local-candidate capture it must come from the workspace-owned strict loopback runtime wrapper, and it must never be stored in the screenshot account file
 - a capture plan must declare one explicit shared browser locale; it may navigate, click, wait, assert, and apply explicitly read-only filters, while the browser guard aborts other POST/PUT/PATCH/DELETE requests except the declared authentication/session exchange
 - missing or invalid credentials, login failure, route drift, or an uncorroborated denial fail the capture. Only a sanitized access report proving that a read-only identity response exactly matches the configured screenshot account plus an authoritative authorization denial may let the docs-impact workflow continue as a Draft PR without a required screenshot
 - after capture, inspect every final PNG for private data and set the result's privacy review to complete before handing the evidence to `next-docs`

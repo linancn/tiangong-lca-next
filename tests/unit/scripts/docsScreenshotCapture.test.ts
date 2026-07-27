@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import {
   classifyAccess,
+  normalizeBaseUrl,
   normalizeOutputPath,
   parseEnvFile,
   redactRoute,
@@ -95,13 +96,12 @@ function validPlan(): VisualPlan {
 }
 
 describe('docs screenshot capture contracts', () => {
-  test('parses the fixed secret variables without exposing them in the plan', () => {
+  test('parses only account secrets and rejects the legacy base URL key', () => {
     const values = parseEnvFile(
       [
         'DOCS_SCREENSHOT_ACCOUNT_ALIAS=docs-screenshot-readonly',
         'DOCS_SCREENSHOT_ACCOUNT_EMAIL="synthetic@example.invalid"',
         "DOCS_SCREENSHOT_ACCOUNT_PASSWORD='not-logged'",
-        'DOCS_SCREENSHOT_BASE_URL=http://127.0.0.1:8000',
       ].join('\n'),
     );
 
@@ -109,14 +109,27 @@ describe('docs screenshot capture contracts', () => {
       accountAlias: 'docs-screenshot-readonly',
       email: 'synthetic@example.invalid',
       password: 'not-logged',
-      baseUrl: 'http://127.0.0.1:8000/',
     });
     expect(() =>
       secretValuesFromEnv({
         ...values,
-        UNRELATED_SECRET: 'must-not-be-accepted',
+        DOCS_SCREENSHOT_BASE_URL: 'http://127.0.0.1:8000',
       }),
     ).toThrow('unsupported variables');
+  });
+
+  test('normalizes a run-scoped base origin and rejects unsafe URL parts', () => {
+    expect(normalizeBaseUrl('http://127.0.0.1:18080')).toBe('http://127.0.0.1:18080/');
+    expect(normalizeBaseUrl('https://lca.tiangong.earth/')).toBe('https://lca.tiangong.earth/');
+    expect(() => normalizeBaseUrl('127.0.0.1:18080')).toThrow('absolute http or https');
+    expect(() => normalizeBaseUrl('file:///tmp/app')).toThrow('must use http or https');
+    expect(() => normalizeBaseUrl('https://user:secret@example.invalid')).toThrow(
+      'must not contain credentials',
+    );
+    expect(() => normalizeBaseUrl('https://example.invalid/app')).toThrow('origin without a path');
+    expect(() => normalizeBaseUrl('https://example.invalid/?token=secret')).toThrow(
+      'query or fragment',
+    );
   });
 
   test('accepts 0600 or narrower secret permissions and rejects broad modes', () => {
