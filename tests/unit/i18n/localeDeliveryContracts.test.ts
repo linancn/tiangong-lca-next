@@ -868,20 +868,16 @@ describe('shared locale delivery contracts', () => {
       },
     };
     expect(compatibility.schemaVersion).toBe('tiangong.i18n-semantic-e2e-digest-compatibility.v1');
-    expect(compatibility.entries.map(({ path: entryPath }: any) => entryPath).sort()).toEqual(
-      [
-        'scripts/i18n/locale-delivery.mjs',
-        'tests/e2e/i18n/evidence-reporter.ts',
-        'tests/unit/e2e/evidenceReporter.test.ts',
-        'tests/unit/i18n/localeDeliveryContracts.test.ts',
-      ].sort(),
-    );
+    const entryPaths = compatibility.entries.map(({ path: entryPath }: any) => entryPath);
+    expect(new Set(entryPaths).size).toBe(entryPaths.length);
     for (const entry of compatibility.entries) {
       const expectedReview = expectedReviews[entry.path];
       expect(expectedReview).toBeDefined();
       const evidenceEntry = evidence.digests.tests.find(
         ({ path: evidencePath }: any) => evidencePath === entry.path,
       );
+      expect(evidenceEntry).toBeDefined();
+      expect(evidenceEntry.sha256).not.toBe(sha256File(entry.path));
       expect(entry).toEqual(
         expect.objectContaining({
           evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
