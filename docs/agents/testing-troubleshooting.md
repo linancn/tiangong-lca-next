@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after real pre-fixture network and production cleanup paths: the fresh-run fallback and exact-ledger recovery guidance worked, while the unreachable resume command is now explicitly tracked.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: canonical artifact regeneration plus one exact test-only mapping resolved the stale-digest gate without another production write, while #704 retains the unreachable resume repair.'
 ---
 
 # Testing Troubleshooting

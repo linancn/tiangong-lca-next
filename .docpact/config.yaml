@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-28'
-lastReviewedCommit: '01da1f8af6ceb4afce3b1f957e43015dac3fd863'
-lastReviewedNote: 'Reviewed for Issues #698 and #704: semantic evidence refreshes remain correctly routed to the locale and testing contracts; the observed resume and writer-canonicality defects need implementation repair, not a rule-graph change.'
+lastReviewedAt: "2026-07-28"
+lastReviewedCommit: "d9d49546fd327f3913ac846cf5bf86c5eed10bb4"
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: three directly covered compatibility records sunset, the one remaining exact test-only pair stays under the existing rule graph, and #704 still owns the resume and writer repairs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

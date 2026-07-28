@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Updated for Issues #698 and #704: recorded the verified production matrix and exact cleanup together with the two discovered release-harness follow-ups; the ordered coverage queue remains empty.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Updated for Issues #698 and #704: recorded the verified production matrix, exact cleanup, and retirement of three now-redundant digest mappings; #704 retains the two release-harness follow-ups and the ordered coverage queue remains empty.'
 ---
 
 # Testing Execution State
@@ -68,7 +68,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - Issue #688 makes semantic evidence and locale summaries deterministic at the writer boundary: evidence is emitted in canonical JSON, all locale summaries are generated once in dependency order, and the isolated double-generation check requires the second run to preserve the exact Git diff
 - Issue #688 also adds compact Agent/CI full-gate output while retaining complete Jest stdout/stderr and structured results under `.local/test-logs/**`; the Release Gate uploads those files for seven days on success or failure
-- Issue #688 records the original four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; the #698 pre-promotion back-merge re-reviews only the combined locale-contract test digest after its detached-Git-state test change, while the other three pairs remain unchanged. Production readiness accepts only those exact reviewed pairs and automatically fails again on any later drift or unlisted evidence input
+- Issue #688 introduced four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; Issue #698's fresh production evidence directly covers three of them, so they are retired. Only the locale-contract test keeps one exact old/new pair for the post-evidence sunset assertion itself; duplicate, redundant, later-drifted, or unlisted mappings fail closed
 - main-target PRs run the reusable Release Gate against their exact base/head, and main-semantic local pushes add `release:preflight` between Docpact and the full test gate; `dev` pushes retain the normal two-gate path
 - the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate

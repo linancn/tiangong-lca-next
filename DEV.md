@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after an authorized production run: bootstrap, exact-candidate execution, guarded cleanup, and managed-push commands remain the intended workflow; the resume and raw canonical-output defects are tracked separately.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: bootstrap, exact-candidate execution, guarded cleanup, canonical artifact regeneration, and managed push remain the intended workflow; #704 retains the resume and raw-writer defects.'
 ---
 
 # Development Bootstrap

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704: the canonical writer and signed pre-fixture resume patterns remain the intended contracts; their observed implementation defects are isolated follow-up work.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: exact mappings must represent a real evidence/current mismatch and retire when refreshed evidence covers them; #704 retains the canonical-writer and resume repairs.'
 ---
 
 # Testing Patterns Reference

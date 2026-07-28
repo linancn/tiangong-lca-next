@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704: the authorized three-browser production run, exact cleanup, canonical tracked evidence, artifact idempotence, and release preflight satisfy this guide; resume dispatch and raw writer canonicality remain tracked defects.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: the authorized production run, exact cleanup, canonical evidence, focused contract proof, artifact idempotence, and release preflight satisfy this guide; #704 retains the two harness defects.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

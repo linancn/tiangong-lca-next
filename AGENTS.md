@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704: the verified semantic-evidence refresh and isolated harness follow-up preserve repo ownership, dev-to-main delivery, production-write guards, and workspace integration boundaries.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: exact evidence maintenance preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

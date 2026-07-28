@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704: refreshing verified semantic evidence does not change protected-branch triggers, and the managed push correctly required a same-change documentation review before the full gate.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: redundant compatibility records now fail closed and the single post-evidence test-only mapping remains within the existing managed-push policy.'
 ---
 
 # Pre-Push Gate Policy

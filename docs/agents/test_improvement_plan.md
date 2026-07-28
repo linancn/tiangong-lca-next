@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for Issues #698 and #704: the successful full production matrix preserves the maintenance strategy, while the two isolated release-harness defects are tracked for focused repair rather than broad test expansion.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: rejecting redundant digest mappings strengthens the existing maintenance strategy without expanding browser scope, while #704 retains the two isolated harness repairs.'
 ---
 
 # Testing Strategy
