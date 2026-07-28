@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: Node 24 setup, focused Jest, locale artifact generation, lint/build, Docpact, and managed-push workflow remain current.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after an authorized production run: bootstrap, exact-candidate execution, guarded cleanup, and managed-push commands remain the intended workflow; the resume and raw canonical-output defects are tracked separately.'
 ---
 
 # Development Bootstrap

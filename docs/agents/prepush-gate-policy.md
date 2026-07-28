@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: the Data Product UI change keeps the existing Docpact, locale-artifact, full-gate, managed-push, and release-boundary triggers.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704: refreshing verified semantic evidence does not change protected-branch triggers, and the managed push correctly required a same-change documentation review before the full gate.'
 ---
 
 # Pre-Push Gate Policy

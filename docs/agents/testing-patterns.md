@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: semantic component assertions plus isolated locale-artifact idempotence remain the correct proof pattern for Data Product failure presentation.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704: the canonical writer and signed pre-fixture resume patterns remain the intended contracts; their observed implementation defects are isolated follow-up work.'
 ---
 
 # Testing Patterns Reference

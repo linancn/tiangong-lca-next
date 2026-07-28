@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: focused workbench and task-center behavior tests preserve the full-closure maintenance strategy and locale-artifact parity.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704: the successful full production matrix preserves the maintenance strategy, while the two isolated release-harness defects are tracked for focused repair rather than broad test expansion.'
 ---
 
 # Testing Strategy

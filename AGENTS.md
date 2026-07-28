@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: safe closure execution-failure presentation stays inside the existing Data Product page/service/task-center boundary and preserves branch, integration, and proof rules.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704: the verified semantic-evidence refresh and isolated harness follow-up preserve repo ownership, dev-to-main delivery, production-write guards, and workspace integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

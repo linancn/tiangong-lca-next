@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: existing focused Jest, Umi serialization, locale-idempotence, and managed-gate recovery guidance remains sufficient.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after real pre-fixture network and production cleanup paths: the fresh-run fallback and exact-ledger recovery guidance worked, while the unreachable resume command is now explicitly tracked.'
 ---
 
 # Testing Troubleshooting
