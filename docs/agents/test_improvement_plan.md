@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: focused workbench and task-center behavior tests preserve the full-closure maintenance strategy and locale-artifact parity.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata preserves the full-closure maintenance strategy and release-risk gate ownership.'
 ---
 
 # Testing Strategy

@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: semantic component assertions plus isolated locale-artifact idempotence remain the correct proof pattern for Data Product failure presentation.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata does not change the repository test-selection, release-gate, or semantic E2E patterns.'
 ---
 
 # Testing Patterns Reference

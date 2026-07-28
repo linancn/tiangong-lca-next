@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering requires focused workbench/task-center tests, locale proof, lint, and build before the managed push gate.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata does not change the existing main-candidate proof, release-preflight, or managed-push requirements.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

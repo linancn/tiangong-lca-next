@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: focused Data Product failure-state coverage keeps the ordered coverage queue empty; the managed push remains the final full-closure proof owner.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata keeps the coverage queue empty and leaves the managed main-candidate gate as the final proof owner.'
 ---
 
 # Testing Execution State

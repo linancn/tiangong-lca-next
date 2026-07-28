@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: the Data Product UI change keeps the existing Docpact, locale-artifact, full-gate, managed-push, and release-boundary triggers.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata follows the existing main-target release-preflight, semantic E2E, immutable-tag, and managed-push policy.'
 ---
 
 # Pre-Push Gate Policy

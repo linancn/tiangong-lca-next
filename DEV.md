@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: Node 24 setup, focused Jest, locale artifact generation, lint/build, Docpact, and managed-push workflow remain current.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata uses the existing Node 24 bootstrap, main-relative Docpact, managed-push, and release-proof commands.'
 ---
 
 # Development Bootstrap

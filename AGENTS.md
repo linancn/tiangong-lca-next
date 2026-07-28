@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: safe closure execution-failure presentation stays inside the existing Data Product page/service/task-center boundary and preserves branch, integration, and proof rules.'
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 dev-to-main promotion follows the existing M2 branch, immutable release-tag, validation, back-merge, and workspace-integration contracts.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
