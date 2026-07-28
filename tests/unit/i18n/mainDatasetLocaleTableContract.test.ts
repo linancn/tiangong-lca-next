@@ -9,7 +9,7 @@ const MAIN_DATASET_TABLES = [
     rowType: 'ContactTable',
     serviceCalls: [
       'getContactTableUuidMentionSearch',
-      'getContactTablePgroongaSearch',
+      'contact_hybrid_search',
       'getContactTableAll',
     ],
   },
@@ -18,7 +18,7 @@ const MAIN_DATASET_TABLES = [
     rowType: 'FlowpropertyTable',
     serviceCalls: [
       'getFlowpropertyTableUuidMentionSearch',
-      'getFlowpropertyTablePgroongaSearch',
+      'flowproperty_hybrid_search',
       'getFlowpropertyTableAll',
     ],
   },
@@ -27,7 +27,7 @@ const MAIN_DATASET_TABLES = [
     rowType: 'UnitGroupTable',
     serviceCalls: [
       'getUnitGroupTableUuidMentionSearch',
-      'getUnitGroupTablePgroongaSearch',
+      'unitgroup_hybrid_search',
       'getUnitGroupTableAll',
     ],
   },
@@ -64,11 +64,7 @@ const MAIN_DATASET_TABLES = [
   {
     file: 'src/pages/Sources/index.tsx',
     rowType: 'SourceTable',
-    serviceCalls: [
-      'getSourceTableUuidMentionSearch',
-      'getSourceTablePgroongaSearch',
-      'getSourceTableAll',
-    ],
+    serviceCalls: ['getSourceTableUuidMentionSearch', 'source_hybrid_search', 'getSourceTableAll'],
   },
 ] as const;
 

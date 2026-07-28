@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: the lifecycle-model compatibility fix uses the existing Docpact and full pre-push gate without changing trigger policy.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the lifecycle-model fix keeps the existing Docpact/full-gate triggers, #690 detached-CI parity, and workspace-owned screenshot-proof boundary.'
 ---
 
 # Pre-Push Gate Policy
@@ -67,6 +67,8 @@ Playwright semantic localization proof remains separate from `prepush:gate`. Foc
 Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
 Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
+
+For a reviewed change that affects only non-browser-semantic release-harness generation or formatting, `docs/plans/i18n/semantic-e2e-digest-compatibility.json` may attest an exact old/new digest pair instead of rerunning authenticated production E2E. This is not a wildcard or path exclusion: it binds the existing evidence commit, owner Issue, current digest, focused proof commands, and automatic sunset at the next verified evidence for that SHA. Any further drift or any browser/source/runtime/authorization/cleanup change remains a hard production-readiness failure.
 
 ## Scope
 

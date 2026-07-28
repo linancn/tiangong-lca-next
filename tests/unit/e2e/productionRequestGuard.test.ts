@@ -202,10 +202,14 @@ describe('production browser request guard', () => {
   it.each([
     ['GET', '/rest/v1/teams?select=*'],
     ['HEAD', '/rest/v1/processes'],
+    ['POST', '/functions/v1/contact_hybrid_search'],
     ['OPTIONS', '/functions/v1/process_hybrid_search'],
     ['POST', '/auth/v1/token?grant_type=password'],
     ['POST', '/storage/v1/object/sign/sys-files/logo.svg'],
     ['POST', '/functions/v1/process_hybrid_search'],
+    ['POST', '/functions/v1/flowproperty_hybrid_search'],
+    ['POST', '/functions/v1/source_hybrid_search'],
+    ['POST', '/functions/v1/unitgroup_hybrid_search'],
     ['POST', '/functions/v1/lca_results'],
   ])('allows the explicit read-only boundary: %s %s', (method, pathname) => {
     expect(classify(method, pathname)).toBe('allow');

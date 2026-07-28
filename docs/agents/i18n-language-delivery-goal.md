@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 326b9e5eb522341905c47c9295b932f8e257a397
-lastReviewedNote: 'Reviewed for Issue #693: docs-impact capture execution moves to workspace tooling while this Goal keeps its credential-free, non-visual semantic E2E evidence boundary unchanged.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
+lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: preserve #690 generator-required remote refs and the later #693 workspace-owned capture boundary without changing the credential-free semantic E2E contract.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -521,7 +521,9 @@ glossary、style rule、context override、dynamic family 或 source semantics �
 ```bash
 npm run i18n:locale:audit -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:manifest:write -- --locale <CANONICAL_LOCALE>
-npm run i18n:context:build -- --locale <CANONICAL_LOCALE>
+npm run i18n:locale:artifacts:write
+npm run i18n:locale:artifacts:idempotence
+npm run i18n:evidence:canonical:check
 npm run i18n:context:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:locale:quality:check -- --locale <CANONICAL_LOCALE>
 npm run i18n:corrections:check
@@ -532,6 +534,8 @@ npm run i18n:hardcoding:audit
 ```
 
 实际命令以实现后的 `package.json` 为准。共享 inventory、dynamic-family registry、language discovery、resource discovery 和 parser 只能有一个 source of truth；语言特有内容仅保留 glossary、style guide、必要 context override、locale files、参考数据 overlay 和紧凑 quality/activation manifest。
+
+tracked semantic evidence reporter 必须直接写出仓库 canonical JSON，不允许先输出临时形态再依赖格式化器修正。locale artifact generator 必须在一次 invocation 中按显式依赖图 `context -> structuralValidation -> quality -> activation` 处理全部 registry locale；任何 generator、evidence input 或摘要合同变化后，都必须连续生成两次并证明第二次执行前后的精确 Git diff 不变。幂等检查使用 detached clone 隔离 ambient worktree state 时，必须显式复制生成器读取的 remote refs（当前包括 `refs/remotes/origin/main`），不能依赖源 checkout 恰好存在同名本地分支。
 
 CI 必须包含反硬编码门禁：扫描业务代码中的 locale/language 二元条件、固定 supported-locale union、手写语言下拉数组、缓存资产数组、`locale || 'en-US'` / `locale ?? 'zh-CN'` 一类逻辑或空值默认，以及“非 zh 即 en”归一逻辑。下载报告等导出完整 HTML 文档的根 `<html lang>` 与 `dir` 也属于运行时语言能力，必须从 registry/runtime policy 动态派生；门禁必须拒绝嵌入模板中的固定根语言元数据。允许项必须落在最小 allowlist，并说明它是外部 adapter、canonical source、历史冻结验证，或故意 fail-closed 的产品支持语言快照门禁；新增语言后，不修改业务页面即可让 registry 驱动的测试发现其所有必需能力。
 
@@ -624,6 +628,8 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 上述截图禁令只约束本 Goal 的 i18n semantic E2E 证据边界。docs-impact 只读截图由 workspace 的独立通用引擎执行；Next 只在 `config/docs-capture/profile.v1.json` 提供与精确 render-target commit 绑定的 runtime/readiness、登录/身份、认证写请求和稳定 locator 合同。该引擎的 PNG 不得被复用为本 Goal 的 semantic E2E 或生产数据闭包证据。
 
 tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
+
+只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
 
 ---
 
@@ -817,7 +823,7 @@ Umi/Jest/coverage/build 共享 `.umi-test`，必须串行。只读上下文研�
 1. 再次检查竞争 PR、version、tag、release、release owner 和 root integration。
 2. 冻结 locale、全语言能力矩阵、参考资源 source/edition/structure/overlay digests、hardcoding audit、已有语言修订、runtime、tests、docs 和 manifests。
 3. 选择/确认唯一 package version，只 bump 一次。
-4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使最终 release gate 非零退出。
+4. 最后一次生成 source/route-view/quality/correction/capability/reference-resource/activation manifests；semantic evidence reporter 直接写 repository-canonical JSON，随后用一次 `npm run i18n:locale:artifacts:write` 按 `context -> structuralValidation -> quality -> activation` 生成全部 registry locale 摘要，并运行 `npm run i18n:locale:artifacts:idempotence` 证明连续两次生成保持精确 Git diff 不变；在明确授权的本地 operator session 中以 authenticated mode、两个 production-write guards 和 verified-evidence opt-in 执行 semantic E2E closure，生成不含凭据的 digest-bound evidence，证明 candidate/backend target、49-ID/registry/browser closure、create intent、pre-delete UUID/owner/五字段全语言 marker attestation 与 `created=cleaned`、`leaked=0`；运行 exact focused checks，随后运行 `npm run i18n:locale:all:production:check`，任何 owned blocker、证据漂移或数据泄漏都必须使最终 release gate 非零退出。
 5. 提交干净、不可变 delivery HEAD，不夹带其他 repo/submodule 改动。
 6. 在该 SHA 的 fresh detached worktree/clone：
    - 使用当前受支持 Node；
@@ -927,6 +933,7 @@ npm run push:retry
 | route/static view、access context、query view 或组件本地文案变化 | 更新 route-view matrix + 认证边界 proof + 受影响状态翻译/浏览器 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认且 tracked tree 变化则失效 |
 | registry/content capability 变化 | 重算全部 active locale 能力闭包、参数化 proof 和 hardcoding audit；旧 semantic E2E evidence 自动失效 | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | Playwright config/spec、49-ID route contract、source/test digest 或 ledger 规则变化 | 重跑无凭据 browser scope，再在明确授权的本地 operator session 中以 authenticated mode、两个 write guards 和 evidence opt-in 执行完整 closure | 永不需要 | tracked HEAD 变化则一次 | 若 tuple 已确认则失效 |
+| 仅 canonical evidence formatting / locale artifact orchestration 变化，且 focused proof 证明 browser 语义不变 | 记录精确旧/新 digest compatibility，运行 canonical check、双生成幂等、focused contracts 和 production preflight | 永不需要 | tracked HEAD 变化则一次 | 精确兼容 pair 内不失效；任何后续漂移立即失效 |
 | 参考资源 edition/source/overlay 变化 | 重算结构、来源、授权、全语言覆盖、缓存和消费端 proof | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | runtime/selector/fallback 变化 | focused tests + browser smoke | 永不需要 | 冻结后一次 | 若 tuple 已确认则失效 |
 | package version/promote tree/batch/production-effective action 变化 | version/batch/workflow consistency + affected proof | 永不需要 | tracked HEAD 变化则一次 | 已有确认失效，发布前重确认一次 |

@@ -29,9 +29,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: direct utility tests and focused component tests remain the correct proof pattern for node-title compatibility.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: direct utility/component tests remain the right node-title proof while #690 isolated-idempotence clones retain explicit remote-ref reproduction.'
 ---
 
 # Testing Patterns Reference
@@ -115,6 +115,7 @@ Special cases:
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
 15. make the semantic evidence reporter write repository-canonical JSON directly; then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
+17. when a digest-bound change is proven to affect only release-harness generation/formatting and not browser semantics, record only its exact evidence/current digest pair in the reviewed compatibility manifest; never exclude the path or accept future drift
 
 Browser semantic E2E pattern:
 
@@ -162,7 +163,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | open-handle debug | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | active German runtime assembly | `npm run i18n:de:audit` |
 | active locale context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
-| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence` |
+| one-shot canonical locale summaries | `npm run i18n:locale:artifacts:write` then `npm run i18n:locale:artifacts:idempotence`; the isolated idempotence clone must reproduce generator-required remote refs such as `origin/main` |
 | canonical semantic evidence format | `npm run i18n:evidence:canonical:check` |
 | language platform and hardcoding | `npm run i18n:platform:audit` then `npm run i18n:hardcoding:audit` |
 | all-active-locale activation | `npm run i18n:locale:all:check` |

@@ -102,6 +102,7 @@ const SEMANTIC_E2E_CRITICAL_TEST_PATHS = Object.freeze([
 ]);
 const SEMANTIC_E2E_PACKAGE_LOCK = 'package-lock.json';
 const SEMANTIC_E2E_TRACKED_ENVIRONMENT = '.env';
+const SEMANTIC_E2E_DIGEST_COMPATIBILITY = 'docs/plans/i18n/semantic-e2e-digest-compatibility.json';
 const LOCALE_ARTIFACT_DEPENDENCIES = Object.freeze({
   context: Object.freeze([]),
   structuralValidation: Object.freeze(['context']),
@@ -942,7 +943,77 @@ function expectedSemanticEvidenceDigests(root, routeRows, evidenceContract) {
   };
 }
 
-function assertExactFileDigests(actual, expected, label, { requireCurrentBindings = true } = {}) {
+function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry) {
+  if (!fs.existsSync(path.resolve(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY))) return false;
+  const manifest = readJson(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY);
+  assertRecordShape(
+    manifest,
+    ['schemaVersion', 'entries'],
+    [],
+    'Semantic E2E digest compatibility manifest',
+  );
+  if (
+    manifest.schemaVersion !== 'tiangong.i18n-semantic-e2e-digest-compatibility.v1' ||
+    !Array.isArray(manifest.entries)
+  ) {
+    throw new Error('Semantic E2E digest compatibility manifest is invalid.');
+  }
+  const seen = new Set();
+  for (const [index, entry] of manifest.entries.entries()) {
+    assertRecordShape(
+      entry,
+      [
+        'path',
+        'evidenceObservedHeadCommit',
+        'evidenceSha256',
+        'compatibleSha256',
+        'scope',
+        'ownerIssue',
+        'reviewedAt',
+        'sunset',
+        'proofCommands',
+      ],
+      [],
+      `Semantic E2E digest compatibility manifest entries[${index}]`,
+    );
+    if (
+      typeof entry.path !== 'string' ||
+      !/^[0-9a-f]{40}$/u.test(entry.evidenceObservedHeadCommit ?? '') ||
+      !/^[0-9a-f]{64}$/u.test(entry.evidenceSha256 ?? '') ||
+      !/^[0-9a-f]{64}$/u.test(entry.compatibleSha256 ?? '') ||
+      entry.scope !== 'non-browser-semantic-release-harness-only' ||
+      !/^#[0-9]+$/u.test(entry.ownerIssue ?? '') ||
+      !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u.test(entry.reviewedAt ?? '') ||
+      entry.sunset !== 'next-verified-evidence-for-compatible-sha' ||
+      !Array.isArray(entry.proofCommands) ||
+      entry.proofCommands.length === 0 ||
+      entry.proofCommands.some((command) => typeof command !== 'string' || command.length === 0)
+    ) {
+      throw new Error(
+        `Semantic E2E digest compatibility manifest entry is invalid for ${entry.path ?? index}.`,
+      );
+    }
+    const key = `${entry.path}\0${entry.evidenceObservedHeadCommit}\0${entry.evidenceSha256}`;
+    if (seen.has(key)) {
+      throw new Error(`Semantic E2E digest compatibility manifest duplicates ${entry.path}.`);
+    }
+    seen.add(key);
+  }
+  return manifest.entries.some(
+    (entry) =>
+      entry.path === expectedEntry.path &&
+      entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
+      entry.evidenceSha256 === actualEntry.sha256 &&
+      entry.compatibleSha256 === expectedEntry.sha256,
+  );
+}
+
+function assertExactFileDigests(
+  actual,
+  expected,
+  label,
+  { requireCurrentBindings = true, digestCompatibility = null } = {},
+) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
   if (
     JSON.stringify(actual.map((entry) => entry?.path)) !==
@@ -954,10 +1025,11 @@ function assertExactFileDigests(actual, expected, label, { requireCurrentBinding
     const actualEntry = actual[index];
     const expectedEntry = expected[index];
     assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
-    if (
-      !/^[0-9a-f]{64}$/u.test(actualEntry.sha256) ||
-      (requireCurrentBindings && actualEntry.sha256 !== expectedEntry.sha256)
-    ) {
+    const digestMatches =
+      actualEntry.sha256 === expectedEntry.sha256 ||
+      (typeof digestCompatibility === 'function' &&
+        digestCompatibility(actualEntry, expectedEntry));
+    if (!/^[0-9a-f]{64}$/u.test(actualEntry.sha256) || (requireCurrentBindings && !digestMatches)) {
       throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
     }
   }
@@ -1260,7 +1332,11 @@ function validateSemanticE2EEvidence(
     evidence.digests.tests,
     expectedDigests.tests,
     'Semantic E2E test digests',
-    { requireCurrentBindings },
+    {
+      requireCurrentBindings,
+      digestCompatibility: (actualEntry, expectedEntry) =>
+        reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry),
+    },
   );
   assertExactFileDigests(
     evidence.digests.sources,

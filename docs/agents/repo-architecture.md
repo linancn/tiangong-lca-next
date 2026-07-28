@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: the dedicated lifecycle-model node-name resolver remains inside the existing service and page layers with no ownership change.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the lifecycle-model resolver remains in the existing service/page layers and the #698 foundation-dataset searches retain the shared Hybrid service boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -80,6 +80,7 @@ Rules:
 - app locale, content language, service-query language, and reference-resource language are separate boundaries. Content reading priorities, backend-query fallbacks, and reference-resource delivery states are declared independently; a native reference overlay exists only after its exact structure/evidence gate passes. Documentation, legal, and public-doc surfaces keep their separately disclosed fallbacks
 - anonymous SPA access is limited to the explicit login/recovery allowlist. Root/Welcome, every other configured application route, case variants, and unmatched paths require the session guard and redirect anonymous users to the canonical login route; authenticated unmatched paths may render the localized 404. Role gates defer missing-session decisions to that global redirect, then enforce their role only after a user exists, so they cannot replace login with an anonymous 403. Localization route/view coverage records this access context but must never broaden it. Authenticated redirects that drive localized query/hash views must preserve their URL state
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
+- Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `npm run reference-data:check`

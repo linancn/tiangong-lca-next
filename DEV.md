@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: b0cf14d4ac66553cdf4cb0b430eb5001af35a0fb
-lastReviewedNote: 'Reviewed for Issue #696: lifecycle-model node label compatibility uses the existing setup, focused validation, build, and managed-push workflow.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the Node 24, focused proof, build, detached-clone locale generation, and managed-push workflow remain current.'
 ---
 
 # Development Bootstrap
@@ -122,7 +122,9 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | require every governed reference resource to have native reviewed assets and explicit production clearance | `npm run reference-data:production:check` (fails while rights or delivery blockers remain) |
 | regenerate reference-resource assets and manifest from reviewed sources | `npm run reference-data:write` |
 | audit one registry locale | `npm run i18n:locale:audit -- --locale <canonical-locale>` |
-| execute deterministic structural validation and build one locale's tracked context, quality, and activation artifacts | `npm run i18n:locale:artifacts:write -- --locale <canonical-locale>` |
+| generate every locale's canonical context, structural-validation, quality, and activation artifacts once in dependency order | `npm run i18n:locale:artifacts:write` |
+| prove two consecutive locale-artifact generations preserve the exact Git diff | `npm run i18n:locale:artifacts:idempotence` (its isolated clone reproduces generator-required remote refs, including tracked `origin/main`) |
+| verify tracked semantic evidence is already in canonical repository format | `npm run i18n:evidence:canonical:check` |
 | check one locale's context and quality | `npm run i18n:context:check -- --locale <canonical-locale>` then `npm run i18n:locale:quality:check -- --locale <canonical-locale>` |
 | check tracked existing-translation corrections | `npm run i18n:corrections:check` |
 | check one locale's activation boundary | `npm run i18n:locale:activation:check -- --locale <canonical-locale>` |
@@ -134,6 +136,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | validate the historical Issue #601 Pilot only | `npm run i18n:de:pilot` |
 | build | `npm run build` |
 | local full test gate | `npm run prepush:gate` |
+| compact agent/CI full gate with complete retained logs | `npm run prepush:gate:agent` |
 | final managed push | `npm run push:checked -- <normal-git-push-args>` |
 | retry one receipt-bound failed transport | `npm run push:retry` |
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |

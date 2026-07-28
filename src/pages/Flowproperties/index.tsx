@@ -1,6 +1,6 @@
 import {
+  flowproperty_hybrid_search,
   getFlowpropertyTableAll,
-  getFlowpropertyTablePgroongaSearch,
   getFlowpropertyTableUuidMentionSearch,
 } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
@@ -457,7 +457,7 @@ const TableList: FC = () => {
               }
               if (currentKeyWord.length > 0) {
                 return attachRefUnitData(
-                  await getFlowpropertyTablePgroongaSearch(
+                  await flowproperty_hybrid_search(
                     requestParams,
                     lang,
                     dataSource,

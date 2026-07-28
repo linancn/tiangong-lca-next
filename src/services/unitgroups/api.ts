@@ -25,6 +25,7 @@ import {
   normalizeLangPayloadForSave,
   type NormalizeLangPayloadForSaveOptions,
 } from '../general/api';
+import { invokeFoundationHybridSearch } from '../general/hybridSearch';
 import { genUnitGroupJsonOrdered } from './util';
 
 type UnitGroupListRpcRow = {
@@ -411,6 +412,28 @@ export async function getUnitGroupTablePgroongaSearch(
   }
 
   return result;
+}
+
+export async function unitgroup_hybrid_search(
+  params: { current?: number; pageSize?: number },
+  lang: string,
+  dataSource: string,
+  queryText: string,
+  filterCondition: unknown,
+  stateCode?: string | number,
+  tid: string | [] = [],
+) {
+  return invokeFoundationHybridSearch({
+    dataSource,
+    filterCondition,
+    functionName: 'unitgroup_hybrid_search',
+    lang,
+    mapRows: mapUnitGroupListRows,
+    params,
+    queryText,
+    stateCode,
+    teamId: await getUnitGroupTeamFilter(dataSource, tid),
+  });
 }
 
 export async function getUnitGroupTableUuidMentionSearch(
