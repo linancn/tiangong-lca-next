@@ -28,9 +28,9 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
-lastReviewedNote: 'Reviewed for promotion #690: confirmed detached-CI parity for the locale artifact idempotence gate by reproducing its required tracked-main ref.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 keeps the coverage queue empty and records the user-authorized exact-digest read-only request-guard exception before the managed main-candidate gate.'
 ---
 
 # Testing Execution State
@@ -53,7 +53,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - repo is in full-closure maintenance mode
 - there is no active ordered coverage queue right now
 - touched code must stay at full closure
-- Issue #670 adds an isolated 9-test `docs:screenshot:test` suite for visual-plan validation, explicit shared locale, external secret-file boundaries, output containment, shared viewport, and authenticated access-denial classification; it is focused tooling proof and does not alter the checked-in full-gate suite/test counts above
+- Issue #693 moves profile validation, generic visual-plan, account-secret, run-scoped origin, output-containment, access classification, and capture compatibility proof to workspace tooling.
 - locale topology, message ownership, ICU placeholders, and dynamic families are additionally protected by `npm run i18n:audit`
 - active German pins the accepted 2,737-message catalog/runtime state at `c26f306e82ac66f50a56aafe8f89ea96c0b0c67d`; post-baseline existing-message changes use the tracked automated correction overlay, while Issue #601/#602/#606 confirmations retain frozen-history semantics only
 - active locale proof uses `i18n:audit`, the registry/Manifest and hardcoding audits, registry-driven context/quality, `i18n:corrections:check`, and all-locale activation; focused proof stays in the edit loop, and each delivery gets one post-commit full gate through `push:checked`
@@ -67,7 +67,9 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - pre-push receipt coverage includes a setup-node-style active Node 24 with an unusable NVM install, so runner bootstrap cannot exit before the repo-owned hook coordinator
 - Issue #688 makes semantic evidence and locale summaries deterministic at the writer boundary: evidence is emitted in canonical JSON, all locale summaries are generated once in dependency order, and the isolated double-generation check requires the second run to preserve the exact Git diff
 - Issue #688 also adds compact Agent/CI full-gate output while retaining complete Jest stdout/stderr and structured results under `.local/test-logs/**`; the Release Gate uploads those files for seven days on success or failure
-- Issue #688 records four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; production readiness accepts only those reviewed pairs and automatically fails again on any later drift or unlisted evidence input
+- Issue #688 records the original four exact non-browser-semantic harness digest pairs in `semantic-e2e-digest-compatibility.json`; the #698 pre-promotion back-merge re-reviews only the combined locale-contract test digest after its detached-Git-state test change, while the other three pairs remain unchanged. Production readiness accepts only those exact reviewed pairs and automatically fails again on any later drift or unlisted evidence input
+- Issue #703 records the explicit user decision to skip an authenticated E2E rerun for the exact additive `contact_hybrid_search`, `flowproperty_hybrid_search`, `source_hybrid_search`, and `unitgroup_hybrid_search` production read-only request-guard expansion; the compatibility scope is restricted to the guard and its paired unit-test file, requires focused endpoint proof, and sunsets on the next verified evidence
+- the same Issue #703 decision pins the complete v0.0.62 config/package/source/unit-test candidate identity and requires the full pre-push gate; this one-time release-candidate record is invalid after any tree drift and does not relax route, runtime-asset, package-lock, backend-target, or production-safety checks
 - main-target PRs run the reusable Release Gate against their exact base/head, and main-semantic local pushes add `release:preflight` between Docpact and the full test gate; `dev` pushes retain the normal two-gate path
 - the production Release Gate delegates the complete Jest inventory to one `prepush:gate` step while the reusable credential-free browser semantic E2E matrix validates the exact release SHA in parallel; tag creation and publication wait for both, and no earlier standalone `test:ci` is allowed
 - a failed managed transport may be retried without repeating the full gate only through the ignored, exact-intent, one-hour receipt and argument-free `npm run push:retry`; any controlled-input drift requires a fresh managed push and gate

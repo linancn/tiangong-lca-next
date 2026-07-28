@@ -859,6 +859,49 @@ describe('Contacts API Service', () => {
       ...overrides,
     });
 
+    it('routes Contact Hybrid Search through the Edge Function with visibility context', async () => {
+      const { contact_hybrid_search } = require('@/services/contacts/api');
+      mockFunctions.mockResolvedValue({ data: { data: [latestSearchRow()] }, error: null });
+      getLangText.mockImplementation((value: any) => value?.[0]?.['#text'] ?? '-');
+      jsonToList.mockReturnValue([{ '@level': '0', '#text': 'Category' }]);
+      classificationToString.mockReturnValue('Category');
+
+      const result = await contact_hybrid_search(
+        { current: 2, pageSize: 25 },
+        'en',
+        'tg',
+        'contact query',
+        { status: 'active' },
+        100,
+        'c3000000-0000-4000-8000-000000000297',
+      );
+
+      expect(mockFunctions).toHaveBeenCalledWith(
+        'contact_hybrid_search',
+        expect.objectContaining({
+          body: {
+            query: 'contact query',
+            filter_condition: { status: 'active' },
+            data_source: 'tg',
+            page_size: 25,
+            page_current: 2,
+            state_code: 100,
+            team_id: 'c3000000-0000-4000-8000-000000000297',
+          },
+        }),
+      );
+      expect(result).toMatchObject({ page: 2, success: true, total: 1 });
+      expect(result.data[0]).toMatchObject({ id: 'contact-1', email: 'search@example.com' });
+
+      await contact_hybrid_search({ current: 1 }, 'en', 'my', 'owner query', {}, 0);
+      expect(mockFunctions).toHaveBeenLastCalledWith(
+        'contact_hybrid_search',
+        expect.objectContaining({
+          body: expect.not.objectContaining({ team_id: expect.anything() }),
+        }),
+      );
+    });
+
     it('should perform latest-version full-text search with pgroonga', async () => {
       const { getContactTablePgroongaSearch } = require('@/services/contacts/api');
       mockRpc.mockResolvedValue({ data: [latestSearchRow()], error: null });

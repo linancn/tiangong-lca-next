@@ -19,6 +19,7 @@ import {
   createFlowproperties,
   createFlowpropertiesVersion,
   deleteFlowproperties,
+  flowproperty_hybrid_search,
   getFlowpropertyDetail,
   getFlowpropertyTableAll,
   getFlowpropertyTablePgroongaSearch,
@@ -1061,6 +1062,44 @@ describe('FlowProperties API Service (src/services/flowproperties/api.ts)', () =
   });
 
   describe('getFlowpropertyTablePgroongaSearch', () => {
+    it('routes FlowProperty Hybrid Search through the reviewed Edge Function', async () => {
+      supabase.functions.invoke.mockResolvedValue({ data: [], error: null });
+
+      const result = await flowproperty_hybrid_search(
+        { current: 3, pageSize: 15 },
+        'en',
+        'tg',
+        'mass query',
+        { category: 'mass' },
+        100,
+        'c3000000-0000-4000-8000-000000000297',
+      );
+
+      expect(supabase.functions.invoke).toHaveBeenCalledWith(
+        'flowproperty_hybrid_search',
+        expect.objectContaining({
+          body: {
+            query: 'mass query',
+            filter_condition: { category: 'mass' },
+            data_source: 'tg',
+            page_size: 15,
+            page_current: 3,
+            state_code: 100,
+            team_id: 'c3000000-0000-4000-8000-000000000297',
+          },
+        }),
+      );
+      expect(result).toEqual({ data: [], page: 3, success: true, total: 0 });
+
+      await flowproperty_hybrid_search({ current: 1 }, 'en', 'my', 'owner query', {}, 0);
+      expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+        'flowproperty_hybrid_search',
+        expect.objectContaining({
+          body: expect.not.objectContaining({ team_id: expect.anything() }),
+        }),
+      );
+    });
+
     it('should perform full-text search', async () => {
       const params = { current: 1, pageSize: 10 };
       const mockSearchResult = [

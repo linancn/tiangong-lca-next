@@ -251,6 +251,7 @@ const Login: React.FC = () => {
                     ? {
                         submitButtonProps: {
                           loading: loading,
+                          'data-testid': 'docs-capture-login-submit',
                         },
                       }
                     : false
@@ -300,6 +301,7 @@ const Login: React.FC = () => {
                       fieldProps={{
                         size: 'middle',
                         prefix: <MailOutlined />,
+                        'data-testid': 'docs-capture-login-email',
                       }}
                       placeholder={intl.formatMessage({
                         id: 'pages.login.email.placeholder',
@@ -331,6 +333,7 @@ const Login: React.FC = () => {
                       fieldProps={{
                         size: 'middle',
                         prefix: <LockOutlined />,
+                        'data-testid': 'docs-capture-login-password',
                       }}
                       placeholder={intl.formatMessage({
                         id: 'pages.login.password.placeholder',

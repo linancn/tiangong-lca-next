@@ -26,9 +26,9 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
-lastReviewedNote: 'Reviewed for promotion #690: added the detached-CI recovery path for missing generator-required remote refs in artifact idempotence.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 adds the bounded recovery path for a user-authorized additive read-only request-guard digest change.'
 ---
 
 # Testing Troubleshooting
@@ -45,7 +45,6 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | focused unit or component | `npm run test:ci -- tests/unit/<scope>/ --runInBand --testTimeout=10000 --no-coverage` |
 | detect open handles | `npm run test:ci -- <file> --runInBand --detectOpenHandles --no-coverage` |
 | focused semantic localization E2E | `npm run e2e:dev -- <Playwright arguments>` |
-| docs-impact screenshot contracts | `npm run docs:screenshot:test` |
 | release environment diagnosis | `npm run e2e:env:doctor -- --format json` |
 | exact pre-fixture continuation | `npm run e2e:release:resume` (no arguments) |
 
@@ -72,12 +71,14 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | Firefox reference-race E2E sees no pending stale consumer after a search/hash navigation | Firefox restored the current candidate document runtime and its warm in-memory reference cache, so clearing IndexedDB/localStorage did not force the intercepted asset request | cross an explicit neutral-document boundary before opening the next candidate deep link, then require the stale request/pending consumer and repeat the focused Firefox scope; do not weaken the race assertion or add a fixed sleep |
 | a main-target PR fails `Release Readiness / Main Candidate` with a semantic evidence digest mismatch | the candidate changed a production-bound route, source, test, runtime asset, or executable lock input after the last authenticated closure | reproduce with `npm run release:preflight`, create a clean committed candidate, run the explicitly authorized authenticated release E2E with verified-evidence output, copy only its generated evidence artifact, regenerate locale artifacts, and push the new commit; do not merge first or retry the unchanged check |
 | a semantic evidence digest mismatch is limited to reviewed canonical formatting or locale-artifact orchestration and browser semantics are unchanged | the evidence binds a monolithic harness file more broadly than the changed behavior | add an exact entry to `docs/plans/i18n/semantic-e2e-digest-compatibility.json` only after focused contract proof, canonical-format proof, double-generation idempotence, and `release:preflight` pass; the entry must bind old/current digests and sunset on the next verified evidence. Do not use it for route, source, runtime, browser, auth, package dependency, production-data, or cleanup changes |
+| explicitly reviewed production-request-guard and paired-unit-test digest mismatches only add named read-only endpoints and the user authorizes skipping E2E | the existing browser evidence predates an additive safety allowlist expansion | add exact `reviewed-read-only-request-guard-expansion` entries for the guard and paired proof, bind both to the owner Issue and old/new file digests, run the focused production-request-guard suite, and rerun `release:preflight`; any deletion, mutation allowance, unrelated guard edit, or later digest drift requires fresh authenticated E2E |
 | a release gate fails but a matching new tag already exists | tag publication ran before validation or the tag was created manually | stop publication and inspect the tag owner/SHA; never move an immutable release tag. The canonical workflow must create a missing tag only after both exact-release gates pass, and any corrected candidate uses a new patch version |
 | teardown refuses cleanup or reports a leaked `codex-e2e` process | the intent ledger is invalid, the production row UUID/owner/five-field registry marker closure does not match, or exact-ID deletion failed | preserve the ignored ledger; inspect only the exact UUID row, restore verifiable ownership/marker evidence or escalate, and never broaden deletion; do not create another record until `created=cleaned` and `leaked=0` |
 | teardown reports that the primary ledger has no matching recovery copy | another invocation is active, a stale teardown is reading a newer run's primary ledger, or the protected external recovery file was removed | stop every older E2E runner, verify the exact UUID through audit/read-only checks, and restore only the matching recovery copy; never let the orphaned primary ledger authorize deletion |
 | Header locale changes reload the document or an old reference label returns after switching | Umi `SelectLang` lost `reload={false}` or an old-locale async response won the race | restore in-document switching, then rerun the same-document identity/URL proof and the delayed old-response race test before accepting the locale refresh |
 | Playwright browser executable is missing | a direct host run lacks binaries, or the release image is absent/mismatched | for `e2e:dev`, run `npx playwright install chromium firefox webkit`; for release proof, run `npm run e2e:env:install` and do not repair browsers one by one on the host |
 | docs capture reports `missing-credentials` or `invalid-authentication` | the secret pointer/file/mode is invalid, identity does not match, or login/MFA/session did not complete | verify only that `DOCS_SCREENSHOT_ENV_FILE` points to the external absolute regular mode-`0600` file; never source or print it, and do not convert this failure into an access-denied Draft |
+| docs capture rejects `--base-url` before browser launch | the caller omitted the run-scoped origin or supplied credentials, a path, query, fragment, or non-HTTP(S) URL | rerun through the workspace runtime wrapper for a local candidate, or pass the explicitly approved production origin; never restore `DOCS_SCREENSHOT_BASE_URL` to the account file |
 | docs capture reports environment failure instead of `verified-access-denied` | the probe returned `401`/`404`/`5xx`, timed out, lacked identity proof, or had only an uncorroborated UI denial | repair the exact authentication/route/locator/environment failure and rerun; only authenticated authoritative denial can enable the Draft exception |
 | docs capture mutation guard reports a blocked request | the selected UI state attempted an application write outside the explicit auth/session allowlist | stop the capture, choose a read-only route/filter or safe fixture, and do not broaden the allowlist to production mutation endpoints |
 | one gate fails only while another Umi-generating command is running locally | concurrent focused tests, coverage, or full gate regenerated shared `.umi-test` | stop or await every heavy command, then rerun only the narrow failed command serially; do not chain broad test, coverage, and full-gate reruns |

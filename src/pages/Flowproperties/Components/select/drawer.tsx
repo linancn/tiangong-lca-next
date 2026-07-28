@@ -1,10 +1,7 @@
 // import ReferenceUnit from '@/pages/Unitgroups/Components/Unit/reference';
 import AllVersionsList from '@/components/AllVersions';
 import { renderTableSelectionClearAction } from '@/components/TableSelectionAlert';
-import {
-  getFlowpropertyTableAll,
-  getFlowpropertyTablePgroongaSearch,
-} from '@/services/flowproperties/api';
+import { flowproperty_hybrid_search, getFlowpropertyTableAll } from '@/services/flowproperties/api';
 import { FlowpropertyTable } from '@/services/flowproperties/data';
 import {
   getContentLanguageAwareTableParams,
@@ -306,7 +303,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               tgRequestEpochRef,
               async () => {
                 if (tgKeyWord.length > 0) {
-                  return getFlowpropertyTablePgroongaSearch(
+                  return flowproperty_hybrid_search(
                     params,
                     params.contentLanguage,
                     'tg',
@@ -316,8 +313,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   });
@@ -327,8 +323,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   },
@@ -381,7 +376,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               coRequestEpochRef,
               async () => {
                 if (coKeyWord.length > 0) {
-                  return getFlowpropertyTablePgroongaSearch(
+                  return flowproperty_hybrid_search(
                     params,
                     params.contentLanguage,
                     'co',
@@ -391,8 +386,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   });
@@ -402,8 +396,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   },
@@ -456,7 +449,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               teRequestEpochRef,
               async () => {
                 if (teKeyWord.length > 0) {
-                  return getFlowpropertyTablePgroongaSearch(
+                  return flowproperty_hybrid_search(
                     params,
                     params.contentLanguage,
                     'te',
@@ -466,8 +459,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   });
@@ -477,8 +469,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   },
@@ -531,7 +522,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
               myRequestEpochRef,
               async () => {
                 if (myKeyWord.length > 0) {
-                  return getFlowpropertyTablePgroongaSearch(
+                  return flowproperty_hybrid_search(
                     params,
                     params.contentLanguage,
                     'my',
@@ -542,8 +533,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                     return getUnitData('unitgroup', res?.data).then((unitRes) => {
                       return {
                         ...res,
-                        data: unitRes,
-                        success: true,
+                        data: unitRes as FlowpropertyTable[],
                       };
                     });
                   });
@@ -559,8 +549,7 @@ const FlowpropertiesSelectDrawer: FC<Props> = ({ buttonType, lang, onData, butto
                   return getUnitData('unitgroup', res?.data).then((unitRes) => {
                     return {
                       ...res,
-                      data: unitRes,
-                      success: true,
+                      data: unitRes as FlowpropertyTable[],
                     };
                   });
                 });

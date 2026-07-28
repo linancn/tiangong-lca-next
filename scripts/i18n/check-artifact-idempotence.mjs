@@ -11,11 +11,23 @@ const MAX_BUFFER_BYTES = 64 * 1024 * 1024;
 const REQUIRED_REMOTE_REFS = Object.freeze(['refs/remotes/origin/main']);
 const require = createRequire(import.meta.url);
 const installedNodeModules = path.dirname(path.dirname(require.resolve('tsx/package.json')));
+const gitEnvironment = { ...process.env };
+const localGitEnvironmentVariables = execFileSync('git', ['rev-parse', '--local-env-vars'], {
+  cwd: process.cwd(),
+  encoding: 'utf8',
+})
+  .trim()
+  .split(/\r?\n/u)
+  .filter(Boolean);
+for (const variable of localGitEnvironmentVariables) {
+  delete gitEnvironment[variable];
+}
 
 function git(root, args, options = {}) {
   return execFileSync('git', args, {
     cwd: root,
     encoding: 'utf8',
+    env: gitEnvironment,
     maxBuffer: MAX_BUFFER_BYTES,
     ...options,
   });
@@ -44,6 +56,7 @@ function runArtifactGeneration(root) {
       {
         cwd: root,
         encoding: 'utf8',
+        env: gitEnvironment,
         maxBuffer: MAX_BUFFER_BYTES,
         stdio: ['ignore', 'pipe', 'pipe'],
       },
@@ -65,6 +78,7 @@ const cloneRoot = path.join(temporaryRoot, 'repository');
 try {
   execFileSync('git', ['clone', '--shared', '--no-checkout', sourceRoot, cloneRoot], {
     encoding: 'utf8',
+    env: gitEnvironment,
     maxBuffer: MAX_BUFFER_BYTES,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -74,6 +88,7 @@ try {
   const workingTreePatch = spawnSync('git', ['diff', '--binary', '--no-ext-diff', 'HEAD', '--'], {
     cwd: sourceRoot,
     encoding: 'buffer',
+    env: gitEnvironment,
     maxBuffer: MAX_BUFFER_BYTES,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -86,6 +101,7 @@ try {
       cwd: cloneRoot,
       input: workingTreePatch.stdout,
       encoding: 'buffer',
+      env: gitEnvironment,
       maxBuffer: MAX_BUFFER_BYTES,
       stdio: ['pipe', 'pipe', 'pipe'],
     });

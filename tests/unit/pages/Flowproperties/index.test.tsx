@@ -54,8 +54,7 @@ jest.mock('umi', () => ({
 jest.mock('@/services/flowproperties/api', () => ({
   __esModule: true,
   getFlowpropertyTableAll: (...args: any[]) => mockGetFlowpropertyTableAll(...args),
-  getFlowpropertyTablePgroongaSearch: (...args: any[]) =>
-    mockGetFlowpropertyTablePgroongaSearch(...args),
+  flowproperty_hybrid_search: (...args: any[]) => mockGetFlowpropertyTablePgroongaSearch(...args),
   getFlowpropertyTableUuidMentionSearch: (...args: any[]) =>
     mockGetFlowpropertyTableUuidMentionSearch(...args),
 }));

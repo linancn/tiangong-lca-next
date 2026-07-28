@@ -9,6 +9,7 @@ import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
   genLifeCycleModelJsonOrdered,
+  genLifeCycleModelNodeName,
   genNodeLabel,
   genPortLabel,
   genReferenceToResultingProcess,
@@ -948,6 +949,92 @@ describe('genLifeCycleModelInfoFromData', () => {
   });
 });
 
+describe('genLifeCycleModelNodeName', () => {
+  it('keeps structured process names unchanged', () => {
+    expect(
+      genLifeCycleModelNodeName(
+        {
+          label: {
+            baseName: [createLangText('Structured process')],
+            treatmentStandardsRoutes: [createLangText('Route')],
+          },
+        },
+        'en',
+      ),
+    ).toBe('Structured process; Route');
+  });
+
+  it('resolves multilingual arrays and single multilingual objects', () => {
+    const label = [createLangText('English process'), createLangText('中文过程', 'zh')];
+
+    expect(genLifeCycleModelNodeName({ label }, 'zh')).toBe('中文过程');
+    expect(genLifeCycleModelNodeName({ label: createLangText('Single process', 'en') }, 'en')).toBe(
+      'Single process',
+    );
+  });
+
+  it('falls back through shortDescription, string label, process id, and placeholder', () => {
+    expect(
+      genLifeCycleModelNodeName(
+        {
+          id: 'process-id',
+          label: 'String label',
+          shortDescription: [createLangText('Short description')],
+        },
+        'en',
+      ),
+    ).toBe('Short description');
+    expect(
+      genLifeCycleModelNodeName(
+        {
+          label: { baseName: [] },
+          shortDescription: ' String short description ',
+        },
+        'en',
+      ),
+    ).toBe('String short description');
+    expect(
+      genLifeCycleModelNodeName(
+        {
+          id: 'process-id',
+          label: ' String label ',
+          shortDescription: ' ',
+        },
+        'en',
+      ),
+    ).toBe('String label');
+    expect(genLifeCycleModelNodeName({ id: 'process-id', label: ' String label ' }, 'en')).toBe(
+      'String label',
+    );
+    expect(genLifeCycleModelNodeName({ id: ' process-id ', label: {} }, 'en')).toBe('process-id');
+    expect(
+      genLifeCycleModelNodeName(
+        {
+          id: 'process-id',
+          label: [{ '@xml:lang': 'unsupported', '#text': 'Unsupported language' }],
+        },
+        'en',
+      ),
+    ).toBe('process-id');
+    expect(genLifeCycleModelNodeName({ id: 'process-id', label: ' ' }, 'en')).toBe('process-id');
+    expect(genLifeCycleModelNodeName({ id: ' ', label: null }, 'en')).toBe('-');
+    expect(genLifeCycleModelNodeName({ label: {} }, 'en')).toBe('-');
+    expect(genLifeCycleModelNodeName(undefined, 'en')).toBe('-');
+  });
+
+  it('does not mutate the persisted node label while resolving display text', () => {
+    const nodeData = {
+      id: 'process-id',
+      label: [createLangText('English process'), createLangText('中文过程', 'zh')],
+      shortDescription: [createLangText('Fallback')],
+    };
+    const originalData = JSON.parse(JSON.stringify(nodeData));
+
+    expect(genLifeCycleModelNodeName(nodeData, 'zh')).toBe('中文过程');
+    expect(nodeData).toEqual(originalData);
+  });
+});
+
 describe('genLifeCycleModelData', () => {
   it('should derive node and port labels based on language preferences', () => {
     const sample = {
@@ -1025,6 +1112,30 @@ describe('genLifeCycleModelData', () => {
     expect(result.nodes[0].ports.items[0].attrs.text.text).toBe('');
     expect(result.nodes[0].ports.items[0].attrs.text.title).toBeUndefined();
     expect(result.edges).toEqual([]);
+  });
+
+  it('should render multilingual node labels without rewriting xflow data', () => {
+    const label = [createLangText('English process'), createLangText('中文过程', 'zh')];
+    const sample = {
+      xflow: {
+        nodes: [
+          {
+            id: 'node-multilingual',
+            width: 350,
+            data: {
+              id: 'process-id',
+              label,
+            },
+          },
+        ],
+      },
+    };
+    const originalLabel = JSON.parse(JSON.stringify(label));
+
+    const result = genLifeCycleModelData(sample as any, 'zh');
+
+    expect(result.nodes[0].label).toBe('中文过程');
+    expect(sample.xflow.nodes[0].data.label).toEqual(originalLabel);
   });
 
   it('should prefer node.size.width and attrs text when textLang is missing', () => {

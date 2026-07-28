@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Reviewed for Issue #657 release integration: the closure preflight and service-backed task feed do not change frontend-side allocation, scaling, or LCIA semantics.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change allocation, scaling, submodel, or LCIA semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

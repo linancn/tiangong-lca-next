@@ -31,6 +31,7 @@ import type {
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
+  genLifeCycleModelNodeName,
   genPortLabel,
   getLifeCycleModelPortFlowVersion,
 } from '@/services/lifeCycleModels/util';
@@ -43,7 +44,6 @@ import type {
   ProcessDetailByVersionResponse,
   ProcessDetailResponse,
 } from '@/services/processes/data';
-import { genProcessName } from '@/services/processes/util';
 import { getUserTeamId } from '@/services/roles/api';
 import { getUserId } from '@/services/users/api';
 import {
@@ -561,10 +561,10 @@ const ToolbarEdit: FC<Props> = ({
   }, [graph, syncGraphData]);
 
   const buildNodeTools = useCallback(
-    (nodeLabel: any, nodeWidth: number, isReference: boolean) =>
+    (nodeData: LifeCycleModelGraphNode['data'], nodeWidth: number, isReference: boolean) =>
       buildEditorNodeTools({
         isReference,
-        nodeLabel,
+        nodeData,
         nodeWidth,
         refTool,
         nonRefTool,
@@ -1249,7 +1249,7 @@ const ToolbarEdit: FC<Props> = ({
   useGraphEvent('node:change:size', (evt) => {
     const node = evt.node;
     const nodeWidth = node.getSize().width;
-    const label = genProcessName(node?.data?.label, lang);
+    const label = genLifeCycleModelNodeName(node?.data, lang);
     const newItems = node?.getPorts()?.map((item: LifeCycleModelPortItem) => {
       const itemText = getLangText(item?.data?.textLang, lang);
       const itemTextWithAllocation = getPortLabelWithAllocation(

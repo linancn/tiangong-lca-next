@@ -26,9 +26,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
-lastReviewedNote: 'Reviewed for promotion #690: canonical artifact idempotence remains isolated while reproducing generator-required Git reference context.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 preserves full-closure ownership and adds one user-authorized, exact-digest additive read-only request-guard exception.'
 ---
 
 # Testing Strategy
@@ -51,13 +51,13 @@ lastReviewedNote: 'Reviewed for promotion #690: canonical artifact idempotence r
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests
 - proof should be risk-proportional and scoped-first: micro-edits use focused checks, coherent batches use subsystem audits, and the repository full gate runs once for the final committed controlled checkpoint
-- documentation screenshot capture is a separate, on-demand product-evidence workflow: keep its plan/security/access logic unit-heavy and its synthetic Chromium canary outside the semantic localization proof and release matrix
+- documentation screenshot capture is a separate, on-demand product-evidence workflow: Next supplies only the source-bound product profile and stable locators, while workspace owns profile compilation, plan/security/access, run-scoped base-origin logic, and the synthetic Chromium canary outside the semantic localization proof and release matrix
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
 - generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
-- semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, but any future digest drift or route/source/runtime/auth/cleanup change must still fail closed
+- semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, and an explicit release-owner decision may cover one promotion candidate only when its complete config/package/source/unit-test identity is pinned and the full gate passes; any future digest or tree drift must fail closed
 
 ## Operating Principles
 
@@ -66,7 +66,7 @@ lastReviewedNote: 'Reviewed for promotion #690: canonical artifact idempotence r
 - make strategy changes explicit
 - keep focused Umi-generating tests, coverage, and full gates serial; shared generated state makes parallel execution invalid evidence
 - keep data workflow fixture relationships explicit so expected-result Markdown remains reviewable instead of becoming an opaque snapshot set
-- keep semantic localization browser evidence credential-free and non-visual: screenshots, traces, videos, and persisted auth artifacts are disabled; the isolated docs-impact capture executor is the only documentation-image surface and never changes those release-E2E defaults
+- keep semantic localization browser evidence credential-free and non-visual: screenshots, traces, videos, and persisted auth artifacts are disabled; the workspace-owned docs-impact capture engine is the only documentation-image surface and never changes those release-E2E defaults
 - dead branches should be removed instead of defended by artificial tests
 
 ## Integration Testing North Star

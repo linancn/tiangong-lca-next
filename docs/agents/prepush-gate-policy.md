@@ -29,9 +29,9 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
-lastReviewedNote: 'Reviewed for promotion #690: the full gate idempotence clone now reproduces generator-required remote refs under detached CI checkout.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 keeps the main-target and managed-push policy while binding the user-authorized E2E skip to an exact release-candidate identity.'
 ---
 
 # Pre-Push Gate Policy
@@ -64,11 +64,13 @@ Production-effective workflows separately run `npm run reference-data:production
 
 Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
 
-The docs-impact screenshot executor is a third, isolated Playwright surface. `npm run docs:screenshot:test` protects its plan, secret-file, path, read-only action, and access-classification contracts; the on-demand `docs:screenshot:capture` command uses `playwright.docs-capture.config.ts`. Neither command joins the routine pre-push/release gate, and neither changes semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
+Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
 Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
-For a reviewed change that affects only non-browser-semantic release-harness generation or formatting, `docs/plans/i18n/semantic-e2e-digest-compatibility.json` may attest an exact old/new digest pair instead of rerunning authenticated production E2E. This is not a wildcard or path exclusion: it binds the existing evidence commit, owner Issue, current digest, focused proof commands, and automatic sunset at the next verified evidence for that SHA. Any further drift or any browser/source/runtime/authorization/cleanup change remains a hard production-readiness failure.
+For a reviewed change that affects only non-browser-semantic release-harness generation or formatting, `docs/plans/i18n/semantic-e2e-digest-compatibility.json` may attest an exact old/new digest pair instead of rerunning authenticated production E2E. An explicit user decision may also authorize the separate `reviewed-read-only-request-guard-expansion` scope, which is valid only for the production request-guard file and its paired unit-test proof, only for additive named read-only endpoints, and only with focused guard-suite proof. Neither scope is a wildcard or path exclusion: every entry binds the existing evidence commit, owner Issue, current digest, focused proof commands, and automatic sunset at the next verified evidence for that SHA. Any further drift or any route, source/runtime, package dependency, authorization, production mutation, or cleanup change remains a hard production-readiness failure.
+
+Issue #703 additionally carries an explicit release-owner decision to skip the authenticated E2E rerun for the v0.0.62 candidate. Its one-time record binds exact complete `config`, package-manifest, `src`, and `tests/unit` identities and requires `release:preflight` plus the full managed `prepush:gate`. It is not a reusable flag: any tree drift fails, and route coverage, E2E harness, package-lock, runtime assets, backend target, and safety invariants remain outside the waiver.
 
 ## Scope
 
@@ -106,7 +108,7 @@ It does not own:
 - any coverage collection exclusions must be explicit, reviewed, and paired with focused verification of the affected user-visible wrapper flows
 - data workflow fixture expansions stay under the existing `tests/**` docpact trigger; they do not change the protected-branch gate policy unless the actual hook, CI command, or coverage bar changes
 - semantic E2E keeps its local candidate frontend on a loopback URL, derives locales from registries, disables screenshot/trace/video/auth artifacts, and keeps every semantic E2E GitHub Actions run credential-free/read-only
-- docs-impact capture remains on-demand and isolated from semantic E2E; it accepts only an external absolute mode-`0600` secret-file pointer, blocks non-authentication mutations, and writes screenshots only under an explicit next-docs output root
+- docs-impact capture remains on-demand and isolated from semantic E2E; workspace tooling owns its external absolute mode-`0600` account file, mandatory run-scoped origin, non-auth mutation guard, and explicit next-docs output roots, while Next owns only the source-bound profile consumed from the exact rendered commit
 - an authorized local production-data run is rejected before Docker when host `CI` or `GITHUB_ACTIONS` is set; after the local check passes, the controller clears only those image-inherited markers at container runtime and still requires `E2E_AUTHENTICATED=true`, `E2E_ALLOW_PRODUCTION_DATA=true`, and the exact one-process confirmation token; `E2E_WRITE_VERIFIED_EVIDENCE=true` separately opts into tracked evidence. It writes its intent ledger before create; cleanup verifies the production row UUID, authenticated owner, and all five multilingual-field markers across registry authoring languages before exact-ID deletion, then proves `created=cleaned` and `leaked=0`
 - Header Umi `SelectLang` remains `reload={false}` so same-document locale refresh and delayed old-response race behavior stay browser-verifiable
 - historical German review commands may remain explicit compatibility gates, but active locale/context/quality/correction/activation and `npm run prepush:gate` must never read ignored confirmation files

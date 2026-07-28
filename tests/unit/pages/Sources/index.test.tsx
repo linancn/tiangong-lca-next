@@ -54,7 +54,7 @@ jest.mock('umi', () => ({
 jest.mock('@/services/sources/api', () => ({
   __esModule: true,
   getSourceTableAll: (...args: any[]) => mockGetSourceTableAll(...args),
-  getSourceTablePgroongaSearch: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
+  source_hybrid_search: (...args: any[]) => mockGetSourceTablePgroongaSearch(...args),
   getSourceTableUuidMentionSearch: (...args: any[]) => mockGetSourceTableUuidMentionSearch(...args),
 }));
 

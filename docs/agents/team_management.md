@@ -19,9 +19,9 @@ checkPaths:
   - src/pages/Teams/**
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
-lastReviewedNote: 'Reviewed #635 locale-driven review-table reloads and canonical English compliance descriptions; team roles and management permissions are unchanged.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering changes no team role, permission, or management flow.'
 ---
 
 # Team Management Reference

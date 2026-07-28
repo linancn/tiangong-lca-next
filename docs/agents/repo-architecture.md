@@ -23,12 +23,11 @@ checkPaths:
   - docker/**
   - scripts/e2e/**
   - playwright.config.ts
-  - playwright.docs-capture.config.ts
-  - scripts/docs-screenshots/**
+  - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 0e35be718eb5c16267f25035140447053669b567
-lastReviewedNote: 'Reviewed for Issue #682 promotion: retained the Issue #680 exact LCIA identity and release boundaries while incorporating the Issue #670 isolated docs screenshot executor and read-only trust boundary.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: closure execution failures remain distinct from curated domain issues and use only the safe task-summary.v2 projection for user-visible diagnostics.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -60,7 +59,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `scripts/reference-data/**` | deterministic classification/location generation and fail-closed evidence validation |
 | `scripts/e2e/**`, `docker/e2e/**` | test-only exact-candidate release-E2E orchestration, isolated environment, static server, preflight, diagnostics, and bounded continuation |
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
-| `playwright.docs-capture.config.ts`, `scripts/docs-screenshots/**` | local-operator-only, read-only documentation screenshot capture; validated plans, external secret-file loading, mutation interception, 144-DPI PNG output, and sanitized access/result evidence |
+| `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
 | other `docker/**` paths | self-hosted sync helpers and mirrors |
 | `electron/**` | desktop packaging surface |
@@ -81,6 +80,7 @@ Rules:
 - app locale, content language, service-query language, and reference-resource language are separate boundaries. Content reading priorities, backend-query fallbacks, and reference-resource delivery states are declared independently; a native reference overlay exists only after its exact structure/evidence gate passes. Documentation, legal, and public-doc surfaces keep their separately disclosed fallbacks
 - anonymous SPA access is limited to the explicit login/recovery allowlist. Root/Welcome, every other configured application route, case variants, and unmatched paths require the session guard and redirect anonymous users to the canonical login route; authenticated unmatched paths may render the localized 404. Role gates defer missing-session decisions to that global redirect, then enforce their role only after a user exists, so they cannot replace login with an anonymous 403. Localization route/view coverage records this access context but must never broaden it. Authenticated redirects that drive localized query/hash views must preserve their URL state
 - query-, hash-, path-, loading-, empty-, error-, and retry-driven visible states belong to the locale catalog just like the default page view; pages and reusable components must not hide service failures behind a successful empty state
+- Contact, FlowProperty, Source, and UnitGroup keyword searches use `src/services/general/hybridSearch.ts` and their four allowlisted Hybrid Edge Functions. UUID-mention and empty-keyword list paths remain on their existing RPCs. The shared service forwards the current user JWT plus query/filter/paging and optional state/team context, returns Team Data as a genuine empty result when no team is selected, and preserves transport/auth/mapping failures as `success: false` instead of presenting them as empty data
 - computed message IDs must belong to an exact enumerated family that either proves a closed-world producer or implements a localized runtime fallback before an unknown value is formatted; opaque backend diagnostics are not locale keys
 - static bundles are read through consuming services, not directly by pages
 - governed classification/location bundles are generated from `reference-resource-manifest.json`, one stable base per resource, and scoped language overlays; `generatedManifest.ts`, gzip assets, cache revisions, prewarm lists, coverage, and digests are derived outputs verified by `npm run reference-data:check`
@@ -103,7 +103,7 @@ The task-center recovery path is:
 
 Next owns scope selection, command orchestration, curated closure-issue presentation, report download initiation, task-summary rendering, and deep-link navigation. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
 
-The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
+The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 
 ### Process Review-Submit Gate
 

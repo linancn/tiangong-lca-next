@@ -1,8 +1,8 @@
 import { attachStateCodesToRows, contributeSource } from '@/services/general/api';
 import {
   getSourceTableAll,
-  getSourceTablePgroongaSearch,
   getSourceTableUuidMentionSearch,
+  source_hybrid_search,
 } from '@/services/sources/api';
 import { Card, Checkbox, Col, Input, Row, Space, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
@@ -466,7 +466,7 @@ const TableList: FC = () => {
               }
               if (currentKeyWord.length > 0) {
                 return attachReviewState(
-                  await getSourceTablePgroongaSearch(
+                  await source_hybrid_search(
                     requestParams,
                     lang,
                     dataSource,

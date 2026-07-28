@@ -18,10 +18,18 @@ import type {
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
+  genLifeCycleModelNodeName,
   genPortLabel,
 } from '@/services/lifeCycleModels/util';
-import { getProcessesByIdAndVersion } from '@/services/processes/api';
-import { genProcessName } from '@/services/processes/util';
+import {
+  getLifeCycleModelGraphProcessReferences,
+  normalizeLifeCycleModelGraphForDisplay,
+} from '@/services/lifeCycleModels/viewCompatibility';
+import {
+  getProcessDetailByIdAndVersion,
+  getProcessesByIdAndVersion,
+} from '@/services/processes/api';
+import type { ProcessDetailByVersionItem } from '@/services/processes/data';
 import { ActionType } from '@ant-design/pro-components';
 import { message, Space, Spin, theme } from 'antd';
 import type { FC } from 'react';
@@ -302,9 +310,19 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     items: [],
   };
 
-  const buildReadOnlyNodeTools = (nodeWidth: number, nodeLabel: unknown, isReference: boolean) => [
+  const buildReadOnlyNodeTools = (
+    nodeWidth: number,
+    nodeData: LifeCycleModelGraphNode['data'],
+    isReference: boolean,
+  ) => [
     isReference ? refTool : '',
-    nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang, readOnlyCursor),
+    nodeTitleTool(
+      nodeWidth,
+      genLifeCycleModelNodeName(nodeData, lang) ?? '',
+      token,
+      lang,
+      readOnlyCursor,
+    ),
     inputFlowTool,
     outputFlowTool,
   ];
@@ -408,36 +426,33 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
     resizeToolRefreshTimerRef.current = setTimeout(() => {
       node.removeTools?.();
       node.addTools(
-        buildReadOnlyNodeTools(
-          nodeWidth,
-          node?.data?.label,
-          node?.data?.quantitativeReference === '1',
-        ),
+        buildReadOnlyNodeTools(nodeWidth, node?.data, node?.data?.quantitativeReference === '1'),
         { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
       );
       resizeToolRefreshTimerRef.current = null;
     }, 0);
   });
 
-  const getProcessInstances = async (
+  const getProcessDisplayData = async (
     jsonTg: LifeCycleModelJsonTg,
-  ): Promise<LifeCycleModelProcessInstance[]> => {
-    const params: { id: string; version: string }[] = [];
-    jsonTg?.xflow?.nodes?.forEach((node) => {
-      const nodeId = node?.data?.id;
-      const nodeVersion = node?.data?.version;
-      if (nodeId && nodeVersion) {
-        params.push({
-          id: nodeId,
-          version: nodeVersion,
-        });
-      }
-    });
-    if (params.length > 0) {
-      const procresses = await getProcessesByIdAndVersion(params);
-      return (procresses.data ?? []) as LifeCycleModelProcessInstance[];
+  ): Promise<{
+    processInstances: LifeCycleModelProcessInstance[];
+    processDetails: ProcessDetailByVersionItem[];
+  }> => {
+    const params = getLifeCycleModelGraphProcessReferences(jsonTg);
+    if (params.length === 0) {
+      return { processInstances: [], processDetails: [] };
     }
-    return [];
+
+    const [processInstancesResult, processDetailsResult] = await Promise.all([
+      getProcessesByIdAndVersion(params).catch(() => ({ data: [] })),
+      getProcessDetailByIdAndVersion(params).catch(() => ({ data: [] })),
+    ]);
+
+    return {
+      processInstances: (processInstancesResult.data ?? []) as LifeCycleModelProcessInstance[],
+      processDetails: (processDetailsResult.data ?? []) as ProcessDetailByVersionItem[],
+    };
   };
 
   const canonicalAppLocale =
@@ -483,7 +498,17 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
           const nextJsonTg = result.data?.json_tg ?? {};
           setInfoData({ ...fromData, id: id });
           setJsonTg(nextJsonTg);
-          const model = genLifeCycleModelData(nextJsonTg, lang);
+          const { processInstances: nextProcessInstances, processDetails } =
+            await getProcessDisplayData(nextJsonTg);
+          if (!isCurrentResolution()) {
+            return;
+          }
+          const displayJsonTg = normalizeLifeCycleModelGraphForDisplay({
+            jsonTg: nextJsonTg,
+            lifeCycleModelDataSet: result.data?.json?.lifeCycleModelDataSet,
+            processDetails,
+          });
+          const model = genLifeCycleModelData(displayJsonTg, lang);
           const initNodes = (model?.nodes ?? []).map((node: LifeCycleModelGraphNode) => {
             return {
               ...node,
@@ -533,7 +558,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
               },
               tools: buildReadOnlyNodeTools(
                 node?.size?.width ?? node?.width ?? 350,
-                node?.data?.label,
+                node?.data,
                 node?.data?.quantitativeReference === '1',
               ),
             };
@@ -577,11 +602,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
             edges: initEdges,
           });
           setNodeCount(initNodes.length);
-
-          const nextProcessInstances = await getProcessInstances(nextJsonTg);
-          if (isCurrentResolution()) {
-            setProcessInstances(nextProcessInstances);
-          }
+          setProcessInstances(nextProcessInstances);
         })
         .finally(() => {
           if (isCurrentResolution()) {
@@ -618,7 +639,7 @@ const ToolbarView: FC<Props> = ({ id, version, lang, drawerVisible }) => {
       updateNode(node.id ?? '', {
         tools: buildReadOnlyNodeTools(
           node?.size?.width ?? node?.width ?? 350,
-          node?.data?.label,
+          node?.data,
           node?.data?.quantitativeReference === '1',
         ),
       });

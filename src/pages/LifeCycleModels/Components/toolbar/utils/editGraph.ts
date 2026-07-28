@@ -8,13 +8,13 @@ import type {
   LifeCycleModelSelectedPortPayload,
   LifeCycleModelThemeToken,
 } from '@/services/lifeCycleModels/data';
-import { genPortLabel } from '@/services/lifeCycleModels/util';
+import { genLifeCycleModelNodeName, genPortLabel } from '@/services/lifeCycleModels/util';
 import type {
   ProcessDetailByVersionItem,
   ProcessDetailResponse,
   ProcessExchangeData,
 } from '@/services/processes/data';
-import { genProcessFromData, genProcessName, genProcessNameJson } from '@/services/processes/util';
+import { genProcessFromData, genProcessNameJson } from '@/services/processes/util';
 import type { Edge as X6Edge, Node as X6Node } from '@antv/x6';
 import { getEdgeLabel, type EdgeLabelText } from './edge';
 import {
@@ -91,7 +91,7 @@ const buildDisplayPortItem = (
 
 export const buildEditorNodeTools = ({
   isReference,
-  nodeLabel,
+  nodeData,
   nodeWidth,
   refTool,
   nonRefTool,
@@ -101,11 +101,11 @@ export const buildEditorNodeTools = ({
   lang,
 }: ToolbarToolContext & {
   isReference: boolean;
-  nodeLabel: unknown;
+  nodeData: LifeCycleModelGraphNode['data'];
   nodeWidth: number;
 }) => [
   isReference ? refTool : nonRefTool,
-  nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang),
+  nodeTitleTool(nodeWidth, genLifeCycleModelNodeName(nodeData, lang) ?? '', token, lang),
   inputFlowTool,
   outputFlowTool,
 ];
@@ -131,7 +131,7 @@ export const buildLocalizedGraphNodeVisualUpdate = ({
     tools: buildEditorNodeTools({
       ...toolContext,
       isReference: node.data?.quantitativeReference === '1',
-      nodeLabel: node.data?.label,
+      nodeData: node.data,
       nodeWidth,
     }),
   };
@@ -139,7 +139,7 @@ export const buildLocalizedGraphNodeVisualUpdate = ({
 
 const buildProcessNodeTools = ({
   isReference,
-  nodeLabel,
+  nodeData,
   nodeWidth,
   refTool,
   nonRefTool,
@@ -149,10 +149,10 @@ const buildProcessNodeTools = ({
   lang,
 }: ToolbarToolContext & {
   isReference: boolean;
-  nodeLabel: unknown;
+  nodeData: LifeCycleModelGraphNode['data'];
   nodeWidth: number;
 }) => [
-  nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? '', token, lang),
+  nodeTitleTool(nodeWidth, genLifeCycleModelNodeName(nodeData, lang) ?? '', token, lang),
   isReference ? refTool : nonRefTool,
   inputFlowTool,
   outputFlowTool,
@@ -160,7 +160,11 @@ const buildProcessNodeTools = ({
 
 export const normalizePastedReferenceCells = (
   cells: Array<X6Node | X6Edge>,
-  buildNodeTools: (nodeLabel: unknown, nodeWidth: number, isReference: boolean) => any[],
+  buildNodeTools: (
+    nodeData: LifeCycleModelGraphNode['data'],
+    nodeWidth: number,
+    isReference: boolean,
+  ) => any[],
   fallbackWidth: number,
 ) => {
   cells.forEach((cell) => {
@@ -179,7 +183,7 @@ export const normalizePastedReferenceCells = (
       ...nodeData,
       quantitativeReference: '0',
     });
-    node.addTools(buildNodeTools(nodeData?.label, nodeWidth, false), { reset: true });
+    node.addTools(buildNodeTools(nodeData, nodeWidth, false), { reset: true });
   });
 };
 
@@ -367,20 +371,21 @@ export const buildProcessNodesFromDetails = ({
     const processDataSet = data?.json?.processDataSet;
     const name = processDataSet?.processInformation?.dataSetInformation?.name ?? {};
     const isReference = nodeCount === 0 && index === 0;
+    const nodeData: LifeCycleModelGraphNode['data'] = {
+      id: data.id,
+      version: data?.version,
+      label: name,
+      shortDescription: genProcessNameJson(name),
+      quantitativeReference: isReference ? '1' : '0',
+    };
 
     return {
       ...nodeTemplate,
       id: createId(),
-      data: {
-        id: data.id,
-        version: data?.version,
-        label: name,
-        shortDescription: genProcessNameJson(name),
-        quantitativeReference: isReference ? '1' : '0',
-      },
+      data: nodeData,
       tools: buildProcessNodeTools({
         isReference,
-        nodeLabel: name,
+        nodeData,
         nodeWidth: nodeTemplate.width ?? 350,
         refTool,
         nonRefTool,
@@ -416,6 +421,12 @@ export const buildUpdatedNodeReferencePayload = ({
   const newLabel = processDataSet?.processInformation?.dataSetInformation?.name ?? {};
   const newShortDescription = genProcessNameJson(newLabel);
   const newVersion = result.data?.version ?? '';
+  const newNodeData: LifeCycleModelGraphNode['data'] = {
+    ...node.data,
+    label: newLabel,
+    shortDescription: newShortDescription,
+    version: newVersion,
+  };
   const exchanges = (genProcessFromData(processDataSet ?? {})?.exchanges?.exchange ??
     []) as ProcessExchangeData[];
   const newItems = (node?.ports?.items ?? []).map((item: LifeCycleModelPortItem) => {
@@ -485,15 +496,10 @@ export const buildUpdatedNodeReferencePayload = ({
   });
 
   return {
-    data: {
-      ...node.data,
-      label: newLabel,
-      shortDescription: newShortDescription,
-      version: newVersion,
-    },
+    data: newNodeData,
     tools: buildEditorNodeTools({
       isReference: node?.data?.quantitativeReference === '1',
-      nodeLabel: newLabel,
+      nodeData: newNodeData,
       nodeWidth,
       refTool,
       nonRefTool,
@@ -574,7 +580,7 @@ export const hydrateEditorNodes = ({
       },
       tools: buildEditorNodeTools({
         isReference: node?.data?.quantitativeReference === '1',
-        nodeLabel: node?.data?.label,
+        nodeData: node?.data,
         nodeWidth,
         refTool,
         nonRefTool,

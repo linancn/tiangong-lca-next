@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Reviewed for Issue #657 release integration: the data-product closure preflight and unified task feed do not change the proposed analysis views, chart rules, or traceability contract.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change the proposed analysis views, chart rules, or traceability contract.'
 ---
 
 # LCA Analysis And Visualization Plan

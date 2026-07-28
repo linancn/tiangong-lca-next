@@ -20,8 +20,7 @@ checkPaths:
   - .docpact/config.yaml
   - package.json
   - playwright.config.ts
-  - playwright.docs-capture.config.ts
-  - scripts/docs-screenshots/**
+  - config/docs-capture/**
   - scripts/e2e/**
   - docker/e2e/**
   - tests/e2e/i18n/**
@@ -29,9 +28,9 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-24
-lastReviewedCommit: 1c675782784e698cc5ea17546fda07d96e1c68ff
-lastReviewedNote: 'Reviewed for promotion #690: locale artifact idempotence reproduces required remote refs so the same command works in detached CI and developer checkouts.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion and bounded request-guard evidence exception use the existing Node 24 bootstrap, main-relative Docpact, focused proof, and managed-push commands.'
 ---
 
 # Development Bootstrap
@@ -104,8 +103,6 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
 | direct/focused semantic localization E2E development | `npm run e2e:dev -- <Playwright arguments>` (`npm run test:e2e:i18n` remains the CI-compatible alias) |
-| validate docs screenshot capture contracts | `npm run docs:screenshot:test` |
-| capture governed docs screenshots | `npm run docs:screenshot:capture -- --plan <plan.json> --result <result.json> --access-report <access.json> --allowed-output-root <next-docs-root>` |
 | install the isolated release E2E environment | `npm run e2e:env:install` |
 | read-only release E2E environment diagnosis | `npm run e2e:env:doctor` |
 | run an exact committed release candidate | `npm run e2e:release -- <release options>` |
@@ -160,11 +157,11 @@ The controller first refuses this production-data command when the host has `CI`
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
-- documentation capture is a separate local operator workflow configured by `playwright.docs-capture.config.ts`; it must not inherit semantic-E2E credentials, fixtures, release evidence, or browser profiles
-- set `DOCS_SCREENSHOT_ENV_FILE` to an external regular file with mode `0600`; that file may contain only the fixed login keys accepted by the capture contract and must never be committed, copied into a worktree, or named in a command argument
-- a capture plan must declare one explicit shared browser locale; it may navigate, click, wait, assert, and apply explicitly read-only filters, while the browser guard aborts other POST/PUT/PATCH/DELETE requests except the declared authentication/session exchange
-- missing or invalid credentials, login failure, route drift, or an uncorroborated denial fail the capture. Only a sanitized access report proving that a read-only identity response exactly matches the configured screenshot account plus an authoritative authorization denial may let the docs-impact workflow continue as a Draft PR without a required screenshot
-- after capture, inspect every final PNG for private data and set the result's privacy review to complete before handing the evidence to `next-docs`
+- documentation capture is a separate local operator workflow: this repository supplies only `config/docs-capture/profile.v1.json`, stable semantic locators, and its exact UI runtime
+- the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces
+- the workspace wrapper must load the profile from the same exact Next commit that it starts as the render target; a profile from current `main` must not control a historical UI
+- the profile is declarative and contains no account values, ports, browser state, output paths, or executable screenshot code
+- changing a profile locator, login contract, authorization probe, readiness path, or runtime command requires the workspace v2 compiler tests and an authorized end-to-end canary
 - use `npm run start:main` only when the task explicitly requires the `main` environment
 - direct semantic E2E development is configured by `playwright.config.ts`, runs from `tests/e2e/i18n/**`, and serves the local worktree with `npm run start:main`; `E2E_BASE_URL` must remain a loopback URL
 - release E2E accepts only a clean committed Next candidate, exports it with `git archive`, builds one production bundle in the digest-pinned Playwright image, serves that immutable bundle internally, and never mounts `lca-workspace`, `.git`, unrelated submodules, host dependencies, or browser profiles

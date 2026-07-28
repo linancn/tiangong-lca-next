@@ -15,8 +15,8 @@ import { SUPPORTED_CONTENT_LANGUAGES } from '@/services/general/contentLanguageR
 
 const mockGetLangText = jest.fn();
 const mockGenPortLabel = jest.fn();
+const mockGenLifeCycleModelNodeName = jest.fn();
 const mockGenProcessFromData = jest.fn();
-const mockGenProcessName = jest.fn();
 const mockGenProcessNameJson = jest.fn();
 const mockGetEdgeLabel = jest.fn();
 const mockGetPortLabelWithAllocation = jest.fn();
@@ -31,13 +31,13 @@ jest.mock('@/services/general/util', () => ({
 
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
+  genLifeCycleModelNodeName: (...args: any[]) => mockGenLifeCycleModelNodeName(...args),
   genPortLabel: (...args: any[]) => mockGenPortLabel(...args),
 }));
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
   genProcessFromData: (...args: any[]) => mockGenProcessFromData(...args),
-  genProcessName: (...args: any[]) => mockGenProcessName(...args),
   genProcessNameJson: (...args: any[]) => mockGenProcessNameJson(...args),
 }));
 
@@ -76,8 +76,8 @@ describe('toolbar/utils/editGraph', () => {
     mockGenPortLabel.mockImplementation(
       (label: string, lang: string, width: number) => `PORT:${label}:${lang}:${width}`,
     );
-    mockGenProcessName.mockImplementation(
-      (label: any, lang: string) => `PROC:${lang}:${String(label)}`,
+    mockGenLifeCycleModelNodeName.mockImplementation(
+      (nodeData: any, lang: string) => `PROC:${lang}:${String(nodeData?.label)}`,
     );
     mockGenProcessNameJson.mockImplementation((label: any) => `PROC_JSON:${String(label)}`);
     mockGetEdgeLabel.mockImplementation(
@@ -101,7 +101,7 @@ describe('toolbar/utils/editGraph', () => {
   it('builds editor node tools and normalizes pasted reference nodes only', () => {
     const tools = buildEditorNodeTools({
       isReference: true,
-      nodeLabel: 'Process A',
+      nodeData: { label: 'Process A' },
       nodeWidth: 240,
       refTool,
       nonRefTool,
@@ -121,7 +121,7 @@ describe('toolbar/utils/editGraph', () => {
     expect(
       buildEditorNodeTools({
         isReference: false,
-        nodeLabel: 'Process B',
+        nodeData: { label: 'Process B' },
         nodeWidth: 180,
         refTool,
         nonRefTool,
@@ -156,7 +156,11 @@ describe('toolbar/utils/editGraph', () => {
       350,
     );
 
-    expect(buildNodeTools).toHaveBeenCalledWith('A', 350, false);
+    expect(buildNodeTools).toHaveBeenCalledWith(
+      { label: 'A', quantitativeReference: '1' },
+      350,
+      false,
+    );
     expect(referenceNode.setData).toHaveBeenCalledWith({
       label: 'A',
       quantitativeReference: '0',
@@ -187,8 +191,8 @@ describe('toolbar/utils/editGraph', () => {
     mockGetLangText.mockImplementation((value: any[], language: string) => {
       return value.find((item) => item['@xml:lang'] === language)?.['#text'];
     });
-    mockGenProcessName.mockImplementation((value: any[], language: string) => {
-      return value.find((item) => item['@xml:lang'] === language)?.['#text'];
+    mockGenLifeCycleModelNodeName.mockImplementation((nodeData: any, language: string) => {
+      return nodeData?.label.find((item: any) => item['@xml:lang'] === language)?.['#text'];
     });
     const node = {
       id: 'node-localized',
@@ -999,11 +1003,11 @@ describe('toolbar/utils/editGraph', () => {
   });
 
   it('covers nullish fallbacks in display and title builders', () => {
-    mockGenProcessName.mockReturnValueOnce(undefined);
+    mockGenLifeCycleModelNodeName.mockReturnValueOnce(undefined);
     expect(
       buildEditorNodeTools({
         isReference: false,
-        nodeLabel: undefined,
+        nodeData: undefined,
         nodeWidth: 160,
         refTool,
         nonRefTool,
@@ -1071,7 +1075,11 @@ describe('toolbar/utils/editGraph', () => {
     };
     const buildNodeTools = jest.fn(() => ['fallback-tools']);
     normalizePastedReferenceCells([defaultWidthNode as any], buildNodeTools, 0);
-    expect(buildNodeTools).toHaveBeenCalledWith('Fallback Width', 350, false);
+    expect(buildNodeTools).toHaveBeenCalledWith(
+      { label: 'Fallback Width', quantitativeReference: '1' },
+      350,
+      false,
+    );
 
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGetPortLabelWithAllocation.mockReturnValueOnce('');
@@ -1115,7 +1123,7 @@ describe('toolbar/utils/editGraph', () => {
     mockGenProcessFromData.mockReturnValueOnce({ exchanges: { exchange: [] } });
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGetPortLabelWithAllocation.mockReturnValueOnce('');
-    mockGenProcessName.mockReturnValueOnce(undefined);
+    mockGenLifeCycleModelNodeName.mockReturnValueOnce(undefined);
     expect(
       buildProcessNodesFromDetails({
         details: [{ id: 'proc-fallback', json: {} }] as any,

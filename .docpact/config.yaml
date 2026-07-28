@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-24'
-lastReviewedCommit: '1c675782784e698cc5ea17546fda07d96e1c68ff'
-lastReviewedNote: 'Reviewed for promotion #690: existing testing-gate rules cover reproduction of generator-required remote refs inside the detached idempotence clone.'
+lastReviewedAt: '2026-07-28'
+lastReviewedCommit: '816c80b36debf5e75b2d5609c5241a05b04bde89'
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion adds one user-authorized, exact-digest compatibility scope for an additive production read-only request-guard expansion without changing routing or ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
@@ -53,7 +53,7 @@ ownership:
           - tests/e2e/**
           - .gitignore
           - playwright.config.ts
-          - playwright.docs-capture.config.ts
+          - config/docs-capture/**
           - package.json
           - .nvmrc
           - jest.config.cjs
@@ -66,7 +66,6 @@ ownership:
           - scripts/validate-lcia-cache.cjs
           - scripts/prepush-gate-receipt.cjs
           - scripts/e2e/**
-          - scripts/docs-screenshots/**
           - scripts/i18n/**
           - scripts/reference-data/**
       ownerRepo: next
@@ -107,7 +106,7 @@ coverage:
     - tests/e2e/**
     - .gitignore
     - playwright.config.ts
-    - playwright.docs-capture.config.ts
+    - config/docs-capture/**
     - package.json
     - .nvmrc
     - jest.config.cjs
@@ -120,7 +119,6 @@ coverage:
     - scripts/validate-lcia-cache.cjs
     - scripts/prepush-gate-receipt.cjs
     - scripts/e2e/**
-    - scripts/docs-screenshots/**
     - scripts/i18n/**
     - scripts/reference-data/**
   exclude:
@@ -164,7 +162,7 @@ routing:
       paths:
         - package.json
         - playwright.config.ts
-        - playwright.docs-capture.config.ts
+        - config/docs-capture/**
         - .nvmrc
         - jest.config.cjs
         - .husky/pre-push
@@ -177,7 +175,6 @@ routing:
         - scripts/prepush-gate-receipt.cjs
         - scripts/i18n/**
         - scripts/reference-data/**
-        - scripts/docs-screenshots/**
         - tests/**
         - tests/e2e/**
         - docs/plans/i18n/semantic-e2e-evidence.schema.json
@@ -423,8 +420,6 @@ rules:
         kind: locale-fallback-contract
       - path: playwright.config.ts
         kind: semantic-e2e-config
-      - path: playwright.docs-capture.config.ts
-        kind: docs-screenshot-config
       - path: tests/e2e/i18n/**
         kind: semantic-e2e-proof
       - path: .github/workflows/i18n-semantic-e2e.yml
@@ -601,8 +596,8 @@ rules:
         kind: test-gate
       - path: scripts/e2e/**
         kind: semantic-e2e-runner
-      - path: scripts/docs-screenshots/**
-        kind: docs-screenshot-runner
+      - path: config/docs-capture/**
+        kind: source-bound-docs-capture-profile
       - path: scripts/i18n/**
         kind: test-gate
       - path: scripts/reference-data/**

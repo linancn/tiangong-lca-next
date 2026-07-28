@@ -2277,6 +2277,14 @@ const LcaTaskCenter: React.FC = () => {
                         <Typography.Text type='secondary' style={{ fontSize: 12 }}>
                           {task.progressLabel ?? `Worker job ${task.id}`}
                         </Typography.Text>
+                        {task.runState === 'failed' && task.errorSummary ? (
+                          <Typography.Text
+                            type='danger'
+                            style={{ fontSize: 12, overflowWrap: 'anywhere' }}
+                          >
+                            {task.errorSummary}
+                          </Typography.Text>
+                        ) : null}
                       </Space>
                       <Typography.Text style={{ fontSize: 13 }}>
                         {formatDateTime(task.updatedAt, intl)}
