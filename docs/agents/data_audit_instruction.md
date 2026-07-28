@@ -18,9 +18,9 @@ checkPaths:
   - docs/agents/data_audit_instruction.md
   - src/pages/Review/**
   - src/pages/ManageSystem/**
-lastReviewedAt: 2026-07-19
-lastReviewedCommit: a3c63306da7f6e4665158aeb0744f578c0e32050
-lastReviewedNote: 'Reviewed #635 locale-driven review-table reloads and canonical English compliance descriptions; audit state codes and transitions are unchanged.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: review-page node title rendering changes no audit state code or workflow transition.'
 ---
 
 # Audit Status Reference

@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Reviewed for Issue #657 release integration: the closure preflight and service-backed task feed do not change frontend-side allocation, scaling, or LCIA semantics.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: display-only lifecycle-model node label compatibility does not change allocation, scaling, submodel, or LCIA semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

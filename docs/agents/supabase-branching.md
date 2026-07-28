@@ -22,9 +22,9 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: b7eff6c1644af4009bafe3f5ee4d031fd4109bbe
-lastReviewedNote: 'Reviewed for Issue #698: foundation-dataset Hybrid Search keeps frontend JWT/state/team shaping in Next, runtime orchestration in Edge, and visibility/RPC/index truth in database-engine.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: read-only lifecycle-model rendering does not change environment or backend ownership, while #698 Hybrid Search keeps JWT/query shaping in Next and orchestration/schema truth in their owning repos.'
 ---
 
 # Supabase Environment And Database Workflow

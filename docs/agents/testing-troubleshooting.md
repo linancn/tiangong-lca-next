@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: retain #690 detached-CI remote-ref recovery and the later rule that browser execution diagnostics belong to workspace tooling.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: existing Watchman/coverage recovery remains sufficient together with #690 detached-CI remote-ref recovery and workspace-owned browser diagnostics.'
 ---
 
 # Testing Troubleshooting

@@ -25,9 +25,9 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: b7eff6c1644af4009bafe3f5ee4d031fd4109bbe
-lastReviewedNote: 'Reviewed for Issue #698: Contact, FlowProperty, Source, and UnitGroup keyword entrypoints now share the reviewed Hybrid service boundary while UUID and empty-query paths remain unchanged.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the lifecycle-model resolver remains in the existing service/page layers and the #698 foundation-dataset searches retain the shared Hybrid service boundary.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

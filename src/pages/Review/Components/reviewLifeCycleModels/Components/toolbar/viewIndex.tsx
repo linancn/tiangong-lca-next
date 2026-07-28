@@ -6,12 +6,18 @@ import { resolveContentLanguage } from '@/services/general/contentLanguageRegist
 import { initVersion } from '@/services/general/data';
 import { formatDateTime } from '@/services/general/util';
 import { getLifeCycleModelDetail } from '@/services/lifeCycleModels/api';
+import type { LifeCycleModelGraphNode } from '@/services/lifeCycleModels/data';
 import {
   genLifeCycleModelData,
   genLifeCycleModelInfoFromData,
+  genLifeCycleModelNodeName,
   genNodeLabel,
 } from '@/services/lifeCycleModels/util';
-import { genProcessName } from '@/services/processes/util';
+import {
+  getLifeCycleModelGraphProcessReferences,
+  normalizeLifeCycleModelGraphForDisplay,
+} from '@/services/lifeCycleModels/viewCompatibility';
+import { getProcessDetailByIdAndVersion } from '@/services/processes/api';
 import { Space, Spin, theme } from 'antd';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'umi';
@@ -314,9 +320,13 @@ const ToolbarView: FC<Props> = ({
     items: [],
   };
 
-  const buildReadOnlyNodeTools = (nodeWidth: number, nodeLabel: unknown, isReference: boolean) => [
+  const buildReadOnlyNodeTools = (
+    nodeWidth: number,
+    nodeData: LifeCycleModelGraphNode['data'],
+    isReference: boolean,
+  ) => [
     isReference ? refTool : '',
-    nodeTitleTool(nodeWidth, genProcessName(nodeLabel, lang) ?? ''),
+    nodeTitleTool(nodeWidth, genLifeCycleModelNodeName(nodeData, lang) ?? ''),
     inputFlowTool,
     outputFlowTool,
   ];
@@ -392,11 +402,7 @@ const ToolbarView: FC<Props> = ({
     resizeToolRefreshTimerRef.current = setTimeout(() => {
       node.removeTools?.();
       node.addTools(
-        buildReadOnlyNodeTools(
-          nodeWidth,
-          node?.data?.label,
-          node?.data?.quantitativeReference === '1',
-        ),
+        buildReadOnlyNodeTools(nodeWidth, node?.data, node?.data?.quantitativeReference === '1'),
         { ...VISUAL_ONLY_MUTATION_OPTIONS, reset: true },
       );
       resizeToolRefreshTimerRef.current = null;
@@ -468,7 +474,17 @@ const ToolbarView: FC<Props> = ({
           result.data?.json?.lifeCycleModelDataSet ?? {},
         );
         setInfoData({ ...fromData, id: id, version: version });
-        const model = genLifeCycleModelData(result.data?.json_tg ?? {}, lang);
+        const rawJsonTg = result.data?.json_tg ?? {};
+        const processReferences = getLifeCycleModelGraphProcessReferences(rawJsonTg);
+        const processDetailsResult = await getProcessDetailByIdAndVersion(processReferences).catch(
+          () => ({ data: [] }),
+        );
+        const displayJsonTg = normalizeLifeCycleModelGraphForDisplay({
+          jsonTg: rawJsonTg,
+          lifeCycleModelDataSet: result.data?.json?.lifeCycleModelDataSet,
+          processDetails: processDetailsResult.data ?? [],
+        });
+        const model = genLifeCycleModelData(displayJsonTg, lang);
         let initNodes = (model?.nodes ?? []).map((node: any) => {
           return {
             ...node,
@@ -509,7 +525,7 @@ const ToolbarView: FC<Props> = ({
             },
             tools: buildReadOnlyNodeTools(
               node?.size?.width ?? node?.width ?? 350,
-              node?.data?.label,
+              node?.data,
               node?.data?.quantitativeReference === '1',
             ),
           };

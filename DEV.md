@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: the existing Node 24 and managed-push workflow remains current, including #690 detached-clone remote-ref reproduction and the later Hybrid Search proof path.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the Node 24, focused proof, build, detached-clone locale generation, and managed-push workflow remain current.'
 ---
 
 # Development Bootstrap

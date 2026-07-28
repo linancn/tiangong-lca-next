@@ -365,6 +365,7 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
 
 const mockGenLifeCycleModelData = jest.fn().mockReturnValue({ json: {} });
 const mockGenLifeCycleModelInfoFromData = jest.fn().mockReturnValue({});
+const mockGenLifeCycleModelNodeName = jest.fn().mockReturnValue('Updated Process');
 const mockGenNodeLabel = jest.fn().mockReturnValue('Node Label');
 const mockGenPortLabel = jest.fn().mockReturnValue('Port Label');
 const resolveMockPortFlowVersion = (node: any, portId: string) =>
@@ -375,6 +376,7 @@ jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelData: (...args: any[]) => mockGenLifeCycleModelData(...args),
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
+  genLifeCycleModelNodeName: (...args: any[]) => mockGenLifeCycleModelNodeName(...args),
   genNodeLabel: (...args: any[]) => mockGenNodeLabel(...args),
   genPortLabel: (...args: any[]) => mockGenPortLabel(...args),
   getLifeCycleModelPortFlowVersion: (...args: any[]) =>
@@ -392,13 +394,11 @@ jest.mock('@/services/processes/api', () => ({
 }));
 
 const mockGenProcessFromData = jest.fn().mockReturnValue({ exchanges: { exchange: [] } });
-const mockGenProcessName = jest.fn().mockReturnValue('Updated Process');
 const mockGenProcessNameJson = jest.fn().mockReturnValue('updated-process');
 
 jest.mock('@/services/processes/util', () => ({
   __esModule: true,
   genProcessFromData: (...args: any[]) => mockGenProcessFromData(...args),
-  genProcessName: (...args: any[]) => mockGenProcessName(...args),
   genProcessNameJson: (...args: any[]) => mockGenProcessNameJson(...args),
 }));
 
@@ -501,7 +501,7 @@ beforeEach(() => {
     },
   });
   mockGenProcessFromData.mockReset().mockReturnValue({ exchanges: { exchange: [] } });
-  mockGenProcessName.mockReset().mockReturnValue('Updated Process');
+  mockGenLifeCycleModelNodeName.mockReset().mockReturnValue('Updated Process');
   mockGenProcessNameJson.mockReset().mockReturnValue('updated-process');
   mockGetProcessDetailByIdAndVersion.mockReset().mockResolvedValue({ data: [] });
   mockGetLifeCycleModelDetail.mockReset().mockResolvedValue({
@@ -3210,7 +3210,7 @@ describe('ToolbarEdit', () => {
       prop: jest.fn(),
       addTools: jest.fn(),
     };
-    mockGenProcessName.mockReturnValueOnce(undefined);
+    mockGenLifeCycleModelNodeName.mockReturnValueOnce(undefined);
     mockGetLangText.mockReturnValueOnce(undefined);
     mockGenPortLabel.mockReturnValueOnce('');
     nodeResizeHandler({ node: resizeNode });
@@ -3288,7 +3288,7 @@ describe('ToolbarEdit', () => {
         },
       },
     ];
-    mockGenProcessName.mockReturnValueOnce(undefined);
+    mockGenLifeCycleModelNodeName.mockReturnValueOnce(undefined);
 
     render(<ToolbarEdit {...baseProps} />);
 

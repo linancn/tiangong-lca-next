@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: preserve #690 isolated-clone remote-ref proof and the later four-dataset Hybrid Search service, page, picker, and managed-gate proof.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: focused lifecycle-model proof remains valid alongside #690 isolated-clone checks, #698 Hybrid Search proof, lint, build, and the managed full gate.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

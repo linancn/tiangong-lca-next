@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: keep #690 detached-CI idempotence parity while retaining the later workspace-owned screenshot-proof boundary.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the lifecycle-model fix keeps the existing Docpact/full-gate triggers, #690 detached-CI parity, and workspace-owned screenshot-proof boundary.'
 ---
 
 # Pre-Push Gate Policy

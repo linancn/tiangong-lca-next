@@ -128,20 +128,35 @@ jest.mock('@/services/lifeCycleModels/api', () => ({
   getLifeCycleModelDetail: (...args: any[]) => mockGetLifeCycleModelDetail(...args),
 }));
 
+const mockGetLifeCycleModelGraphProcessReferences = jest.fn((jsonTg: any) =>
+  (jsonTg?.xflow?.nodes ?? [])
+    .map((node: any) => ({ id: node?.data?.id, version: node?.data?.version }))
+    .filter((item: any) => item.id && item.version),
+);
+const mockNormalizeLifeCycleModelGraphForDisplay = jest.fn(({ jsonTg }: any) => jsonTg);
+jest.mock('@/services/lifeCycleModels/viewCompatibility', () => ({
+  __esModule: true,
+  getLifeCycleModelGraphProcessReferences: (...args: any[]) =>
+    mockGetLifeCycleModelGraphProcessReferences(...args),
+  normalizeLifeCycleModelGraphForDisplay: (...args: any[]) =>
+    mockNormalizeLifeCycleModelGraphForDisplay(...args),
+}));
+
+const mockGetProcessDetailByIdAndVersion = jest.fn();
+jest.mock('@/services/processes/api', () => ({
+  __esModule: true,
+  getProcessDetailByIdAndVersion: (...args: any[]) => mockGetProcessDetailByIdAndVersion(...args),
+}));
+
 const mockGenLifeCycleModelInfoFromData = jest.fn((dataset: any) => dataset);
 const mockGenLifeCycleModelData = jest.fn();
+const mockGenLifeCycleModelNodeName = jest.fn((nodeData: any) => nodeData?.label ?? 'process-name');
 jest.mock('@/services/lifeCycleModels/util', () => ({
   __esModule: true,
   genLifeCycleModelInfoFromData: (...args: any[]) => mockGenLifeCycleModelInfoFromData(...args),
   genLifeCycleModelData: (...args: any[]) => mockGenLifeCycleModelData(...args),
+  genLifeCycleModelNodeName: (...args: any[]) => mockGenLifeCycleModelNodeName(...args),
   genNodeLabel: jest.fn((label: string) => label),
-}));
-
-const mockGenProcessName = jest.fn((label: any) => label ?? 'process-name');
-
-jest.mock('@/services/processes/util', () => ({
-  __esModule: true,
-  genProcessName: (...args: any[]) => mockGenProcessName(...args),
 }));
 
 jest.mock('@/services/general/data', () => ({
@@ -157,7 +172,9 @@ jest.mock('@/services/general/util', () => ({
 describe('ReviewLifeCycleModelToolbarView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGenProcessName.mockImplementation((label: any) => label ?? 'process-name');
+    mockGenLifeCycleModelNodeName.mockImplementation(
+      (nodeData: any) => nodeData?.label ?? 'process-name',
+    );
     mockGraphStoreState = {
       initData: mockInitData,
       updateNode: mockUpdateNode,
@@ -247,6 +264,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       ],
       error: null,
     });
+    mockGetProcessDetailByIdAndVersion.mockResolvedValue({ data: [] });
     mockGenLifeCycleModelData.mockReturnValue({
       nodes: [
         {
@@ -518,7 +536,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       data: [{ json: {} }],
       error: null,
     });
-    mockGenProcessName.mockImplementation((label: any) => label);
+    mockGenLifeCycleModelNodeName.mockImplementation((nodeData: any) => nodeData?.label);
     mockGenLifeCycleModelData.mockReturnValue({
       nodes: [
         {
@@ -658,6 +676,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
   });
 
   it('merges comment-only review data when the base review payload is missing', async () => {
+    mockGetProcessDetailByIdAndVersion.mockResolvedValueOnce({});
     mockGetLifeCycleModelDetail.mockResolvedValue({
       data: {
         json: {
@@ -699,6 +718,7 @@ describe('ReviewLifeCycleModelToolbarView', () => {
       data: [],
       error: null,
     });
+    mockGetProcessDetailByIdAndVersion.mockRejectedValueOnce(new Error('detail lookup failed'));
     mockGenLifeCycleModelData.mockReturnValue(undefined);
 
     render(
@@ -794,8 +814,8 @@ describe('ReviewLifeCycleModelToolbarView', () => {
     expect(mockUpdateEdge).toHaveBeenCalledWith('', { selected: false });
   });
 
-  it('falls back to empty tool labels when genProcessName returns undefined', async () => {
-    mockGenProcessName.mockImplementation(() => undefined);
+  it('falls back to empty tool labels when node-name resolution returns undefined', async () => {
+    mockGenLifeCycleModelNodeName.mockImplementation(() => undefined);
 
     render(
       <ToolbarView

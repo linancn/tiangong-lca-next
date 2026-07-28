@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: keep #690 explicit remote-ref reproduction in isolated idempotence clones while profile compilation and browser proof remain workspace-owned.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: direct utility/component tests remain the right node-title proof while #690 isolated-idempotence clones retain explicit remote-ref reproduction.'
 ---
 
 # Testing Patterns Reference

@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: canonical artifact idempotence retains #690 Git-context parity while profile compilation and synthetic capture proof remain workspace-owned.'
+lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: lifecycle-model regression coverage preserves full closure alongside #690 locale-artifact Git-context parity and workspace-owned capture proof.'
 ---
 
 # Testing Strategy

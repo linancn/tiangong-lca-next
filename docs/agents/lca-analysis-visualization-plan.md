@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-07-23
-lastReviewedCommit: 74b36dfcb6abc66623a058873c42a653108f2ac9
-lastReviewedNote: 'Reviewed for Issue #657 release integration: the data-product closure preflight and unified task feed do not change the proposed analysis views, chart rules, or traceability contract.'
+lastReviewedAt: 2026-07-27
+lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
+lastReviewedNote: 'Reviewed for Issue #696: lifecycle-model canvas label resolution does not change the proposed analysis views, chart rules, or traceability contract.'
 ---
 
 # LCA Analysis And Visualization Plan

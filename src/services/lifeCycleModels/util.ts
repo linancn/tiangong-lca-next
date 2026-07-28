@@ -19,6 +19,7 @@ import type {
   FormLifeCycleModel,
   LifeCycleModelGraphEdge,
   LifeCycleModelGraphNode,
+  LifeCycleModelNodeData,
   LifeCycleModelPortGroup,
 } from './data';
 import { toReferenceProcessKey, toReferenceProcessNumber } from './referenceProcess';
@@ -125,6 +126,74 @@ const resolveConnectionFlowVersion = ({
 export function genNodeLabel(label: string, lang: string, nodeWidth: number) {
   const labelSub = label?.substring(0, nodeWidth / getContentGraphTextWidthDivisor(lang) - 4);
   return label !== labelSub ? labelSub + '...' : label;
+}
+
+const PROCESS_NAME_FIELDS = [
+  'baseName',
+  'treatmentStandardsRoutes',
+  'mixAndLocationTypes',
+  'functionalUnitFlowProperties',
+] as const;
+
+const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const resolveLocalizedNodeText = (value: unknown, lang: string): string | undefined => {
+  if (!Array.isArray(value) && !(isObjectRecord(value) && '#text' in value)) {
+    return undefined;
+  }
+
+  const localizedText = getLangText(value, lang);
+  return localizedText === '-' ? undefined : localizedText;
+};
+
+const resolveNodeFallbackText = (value: unknown, lang: string): string | undefined => {
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : undefined;
+  }
+
+  return resolveLocalizedNodeText(value, lang);
+};
+
+export function genLifeCycleModelNodeName(
+  nodeData: LifeCycleModelNodeData | undefined,
+  lang: string,
+): string {
+  const label = nodeData?.label;
+
+  if (isObjectRecord(label) && PROCESS_NAME_FIELDS.some((fieldName) => fieldName in label)) {
+    const processName = genProcessName(label, lang);
+    if (processName !== '-') {
+      return processName;
+    }
+  }
+
+  const localizedLabel = resolveLocalizedNodeText(label, lang);
+  if (localizedLabel) {
+    return localizedLabel;
+  }
+
+  const shortDescription = resolveNodeFallbackText(nodeData?.shortDescription, lang);
+  if (shortDescription) {
+    return shortDescription;
+  }
+
+  if (typeof label === 'string') {
+    const normalizedLabel = label.trim();
+    if (normalizedLabel.length > 0) {
+      return normalizedLabel;
+    }
+  }
+
+  if (typeof nodeData?.id === 'string') {
+    const normalizedId = nodeData.id.trim();
+    if (normalizedId.length > 0) {
+      return normalizedId;
+    }
+  }
+
+  return '-';
 }
 
 export function genPortLabel(label: string, lang: string, nodeWidth: number) {
@@ -996,7 +1065,7 @@ export function genLifeCycleModelData(data: any, lang: string) {
     nodes:
       data?.xflow?.nodes?.map((node: any) => {
         const nodeWidth = node?.size?.width ?? node?.width ?? 350;
-        const label = genProcessName(node?.data?.label, lang);
+        const label = genLifeCycleModelNodeName(node?.data, lang);
         return {
           ...node,
           label: genNodeLabel(label, lang, nodeWidth),
