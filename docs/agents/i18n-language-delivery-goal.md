@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: preserve the semantic E2E contract while documenting the explicit user-authorized, exact-digest additive production read-only request-guard exception.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the fresh authenticated proof supersedes the active skip waiver while preserving exact cleanup, credential-free CI, and the existing language-delivery contract.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

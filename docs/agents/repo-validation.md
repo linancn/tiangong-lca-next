@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 retains the main-candidate and managed-push gates while recording the user-authorized E2E skip as an exact release-candidate identity.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the authorized production run, exact cleanup, canonical evidence, focused proof, artifact idempotence, release preflight, and managed-push gates remain the required closure.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 adds the bounded recovery path for a user-authorized additive read-only request-guard digest change.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: canonical regeneration and exact harness mappings resolve post-evidence drift, fresh evidence retires the active waiver, and #704 retains the resume repair.'
 ---
 
 # Testing Troubleshooting

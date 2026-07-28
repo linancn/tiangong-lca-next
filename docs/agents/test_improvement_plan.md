@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: v0.0.62 preserves full-closure ownership and adds one user-authorized, exact-digest additive read-only request-guard exception.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence sunsets the one-time waiver and redundant pairs without expanding browser scope; #704 retains the isolated harness repairs.'
 ---
 
 # Testing Strategy

@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion follows the M2/release/integration contracts and records the user-authorized request-guard evidence exception in the owning validation docs.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence and waiver sunset preserve repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

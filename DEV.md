@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion and bounded request-guard evidence exception use the existing Node 24 bootstrap, main-relative Docpact, focused proof, and managed-push commands.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, and managed push remain unchanged.'
 ---
 
 # Development Bootstrap

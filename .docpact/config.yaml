@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-28'
-lastReviewedCommit: '816c80b36debf5e75b2d5609c5241a05b04bde89'
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion adds one user-authorized, exact-digest compatibility scope for an additive production read-only request-guard expansion without changing routing or ownership.'
+lastReviewedAt: "2026-07-28"
+lastReviewedCommit: "61b2158f9de009278371bb40e0217160933025cb"
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh production evidence supersedes the active #703 waiver and stale digest pairs without changing routing or ownership; #704 retains the runner repairs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

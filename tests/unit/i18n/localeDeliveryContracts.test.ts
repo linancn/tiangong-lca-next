@@ -892,8 +892,8 @@ describe('shared locale delivery contracts', () => {
       { ownerIssue: string; reviewedAt: string; scope: string; requiredProof: string }
     > = {
       'scripts/i18n/locale-delivery.mjs': {
-        ownerIssue: '#688',
-        reviewedAt: '2026-07-24',
+        ownerIssue: '#703',
+        reviewedAt: '2026-07-28',
         scope: 'non-browser-semantic-release-harness-only',
         requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
@@ -931,22 +931,16 @@ describe('shared locale delivery contracts', () => {
       },
     };
     expect(compatibility.schemaVersion).toBe('tiangong.i18n-semantic-e2e-digest-compatibility.v1');
-    expect(compatibility.entries.map(({ path: entryPath }: any) => entryPath).sort()).toEqual(
-      [
-        'scripts/i18n/locale-delivery.mjs',
-        'tests/e2e/i18n/evidence-reporter.ts',
-        'tests/e2e/i18n/production-request-guard.ts',
-        'tests/unit/e2e/evidenceReporter.test.ts',
-        'tests/unit/e2e/productionRequestGuard.test.ts',
-        'tests/unit/i18n/localeDeliveryContracts.test.ts',
-      ].sort(),
-    );
+    const entryPaths = compatibility.entries.map(({ path: entryPath }: any) => entryPath);
+    expect(new Set(entryPaths).size).toBe(entryPaths.length);
     for (const entry of compatibility.entries) {
       const expectedReview = expectedReviews[entry.path];
       expect(expectedReview).toBeDefined();
       const evidenceEntry = evidence.digests.tests.find(
         ({ path: evidencePath }: any) => evidencePath === entry.path,
       );
+      expect(evidenceEntry).toBeDefined();
+      expect(evidenceEntry.sha256).not.toBe(sha256File(entry.path));
       expect(entry).toEqual(
         expect.objectContaining({
           evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
@@ -963,32 +957,7 @@ describe('shared locale delivery contracts', () => {
         }),
       );
     }
-    expect(compatibility.releaseCandidateWaivers).toEqual([
-      expect.objectContaining({
-        scope: 'user-authorized-release-candidate-e2e-skip',
-        ownerIssue: '#703',
-        reviewedAt: '2026-07-28',
-        evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
-        evidenceCandidateIdentity: {
-          configTreeDigest: evidence.candidate.configTreeDigest,
-          packageManifestDigest: evidence.candidate.packageManifestDigest,
-          sourceTreeDigest: evidence.candidate.sourceTreeDigest,
-          unitTestTreeDigest: evidence.candidate.unitTestTreeDigest,
-        },
-        compatibleCandidateIdentity: {
-          configTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
-          packageManifestDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
-          sourceTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
-          unitTestTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
-        },
-        proofCommands: expect.arrayContaining([
-          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts tests/unit/i18n/localeDeliveryContracts.test.ts --runInBand --no-coverage',
-          'npm run release:preflight',
-          'npm run prepush:gate',
-        ]),
-        sunset: 'next-verified-evidence-for-compatible-sha',
-      }),
-    ]);
+    expect(compatibility.releaseCandidateWaivers).toEqual([]);
   });
 
   it('requires the production locale gate in the release workflow', () => {
