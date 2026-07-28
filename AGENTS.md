@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: safe closure execution-failure presentation stays inside the existing Data Product page/service/task-center boundary and preserves branch, integration, and proof rules.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: exact evidence maintenance preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

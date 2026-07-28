@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering requires focused workbench/task-center tests, locale proof, lint, and build before the managed push gate.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: the authorized production run, exact cleanup, canonical evidence, focused contract proof, artifact idempotence, and release preflight satisfy this guide; #704 retains the two harness defects.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

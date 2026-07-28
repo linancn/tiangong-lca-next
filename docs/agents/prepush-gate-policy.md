@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: the Data Product UI change keeps the existing Docpact, locale-artifact, full-gate, managed-push, and release-boundary triggers.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: redundant compatibility records now fail closed and the single post-evidence test-only mapping remains within the existing managed-push policy.'
 ---
 
 # Pre-Push Gate Policy

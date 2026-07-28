@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
-lastReviewedNote: 'Reviewed for Issue #701: focused workbench and task-center behavior tests preserve the full-closure maintenance strategy and locale-artifact parity.'
+lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: rejecting redundant digest mappings strengthens the existing maintenance strategy without expanding browser scope, while #704 retains the two isolated harness repairs.'
 ---
 
 # Testing Strategy

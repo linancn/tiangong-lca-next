@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-28'
-lastReviewedCommit: 'df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c'
-lastReviewedNote: 'Reviewed for Issue #701: Data Product failure UI, locale artifacts, component tests, and task-center changes remain covered by the existing runtime, calculation-adjacent, locale, and testing routes.'
+lastReviewedAt: "2026-07-28"
+lastReviewedCommit: "d9d49546fd327f3913ac846cf5bf86c5eed10bb4"
+lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: three directly covered compatibility records sunset, the one remaining exact test-only pair stays under the existing rule graph, and #704 still owns the resume and writer repairs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

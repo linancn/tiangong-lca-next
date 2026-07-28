@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 318d7e87de3dc0890c34cd73893d73a5816b6f90
-lastReviewedNote: 'Reviewed for the #698 pre-promotion main-to-dev back-merge: preserve #690 generator-required remote refs and the later #693 workspace-owned capture boundary without changing the credential-free semantic E2E contract.'
+lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedNote: 'Reviewed for the authorized #698 production evidence refresh: the one-record write, exact cleanup, and credential-free CI boundary remain satisfied; #704 tracks resume dispatch and raw writer canonicality without changing this Goal contract.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
