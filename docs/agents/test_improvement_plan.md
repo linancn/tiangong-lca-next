@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: lifecycle-model regression coverage preserves full closure alongside #690 locale-artifact Git-context parity and workspace-owned capture proof.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: focused workbench and task-center behavior tests preserve the full-closure maintenance strategy and locale-artifact parity.'
 ---
 
 # Testing Strategy

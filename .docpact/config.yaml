@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-28'
-lastReviewedCommit: 'cf4d8b82d84035860d3dc47356a1a5e05b776ea0'
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: lifecycle-model compatibility preserves the newer #698 Hybrid Search, #690 detached-idempotence, docs-capture, locale, and testing routes.'
+lastReviewedCommit: 'df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c'
+lastReviewedNote: 'Reviewed for Issue #701: Data Product failure UI, locale artifacts, component tests, and task-center changes remain covered by the existing runtime, calculation-adjacent, locale, and testing routes.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

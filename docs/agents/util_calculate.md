@@ -20,9 +20,9 @@ checkPaths:
   - src/services/lca/**
   - src/components/LcaTaskCenter/**
   - src/pages/Processes/Analysis/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: display-only lifecycle-model node label compatibility does not change allocation, scaling, submodel, or LCIA semantics.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change allocation, scaling, submodel, or LCIA semantics.'
 ---
 
 # Lifecycle Model Calculation Reference

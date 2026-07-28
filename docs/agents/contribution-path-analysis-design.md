@@ -20,9 +20,9 @@ checkPaths:
   - docs/agents/util_calculate.md
   - src/pages/Processes/Analysis/**
   - src/components/LcaTaskCenter/**
-lastReviewedAt: 2026-07-27
-lastReviewedCommit: 64c0dfd77f266f5ddbc2e1976679d8d6f35a8b32
-lastReviewedNote: 'Reviewed for Issue #696: lifecycle-model canvas label resolution does not change the proposed async contribution-path result contract.'
+lastReviewedAt: 2026-07-28
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: Data Product closure failure rendering does not change the proposed async contribution-path result contract.'
 ---
 
 # Contribution Path Analysis Design

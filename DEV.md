@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the Node 24, focused proof, build, detached-clone locale generation, and managed-push workflow remain current.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: Node 24 setup, focused Jest, locale artifact generation, lint/build, Docpact, and managed-push workflow remain current.'
 ---
 
 # Development Bootstrap

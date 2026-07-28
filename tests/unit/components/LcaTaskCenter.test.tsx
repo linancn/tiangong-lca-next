@@ -1564,6 +1564,7 @@ describe('LcaTaskCenter', () => {
         title: 'Package failed',
         workerStatus: 'failed',
         runState: 'failed',
+        errorSummary: 'Result package materialization failed.',
         updatedAt: '2026-07-22T00:02:00Z',
       },
       {
@@ -1595,6 +1596,7 @@ describe('LcaTaskCenter', () => {
     expect(screen.getByText('Certificate: valid')).toBeInTheDocument();
     expect(screen.getByText('All rows scanned')).toBeInTheDocument();
     expect(screen.getByText('Worker job package-job')).toBeInTheDocument();
+    expect(screen.getByText('Result package materialization failed.')).toBeInTheDocument();
     expect(screen.getAllByText('Queued')).toHaveLength(4);
     expect(screen.getAllByRole('progressbar')).toHaveLength(5);
 
