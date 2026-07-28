@@ -610,6 +610,13 @@ const DataProcessing = () => {
     [dataProductTasks],
   );
   const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
+  const closureTask = useMemo(
+    () =>
+      closureCheck?.workerJob?.jobId
+        ? dataProductTasks.find((task) => task.jobId === closureCheck.workerJob?.jobId)
+        : undefined,
+    [closureCheck?.workerJob?.jobId, dataProductTasks],
+  );
   const [closurePrerequisiteUnavailable, setClosurePrerequisiteUnavailable] = useState(false);
   const [closureIssues, setClosureIssues] = useState<ClosureCheckIssueV1[]>([]);
   const [closureIssuesAfterIssueId, setClosureIssuesAfterIssueId] = useState<string | undefined>();
@@ -777,14 +784,14 @@ const DataProcessing = () => {
   );
 
   useEffect(() => {
-    if (!closureCheck?.closureCheckId) {
+    if (!closureCheck?.closureCheckId || !['passed', 'blocked'].includes(closureCheck.runStatus)) {
       setClosureIssues([]);
       setClosureIssuesAfterIssueId(undefined);
       setClosureIssuesError(null);
       return;
     }
     void loadClosureIssues();
-  }, [closureCheck?.closureCheckId, loadClosureIssues]);
+  }, [closureCheck?.closureCheckId, closureCheck?.runStatus, loadClosureIssues]);
 
   useEffect(() => {
     if (isAuthorized && activeTabKey === 'publication') {
@@ -1449,7 +1456,61 @@ const DataProcessing = () => {
                   )}
                 />
               ) : null}
-              {closureCheck ? (
+              {closureCheck?.runStatus === 'failed' ? (
+                <Alert
+                  type='error'
+                  message={
+                    <Space direction='vertical' size={2}>
+                      <strong>
+                        {t(
+                          'pages.dataProcessing.closure.executionFailed',
+                          'Data completeness check failed to run',
+                        )}
+                      </strong>
+                      <span>
+                        {closureTask?.errorSummary ??
+                          t(
+                            'pages.dataProcessing.closure.executionFailedFallback',
+                            'The check did not complete. Retry it; if it fails again, contact an administrator with the identifiers below.',
+                          )}
+                      </span>
+                      {closureCheck.workerJob?.errorCode ? (
+                        <span>
+                          {`${t(
+                            'pages.dataProcessing.closure.errorCode',
+                            'Error code',
+                          )}: ${closureCheck.workerJob.errorCode}`}
+                        </span>
+                      ) : null}
+                      {closureCheck.workerJob?.jobId ? (
+                        <span>
+                          {`${t(
+                            'pages.dataProcessing.closure.workerJobId',
+                            'Worker job ID',
+                          )}: ${closureCheck.workerJob.jobId}`}
+                        </span>
+                      ) : null}
+                    </Space>
+                  }
+                />
+              ) : closureCheck?.runStatus === 'cancelled' ? (
+                <Alert
+                  type='warning'
+                  message={t(
+                    'pages.dataProcessing.closure.executionCancelled',
+                    'Data completeness check was cancelled. Run a new check to continue.',
+                  )}
+                />
+              ) : closureCheck && ['queued', 'running'].includes(closureCheck.runStatus) ? (
+                <Alert
+                  type='info'
+                  message={t(
+                    'pages.dataProcessing.closure.executionPending',
+                    'The check is still running. Closure issues will be available after it completes.',
+                  )}
+                />
+              ) : null}
+              {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
                 <div className={styles.closureIssues} data-testid='closure-issues'>
                   <strong>{t('pages.dataProcessing.closure.issueList', 'Closure issues')}</strong>
                   {closureIssuesError ? <Alert type='error' message={closureIssuesError} /> : null}

@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: the lifecycle-model fix keeps the existing Docpact/full-gate triggers, #690 detached-CI parity, and workspace-owned screenshot-proof boundary.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: the Data Product UI change keeps the existing Docpact, locale-artifact, full-gate, managed-push, and release-boundary triggers.'
 ---
 
 # Pre-Push Gate Policy

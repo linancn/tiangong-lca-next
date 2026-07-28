@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: existing Watchman/coverage recovery remains sufficient together with #690 detached-CI remote-ref recovery and workspace-owned browser diagnostics.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: existing focused Jest, Umi serialization, locale-idempotence, and managed-gate recovery guidance remains sufficient.'
 ---
 
 # Testing Troubleshooting

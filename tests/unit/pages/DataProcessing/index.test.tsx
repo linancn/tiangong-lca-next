@@ -843,6 +843,98 @@ describe('DataProcessing page', () => {
     expect(screen.getByTestId('data-product-job-worker-job-1')).toBeInTheDocument();
   });
 
+  it('shows execution diagnostics instead of an empty issue result when closure execution fails', async () => {
+    mockGetClosureCheck.mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'failed',
+        certificateValidity: 'unavailable',
+        scanCompleteness: 'unknown',
+        workerJob: {
+          jobId: 'closure-worker-failed',
+          status: 'failed',
+          errorCode: 'scope_closure_execution_failed',
+        },
+      },
+      error: null,
+    });
+    mockDataProductTasks.push({
+      schemaVersion: 'task-summary.v2',
+      jobId: 'closure-worker-failed',
+      jobKind: 'lcia.scope_closure_check',
+      category: 'data_product',
+      workerStatus: 'failed',
+      runState: 'failed',
+      domainValidity: 'unknown',
+      projectionUpdatedAt: '2026-06-23T10:06:00Z',
+      title: 'Data completeness check',
+      errorSummary: 'TIDAS validation could not complete its issue stream.',
+      capabilities: {
+        canCancel: false,
+        canDownloadReport: false,
+        canOpenWorkbench: true,
+        canPreviewResult: false,
+      },
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByText('Data completeness check failed to run')).toBeInTheDocument();
+    expect(
+      screen.getByText('TIDAS validation could not complete its issue stream.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Error code: scope_closure_execution_failed')).toBeInTheDocument();
+    expect(screen.getByText('Worker job ID: closure-worker-failed')).toBeInTheDocument();
+    expect(screen.queryByText('No closure issues found.')).not.toBeInTheDocument();
+    expect(mockListClosureCheckIssues).not.toHaveBeenCalled();
+  });
+
+  it('uses the safe execution fallback when a failed closure check has no task projection', async () => {
+    mockGetClosureCheck.mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'failed',
+        certificateValidity: 'unavailable',
+        scanCompleteness: 'unknown',
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(
+      await screen.findByText(
+        'The check did not complete. Retry it; if it fails again, contact an administrator with the identifiers below.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/^Error code:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Worker job ID:/)).not.toBeInTheDocument();
+    expect(mockListClosureCheckIssues).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['cancelled', 'Data completeness check was cancelled. Run a new check to continue.'],
+    ['running', 'The check is still running. Closure issues will be available after it completes.'],
+  ])('shows the %s closure execution state without loading issues', async (runStatus, message) => {
+    mockGetClosureCheck.mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus,
+        certificateValidity: 'unavailable',
+        scanCompleteness: 'unknown',
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(mockListClosureCheckIssues).not.toHaveBeenCalled();
+  });
+
   it('shows a closure-issue loading error without blocking task history rendering', async () => {
     mockListClosureCheckIssues.mockResolvedValueOnce({
       data: null,

@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: lifecycle-model compatibility remains in the Next page/service boundary without changing the newer Hybrid Search, docs-capture, or branch-policy contracts.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: safe closure execution-failure presentation stays inside the existing Data Product page/service/task-center boundary and preserves branch, integration, and proof rules.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

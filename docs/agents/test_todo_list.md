@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: lifecycle-model paths retain full closure, #690 detached-CI locale-artifact parity remains intact, and the ordered coverage queue stays empty.'
+lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedNote: 'Reviewed for Issue #701: focused Data Product failure-state coverage keeps the ordered coverage queue empty; the managed push remains the final full-closure proof owner.'
 ---
 
 # Testing Execution State
