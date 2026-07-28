@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: rejecting redundant digest mappings strengthens the existing maintenance strategy without expanding browser scope, while #704 retains the two isolated harness repairs.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence sunsets the one-time waiver and redundant pairs without expanding browser scope; #704 retains the isolated harness repairs.'
 ---
 
 # Testing Strategy
@@ -57,7 +57,7 @@ lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset:
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
 - generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
-- semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, but any future digest drift or route/source/runtime/auth/cleanup change must still fail closed
+- semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, and an explicit release-owner decision may cover one promotion candidate only when its complete config/package/source/unit-test identity is pinned and the full gate passes; any future digest or tree drift must fail closed
 
 ## Operating Principles
 

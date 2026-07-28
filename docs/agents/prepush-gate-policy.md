@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: redundant compatibility records now fail closed and the single post-evidence test-only mapping remains within the existing managed-push policy.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence retires the active release-candidate waiver, exact non-browser mappings remain fail closed, and main-target managed-push policy is unchanged.'
 ---
 
 # Pre-Push Gate Policy
@@ -68,7 +68,9 @@ Docs-impact screenshot execution is an isolated workspace tooling surface. Next 
 
 Routine locale and pre-push checks validate the tracked semantic evidence record, schema, route/assertion closure, browser/locale coverage, cleanup result, and declared digest-path inventory without requiring its recorded file hashes to match the current checkout. Exact current backend, executable package-lock semantics, runtime-asset, semantic-test, and route/source digest matching belongs to the explicit production-readiness commands. The raw evidence lock must still match the lock at its recorded candidate commit; only the root application's release-version fields are removed from the deterministic cross-candidate comparison, while every dependency and remaining lock field stays fail-closed. The broad candidate `src/**` and `tests/unit/**` tree digests remain execution provenance only; production invalidation is driven by the narrower declared semantic evidence inputs.
 
-For a reviewed change that affects only non-browser-semantic release-harness generation or formatting, `docs/plans/i18n/semantic-e2e-digest-compatibility.json` may attest an exact old/new digest pair instead of rerunning authenticated production E2E. This is not a wildcard or path exclusion: it binds the existing evidence commit, owner Issue, current digest, focused proof commands, and automatic sunset at the next verified evidence for that SHA. Any further drift or any browser/source/runtime/authorization/cleanup change remains a hard production-readiness failure.
+For a reviewed change that affects only non-browser-semantic release-harness generation or formatting, `docs/plans/i18n/semantic-e2e-digest-compatibility.json` may attest an exact old/new digest pair instead of rerunning authenticated production E2E. An explicit user decision may also authorize the separate `reviewed-read-only-request-guard-expansion` scope, which is valid only for the production request-guard file and its paired unit-test proof, only for additive named read-only endpoints, and only with focused guard-suite proof. Neither scope is a wildcard or path exclusion: every entry binds the existing evidence commit, owner Issue, current digest, focused proof commands, and automatic sunset at the next verified evidence for that SHA. Any further drift or any route, source/runtime, package dependency, authorization, production mutation, or cleanup change remains a hard production-readiness failure.
+
+Issue #703 additionally carries an explicit release-owner decision to skip the authenticated E2E rerun for the v0.0.62 candidate. Its one-time record binds exact complete `config`, package-manifest, `src`, and `tests/unit` identities and requires `release:preflight` plus the full managed `prepush:gate`. It is not a reusable flag: any tree drift fails, and route coverage, E2E harness, package-lock, runtime assets, backend target, and safety invariants remain outside the waiver.
 
 ## Scope
 

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-28"
-lastReviewedCommit: "d9d49546fd327f3913ac846cf5bf86c5eed10bb4"
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after the #698 production evidence refresh: three directly covered compatibility records sunset, the one remaining exact test-only pair stays under the existing rule graph, and #704 still owns the resume and writer repairs.'
+lastReviewedCommit: "61b2158f9de009278371bb40e0217160933025cb"
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh production evidence supersedes the active #703 waiver and stale digest pairs without changing routing or ownership; #704 retains the runner repairs.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

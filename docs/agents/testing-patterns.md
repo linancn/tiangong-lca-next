@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
-lastReviewedNote: 'Reviewed for Issues #698 and #704 after compatibility sunset: exact mappings must represent a real evidence/current mismatch and retire when refreshed evidence covers them; #704 retains the canonical-writer and resume repairs.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: active waivers and exact mappings must represent real current mismatches and retire when fresh evidence covers them; #704 retains its repairs.'
 ---
 
 # Testing Patterns Reference
@@ -136,6 +136,8 @@ Browser semantic E2E pattern:
 - stage deliberately stale IndexedDB/localStorage fixtures on a same-origin static document before navigating to the tested deep link, and send menu-dismissal keys to the visible menu/trigger rather than ambient page focus; Firefox may retry one exact navigation only after its known cancellation failed to commit that target
 - disable screenshot, trace, video, and persisted/uploaded auth state; evidence contains only non-secret assertion results and content digests
 - treat adding a registry locale or changing a bound route/source/test or executable dependency lock as evidence invalidation, not as a request to reuse the old result; a package-lock root application-version-only change may reuse evidence only after the raw evidence lock is verified at its recorded commit and the deterministic dependency projection remains exact
+- when the user explicitly authorizes skipping E2E for an additive production request-guard expansion, bind only `tests/e2e/i18n/production-request-guard.ts` and its paired `tests/unit/e2e/productionRequestGuard.test.ts` proof to exact old/new digest pairs under `reviewed-read-only-request-guard-expansion`, require focused unit proof for every added read-only endpoint, and fail closed on any later digest drift
+- when a release owner explicitly authorizes skipping the full authenticated E2E rerun for a promotion, record one owner-Issue-bound `user-authorized-release-candidate-e2e-skip` identity covering the complete `config`, `src`, `tests/unit`, and package manifest trees; require the full pre-push gate, permit it only for source and unit-test bindings, and fail closed on any candidate-tree drift
 
 Documentation capture profile pattern:
 

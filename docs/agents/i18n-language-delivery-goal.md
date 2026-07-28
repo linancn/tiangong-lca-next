@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
-lastReviewedNote: 'Reviewed for the authorized #698 production evidence refresh: the one-record write, exact cleanup, and credential-free CI boundary remain satisfied; #704 tracks resume dispatch and raw writer canonicality without changing this Goal contract.'
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the fresh authenticated proof supersedes the active skip waiver while preserving exact cleanup, credential-free CI, and the existing language-delivery contract.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
@@ -629,7 +629,9 @@ route-view matrix 的每一 row 必须拥有稳定 `executableAssertionId`。观
 
 tracked semantic evidence 只允许包含非秘密 assertion 结果与 digest。常规 locale/pre-push 检查验证 evidence schema、记录结构、49-ID 完整闭包、每条 route/view/proof-scope 与 required-scenario 对应关系、registry locale 顺序、浏览器要求、cleanup counts 和声明的 digest path inventory，但不要求当前 checkout 与上次生产执行的文件 hash 相同。显式 production-readiness gate 另外验证当前 backend target、route contract、package-lock 可执行依赖语义、runtime assets 以及声明的 test/source digests；任一生产绑定输入变化、缺失或不一致都 fail closed。evidence 保留原始 package-lock digest，并先证明它与 `observedHeadCommit` 中的原始 lock 一致；跨候选的确定性投影只排除根应用自身的 release version 字段，dependency range、resolved version、integrity、registry、script 及其他 lock 字段仍全部 fail closed。完整 `src/**` 和 `tests/unit/**` tree digest 只保留为执行 provenance，不作为生产失效边界。计划中的 assertion 文案或匿名重定向只能证明其声明的 access boundary，不能冒充已登录页面内部本地化证据。
 
-只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
+通常只有在代码审阅已经证明变化仅属于 canonical formatting 或 locale artifact orchestration、完全不改变 browser assertion、route/source/runtime/auth/production-data/cleanup 语义时，才允许用 `docs/plans/i18n/semantic-e2e-digest-compatibility.json` 保存精确 evidence/current digest pair 来复用既有 browser evidence。另一个受限范围 `reviewed-read-only-request-guard-expansion` 只允许在用户明确授权跳过 E2E、改动仅向 production request guard 增加具名只读 endpoint、且 focused guard tests 覆盖全部新增 endpoint 时使用。每条记录必须绑定 observed evidence commit、owner Issue、focused proof commands 和 `next-verified-evidence-for-compatible-sha` sunset；当前 digest 再变化或任何未列出的绑定输入漂移时必须重新 fail closed，禁止建立通配路径、长期排除或手改 evidence JSON。
+
+Issue #703 的 v0.0.62 promotion 另有一次明确的 release-owner 授权，可以跳过完整 authenticated E2E。该授权只能通过 `user-authorized-release-candidate-e2e-skip` 保存为完整 `config`、package manifest、`src`、`tests/unit` tree identity，并要求 focused request-guard proof、`release:preflight` 与完整 `prepush:gate`；任何 tree drift 立即失效，且 route coverage、E2E harness、package lock、runtime assets、backend target 与 production safety 均不在授权范围内。
 
 ---
 
