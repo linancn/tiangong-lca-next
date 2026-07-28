@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence sunsets the one-time waiver and redundant pairs without expanding browser scope; #704 retains the isolated harness repairs.'
 ---
 

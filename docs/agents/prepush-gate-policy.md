@@ -30,7 +30,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: d9d49546fd327f3913ac846cf5bf86c5eed10bb4
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence retires the active release-candidate waiver, exact non-browser mappings remain fail closed, and main-target managed-push policy is unchanged.'
 ---
 

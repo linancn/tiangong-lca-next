@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-28
-lastReviewedCommit: 01da1f8af6ceb4afce3b1f957e43015dac3fd863
+lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the fresh authenticated proof supersedes the active skip waiver while preserving exact cleanup, credential-free CI, and the existing language-delivery contract.'
 baselineObservedAt: 2026-07-18
 related:
