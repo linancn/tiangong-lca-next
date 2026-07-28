@@ -949,7 +949,7 @@ function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, ex
   assertRecordShape(
     manifest,
     ['schemaVersion', 'entries'],
-    [],
+    ['releaseCandidateWaivers'],
     'Semantic E2E digest compatibility manifest',
   );
   if (
@@ -958,6 +958,20 @@ function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, ex
   ) {
     throw new Error('Semantic E2E digest compatibility manifest is invalid.');
   }
+  const allowedScopePaths = {
+    'non-browser-semantic-release-harness-only': new Set([
+      'scripts/i18n/locale-delivery.mjs',
+      'tests/e2e/i18n/evidence-reporter.ts',
+      'tests/unit/e2e/evidenceReporter.test.ts',
+      'tests/unit/i18n/localeDeliveryContracts.test.ts',
+    ]),
+    'reviewed-read-only-request-guard-expansion': new Set([
+      'tests/e2e/i18n/production-request-guard.ts',
+      'tests/unit/e2e/productionRequestGuard.test.ts',
+    ]),
+  };
+  const requestGuardProof =
+    'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage';
   const seen = new Set();
   for (const [index, entry] of manifest.entries.entries()) {
     assertRecordShape(
@@ -981,13 +995,15 @@ function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, ex
       !/^[0-9a-f]{40}$/u.test(entry.evidenceObservedHeadCommit ?? '') ||
       !/^[0-9a-f]{64}$/u.test(entry.evidenceSha256 ?? '') ||
       !/^[0-9a-f]{64}$/u.test(entry.compatibleSha256 ?? '') ||
-      entry.scope !== 'non-browser-semantic-release-harness-only' ||
+      !allowedScopePaths[entry.scope]?.has(entry.path) ||
       !/^#[0-9]+$/u.test(entry.ownerIssue ?? '') ||
       !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/u.test(entry.reviewedAt ?? '') ||
       entry.sunset !== 'next-verified-evidence-for-compatible-sha' ||
       !Array.isArray(entry.proofCommands) ||
       entry.proofCommands.length === 0 ||
-      entry.proofCommands.some((command) => typeof command !== 'string' || command.length === 0)
+      entry.proofCommands.some((command) => typeof command !== 'string' || command.length === 0) ||
+      (entry.scope === 'reviewed-read-only-request-guard-expansion' &&
+        !entry.proofCommands.includes(requestGuardProof))
     ) {
       throw new Error(
         `Semantic E2E digest compatibility manifest entry is invalid for ${entry.path ?? index}.`,
@@ -1005,6 +1021,76 @@ function reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, ex
       entry.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
       entry.evidenceSha256 === actualEntry.sha256 &&
       entry.compatibleSha256 === expectedEntry.sha256,
+  );
+}
+
+function reviewedReleaseCandidateWaiver(root, evidence) {
+  const manifest = readJson(root, SEMANTIC_E2E_DIGEST_COMPATIBILITY);
+  if (
+    !Array.isArray(manifest.releaseCandidateWaivers) ||
+    manifest.releaseCandidateWaivers.length !== 1
+  ) {
+    return false;
+  }
+  const waiver = manifest.releaseCandidateWaivers[0];
+  assertRecordShape(
+    waiver,
+    [
+      'scope',
+      'ownerIssue',
+      'reviewedAt',
+      'evidenceObservedHeadCommit',
+      'evidenceCandidateIdentity',
+      'compatibleCandidateIdentity',
+      'proofCommands',
+      'sunset',
+    ],
+    [],
+    'Semantic E2E release-candidate waiver',
+  );
+  const candidateIdentityKeys = [
+    'configTreeDigest',
+    'packageManifestDigest',
+    'sourceTreeDigest',
+    'unitTestTreeDigest',
+  ];
+  assertRecordShape(
+    waiver.evidenceCandidateIdentity,
+    candidateIdentityKeys,
+    [],
+    'Semantic E2E release-candidate evidence identity',
+  );
+  assertRecordShape(
+    waiver.compatibleCandidateIdentity,
+    candidateIdentityKeys,
+    [],
+    'Semantic E2E release-candidate compatible identity',
+  );
+  const currentCandidateIdentity = {
+    configTreeDigest: digestTree(root, 'config'),
+    packageManifestDigest: fileDigest(root, 'package.json'),
+    sourceTreeDigest: digestTree(root, 'src'),
+    unitTestTreeDigest: digestTree(root, 'tests/unit'),
+  };
+  const requiredProofCommands = [
+    'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts tests/unit/i18n/localeDeliveryContracts.test.ts --runInBand --no-coverage',
+    'npm run release:preflight',
+    'npm run prepush:gate',
+  ];
+  const evidenceCandidateIdentity = Object.fromEntries(
+    candidateIdentityKeys.map((key) => [key, evidence.candidate[key]]),
+  );
+  return (
+    waiver.scope === 'user-authorized-release-candidate-e2e-skip' &&
+    waiver.ownerIssue === '#703' &&
+    waiver.reviewedAt === '2026-07-28' &&
+    waiver.evidenceObservedHeadCommit === evidence.candidate.observedHeadCommit &&
+    waiver.sunset === 'next-verified-evidence-for-compatible-sha' &&
+    Array.isArray(waiver.proofCommands) &&
+    requiredProofCommands.every((command) => waiver.proofCommands.includes(command)) &&
+    JSON.stringify(waiver.evidenceCandidateIdentity) ===
+      JSON.stringify(evidenceCandidateIdentity) &&
+    JSON.stringify(waiver.compatibleCandidateIdentity) === JSON.stringify(currentCandidateIdentity)
   );
 }
 
@@ -1306,6 +1392,7 @@ function validateSemanticE2EEvidence(
     'Semantic E2E digests',
   );
   const expectedDigests = expectedSemanticEvidenceDigests(root, routeRows, evidenceContract);
+  const releaseCandidateWaiver = reviewedReleaseCandidateWaiver(root, evidence);
   assertRecordShape(
     evidence.digests.packageLock,
     ['path', 'sha256'],
@@ -1335,14 +1422,18 @@ function validateSemanticE2EEvidence(
     {
       requireCurrentBindings,
       digestCompatibility: (actualEntry, expectedEntry) =>
-        reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry),
+        reviewedSemanticTestDigestCompatibility(root, evidence, actualEntry, expectedEntry) ||
+        (expectedEntry.path.startsWith('tests/unit/') && releaseCandidateWaiver),
     },
   );
   assertExactFileDigests(
     evidence.digests.sources,
     expectedDigests.sources,
     'Semantic E2E source digests',
-    { requireCurrentBindings },
+    {
+      requireCurrentBindings,
+      digestCompatibility: () => releaseCandidateWaiver,
+    },
   );
 
   if (!Array.isArray(evidence.assertions)) {

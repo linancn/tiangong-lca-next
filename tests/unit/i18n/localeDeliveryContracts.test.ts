@@ -28,6 +28,23 @@ const sha256File = (relativePath: string) =>
     .update(fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath)))
     .digest('hex');
 
+const digestTree = (relativeDirectory: string) => {
+  const paths = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '--', relativeDirectory],
+    { cwd: REPOSITORY_ROOT, encoding: 'utf8' },
+  )
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .sort();
+  return createHash('sha256')
+    .update(
+      `${JSON.stringify(paths.map((relativePath) => ({ path: relativePath, sha256: sha256File(relativePath) })))}\n`,
+    )
+    .digest('hex');
+};
+
 describe('shared locale delivery contracts', () => {
   it('generates every locale artifact twice without inheriting source Git state', () => {
     const gitDir = execFileSync('git', ['rev-parse', '--absolute-git-dir'], {
@@ -782,6 +799,24 @@ describe('shared locale delivery contracts', () => {
     const coverage = readJson('docs/plans/i18n/route-view-coverage.json');
     const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
     const digestCompatibility = readJson(DIGEST_COMPATIBILITY_PATH);
+    const releaseCandidateWaiver = digestCompatibility.releaseCandidateWaivers?.[0];
+    const releaseCandidateWaiverReady =
+      releaseCandidateWaiver?.scope === 'user-authorized-release-candidate-e2e-skip' &&
+      releaseCandidateWaiver?.ownerIssue === '#703' &&
+      JSON.stringify(releaseCandidateWaiver.evidenceCandidateIdentity) ===
+        JSON.stringify({
+          configTreeDigest: evidence.candidate.configTreeDigest,
+          packageManifestDigest: evidence.candidate.packageManifestDigest,
+          sourceTreeDigest: evidence.candidate.sourceTreeDigest,
+          unitTestTreeDigest: evidence.candidate.unitTestTreeDigest,
+        }) &&
+      JSON.stringify(releaseCandidateWaiver.compatibleCandidateIdentity) ===
+        JSON.stringify({
+          configTreeDigest: digestTree('config'),
+          packageManifestDigest: sha256File('package.json'),
+          sourceTreeDigest: digestTree('src'),
+          unitTestTreeDigest: digestTree('tests/unit'),
+        });
     const compatibleDigest = ({ path: evidencePath, sha256 }: any) =>
       digestCompatibility.entries.some(
         (entry: any) =>
@@ -817,7 +852,10 @@ describe('shared locale delivery contracts', () => {
       boundFiles.every(
         ({ path: evidencePath, sha256 }: { path: string; sha256: string }) =>
           fs.existsSync(path.join(REPOSITORY_ROOT, evidencePath)) &&
-          (sha256File(evidencePath) === sha256 || compatibleDigest({ path: evidencePath, sha256 })),
+          (sha256File(evidencePath) === sha256 ||
+            compatibleDigest({ path: evidencePath, sha256 }) ||
+            (releaseCandidateWaiverReady &&
+              (evidencePath.startsWith('src/') || evidencePath.startsWith('tests/unit/')))),
       );
     const result = spawnSync(
       process.execPath,
@@ -846,25 +884,50 @@ describe('shared locale delivery contracts', () => {
     expect(result.stderr).not.toContain('file-specific-owner-confirmation-required');
   });
 
-  it('limits semantic E2E digest compatibility to exact reviewed release-harness inputs', () => {
+  it('limits semantic E2E digest compatibility to exact reviewed inputs and scopes', () => {
     const evidence = readJson('docs/plans/i18n/semantic-e2e-evidence.json');
     const compatibility = readJson(DIGEST_COMPATIBILITY_PATH);
-    const expectedReviews: Record<string, { ownerIssue: string; reviewedAt: string }> = {
+    const expectedReviews: Record<
+      string,
+      { ownerIssue: string; reviewedAt: string; scope: string; requiredProof: string }
+    > = {
       'scripts/i18n/locale-delivery.mjs': {
         ownerIssue: '#688',
         reviewedAt: '2026-07-24',
+        scope: 'non-browser-semantic-release-harness-only',
+        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
       'tests/e2e/i18n/evidence-reporter.ts': {
         ownerIssue: '#688',
         reviewedAt: '2026-07-24',
+        scope: 'non-browser-semantic-release-harness-only',
+        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
+      },
+      'tests/e2e/i18n/production-request-guard.ts': {
+        ownerIssue: '#703',
+        reviewedAt: '2026-07-28',
+        scope: 'reviewed-read-only-request-guard-expansion',
+        requiredProof:
+          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
+      },
+      'tests/unit/e2e/productionRequestGuard.test.ts': {
+        ownerIssue: '#703',
+        reviewedAt: '2026-07-28',
+        scope: 'reviewed-read-only-request-guard-expansion',
+        requiredProof:
+          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts --runInBand --no-coverage',
       },
       'tests/unit/e2e/evidenceReporter.test.ts': {
         ownerIssue: '#688',
         reviewedAt: '2026-07-24',
+        scope: 'non-browser-semantic-release-harness-only',
+        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
       'tests/unit/i18n/localeDeliveryContracts.test.ts': {
         ownerIssue: '#698',
         reviewedAt: '2026-07-28',
+        scope: 'non-browser-semantic-release-harness-only',
+        requiredProof: 'npm run i18n:locale:artifacts:idempotence',
       },
     };
     expect(compatibility.schemaVersion).toBe('tiangong.i18n-semantic-e2e-digest-compatibility.v1');
@@ -872,7 +935,9 @@ describe('shared locale delivery contracts', () => {
       [
         'scripts/i18n/locale-delivery.mjs',
         'tests/e2e/i18n/evidence-reporter.ts',
+        'tests/e2e/i18n/production-request-guard.ts',
         'tests/unit/e2e/evidenceReporter.test.ts',
+        'tests/unit/e2e/productionRequestGuard.test.ts',
         'tests/unit/i18n/localeDeliveryContracts.test.ts',
       ].sort(),
     );
@@ -887,17 +952,43 @@ describe('shared locale delivery contracts', () => {
           evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
           evidenceSha256: evidenceEntry.sha256,
           compatibleSha256: sha256File(entry.path),
-          scope: 'non-browser-semantic-release-harness-only',
+          scope: expectedReview.scope,
           ownerIssue: expectedReview.ownerIssue,
           reviewedAt: expectedReview.reviewedAt,
           sunset: 'next-verified-evidence-for-compatible-sha',
           proofCommands: expect.arrayContaining([
             'npm run i18n:evidence:canonical:check',
-            'npm run i18n:locale:artifacts:idempotence',
+            expectedReview.requiredProof,
           ]),
         }),
       );
     }
+    expect(compatibility.releaseCandidateWaivers).toEqual([
+      expect.objectContaining({
+        scope: 'user-authorized-release-candidate-e2e-skip',
+        ownerIssue: '#703',
+        reviewedAt: '2026-07-28',
+        evidenceObservedHeadCommit: evidence.candidate.observedHeadCommit,
+        evidenceCandidateIdentity: {
+          configTreeDigest: evidence.candidate.configTreeDigest,
+          packageManifestDigest: evidence.candidate.packageManifestDigest,
+          sourceTreeDigest: evidence.candidate.sourceTreeDigest,
+          unitTestTreeDigest: evidence.candidate.unitTestTreeDigest,
+        },
+        compatibleCandidateIdentity: {
+          configTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+          packageManifestDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+          sourceTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+          unitTestTreeDigest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+        },
+        proofCommands: expect.arrayContaining([
+          'npm run test:ci -- tests/unit/e2e/productionRequestGuard.test.ts tests/unit/i18n/localeDeliveryContracts.test.ts --runInBand --no-coverage',
+          'npm run release:preflight',
+          'npm run prepush:gate',
+        ]),
+        sunset: 'next-verified-evidence-for-compatible-sha',
+      }),
+    ]);
   });
 
   it('requires the production locale gate in the release workflow', () => {

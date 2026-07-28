@@ -30,7 +30,7 @@ checkPaths:
   - .nvmrc
 lastReviewedAt: 2026-07-28
 lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata uses the existing Node 24 bootstrap, main-relative Docpact, managed-push, and release-proof commands.'
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion and bounded request-guard evidence exception use the existing Node 24 bootstrap, main-relative Docpact, focused proof, and managed-push commands.'
 ---
 
 # Development Bootstrap

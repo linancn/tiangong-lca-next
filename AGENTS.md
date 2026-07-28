@@ -33,7 +33,7 @@ checkPaths:
   - .github/workflows/**
 lastReviewedAt: 2026-07-28
 lastReviewedCommit: 816c80b36debf5e75b2d5609c5241a05b04bde89
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 dev-to-main promotion follows the existing M2 branch, immutable release-tag, validation, back-merge, and workspace-integration contracts.'
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion follows the M2/release/integration contracts and records the user-authorized request-guard evidence exception in the owning validation docs.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

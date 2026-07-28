@@ -2,7 +2,7 @@ version: 1
 layout: repo
 lastReviewedAt: '2026-07-28'
 lastReviewedCommit: '816c80b36debf5e75b2d5609c5241a05b04bde89'
-lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promote-only package metadata keeps the existing routing, testing-gate, release, and documentation ownership contracts unchanged.'
+lastReviewedNote: 'Reviewed for Issue #703: the v0.0.62 promotion adds one user-authorized, exact-digest compatibility scope for an additive production read-only request-guard expansion without changing routing or ownership.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
