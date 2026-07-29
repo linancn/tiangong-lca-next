@@ -1004,6 +1004,13 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       'artifactExpiresAt',
     ];
     expect(databaseArtifactContract.schemaVersion).toBe('lcia.scope-closure-cross-repo-fixture.v1');
+    expect(Object.keys(databaseArtifactContract)).toEqual([
+      'schemaVersion',
+      'ownerCheckRead',
+      'download',
+      'workerGc',
+      'publicationStaging',
+    ]);
     expect(databaseArtifactContract.ownerCheckRead.artifactOrder).toEqual([
       'closure_report_xlsx',
       'closure_issue_manifest',
@@ -1019,6 +1026,25 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       'closure_report_xlsx',
       'closure_issue_manifest',
     ]);
+    expect(databaseArtifactContract.workerGc).toEqual(
+      expect.objectContaining({
+        previewSignature: 'svc_lcia_scope_closure_artifact_gc_preview(integer)',
+        claimSignature: 'svc_lcia_scope_closure_artifact_gc_claim(integer,integer)',
+        renewSignature: 'svc_lcia_scope_closure_artifact_gc_renew(uuid,integer)',
+        previewIsNonMutating: true,
+        renewalRequiresUnexpiredCurrentToken: true,
+      }),
+    );
+    expect(databaseArtifactContract.publicationStaging).toEqual(
+      expect.objectContaining({
+        acl: 'service_role only',
+        createSignature:
+          'svc_lcia_scope_closure_artifact_write_set_create(uuid,text,jsonb,integer,uuid)',
+        finalizeSignature: 'svc_lcia_scope_closure_artifact_write_set_finalize(uuid,uuid)',
+        publicationInvariant:
+          'all planned locators are registered before upload and all artifacts become ready in one finalize transaction',
+      }),
+    );
 
     const decoded = databaseArtifactContract.ownerCheckRead.artifacts.map(
       (artifact: Record<string, unknown>, index: number) => {
