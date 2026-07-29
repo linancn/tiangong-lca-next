@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence and waiver sunset preserve repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
+lastReviewedCommit: aaf4be377df8dc84bc755f93ea4ffc0858936fe7
+lastReviewedNote: 'Reviewed for Issue #711: the audited standard-user semantic fixture preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

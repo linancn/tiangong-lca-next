@@ -1,4 +1,4 @@
-import { expect, test, type Page } from './fixtures';
+import { expect, test, type Page, type Route } from './fixtures';
 
 import { signInViaUi } from './auth';
 import {
@@ -14,8 +14,51 @@ import {
   spaLocationToCandidateUrl,
   type SpaLocationTarget,
 } from './contracts';
-import { installVerifiedProductionReadOnlyGuard } from './production-backend-target';
-import { assertNoBlockedProductionRequests } from './production-request-guard';
+import {
+  installVerifiedProductionReadOnlyGuard,
+  readVerifiedProductionBackendTarget,
+} from './production-backend-target';
+import {
+  assertAuditedSyntheticReadRequest,
+  assertNoBlockedProductionRequests,
+} from './production-request-guard';
+
+const ROLES_API_PATTERN = '**/rest/v1/roles?*';
+const productionBackendTarget = readVerifiedProductionBackendTarget();
+
+async function fulfillStandardUserRole(route: Route): Promise<boolean> {
+  if (route.request().method() === 'OPTIONS') {
+    await route.fallback();
+    return false;
+  }
+  const requestTarget = new URL(route.request().url());
+  const userFilter = requestTarget.searchParams.get('user_id') ?? '';
+  expect(userFilter).toMatch(/^eq\.[0-9a-f-]+$/iu);
+  assertAuditedSyntheticReadRequest(route.request(), {
+    expectedOrigin: productionBackendTarget.origin,
+    expectedPublishableKey: productionBackendTarget.publishableKey,
+    method: 'GET',
+    pathname: '/rest/v1/roles',
+    searchParams: {
+      select: 'user_id,role',
+      team_id: 'eq.00000000-0000-0000-0000-000000000000',
+      user_id: userFilter,
+    },
+  });
+  await route.fulfill({
+    // Route-boundary evidence is defined for a standard authenticated user. Keep that
+    // boundary deterministic even when the supplied production actor owns elevated roles.
+    body: JSON.stringify([]),
+    contentType: 'application/json',
+    headers: {
+      'access-control-allow-origin': '*',
+      'access-control-expose-headers': 'content-range',
+      'content-range': '*/0',
+    },
+    status: 200,
+  });
+  return true;
+}
 
 function readSpaLocation(page: Page): SpaLocationTarget {
   const hash = new URL(page.url()).hash.slice(1);
@@ -61,6 +104,16 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
 
   expect(baseURL).toBeTruthy();
   await signInViaUi(page);
+  let fulfilledStandardRoleReads = 0;
+  await page.route(ROLES_API_PATTERN, async (route) => {
+    if (new URL(page.url()).hash.split('?')[0] !== '#/data-processing') {
+      await route.fallback();
+      return;
+    }
+    if (await fulfillStandardUserRole(route)) {
+      fulfilledStandardRoleReads += 1;
+    }
+  });
   const anonymousContext = await browser.newContext({
     locale: 'en-US',
     serviceWorkers: 'block',
@@ -187,6 +240,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
         }
       });
     }
+    expect(fulfilledStandardRoleReads).toBeGreaterThan(0);
   } finally {
     await anonymousContext.close();
     assertNoBlockedProductionRequests(anonymousProductionRequestGuard);

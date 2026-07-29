@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: active waivers and exact mappings must represent real current mismatches and retire when fresh evidence covers them; #704 retains its repairs.'
+lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
+lastReviewedNote: 'Reviewed for Issue #711: exact audited synthetic reads are the retained pattern for role-neutral route-boundary evidence; no waiver or broad fallback was added.'
 ---
 
 # Testing Patterns Reference

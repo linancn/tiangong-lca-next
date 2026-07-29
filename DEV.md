@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, and managed push remain unchanged.'
+lastReviewedCommit: aaf4be377df8dc84bc755f93ea4ffc0858936fe7
+lastReviewedNote: 'Reviewed for Issue #711: deterministic role-boundary evidence does not change bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, or managed push.'
 ---
 
 # Development Bootstrap

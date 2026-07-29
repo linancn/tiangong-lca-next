@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence sunsets the one-time waiver and redundant pairs without expanding browser scope; #704 retains the isolated harness repairs.'
+lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
+lastReviewedNote: 'Reviewed for Issue #711: the standard-user route fixture removes production-role variance without expanding browser scope or changing the improvement backlog.'
 ---
 
 # Testing Strategy
