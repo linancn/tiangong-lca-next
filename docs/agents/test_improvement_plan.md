@@ -27,7 +27,7 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedCommit: 646652fb4ebf91bfab010f7918c576efefd206d4
 lastReviewedNote: 'Reviewed for Issue #704: repository-owned formatting closes the writer-boundary defect without expanding browser scope or changing the testing strategy.'
 ---
 

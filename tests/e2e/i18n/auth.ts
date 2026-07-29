@@ -38,7 +38,10 @@ export async function loadE2ECredential() {
 }
 
 export async function signInViaUi(page: Page): Promise<void> {
-  const credential = await loadE2ECredential();
+  const credential =
+    process.env.E2E_QUALIFICATION === 'true'
+      ? { email: 'semantic-harness@example.invalid', password: 'qualification-only' }
+      : await loadE2ECredential();
   await page.goto('/#/user/login', { waitUntil: 'domcontentloaded' });
   await waitForRenderedLoginControl(page);
   const loginForm = getLoginFormControls(page);

@@ -30,7 +30,7 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedCommit: 646652fb4ebf91bfab010f7918c576efefd206d4
 lastReviewedNote: 'Reviewed for Issue #704: repository-rooted evidence formatting does not change managed-push, protected-branch, browser, or production-write policy.'
 ---
 

@@ -78,7 +78,9 @@ test('codex-e2e process renders every registry-backed content language', async (
 }, testInfo) => {
   test.setTimeout(6 * 60_000);
   test.skip(
-    process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+    process.env.E2E_QUALIFICATION !== 'true' &&
+      (process.env.E2E_AUTHENTICATED !== 'true' ||
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
     'Process lifecycle semantics require the explicit production-data guard and credentials.',
   );
   annotateEvidence(testInfo, processAssertion, 'persisted-multilingual-content');

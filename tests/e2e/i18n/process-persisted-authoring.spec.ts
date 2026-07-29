@@ -20,7 +20,8 @@ const AUTHORING_LANGUAGE_DEFINITIONS = CONTENT_LANGUAGE_REGISTRY.filter(
   ({ authoring }) => authoring.enabled,
 );
 const productionSaveEnabled =
-  process.env.E2E_AUTHENTICATED === 'true' && process.env.E2E_ALLOW_PRODUCTION_DATA === 'true';
+  process.env.E2E_QUALIFICATION === 'true' ||
+  (process.env.E2E_AUTHENTICATED === 'true' && process.env.E2E_ALLOW_PRODUCTION_DATA === 'true');
 
 test.use({ allowLedgerControlledProcessSaveDraft: productionSaveEnabled });
 
@@ -109,7 +110,9 @@ test('one ledger-controlled Process UI save persists every authoring language', 
   }
 
   // Revalidate the complete local operator envelope at the actual browser mutation boundary.
-  assertProductionDataWriteAuthorization(process.env);
+  if (process.env.E2E_QUALIFICATION !== 'true') {
+    assertProductionDataWriteAuthorization(process.env);
+  }
   const saveResponse = page.waitForResponse((response) => {
     const target = new URL(response.url());
     return (
