@@ -7,6 +7,7 @@ import { invokeDataProductCommand } from '@/services/dataProducts/api';
 import {
   createClosureCheck,
   createClosureReportDownload,
+  decodeClosureArtifact,
   decodeClosureCheckCreateResult,
   decodeClosureCheckIssue,
   decodeClosureCheckIssuePage,
@@ -109,6 +110,23 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
           dataSnapshotToken: 'snapshot-token',
           blockerCodes: [],
           summary: { evidenceHash: 'evidence-hash' },
+          artifacts: [
+            {
+              artifactRole: 'closure_report_xlsx',
+              artifactState: 'ready',
+              artifactId: '11111111-1111-4111-8111-111111111111',
+              format: 'xlsx',
+              filename: 'closure-issues.xlsx',
+              mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              size: 1024,
+              checksumSha256: 'a'.repeat(64),
+              artifactExpiresAt: '2026-07-29T00:00:00Z',
+            },
+            {
+              artifactRole: 'closure_issue_manifest',
+              artifactState: 'pending',
+            },
+          ],
           scanExecutionId: 'scan-1',
           reusedFromCheckId: 'closure-0',
           createdAt: '2026-07-22T00:00:00Z',
@@ -162,6 +180,14 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       scanExecutionId: 'scan-1',
       reusedFromCheckId: 'closure-0',
       workerJob: { jobId: 'job-1', status: 'completed', progressFraction: 1 },
+      artifacts: [
+        expect.objectContaining({
+          artifactRole: 'closure_report_xlsx',
+          artifactState: 'ready',
+          filename: 'closure-issues.xlsx',
+        }),
+        { artifactRole: 'closure_issue_manifest', artifactState: 'pending' },
+      ],
     });
     expect(summary.data?.workerJob).not.toHaveProperty('result');
   });
@@ -282,10 +308,16 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     (invokeDataProductCommand as jest.Mock).mockResolvedValue({
       data: {
         signedDownloadUrl: 'https://storage.example.test/reports/closure-1?token=short-lived',
-        artifactId: 'artifact-1',
+        artifactId: '11111111-1111-4111-8111-111111111111',
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'ready',
+        format: 'xlsx',
+        filename: 'closure-issues.xlsx',
         mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         size: 1024,
         checksumSha256: 'a'.repeat(64),
+        artifactExpiresAt: '2026-08-05T00:00:00Z',
+        signedUrlExpiresAt: '2026-07-29T00:05:00Z',
         expiresInSeconds: 300,
         storagePath: 'private/closure-1.xlsx',
         rawWorkerResult: { shouldNeverReachUi: true },
@@ -300,11 +332,22 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
 
     expect(result.data).toEqual({
       signedDownloadUrl: 'https://storage.example.test/reports/closure-1?token=short-lived',
-      artifactId: 'artifact-1',
+      artifactId: '11111111-1111-4111-8111-111111111111',
+      artifactRole: 'closure_report_xlsx',
+      artifactState: 'ready',
+      format: 'xlsx',
+      filename: 'closure-issues.xlsx',
       mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       size: 1024,
       checksumSha256: 'a'.repeat(64),
+      artifactExpiresAt: '2026-08-05T00:00:00Z',
+      signedUrlExpiresAt: '2026-07-29T00:05:00Z',
       expiresInSeconds: 300,
+    });
+    expect(invokeDataProductCommand).toHaveBeenCalledWith({
+      action: 'create_closure_report_download',
+      closureCheckId: 'closure-1',
+      artifactRole: 'closure_report_xlsx',
     });
     expect(result.data).not.toHaveProperty('storagePath');
     expect(result.data).not.toHaveProperty('rawWorkerResult');
@@ -601,6 +644,9 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       { runStatus: 'unknown' },
       { certificateValidity: 'unknown' },
       { scanCompleteness: 'invalid' },
+      {
+        artifacts: [{ artifactRole: 'unsupported', artifactState: 'pending' }],
+      },
     ]) {
       expect(decodeClosureCheckSummary({ ...summaryBase, ...patch })).toBeNull();
     }
@@ -667,10 +713,16 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
 
     const descriptor = {
       signedDownloadUrl: 'https://storage.example.test/report.xlsx',
-      artifactId: 'artifact-1',
-      mediaType: 'application/octet-stream',
+      artifactId: '11111111-1111-4111-8111-111111111111',
+      artifactRole: 'closure_report_xlsx',
+      artifactState: 'ready',
+      format: 'xlsx',
+      filename: 'closure-issues.xlsx',
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       size: 0,
       checksumSha256: 'a'.repeat(64),
+      artifactExpiresAt: '2026-08-05T00:00:00Z',
+      signedUrlExpiresAt: '2026-07-29T00:01:00Z',
       expiresInSeconds: 60,
     };
     expect(decodeClosureReportDownloadDescriptor(null)).toBeNull();
@@ -679,16 +731,96 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       { signedDownloadUrl: 'not a url' },
       { signedDownloadUrl: 'ftp://example.test/report.xlsx' },
       { artifactId: '' },
+      { artifactId: 'not-a-uuid' },
+      { artifactRole: 'unsupported' },
+      { artifactState: 'expired' },
+      { format: '' },
+      { format: 'json' },
+      { filename: '' },
+      { filename: '../closure-issues.xlsx' },
       { mediaType: '' },
       { size: '0' },
+      { size: 1.5 },
       { size: -1 },
       { checksumSha256: '' },
+      { checksumSha256: 'abc' },
+      { artifactExpiresAt: 'invalid' },
+      { signedUrlExpiresAt: 'invalid' },
+      { signedUrlExpiresAt: '2026-08-06T00:00:00Z' },
       { expiresInSeconds: Number.NaN },
       { expiresInSeconds: 0 },
+      { expiresInSeconds: 901 },
     ]) {
       expect(decodeClosureReportDownloadDescriptor({ ...descriptor, ...patch })).toBeNull();
     }
     expect(decodeClosureReportDownloadDescriptor(descriptor)).toEqual(descriptor);
+
+    expect(decodeClosureArtifact(null)).toBeNull();
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'unsupported',
+        artifactState: 'pending',
+      }),
+    ).toBeNull();
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'unknown',
+      }),
+    ).toBeNull();
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_issue_manifest',
+        artifactState: 'pending',
+        privateObjectPath: 'must-not-survive',
+      }),
+    ).toEqual({
+      artifactRole: 'closure_issue_manifest',
+      artifactState: 'pending',
+    });
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'ready',
+      }),
+    ).toBeNull();
+    expect(decodeClosureArtifact(descriptor)).toEqual({
+      artifactRole: 'closure_report_xlsx',
+      artifactState: 'ready',
+      artifactId: '11111111-1111-4111-8111-111111111111',
+      format: 'xlsx',
+      filename: 'closure-issues.xlsx',
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      size: 0,
+      checksumSha256: 'a'.repeat(64),
+      artifactExpiresAt: '2026-08-05T00:00:00Z',
+    });
+    expect(
+      decodeClosureArtifact({
+        ...descriptor,
+        artifactRole: 'closure_issue_manifest',
+        format: 'json',
+        filename: 'closure-issues-manifest.json',
+        mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+      }),
+    ).toMatchObject({
+      artifactRole: 'closure_issue_manifest',
+      artifactState: 'ready',
+      format: 'json',
+    });
+    expect(
+      decodeClosureArtifact({
+        ...descriptor,
+        artifactRole: 'closure_issues_partition_000001',
+        format: 'ndjson+zstd',
+        filename: 'closure-issues-000001.ndjson.zst',
+        mediaType: 'application/x-ndjson+zstd',
+      }),
+    ).toMatchObject({
+      artifactRole: 'closure_issues_partition_000001',
+      artifactState: 'ready',
+      format: 'ndjson+zstd',
+    });
   });
 
   it('normalizes closure command transport errors, empty data, and invalid payloads', async () => {

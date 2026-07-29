@@ -181,6 +181,37 @@
   background: var(--ant-color-fill-quaternary);
 }
 
+.closureArtifacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  width: min(760px, 100%);
+}
+
+.closureArtifacts > strong {
+  grid-column: 1 / -1;
+}
+
+.closureArtifact {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--ant-color-border-secondary);
+  border-radius: 6px;
+  background: var(--ant-color-bg-container);
+}
+
+.closureArtifact span {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+.closureArtifact code {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+
 .bundleToolbar {
   width: 100%;
   padding: 12px;

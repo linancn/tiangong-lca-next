@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/build.yml
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 04979bd9647a2592d4b352cdbe2704a7262fd2b8
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 6c3517cad3b871210812ae5fa5204b33dff1bc16
 lastReviewedNote: 'Updated for Issues #698, #703, and #704 during the replacement v0.0.62 back-merge: recorded fresh production proof, exact cleanup, waiver sunset, remaining exact harness pairs, and why the pre-#707 back-merge was superseded; #704 retains its follow-ups and the coverage queue remains empty.'
 ---
 

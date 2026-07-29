@@ -26,8 +26,8 @@ checkPaths:
   - package.json
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 6c3517cad3b871210812ae5fa5204b33dff1bc16
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: canonical regeneration and exact harness mappings resolve post-evidence drift, fresh evidence retires the active waiver, and #704 retains the resume repair.'
 ---
 

@@ -10,6 +10,8 @@ import {
   previewLciaResultPackage,
   publishLciaResultPackage,
   unpublishLciaResultPublication,
+  type ClosureArtifactRole,
+  type ClosureArtifactV1,
   type ClosureCheckIssueV1,
   type ClosureCheckSummaryV1,
   type ClosureScopeIdentityV1,
@@ -118,6 +120,10 @@ type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
 const previewExportPageSize = 100;
+const closureArtifactRoles: ClosureArtifactRole[] = [
+  'closure_report_xlsx',
+  'closure_issue_manifest',
+];
 
 function newIdempotencyToken(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -623,6 +629,9 @@ const DataProcessing = () => {
   const [closureIssuesLoading, setClosureIssuesLoading] = useState(false);
   const [closureIssuesError, setClosureIssuesError] = useState<string | null>(null);
   const [closureSelectionKey, setClosureSelectionKey] = useState<string | null>(null);
+  const [expiredClosureArtifactRoles, setExpiredClosureArtifactRoles] = useState<
+    ClosureArtifactRole[]
+  >([]);
   const [currentSelectionKey, setCurrentSelectionKey] = useState<string>(scopeSelectionKey({}));
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
     deepLink.packageId,
@@ -641,6 +650,10 @@ const DataProcessing = () => {
   useEffect(() => {
     setActiveTabKey(deepLink.activeTabKey);
   }, [deepLink.activeTabKey]);
+
+  useEffect(() => {
+    setExpiredClosureArtifactRoles([]);
+  }, [closureCheck?.closureCheckId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1107,6 +1120,7 @@ const DataProcessing = () => {
         return;
       }
       setClosureCheck(summary.data);
+      setExpiredClosureArtifactRoles([]);
       setClosurePrerequisiteUnavailable(false);
       setClosureSelectionKey(selectionKey);
       setCurrentSelectionKey(selectionKey);
@@ -1124,9 +1138,23 @@ const DataProcessing = () => {
     }
   };
 
-  const handleDownloadClosureReport = async () => {
-    const result = await createClosureReportDownload(closureCheck!.closureCheckId);
+  const handleDownloadClosureArtifact = async (artifact: ClosureArtifactV1) => {
+    const result = await createClosureReportDownload(
+      closureCheck!.closureCheckId,
+      artifact.artifactRole,
+    );
     if (result.error || !result.data?.signedDownloadUrl) {
+      if (result.status === 410 || result.error?.code === 'closure_report_expired') {
+        setExpiredClosureArtifactRoles((current) => [...current, artifact.artifactRole]);
+        setCommandStatus({
+          kind: 'error',
+          message: t(
+            'pages.dataProcessing.closure.artifact.expiredGuidance',
+            'This artifact has expired. Run the data completeness check again to prepare a new download.',
+          ),
+        });
+        return;
+      }
       setCommandStatus({
         kind: 'error',
         message:
@@ -1537,6 +1565,112 @@ const DataProcessing = () => {
                   ) : null}
                 </div>
               ) : null}
+              {closureCheck ? (
+                <div className={styles.closureArtifacts} data-testid='closure-artifacts'>
+                  <strong>
+                    {t('pages.dataProcessing.closure.artifacts.title', 'Result artifacts')}
+                  </strong>
+                  {closureArtifactRoles.map((artifactRole) => {
+                    const decodedArtifact = closureCheck.artifacts?.find(
+                      (artifact) => artifact.artifactRole === artifactRole,
+                    );
+                    const lifecycleState = expiredClosureArtifactRoles.includes(artifactRole)
+                      ? 'expired'
+                      : !decodedArtifact
+                        ? 'unavailable'
+                        : decodedArtifact.artifactState === 'pending'
+                          ? 'preparing'
+                          : decodedArtifact.artifactState === 'ready'
+                            ? 'available'
+                            : decodedArtifact.artifactState === 'expired'
+                              ? 'expired'
+                              : 'unavailable';
+                    const roleLabel =
+                      artifactRole === 'closure_report_xlsx'
+                        ? t(
+                            'pages.dataProcessing.closure.artifact.humanReport',
+                            'Human issue report (XLSX)',
+                          )
+                        : t(
+                            'pages.dataProcessing.closure.artifact.machineResult',
+                            'Complete machine result',
+                          );
+                    const stateMessage =
+                      lifecycleState === 'preparing'
+                        ? t(
+                            'pages.dataProcessing.closure.artifact.preparing',
+                            'Preparing this artifact.',
+                          )
+                        : lifecycleState === 'available'
+                          ? t(
+                              'pages.dataProcessing.closure.artifact.availableUntil',
+                              'Available until',
+                            )
+                          : lifecycleState === 'expired'
+                            ? t(
+                                'pages.dataProcessing.closure.artifact.expiredGuidance',
+                                'This artifact has expired. Run the data completeness check again to prepare a new download.',
+                              )
+                            : t(
+                                'pages.dataProcessing.closure.artifact.unavailable',
+                                'This artifact is unavailable.',
+                              );
+                    return (
+                      <section
+                        key={artifactRole}
+                        className={styles.closureArtifact}
+                        data-testid={`closure-artifact-${artifactRole}`}
+                      >
+                        <strong>{roleLabel}</strong>
+                        <span data-testid={`closure-artifact-state-${artifactRole}`}>
+                          {lifecycleState === 'available'
+                            ? `${stateMessage}: ${formatTimestamp(
+                                decodedArtifact?.artifactExpiresAt,
+                              )}`
+                            : stateMessage}
+                        </span>
+                        {decodedArtifact?.filename ? <span>{decodedArtifact.filename}</span> : null}
+                        {decodedArtifact?.format ||
+                        decodedArtifact?.mediaType ||
+                        decodedArtifact?.size !== undefined ? (
+                          <span>
+                            {[
+                              decodedArtifact.format,
+                              decodedArtifact.mediaType,
+                              formatArtifactByteSize(decodedArtifact.size),
+                            ]
+                              .filter((value) => value && value !== '-')
+                              .join(' · ')}
+                          </span>
+                        ) : null}
+                        {decodedArtifact?.checksumSha256 ? (
+                          <code>{decodedArtifact.checksumSha256}</code>
+                        ) : null}
+                        {lifecycleState === 'available' && decodedArtifact ? (
+                          <Button
+                            onClick={() => void handleDownloadClosureArtifact(decodedArtifact)}
+                            icon={<DownloadOutlined />}
+                          >
+                            {artifactRole === 'closure_report_xlsx'
+                              ? t(
+                                  'pages.dataProcessing.action.downloadClosureReport',
+                                  'Download issue report',
+                                )
+                              : t(
+                                  'pages.dataProcessing.action.downloadClosureMachineResult',
+                                  'Download complete machine result',
+                                )}
+                          </Button>
+                        ) : lifecycleState === 'expired' ? (
+                          <Button onClick={handleCreateClosureCheck}>
+                            {t('pages.dataProcessing.action.rerunClosureCheck', 'Run check again')}
+                          </Button>
+                        ) : null}
+                      </section>
+                    );
+                  })}
+                </div>
+              ) : null}
               <Space wrap>
                 <Button
                   loading={submittingAction === 'createClosureCheck'}
@@ -1544,14 +1678,6 @@ const DataProcessing = () => {
                 >
                   {t('pages.dataProcessing.action.checkCompleteness', 'Check data completeness')}
                 </Button>
-                {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
-                  <Button onClick={handleDownloadClosureReport} icon={<DownloadOutlined />}>
-                    {t(
-                      'pages.dataProcessing.action.downloadClosureReport',
-                      'Download issue report',
-                    )}
-                  </Button>
-                ) : null}
               </Space>
             </Space>
           </Card>

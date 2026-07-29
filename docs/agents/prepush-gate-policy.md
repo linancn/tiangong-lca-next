@@ -29,8 +29,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/reference-data/**
   - .github/workflows/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 6c3517cad3b871210812ae5fa5204b33dff1bc16
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence retires the active release-candidate waiver, exact non-browser mappings remain fail closed, and main-target managed-push policy is unchanged.'
 ---
 

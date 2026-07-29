@@ -248,6 +248,23 @@ describe('DataProcessing page', () => {
         scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
+        artifacts: [
+          {
+            artifactRole: 'closure_report_xlsx',
+            artifactState: 'ready',
+            artifactId: '11111111-1111-4111-8111-111111111111',
+            format: 'xlsx',
+            filename: 'closure-issues.xlsx',
+            mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            size: 1024,
+            checksumSha256: 'a'.repeat(64),
+            artifactExpiresAt: '2026-08-05T00:00:00Z',
+          },
+          {
+            artifactRole: 'closure_issue_manifest',
+            artifactState: 'pending',
+          },
+        ],
       },
       error: null,
     });
@@ -2235,7 +2252,160 @@ describe('DataProcessing page', () => {
         'noopener,noreferrer',
       ),
     );
+    expect(mockCreateClosureReportDownload).toHaveBeenLastCalledWith(
+      'closure-valid',
+      'closure_report_xlsx',
+    );
     openSpy.mockRestore();
+  });
+
+  it('renders independent artifact states and maps a 410 machine download to rerun guidance', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    mockGetClosureCheck.mockReset().mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+        requestedScopeHash: 'scope-hash-valid',
+        policyFingerprint: 'policy-valid',
+        artifacts: [
+          {
+            artifactRole: 'closure_report_xlsx',
+            artifactState: 'ready',
+            artifactId: '11111111-1111-4111-8111-111111111111',
+            format: 'xlsx',
+            filename: 'closure-issues.xlsx',
+            mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            size: 1024,
+            checksumSha256: 'a'.repeat(64),
+            artifactExpiresAt: '2026-08-05T00:00:00Z',
+          },
+          {
+            artifactRole: 'closure_issue_manifest',
+            artifactState: 'ready',
+            artifactId: '22222222-2222-4222-8222-222222222222',
+            format: 'json',
+            filename: 'closure-complete-manifest.json',
+            mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+            size: 2048,
+            checksumSha256: 'b'.repeat(64),
+            artifactExpiresAt: '2026-08-05T00:00:00Z',
+          },
+        ],
+      },
+      error: null,
+    });
+    mockCreateClosureReportDownload
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'closure_report_expired', message: 'expired' },
+        status: 410,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          signedDownloadUrl: 'https://storage.example.test/closure.xlsx',
+          filename: 'closure-issues.xlsx',
+        },
+        error: null,
+        status: 200,
+      });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+
+    expect(screen.getByText('closure-issues.xlsx')).toBeInTheDocument();
+    expect(screen.getByText('closure-complete-manifest.json')).toBeInTheDocument();
+    expect(screen.getAllByText(/Available until: 2026-08-05 00:00/)).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download complete machine result' }));
+    expect(
+      await screen.findAllByText(
+        'This artifact has expired. Run the data completeness check again to prepare a new download.',
+      ),
+    ).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Download complete machine result' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Run check again' })).toBeInTheDocument();
+    expect(mockCreateClosureReportDownload).toHaveBeenNthCalledWith(
+      1,
+      'closure-valid',
+      'closure_issue_manifest',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download issue report' }));
+    await waitFor(() =>
+      expect(openSpy).toHaveBeenCalledWith(
+        'https://storage.example.test/closure.xlsx',
+        '_blank',
+        'noopener,noreferrer',
+      ),
+    );
+    openSpy.mockRestore();
+  });
+
+  it('maps deleted and failed artifact transport states to unavailable actions', async () => {
+    mockGetClosureCheck.mockReset().mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+        requestedScopeHash: 'scope-hash-valid',
+        policyFingerprint: 'policy-valid',
+        artifacts: [
+          {
+            artifactRole: 'closure_report_xlsx',
+            artifactState: 'deleted',
+          },
+          {
+            artifactRole: 'closure_issue_manifest',
+            artifactState: 'failed',
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+
+    expect(screen.getAllByText('This artifact is unavailable.')).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Download issue report' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download complete machine result' })).toBeNull();
+  });
+
+  it('renders backend expiry separately from a missing artifact projection', async () => {
+    mockGetClosureCheck.mockReset().mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-valid',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+        requestedScopeHash: 'scope-hash-valid',
+        policyFingerprint: 'policy-valid',
+        artifacts: [
+          {
+            artifactRole: 'closure_report_xlsx',
+            artifactState: 'expired',
+          },
+        ],
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+
+    expect(
+      screen.getByText(
+        'This artifact has expired. Run the data completeness check again to prepare a new download.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('This artifact is unavailable.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run check again' })).toBeInTheDocument();
   });
 
   it('renders access denied for non-manager users', async () => {
