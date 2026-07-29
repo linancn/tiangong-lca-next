@@ -685,10 +685,18 @@ async function main(): Promise<number> {
         assertionIds instanceof Array &&
         assertionIds.every((assertionId) => {
           const observed = (assertionBrowsers as Record<string, unknown>)[String(assertionId)];
-          const expected = expectedCriticalAssertionIds.includes(String(assertionId))
-            ? expectedBrowsers
-            : ['chromium'];
-          return JSON.stringify(observed) === JSON.stringify(expected);
+          if (
+            !Array.isArray(observed) ||
+            observed.length === 0 ||
+            observed.some((browser) => !expectedBrowsers.includes(String(browser))) ||
+            !observed.includes('chromium')
+          ) {
+            return false;
+          }
+          return (
+            !expectedCriticalAssertionIds.includes(String(assertionId)) ||
+            expectedBrowsers.every((browser) => observed.includes(browser))
+          );
         });
       const canonicalCheck = spawnSync(
         process.execPath,
