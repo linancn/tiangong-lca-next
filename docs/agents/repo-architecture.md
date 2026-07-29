@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
-lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: closure diagnostics retain safe projections, while Process keyword search uses Database search_processes_latest_v2 and keeps strict owner-draft visibility database-owned.'
+lastReviewedCommit: 9504e41134e54837c81a423db39ee1f3aceaa55b
+lastReviewedNote: 'Reviewed for Issue #720: Docker Edge functions remain a generated non-authoritative mirror, now bound to one exact source commit with a retained receipt and stale-file deletion.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -61,7 +61,7 @@ This repo is a Umi-based React SPA with service-first data access, cache-backed 
 | `playwright.config.ts`, `tests/e2e/i18n/**` | test-only semantic localization browser matrix, guarded production fixture ledger, and non-secret evidence reporter |
 | `config/docs-capture/profile.v1.json` | source-bound product adapter facts consumed and validated by workspace-owned documentation capture tooling: runtime/readiness, login/identity, auth mutation allowlist, denial marker, and locator policy |
 | `icons/**` | packaged app icons and release assets |
-| other `docker/**` paths | self-hosted sync helpers and mirrors |
+| other `docker/**` paths | self-hosted sync helpers and exact-revision, delete-aware mirrors; Edge function mirror provenance lives in `docker/volumes/functions/.source-revision.json` |
 | `electron/**` | desktop packaging surface |
 
 ## Runtime Model
@@ -153,6 +153,6 @@ Next owns read orchestration, release dataset identity display, directional LCI/
 ## Common Misreads
 
 - GitHub default branch `main` is not the daily trunk
-- `docker/volumes/functions/**` is a synced mirror, not a primary edit surface
+- `docker/volumes/functions/**` is a generated exact-Edge-revision mirror, not a primary edit surface; refresh it only through the delete-aware helper and retain its source receipt
 - app-side data access does not belong outside `src/services/**`
 - a merged child PR does not finish workspace delivery
