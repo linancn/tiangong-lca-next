@@ -23,6 +23,65 @@ import { CONTENT_LANGUAGE_REGISTRY } from '@/services/general/contentLanguageReg
 import { LOCALE_CAPABILITY_MATRIX } from '@/services/general/localeCapabilities';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
+const publicArtifactContract = require('../../../fixtures/contracts/20260729_scope_closure_public_artifact_contract.json');
+type TestArtifactState = 'pending' | 'ready' | 'expired' | 'deleted' | 'failed';
+
+function contractArtifacts(states: [TestArtifactState, TestArtifactState] = ['ready', 'pending']) {
+  return publicArtifactContract.ownerCheckRead.artifacts.map(
+    (fixture: Record<string, unknown>, index: number) => {
+      const state = states[index];
+      const role = fixture.artifactRole as 'closure_report_xlsx' | 'closure_issue_manifest';
+      const readyMetadata =
+        role === 'closure_report_xlsx'
+          ? {
+              filename: 'closure-issues.xlsx',
+              format: 'xlsx',
+              mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              size: 1024,
+              checksumSha256: 'a'.repeat(64),
+              artifactExpiresAt: '2026-08-05T00:00:00Z',
+            }
+          : {
+              filename: 'closure-complete-manifest.json',
+              format: 'json',
+              mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+              size: 2048,
+              checksumSha256: 'b'.repeat(64),
+              artifactExpiresAt: '2026-08-05T00:00:00Z',
+            };
+      return state === 'ready'
+        ? { ...fixture, ...readyMetadata, artifactState: state }
+        : {
+            artifactRole: role,
+            artifactState: state,
+            filename: null,
+            format: null,
+            mediaType: null,
+            size: null,
+            checksumSha256: null,
+            artifactExpiresAt: null,
+          };
+    },
+  );
+}
+
+function closureSummary(
+  states: [TestArtifactState, TestArtifactState],
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    schemaVersion: 'lcia.scope-closure-check.v1',
+    closureCheckId: 'closure-valid',
+    runStatus: 'passed',
+    certificateValidity: 'valid',
+    scanCompleteness: 'complete',
+    requestedScopeHash: 'scope-hash-valid',
+    policyFingerprint: 'policy-valid',
+    artifacts: contractArtifacts(states),
+    ...overrides,
+  };
+}
+
 jest.mock('antd', () => require('../../../mocks/antd').createAntdMock());
 jest.mock('@ant-design/pro-components', () =>
   require('../../../mocks/proComponents').createProComponentsMock(),
@@ -248,23 +307,7 @@ describe('DataProcessing page', () => {
         scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
-        artifacts: [
-          {
-            artifactRole: 'closure_report_xlsx',
-            artifactState: 'ready',
-            artifactId: '11111111-1111-4111-8111-111111111111',
-            format: 'xlsx',
-            filename: 'closure-issues.xlsx',
-            mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            size: 1024,
-            checksumSha256: 'a'.repeat(64),
-            artifactExpiresAt: '2026-08-05T00:00:00Z',
-          },
-          {
-            artifactRole: 'closure_issue_manifest',
-            artifactState: 'pending',
-          },
-        ],
+        artifacts: contractArtifacts(),
       },
       error: null,
     });
@@ -735,7 +778,7 @@ describe('DataProcessing page', () => {
     mockGetClosureCheck.mockResolvedValue({
       data: {
         schemaVersion: 'lcia.scope-closure-check.v1',
-        closureCheckId: 'closure-blocked',
+        closureCheckId: 'closure-valid',
         runStatus: 'blocked',
         certificateValidity: 'unavailable',
         scanCompleteness: 'complete',
@@ -2171,6 +2214,19 @@ describe('DataProcessing page', () => {
 
   it('uses the idempotency fallback and invalidates the certificate when selection changes', async () => {
     mockLocation = { pathname: '/data-processing', search: '' };
+    mockGetClosureCheck.mockResolvedValue({
+      data: {
+        schemaVersion: 'lcia.scope-closure-check.v1',
+        closureCheckId: 'closure-new',
+        runStatus: 'passed',
+        certificateValidity: 'valid',
+        scanCompleteness: 'complete',
+        requestedScopeHash: 'scope-hash-new',
+        policyFingerprint: 'policy-new',
+        artifacts: contractArtifacts(),
+      },
+      error: null,
+    });
     const originalRandomUuid = globalThis.crypto.randomUUID;
     Object.defineProperty(globalThis.crypto, 'randomUUID', {
       configurable: true,
@@ -2243,8 +2299,494 @@ describe('DataProcessing page', () => {
     ).toBeNull();
   });
 
+  it('polls an exact pending projection until both primary downloads are ready, then stops', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-07-29T00:00:00Z'));
+    mockGetClosureCheck
+      .mockReset()
+      .mockResolvedValueOnce({
+        data: closureSummary(['pending', 'pending'], {
+          runStatus: 'queued',
+          certificateValidity: 'unavailable',
+          scanCompleteness: 'unknown',
+          workerJob: { jobId: 'closure-worker-poll', status: 'queued' },
+        }),
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: closureSummary(['ready', 'ready']), error: null });
+
+    try {
+      render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(1);
+      expect(screen.getAllByText('Preparing this artifact.')).toHaveLength(2);
+
+      await act(async () => {
+        jest.advanceTimersByTime(2_000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+      expect(screen.getByRole('button', { name: 'Download issue report' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Download machine result manifest' }),
+      ).toBeInTheDocument();
+
+      await act(async () => {
+        jest.advanceTimersByTime(60_000);
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('starts the same bounded polling after creating a queued closure check', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-07-29T00:00:00Z'));
+    mockLocation = { pathname: '/data-processing', search: '' };
+    mockGetClosureCheck
+      .mockReset()
+      .mockResolvedValueOnce({
+        data: closureSummary(['pending', 'pending'], {
+          closureCheckId: 'closure-new',
+          runStatus: 'queued',
+          certificateValidity: 'unavailable',
+          scanCompleteness: 'unknown',
+        }),
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: closureSummary(['ready', 'ready'], { closureCheckId: 'closure-new' }),
+        error: null,
+      });
+
+    try {
+      render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      fireEvent.change(screen.getByLabelText('Result set name'), {
+        target: { value: 'Created polling' },
+      });
+      fireEvent.change(screen.getByLabelText('Default impact category'), {
+        target: { value: 'climate-change' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(screen.getAllByText('Preparing this artifact.')).toHaveLength(2);
+
+      await act(async () => {
+        jest.advanceTimersByTime(2_000);
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+      expect(screen.getByRole('button', { name: 'Download issue report' })).toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('caps pending polling after the configured maximum attempts', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-07-29T00:00:00Z'));
+    const pending = closureSummary(['pending', 'pending'], {
+      runStatus: 'running',
+      certificateValidity: 'unavailable',
+      scanCompleteness: 'unknown',
+    });
+    mockGetClosureCheck.mockReset().mockResolvedValue({ data: pending, error: null });
+
+    try {
+      const view = render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      for (let attempt = 0; attempt < 35; attempt += 1) {
+        await act(async () => {
+          jest.advanceTimersByTime(2_000);
+          await Promise.resolve();
+          await Promise.resolve();
+        });
+      }
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(31);
+      view.unmount();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('ignores a stale summary response after the closure id changes', async () => {
+    let resolveOld: ((value: { data: Record<string, unknown>; error: null }) => void) | undefined;
+    const oldResponse = new Promise<{ data: Record<string, unknown>; error: null }>((resolve) => {
+      resolveOld = resolve;
+    });
+    mockGetClosureCheck.mockReset().mockImplementation((closureCheckId: string) =>
+      closureCheckId === 'closure-valid'
+        ? oldResponse
+        : Promise.resolve({
+            data: closureSummary(['ready', 'ready'], {
+              closureCheckId: 'closure-replacement',
+              artifacts: contractArtifacts(['ready', 'ready']).map(
+                (artifact: Record<string, unknown>) => ({
+                  ...artifact,
+                  filename:
+                    artifact.artifactRole === 'closure_report_xlsx'
+                      ? 'replacement.xlsx'
+                      : 'replacement-manifest.json',
+                }),
+              ),
+            }),
+            error: null,
+          }),
+    );
+
+    const view = render(<DataProcessing />);
+    await waitFor(() => expect(mockGetClosureCheck).toHaveBeenCalledWith('closure-valid'));
+    mockLocation = {
+      pathname: '/data-processing',
+      search: '?closureCheckId=closure-replacement',
+    };
+    view.rerender(<DataProcessing />);
+    expect(await screen.findByText('replacement.xlsx')).toBeInTheDocument();
+    await act(async () => {
+      resolveOld?.({
+        data: closureSummary(['pending', 'pending'], {
+          runStatus: 'running',
+          certificateValidity: 'unavailable',
+          scanCompleteness: 'unknown',
+        }),
+        error: null,
+      });
+      await oldResponse;
+    });
+    expect(screen.getByText('replacement.xlsx')).toBeInTheDocument();
+    expect(screen.queryByText('Preparing this artifact.')).toBeNull();
+  });
+
+  it('refreshes a pending summary immediately when its task subscription becomes terminal', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-07-29T00:00:00Z'));
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'closure-worker-event',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        workerStatus: 'running',
+        runState: 'active',
+        domainValidity: 'pending',
+        projectionUpdatedAt: '2026-07-29T00:00:00Z',
+        title: 'Data completeness check',
+        capabilities: {},
+      },
+    ];
+    mockGetClosureCheck
+      .mockReset()
+      .mockResolvedValueOnce({
+        data: closureSummary(['pending', 'pending'], {
+          runStatus: 'running',
+          certificateValidity: 'unavailable',
+          scanCompleteness: 'unknown',
+          workerJob: { jobId: 'closure-worker-event', status: 'running' },
+        }),
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: closureSummary(['ready', 'ready']), error: null });
+
+    try {
+      render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      mockDataProductTasks = [
+        {
+          ...mockDataProductTasks[0],
+          workerStatus: 'completed',
+          runState: 'succeeded',
+          domainValidity: 'valid',
+          projectionUpdatedAt: '2026-07-29T00:00:01Z',
+        },
+      ];
+      await act(async () => {
+        taskListeners.forEach((listener) => listener());
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+      expect(screen.getByRole('button', { name: 'Download issue report' })).toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('shares one in-flight refresh between polling and a terminal task event', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-07-29T00:00:00Z'));
+    let resolveRefresh:
+      ((value: { data: Record<string, unknown>; error: null }) => void) | undefined;
+    const pendingRefresh = new Promise<{ data: Record<string, unknown>; error: null }>(
+      (resolve) => {
+        resolveRefresh = resolve;
+      },
+    );
+    mockDataProductTasks = [
+      {
+        schemaVersion: 'task-summary.v2',
+        jobId: 'closure-worker-flight',
+        jobKind: 'lcia.scope_closure_check',
+        category: 'data_product',
+        workerStatus: 'running',
+        runState: 'active',
+        domainValidity: 'pending',
+        projectionUpdatedAt: '2026-07-29T00:00:00Z',
+        title: 'Data completeness check',
+        capabilities: {},
+      },
+    ];
+    mockGetClosureCheck
+      .mockReset()
+      .mockResolvedValueOnce({
+        data: closureSummary(['pending', 'pending'], {
+          runStatus: 'running',
+          certificateValidity: 'unavailable',
+          scanCompleteness: 'unknown',
+          workerJob: { jobId: 'closure-worker-flight', status: 'running' },
+        }),
+        error: null,
+      })
+      .mockReturnValueOnce(pendingRefresh);
+
+    try {
+      render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(2_000);
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+
+      mockDataProductTasks = [
+        {
+          ...mockDataProductTasks[0],
+          workerStatus: 'completed',
+          runState: 'succeeded',
+          domainValidity: 'valid',
+          projectionUpdatedAt: '2026-07-29T00:00:01Z',
+        },
+      ];
+      await act(async () => {
+        taskListeners.forEach((listener) => listener());
+        await Promise.resolve();
+      });
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(2);
+
+      await act(async () => {
+        resolveRefresh?.({ data: closureSummary(['ready', 'ready']), error: null });
+        await pendingRefresh;
+        await Promise.resolve();
+      });
+      expect(screen.getByRole('button', { name: 'Download issue report' })).toBeInTheDocument();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('expires ready artifacts at the client deadline without another network request', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.parse('2026-08-04T23:59:59Z'));
+    mockGetClosureCheck.mockReset().mockResolvedValue({
+      data: closureSummary(['ready', 'ready']),
+      error: null,
+    });
+
+    try {
+      render(<DataProcessing />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(screen.getByRole('button', { name: 'Download issue report' })).toBeInTheDocument();
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        jest.advanceTimersByTime(1_000);
+        await Promise.resolve();
+      });
+      expect(screen.queryByRole('button', { name: 'Download issue report' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Download machine result manifest' })).toBeNull();
+      expect(
+        screen.getAllByText(
+          'This artifact has expired. Run the data completeness check again to prepare a new download.',
+        ),
+      ).toHaveLength(2);
+      expect(mockGetClosureCheck).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('serializes every recovery entry until the request settles, then permits a retry', async () => {
+    let resolveFirstRecovery:
+      ((value: { data: Record<string, unknown>; error: null }) => void) | undefined;
+    const firstRecovery = new Promise<{ data: Record<string, unknown>; error: null }>((resolve) => {
+      resolveFirstRecovery = resolve;
+    });
+    mockGetClosureCheck
+      .mockReset()
+      .mockResolvedValueOnce({ data: closureSummary(['expired', 'failed']), error: null })
+      .mockResolvedValue({
+        data: closureSummary(['ready', 'ready'], { closureCheckId: 'closure-new' }),
+        error: null,
+      });
+    mockCreateClosureCheck
+      .mockReset()
+      .mockReturnValueOnce(firstRecovery)
+      .mockResolvedValue({
+        data: {
+          closureCheckId: 'closure-new',
+          requestedScopeHash: 'scope-hash-new',
+          policyFingerprint: 'policy-new',
+          workerJob: null,
+          reused: false,
+        },
+        error: null,
+      });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+    fireEvent.change(screen.getByLabelText('Result set name'), {
+      target: { value: 'Recovery mutex' },
+    });
+    fireEvent.change(screen.getByLabelText('Default impact category'), {
+      target: { value: 'climate-change' },
+    });
+    const rerunButtons = screen.getAllByRole('button', { name: 'Run check again' });
+    const primaryRecoveryButton = screen.getByRole('button', {
+      name: 'Check data completeness',
+    });
+    act(() => {
+      rerunButtons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      rerunButtons[1].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      primaryRecoveryButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    await waitFor(() => expect(mockCreateClosureCheck).toHaveBeenCalledTimes(1));
+    expect(rerunButtons[0]).toBeDisabled();
+    expect(rerunButtons[1]).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Check data completeness' })).toBeDisabled();
+
+    await act(async () => {
+      resolveFirstRecovery?.({
+        data: {
+          closureCheckId: 'closure-new',
+          requestedScopeHash: 'scope-hash-new',
+          policyFingerprint: 'policy-new',
+          workerJob: null,
+          reused: false,
+        },
+        error: null,
+      });
+      await firstRecovery;
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Check data completeness' })).not.toBeDisabled(),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+    await waitFor(() => expect(mockCreateClosureCheck).toHaveBeenCalledTimes(2));
+    expect(mockCreateClosureCheck.mock.calls[0][0].requestIdempotencyToken).toEqual(
+      expect.any(String),
+    );
+    expect(mockCreateClosureCheck.mock.calls[1][0].requestIdempotencyToken).not.toBe(
+      mockCreateClosureCheck.mock.calls[0][0].requestIdempotencyToken,
+    );
+  });
+
+  it('does not apply recovery completion after navigation activates another closure id', async () => {
+    mockLocation = { pathname: '/data-processing', search: '' };
+    let resolveCreatedSummary:
+      ((value: { data: Record<string, unknown>; error: null }) => void) | undefined;
+    const createdSummary = new Promise<{ data: Record<string, unknown>; error: null }>(
+      (resolve) => {
+        resolveCreatedSummary = resolve;
+      },
+    );
+    mockCreateClosureCheck.mockReset().mockResolvedValue({
+      data: {
+        closureCheckId: 'closure-created-stale',
+        requestedScopeHash: 'scope-hash-new',
+        policyFingerprint: 'policy-new',
+        workerJob: null,
+        reused: false,
+      },
+      error: null,
+    });
+    mockGetClosureCheck.mockReset().mockImplementation((closureCheckId: string) => {
+      if (closureCheckId === 'closure-created-stale') return createdSummary;
+      return Promise.resolve({
+        data: closureSummary(['ready', 'ready'], {
+          closureCheckId: 'closure-replacement',
+          artifacts: contractArtifacts(['ready', 'ready']).map(
+            (artifact: Record<string, unknown>) => ({
+              ...artifact,
+              filename:
+                artifact.artifactRole === 'closure_report_xlsx'
+                  ? 'navigation-winner.xlsx'
+                  : 'navigation-winner.json',
+            }),
+          ),
+        }),
+        error: null,
+      });
+    });
+
+    const view = render(<DataProcessing />);
+    fireEvent.change(await screen.findByLabelText('Result set name'), {
+      target: { value: 'Stale recovery' },
+    });
+    fireEvent.change(screen.getByLabelText('Default impact category'), {
+      target: { value: 'climate-change' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Check data completeness' }));
+    await waitFor(() => expect(mockGetClosureCheck).toHaveBeenCalledWith('closure-created-stale'));
+
+    mockLocation = {
+      pathname: '/data-processing',
+      search: '?closureCheckId=closure-replacement',
+    };
+    view.rerender(<DataProcessing />);
+    expect(await screen.findByText('navigation-winner.xlsx')).toBeInTheDocument();
+
+    await act(async () => {
+      resolveCreatedSummary?.({
+        data: closureSummary(['ready', 'ready'], { closureCheckId: 'closure-created-stale' }),
+        error: null,
+      });
+      await createdSummary;
+      await Promise.resolve();
+    });
+    expect(screen.getByText('navigation-winner.xlsx')).toBeInTheDocument();
+  });
+
   it('keeps 404/502 details opaque and opens a valid signed report without buffering', async () => {
-    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     mockCreateClosureReportDownload
       .mockResolvedValueOnce({
         data: null,
@@ -2279,24 +2821,22 @@ describe('DataProcessing page', () => {
 
     const fetchCountBeforeDownload = mockFetch.mock.calls.length;
     fireEvent.click(downloadButton);
-    await waitFor(() =>
-      expect(openSpy).toHaveBeenCalledWith(
-        'https://storage.example.test/closure.xlsx',
-        '_blank',
-        'noopener,noreferrer',
-      ),
-    );
+    await waitFor(() => expect(clickSpy).toHaveBeenCalledTimes(1));
+    const navigationAnchor = clickSpy.mock.instances[0] as unknown as HTMLAnchorElement;
+    expect(navigationAnchor.href).toBe('https://storage.example.test/closure.xlsx');
+    expect(navigationAnchor.target).toBe('_self');
+    expect(navigationAnchor.rel).toBe('noopener noreferrer');
     expect(mockFetch).toHaveBeenCalledTimes(fetchCountBeforeDownload);
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     expect(mockCreateClosureReportDownload).toHaveBeenLastCalledWith(
       'closure-valid',
       'closure_report_xlsx',
     );
-    openSpy.mockRestore();
+    clickSpy.mockRestore();
   });
 
   it('renders independent artifact states and maps a 410 machine download to rerun guidance', async () => {
-    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+    const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     mockGetClosureCheck.mockReset().mockResolvedValue({
       data: {
         schemaVersion: 'lcia.scope-closure-check.v1',
@@ -2306,30 +2846,7 @@ describe('DataProcessing page', () => {
         scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
-        artifacts: [
-          {
-            artifactRole: 'closure_report_xlsx',
-            artifactState: 'ready',
-            artifactId: '11111111-1111-4111-8111-111111111111',
-            format: 'xlsx',
-            filename: 'closure-issues.xlsx',
-            mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            size: 1024,
-            checksumSha256: 'a'.repeat(64),
-            artifactExpiresAt: '2026-08-05T00:00:00Z',
-          },
-          {
-            artifactRole: 'closure_issue_manifest',
-            artifactState: 'ready',
-            artifactId: '22222222-2222-4222-8222-222222222222',
-            format: 'json',
-            filename: 'closure-complete-manifest.json',
-            mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
-            size: 2048,
-            checksumSha256: 'b'.repeat(64),
-            artifactExpiresAt: '2026-08-05T00:00:00Z',
-          },
-        ],
+        artifacts: contractArtifacts(['ready', 'ready']),
       },
       error: null,
     });
@@ -2370,14 +2887,8 @@ describe('DataProcessing page', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Download issue report' }));
-    await waitFor(() =>
-      expect(openSpy).toHaveBeenCalledWith(
-        'https://storage.example.test/closure.xlsx',
-        '_blank',
-        'noopener,noreferrer',
-      ),
-    );
-    openSpy.mockRestore();
+    await waitFor(() => expect(clickSpy).toHaveBeenCalledTimes(1));
+    clickSpy.mockRestore();
   });
 
   it('presents deleted and failed artifact transport states independently', async () => {
@@ -2390,16 +2901,7 @@ describe('DataProcessing page', () => {
         scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
-        artifacts: [
-          {
-            artifactRole: 'closure_report_xlsx',
-            artifactState: 'deleted',
-          },
-          {
-            artifactRole: 'closure_issue_manifest',
-            artifactState: 'failed',
-          },
-        ],
+        artifacts: contractArtifacts(['deleted', 'failed']),
       },
       error: null,
     });
@@ -2426,12 +2928,7 @@ describe('DataProcessing page', () => {
         scanCompleteness: 'complete',
         requestedScopeHash: 'scope-hash-valid',
         policyFingerprint: 'policy-valid',
-        artifacts: [
-          {
-            artifactRole: 'closure_report_xlsx',
-            artifactState: 'expired',
-          },
-        ],
+        artifacts: contractArtifacts(['expired', 'deleted']),
       },
       error: null,
     });
@@ -2446,6 +2943,23 @@ describe('DataProcessing page', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('This artifact is unavailable.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Run check again' })).toBeInTheDocument();
+  });
+
+  it('safely renders both primary roles unavailable when the artifact projection is missing', async () => {
+    mockGetClosureCheck.mockReset().mockResolvedValue({
+      data: {
+        ...closureSummary(['ready', 'ready']),
+        artifacts: undefined,
+      },
+      error: null,
+    });
+
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+
+    expect(screen.getAllByText('This artifact is unavailable.')).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Download issue report' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download machine result manifest' })).toBeNull();
   });
 
   it('renders access denied for non-manager users', async () => {

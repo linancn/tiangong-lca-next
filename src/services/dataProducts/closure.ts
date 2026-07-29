@@ -365,17 +365,19 @@ export function decodeClosureCheckSummary(value: unknown): ClosureCheckSummaryV1
   }
   const blockerCodes = stringArray(value.blockerCodes);
   const workerJob = decodeClosureCheckWorkerJob(value.workerJob);
-  const decodedArtifacts = Array.isArray(value.artifacts)
-    ? value.artifacts.map(decodeClosureArtifact).filter((artifact) => artifact !== null)
-    : undefined;
-  const artifacts = decodedArtifacts
-    ? (['closure_report_xlsx', 'closure_issue_manifest'] as const).flatMap((artifactRole) => {
-        const matching = decodedArtifacts.filter(
-          (artifact) => artifact.artifactRole === artifactRole,
-        );
-        return matching.length === 1 ? matching : [];
-      })
-    : undefined;
+  let artifacts: ClosureArtifactV1[] | undefined;
+  if (value.artifacts !== undefined && value.artifacts !== null) {
+    if (!Array.isArray(value.artifacts) || value.artifacts.length !== 2) return null;
+    const decodedArtifacts = value.artifacts.map(decodeClosureArtifact);
+    if (
+      decodedArtifacts.some((artifact) => artifact === null) ||
+      decodedArtifacts[0]?.artifactRole !== 'closure_report_xlsx' ||
+      decodedArtifacts[1]?.artifactRole !== 'closure_issue_manifest'
+    ) {
+      return null;
+    }
+    artifacts = decodedArtifacts as ClosureArtifactV1[];
+  }
   return {
     schemaVersion: 'lcia.scope-closure-check.v1',
     closureCheckId,

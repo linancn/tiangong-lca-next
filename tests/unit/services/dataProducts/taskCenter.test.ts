@@ -716,7 +716,28 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
           },
         ],
       }),
-    ).toMatchObject({ ...summaryBase, artifacts: [] });
+    ).toBeNull();
+    const exactArtifacts = databaseArtifactContract.ownerCheckRead.artifacts.map(
+      (artifact: Record<string, unknown>, index: number) => ({
+        ...artifact,
+        filename: String(artifact.filename).replace('<closureCheckId>', 'closure-1'),
+        checksumSha256: index === 0 ? 'a'.repeat(64) : 'b'.repeat(64),
+        artifactExpiresAt: '2026-08-05T00:00:00Z',
+      }),
+    );
+    expect(decodeClosureCheckSummary({ ...summaryBase, artifacts: exactArtifacts })).toMatchObject({
+      ...summaryBase,
+      artifacts: exactArtifacts,
+    });
+    for (const artifacts of [
+      [...exactArtifacts].reverse(),
+      [...exactArtifacts, exactArtifacts[0]],
+      [exactArtifacts[0], exactArtifacts[0]],
+      [exactArtifacts[0], { ...exactArtifacts[1], size: 'malformed' }],
+      { 0: exactArtifacts[0], 1: exactArtifacts[1] },
+    ]) {
+      expect(decodeClosureCheckSummary({ ...summaryBase, artifacts })).toBeNull();
+    }
     expect(decodeClosureCheckSummary({ ...summaryBase, artifacts: null })).toEqual(summaryBase);
     expect(decodeClosureCheckSummary({ ...summaryBase, workerJob: null })).toMatchObject({
       ...summaryBase,
