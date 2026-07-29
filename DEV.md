@@ -28,8 +28,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - .nvmrc
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: ef985cd620116c5029d93c92b521efda6d1e74d9
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, and managed push remain unchanged.'
 ---
 
