@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
-lastReviewedNote: 'Reviewed for Issue #724: canonical production evidence, its source hash, regenerated locale artifacts, and focused production checks follow the existing validation workflow without changing commands.'
+lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
+lastReviewedNote: 'Reviewed for Issue #724: the refreshed 60-pass, 24-skip qualification receipt follows the existing clean-candidate validation workflow without changing commands.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

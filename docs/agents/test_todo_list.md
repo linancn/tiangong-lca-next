@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
-lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after verified production evidence; no new testing backlog item is required.'
+lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
+lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after the refreshed qualification receipt; no new testing backlog item is required.'
 ---
 
 # Testing Execution State

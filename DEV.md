@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
-lastReviewedNote: 'Reviewed for Issue #724: verified production evidence follows the existing qualify, authenticated release run, derived-artifact refresh, and managed-push sequence.'
+lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
+lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt follows the existing clean-candidate, three-browser qualify, and managed-push sequence.'
 ---
 
 # Development Bootstrap

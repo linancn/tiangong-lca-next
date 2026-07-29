@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-29'
-lastReviewedCommit: '82ed0855eed7c855c5298f6568c707b3e3b4eced'
-lastReviewedNote: 'Reviewed for Issue #724: verified production evidence and regenerated locale artifacts remain governed by the existing semantic-E2E and testing contracts; the required-doc and ownership sets remain correct.'
+lastReviewedCommit: 'd6e1c29e8e7b5e2434391d1f6c96b029abd10765'
+lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt for the production-evidence commit remains governed by the existing testing contract; required-doc and ownership sets remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.
