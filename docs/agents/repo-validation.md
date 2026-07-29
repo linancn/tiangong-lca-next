@@ -30,7 +30,7 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
 lastReviewedNote: 'Reviewed for Issue #704: raw external evidence must pass the repository canonical checker without host normalization; authenticated cleanup and managed gates remain unchanged.'
 related:
   - ../AGENTS.md

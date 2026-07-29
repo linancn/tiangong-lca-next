@@ -20,6 +20,7 @@ import {
   readStoredAppLocale,
   routeToCandidateUrl,
   selectAppLocaleThroughUi,
+  setStoredAppLocale,
 } from './contracts';
 import { readProductionDataLedger, type ProductionDataLedger } from './production-data-ledger';
 import { loadReferenceFixture, type ReferenceFixture } from './reference-fixture';
@@ -482,7 +483,9 @@ test('delayed old-locale classification and location responses never overwrite t
   page,
 }, testInfo) => {
   test.skip(
-    process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+    process.env.E2E_QUALIFICATION !== 'true' &&
+      (process.env.E2E_AUTHENTICATED !== 'true' ||
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
     'Reference refresh semantics require the explicit production-data guard and credentials.',
   );
   annotateEvidence(testInfo, processAssertion, 'reference-refresh');
@@ -524,11 +527,22 @@ test('delayed old-locale classification and location responses never overwrite t
         const expectsMountedProcessDrawer = fixtureIndex > 0 || localePairIndex > 0;
         if (expectsMountedProcessDrawer) {
           await expect(mountedProcessDrawer).toHaveCount(1);
-          await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });
         } else {
           await expect(mountedProcessDrawer).toHaveCount(0);
-          await selectLocaleThroughHeader(page, staleDefinition);
         }
+
+        // Unmount every reference consumer before changing the staged locale or clearing its
+        // persistent cache. Otherwise an old document can finish a locale-triggered cache write
+        // after the clear and turn the intended network miss into a warm-cache read. That timing
+        // is browser-dependent and was observed in Firefox during release qualification.
+        const raceStagingUrl = new URL('/privacy_notice.html', baseURL!);
+        raceStagingUrl.searchParams.set(
+          'codexE2EReferenceState',
+          `race-stage-${fixture.id}-${currentDefinition.languageCode}`,
+        );
+        await gotoCandidateUrl(page, browserName, raceStagingUrl.toString());
+        await setStoredAppLocale(page, staleDefinition.appLocale);
+        await expect.poll(() => readStoredAppLocale(page)).toBe(staleDefinition.appLocale);
         await clearBrowserCache(page, fixture);
 
         let releaseOldResponse!: () => void;
@@ -540,13 +554,20 @@ test('delayed old-locale classification and location responses never overwrite t
         let staleRequestsStarted = 0;
         let staleResponsesFinished = 0;
         let staleLastStartedAt = 0;
+        let markStaleRequestStarted!: () => void;
+        const staleRequestPhase = {
+          started: new Promise<void>((resolve) => {
+            markStaleRequestStarted = resolve;
+          }),
+        };
 
         await page.route(staleAssetPattern, async (route) => {
           staleRequestsStarted += 1;
           staleLastStartedAt = Date.now();
+          markStaleRequestStarted();
           try {
-            const response = await route.fetch();
             await oldResponseRelease;
+            const response = await route.fetch();
             await route.fulfill({ response });
           } catch (error) {
             staleResponseErrors.push(error instanceof Error ? error.message : String(error));
@@ -566,13 +587,10 @@ test('delayed old-locale classification and location responses never overwrite t
         try {
           const state = `race-${fixture.id}-${currentDefinition.languageCode}`;
           const targetUrl = buildProcessDeepLink(baseURL!, ledger!, state);
-          // A search/hash-only navigation may restore Firefox's current document runtime and its
-          // in-memory reference cache. Cross a neutral document boundary so every iteration must
-          // bootstrap a fresh candidate runtime and exercise the intercepted stale asset request.
-          await page.goto('about:blank', { waitUntil: 'load' });
           await gotoCandidateDocument(page, browserName, targetUrl, ledger!, state, {
             waitForDrawerIdle: false,
           });
+          await staleRequestPhase.started;
           const staleConsumers = mountedProcessDrawer.locator(
             `[data-testid="reference-resource-${fixture.id}"][data-reference-language="${staleDefinition.languageCode}"][data-reference-pending="true"]`,
           );
@@ -685,7 +703,9 @@ test('previous-revision browser caches fail closed and process deep links surviv
 }, testInfo) => {
   test.setTimeout(10 * 60_000);
   test.skip(
-    process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+    process.env.E2E_QUALIFICATION !== 'true' &&
+      (process.env.E2E_AUTHENTICATED !== 'true' ||
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
     'Reference cache semantics require the explicit production-data guard and credentials.',
   );
   annotateEvidence(testInfo, processAssertion, 'reference-refresh-cache');
@@ -802,7 +822,9 @@ test('process edit form consumes current classification and location assets in e
   page,
 }, testInfo) => {
   test.skip(
-    process.env.E2E_AUTHENTICATED !== 'true' || process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+    process.env.E2E_QUALIFICATION !== 'true' &&
+      (process.env.E2E_AUTHENTICATED !== 'true' ||
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
     'Reference form semantics require the explicit production-data guard and credentials.',
   );
   annotateEvidence(testInfo, processAssertion, 'reference-refresh');

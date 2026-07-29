@@ -16,8 +16,8 @@ checkPaths:
   - .github/PULL_REQUEST_TEMPLATE/feature-to-dev.md
   - AGENTS.md
   - docs/agents/repo-validation.md
-lastReviewedAt: 2026-04-23
-lastReviewedCommit: eb445ef00ab1d07b76a46d471e54377801117ee7
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 646652fb4ebf91bfab010f7918c576efefd206d4
 ---
 
 ## Branch Contract

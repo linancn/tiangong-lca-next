@@ -1101,21 +1101,33 @@ function assertExactFileDigests(
   { requireCurrentBindings = true, digestCompatibility = null } = {},
 ) {
   if (!Array.isArray(actual)) throw new Error(`${label} must be an array.`);
+  const actualPaths = actual.map((entry) => entry?.path);
   if (
-    JSON.stringify(actual.map((entry) => entry?.path)) !==
-    JSON.stringify(expected.map((entry) => entry.path))
+    actualPaths.some((entryPath) => typeof entryPath !== 'string' || entryPath.length === 0) ||
+    new Set(actualPaths).size !== actualPaths.length ||
+    JSON.stringify(actualPaths) !== JSON.stringify([...actualPaths].sort())
   ) {
+    throw new Error(`${label} paths must be non-empty, unique, and sorted.`);
+  }
+  for (let index = 0; index < actual.length; index += 1) {
+    const actualEntry = actual[index];
+    assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
+    if (!/^[0-9a-f]{64}$/u.test(actualEntry.sha256)) {
+      throw new Error(`${label} contains an invalid digest for ${actualEntry.path}.`);
+    }
+  }
+  if (!requireCurrentBindings) return;
+  if (JSON.stringify(actualPaths) !== JSON.stringify(expected.map((entry) => entry.path))) {
     throw new Error(`${label} paths do not exactly close the required file set.`);
   }
   for (let index = 0; index < expected.length; index += 1) {
     const actualEntry = actual[index];
     const expectedEntry = expected[index];
-    assertRecordShape(actualEntry, ['path', 'sha256'], [], `${label}[${index}]`);
     const digestMatches =
       actualEntry.sha256 === expectedEntry.sha256 ||
       (typeof digestCompatibility === 'function' &&
         digestCompatibility(actualEntry, expectedEntry));
-    if (!/^[0-9a-f]{64}$/u.test(actualEntry.sha256) || (requireCurrentBindings && !digestMatches)) {
+    if (!digestMatches) {
       throw new Error(`${label} contains a digest mismatch for ${expectedEntry.path}.`);
     }
   }

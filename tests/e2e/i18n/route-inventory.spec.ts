@@ -22,6 +22,10 @@ import {
   assertAuditedSyntheticReadRequest,
   assertNoBlockedProductionRequests,
 } from './production-request-guard';
+import {
+  assertSemanticBackendSimulatorClosed,
+  installSemanticBackendSimulator,
+} from './semantic-backend-simulator';
 
 const ROLES_API_PATTERN = '**/rest/v1/roles?*';
 const productionBackendTarget = readVerifiedProductionBackendTarget();
@@ -89,6 +93,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   browser,
   browserName,
   page,
+  productionRequestGuard,
 }, testInfo) => {
   // This is intentionally one auditable matrix: 49 stable route assertions × four locales.
   // Keep the timeout local so ordinary focused E2E tests retain the stricter suite default.
@@ -103,7 +108,6 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   );
 
   expect(baseURL).toBeTruthy();
-  await signInViaUi(page);
   let fulfilledStandardRoleReads = 0;
   await page.route(ROLES_API_PATTERN, async (route) => {
     if (new URL(page.url()).hash.split('?')[0] !== '#/data-processing') {
@@ -114,12 +118,15 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
       fulfilledStandardRoleReads += 1;
     }
   });
+  await signInViaUi(page);
   const anonymousContext = await browser.newContext({
     locale: 'en-US',
     serviceWorkers: 'block',
   });
-  const { guard: anonymousProductionRequestGuard } =
-    await installVerifiedProductionReadOnlyGuard(anonymousContext);
+  const qualification = process.env.E2E_QUALIFICATION === 'true';
+  const anonymousProductionRequestGuard = qualification
+    ? await installSemanticBackendSimulator(anonymousContext, 'anonymous')
+    : (await installVerifiedProductionReadOnlyGuard(anonymousContext)).guard;
   const anonymousPage = await anonymousContext.newPage();
   await anonymousPage.goto(new URL('/#/user/login', baseURL!).toString(), {
     waitUntil: 'domcontentloaded',
@@ -240,9 +247,20 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
         }
       });
     }
-    expect(fulfilledStandardRoleReads).toBeGreaterThan(0);
+    if (process.env.E2E_QUALIFICATION === 'true' && 'requestCounts' in productionRequestGuard) {
+      expect(
+        (productionRequestGuard.requestCounts as Record<string, number>)['GET /rest/v1/roles'],
+      ).toBeGreaterThan(0);
+    } else {
+      expect(fulfilledStandardRoleReads).toBeGreaterThan(0);
+    }
   } finally {
     await anonymousContext.close();
-    assertNoBlockedProductionRequests(anonymousProductionRequestGuard);
+    if (
+      'externalRequests' in anonymousProductionRequestGuard &&
+      'productionWrites' in anonymousProductionRequestGuard
+    ) {
+      assertSemanticBackendSimulatorClosed(anonymousProductionRequestGuard);
+    } else assertNoBlockedProductionRequests(anonymousProductionRequestGuard);
   }
 });

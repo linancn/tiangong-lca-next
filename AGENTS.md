@@ -32,7 +32,7 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
 lastReviewedNote: 'Reviewed for Issue #704: the canonical evidence writer fix preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
