@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 336ae0226b99014b070fe9114fc17a41cf819aae
-lastReviewedNote: 'Reviewed for Issue #724: the exact role-boundary fix follows the existing qualify, commit-receipt, focused-production-proof, and managed-push sequence.'
+lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
+lastReviewedNote: 'Reviewed for Issue #724: verified production evidence follows the existing qualify, authenticated release run, derived-artifact refresh, and managed-push sequence.'
 ---
 
 # Development Bootstrap

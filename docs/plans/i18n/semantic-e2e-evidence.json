@@ -1,14 +1,14 @@
 {
   "schemaVersion": "tiangong.i18n-semantic-e2e-evidence.v1",
   "status": "verified",
-  "generatedAt": "2026-07-28T07:01:18.873Z",
-  "runId": "local-b812406d-f801-49d6-bdb6-b5a9209373e4",
+  "generatedAt": "2026-07-29T19:13:51.968Z",
+  "runId": "local-81f1343b-0a88-4f61-a7ad-7649568ff953",
   "candidate": {
     "configTreeDigest": "c79878bbed6dfb7becc3cedae0fdd08e0926b674293a6f9656469ac8682cc804",
-    "observedHeadCommit": "816c80b36debf5e75b2d5609c5241a05b04bde89",
-    "packageManifestDigest": "8f6968830a53792605e21f2a46dbc99bdfbe7061f68700144c54f5a08d0ea7eb",
-    "sourceTreeDigest": "bfcc128d51da75293976ffe30daf61c833d12e8412cb72635a0107618cc276f2",
-    "unitTestTreeDigest": "879bd286abeacd161ad6149bfe606b420ab25a91242c4f770009ee75348d220b"
+    "observedHeadCommit": "82ed0855eed7c855c5298f6568c707b3e3b4eced",
+    "packageManifestDigest": "57389d83ac34ff293f1312ba4dcfdc76b5a1ac32fa71ef5449bca6e7a358dbdf",
+    "sourceTreeDigest": "f0ebaaf11f0cf19c979f2c118189d4779f65600289152ee68d7e9d653727a1d6",
+    "unitTestTreeDigest": "f5e5024efa50109a81c9daca0b1d4cb3fbb5371dc9ce0cdcdddcf359307476e6"
   },
   "target": {
     "frontend": "candidate-local",
@@ -34,7 +34,7 @@
   "digests": {
     "packageLock": {
       "path": "package-lock.json",
-      "sha256": "34c5a57f539d4ccb0f8593a7e2de7ed2cb1b6ff52f0301d23d0e839577998f27"
+      "sha256": "082c623e76b64e161d0894bb3e7879d096f235494ce3fecc8106dd2723e33902"
     },
     "runtimeAssets": [
       {
@@ -137,11 +137,11 @@
       },
       {
         "path": "playwright.config.ts",
-        "sha256": "2a9a8e25a097ed7878bf18009177accb318d50b27996a99762fd8a992a6a0ae0"
+        "sha256": "1077ae72b2c746b48e29755ab5cdfa31950a35c54778d772bcc2cef91f9d7582"
       },
       {
         "path": "scripts/i18n/locale-delivery.mjs",
-        "sha256": "d9023ec244cc79d2744526d7111e25b1dd506731e9c260ab997ff4c38c421ee5"
+        "sha256": "144a85e31f94bef9a559277450e8fb96a22495ceb317b109d28f7797f278925c"
       },
       {
         "path": "scripts/i18n/package-lock-runtime-fingerprint.cjs",
@@ -157,11 +157,11 @@
       },
       {
         "path": "tests/e2e/i18n/access-fallback.spec.ts",
-        "sha256": "709bac7281a50150bcf5e15c19b6b6b934d84ca1f3eb4e401d5cebe090695bc3"
+        "sha256": "2932c63d44789a1a547dd326f8c422125875888813dbd07adacd0ad4a4e668a5"
       },
       {
         "path": "tests/e2e/i18n/auth.ts",
-        "sha256": "e2a34b56f3f3941b538e865dd585e9ae15e20da862083c0e8dc43e57266ac09d"
+        "sha256": "e6d91504067d07aa87fde8d389596c59bb0d3c10e75c380d05e0922fe84924f9"
       },
       {
         "path": "tests/e2e/i18n/candidate-readiness.ts",
@@ -181,11 +181,11 @@
       },
       {
         "path": "tests/e2e/i18n/evidence-reporter.ts",
-        "sha256": "0abdfa350560a8eebc2f3a6eb10553c4003ed24533dd24da48f699198fa6d874"
+        "sha256": "007ea76dec2301fb40e7e943b59c28ccff66267b9f84339e68d1241ef0d0f28d"
       },
       {
         "path": "tests/e2e/i18n/fixtures.ts",
-        "sha256": "988286acae9adfb9b19a4c3fc2cfa511d25ef52500f99291c2948766246ab89e"
+        "sha256": "de09ce12b3da4b312fae27fd44baf0f38b0181c8c41cc4df541d48016c56c60e"
       },
       {
         "path": "tests/e2e/i18n/global-setup.ts",
@@ -193,7 +193,15 @@
       },
       {
         "path": "tests/e2e/i18n/global-teardown.ts",
-        "sha256": "c54a161cfb0c341b1a3b1b5d2bfa5e12d8429582fe466d332430c7036c718972"
+        "sha256": "dd9b5a81b291f83e40080b8afa6538c668039cb01e1f1cfad9db82170830245f"
+      },
+      {
+        "path": "tests/e2e/i18n/harness-contract.ts",
+        "sha256": "a9a2641c42a697fce435cb6661e5f64289b831d9b40405f0c3585b1396d20408"
+      },
+      {
+        "path": "tests/e2e/i18n/harness-qualification.spec.ts",
+        "sha256": "441c58d53a1902a7a1f522120fad33e5c4d7035816883ab7b2c12311452981f9"
       },
       {
         "path": "tests/e2e/i18n/locale-capability-scenarios.ts",
@@ -209,11 +217,11 @@
       },
       {
         "path": "tests/e2e/i18n/process-lifecycle.spec.ts",
-        "sha256": "2dbdcaa8d8690b9995200457fffccc2569205d98cc3a91c7a7910fcdbeb1daf4"
+        "sha256": "3251262985e55c5c8ac80f94d2f1fa6a83d48cd33dad9f3ae20c16147559cd30"
       },
       {
         "path": "tests/e2e/i18n/process-persisted-authoring.spec.ts",
-        "sha256": "a3ecf3ca7e0026742757a663d5dcbe3b97b69f80ba8f74ab435d4f00c9d1b91d"
+        "sha256": "d8ed9fa0793fcba6ac2efab3b2786269b94ba16c1634ea462f889c6b0dd76c55"
       },
       {
         "path": "tests/e2e/i18n/production-backend-target.ts",
@@ -221,7 +229,7 @@
       },
       {
         "path": "tests/e2e/i18n/production-data-ledger.ts",
-        "sha256": "dc85d963d17a03ccf5c2bdad8bcf119744963325dce9f5a09d83eb8efe29f7f6"
+        "sha256": "94682853a0a2a5ce2559cf7215dec96117b178504f8b16b6cc966c67d4312b13"
       },
       {
         "path": "tests/e2e/i18n/production-data-safety.ts",
@@ -229,7 +237,11 @@
       },
       {
         "path": "tests/e2e/i18n/production-request-guard.ts",
-        "sha256": "85a0104185632363b49423aef0c813c6413e2bbb07df4a73bdbddc33e46de8e8"
+        "sha256": "714dd934f25a6cb234496a3b6f41d2c9d3bb9bb0876270e8ac5222f63818bfda"
+      },
+      {
+        "path": "tests/e2e/i18n/qualification-reporter.ts",
+        "sha256": "49c6e98c0ced03587c2118f64bf2265aeb6d9807e2bf70ba6396e1ca7d46a90d"
       },
       {
         "path": "tests/e2e/i18n/query-responsive.spec.ts",
@@ -241,7 +253,7 @@
       },
       {
         "path": "tests/e2e/i18n/reference-refresh.spec.ts",
-        "sha256": "15448007da83a3d7869714e3f6c73d219746ddbc44694a175d9d185881701eab"
+        "sha256": "245bb073e04b91c6de8524e7323a36b94d3f66cc1854cf72dc9ef333090f9c21"
       },
       {
         "path": "tests/e2e/i18n/responsive-layout.spec.ts",
@@ -257,7 +269,11 @@
       },
       {
         "path": "tests/e2e/i18n/route-inventory.spec.ts",
-        "sha256": "6fe86ce2715bd2397199be2f0b4b4bf2fbfe49408a56e7343d09da1aa99a59e6"
+        "sha256": "702477e78e14b2c6822b5c78f57753ad5c374bc8fb3b4746d04a6134462aa409"
+      },
+      {
+        "path": "tests/e2e/i18n/semantic-backend-simulator.ts",
+        "sha256": "35e0b220453ec603345d04d3baabdf372dfc263e1af2efd08054430d8084d35b"
       },
       {
         "path": "tests/e2e/i18n/semantic-critical.spec.ts",
@@ -265,7 +281,7 @@
       },
       {
         "path": "tests/e2e/i18n/state-semantics.spec.ts",
-        "sha256": "bf52e5d0a0ecf1ea39087a36311d04bb9578d02c3ecc56b1a2d3df27b8d03b2e"
+        "sha256": "246ab3a91ed5e637cf7fe537538c0ac6b25fa47ded3ce415e6959302a7f77008"
       },
       {
         "path": "tests/e2e/i18n/typed-view-readonly-fixture.ts",
@@ -273,7 +289,7 @@
       },
       {
         "path": "tests/e2e/i18n/typed-view-variants.spec.ts",
-        "sha256": "3d6a03deba0368ec35cdbbb7b3f9378811557bbb9286ed5c3b2df132dadcdac4"
+        "sha256": "d46194896a0f29175e253131bf6fb1885c495bf97d368db7a47dbf33a8009875"
       },
       {
         "path": "tests/unit/app.test.tsx",
@@ -325,7 +341,7 @@
       },
       {
         "path": "tests/unit/e2e/evidenceReporter.test.ts",
-        "sha256": "994f4be1b4f23c29fd7d483971e369d3fa179c4432187e60d0f2f0114692cf9f"
+        "sha256": "47e44220a81a0a4f8a10dabd687929bd699fff34ee9829927043a749fdd2922c"
       },
       {
         "path": "tests/unit/e2e/productionDataLedger.test.ts",
@@ -333,15 +349,15 @@
       },
       {
         "path": "tests/unit/e2e/productionRequestGuard.test.ts",
-        "sha256": "d0a31f6d6d6ac840dd2e8bdda1f72b68ce4a9df733e244ab5a1356002f43abc8"
+        "sha256": "4286f37e6b8132aa49ad4afecd16490e9d55427ba7d3167603a58fbf5e2a7b5a"
       },
       {
         "path": "tests/unit/e2e/referenceRefreshContract.test.ts",
-        "sha256": "12e7b526cac4447bc848c6f5eb3f151d35155e65da1b55a24433b02465ffe853"
+        "sha256": "2c97cc104c0687e498515bfe5acad7c6b11a10a35beea959df7d1a040b51f2bb"
       },
       {
         "path": "tests/unit/i18n/localeDeliveryContracts.test.ts",
-        "sha256": "a5581fbbe9a23cf98a20086f2f4c318d3ab053d53a39bac12bd81ea3904a6fb5"
+        "sha256": "7bbc1317683c8a2418134a59c0de7735973fe74b42ecf76a0ea6b0a79c0b180e"
       },
       {
         "path": "tests/unit/i18n/packageLockRuntimeFingerprint.test.js",
@@ -361,7 +377,7 @@
       },
       {
         "path": "tests/unit/pages/DataProcessing/index.test.tsx",
-        "sha256": "765ec7886d96df4d4ad6e85ce209e79d5c5238678c8df016caa1739310c7a711"
+        "sha256": "d93017c1d6ca6a9c8d800fefd2236f4b8d51b49e0dcfe04354c02ec04ad623e1"
       },
       {
         "path": "tests/unit/pages/Flowproperties/index.test.tsx",
@@ -503,7 +519,7 @@
       },
       {
         "path": "src/locales/en-US/pages.ts",
-        "sha256": "51a70bc17810a3d756f8d36174c3bdea921b191cf7306690eb315287370004d0"
+        "sha256": "fa55d56b7a0cb208a9a11d064ae69f7ba8c6d0d55759399e19628a6f70e0fb23"
       },
       {
         "path": "src/locales/en-US/pages_general.ts",
@@ -527,7 +543,7 @@
       },
       {
         "path": "src/pages/DataProcessing/index.tsx",
-        "sha256": "cfc8344f148b14a474594237913e16ac462b357838efe29b76ab7f080f12004f"
+        "sha256": "3a091d4e615be66d04e347b3baa53bbbe4d2fada93d1986ae469d4cb6f238caf"
       },
       {
         "path": "src/pages/Flowproperties/index.tsx",

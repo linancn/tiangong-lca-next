@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: a zero exact-role-fulfillment count is resolved through deterministic document reload and targeted proof, not by widening request counts or retrying production blindly.'
+lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
+lastReviewedNote: 'Reviewed for Issue #724: a stale evidence descriptor correctly fails closed and is resolved by updating the verified source hash before regenerating derived artifacts.'
 ---
 
 # Testing Troubleshooting

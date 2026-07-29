@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: the route-inventory fix and refreshed qualification receipt follow the existing clean-candidate, focused-production-proof, and managed-gate workflow without changing validation commands.'
+lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
+lastReviewedNote: 'Reviewed for Issue #724: canonical production evidence, its source hash, regenerated locale artifacts, and focused production checks follow the existing validation workflow without changing commands.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
