@@ -57,7 +57,7 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 646652fb4ebf91bfab010f7918c576efefd206d4
+lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
 lastReviewedNote: 'Reviewed for Issue #704: external container output now uses the repository canonical formatting policy while preserving credential-free CI and local-only production-data safeguards.'
 baselineObservedAt: 2026-07-18
 related:
