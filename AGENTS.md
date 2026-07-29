@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: the tracked qualification receipt and clean-candidate production-E2E sequence fit the existing repository ownership, delivery, and managed-push boundaries.'
+lastReviewedCommit: 336ae0226b99014b070fe9114fc17a41cf819aae
+lastReviewedNote: 'Reviewed for Issue #724: deterministic role-boundary proof and its refreshed qualification receipt remain within the existing repository ownership, delivery, and managed-push boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
