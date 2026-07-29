@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
-lastReviewedNote: 'Reviewed for Issue #711: exact audited reads with phase-scoped counters are the retained pattern for asynchronous modal-state evidence; no waiver or broad fallback was added.'
+lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedNote: 'Reviewed for Issue #704: external evidence destinations must reuse the repository-owned canonical formatting policy and checker.'
 ---
 
 # Testing Patterns Reference
@@ -113,7 +113,7 @@ Special cases:
 12. prove in a clean runner that active locale/context/quality/correction/activation commands do not read `.local/**confirmation*`; historical German checker fixtures stay outside that dependency path
 13. derive UI, content, service-query, and reference-resource expectations from their typed registries/Manifest; a new active locale must enter the same parameterized tests and fail closed on any missing capability or unowned language hardcoding. A unit test may repeat the current locale list only when its adjacent name or comment declares an intentional fail-closed product-contract snapshot that forces explicit review of additions, removals, labels, and order
 14. bind route/view semantics to stable executable assertion IDs, not prose-only planned assertions; routine checks validate the tracked 49-ID/locale/browser/cleanup structure, while explicit production readiness additionally requires current route, test, source, backend, package, and runtime-asset bindings
-15. make the semantic evidence reporter write repository-canonical JSON directly; then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
+15. make the semantic evidence reporter resolve formatting from the repository-owned evidence path and write repository-canonical JSON directly even when the actual destination is an external container mount; verify those raw bytes with the same canonical checker, then generate every locale summary in one invocation following the explicit `context -> structuralValidation -> quality -> activation` graph
 16. run the isolated double-generation check after generator or evidence-input changes; both consecutive runs must preserve the exact Git diff so stale or non-canonical checked-in summaries fail before publication
 17. when a digest-bound change is proven to affect only release-harness generation/formatting and not browser semantics, record only its exact evidence/current digest pair in the reviewed compatibility manifest; never exclude the path or accept future drift
 
