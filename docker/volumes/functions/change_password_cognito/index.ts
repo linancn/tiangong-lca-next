@@ -5,7 +5,7 @@
 import '@supabase/functions-js/edge-runtime.d.ts';
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import { supabaseClient } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient } from '../_shared/supabase_client.ts';
 
 import {
   AdminGetUserCommand,
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
 
   // Authenticate (JWT only)
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
+    authClient: supabaseAuthClient,
     allowedMethods: [AuthMethod.JWT],
   });
 

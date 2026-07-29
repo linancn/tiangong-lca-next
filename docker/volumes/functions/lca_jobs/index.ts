@@ -3,8 +3,9 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { callLcaReadJobProjectionRpc } from '../_shared/db_rpc/lca_results.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
-import { supabaseClient } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type JobLookupBody = { job_id?: string };
@@ -17,7 +18,7 @@ Deno.serve(async (req) => {
   const redis = await getRedisClient();
 
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
+    authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
   });
@@ -49,71 +50,64 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_job_id' }, 400);
   }
 
-  const { data: job, error: jobError } = await supabaseClient
-    .from('lca_jobs')
-    .select(
-      'id,job_type,snapshot_id,status,payload,diagnostics,created_at,started_at,finished_at,updated_at',
-    )
-    .eq('id', jobId)
-    .eq('requested_by', userId)
-    .maybeSingle();
+  const projection = await callLcaReadJobProjectionRpc(supabaseClient, {
+    requestedBy: userId,
+    legacyJobId: jobId,
+    includeInternal: true,
+  });
 
-  if (jobError) {
-    console.error('query lca_jobs failed', {
-      error: jobError.message,
-      code: jobError.code,
+  if (!projection.ok) {
+    console.error('query lca job projection failed', {
+      error: projection.message,
+      code: projection.code,
+      details: projection.details,
       user_id: userId,
       job_id: jobId,
     });
     return json({ error: 'job_lookup_failed' }, 500);
   }
 
-  if (!job) {
+  const projectionData = asRecord(projection.data);
+  if (!projectionData) {
     return json({ error: 'job_not_found' }, 404);
   }
 
-  const { data: resultRow, error: resultError } = await supabaseClient
-    .from('lca_results')
-    .select(
-      'id,artifact_url,artifact_format,artifact_byte_size,artifact_sha256,diagnostics,created_at',
-    )
-    .eq('job_id', jobId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (resultError) {
-    console.error('query lca_results failed', {
-      error: resultError.message,
-      code: resultError.code,
+  const job = asRecord(projectionData.job);
+  if (!job) {
+    console.error('lca job projection missing job payload', {
       user_id: userId,
       job_id: jobId,
     });
-    return json({ error: 'result_lookup_failed' }, 500);
+    return json({ error: 'job_lookup_failed' }, 500);
   }
 
+  const resultRow = asRecord(projectionData.result);
+  const artifact = asRecord(resultRow?.artifact) ?? {};
+  const timestamps = asRecord(job.timestamps) ?? {};
   const response = {
-    job_id: String(job.id),
-    snapshot_id: String(job.snapshot_id),
-    job_type: String(job.job_type),
-    status: String(job.status),
+    job_id: stringField(job, 'legacyJobId') || stringField(job, 'workerJobId'),
+    worker_job_id: stringField(job, 'workerJobId'),
+    snapshot_id: stringField(job, 'snapshotId'),
+    job_type: stringField(job, 'jobType'),
+    job_kind: stringField(job, 'jobKind'),
+    status: stringField(job, 'status'),
     timestamps: {
-      created_at: job.created_at,
-      started_at: job.started_at,
-      finished_at: job.finished_at,
-      updated_at: job.updated_at,
+      created_at: timestamps.createdAt ?? null,
+      started_at: timestamps.startedAt ?? null,
+      finished_at: timestamps.finishedAt ?? null,
+      updated_at: timestamps.updatedAt ?? null,
     },
-    payload: job.payload,
-    diagnostics: job.diagnostics,
+    payload: job.payload ?? null,
+    diagnostics: job.diagnostics ?? null,
     result: resultRow
       ? {
-          result_id: String(resultRow.id),
-          created_at: resultRow.created_at,
-          artifact_url: resultRow.artifact_url,
-          artifact_format: resultRow.artifact_format,
-          artifact_byte_size: resultRow.artifact_byte_size,
-          artifact_sha256: resultRow.artifact_sha256,
-          diagnostics: resultRow.diagnostics,
+          result_id: stringField(resultRow, 'resultId'),
+          created_at: resultRow.createdAt,
+          artifact_url: artifact.artifactUrl ?? null,
+          artifact_format: artifact.artifactFormat ?? null,
+          artifact_byte_size: artifact.artifactByteSize ?? null,
+          artifact_sha256: artifact.artifactSha256 ?? null,
+          diagnostics: resultRow.diagnostics ?? null,
         }
       : null,
   };
@@ -152,6 +146,17 @@ function resolveJobId(rawUrl: string, body: JobLookupBody | null): string | null
   }
 
   return null;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringField(record: Record<string, unknown>, field: string): string {
+  const value = record[field];
+  return typeof value === 'string' && value.trim().length > 0 ? value : '';
 }
 
 function json(body: unknown, status = 200): Response {

@@ -1,7 +1,8 @@
-import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
 import { authenticateRequest, AuthMethod, type AuthResult } from '../_shared/auth.ts';
 import { getRedisClient, type RedisClient } from '../_shared/redis_client.ts';
+import { createSupabaseServiceClient, supabaseAuthClient } from '../_shared/supabase_client.ts';
 import { json, lookupTidasPackageJob, TidasPackageError } from '../_shared/tidas_package.ts';
 
 type JobLookupBody = {
@@ -9,10 +10,11 @@ type JobLookupBody = {
 };
 
 export type TidasPackageJobsHandlerDeps = {
+  authClient: SupabaseClient;
   authenticateRequest: (
     req: Request,
     config: {
-      supabase: SupabaseClient;
+      authClient?: SupabaseClient;
       redis?: RedisClient;
       allowedMethods: AuthMethod[];
     },
@@ -58,10 +60,7 @@ function resolveJobId(rawUrl: string, body: JobLookupBody | null): string | null
 
 function getDefaultSupabaseClient(): SupabaseClient {
   if (!cachedSupabaseClient) {
-    cachedSupabaseClient = createClient(
-      Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '',
-    );
+    cachedSupabaseClient = createSupabaseServiceClient();
   }
 
   return cachedSupabaseClient;
@@ -69,6 +68,7 @@ function getDefaultSupabaseClient(): SupabaseClient {
 
 export function createTidasPackageJobsHandler(
   deps: TidasPackageJobsHandlerDeps = {
+    authClient: supabaseAuthClient,
     authenticateRequest,
     getRedisClient,
     supabase: getDefaultSupabaseClient(),
@@ -92,7 +92,7 @@ export function createTidasPackageJobsHandler(
 
     const redis = await deps.getRedisClient();
     const authResult = await deps.authenticateRequest(req, {
-      supabase: deps.supabase,
+      authClient: deps.authClient,
       redis,
       allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
     });
@@ -100,7 +100,14 @@ export function createTidasPackageJobsHandler(
     if (!authResult.isAuthenticated || !authResult.user?.id) {
       return (
         authResult.response ??
-        json({ ok: false, code: 'AUTH_REQUIRED', message: 'Authentication required' }, 401)
+        json(
+          {
+            ok: false,
+            code: 'AUTH_REQUIRED',
+            message: 'Authentication required',
+          },
+          401,
+        )
       );
     }
 
