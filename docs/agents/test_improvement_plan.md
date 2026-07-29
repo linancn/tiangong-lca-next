@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: the existing three-browser qualification and tracked-receipt workflow remains sufficient; no expansion of the semantic matrix is required.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: exact role-boundary fulfillment removes the qualification false positive within the existing three-browser matrix; no strategy or matrix expansion is required.'
 ---
 
 # Testing Strategy

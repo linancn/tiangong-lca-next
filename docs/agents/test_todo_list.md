@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: the coverage queue remains empty; the exact Edge mirror gate and current three-browser qualification refresh the maintained full-closure baseline.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty; deterministic role-boundary fulfillment closes a release-harness false positive without adding a new testing backlog item.'
 ---
 
 # Testing Execution State

@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical locale evidence, credential-free CI, local-only production safeguards, and the language-delivery contract remain unchanged by the Process search cutover.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: qualification and authenticated production proof now require the same exact data-processing role fulfillment; the 49-ID, credential, write-safety, and cleanup contracts remain unchanged.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
