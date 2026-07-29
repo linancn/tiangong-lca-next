@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: qualification updates one tracked receipt that must land through a clean dev PR before production release proof; the managed-push and production-write policies remain fail closed.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt and test-only fix still require one clean managed push; production-write authorization and release-evidence policies remain fail closed.'
 ---
 
 # Pre-Push Gate Policy

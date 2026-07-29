@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: release recovery now explicitly distinguishes a stale qualification receipt from the expected dirty tree produced by successful qualification.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: a zero exact-role-fulfillment count is resolved through deterministic document reload and targeted proof, not by widening request counts or retrying production blindly.'
 ---
 
 # Testing Troubleshooting

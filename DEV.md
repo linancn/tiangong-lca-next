@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: qualification generates one tracked receipt that must merge through dev before the clean authorized production-E2E candidate runs.'
+lastReviewedCommit: 336ae0226b99014b070fe9114fc17a41cf819aae
+lastReviewedNote: 'Reviewed for Issue #724: the exact role-boundary fix follows the existing qualify, commit-receipt, focused-production-proof, and managed-push sequence.'
 ---
 
 # Development Bootstrap

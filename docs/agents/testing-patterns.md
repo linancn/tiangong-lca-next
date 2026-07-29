@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: qualification-receipt generation, review, and clean-candidate reuse now form an explicit release-E2E pattern; the browser scope is unchanged.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: hash-only role-boundary navigation now uses the existing fresh-document and exact-request-fulfillment pattern; qualification and production share one assertion path.'
 ---
 
 # Testing Patterns Reference

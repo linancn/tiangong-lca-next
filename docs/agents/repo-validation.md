@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
-lastReviewedNote: 'Reviewed for Issue #722: a successful semantic-harness qualification must land its generated tracked receipt through a clean dev PR before authenticated production release proof.'
+lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
+lastReviewedNote: 'Reviewed for Issue #724: the route-inventory fix and refreshed qualification receipt follow the existing clean-candidate, focused-production-proof, and managed-gate workflow without changing validation commands.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
