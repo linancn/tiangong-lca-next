@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: production-actor role drift is resolved through the exact audited standard-user route fixture, not by weakening access-boundary assertions.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: late locale and reload reads are separated from modal and retry assertions instead of weakening request or state semantics.'
 ---
 
 # Testing Troubleshooting

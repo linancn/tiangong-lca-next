@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: aaf4be377df8dc84bc755f93ea4ffc0858936fe7
-lastReviewedNote: 'Reviewed for Issue #711: deterministic role-boundary evidence does not change bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, or managed push.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: phase-scoped semantic request proof does not change bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, or managed push.'
 ---
 
 # Development Bootstrap

@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: aaf4be377df8dc84bc755f93ea4ffc0858936fe7
-lastReviewedNote: 'Reviewed for Issue #711: the audited standard-user semantic fixture preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: phase-scoped semantic request proof preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

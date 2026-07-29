@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: the audited standard-user role fixture makes route-boundary evidence independent of the production actor role while preserving credential-free CI and local-only production-data safeguards.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: phase-scoped request assertions keep localized modal-state evidence deterministic while preserving credential-free CI and local-only production-data safeguards.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
