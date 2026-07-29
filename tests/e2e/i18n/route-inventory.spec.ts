@@ -93,7 +93,6 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   browser,
   browserName,
   page,
-  productionRequestGuard,
 }, testInfo) => {
   // This is intentionally one auditable matrix: 49 stable route assertions × four locales.
   // Keep the timeout local so ordinary focused E2E tests retain the stricter suite default.
@@ -108,17 +107,17 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
   );
 
   expect(baseURL).toBeTruthy();
-  let fulfilledStandardRoleReads = 0;
+  await signInViaUi(page);
+  const standardRoleReads = { fulfilled: 0 };
   await page.route(ROLES_API_PATTERN, async (route) => {
     if (new URL(page.url()).hash.split('?')[0] !== '#/data-processing') {
       await route.fallback();
       return;
     }
     if (await fulfillStandardUserRole(route)) {
-      fulfilledStandardRoleReads += 1;
+      standardRoleReads.fulfilled += 1;
     }
   });
-  await signInViaUi(page);
   const anonymousContext = await browser.newContext({
     locale: 'en-US',
     serviceWorkers: 'block',
@@ -163,9 +162,23 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
 
               // The product selector changes locale in the mounted document. This exercises the
               // same transition users perform and preserves the authenticated session and URL state.
+              const standardRoleReadsBeforeNavigation = standardRoleReads.fulfilled;
               await assertionPage.goto(spaLocationToCandidateUrl(baseURL!, target.navigate), {
                 waitUntil: 'domcontentloaded',
               });
+              if (
+                assertionPage === page &&
+                target.kind === 'role-boundary' &&
+                target.navigate.hashPath === '/data-processing'
+              ) {
+                // Hash-only navigation can reuse the mounted application without issuing a fresh
+                // role read. Reload so the exact standard-user route fulfillment proves this
+                // boundary in both qualification and authenticated production runs.
+                await assertionPage.reload({ waitUntil: 'domcontentloaded' });
+                await expect
+                  .poll(() => standardRoleReads.fulfilled)
+                  .toBeGreaterThan(standardRoleReadsBeforeNavigation);
+              }
               await expect.poll(() => readSpaLocation(assertionPage)).toEqual(target.expected);
               if (target.localeTransition === 'storage-reload') {
                 await setStoredAppLocale(assertionPage, locale);
@@ -247,13 +260,7 @@ test('Chromium route semantics inventory closes every stable assertion ID', asyn
         }
       });
     }
-    if (process.env.E2E_QUALIFICATION === 'true' && 'requestCounts' in productionRequestGuard) {
-      expect(
-        (productionRequestGuard.requestCounts as Record<string, number>)['GET /rest/v1/roles'],
-      ).toBeGreaterThan(0);
-    } else {
-      expect(fulfilledStandardRoleReads).toBeGreaterThan(0);
-    }
+    expect(standardRoleReads.fulfilled).toBeGreaterThan(0);
   } finally {
     await anonymousContext.close();
     if (
