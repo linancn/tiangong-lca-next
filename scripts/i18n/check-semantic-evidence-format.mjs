@@ -1,22 +1,27 @@
 #!/usr/bin/env node
 
 import fs from 'node:fs';
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 
-const require = createRequire(import.meta.url);
-const prettier = require('prettier');
+import {
+  formatCanonicalSemanticEvidence,
+  SEMANTIC_EVIDENCE_REPOSITORY_PATH,
+} from './semantic-evidence-format.ts';
+
 const root = process.cwd();
-const evidencePath = path.join(root, 'docs/plans/i18n/semantic-e2e-evidence.json');
+const args = process.argv.slice(2);
+if (args.length !== 0 && (args.length !== 2 || args[0] !== '--path')) {
+  throw new Error('Usage: check-semantic-evidence-format.mjs [--path <evidence-path>]');
+}
+const evidencePath =
+  args.length === 2
+    ? path.resolve(root, args[1])
+    : path.join(root, SEMANTIC_EVIDENCE_REPOSITORY_PATH);
 const checkedInEvidence = fs.readFileSync(evidencePath, 'utf8');
-const resolvedConfig = await prettier.resolveConfig(evidencePath);
-const canonicalEvidence = await prettier.format(
-  JSON.stringify(JSON.parse(checkedInEvidence), null, 2),
-  {
-    ...(resolvedConfig ?? {}),
-    filepath: evidencePath,
-  },
+const canonicalEvidence = await formatCanonicalSemanticEvidence(
+  JSON.parse(checkedInEvidence),
+  root,
 );
 
 if (canonicalEvidence !== checkedInEvidence) {

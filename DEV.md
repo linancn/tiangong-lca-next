@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
-lastReviewedNote: 'Reviewed for Issue #711: phase-scoped semantic request proof does not change bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, or managed push.'
+lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedNote: 'Reviewed for Issue #704: repository-rooted evidence formatting does not change bootstrap, exact-candidate proof, guarded cleanup, main-relative Docpact, or managed push.'
 ---
 
 # Development Bootstrap

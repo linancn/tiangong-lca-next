@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
-lastReviewedNote: 'Reviewed for Issue #711: phase-scoped semantic request proof preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
+lastReviewedCommit: 8e2e2f665a6ebd8b158ccd21a23521aa6f265eb2
+lastReviewedNote: 'Reviewed for Issue #704: the canonical evidence writer fix preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
