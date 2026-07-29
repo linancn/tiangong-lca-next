@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: the standard-user route fixture removes production-role variance without expanding browser scope or changing the improvement backlog.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: phase-scoped request assertions remove timing-dependent totals without expanding browser scope or changing the improvement backlog.'
 ---
 
 # Testing Strategy

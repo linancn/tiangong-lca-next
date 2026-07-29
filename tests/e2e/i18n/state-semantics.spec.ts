@@ -69,32 +69,37 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
   for (const locale of APP_LOCALES) {
     await test.step(`locale ${locale} empty transition`, async () => {
       await selectAppLocaleThroughUi(page, locale);
-      let requestCount = 0;
+      let requestPhase: 'bootstrap' | 'modal' = 'bootstrap';
+      let bootstrapRequestCount = 0;
+      let modalRequestCount = 0;
       let releaseModalResponse: (() => void) | undefined;
       const modalResponse = new Promise<void>((resolve) => {
         releaseModalResponse = resolve;
       });
       await page.route(TEAMS_API_PATTERN, async (route) => {
         assertExactTeamsRead(route);
-        requestCount += 1;
-        if (requestCount === 1) {
+        if (requestPhase === 'bootstrap') {
+          bootstrapRequestCount += 1;
           await fulfillTeams(route, []);
           return;
         }
+        modalRequestCount += 1;
         await modalResponse;
         await fulfillTeams(route, []);
       });
 
       try {
         await page.reload({ waitUntil: 'domcontentloaded' });
-        await expect.poll(() => requestCount).toBeGreaterThanOrEqual(1);
+        await expect.poll(() => bootstrapRequestCount).toBeGreaterThanOrEqual(1);
+        await page.waitForLoadState('networkidle');
+        requestPhase = 'modal';
         await page
           .getByRole('button', {
             name: getLocaleMessage(locale, 'pages.welcome.overview.actions.dataEcosystem'),
             exact: true,
           })
           .click();
-        await expect.poll(() => requestCount).toBe(2);
+        await expect.poll(() => modalRequestCount).toBe(1);
         await expect(page.locator('.ant-modal').filter({ visible: true })).toBeVisible();
         await expect(page.locator('.ant-modal .ant-spin-spinning')).toBeVisible();
         releaseModalResponse?.();
@@ -111,26 +116,38 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
     });
 
     await test.step(`locale ${locale} error and retry transition`, async () => {
-      let requestCount = 0;
+      let requestPhase: 'bootstrap' | 'modal' | 'retry' = 'bootstrap';
+      let bootstrapRequestCount = 0;
+      let modalRequestCount = 0;
+      let retryRequestCount = 0;
       await page.route(TEAMS_API_PATTERN, async (route) => {
         assertExactTeamsRead(route);
-        requestCount += 1;
-        if (requestCount === 2) {
+        if (requestPhase === 'bootstrap') {
+          bootstrapRequestCount += 1;
+          await fulfillTeams(route, []);
+          return;
+        }
+        if (requestPhase === 'modal') {
+          modalRequestCount += 1;
           await fulfillTeams(route, [], 500);
           return;
         }
+        retryRequestCount += 1;
         await fulfillTeams(route, []);
       });
 
       try {
         await page.reload({ waitUntil: 'domcontentloaded' });
-        await expect.poll(() => requestCount).toBeGreaterThanOrEqual(1);
+        await expect.poll(() => bootstrapRequestCount).toBeGreaterThanOrEqual(1);
+        await page.waitForLoadState('networkidle');
+        requestPhase = 'modal';
         await page
           .getByRole('button', {
             name: getLocaleMessage(locale, 'pages.welcome.overview.actions.dataEcosystem'),
             exact: true,
           })
           .click();
+        await expect.poll(() => modalRequestCount).toBe(1);
         await expect(
           page.getByRole('alert').filter({
             hasText: getLocaleMessage(locale, 'pages.welcome.overview.dataEcosystem.error'),
@@ -145,8 +162,9 @@ test('welcome modal exposes localized loading, empty, error, and retry states', 
             hasText: getLocaleMessage(locale, 'pages.welcome.overview.dataEcosystem.retry'),
           });
         await expect(retryButton).toHaveCount(1);
+        requestPhase = 'retry';
         await retryButton.click();
-        await expect.poll(() => requestCount).toBe(3);
+        await expect.poll(() => retryRequestCount).toBe(1);
         await expect(
           page.getByRole('status').filter({
             hasText: getLocaleMessage(locale, 'pages.welcome.overview.dataEcosystem.empty'),

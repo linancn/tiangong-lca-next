@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: exact audited synthetic reads are the retained pattern for role-neutral route-boundary evidence; no waiver or broad fallback was added.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: exact audited reads with phase-scoped counters are the retained pattern for asynchronous modal-state evidence; no waiver or broad fallback was added.'
 ---
 
 # Testing Patterns Reference

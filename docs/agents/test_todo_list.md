@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: deterministic route-role proof closes the production-actor variance; no new coverage or harness follow-up remains.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: deterministic phase-scoped modal proof closes the request-order race without adding a new coverage or harness backlog item.'
 ---
 
 # Testing Execution State

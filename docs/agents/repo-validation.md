@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
-lastReviewedNote: 'Reviewed for Issue #711: role-boundary semantic proof now uses an exact audited standard-user fixture; authenticated evidence, cleanup, release preflight, and managed gates remain required.'
+lastReviewedCommit: 0b6481ed0413937b57e517aacdda6b1d712d5600
+lastReviewedNote: 'Reviewed for Issue #711: modal-state semantic proof now separates bootstrap, modal, and retry reads; authenticated evidence, cleanup, release preflight, and managed gates remain required.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
