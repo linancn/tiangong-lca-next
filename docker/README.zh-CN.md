@@ -16,18 +16,30 @@
 
 脚本：`docker/pull-edge-functions.sh`
 
-默认行为：
+行为：
 
-- 从 `https://github.com/linancn/tiangong-lca-edge-functions.git` 拉取最新函数代码
-- 覆盖更新 `docker/volumes/functions/`
-- 备份旧目录到 `docker/volumes/functions.backup.<timestamp>`
+- 必须指定一个已经评审的完整 Edge commit SHA，不跟随会移动的 ref
+- 将该 ref 解析为唯一 commit
+- 用 `supabase/functions/` 对 `docker/volumes/functions/` 做可删除陈旧文件的完整镜像同步
+- 在 `docker/volumes/functions/.source-revision.json` 记录仓库与解析后的 commit
 
 执行命令：
 
 ```bash
 cd /path/to/tiangong-lca-next
-./docker/pull-edge-functions.sh
+./docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>
 ```
+
+只有在明确进行本地仓库或 fork 验证时才覆盖源仓库：
+
+```bash
+./docker/pull-edge-functions.sh \
+  --repo /path/to/tiangong-lca-edge-functions \
+  --ref <reviewed-40-character-edge-commit>
+```
+
+脚本从自身位置解析目标目录，因此可以从其他工作目录调用。同步会删除
+Edge 精确版本中不存在的镜像文件；提交前必须审查完整生成 diff。
 
 ## 2) 同步 data.sql（远程 Supabase）
 

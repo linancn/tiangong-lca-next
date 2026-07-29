@@ -1,7 +1,8 @@
-import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
+import type { SupabaseClient } from 'jsr:@supabase/supabase-js@2.98.0';
 
 import { authenticateRequest, AuthMethod, type AuthResult } from '../_shared/auth.ts';
 import { getRedisClient, type RedisClient } from '../_shared/redis_client.ts';
+import { createSupabaseServiceClient, supabaseAuthClient } from '../_shared/supabase_client.ts';
 import {
   enqueueImportTidasPackage,
   json,
@@ -10,10 +11,11 @@ import {
 } from '../_shared/tidas_package.ts';
 
 export type ImportTidasPackageHandlerDeps = {
+  authClient: SupabaseClient;
   authenticateRequest: (
     req: Request,
     config: {
-      supabase: SupabaseClient;
+      authClient?: SupabaseClient;
       redis?: RedisClient;
       allowedMethods: AuthMethod[];
     },
@@ -39,10 +41,7 @@ function looksLikeJwtToken(token: string): boolean {
 
 function getDefaultSupabaseClient(): SupabaseClient {
   if (!cachedSupabaseClient) {
-    cachedSupabaseClient = createClient(
-      Deno.env.get('REMOTE_SUPABASE_URL') ?? Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('REMOTE_SERVICE_API_KEY') ?? Deno.env.get('SERVICE_API_KEY') ?? '',
-    );
+    cachedSupabaseClient = createSupabaseServiceClient();
   }
 
   return cachedSupabaseClient;
@@ -50,6 +49,7 @@ function getDefaultSupabaseClient(): SupabaseClient {
 
 export function createImportTidasPackageHandler(
   deps: ImportTidasPackageHandlerDeps = {
+    authClient: supabaseAuthClient,
     authenticateRequest,
     getRedisClient,
     supabase: getDefaultSupabaseClient(),
@@ -75,7 +75,7 @@ export function createImportTidasPackageHandler(
     const shouldTryUserApiKey = bearerToken.length > 0 && !looksLikeJwtToken(bearerToken);
     const redis = shouldTryUserApiKey ? await deps.getRedisClient() : undefined;
     const authResult = await deps.authenticateRequest(req, {
-      supabase: deps.supabase,
+      authClient: deps.authClient,
       redis,
       allowedMethods: shouldTryUserApiKey
         ? [AuthMethod.USER_API_KEY, AuthMethod.JWT]

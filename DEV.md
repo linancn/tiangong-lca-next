@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: bootstrap, focused Process RPC proof, guarded cleanup, canonical generation, main-relative Docpact, and managed push remain the required loop.'
+lastReviewedCommit: 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8
+lastReviewedNote: 'Reviewed for Issue #720: the normal bootstrap and managed-push loop is unchanged; self-hosted Edge mirror refresh now has one canonical full-SHA helper command plus receipt and idempotence proof.'
 ---
 
 # Development Bootstrap
@@ -99,6 +99,7 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | start shared `dev` env | `npm start` |
 | explicit shared `dev` env | `npm run start:dev` |
 | explicit `main` env | `npm run start:main` |
+| sync the self-hosted Edge mirror from one reviewed commit | `./docker/pull-edge-functions.sh --ref <40-character-commit-sha>` |
 | local docpact gate | `npm run docpact:gate` |
 | lint + typecheck | `npm run lint` |
 | shared CI-style test runner | `npm test` |
@@ -163,6 +164,7 @@ Create the `dev -> main` Promote PR only after that authorized run has produced 
 ## Command Rules
 
 - `npm start` and `npm run start:dev` are equivalent
+- Edge mirror refresh accepts only a full reviewed commit SHA, records the resolved source in `docker/volumes/functions/.source-revision.json`, deletes stale mirror files, and must be rerun once with no resulting tracked change before handoff
 - documentation capture is a separate local operator workflow: this repository supplies only `config/docs-capture/profile.v1.json`, stable semantic locators, and its exact UI runtime
 - the generic Playwright engine, private credential pointer, dynamic loopback origin, access report, and screenshot outputs are owned by the workspace docs-impact tooling; they must not be copied into this repository or its release-E2E surfaces
 - the workspace wrapper must load the profile from the same exact Next commit that it starts as the render target; a profile from current `main` must not control a historical UI

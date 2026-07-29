@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and later workspace integration remain unchanged.'
+lastReviewedCommit: 9504e41134e54837c81a423db39ee1f3aceaa55b
+lastReviewedNote: 'Reviewed for Issue #720: generated Edge mirrors now require one reviewed exact ref, a source receipt, and delete-aware helper execution; repository ownership, delivery, and managed-push rules remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md
@@ -198,7 +198,7 @@ Use the role table in this file as the update map.
 ## Hard Boundaries
 
 - do not author schema or migration truth here
-- do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh`
+- do not hand-edit `docker/volumes/functions/**`; refresh it via `docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>`, keep the generated source-revision receipt, and review the complete delete-aware mirror diff
 - do not create ad-hoc Supabase clients outside `src/services/**`
 - do not pass documentation screenshot credentials on the command line, persist browser profiles/storage state, or treat missing/invalid credentials as verified authorization denial
 - do not use the screenshot executor for data creation or mutation; only the explicit authentication/session exchange may use non-GET requests

@@ -3,33 +3,36 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { callLcaReadLatestSingleSolveResultRpc } from '../_shared/db_rpc/lca_results.ts';
+import { ensureLcaAllUnitSolveQueued } from '../_shared/lca_all_unit_solve_queue.ts';
 import {
   fetchProcessScopeLookup,
   matchesProcessDataScope,
   processScopeLookupKey,
   validateProcessEntriesInDataScope,
 } from '../_shared/lca_process_scope.ts';
+import { ensureLcaSnapshotBuildQueued } from '../_shared/lca_snapshot_build_queue.ts';
 import {
-  buildSnapshotBuildPayloadFields,
+  buildLcaCalculationEvidenceBinding,
   buildSnapshotContainsFilter,
   buildSnapshotProcessFilter,
+  buildSnapshotVisibilityOrExpression,
   matchesSnapshotProcessFilter,
   parseLcaDataScope,
   parseSnapshotProcessFilter,
+  PUBLIC_PLUS_OWNER_DRAFT_SCOPE,
   shouldAutoBuildSnapshot,
+  validateCalculationEvidenceForDataScope,
+  type LcaCalculationEvidenceBinding,
   type LcaDataScope,
   type ParsedSnapshotProcessFilter,
-  type SnapshotProcessFilter,
 } from '../_shared/lca_snapshot_scope.ts';
+import { verifySnapshotMatchesDataScope } from '../_shared/lca_snapshot_scope_db.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
-import { supabaseClient } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient, supabaseClient } from '../_shared/supabase_client.ts';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ALL_UNIT_QUERY_FORMAT = 'all-unit-query:v1';
-const QUEUE_NAME = 'lca_jobs';
-const SNAPSHOT_BUILD_REQUEST_VERSION = 'lca_snapshot_build_v1';
-const ACTIVE_BUILD_MAX_QUEUED_MS = 10 * 60 * 1000;
-const ACTIVE_BUILD_MAX_RUNNING_MS = 2 * 60 * 60 * 1000;
 const DEFAULT_HOTSPOT_LIMIT = 20;
 const MAX_HOTSPOT_LIMIT = 200;
 
@@ -74,6 +77,7 @@ type SnapshotIndexDocument = {
   impact_count: number;
   process_map: SnapshotIndexProcessEntry[];
   impact_map: SnapshotIndexImpactEntry[];
+  calculation_evidence?: unknown;
 };
 
 type AllUnitQueryEnvelope = {
@@ -99,10 +103,6 @@ type ScopedSnapshotResolution =
   | { kind: 'fresh'; data: ReadySnapshotMeta }
   | { kind: 'stale'; snapshot_id: string }
   | { kind: 'none' };
-
-type BuildQueueResult =
-  | { ok: true; job_id: string; snapshot_id: string }
-  | { ok: false; error: string; status: number };
 
 type LatestAllUnitRow = {
   snapshot_id: string;
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
 
   const redis = await getRedisClient();
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
+    authClient: supabaseAuthClient,
     redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY],
   });
@@ -183,7 +183,11 @@ Deno.serve(async (req) => {
       (snapshotMeta.error === 'no_ready_snapshot' ||
         snapshotMeta.error === 'snapshot_stale_rebuild_required');
     if (shouldQueueBuild) {
-      const queued = await ensureSnapshotBuildQueued(scope, userId, dataScope);
+      const queued = await ensureLcaSnapshotBuildQueued(supabaseClient, {
+        scope,
+        dataScope,
+        userId,
+      });
       if (!queued.ok) {
         return json({ error: queued.error }, queued.status);
       }
@@ -191,7 +195,9 @@ Deno.serve(async (req) => {
         {
           error: 'snapshot_build_queued',
           build_job_id: queued.job_id,
+          build_worker_job_id: queued.worker_job_id ?? null,
           build_snapshot_id: queued.snapshot_id,
+          calculation_contract: queued.calculation_contract,
         },
         409,
       );
@@ -213,16 +219,43 @@ Deno.serve(async (req) => {
   if (snapshotIndex.data.snapshot_id !== snapshotId) {
     return json({ error: 'snapshot_index_mismatch' }, 500);
   }
+  const calculationEvidence = await resolveCalculationEvidenceBinding(
+    snapshotIndex.data.calculation_evidence,
+    dataScope,
+    userId,
+  );
+  if (!calculationEvidence.ok) {
+    return json({ error: calculationEvidence.error }, 409);
+  }
+  const calculationEvidenceBinding = calculationEvidence.binding;
 
   const latestAllUnit = await fetchLatestAllUnit(snapshotId);
   if (!latestAllUnit.ok) {
     return json({ error: latestAllUnit.error }, latestAllUnit.status);
   }
   if (!latestAllUnit.row) {
-    if (allowFallback) {
-      return json({ error: 'fallback_not_implemented_yet' }, 501);
+    const queued = await ensureLcaAllUnitSolveQueued(supabaseClient, {
+      scope,
+      snapshotId,
+      userId,
+      calculationEvidenceBinding,
+    });
+    if (!queued.ok) {
+      return json({ error: queued.error, details: queued.details ?? null }, queued.status);
     }
-    return json({ error: 'all_unit_result_not_ready' }, 409);
+    return json(
+      {
+        error: 'all_unit_result_queued',
+        mode: queued.mode,
+        snapshot_id: queued.snapshot_id,
+        cache_key: queued.cache_key,
+        solve_job_id: queued.job_id,
+        solve_worker_job_id: queued.worker_job_id,
+        fallback_requested: allowFallback,
+        ...(calculationEvidenceBinding ? { calculation_evidence: calculationEvidenceBinding } : {}),
+      },
+      409,
+    );
   }
 
   const queryArtifact = await fetchArtifactJson<AllUnitQueryEnvelope>(
@@ -321,6 +354,9 @@ Deno.serve(async (req) => {
           cache_hit: false,
           computed_at: computedAt,
           query_artifact_format: latestAllUnit.row.query_artifact_format,
+          ...(calculationEvidenceBinding
+            ? { calculation_evidence: calculationEvidenceBinding }
+            : {}),
           ...(source === 'fallback_solve_one'
             ? {
                 scaled_from_all_unit_result_id: latestAllUnit.row.result_id,
@@ -459,6 +495,9 @@ Deno.serve(async (req) => {
           cache_hit: false,
           computed_at: latestAllUnit.row.computed_at,
           query_artifact_format: latestAllUnit.row.query_artifact_format,
+          ...(calculationEvidenceBinding
+            ? { calculation_evidence: calculationEvidenceBinding }
+            : {}),
         },
       },
       200,
@@ -520,11 +559,29 @@ Deno.serve(async (req) => {
         cache_hit: false,
         computed_at: latestAllUnit.row.computed_at,
         query_artifact_format: latestAllUnit.row.query_artifact_format,
+        ...(calculationEvidenceBinding ? { calculation_evidence: calculationEvidenceBinding } : {}),
       },
     },
     200,
   );
 });
+
+async function resolveCalculationEvidenceBinding(
+  raw: unknown,
+  dataScope: LcaDataScope,
+  userId: string,
+): Promise<
+  { ok: true; binding: LcaCalculationEvidenceBinding | null } | { ok: false; error: string }
+> {
+  const validation = await validateCalculationEvidenceForDataScope(dataScope, userId, raw);
+  if (!validation.ok) {
+    return validation;
+  }
+  return {
+    ok: true,
+    binding: validation.evidence ? buildLcaCalculationEvidenceBinding(validation.evidence) : null,
+  };
+}
 
 async function resolveReadySnapshot(
   scope: string,
@@ -541,6 +598,23 @@ async function resolveReadySnapshot(
     const ready = await fetchSnapshotArtifactMeta(explicit);
     if (!ready.ok) {
       return { ok: false, error: ready.error, status: ready.status };
+    }
+    if (dataScope === PUBLIC_PLUS_OWNER_DRAFT_SCOPE && userId) {
+      const scopeVerification = await verifySnapshotMatchesDataScope(supabaseClient, {
+        snapshotId: explicit,
+        dataScope,
+        userId,
+      });
+      if (!scopeVerification.ok) {
+        return {
+          ok: false,
+          error: scopeVerification.error,
+          status: scopeVerification.status,
+        };
+      }
+      if (!scopeVerification.matches) {
+        return { ok: false, error: 'snapshot_not_in_data_scope', status: 403 };
+      }
     }
     return { ok: true, data: { snapshot_id: ready.data.snapshot_id } };
   }
@@ -602,7 +676,7 @@ async function fetchReadySnapshotForDataScope(
   userId: string,
   dataScope: LcaDataScope,
 ): Promise<ScopedSnapshotResolution> {
-  const expectedProcessFilter = buildSnapshotProcessFilter(dataScope, userId);
+  const expectedProcessFilter = await buildSnapshotProcessFilter(dataScope, userId);
   const { data, error } = await supabaseClient
     .from('lca_network_snapshots')
     .select('id,created_at,process_filter')
@@ -690,16 +764,9 @@ async function fetchProcessMaxModifiedAt(
     .order('modified_at', { ascending: false })
     .limit(1);
 
-  if (!filter.allStates) {
-    if (filter.processStates.length > 0 && filter.includeUserId) {
-      query = query.or(
-        `state_code.in.(${filter.processStates.join(',')}),user_id.eq.${filter.includeUserId}`,
-      );
-    } else if (filter.processStates.length > 0) {
-      query = query.in('state_code', filter.processStates);
-    } else if (filter.includeUserId) {
-      query = query.eq('user_id', filter.includeUserId);
-    }
+  const visibilityExpression = buildSnapshotVisibilityOrExpression(filter);
+  if (!filter.allStates && visibilityExpression) {
+    query = query.or(visibilityExpression);
   }
 
   const { data, error } = await query.maybeSingle();
@@ -720,16 +787,11 @@ async function fetchTableMaxModifiedAt(
     .order('modified_at', { ascending: false })
     .limit(1);
 
-  if (!filter.allStates) {
-    if (filter.processStates.length > 0 && filter.includeUserId) {
-      query = query.or(
-        `state_code.in.(${filter.processStates.join(',')}),user_id.eq.${filter.includeUserId}`,
-      );
-    } else if (filter.processStates.length > 0) {
-      query = query.in('state_code', filter.processStates);
-    } else if (filter.includeUserId) {
-      query = query.eq('user_id', filter.includeUserId);
-    }
+  const visibilityExpression = buildSnapshotVisibilityOrExpression(filter, {
+    supportsCollaborationColumns: table === 'flows',
+  });
+  if (!filter.allStates && visibilityExpression) {
+    query = query.or(visibilityExpression);
   }
 
   const { data, error } = await query.maybeSingle();
@@ -738,198 +800,6 @@ async function fetchTableMaxModifiedAt(
     return null;
   }
   return data?.modified_at ? String(data.modified_at) : null;
-}
-
-async function ensureSnapshotBuildQueued(
-  scope: string,
-  userId: string,
-  dataScope: LcaDataScope = 'current_user',
-): Promise<BuildQueueResult> {
-  const processFilter = buildSnapshotProcessFilter(dataScope, userId);
-  const activeBuild = await findActiveBuildJob(scope, processFilter);
-  if (!activeBuild.ok) {
-    return activeBuild;
-  }
-  if (activeBuild.job_id && activeBuild.snapshot_id) {
-    return { ok: true, job_id: activeBuild.job_id, snapshot_id: activeBuild.snapshot_id };
-  }
-
-  const snapshotId = crypto.randomUUID();
-  const jobId = crypto.randomUUID();
-  const buildPayload = {
-    type: 'build_snapshot',
-    job_id: jobId,
-    snapshot_id: snapshotId,
-    scope,
-    ...buildSnapshotBuildPayloadFields(processFilter),
-    provider_rule: 'strict_unique_provider',
-    reference_normalization_mode: 'lenient',
-    allocation_fraction_mode: 'lenient',
-    self_loop_cutoff: 0.999999,
-    singular_eps: 1e-12,
-    no_lcia: false,
-  };
-  const requestKey = await sha256Hex(
-    JSON.stringify({
-      version: SNAPSHOT_BUILD_REQUEST_VERSION,
-      scope,
-      process_filter: processFilter,
-      payload: buildPayload,
-    }),
-  );
-
-  const { error: snapshotInsertError } = await supabaseClient.from('lca_network_snapshots').insert({
-    id: snapshotId,
-    scope: 'full_library',
-    process_filter: processFilter,
-    provider_matching_rule: 'strict_unique_provider',
-    status: 'draft',
-    created_by: userId,
-  });
-  if (snapshotInsertError && !isDuplicateKey(snapshotInsertError.code)) {
-    console.error('insert lca_network_snapshots failed', {
-      error: snapshotInsertError.message,
-      code: snapshotInsertError.code,
-      snapshot_id: snapshotId,
-    });
-    return { ok: false, error: 'snapshot_build_seed_failed', status: 500 };
-  }
-
-  const nowIso = new Date().toISOString();
-  const { error: jobInsertError } = await supabaseClient.from('lca_jobs').insert({
-    id: jobId,
-    job_type: 'build_snapshot',
-    snapshot_id: snapshotId,
-    status: 'queued',
-    payload: buildPayload,
-    diagnostics: {},
-    requested_by: userId,
-    request_key: requestKey,
-    idempotency_key: `${userId}:${requestKey}`,
-    created_at: nowIso,
-    updated_at: nowIso,
-  });
-  if (jobInsertError && !isDuplicateKey(jobInsertError.code)) {
-    console.error('insert build lca_jobs failed', {
-      error: jobInsertError.message,
-      code: jobInsertError.code,
-      job_id: jobId,
-    });
-    return { ok: false, error: 'snapshot_build_job_insert_failed', status: 500 };
-  }
-
-  const { data: jobRow, error: jobReadError } = await supabaseClient
-    .from('lca_jobs')
-    .select('id,snapshot_id')
-    .eq('request_key', requestKey)
-    .eq('job_type', 'build_snapshot')
-    .eq('requested_by', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (jobReadError || !jobRow?.id || !jobRow?.snapshot_id) {
-    console.error('read build lca_jobs failed', {
-      error: jobReadError?.message,
-      code: jobReadError?.code,
-      request_key: requestKey,
-    });
-    return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
-  }
-
-  const finalJobId = String(jobRow.id);
-  const finalSnapshotId = String(jobRow.snapshot_id);
-  if (finalJobId === jobId) {
-    const { error: enqueueError } = await supabaseClient.rpc('lca_enqueue_job', {
-      p_queue_name: QUEUE_NAME,
-      p_message: buildPayload,
-    });
-    if (enqueueError) {
-      console.error('enqueue build snapshot message failed', {
-        error: enqueueError.message,
-        code: enqueueError.code,
-      });
-      return { ok: false, error: 'snapshot_build_enqueue_failed', status: 500 };
-    }
-  }
-
-  return { ok: true, job_id: finalJobId, snapshot_id: finalSnapshotId };
-}
-
-async function findActiveBuildJob(
-  scope: string,
-  expectedProcessFilter: SnapshotProcessFilter,
-): Promise<
-  | { ok: true; job_id: string | null; snapshot_id: string | null }
-  | { ok: false; error: string; status: number }
-> {
-  const { data: rows, error } = await supabaseClient
-    .from('lca_jobs')
-    .select('id,snapshot_id,payload,status,created_at,started_at')
-    .eq('job_type', 'build_snapshot')
-    .in('status', ['queued', 'running'])
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) {
-    console.error('read active build lca_jobs failed', {
-      error: error.message,
-      code: error.code,
-    });
-    return { ok: false, error: 'snapshot_build_job_lookup_failed', status: 500 };
-  }
-
-  for (const row of rows ?? []) {
-    const status = String((row as { status?: unknown }).status ?? '');
-    const nowMs = Date.now();
-    const createdAtRaw = (row as { created_at?: unknown }).created_at;
-    const createdAtMs =
-      createdAtRaw === null || createdAtRaw === undefined
-        ? Number.NaN
-        : Date.parse(String(createdAtRaw));
-    const startedAtRaw = (row as { started_at?: unknown }).started_at;
-    const startedAtMs =
-      startedAtRaw === null || startedAtRaw === undefined
-        ? Number.NaN
-        : Date.parse(String(startedAtRaw));
-    if (
-      status === 'queued' &&
-      Number.isFinite(createdAtMs) &&
-      nowMs - createdAtMs > ACTIVE_BUILD_MAX_QUEUED_MS
-    ) {
-      continue;
-    }
-    if (
-      status === 'running' &&
-      Number.isFinite(startedAtMs) &&
-      nowMs - startedAtMs > ACTIVE_BUILD_MAX_RUNNING_MS
-    ) {
-      continue;
-    }
-
-    const payload = (row as { payload?: unknown }).payload as { scope?: unknown } | undefined;
-    if ((payload?.scope ?? '') !== scope) {
-      continue;
-    }
-    const jobId = String((row as { id?: unknown }).id ?? '').trim();
-    const snapshotId = String((row as { snapshot_id?: unknown }).snapshot_id ?? '').trim();
-    if (!jobId || !snapshotId) {
-      continue;
-    }
-    const { data: snap, error: snapErr } = await supabaseClient
-      .from('lca_network_snapshots')
-      .select('process_filter')
-      .eq('id', snapshotId)
-      .maybeSingle();
-    if (snapErr || !snap) {
-      continue;
-    }
-    const filter = (snap as { process_filter?: unknown }).process_filter;
-    if (matchesSnapshotProcessFilter(filter, expectedProcessFilter)) {
-      return { ok: true, job_id: jobId, snapshot_id: snapshotId };
-    }
-  }
-
-  return { ok: true, job_id: null, snapshot_id: null };
 }
 
 async function fetchSnapshotArtifactMeta(
@@ -1011,101 +881,58 @@ async function fetchLatestSingleSolveForProcess(
   userId: string,
   processIndex: number,
 ): Promise<{ ok: true; row: LatestSingleSolveRow | null } | { ok: false; error: string }> {
-  const { data: jobs, error: jobsError } = await supabaseClient
-    .from('lca_jobs')
-    .select('id,payload,created_at')
-    .eq('snapshot_id', snapshotId)
-    .eq('job_type', 'solve_one')
-    .eq('status', 'completed')
-    .eq('requested_by', userId)
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const projection = await callLcaReadLatestSingleSolveResultRpc(supabaseClient, {
+    requestedBy: userId,
+    snapshotId,
+    processIndex,
+  });
 
-  if (jobsError) {
-    console.warn('query latest solve_one jobs failed', {
-      error: jobsError.message,
+  if (!projection.ok) {
+    console.warn('query latest solve_one projection failed', {
+      error: projection.message,
+      code: projection.code,
+      details: projection.details,
       snapshot_id: snapshotId,
       user_id: userId,
     });
     return { ok: false, error: 'latest_single_lookup_failed' };
   }
 
-  for (const row of jobs ?? []) {
-    const jobId = String((row as { id?: unknown }).id ?? '').trim();
-    if (!jobId) {
-      continue;
-    }
-
-    const amount = amountForProcessIndex((row as { payload?: unknown }).payload, processIndex);
-    if (amount === null) {
-      continue;
-    }
-
-    const { data: resultRow, error: resultError } = await supabaseClient
-      .from('lca_results')
-      .select('id,created_at')
-      .eq('job_id', jobId)
-      .maybeSingle();
-
-    if (resultError) {
-      console.warn('query result by solve_one job failed', {
-        error: resultError.message,
-        snapshot_id: snapshotId,
-        user_id: userId,
-        job_id: jobId,
-      });
-      continue;
-    }
-    if (!resultRow) {
-      continue;
-    }
-
-    return {
-      ok: true,
-      row: {
-        result_id: String(resultRow.id),
-        computed_at: String(resultRow.created_at),
-        amount,
-      },
-    };
+  const data = asRecord(projection.data);
+  if (!data) {
+    return { ok: true, row: null };
   }
 
-  return { ok: true, row: null };
-}
+  const result = asRecord(data.result);
+  if (!result) {
+    console.warn('latest solve_one projection missing result payload', {
+      snapshot_id: snapshotId,
+      user_id: userId,
+      process_index: processIndex,
+    });
+    return { ok: false, error: 'latest_single_lookup_failed' };
+  }
 
-function amountForProcessIndex(payload: unknown, processIndex: number): number | null {
-  const obj = (payload ?? {}) as {
-    demand?: unknown;
-    rhs?: unknown;
+  const amount = Number(data.amount ?? 1);
+  return {
+    ok: true,
+    row: {
+      result_id: stringField(result, 'resultId'),
+      computed_at: stringField(result, 'createdAt'),
+      amount: Number.isFinite(amount) && amount !== 0 ? amount : 1,
+    },
   };
-
-  const demand = obj.demand as { process_index?: unknown; amount?: unknown } | undefined;
-  if (
-    demand &&
-    Number.isInteger(demand.process_index) &&
-    Number(demand.process_index) === processIndex
-  ) {
-    const amount = Number(demand.amount ?? 1);
-    if (Number.isFinite(amount) && amount !== 0) {
-      return amount;
-    }
-  }
-
-  if (!Array.isArray(obj.rhs)) {
-    return null;
-  }
-  if (!Number.isInteger(processIndex) || processIndex < 0 || processIndex >= obj.rhs.length) {
-    return null;
-  }
-  const amount = Number(obj.rhs[processIndex]);
-  if (!Number.isFinite(amount) || amount === 0) {
-    return null;
-  }
-  return amount;
 }
 
-function isDuplicateKey(code: string | undefined): boolean {
-  return code === '23505';
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function stringField(record: Record<string, unknown>, field: string): string {
+  const value = record[field];
+  return typeof value === 'string' && value.trim().length > 0 ? value : '';
 }
 
 function processEntryForId(
@@ -1354,13 +1181,6 @@ async function fetchJsonByHttp<T>(
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'fetch_failed' };
   }
-}
-
-async function sha256Hex(input: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
 }
 
 function json(body: unknown, status = 200): Response {

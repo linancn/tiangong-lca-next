@@ -1,45 +1,61 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import '@supabase/functions-js/edge-runtime.d.ts';
 
-import { z } from 'zod';
-
 // We'll make a direct Postgres connection to update the document
 import { InvokeEndpointCommand, SageMakerRuntimeClient } from '@aws-sdk/client-sagemaker-runtime';
 import postgres from 'postgres';
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
+import {
+  parseEmbeddingFtJobs,
+  type EmbeddingFtJobError,
+  type EmbeddingFtJob as Job,
+} from '../_shared/embedding_ft_job.ts';
+import { embeddingFtPostgresOptions } from '../_shared/embedding_ft_postgres.ts';
+import {
+  classifyEmbeddingJobError,
+  parsePositiveInteger,
+  type ClassifiedEmbeddingJobError,
+} from '../_shared/embedding_queue_runtime.ts';
+import { extractEmbeddingVector } from '../_shared/embedding_vector.ts';
 import { getRedisClient } from '../_shared/redis_client.ts';
-import { supabaseClient as supabase } from '../_shared/supabase_client.ts';
+import { supabaseAuthClient } from '../_shared/supabase_client.ts';
 
 const SAGEMAKER_ENDPOINT_NAME = Deno.env.get('SAGEMAKER_ENDPOINT_NAME');
 const AWS_REGION = 'us-east-1';
 const AWS_ACCESS_KEY_ID = Deno.env.get('AWS_ACCESS_KEY_ID');
 const AWS_SECRET_ACCESS_KEY = Deno.env.get('AWS_SECRET_ACCESS_KEY');
 const AWS_SESSION_TOKEN = Deno.env.get('AWS_SESSION_TOKEN');
+const DB_UPDATE_LOCK_TIMEOUT = Deno.env.get('EMBEDDING_FT_DB_LOCK_TIMEOUT')?.trim() || '5s';
+const DB_UPDATE_STATEMENT_TIMEOUT =
+  Deno.env.get('EMBEDDING_FT_DB_STATEMENT_TIMEOUT')?.trim() || '30s';
+const DB_RETRY_BACKOFF_SECONDS = parsePositiveInteger(
+  Deno.env.get('EMBEDDING_FT_DB_RETRY_BACKOFF_SECONDS'),
+  300,
+);
 const textDecoder = new TextDecoder();
 
 // Initialize Postgres client
 const sql = postgres(
   // `SUPABASE_DB_URL` is a built-in environment variable
   Deno.env.get('SUPABASE_DB_URL')!,
+  embeddingFtPostgresOptions(),
 );
 
-// Job schema: now supports composite PK (id, version)
-const jobSchema = z.object({
-  jobId: z.number(),
-  id: z.uuid(),
-  version: z.string(),
-  schema: z.string(),
-  table: z.string(),
-  contentFunction: z.string(),
-  embeddingColumn: z.string(),
-});
+type FailedJob = Job & { error: string };
 
-const failedJobSchema = jobSchema.extend({
-  error: z.string(),
-});
+type DeferredJob = FailedJob & {
+  category: string;
+};
 
-type Job = z.infer<typeof jobSchema>;
-type FailedJob = z.infer<typeof failedJobSchema>;
+type JobOutcome =
+  | {
+      status: 'completed';
+    }
+  | {
+      status: 'deferred';
+      category: string;
+      error: string;
+    };
 
 type Row = {
   id: string;
@@ -66,80 +82,6 @@ function getSageMakerClient() {
   return sagemakerClient;
 }
 
-function isNumberArray(value: unknown): value is number[] {
-  return Array.isArray(value) && value.every((item) => typeof item === 'number');
-}
-
-/**
- * Attempts to parse a JSON string, returning undefined when parsing is not possible.
- */
-function safeParseJsonString(value: string): unknown | undefined {
-  const trimmed = value.trim();
-
-  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
-    return undefined;
-  }
-
-  try {
-    return JSON.parse(trimmed);
-  } catch (error) {
-    console.warn('failed to parse JSON string from model response', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return undefined;
-  }
-}
-
-function findFirstNumberArray(value: unknown): number[] | undefined {
-  if (typeof value === 'string') {
-    const parsed = safeParseJsonString(value);
-    if (parsed !== undefined) {
-      return findFirstNumberArray(parsed);
-    }
-    return undefined;
-  }
-
-  if (isNumberArray(value)) {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const found = findFirstNumberArray(item);
-      if (found) {
-        return found;
-      }
-    }
-    return undefined;
-  }
-
-  if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-
-    for (const key of ['embedding', 'embeddings', 'data']) {
-      if (key in obj) {
-        const found = findFirstNumberArray(obj[key]);
-        if (found) {
-          return found;
-        }
-      }
-    }
-
-    for (const candidate of Object.values(obj)) {
-      const found = findFirstNumberArray(candidate);
-      if (found) {
-        return found;
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function extractEmbedding(result: unknown): number[] | undefined {
-  return findFirstNumberArray(result);
-}
-
 // Listen for HTTP requests
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
@@ -153,7 +95,7 @@ Deno.serve(async (req) => {
   const redis = await getRedisClient();
 
   const authResult = await authenticateRequest(req, {
-    supabase: supabase,
+    authClient: supabaseAuthClient,
     redis: redis,
     allowedMethods: [AuthMethod.JWT, AuthMethod.USER_API_KEY, AuthMethod.SERVICE_API_KEY],
   });
@@ -162,16 +104,17 @@ Deno.serve(async (req) => {
     return authResult.response!;
   }
 
-  // Use Zod to parse and validate the request body
-  const parseResult = z.array(jobSchema).safeParse(await req.json());
-
-  if (parseResult.error) {
-    return new Response(`invalid request body: ${parseResult.error.message}`, {
+  let pendingJobs: Job[];
+  try {
+    pendingJobs = parseEmbeddingFtJobs(await req.json());
+  } catch (error) {
+    const code = (error as EmbeddingFtJobError)?.code ?? 'INVALID_EMBEDDING_JOB_BATCH';
+    const message = error instanceof Error ? error.message : 'invalid request body';
+    return new Response(JSON.stringify({ error: message, code }), {
+      headers: { 'content-type': 'application/json' },
       status: 400,
     });
   }
-
-  const pendingJobs = parseResult.data;
 
   // Track jobs that completed successfully
   const completedJobs: Job[] = [];
@@ -179,13 +122,24 @@ Deno.serve(async (req) => {
   // Track jobs that failed due to an error
   const failedJobs: FailedJob[] = [];
 
+  // Track jobs deliberately deferred with pgmq visibility timeout backoff
+  const deferredJobs: DeferredJob[] = [];
+
   async function processJobs() {
     let currentJob: Job | undefined;
 
     while ((currentJob = pendingJobs.shift()) !== undefined) {
       try {
-        await processJob(currentJob);
-        completedJobs.push(currentJob);
+        const outcome = await processJob(currentJob);
+        if (outcome.status === 'deferred') {
+          deferredJobs.push({
+            ...currentJob,
+            category: outcome.category,
+            error: outcome.error,
+          });
+        } else {
+          completedJobs.push(currentJob);
+        }
       } catch (error) {
         const msg = error instanceof Error ? error.message : JSON.stringify(error);
         console.error('job failed', {
@@ -221,12 +175,14 @@ Deno.serve(async (req) => {
   // Log completed and failed jobs for traceability
   console.log('finished processing jobs:', {
     completedJobs: completedJobs.length,
+    deferredJobs: deferredJobs.length,
     failedJobs: failedJobs.length,
   });
 
   return new Response(
     JSON.stringify({
       completedJobs,
+      deferredJobs,
       failedJobs,
     }),
     {
@@ -237,6 +193,7 @@ Deno.serve(async (req) => {
       headers: {
         'content-type': 'application/json',
         'x-completed-jobs': completedJobs.length.toString(),
+        'x-deferred-jobs': deferredJobs.length.toString(),
         'x-failed-jobs': failedJobs.length.toString(),
       },
     },
@@ -299,20 +256,15 @@ async function generateEmbedding(text: string) {
   }
 
   const parsed = JSON.parse(bodyString);
-  const embedding = extractEmbedding(parsed);
-
-  if (!embedding) {
-    throw new Error('failed to generate embedding from SageMaker response');
-  }
-
-  return embedding;
+  return extractEmbeddingVector(parsed);
 }
 
 /**
  * Processes an embedding job.
  */
-async function processJob(job: Job) {
+async function processJob(job: Job): Promise<JobOutcome> {
   const { jobId, id, version, schema, table, contentFunction, embeddingColumn } = job;
+  const jobStartedAt = performance.now();
 
   // Log the id & version for traceability of each job
   console.log('processing embedding job', {
@@ -324,6 +276,7 @@ async function processJob(job: Job) {
   });
 
   // Fetch content for the schema/table/row combination
+  const fetchStartedAt = performance.now();
   const [row]: [Row] = await sql`
     select
       id,
@@ -335,6 +288,15 @@ async function processJob(job: Job) {
       id = ${id} and version = ${version}
   `;
 
+  console.log('embedding job content fetch finished', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    found: Boolean(row),
+    durationMs: elapsedMs(fetchStartedAt),
+  });
+
   if (!row) {
     console.log('row not found or version changed, ACKing job', {
       id,
@@ -343,11 +305,9 @@ async function processJob(job: Job) {
       table: `${schema}.${table}`,
     });
 
-    await sql`
-      select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
-    `;
+    await ackJob(job, 'row_not_found_or_version_changed');
 
-    return;
+    return { status: 'completed' };
   }
 
   if (typeof row.content !== 'string') {
@@ -359,26 +319,59 @@ async function processJob(job: Job) {
       contentType: typeof row.content,
     });
 
-    await sql`
-      select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
-    `;
+    await ackJob(job, 'invalid_content');
 
-    return;
+    return { status: 'completed' };
   }
 
-  console.log('generating embedding for ', row.content);
+  console.log('generating embedding', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    contentLength: row.content.length,
+  });
 
+  const embeddingStartedAt = performance.now();
   const embedding = await generateEmbedding(row.content);
 
-  const result = await sql`
-    update
-      ${sql(schema)}.${sql(table)}
-    set
-      ${sql(embeddingColumn)} = ${JSON.stringify(embedding)},
-      embedding_ft_at = now()
-    where
-      id = ${id} and version = ${version}
-  `;
+  console.log('embedding generated', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    dimensions: embedding.length,
+    durationMs: elapsedMs(embeddingStartedAt),
+  });
+
+  const updateStartedAt = performance.now();
+  let result;
+
+  try {
+    result = await updateEmbeddingWithTimeouts(job, embedding);
+  } catch (error) {
+    const classified = classifyEmbeddingJobError(error);
+
+    if (classified.retryable) {
+      await deferJob(job, classified);
+      return {
+        status: 'deferred',
+        category: classified.category,
+        error: classified.message,
+      };
+    }
+
+    throw error;
+  }
+
+  console.log('embedding update finished', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    rowsAffected: result.count,
+    durationMs: elapsedMs(updateStartedAt),
+  });
 
   if (result.count === 0) {
     console.log('no rows affected - record not found or version changed, ACKing job', {
@@ -397,12 +390,87 @@ async function processJob(job: Job) {
     });
   }
 
+  await ackJob(job, result.count === 0 ? 'no_rows_affected' : 'updated');
+
+  // Confirm completion for this id/version
+  console.log('finished embedding job', {
+    id,
+    version,
+    jobId,
+    totalDurationMs: elapsedMs(jobStartedAt),
+  });
+
+  return { status: 'completed' };
+}
+
+async function updateEmbeddingWithTimeouts(job: Job, embedding: number[]) {
+  const { id, version, schema, table, embeddingColumn } = job;
+
+  return await sql.begin(async (transaction) => {
+    const tx = transaction as unknown as typeof sql;
+
+    await tx`
+      select set_config('lock_timeout', ${DB_UPDATE_LOCK_TIMEOUT}, true)
+    `;
+    await tx`
+      select set_config('statement_timeout', ${DB_UPDATE_STATEMENT_TIMEOUT}, true)
+    `;
+
+    return await tx`
+      update
+        ${tx(schema)}.${tx(table)}
+      set
+        ${tx(embeddingColumn)} = ${JSON.stringify(embedding)},
+        embedding_ft_at = now()
+      where
+        id = ${id} and version = ${version}
+    `;
+  });
+}
+
+async function ackJob(job: Job, reason: string) {
+  const { jobId, id, version, schema, table } = job;
+  const ackStartedAt = performance.now();
+
   await sql`
     select pgmq.delete(${QUEUE_NAME}, ${jobId}::bigint)
   `;
 
-  // Confirm completion for this id/version
-  console.log('finished embedding job', { id, version, jobId });
+  console.log('embedding job ACKed', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    reason,
+    durationMs: elapsedMs(ackStartedAt),
+  });
+}
+
+async function deferJob(job: Job, error: ClassifiedEmbeddingJobError) {
+  const { jobId, id, version, schema, table } = job;
+  const deferStartedAt = performance.now();
+
+  await sql`
+    select pgmq.set_vt(${QUEUE_NAME}, ${jobId}::bigint, ${DB_RETRY_BACKOFF_SECONDS}::integer)
+  `;
+
+  console.warn('embedding job deferred after retryable database contention', {
+    id,
+    version,
+    jobId,
+    table: `${schema}.${table}`,
+    category: error.category,
+    code: error.code,
+    retryBackoffSeconds: DB_RETRY_BACKOFF_SECONDS,
+    lockTimeout: DB_UPDATE_LOCK_TIMEOUT,
+    statementTimeout: DB_UPDATE_STATEMENT_TIMEOUT,
+    durationMs: elapsedMs(deferStartedAt),
+    error: error.message,
+  });
+}
+
+function elapsedMs(startedAt: number): number {
+  return Math.round(performance.now() - startedAt);
 }
 
 /**

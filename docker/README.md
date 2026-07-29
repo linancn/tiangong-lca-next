@@ -14,17 +14,30 @@ This project includes two sync workflows used to keep self-hosted assets aligned
 
 Script: `docker/pull-edge-functions.sh`
 
-Default behavior:
-- Clone latest functions from `https://github.com/linancn/tiangong-lca-edge-functions.git`
-- Update `docker/volumes/functions/`
-- Backup current `docker/volumes/functions/` to `docker/volumes/functions.backup.<timestamp>`
+Behavior:
+- Require one reviewed full Edge commit SHA instead of following a moving ref.
+- Resolve that ref to one exact commit.
+- Replace `docker/volumes/functions/` with a delete-aware mirror of `supabase/functions/`.
+- Record the repository and resolved commit in `docker/volumes/functions/.source-revision.json`.
 
 Command:
 
 ```bash
 cd /path/to/tiangong-lca-next
-./docker/pull-edge-functions.sh
+./docker/pull-edge-functions.sh --ref <reviewed-40-character-edge-commit>
 ```
+
+Use another repository only for an explicit local or fork validation:
+
+```bash
+./docker/pull-edge-functions.sh \
+  --repo /path/to/tiangong-lca-edge-functions \
+  --ref <reviewed-40-character-edge-commit>
+```
+
+The helper is safe to invoke from another working directory because it resolves
+the target from its own location. It removes stale mirror files; review the
+complete generated diff before committing it.
 
 ### 2) Sync `data.sql` From Remote Supabase
 

@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-29"
-lastReviewedCommit: "357778f9ca2f9ed3f10d79d617a027ff87a451c5"
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: semantic harness qualification and the Process v2 search cutover preserve repository ownership, routing, and Database/Edge boundaries.'
+lastReviewedCommit: "9504e41134e54837c81a423db39ee1f3aceaa55b"
+lastReviewedNote: 'Reviewed for Issue #720: exact-ref, delete-aware Edge mirror generation remains within the Docker frontend-runtime ownership boundary and preserves Database/Edge source-of-truth separation.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

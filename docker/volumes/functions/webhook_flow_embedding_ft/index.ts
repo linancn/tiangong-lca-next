@@ -3,6 +3,7 @@ import '@supabase/functions-js/edge-runtime.d.ts';
 
 import { authenticateRequest, AuthMethod } from '../_shared/auth.ts';
 import { corsHeaders } from '../_shared/cors.ts';
+import { generateFlowMarkdown, normalizeJsonOrdered } from '../_shared/flow_extraction.ts';
 import { supabaseClient } from '../_shared/supabase_client.ts';
 
 interface WebhookPayload {
@@ -563,7 +564,6 @@ const tidasFlowToMarkdown = (flowJson: any, lang = DEFAULT_LANG) => {
 
 Deno.serve(async (req) => {
   const authResult = await authenticateRequest(req, {
-    supabase: supabaseClient,
     allowedMethods: [AuthMethod.SERVICE_API_KEY],
   });
 
@@ -618,33 +618,25 @@ Deno.serve(async (req) => {
         throw new Error(`batch index ${index}: Record is missing id or version`);
       }
 
-      const jsonDataRaw = (record as Record<string, any>).json_ordered;
-      // console.log("[webhook_flow_embedding_ft] json_ordered type", {
-      //   index,
-      //   type: typeof jsonDataRaw,
-      //   isString: typeof jsonDataRaw === "string",
-      // });
-      if (typeof jsonDataRaw === 'string') {
-        try {
-          (record as Record<string, any>).json_ordered = JSON.parse(jsonDataRaw);
-        } catch (error) {
-          console.error('[webhook_flow_embedding_ft] json parse failed', {
-            index,
-            message: error instanceof Error ? error.message : String(error),
-          });
-          throw new Error(
-            `batch index ${index}: Failed to parse json_ordered string: ${
-              error instanceof Error ? error.message : 'unknown'
-            }`,
-          );
-        }
+      let jsonData: unknown;
+      try {
+        jsonData = normalizeJsonOrdered((record as Record<string, unknown>).json_ordered);
+      } catch (error) {
+        console.error('[webhook_flow_embedding_ft] json parse failed', {
+          index,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        throw new Error(
+          `batch index ${index}: Failed to parse json_ordered string: ${
+            error instanceof Error ? error.message : 'unknown'
+          }`,
+        );
       }
-      const jsonData = (record as Record<string, any>).json_ordered;
       if (!jsonData) {
         throw new Error(`batch index ${index}: No json_ordered data found in record`);
       }
 
-      const markdown = tidasFlowToMarkdown(jsonData);
+      const markdown = generateFlowMarkdown(jsonData);
       console.log(markdown);
       // console.log("[webhook_flow_embedding_ft] markdown generated", {
       //   index,
