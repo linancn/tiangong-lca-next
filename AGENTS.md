@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: the canonical evidence writer fix preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and later workspace integration remain unchanged.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

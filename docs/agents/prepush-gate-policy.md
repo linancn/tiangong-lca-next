@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: repository-rooted evidence formatting does not change managed-push, protected-branch, browser, or production-write policy.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical artifact regeneration, semantic harness qualification, full coverage, managed-push, and production-write policy remain fail closed.'
 ---
 
 # Pre-Push Gate Policy

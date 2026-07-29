@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: repository-rooted evidence formatting does not change bootstrap, exact-candidate proof, guarded cleanup, main-relative Docpact, or managed push.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: bootstrap, focused Process RPC proof, guarded cleanup, canonical generation, main-relative Docpact, and managed push remain the required loop.'
 ---
 
 # Development Bootstrap

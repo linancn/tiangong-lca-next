@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: raw external evidence must pass the repository canonical checker without host normalization; authenticated cleanup and managed gates remain unchanged.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: focused Process and data-workflow proof, canonical semantic evidence, complete coverage, matching non-production validation, and managed gates remain required.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml

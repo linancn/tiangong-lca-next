@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: the canonical evidence writer repair is delivered while the separate resume-dispatch defect remains tracked.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: the coverage queue remains empty; staging Database/Edge E2E is complete and the matching Next picker smoke remains the explicit environment follow-up.'
 ---
 
 # Testing Execution State
