@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt and test-only fix still require one clean managed push; production-write authorization and release-evidence policies remain fail closed.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: removing superseded compatibility entries still requires a new clean managed push; production-write authorization and release-evidence policies remain fail closed.'
 ---
 
 # Pre-Push Gate Policy

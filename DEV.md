@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 336ae0226b99014b070fe9114fc17a41cf819aae
-lastReviewedNote: 'Reviewed for Issue #724: the exact role-boundary fix follows the existing qualify, commit-receipt, focused-production-proof, and managed-push sequence.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: retiring superseded digest compatibility entries follows the existing canonical-evidence, focused-contract-test, and managed-push sequence.'
 ---
 
 # Development Bootstrap

@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: qualification and authenticated production proof now require the same exact data-processing role fulfillment; the 49-ID, credential, write-safety, and cleanup contracts remain unchanged.'
+lastReviewedCommit: 82ed0855eed7c855c5298f6568c707b3e3b4eced
+lastReviewedNote: 'Reviewed for Issue #724: the verified 60-pass production run preserves the 49-ID, credential, write-safety, cleanup, and explicit-promotion-confirmation contracts.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty; deterministic role-boundary fulfillment closes a release-harness false positive without adding a new testing backlog item.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after removing superseded digest compatibility entries; no new testing backlog item is required.'
 ---
 
 # Testing Execution State

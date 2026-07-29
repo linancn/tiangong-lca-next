@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: exact role-boundary fulfillment removes the qualification false positive within the existing three-browser matrix; no strategy or matrix expansion is required.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: exact production evidence eliminates two temporary digest compatibility entries; no strategy or matrix expansion is required.'
 ---
 
 # Testing Strategy

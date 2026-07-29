@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: hash-only role-boundary navigation now uses the existing fresh-document and exact-request-fulfillment pattern; qualification and production share one assertion path.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: compatibility entries sunset when verified evidence directly matches the current input hash, following the existing exact-digest proof pattern.'
 ---
 
 # Testing Patterns Reference

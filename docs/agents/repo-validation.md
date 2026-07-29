@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ab3003ed063f6651f37a8c8c4a136be266b563c0
-lastReviewedNote: 'Reviewed for Issue #724: the route-inventory fix and refreshed qualification receipt follow the existing clean-candidate, focused-production-proof, and managed-gate workflow without changing validation commands.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: obsolete digest compatibility entries are removed only after exact evidence hashes match and focused contract tests pass; validation commands remain unchanged.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
