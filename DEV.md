@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8
-lastReviewedNote: 'Reviewed for Issue #720: the normal bootstrap and managed-push loop is unchanged; self-hosted Edge mirror refresh now has one canonical full-SHA helper command plus receipt and idempotence proof.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: qualification generates one tracked receipt that must merge through dev before the clean authorized production-E2E candidate runs.'
 ---
 
 # Development Bootstrap
@@ -145,6 +145,8 @@ If no push will occur and a standalone handoff needs final evidence, run `npm ru
 | repo AI-doc lint | `scripts/docpact validate-config --root . --strict && scripts/docpact lint --root . --base <base> --head <head> --mode enforce` |
 
 Run `npm run e2e:qualify` on a clean committed source before preparing a release candidate. It executes the release-shaped Docker bundle against the closed semantic backend simulator, including all 72 canonical test positions, all 49 live assertion IDs, and every declared Chromium, Firefox, and WebKit case. The simulator implements only the exact audited API contracts used by the suite; unknown requests, external origins, and production writes fail the run. Its checked-in receipt is bound to the source inputs and browser/runtime identity, and `release:preflight` rejects missing or stale receipts.
+
+A successful qualification updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`. Review and merge that generated receipt through the normal tracked `dev` PR flow before invoking authenticated release proof from the resulting clean commit. The receipt path is excluded from its own semantic input digest, so committing the generated record preserves the qualified input identity.
 
 After explicit user authorization, an operator runs the complete authenticated closure from a clean committed candidate. The runtime-only users file must be mode `0600`; `--role` selects a credential entry but does not impose a global business-role requirement:
 

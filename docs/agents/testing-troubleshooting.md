@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical regeneration resolves locale digest conflicts, while focused RPC proof and managed gates diagnose runtime or coverage drift.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: release recovery now explicitly distinguishes a stale qualification receipt from the expected dirty tree produced by successful qualification.'
 ---
 
 # Testing Troubleshooting
@@ -61,6 +61,7 @@ Canonical baseline and proof ownership stays with `DEV.md` and `docs/agents/repo
 | data workflow smoke assertion mismatch | `fixtures/data/**`, `fixtures/result/**`, workflow default path, or last-run artifact drifted apart | compare the case in `tests/data-workflows/fixtures/result/README.md`, then update the paired input fixture, expected-result Markdown, workflow lib default, and unit proof together |
 | release E2E fails before any browser test | Node/Git/Docker, pinned image, output permissions, candidate identity, browser launch, bundle readiness, backend/auth, recovery ledger, or discovery is invalid | run `npm run e2e:env:doctor -- --format json`, then inspect the first failed check in `preflight-report.json`; use its one next command instead of starting the full suite |
 | release E2E refuses a dirty candidate | release evidence cannot identify a mutable worktree | commit the intended candidate before release proof, or use `npm run e2e:dev` for focused diagnosis; never mount the parent workspace to make the dirty tree appear runnable |
+| release E2E reports a stale qualification receipt, then refuses the dirty candidate after `e2e:qualify` succeeds | qualification correctly generated a new tracked receipt, so the worktree is no longer a releasable immutable candidate | review the receipt, land it through a tracked `dev` PR, and retry from the clean merged candidate; do not discard the result, hand-edit its hashes, or use `e2e:dev` as release evidence |
 | release E2E reports `E2E_INVOCATION_LOCKED` | another install/run/resume/clean command still owns the project runtime | wait for that exact command to finish and retry the reported command; a dead PID lock is recovered automatically, so do not delete live runtime state |
 | `e2e:release:resume` rejects or is unavailable | the receipt expired, arguments were supplied, identity/input drifted, or execution reached browser/fixture/cleanup work | start a fresh `npm run e2e:release`; resume is intentionally limited to one exact pre-fixture failure and always reruns preflight |
 | Playwright refuses `E2E_BASE_URL` | the browser target is not the local candidate frontend | use a loopback candidate URL and let `playwright.config.ts` start `npm run start:main`; never point the Playwright frontend target at production |

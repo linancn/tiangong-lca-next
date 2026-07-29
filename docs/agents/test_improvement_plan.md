@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: semantic harness qualification plus focused Process service/data-workflow tests remain sufficient without expanding browser scope before deployed picker smoke.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: the existing three-browser qualification and tracked-receipt workflow remains sufficient; no expansion of the semantic matrix is required.'
 ---
 
 # Testing Strategy
@@ -47,6 +47,7 @@ lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev
 - the localization semantic E2E layer is deliberately bounded: 49 stable route/view assertion IDs, a Chromium full matrix, three-browser critical scenarios, registry-derived locale/content-language loops, and digest-bound evidence that invalidates itself when a locale, covered input, or executable dependency lock changes; root application release-version metadata is excluded only after the evidence's raw lock is proven at its recorded commit
 - production-backed E2E uses a local candidate frontend and an explicitly authorized local operator trust boundary; GitHub Actions runs the credential-free/read-only browser matrix only on demand and for the exact release SHA, while host `CI`/`GITHUB_ACTIONS` rejects production-data mode before Docker. After that local check passes, the controller clears only image-inherited CI markers and still requires authenticated mode plus the two explicit production-write guards (and a separate verified-evidence opt-in), writes intent before create, verifies UUID/owner/five-field registry markers before delete, and ends with `created=cleaned`, `leaked=0`
 - local release proof now treats environment setup as productized test infrastructure: a pinned-image installer, read-only doctor, archived clean candidate, one cached production build, ordered pre-fixture checks, phase-coded diagnostics, and exact one-hour continuation remove repeated environment exploration without weakening browser or cleanup evidence
+- semantic-harness qualification is a credential-free precursor when the release controller requires it; its generated tracked receipt must be reviewed and merged before the clean authenticated candidate runs, while the receipt path stays outside its own semantic input digest
 - browser/UI race repair remains a focused loop (`e2e:dev` with one project/spec/grep plus explicit readiness states); only after focused repeat stability should an operator spend the complete release matrix, and no blanket retry or fixed sleep may substitute for first-attempt release proof
 - same-document locale behavior is a first-class browser risk: Header Umi `SelectLang` stays `reload={false}`, and proof covers retained document identity plus stale-reference-response race rejection
 - clean-runner localization tests should prove that active locale and full-gate commands pass with private confirmation files absent; generated private fixtures remain limited to historical German compatibility-checker tests

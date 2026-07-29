@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: "2026-07-29"
-lastReviewedCommit: "9504e41134e54837c81a423db39ee1f3aceaa55b"
-lastReviewedNote: 'Reviewed for Issue #720: exact-ref, delete-aware Edge mirror generation remains within the Docker frontend-runtime ownership boundary and preserves Database/Edge source-of-truth separation.'
+lastReviewedCommit: "d0042d063b4cffd1363b346df69ee8ab6242da2e"
+lastReviewedNote: 'Reviewed for Issue #722: the tracked semantic-harness qualification receipt remains governed by the existing testing-and-gate contract; the required-doc and ownership sets remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

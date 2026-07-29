@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: the coverage queue remains empty; staging Database/Edge E2E is complete and the matching Next picker smoke remains the explicit environment follow-up.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: the coverage queue remains empty; the exact Edge mirror gate and current three-browser qualification refresh the maintained full-closure baseline.'
 ---
 
 # Testing Execution State
@@ -40,10 +40,10 @@ lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev
 ## Checked-In Reference Baseline
 
 - reference full run: `npm run prepush:gate`
-- verified commit: `26ae31317d885ec6dc6879066c0e212f526f1a8e`
-- suites: `403`
-- tests: `5438`
-- tracked source files: `454`
+- verified commit: `217a2b6a01b3cc8a65d026390cb0a4fa802edf68`
+- suites: `405`
+- tests: `5486`
+- tracked source files: `456`
 - coverage: `100%` statements, branches, functions, and lines
 
 This is a checked-in reference, not a per-PR execution ledger. A delivery's post-commit, hook-owned full-gate result belongs in its PR validation evidence; update this section when the reference counts, coverage policy, or queue state materially changes.
@@ -60,6 +60,7 @@ This is a checked-in reference, not a per-PR execution ledger. A delivery's post
 - Issue #635 adds a separate Playwright semantic localization proof surface: `npm run test:e2e:i18n` derives all locale/content-language expectations from registries, binds 49 stable route/view assertion IDs, runs Chromium across the complete matrix, and requires the login/selector, team authoring, and process lifecycle critical scenarios in Chromium, Firefox, and WebKit
 - semantic E2E GitHub Actions is credential-free/read-only and runs only contract discovery plus three-browser public semantics; it is optional through `workflow_dispatch`, mandatory for the exact release SHA, and absent from routine PR/dev triggers, while authenticated candidate-local/production-backend closure is restricted to an explicitly authorized local operator session with authenticated mode, both production-write guards, and an explicit verified-evidence opt-in
 - Issue #654 adds `e2e:env:install`, read-only `e2e:env:doctor`, exact-candidate `e2e:release`, argument-free bounded `e2e:release:resume`, owned cleanup, and focused `e2e:dev`; release mode archives only a clean Next commit, uses a digest-pinned container and cached production build, performs all safe checks before fixture intent, and never mounts the workspace
+- Issue #722 records the current credential-free semantic-harness qualification for the exact post-mirror `dev` inputs: 48 canonical cases and 12 harness-control cases executed, 24 designed cases skipped, all 49 assertion IDs closed, and external requests, production writes, and cleanup residue all zero. The generated receipt must merge before the clean authorized production run.
 - Issue #704 tracks two harness defects observed during authenticated production evidence refreshes. The evidence-writer repair now resolves the repository-owned Prettier configuration independently of `/e2e-output` and gives the checker a read-only external-artifact path, so raw container bytes can satisfy the same canonical contract without host normalization. The separate argument-free `e2e:release:resume` dispatch defect remains open under #704.
 - Issue #660 keeps production-data E2E fail-closed on real CI hosts while allowing an authorized local run to override only the release image's inherited `CI`/`GITHUB_ACTIONS` markers before the unchanged in-container authorization and ledger checks
 - tracked semantic evidence remains fail closed for production readiness until one full local authenticated execution closes every assertion, matches the declared source/test/route bindings, writes its intent ledger before create, verifies UUID + owner + all five multilingual field markers before delete, and reports `created=cleaned` with `leaked=0`; routine pre-push checks validate the record structurally without requiring current production-proof hashes, package-lock verification rejects all executable dependency drift while tolerating only root release-version metadata after proving the evidence's raw lock at its recorded commit, and adding a registry locale still invalidates older evidence rather than silently shrinking coverage
