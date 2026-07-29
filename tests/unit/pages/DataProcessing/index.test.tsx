@@ -513,7 +513,9 @@ describe('DataProcessing page', () => {
     ]);
 
     expect(formatArtifactByteSize(-1)).toBe('-');
+    expect(formatArtifactByteSize(null)).toBe('-');
     expect(formatArtifactByteSize(512)).toBe('512 B');
+    expect(formatArtifactByteSize('512')).toBe('512 B');
     expect(formatArtifactByteSize(1536)).toBe('1.5 KB');
     expect(formatArtifactByteSize(2 * 1024 * 1024)).toBe('2.00 MB');
     expect(formatNumericValue('bad')).toBe('-');
@@ -2224,11 +2226,36 @@ describe('DataProcessing page', () => {
     }
   });
 
-  it('reports unavailable closure downloads and opens a valid signed report', async () => {
+  it('renders ready and pending primary roles independently with semantic metadata', async () => {
+    render(<DataProcessing />);
+    await waitForValidCertificate();
+
+    const report = screen.getByTestId('closure-artifact-closure_report_xlsx');
+    const manifest = screen.getByTestId('closure-artifact-closure_issue_manifest');
+    expect(within(report).getByText(/Available until: 2026-08-05 00:00/)).toBeInTheDocument();
+    expect(within(report).getByText('closure-issues.xlsx')).toBeInTheDocument();
+    expect(within(report).getByText(/xlsx.*1\.0 KB/)).toBeInTheDocument();
+    expect(within(report).getByText('a'.repeat(64))).toBeInTheDocument();
+    expect(within(manifest).getByText('Machine result manifest')).toBeInTheDocument();
+    expect(within(manifest).getByText('Preparing this artifact.')).toBeInTheDocument();
+    expect(
+      within(manifest).queryByRole('button', { name: 'Download machine result manifest' }),
+    ).toBeNull();
+  });
+
+  it('keeps 404/502 details opaque and opens a valid signed report without buffering', async () => {
     const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
     mockCreateClosureReportDownload
-      .mockResolvedValueOnce({ data: null, error: null })
-      .mockResolvedValueOnce({ data: null, error: { message: 'closure report failed' } })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'closure_report_unavailable', message: 'private bucket detail' },
+        status: 404,
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'edge_upstream_failed', message: 'internal RPC detail' },
+        status: 502,
+      })
       .mockResolvedValueOnce({
         data: { signedDownloadUrl: 'https://storage.example.test/closure.xlsx' },
         error: null,
@@ -2239,11 +2266,18 @@ describe('DataProcessing page', () => {
     const downloadButton = await screen.findByRole('button', { name: 'Download issue report' });
 
     fireEvent.click(downloadButton);
-    expect(await screen.findByText('Report is unavailable')).toBeInTheDocument();
+    expect(
+      await screen.findByText('This download is currently unavailable. Please try again later.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('private bucket detail')).toBeNull();
 
     fireEvent.click(downloadButton);
-    expect(await screen.findByText('closure report failed')).toBeInTheDocument();
+    expect(
+      await screen.findByText('This download is currently unavailable. Please try again later.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('internal RPC detail')).toBeNull();
 
+    const fetchCountBeforeDownload = mockFetch.mock.calls.length;
     fireEvent.click(downloadButton);
     await waitFor(() =>
       expect(openSpy).toHaveBeenCalledWith(
@@ -2252,6 +2286,8 @@ describe('DataProcessing page', () => {
         'noopener,noreferrer',
       ),
     );
+    expect(mockFetch).toHaveBeenCalledTimes(fetchCountBeforeDownload);
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
     expect(mockCreateClosureReportDownload).toHaveBeenLastCalledWith(
       'closure-valid',
       'closure_report_xlsx',
@@ -2319,13 +2355,13 @@ describe('DataProcessing page', () => {
     expect(screen.getByText('closure-complete-manifest.json')).toBeInTheDocument();
     expect(screen.getAllByText(/Available until: 2026-08-05 00:00/)).toHaveLength(2);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Download complete machine result' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Download machine result manifest' }));
     expect(
       await screen.findAllByText(
         'This artifact has expired. Run the data completeness check again to prepare a new download.',
       ),
     ).toHaveLength(2);
-    expect(screen.queryByRole('button', { name: 'Download complete machine result' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download machine result manifest' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Run check again' })).toBeInTheDocument();
     expect(mockCreateClosureReportDownload).toHaveBeenNthCalledWith(
       1,
@@ -2344,7 +2380,7 @@ describe('DataProcessing page', () => {
     openSpy.mockRestore();
   });
 
-  it('maps deleted and failed artifact transport states to unavailable actions', async () => {
+  it('presents deleted and failed artifact transport states independently', async () => {
     mockGetClosureCheck.mockReset().mockResolvedValue({
       data: {
         schemaVersion: 'lcia.scope-closure-check.v1',
@@ -2371,9 +2407,13 @@ describe('DataProcessing page', () => {
     render(<DataProcessing />);
     await waitForValidCertificate();
 
-    expect(screen.getAllByText('This artifact is unavailable.')).toHaveLength(2);
+    expect(screen.getByText('This artifact is unavailable.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Artifact preparation failed. Run the data completeness check again.'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Download issue report' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Download complete machine result' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Download machine result manifest' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Run check again' })).toBeInTheDocument();
   });
 
   it('renders backend expiry separately from a missing artifact projection', async () => {

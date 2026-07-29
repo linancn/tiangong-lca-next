@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "lcia.scope-closure-cross-repo-fixture.v1",
+  "ownerCheckRead": {
+    "artifacts": [
+      {
+        "artifactRole": "closure_report_xlsx",
+        "artifactState": "ready",
+        "filename": "scope-closure-<closureCheckId>.xlsx",
+        "format": "xlsx",
+        "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "size": 128,
+        "checksumSha256": "<64-lowercase-hex>",
+        "artifactExpiresAt": "<rfc3339>"
+      },
+      {
+        "artifactRole": "closure_issue_manifest",
+        "artifactState": "ready",
+        "filename": "scope-closure-<closureCheckId>-manifest.json",
+        "format": "json",
+        "mediaType": "application/vnd.tiangong.scope-closure-manifest+json",
+        "size": 512,
+        "checksumSha256": "<64-lowercase-hex>",
+        "artifactExpiresAt": "<rfc3339>"
+      }
+    ],
+    "artifactOrder": ["closure_report_xlsx", "closure_issue_manifest"],
+    "artifactStates": ["pending", "ready", "expired", "deleted", "failed"],
+    "forbiddenFields": [
+      "artifactId",
+      "bucket",
+      "objectPath",
+      "storageBucket",
+      "storagePath",
+      "service"
+    ]
+  },
+  "download": {
+    "selectors": ["closure_report_xlsx", "closure_issue_manifest"],
+    "descriptorFields": [
+      "artifactId",
+      "artifactRole",
+      "artifactState",
+      "filename",
+      "format",
+      "mediaType",
+      "size",
+      "checksumSha256",
+      "artifactExpiresAt",
+      "bucket",
+      "objectPath"
+    ],
+    "legacyOverload": {
+      "signature": "get_lcia_scope_closure_report_download(uuid)",
+      "forwardsSelector": "closure_report_xlsx",
+      "removal": "separate cleanup Issue after all Edge consumers migrate"
+    }
+  },
+  "workerGc": {
+    "claimItemFields": [
+      "artifactId",
+      "artifactRole",
+      "lifecycleState",
+      "gcPhase",
+      "objectDeleteRequired",
+      "bucket",
+      "objectPath",
+      "checksumSha256",
+      "artifactExpiresAt"
+    ],
+    "gcPhases": ["object_delete", "detail_cleanup"],
+    "freshProcessDetailCleanup": {
+      "objectDeleteRequired": false,
+      "bucket": null,
+      "objectPath": null,
+      "requiresNewFencedToken": true
+    }
+  }
+}

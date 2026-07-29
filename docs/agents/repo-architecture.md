@@ -25,8 +25,8 @@ checkPaths:
   - playwright.config.ts
   - config/docs-capture/**
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: df5f4c9fbbe4132b4eaa22264e69cb6da61dd22c
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
 lastReviewedNote: 'Reviewed for Issue #701: closure execution failures remain distinct from curated domain issues and use only the safe task-summary.v2 projection for user-visible diagnostics.'
 related:
   - ../AGENTS.md

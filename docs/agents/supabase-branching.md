@@ -22,8 +22,8 @@ checkPaths:
   - scripts/e2e/**
   - playwright.config.ts
   - tests/e2e/i18n/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: cf4d8b82d84035860d3dc47356a1a5e05b776ea0
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
 lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: read-only lifecycle-model rendering does not change environment or backend ownership, while #698 Hybrid Search keeps JWT/query shaping in Next and orchestration/schema truth in their owning repos.'
 ---
 

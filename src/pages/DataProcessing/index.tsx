@@ -364,6 +364,9 @@ export function stateCodeCountsFromScope(
 }
 
 export function formatArtifactByteSize(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
   const size = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(size) || size < 0) {
     return '-';
@@ -1157,9 +1160,10 @@ const DataProcessing = () => {
       }
       setCommandStatus({
         kind: 'error',
-        message:
-          result.error?.message ??
-          t('pages.dataProcessing.closure.reportUnavailable', 'Report is unavailable'),
+        message: t(
+          'pages.dataProcessing.closure.artifact.downloadFailed',
+          'This download is currently unavailable. Please try again later.',
+        ),
       });
       return;
     }
@@ -1584,7 +1588,9 @@ const DataProcessing = () => {
                             ? 'available'
                             : decodedArtifact.artifactState === 'expired'
                               ? 'expired'
-                              : 'unavailable';
+                              : decodedArtifact.artifactState === 'failed'
+                                ? 'failed'
+                                : 'unavailable';
                     const roleLabel =
                       artifactRole === 'closure_report_xlsx'
                         ? t(
@@ -1593,7 +1599,7 @@ const DataProcessing = () => {
                           )
                         : t(
                             'pages.dataProcessing.closure.artifact.machineResult',
-                            'Complete machine result',
+                            'Machine result manifest',
                           );
                     const stateMessage =
                       lifecycleState === 'preparing'
@@ -1611,10 +1617,15 @@ const DataProcessing = () => {
                                 'pages.dataProcessing.closure.artifact.expiredGuidance',
                                 'This artifact has expired. Run the data completeness check again to prepare a new download.',
                               )
-                            : t(
-                                'pages.dataProcessing.closure.artifact.unavailable',
-                                'This artifact is unavailable.',
-                              );
+                            : lifecycleState === 'failed'
+                              ? t(
+                                  'pages.dataProcessing.closure.artifact.failedGuidance',
+                                  'Artifact preparation failed. Run the data completeness check again.',
+                                )
+                              : t(
+                                  'pages.dataProcessing.closure.artifact.unavailable',
+                                  'This artifact is unavailable.',
+                                );
                     return (
                       <section
                         key={artifactRole}
@@ -1658,10 +1669,10 @@ const DataProcessing = () => {
                                 )
                               : t(
                                   'pages.dataProcessing.action.downloadClosureMachineResult',
-                                  'Download complete machine result',
+                                  'Download machine result manifest',
                                 )}
                           </Button>
-                        ) : lifecycleState === 'expired' ? (
+                        ) : lifecycleState === 'expired' || lifecycleState === 'failed' ? (
                           <Button onClick={handleCreateClosureCheck}>
                             {t('pages.dataProcessing.action.rerunClosureCheck', 'Run check again')}
                           </Button>

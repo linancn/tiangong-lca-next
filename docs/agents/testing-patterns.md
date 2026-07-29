@@ -30,7 +30,7 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 6c3517cad3b871210812ae5fa5204b33dff1bc16
+lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: active waivers and exact mappings must represent real current mismatches and retire when fresh evidence covers them; #704 retains its repairs.'
 ---
 

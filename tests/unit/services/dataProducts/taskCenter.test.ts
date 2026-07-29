@@ -33,6 +33,8 @@ import {
   upsertTaskSummaries,
 } from '@/services/taskCenter/workerJobStore';
 
+const databaseArtifactContract = require('../../../fixtures/contracts/20260729_scope_closure_public_artifact_contract.json');
+
 describe('Data Product TaskSummaryV2 safe projection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -114,7 +116,6 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
             {
               artifactRole: 'closure_report_xlsx',
               artifactState: 'ready',
-              artifactId: '11111111-1111-4111-8111-111111111111',
               format: 'xlsx',
               filename: 'closure-issues.xlsx',
               mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -125,6 +126,12 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
             {
               artifactRole: 'closure_issue_manifest',
               artifactState: 'pending',
+              filename: 'scope-closure-closure-1-manifest.json',
+              format: 'json',
+              mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+              size: null,
+              checksumSha256: null,
+              artifactExpiresAt: null,
             },
           ],
           scanExecutionId: 'scan-1',
@@ -186,7 +193,13 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
           artifactState: 'ready',
           filename: 'closure-issues.xlsx',
         }),
-        { artifactRole: 'closure_issue_manifest', artifactState: 'pending' },
+        expect.objectContaining({
+          artifactRole: 'closure_issue_manifest',
+          artifactState: 'pending',
+          size: null,
+          checksumSha256: null,
+          artifactExpiresAt: null,
+        }),
       ],
     });
     expect(summary.data?.workerJob).not.toHaveProperty('result');
@@ -351,6 +364,50 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     });
     expect(result.data).not.toHaveProperty('storagePath');
     expect(result.data).not.toHaveProperty('rawWorkerResult');
+  });
+
+  it('sends each bounded primary role exactly and rejects a mismatched response role', async () => {
+    const manifestDescriptor = {
+      signedDownloadUrl: 'https://storage.example.test/reports/closure-1-manifest?token=short',
+      artifactId: '22222222-2222-4222-8222-222222222222',
+      artifactRole: 'closure_issue_manifest',
+      artifactState: 'ready',
+      format: 'json',
+      filename: 'scope-closure-closure-1-manifest.json',
+      mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+      size: 2048,
+      checksumSha256: 'b'.repeat(64),
+      artifactExpiresAt: '2026-08-05T00:00:00Z',
+      signedUrlExpiresAt: '2026-07-29T00:05:00Z',
+      expiresInSeconds: 300,
+    };
+    (invokeDataProductCommand as jest.Mock)
+      .mockResolvedValueOnce({ data: manifestDescriptor, error: null })
+      .mockResolvedValueOnce({ data: manifestDescriptor, error: null });
+
+    await expect(
+      createClosureReportDownload('closure-1', 'closure_issue_manifest'),
+    ).resolves.toMatchObject({
+      data: { artifactRole: 'closure_issue_manifest', format: 'json' },
+      error: null,
+    });
+    expect(invokeDataProductCommand).toHaveBeenNthCalledWith(1, {
+      action: 'create_closure_report_download',
+      closureCheckId: 'closure-1',
+      artifactRole: 'closure_issue_manifest',
+    });
+
+    await expect(
+      createClosureReportDownload('closure-1', 'closure_report_xlsx'),
+    ).resolves.toMatchObject({
+      data: null,
+      error: { code: 'INVALID_CLOSURE_REPORT_DESCRIPTOR' },
+    });
+    expect(invokeDataProductCommand).toHaveBeenNthCalledWith(2, {
+      action: 'create_closure_report_download',
+      closureCheckId: 'closure-1',
+      artifactRole: 'closure_report_xlsx',
+    });
   });
 
   it('covers optional task projection fields, presenter fallbacks, and feed overrides', async () => {
@@ -644,12 +701,23 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       { runStatus: 'unknown' },
       { certificateValidity: 'unknown' },
       { scanCompleteness: 'invalid' },
-      {
-        artifacts: [{ artifactRole: 'unsupported', artifactState: 'pending' }],
-      },
     ]) {
       expect(decodeClosureCheckSummary({ ...summaryBase, ...patch })).toBeNull();
     }
+    expect(
+      decodeClosureCheckSummary({
+        ...summaryBase,
+        artifacts: [
+          { artifactRole: 'unsupported', artifactState: 'pending' },
+          {
+            artifactRole: 'closure_report_xlsx',
+            artifactState: 'ready',
+            size: 'not-a-number',
+          },
+        ],
+      }),
+    ).toMatchObject({ ...summaryBase, artifacts: [] });
+    expect(decodeClosureCheckSummary({ ...summaryBase, artifacts: null })).toEqual(summaryBase);
     expect(decodeClosureCheckSummary({ ...summaryBase, workerJob: null })).toMatchObject({
       ...summaryBase,
       workerJob: null,
@@ -772,32 +840,91 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
       decodeClosureArtifact({
         artifactRole: 'closure_issue_manifest',
         artifactState: 'pending',
-        privateObjectPath: 'must-not-survive',
+        filename: 'scope-closure-closure-1-manifest.json',
+        format: 'json',
+        mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+        size: null,
+        checksumSha256: null,
+        artifactExpiresAt: null,
       }),
     ).toEqual({
       artifactRole: 'closure_issue_manifest',
       artifactState: 'pending',
+      filename: 'scope-closure-closure-1-manifest.json',
+      format: 'json',
+      mediaType: 'application/vnd.tiangong.scope-closure-manifest+json',
+      size: null,
+      checksumSha256: null,
+      artifactExpiresAt: null,
     });
     expect(
       decodeClosureArtifact({
         artifactRole: 'closure_report_xlsx',
         artifactState: 'ready',
+        filename: null,
+        format: null,
+        mediaType: null,
+        size: null,
+        checksumSha256: null,
+        artifactExpiresAt: null,
       }),
     ).toBeNull();
-    expect(decodeClosureArtifact(descriptor)).toEqual({
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'deleted',
+        filename: null,
+        format: null,
+        mediaType: null,
+        size: null,
+        checksumSha256: null,
+        artifactExpiresAt: null,
+      }),
+    ).toEqual({
+      artifactRole: 'closure_report_xlsx',
+      artifactState: 'deleted',
+      filename: null,
+      format: null,
+      mediaType: null,
+      size: null,
+      checksumSha256: null,
+      artifactExpiresAt: null,
+    });
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'expired',
+        filename: 'closure-issues.xlsx',
+        format: 'xlsx',
+        mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        size: 128,
+        checksumSha256: 'c'.repeat(64),
+        artifactExpiresAt: '2026-07-29T00:00:00Z',
+      }),
+    ).toEqual({
+      artifactRole: 'closure_report_xlsx',
+      artifactState: 'expired',
+      filename: 'closure-issues.xlsx',
+      format: 'xlsx',
+      mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      size: 128,
+      checksumSha256: 'c'.repeat(64),
+      artifactExpiresAt: '2026-07-29T00:00:00Z',
+    });
+    const availabilityDescriptor = {
       artifactRole: 'closure_report_xlsx',
       artifactState: 'ready',
-      artifactId: '11111111-1111-4111-8111-111111111111',
       format: 'xlsx',
       filename: 'closure-issues.xlsx',
       mediaType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       size: 0,
       checksumSha256: 'a'.repeat(64),
       artifactExpiresAt: '2026-08-05T00:00:00Z',
-    });
+    };
+    expect(decodeClosureArtifact(availabilityDescriptor)).toEqual(availabilityDescriptor);
     expect(
       decodeClosureArtifact({
-        ...descriptor,
+        ...availabilityDescriptor,
         artifactRole: 'closure_issue_manifest',
         format: 'json',
         filename: 'closure-issues-manifest.json',
@@ -810,17 +937,95 @@ describe('Data Product TaskSummaryV2 safe projection', () => {
     });
     expect(
       decodeClosureArtifact({
-        ...descriptor,
+        ...availabilityDescriptor,
         artifactRole: 'closure_issues_partition_000001',
         format: 'ndjson+zstd',
         filename: 'closure-issues-000001.ndjson.zst',
         mediaType: 'application/x-ndjson+zstd',
       }),
-    ).toMatchObject({
-      artifactRole: 'closure_issues_partition_000001',
-      artifactState: 'ready',
-      format: 'ndjson+zstd',
-    });
+    ).toBeNull();
+
+    for (const patch of [
+      { filename: '../closure-issues.xlsx' },
+      { size: '1024' },
+      { size: -1 },
+      { checksumSha256: 'not-a-hash' },
+      { artifactExpiresAt: 'not-a-timestamp' },
+      { format: 'json' },
+      { mediaType: 'application/json' },
+    ]) {
+      expect(decodeClosureArtifact({ ...availabilityDescriptor, ...patch })).toBeNull();
+    }
+    expect(
+      decodeClosureArtifact({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'deleted',
+        format: null,
+        filename: null,
+        mediaType: null,
+        size: null,
+        checksumSha256: null,
+        artifactExpiresAt: null,
+        bucket: 'must-not-survive',
+      }),
+    ).toBeNull();
+  });
+
+  it('decodes the exact Database owner-artifact fixture shape without identifiers or locators', () => {
+    const expectedProjectionFields = [
+      'artifactRole',
+      'artifactState',
+      'filename',
+      'format',
+      'mediaType',
+      'size',
+      'checksumSha256',
+      'artifactExpiresAt',
+    ];
+    expect(databaseArtifactContract.schemaVersion).toBe('lcia.scope-closure-cross-repo-fixture.v1');
+    expect(databaseArtifactContract.ownerCheckRead.artifactOrder).toEqual([
+      'closure_report_xlsx',
+      'closure_issue_manifest',
+    ]);
+    expect(databaseArtifactContract.ownerCheckRead.artifactStates).toEqual([
+      'pending',
+      'ready',
+      'expired',
+      'deleted',
+      'failed',
+    ]);
+    expect(databaseArtifactContract.download.selectors).toEqual([
+      'closure_report_xlsx',
+      'closure_issue_manifest',
+    ]);
+
+    const decoded = databaseArtifactContract.ownerCheckRead.artifacts.map(
+      (artifact: Record<string, unknown>, index: number) => {
+        expect(Object.keys(artifact)).toEqual(expectedProjectionFields);
+        databaseArtifactContract.ownerCheckRead.forbiddenFields.forEach((field: string) => {
+          expect(artifact).not.toHaveProperty(field);
+        });
+        return decodeClosureArtifact({
+          ...artifact,
+          filename: String(artifact.filename).replace('<closureCheckId>', 'closure-1'),
+          checksumSha256: index === 0 ? 'a'.repeat(64) : 'b'.repeat(64),
+          artifactExpiresAt: '2026-08-05T00:00:00Z',
+        });
+      },
+    );
+
+    expect(decoded).toEqual([
+      expect.objectContaining({
+        artifactRole: 'closure_report_xlsx',
+        artifactState: 'ready',
+        format: 'xlsx',
+      }),
+      expect.objectContaining({
+        artifactRole: 'closure_issue_manifest',
+        artifactState: 'ready',
+        format: 'json',
+      }),
+    ]);
   });
 
   it('normalizes closure command transport errors, empty data, and invalid payloads', async () => {

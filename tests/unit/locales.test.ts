@@ -150,6 +150,52 @@ describe('locale bundle baseline', () => {
     });
   });
 
+  it('localizes the machine-result manifest and artifact recovery contract', () => {
+    const expected = {
+      'en-US': {
+        action: 'Download machine result manifest',
+        role: 'Machine result manifest',
+        failed: 'Artifact preparation failed. Run the data completeness check again.',
+        generic: 'This download is currently unavailable. Please try again later.',
+      },
+      'zh-CN': {
+        action: '下载机器结果清单',
+        role: '机器结果清单',
+        failed: '产物准备失败。请重新运行数据完整性检查。',
+        generic: '当前无法下载此产物，请稍后重试。',
+      },
+      'de-DE': {
+        action: 'Manifest des maschinenlesbaren Ergebnisses herunterladen',
+        role: 'Manifest des maschinenlesbaren Ergebnisses',
+        failed:
+          'Die Vorbereitung des Artefakts ist fehlgeschlagen. Führen Sie die Datenvollständigkeitsprüfung erneut aus.',
+        generic: 'Dieser Download ist derzeit nicht verfügbar. Versuchen Sie es später erneut.',
+      },
+      'fr-FR': {
+        action: 'Télécharger le manifeste du résultat machine',
+        role: 'Manifeste du résultat machine',
+        failed:
+          'La préparation de l’artefact a échoué. Relancez la vérification de l’exhaustivité des données.',
+        generic: 'Ce téléchargement est actuellement indisponible. Réessayez plus tard.',
+      },
+    } satisfies Record<ActiveLocale, Record<string, string>>;
+
+    LOCALE_ENTRIES.forEach(([locale, bundle]) => {
+      expect(bundle['pages.dataProcessing.action.downloadClosureMachineResult']).toBe(
+        expected[locale].action,
+      );
+      expect(bundle['pages.dataProcessing.closure.artifact.machineResult']).toBe(
+        expected[locale].role,
+      );
+      expect(bundle['pages.dataProcessing.closure.artifact.failedGuidance']).toBe(
+        expected[locale].failed,
+      );
+      expect(bundle['pages.dataProcessing.closure.artifact.downloadFailed']).toBe(
+        expected[locale].generic,
+      );
+    });
+  });
+
   it('exports only strings and limits empty messages to the explicit allowlist', () => {
     LOCALE_ENTRIES.forEach(([locale, bundle]) => {
       const nonStrings = Object.entries(bundle)
