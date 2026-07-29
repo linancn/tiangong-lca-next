@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 9504e41134e54837c81a423db39ee1f3aceaa55b
-lastReviewedNote: 'Reviewed for Issue #720: generated Edge mirrors now require one reviewed exact ref, a source receipt, and delete-aware helper execution; repository ownership, delivery, and managed-push rules remain unchanged.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: the tracked qualification receipt and clean-candidate production-E2E sequence fit the existing repository ownership, delivery, and managed-push boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

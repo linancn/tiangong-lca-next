@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical evidence output, qualified semantic harnesses, exact v2 RPC mocks, and strict owner-draft cases remain the applicable patterns.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: qualification-receipt generation, review, and clean-candidate reuse now form an explicit release-E2E pattern; the browser scope is unchanged.'
 ---
 
 # Testing Patterns Reference
@@ -122,6 +122,7 @@ Browser semantic E2E pattern:
 - use `@playwright/test` `1.61.1` through `playwright.config.ts` and keep specs/helpers under `tests/e2e/i18n/**`
 - use `npm run e2e:dev` for a dirty/focused worktree loop; it serves the candidate with `npm run start:main` and must still reject a non-loopback Playwright base URL
 - use `npm run e2e:release` for release proof: require a clean commit, export only the Next candidate, build/serve the production bundle inside the digest-pinned image, and never mount the parent workspace, Git metadata, host dependencies, or browser profiles
+- when release proof reports a missing or stale qualification receipt, run `npm run e2e:qualify`, review its generated tracked receipt, merge it through the normal `dev` PR flow, and retry only from the clean merged candidate; the receipt file is excluded from its own semantic input digest
 - finish environment, identity, browser-launch, bundle/login, backend, optional role-neutral auth, recovery-ledger, and test-discovery preflight before fixture intent; preserve the sanitized original cause in structured diagnostics
 - serialize commands that mutate release-E2E runtime state; allow argument-free resume only for the exact HMAC-bound one-hour receipt issued before fixture intent, revalidate all candidate/environment/source/image/argument bindings, and rerun preflight; never reuse a browser pass, failed assertion, fixture phase, or cleanup result
 - reproduce a race with an exact read-only scope such as `--project chromium --grep <pattern> --repeat-each 5`; the controller rejects repetition for a full matrix, production mutation, or verified evidence

@@ -30,8 +30,8 @@ checkPaths:
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 9504e41134e54837c81a423db39ee1f3aceaa55b
-lastReviewedNote: 'Reviewed for Issue #720: Docker sync proof now includes shell syntax, non-mutating help, exact source receipt, stale-file deletion, and second-run idempotence before the unchanged managed gate.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: a successful semantic-harness qualification must land its generated tracked receipt through a clean dev PR before authenticated production release proof.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -100,6 +100,8 @@ The independent `.github/workflows/i18n-semantic-e2e.yml` workflow is one creden
 - every invocation uses no production credentials, permits no production writes, and runs only contract discovery plus the public semantic/boundary matrix in Chromium, Firefox, and WebKit
 
 The separate full authenticated closure is local-operator-only. It requires explicit user authorization, runtime credentials, the local candidate, `E2E_BACKEND_TARGET=production`, and `E2E_AUTHENTICATED=true`. Before Docker execution, the host controller rejects production-data mode whenever `CI` or `GITHUB_ACTIONS` is set. Only after that local check passes does it override the release image's inherited CI markers to empty inside the container; the container's safety check remains unchanged. Its two production-write guards are `E2E_ALLOW_PRODUCTION_DATA=true` and `E2E_PRODUCTION_WRITE_CONFIRMATION=I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS`; writing verified tracked evidence separately opts in with `E2E_WRITE_VERIFIED_EVIDENCE=true`. Semantic E2E GitHub Actions is never a transport for these credentials, flags, or writes.
+
+If the controller directs the operator to `npm run e2e:qualify`, complete that credential-free three-browser qualification first. The command updates `docs/plans/i18n/semantic-harness-qualification-receipt.json`; review and merge that generated receipt through the normal `dev` PR flow, then retry authenticated proof only from the resulting clean candidate. The qualification input digest excludes the receipt path itself, so the evidence commit does not invalidate the semantic inputs it records.
 
 The full route/view proof has 49 stable assertion IDs. Every ID requires its live route scenario plus any target-declared semantic scenarios; these cover anonymous fail-closed navigation, locale fallback/refresh, modal states, authoring options, responsive layout, persisted multilingual content, and reference refresh where applicable. Locales and authoring languages are derived from the typed registries, Chromium runs the entire route/view matrix, and the selector, team authoring, and process lifecycle critical scenarios run in all three browser engines. Adding a registry locale expands the expected locale sequence and invalidates any older evidence automatically.
 

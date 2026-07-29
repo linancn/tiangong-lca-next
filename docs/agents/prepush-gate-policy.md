@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
-lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical artifact regeneration, semantic harness qualification, full coverage, managed-push, and production-write policy remain fail closed.'
+lastReviewedCommit: d0042d063b4cffd1363b346df69ee8ab6242da2e
+lastReviewedNote: 'Reviewed for Issue #722: qualification updates one tracked receipt that must land through a clean dev PR before production release proof; the managed-push and production-write policies remain fail closed.'
 ---
 
 # Pre-Push Gate Policy
@@ -63,6 +63,8 @@ Production-effective workflows separately run `npm run reference-data:production
 `npm run release:preflight` owns the credential-free production-readiness boundary by running both `npm run i18n:locale:all:production:check` and `npm run reference-data:production:check`. A local push whose source or destination has `main` semantics (`main`, `master`, `hotfix/*`, `promote/*`, `release/*`, or the equivalent `codex/` branch names) runs this preflight between Docpact and the full test gate. A push to `dev` remains governed by Docpact plus the full test gate only.
 
 Playwright semantic localization proof remains separate from `prepush:gate`. Focused local diagnosis uses `npm run e2e:dev`; exact local release proof uses the repository-owned `e2e:env:install` / read-only `e2e:env:doctor` / `e2e:release` controller. Keeping both outside the routine hook prevents local pushes from requiring Docker, browsers, production credentials, or production data. GitHub Actions still owns only the credential-free/read-only public browser matrix; the full authenticated closure belongs exclusively to an explicitly authorized local operator session.
+
+When `e2e:release` reports a missing or stale semantic-harness qualification receipt, run `npm run e2e:qualify`. A successful qualification updates the tracked receipt, so land that generated file through the normal reviewed `dev` PR flow before retrying release proof from a clean candidate. Receipt validation binds the semantic input digest while intentionally excluding the receipt file itself; committing the generated receipt does not manufacture or replace the browser result.
 
 Docs-impact screenshot execution is an isolated workspace tooling surface. Next contributes only the exact source commit's declarative `config/docs-capture/profile.v1.json`; the workspace package owns profile validation, plan compilation, secret-file handling, read-only actions, Playwright capture, and access classification. This proof does not join the routine pre-push/release gate and does not change semantic E2E's `screenshot: off`, trace, video, or auth-artifact policy.
 
