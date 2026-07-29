@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
-lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: Next keeps request shaping, Database owns indexed Process search and visibility truth, Edge owns orchestration, and exact matching non-production revisions precede promotion.'
+lastReviewedCommit: 251e9aa1fdf4ae140c45a1d0ac609e717f5ff0c8
+lastReviewedNote: 'Reviewed for Issue #720: Edge retains runtime source ownership; Next may carry only a generated, full-commit-bound Docker mirror with source receipt and delete-aware synchronization.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -64,6 +64,7 @@ Rules:
 - routine feature and fix work starts from Git `dev` and targets `dev`
 - do not infer the working trunk from GitHub default-branch UI alone
 - do not create ad-hoc Supabase clients outside `src/services/**`
+- `docker/volumes/functions/**` does not transfer Edge runtime ownership to Next: it is generated only by `docker/pull-edge-functions.sh --ref <40-character-commit-sha>`, must match that exact Edge tree plus its source receipt, and must delete files absent from the source commit
 - national-carbon process-flow graph cache reads go through `src/services/nationalCarbonGraphCache/objects.ts` and its signed object bundle; the frontend no longer owns a public cache base URL override and local direct-read debugging paths should not be reintroduced without a new runtime ownership decision
 - ordered-dataset shaping in `src/services/**` stays an app-side boundary even when it mirrors backend schema names
 - persisted Calculation Bundle and release readback go through `src/services/lcaReleases/**`: private bundle reads forward the current user session, public current-release and Process projections may be anonymous, and neither path accepts a service-role credential or exposes private object locators
@@ -86,6 +87,7 @@ Rules:
 | Process keyword search or strict calculation picker scope | change the app-side request here, pair it with the matching database v2 RPC revision, and validate public plus owner-draft results against a non-production environment; never restore direct `extracted_text` filtering |
 | translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
+| self-hosted Edge Function mirror refresh | first review and promote the owning Edge commit, then run the Next helper with that full SHA, verify byte-for-byte parity/source receipt/stale deletion, and require a no-diff second run |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |
 | semantic localization release evidence | run the local candidate with the tracked `main` backend only inside the guarded Playwright workflow; use user credentials and exact `codex-e2e` ledger cleanup, never schema/admin authority |
 
