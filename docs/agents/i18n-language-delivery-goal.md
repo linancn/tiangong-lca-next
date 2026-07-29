@@ -56,9 +56,9 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the fresh authenticated proof supersedes the active skip waiver while preserving exact cleanup, credential-free CI, and the existing language-delivery contract.'
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
+lastReviewedNote: 'Reviewed for Issue #711: the audited standard-user role fixture makes route-boundary evidence independent of the production actor role while preserving credential-free CI and local-only production-data safeguards.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md

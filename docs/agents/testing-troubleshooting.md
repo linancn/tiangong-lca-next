@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: canonical regeneration and exact harness mappings resolve post-evidence drift, fresh evidence retires the active waiver, and #704 retains the resume repair.'
+lastReviewedCommit: 103b83b8610b714c36cc90cb9e26b1fb7536928a
+lastReviewedNote: 'Reviewed for Issue #711: production-actor role drift is resolved through the exact audited standard-user route fixture, not by weakening access-boundary assertions.'
 ---
 
 # Testing Troubleshooting
