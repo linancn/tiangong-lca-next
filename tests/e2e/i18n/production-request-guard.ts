@@ -50,7 +50,7 @@ export const AUDITED_READ_ONLY_RPC_NAMES = [
   'search_flowproperties_latest',
   'search_flows_latest',
   'search_lifecyclemodels_latest',
-  'search_processes_latest',
+  'search_processes_latest_v2',
   'search_sources_latest',
   'search_unitgroups_latest',
 ] as const;

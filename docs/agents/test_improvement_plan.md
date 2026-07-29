@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: repository-owned formatting closes the writer-boundary defect without expanding browser scope or changing the testing strategy.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: semantic harness qualification plus focused Process service/data-workflow tests remain sufficient without expanding browser scope before deployed picker smoke.'
 ---
 
 # Testing Strategy

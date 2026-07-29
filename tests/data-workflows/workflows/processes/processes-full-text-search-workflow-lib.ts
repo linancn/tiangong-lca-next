@@ -550,6 +550,8 @@ async function runProcessFullTextSearchQuery(input: {
     page_current: input.query.pageCurrent ?? 1,
     page_size: input.query.pageSize ?? 10,
     query_text: input.query.keyword,
+    query_terms: [input.query.keyword],
+    owner_draft_only: false,
   };
 
   if (typeof input.query.stateCode === 'number') {
@@ -560,7 +562,7 @@ async function runProcessFullTextSearchQuery(input: {
     requestParams.type_of_data_set_filter = input.query.typeOfDataSet;
   }
 
-  const result = await input.supabase.rpc('search_processes_latest', requestParams);
+  const result = await input.supabase.rpc('search_processes_latest_v2', requestParams);
   if (result.error) {
     throw new Error(
       `Process full-text search failed for "${input.query.label}": ${result.error.message}`,

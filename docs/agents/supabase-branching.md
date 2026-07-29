@@ -23,8 +23,8 @@ checkPaths:
   - playwright.config.ts
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
-lastReviewedNote: 'Reviewed while updating PR #697 for Issue #696 against origin/dev at 61882ef4: read-only lifecycle-model rendering does not change environment or backend ownership, while #698 Hybrid Search keeps JWT/query shaping in Next and orchestration/schema truth in their owning repos.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: Next keeps request shaping, Database owns indexed Process search and visibility truth, Edge owns orchestration, and exact matching non-production revisions precede promotion.'
 ---
 
 # Supabase Environment And Database Workflow
@@ -71,6 +71,7 @@ Rules:
 - Node-loaded smoke workflows may call shared service helpers; runtime fallbacks such as locale detection still belong in `src/services/**` and do not create database schema or Edge runtime ownership
 - app-side service errors must remain distinguishable from successful empty results so localized pages can render truthful error and retry states; this presentation contract does not move schema, authorization, or Edge ownership into Next
 - Contact, FlowProperty, Source, and UnitGroup keyword searches call only their exact allowlisted Hybrid Edge Functions through the shared app-side helper. Next forwards the current user JWT and optional state/team scope, but never decides team membership; the Edge layer validates and forwards request shape, and `database-engine` remains authoritative for `tg`/`co`/`my`/`te` visibility, Semantic/Hybrid RPCs, derivative queues, and HNSW indexes
+- Process keyword searches call `search_processes_latest_v2` through `src/services/processes/api.ts`, pass explicit query terms, and never query `extracted_text` with app-side ILIKE. The `public_plus_owner_draft` picker asks the database for strict personal drafts and public rows separately; database-engine owns the exact `state_code=0`, null-team, null-review, latest-version, and `extracted_md` index constraints
 - the authenticated semantic localization E2E is an explicit test-only exception to the shipped `src/services/**` placement rule: direct development mode serves the worktree with `npm run start:main`, while release mode builds and serves the archived clean commit inside its isolated container; both verify the selected Supabase origin against tracked `main`, authenticate as the runtime test user, never use a service-role key, and may create/delete only the exact UUID/version `codex-e2e` process recorded in the primary plus externally mounted recovery ledger
 - production-backed browser proof classifies only the exact reviewed `list_task_feed` and `list_publications` payloads as read-only data-product commands; the shared function path or a POST method alone never establishes a read-only boundary
 - ordinary PR and `dev` browser jobs receive no production credentials and perform no writes; the production-backed closure is manual-only, requires `E2E_ALLOW_PRODUCTION_DATA=true`, and must finish with `created=cleaned` and `leaked=0`
@@ -82,6 +83,7 @@ Rules:
 | app-only change | work in this repo, use `dev`, validate here |
 | ordered-dataset shaping or validation normalization under `src/services/**` | keep the change in this repo, validate here, and escalate only if schema truth or Edge runtime behavior must change |
 | foundation-dataset Hybrid Search entrypoint | change Next pages/services here, pair it with the matching Edge route and database RPC revisions, validate against a non-production environment, and preserve UUID/empty-query behavior |
+| Process keyword search or strict calculation picker scope | change the app-side request here, pair it with the matching database v2 RPC revision, and validate public plus owner-draft results against a non-production environment; never restore direct `extracted_text` filtering |
 | translation-backed validation save flow such as `translate_text` retries, English supplementation, or save-while-checking continuity | keep the frontend control flow in this repo; escalate only if the Edge runtime contract itself must change |
 | schema-related feature | start in `database-engine`, validate the database branch there, then validate this repo against the relevant environment |
 | `main` investigation or hotfix verification | use `npm run start:main` only for that scoped task |

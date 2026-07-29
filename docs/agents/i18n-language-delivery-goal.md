@@ -57,8 +57,8 @@ checkPaths:
   - .github/workflows/build.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
-lastReviewedNote: 'Reviewed for Issue #704: external container output now uses the repository canonical formatting policy while preserving credential-free CI and local-only production-data safeguards.'
+lastReviewedCommit: 357778f9ca2f9ed3f10d79d617a027ff87a451c5
+lastReviewedNote: 'Reviewed for Issues #704, #711, and #713 after the latest dev merge: canonical locale evidence, credential-free CI, local-only production safeguards, and the language-delivery contract remain unchanged by the Process search cutover.'
 baselineObservedAt: 2026-07-18
 related:
   - ../../AGENTS.md
