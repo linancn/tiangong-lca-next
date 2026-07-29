@@ -29,8 +29,8 @@ checkPaths:
   - scripts/test-runner.cjs
   - scripts/i18n/locale-delivery.mjs
   - .github/workflows/**
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the authorized production run, exact cleanup, canonical evidence, focused proof, artifact idempotence, release preflight, and managed-push gates remain the required closure.'
 related:
   - ../AGENTS.md
@@ -71,6 +71,7 @@ npm run prepush:gate
 | --- | --- | --- | --- |
 | routes, pages, app runtime, shared UI | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | shared UX changes often affect multiple entrypoints |
 | services or env selection | `npm run lint`; focused `npm run test:ci -- <jest-args>`; `npm run build` | `npm run prepush:gate` | companion proof may live in another repo if schema or Edge runtime changed |
+| Process keyword search service or LCA picker scope | focused `tests/unit/services/processes/api.test.ts` plus the Process full-text data-workflow unit; `npm run lint`; `npm run build` | smoke against the exact non-production Database revision that exposes `search_processes_latest_v2`; cover public, personal, and `public_plus_owner_draft` scopes | Assert explicit `query_terms`, no direct `extracted_text`/ILIKE path, and `owner_draft_only=true` only for the personal branch of the strict calculation scope. Database owns latest-version, owner/team/review, and `extracted_md` index semantics. |
 | Contact, FlowProperty, Source, or UnitGroup Hybrid Search service/page/picker | `npm run lint`; focused shared-helper, four service, four main-page, four picker, locale-contract, and production-request-guard Jest suites; `npm run build` | final `npm run prepush:gate` through `push:checked`; smoke the exact non-production frontend against matching Database and Edge revisions for `tg`/`co`/`my`/`te` | Keep UUID and empty-keyword paths unchanged; verify state/team forwarding and Team Data without a selected team; auth, transport, malformed-response, and mapping failures must remain `success: false` rather than a successful empty result. New read-only Edge paths require an exact production-request-guard allowlist entry. |
 | persisted Calculation Bundle or public release readback | `npm run lint`; focused `lcaReleases`, `CalculationBundlePanel`, `LcaReleaseReadPanel`, Data Processing, Process view, and locale tests; `npm run i18n:audit`; `npm run build` | `npm run prepush:gate`; paired Database RPC, Edge projection, Worker bundle, and deterministic package proof; live smoke only when a deployed environment and user credentials are available | private bundle reads use the user session; raw downloads must verify stored byte size and SHA-256 before Blob save; public release reads expose sanitized projections and short-lived artifact downloads only |
 | Data Product closure/task failure presentation | `npm run lint`; focused Data Processing, global Task Center, data-product task decoder, and locale tests; `npm run i18n:audit`; `npm run build` | `npm run prepush:gate`; smoke a failed and a blocked closure check against a matching non-production Database/Edge/Worker deployment | execution failure must not render as an empty closure-issue result; expose only the safe task-summary error, stable error code, and job identity, while passed/blocked checks retain the curated paginated issue list |

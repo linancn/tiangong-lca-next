@@ -56,8 +56,8 @@ checkPaths:
   - .github/workflows/i18n-semantic-e2e.yml
   - .github/workflows/build.yml
   - package.json
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: the fresh authenticated proof supersedes the active skip waiver while preserving exact cleanup, credential-free CI, and the existing language-delivery contract.'
 baselineObservedAt: 2026-07-18
 related:
