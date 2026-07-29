@@ -26,8 +26,8 @@ checkPaths:
   - config/docs-capture/**
   - tests/e2e/i18n/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
-lastReviewedNote: 'Reviewed for Issue #701: closure execution failures remain distinct from curated domain issues and use only the safe task-summary.v2 projection for user-visible diagnostics.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: closure diagnostics retain safe projections, while Process keyword search uses Database search_processes_latest_v2 and keeps strict owner-draft visibility database-owned.'
 related:
   - ../AGENTS.md
   - ../.docpact/config.yaml
@@ -102,9 +102,9 @@ The task-center recovery path is:
 
 `src/components/LcaTaskCenter/index.tsx -> src/services/dataProducts/taskCenter.ts -> app_data_product_commands:list_task_feed`
 
-Next owns scope selection, command orchestration, curated closure-issue presentation, report download initiation, task-summary rendering, and deep-link navigation. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
+Next owns scope selection, command orchestration, curated closure-issue presentation, artifact-state presentation, task-summary rendering, and deep-link navigation. It maps the backend's typed artifact states to explicit preparing, available, expired, and unavailable UI states, keeps the bounded human XLSX action separate from the complete machine-result manifest action, and navigates directly to short-lived signed URLs without fetching or buffering artifact bytes. Requested LCIA methods cross the command boundary as exact `{ id, version }` identities derived from the reviewed static catalog; Next must not collapse them to identifier-only strings. Result-package generation remains unavailable until the selected closure check reports `passed`, a `valid` certificate, a `complete` scan, and matching scope/policy evidence; the backend revalidates those facts when it accepts `create_build`.
 
-The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
+The global task center consumes only the whitelisted `task-summary.v2` projection for `lcia.scope_closure_check` and `lcia_result.package_build`. It must not decode raw worker rows, payloads, diagnostics, artifact locators, or infer domain validity from worker status. A closure execution failure is not an empty domain-issue result: the workbench renders the safe task-summary error, stable closure worker error code, and job identity in a separate failure state, and loads curated closure issues only after a `passed` or `blocked` completion. The Data Processing artifact projection similarly exposes only semantic role/format/filename, integrity, size, lifecycle/expiry, and signed-download metadata; it never exposes bucket or object paths. Database, Edge, and Worker remain authoritative for task state, closure evidence, artifacts, and authorization.
 
 ### Process Review-Submit Gate
 

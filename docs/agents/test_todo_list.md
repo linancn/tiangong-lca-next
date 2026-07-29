@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
-lastReviewedNote: 'Updated for Issues #698, #703, and #704 during the replacement v0.0.62 back-merge: recorded fresh production proof, exact cleanup, waiver sunset, remaining exact harness pairs, and why the pre-#707 back-merge was superseded; #704 retains its follow-ups and the coverage queue remains empty.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Updated for the merged latest-dev closure-artifact delivery and Issue #713: the coverage queue remains empty; matching deployed Database/Edge/Next smoke and generated-mirror refresh remain explicit environment follow-ups.'
 ---
 
 # Testing Execution State

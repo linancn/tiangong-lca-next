@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: ef985cd620116c5029d93c92b521efda6d1e74d9
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: bootstrap, exact-candidate proof, guarded cleanup, canonical artifact generation, main-relative Docpact, and managed push remain unchanged.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: bootstrap, focused Process RPC proof, canonical artifact generation, main-relative Docpact, and receipt-bound managed push remain unchanged.'
 ---
 
 # Development Bootstrap

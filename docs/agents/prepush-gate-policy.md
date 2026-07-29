@@ -30,8 +30,8 @@ checkPaths:
   - scripts/reference-data/**
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence retires the active release-candidate waiver, exact non-browser mappings remain fail closed, and main-target managed-push policy is unchanged.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: canonical artifact idempotence, exact non-browser mappings, complete coverage, and receipt-bound managed-push policy remain the required gate.'
 ---
 
 # Pre-Push Gate Policy

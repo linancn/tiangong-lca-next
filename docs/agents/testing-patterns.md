@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: active waivers and exact mappings must represent real current mismatches and retire when fresh evidence covers them; #704 retains its repairs.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: exact RPC mocks, strict owner-draft cases, canonical artifact evidence, and fail-closed mappings remain the applicable patterns.'
 ---
 
 # Testing Patterns Reference

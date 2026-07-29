@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "lcia.scope-closure-cross-repo-fixture.v1",
+  "ownerCheckRead": {
+    "artifacts": [
+      {
+        "artifactRole": "closure_report_xlsx",
+        "artifactState": "ready",
+        "filename": "scope-closure-<closureCheckId>.xlsx",
+        "format": "xlsx",
+        "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "size": 128,
+        "checksumSha256": "<64-lowercase-hex>",
+        "artifactExpiresAt": "<rfc3339>"
+      },
+      {
+        "artifactRole": "closure_issue_manifest",
+        "artifactState": "ready",
+        "filename": "scope-closure-<closureCheckId>-manifest.json",
+        "format": "json",
+        "mediaType": "application/vnd.tiangong.scope-closure-manifest+json",
+        "size": 512,
+        "checksumSha256": "<64-lowercase-hex>",
+        "artifactExpiresAt": "<rfc3339>"
+      }
+    ],
+    "artifactOrder": ["closure_report_xlsx", "closure_issue_manifest"],
+    "artifactStates": ["pending", "ready", "expired", "deleted", "failed"],
+    "forbiddenFields": [
+      "artifactId",
+      "bucket",
+      "objectPath",
+      "storageBucket",
+      "storagePath",
+      "service"
+    ]
+  },
+  "download": {
+    "selectors": ["closure_report_xlsx", "closure_issue_manifest"],
+    "descriptorFields": [
+      "artifactId",
+      "artifactRole",
+      "artifactState",
+      "filename",
+      "format",
+      "mediaType",
+      "size",
+      "checksumSha256",
+      "artifactExpiresAt",
+      "bucket",
+      "objectPath"
+    ],
+    "legacyOverload": {
+      "signature": "get_lcia_scope_closure_report_download(uuid)",
+      "forwardsSelector": "closure_report_xlsx",
+      "removal": "separate cleanup Issue after all Edge consumers migrate"
+    }
+  },
+  "workerGc": {
+    "previewSignature": "svc_lcia_scope_closure_artifact_gc_preview(integer)",
+    "claimSignature": "svc_lcia_scope_closure_artifact_gc_claim(integer,integer)",
+    "renewSignature": "svc_lcia_scope_closure_artifact_gc_renew(uuid,integer)",
+    "claimResultFields": ["claimToken", "leaseExpiresAt", "items"],
+    "renewResultFields": ["claimToken", "leaseExpiresAt", "artifactIds"],
+    "claimItemFields": [
+      "artifactId",
+      "artifactRole",
+      "lifecycleState",
+      "gcPhase",
+      "objectDeleteRequired",
+      "bucket",
+      "objectPath",
+      "checksumSha256",
+      "artifactExpiresAt"
+    ],
+    "gcPhases": ["object_delete", "detail_cleanup"],
+    "freshProcessDetailCleanup": {
+      "objectDeleteRequired": false,
+      "bucket": null,
+      "objectPath": null,
+      "requiresNewFencedToken": true
+    },
+    "previewIsNonMutating": true,
+    "renewalRequiresUnexpiredCurrentToken": true
+  },
+  "publicationStaging": {
+    "acl": "service_role only",
+    "createSignature": "svc_lcia_scope_closure_artifact_write_set_create(uuid,text,jsonb,integer,uuid)",
+    "inspectSignature": "svc_lcia_scope_closure_artifact_write_set_inspect(uuid)",
+    "finalizeSignature": "svc_lcia_scope_closure_artifact_write_set_finalize(uuid,uuid)",
+    "failSignature": "svc_lcia_scope_closure_artifact_write_set_fail(uuid,uuid,text)",
+    "reconcileSignature": "svc_lcia_scope_closure_artifact_write_set_reconcile(integer,integer)",
+    "reconcileCompleteSignature": "svc_lcia_scope_closure_artifact_write_set_reconcile_complete(uuid,uuid)",
+    "createRequestFields": [
+      "closureCheckId",
+      "idempotencyKey",
+      "items",
+      "stagingSeconds",
+      "reusedFromCheckId"
+    ],
+    "itemRequestFields": [
+      "clientKey",
+      "artifactType",
+      "artifactRole",
+      "bucket",
+      "objectPath",
+      "mediaType",
+      "size",
+      "checksumSha256",
+      "metadata"
+    ],
+    "bundleMetadata": {
+      "completeMachineResultClientKey": "manifest.json"
+    },
+    "resultFields": [
+      "writeSetId",
+      "closureCheckId",
+      "workerJobId",
+      "requestedBy",
+      "status",
+      "writeToken",
+      "stagingExpiresAt",
+      "reconcileToken",
+      "reconcileLeaseExpiresAt",
+      "failureReason",
+      "createdAt",
+      "updatedAt",
+      "finalizedAt",
+      "cleanedAt",
+      "artifactMap",
+      "items"
+    ],
+    "artifactMap": {
+      "meaning": "authoritative clientKey-to-artifactId mapping for Worker persisted maps",
+      "example": {
+        "manifest.json": "<database-preallocated-artifact-uuid>"
+      }
+    },
+    "finalizeBundleResolution": {
+      "input": "metadata.completeMachineResultClientKey",
+      "output": "metadata.completeMachineResultArtifactId",
+      "atomic": true,
+      "retainsClientKeyField": false
+    },
+    "publicationModes": {
+      "fresh": {
+        "reusedFromCheckId": null,
+        "shape": "one report, one bundle, one manifest, and optional complete-machine-result partitions"
+      },
+      "reused": {
+        "reusedFromCheckId": "<completed-source-check-uuid>",
+        "shape": "exactly one closure_report_xlsx",
+        "finalizeMutation": "replace target report_artifact_id only; preserve source complete-machine-result and bundle bindings"
+      }
+    },
+    "publicationInvariant": "all planned locators are registered before upload and all artifacts become ready in one finalize transaction"
+  }
+}

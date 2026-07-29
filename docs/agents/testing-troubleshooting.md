@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 75adbbf7c274b714df8c6cb00cab5ae231dcf188
-lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: canonical regeneration and exact harness mappings resolve post-evidence drift, fresh evidence retires the active waiver, and #704 retains the resume repair.'
+lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
+lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: canonical regeneration resolves manifest conflicts after branch sync, while focused RPC proof and the managed gate diagnose runtime or coverage drift.'
 ---
 
 # Testing Troubleshooting
