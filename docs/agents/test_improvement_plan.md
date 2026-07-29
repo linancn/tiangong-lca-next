@@ -26,8 +26,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
   - package.json
-lastReviewedAt: 2026-07-28
-lastReviewedCommit: 61b2158f9de009278371bb40e0217160933025cb
+lastReviewedAt: 2026-07-29
+lastReviewedCommit: 16dcca003930ec1720fbb96566cd445273983aa2
 lastReviewedNote: 'Reviewed for Issues #698, #703, and #704 during the v0.0.62 back-merge: fresh evidence sunsets the one-time waiver and redundant pairs without expanding browser scope; #704 retains the isolated harness repairs.'
 ---
 

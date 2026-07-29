@@ -10,6 +10,8 @@ import {
   previewLciaResultPackage,
   publishLciaResultPackage,
   unpublishLciaResultPublication,
+  type ClosureArtifactRole,
+  type ClosureArtifactV1,
   type ClosureCheckIssueV1,
   type ClosureCheckSummaryV1,
   type ClosureScopeIdentityV1,
@@ -60,6 +62,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
@@ -118,6 +121,26 @@ type StatusTone = 'success' | 'error' | 'processing' | 'warning' | 'default';
 const submittedBuildPendingPhase = 'waiting_for_worker_processing';
 const previewPageSize = 25;
 const previewExportPageSize = 100;
+const closureArtifactRoles: ClosureArtifactRole[] = [
+  'closure_report_xlsx',
+  'closure_issue_manifest',
+];
+export const closureCheckPollIntervalMs = 2_000;
+export const closureCheckPollMaxAttempts = 30;
+
+function closureCheckNeedsPolling(closureCheck: ClosureCheckSummaryV1 | null): boolean {
+  return Boolean(
+    closureCheck &&
+    (['queued', 'running'].includes(closureCheck.runStatus) ||
+      closureCheck.artifacts?.some((artifact) => artifact.artifactState === 'pending')),
+  );
+}
+
+function isTerminalTaskStatus(status: TaskSummaryV2['workerStatus'] | undefined): boolean {
+  return Boolean(
+    status && ['completed', 'blocked', 'stale', 'failed', 'cancelled'].includes(status),
+  );
+}
 
 function newIdempotencyToken(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -358,6 +381,9 @@ export function stateCodeCountsFromScope(
 }
 
 export function formatArtifactByteSize(value: unknown): string {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
   const size = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(size) || size < 0) {
     return '-';
@@ -610,6 +636,19 @@ const DataProcessing = () => {
     [dataProductTasks],
   );
   const [closureCheck, setClosureCheck] = useState<ClosureCheckSummaryV1 | null>(null);
+  const closureCheckRef = useRef<ClosureCheckSummaryV1 | null>(null);
+  const activeClosureCheckIdRef = useRef<string>();
+  const closureRequestGenerationRef = useRef(0);
+  const closureRefreshFlightRef = useRef<{
+    closureCheckId: string;
+    promise: ReturnType<typeof getClosureCheck>;
+  } | null>(null);
+  const mountedRef = useRef(true);
+  const previousClosureTaskStatusRef = useRef<TaskSummaryV2['workerStatus']>();
+  const closurePollAttemptRef = useRef<{ closureCheckId?: string; count: number }>({ count: 0 });
+  const recoveryInFlightRef = useRef(false);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [artifactClockNow, setArtifactClockNow] = useState(() => Date.now());
   const closureTask = useMemo(
     () =>
       closureCheck?.workerJob?.jobId
@@ -623,6 +662,9 @@ const DataProcessing = () => {
   const [closureIssuesLoading, setClosureIssuesLoading] = useState(false);
   const [closureIssuesError, setClosureIssuesError] = useState<string | null>(null);
   const [closureSelectionKey, setClosureSelectionKey] = useState<string | null>(null);
+  const [expiredClosureArtifactRoles, setExpiredClosureArtifactRoles] = useState<
+    ClosureArtifactRole[]
+  >([]);
   const [currentSelectionKey, setCurrentSelectionKey] = useState<string>(scopeSelectionKey({}));
   const [selectedPackageId, setSelectedPackageId] = useState<string | undefined>(
     deepLink.packageId,
@@ -641,6 +683,19 @@ const DataProcessing = () => {
   useEffect(() => {
     setActiveTabKey(deepLink.activeTabKey);
   }, [deepLink.activeTabKey]);
+
+  useEffect(() => {
+    setExpiredClosureArtifactRoles([]);
+  }, [closureCheck?.closureCheckId]);
+
+  useEffect(
+    () => () => {
+      mountedRef.current = false;
+      closureRequestGenerationRef.current += 1;
+      closureRefreshFlightRef.current = null;
+    },
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -700,6 +755,44 @@ const DataProcessing = () => {
 
   const isAuthorized = role === 'data_product_manager';
 
+  const activateClosureCheckId = useCallback((closureCheckId: string | undefined) => {
+    if (activeClosureCheckIdRef.current === closureCheckId) return;
+    activeClosureCheckIdRef.current = closureCheckId;
+    closureRequestGenerationRef.current += 1;
+    closureRefreshFlightRef.current = null;
+    previousClosureTaskStatusRef.current = undefined;
+    closurePollAttemptRef.current = { closureCheckId, count: 0 };
+  }, []);
+
+  const refreshClosureCheck = useCallback((closureCheckId: string) => {
+    const currentFlight = closureRefreshFlightRef.current;
+    if (currentFlight?.closureCheckId === closureCheckId) {
+      return currentFlight.promise;
+    }
+    const generation = closureRequestGenerationRef.current;
+    const promise = getClosureCheck(closureCheckId)
+      .then((result) => {
+        if (
+          mountedRef.current &&
+          generation === closureRequestGenerationRef.current &&
+          activeClosureCheckIdRef.current === closureCheckId &&
+          !result.error &&
+          result.data?.closureCheckId === closureCheckId
+        ) {
+          closureCheckRef.current = result.data;
+          setClosureCheck(result.data);
+        }
+        return result;
+      })
+      .finally(() => {
+        if (closureRefreshFlightRef.current?.promise === promise) {
+          closureRefreshFlightRef.current = null;
+        }
+      });
+    closureRefreshFlightRef.current = { closureCheckId, promise };
+    return promise;
+  }, []);
+
   const loadBuildJobs = useCallback(async () => {
     setBuildJobsLoading(true);
     setBuildJobsError(null);
@@ -737,19 +830,107 @@ const DataProcessing = () => {
   }, [isAuthorized, loadBuildJobs]);
 
   useEffect(() => {
-    if (!isAuthorized || !deepLink.closureCheckId) return;
-    void getClosureCheck(deepLink.closureCheckId).then((result) => {
-      if (!result.error && result.data) {
-        setClosureCheck(result.data);
-        const selectionKey = scopeSelectionKey(
-          buildForm.getFieldsValue?.() ?? {},
-          impactCategoryOptions,
-        );
-        setClosureSelectionKey(selectionKey);
-        setCurrentSelectionKey(selectionKey);
+    if (!isAuthorized || !deepLink.closureCheckId) {
+      activateClosureCheckId(undefined);
+      return;
+    }
+    activateClosureCheckId(deepLink.closureCheckId);
+    const closureCheckId = deepLink.closureCheckId;
+    void refreshClosureCheck(closureCheckId);
+  }, [activateClosureCheckId, deepLink.closureCheckId, isAuthorized, refreshClosureCheck]);
+
+  useEffect(() => {
+    if (
+      isAuthorized &&
+      deepLink.closureCheckId &&
+      closureCheck?.closureCheckId === deepLink.closureCheckId
+    ) {
+      const selectionKey = scopeSelectionKey(
+        buildForm.getFieldsValue?.() ?? {},
+        impactCategoryOptions,
+      );
+      setClosureSelectionKey(selectionKey);
+      setCurrentSelectionKey(selectionKey);
+    }
+  }, [
+    buildForm,
+    closureCheck?.closureCheckId,
+    deepLink.closureCheckId,
+    impactCategoryOptions,
+    isAuthorized,
+  ]);
+
+  const closurePollingKey = closureCheck
+    ? [
+        closureCheck.closureCheckId,
+        closureCheck.runStatus,
+        ...(closureCheck.artifacts?.map(
+          (artifact) => `${artifact.artifactRole}:${artifact.artifactState}`,
+        ) ?? []),
+      ].join('|')
+    : '';
+
+  useEffect(() => {
+    const closureCheckId = closureCheck?.closureCheckId;
+    if (!closureCheckId || !closureCheckNeedsPolling(closureCheck)) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const poll = async () => {
+      closurePollAttemptRef.current.count += 1;
+      await refreshClosureCheck(closureCheckId);
+      if (
+        !cancelled &&
+        activeClosureCheckIdRef.current === closureCheckId &&
+        closureCheckNeedsPolling(closureCheckRef.current) &&
+        closurePollAttemptRef.current.count < closureCheckPollMaxAttempts
+      ) {
+        timer = setTimeout(() => void poll(), closureCheckPollIntervalMs);
       }
-    });
-  }, [buildForm, deepLink.closureCheckId, impactCategoryOptions, isAuthorized]);
+    };
+    timer = setTimeout(() => void poll(), closureCheckPollIntervalMs);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [closurePollingKey, refreshClosureCheck]);
+
+  useEffect(() => {
+    const status = closureTask?.workerStatus;
+    const previousStatus = previousClosureTaskStatusRef.current;
+    previousClosureTaskStatusRef.current = status;
+    if (
+      closureCheck?.closureCheckId &&
+      isTerminalTaskStatus(status) &&
+      status !== previousStatus &&
+      closureCheckNeedsPolling(closureCheck)
+    ) {
+      void refreshClosureCheck(closureCheck.closureCheckId);
+    }
+  }, [closureCheck, closureTask?.workerStatus, refreshClosureCheck]);
+
+  const closureArtifactExpiryKey =
+    closureCheck?.artifacts
+      ?.map((artifact) => `${artifact.artifactRole}:${artifact.artifactExpiresAt ?? ''}`)
+      .join('|') ?? '';
+  useEffect(() => {
+    setArtifactClockNow(Date.now());
+  }, [closureArtifactExpiryKey, closureCheck?.closureCheckId]);
+
+  useEffect(() => {
+    const now = Date.now();
+    const nextExpiry = closureCheck?.artifacts
+      ?.filter(
+        (artifact) =>
+          artifact.artifactState === 'ready' &&
+          typeof artifact.artifactExpiresAt === 'string' &&
+          Date.parse(artifact.artifactExpiresAt) > now,
+      )
+      .map((artifact) => Date.parse(artifact.artifactExpiresAt!))
+      .sort((left, right) => left - right)[0];
+    if (nextExpiry === undefined) return;
+    const timer = setTimeout(() => setArtifactClockNow(Date.now()), Math.max(0, nextExpiry - now));
+    return () => clearTimeout(timer);
+  }, [artifactClockNow, closureArtifactExpiryKey, closureCheck?.closureCheckId]);
 
   useEffect(() => {
     setCurrentSelectionKey(
@@ -1070,72 +1251,105 @@ const DataProcessing = () => {
     }
   };
 
-  const handleCreateClosureCheck = async () => {
-    const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
-    const selectedLciaMethod = selectedImpactCategoryIdentity(
-      values.defaultImpactCategory,
-      impactCategoryOptions,
+  const handleRecoverClosureCheck = async () => {
+    if (recoveryInFlightRef.current) return;
+    recoveryInFlightRef.current = true;
+    setRecoveryLoading(true);
+    try {
+      const values = await buildForm.validateFields(['coverageMode', 'defaultImpactCategory']);
+      const selectedLciaMethod = selectedImpactCategoryIdentity(
+        values.defaultImpactCategory,
+        impactCategoryOptions,
+      );
+      if (!selectedLciaMethod) {
+        setCommandStatus({
+          kind: 'error',
+          message: t(
+            'pages.dataProcessing.validation.defaultImpactCategoryInvalid',
+            'The selected impact category is unavailable or has no valid version.',
+          ),
+        });
+        return;
+      }
+      const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
+      const result = await runCommand('createClosureCheck', () =>
+        createClosureCheck({
+          requestedScope: {
+            coverageMode: values.coverageMode || 'global_eligible',
+            lciaMethods: [selectedLciaMethod],
+          },
+          requestIdempotencyToken: newIdempotencyToken(),
+        }),
+      );
+      if (result && !result.error && result.data) {
+        const closureCheckId = result.data.closureCheckId;
+        activateClosureCheckId(closureCheckId);
+        const summary = await refreshClosureCheck(closureCheckId);
+        if (activeClosureCheckIdRef.current !== closureCheckId) return;
+        if (summary.error || !summary.data) {
+          setCommandStatus({
+            kind: 'error',
+            message:
+              summary.error?.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
+          });
+          return;
+        }
+        setExpiredClosureArtifactRoles([]);
+        setClosurePrerequisiteUnavailable(false);
+        setClosureSelectionKey(selectionKey);
+        setCurrentSelectionKey(selectionKey);
+        void loadBuildJobs();
+      } else if (
+        result?.error?.code === 'current_release_required' ||
+        result?.error?.code === 'closure_evidence_unavailable'
+      ) {
+        // This is an execution-environment prerequisite, not a data-quality
+        // blocker.  A formerly displayed certificate must not keep result
+        // generation enabled after the server says current evidence is absent.
+        activateClosureCheckId(undefined);
+        closureCheckRef.current = null;
+        setClosureCheck(null);
+        setClosureSelectionKey(null);
+        setClosurePrerequisiteUnavailable(true);
+      }
+    } finally {
+      recoveryInFlightRef.current = false;
+      if (mountedRef.current) setRecoveryLoading(false);
+    }
+  };
+
+  const handleDownloadClosureArtifact = async (artifact: ClosureArtifactV1) => {
+    const result = await createClosureReportDownload(
+      closureCheck!.closureCheckId,
+      artifact.artifactRole,
     );
-    if (!selectedLciaMethod) {
+    if (result.error || !result.data?.signedDownloadUrl) {
+      if (result.status === 410 || result.error?.code === 'closure_report_expired') {
+        setExpiredClosureArtifactRoles((current) => [...current, artifact.artifactRole]);
+        setCommandStatus({
+          kind: 'error',
+          message: t(
+            'pages.dataProcessing.closure.artifact.expiredGuidance',
+            'This artifact has expired. Run the data completeness check again to prepare a new download.',
+          ),
+        });
+        return;
+      }
       setCommandStatus({
         kind: 'error',
         message: t(
-          'pages.dataProcessing.validation.defaultImpactCategoryInvalid',
-          'The selected impact category is unavailable or has no valid version.',
+          'pages.dataProcessing.closure.artifact.downloadFailed',
+          'This download is currently unavailable. Please try again later.',
         ),
       });
       return;
     }
-    const selectionKey = scopeSelectionKey(values, impactCategoryOptions);
-    const result = await runCommand('createClosureCheck', () =>
-      createClosureCheck({
-        requestedScope: {
-          coverageMode: values.coverageMode || 'global_eligible',
-          lciaMethods: [selectedLciaMethod],
-        },
-        requestIdempotencyToken: newIdempotencyToken(),
-      }),
-    );
-    if (result && !result.error && result.data) {
-      const summary = await getClosureCheck(result.data.closureCheckId);
-      if (summary.error || !summary.data) {
-        setCommandStatus({
-          kind: 'error',
-          message:
-            summary.error?.message ?? t('pages.dataProcessing.command.failed', 'Command failed'),
-        });
-        return;
-      }
-      setClosureCheck(summary.data);
-      setClosurePrerequisiteUnavailable(false);
-      setClosureSelectionKey(selectionKey);
-      setCurrentSelectionKey(selectionKey);
-      void loadBuildJobs();
-    } else if (
-      result?.error?.code === 'current_release_required' ||
-      result?.error?.code === 'closure_evidence_unavailable'
-    ) {
-      // This is an execution-environment prerequisite, not a data-quality
-      // blocker.  A formerly displayed certificate must not keep result
-      // generation enabled after the server says current evidence is absent.
-      setClosureCheck(null);
-      setClosureSelectionKey(null);
-      setClosurePrerequisiteUnavailable(true);
-    }
-  };
-
-  const handleDownloadClosureReport = async () => {
-    const result = await createClosureReportDownload(closureCheck!.closureCheckId);
-    if (result.error || !result.data?.signedDownloadUrl) {
-      setCommandStatus({
-        kind: 'error',
-        message:
-          result.error?.message ??
-          t('pages.dataProcessing.closure.reportUnavailable', 'Report is unavailable'),
-      });
-      return;
-    }
-    window.open(result.data.signedDownloadUrl, '_blank', 'noopener,noreferrer');
+    const anchor = document.createElement('a');
+    anchor.href = result.data.signedDownloadUrl;
+    anchor.target = '_self';
+    anchor.rel = 'noopener noreferrer';
+    if (result.data.filename) anchor.download = result.data.filename;
+    anchor.click();
   };
 
   const previewPackageById = async (
@@ -1537,21 +1751,133 @@ const DataProcessing = () => {
                   ) : null}
                 </div>
               ) : null}
+              {closureCheck ? (
+                <div className={styles.closureArtifacts} data-testid='closure-artifacts'>
+                  <strong>
+                    {t('pages.dataProcessing.closure.artifacts.title', 'Result artifacts')}
+                  </strong>
+                  {closureArtifactRoles.map((artifactRole) => {
+                    const decodedArtifact = closureCheck.artifacts?.find(
+                      (artifact) => artifact.artifactRole === artifactRole,
+                    );
+                    const lifecycleState = expiredClosureArtifactRoles.includes(artifactRole)
+                      ? 'expired'
+                      : !decodedArtifact
+                        ? 'unavailable'
+                        : decodedArtifact.artifactState === 'pending'
+                          ? 'preparing'
+                          : decodedArtifact.artifactState === 'ready'
+                            ? Date.parse(decodedArtifact.artifactExpiresAt) > artifactClockNow
+                              ? 'available'
+                              : 'expired'
+                            : decodedArtifact.artifactState === 'expired'
+                              ? 'expired'
+                              : decodedArtifact.artifactState === 'failed'
+                                ? 'failed'
+                                : 'unavailable';
+                    const roleLabel =
+                      artifactRole === 'closure_report_xlsx'
+                        ? t(
+                            'pages.dataProcessing.closure.artifact.humanReport',
+                            'Human issue report (XLSX)',
+                          )
+                        : t(
+                            'pages.dataProcessing.closure.artifact.machineResult',
+                            'Machine result manifest',
+                          );
+                    const stateMessage =
+                      lifecycleState === 'preparing'
+                        ? t(
+                            'pages.dataProcessing.closure.artifact.preparing',
+                            'Preparing this artifact.',
+                          )
+                        : lifecycleState === 'available'
+                          ? t(
+                              'pages.dataProcessing.closure.artifact.availableUntil',
+                              'Available until',
+                            )
+                          : lifecycleState === 'expired'
+                            ? t(
+                                'pages.dataProcessing.closure.artifact.expiredGuidance',
+                                'This artifact has expired. Run the data completeness check again to prepare a new download.',
+                              )
+                            : lifecycleState === 'failed'
+                              ? t(
+                                  'pages.dataProcessing.closure.artifact.failedGuidance',
+                                  'Artifact preparation failed. Run the data completeness check again.',
+                                )
+                              : t(
+                                  'pages.dataProcessing.closure.artifact.unavailable',
+                                  'This artifact is unavailable.',
+                                );
+                    return (
+                      <section
+                        key={artifactRole}
+                        className={styles.closureArtifact}
+                        data-testid={`closure-artifact-${artifactRole}`}
+                      >
+                        <strong>{roleLabel}</strong>
+                        <span data-testid={`closure-artifact-state-${artifactRole}`}>
+                          {lifecycleState === 'available'
+                            ? `${stateMessage}: ${formatTimestamp(
+                                decodedArtifact?.artifactExpiresAt,
+                              )}`
+                            : stateMessage}
+                        </span>
+                        {decodedArtifact?.filename ? <span>{decodedArtifact.filename}</span> : null}
+                        {decodedArtifact?.format ||
+                        decodedArtifact?.mediaType ||
+                        decodedArtifact?.size !== undefined ? (
+                          <span>
+                            {[
+                              decodedArtifact.format,
+                              decodedArtifact.mediaType,
+                              formatArtifactByteSize(decodedArtifact.size),
+                            ]
+                              .filter((value) => value && value !== '-')
+                              .join(' · ')}
+                          </span>
+                        ) : null}
+                        {decodedArtifact?.checksumSha256 ? (
+                          <code>{decodedArtifact.checksumSha256}</code>
+                        ) : null}
+                        {lifecycleState === 'available' && decodedArtifact ? (
+                          <Button
+                            onClick={() => void handleDownloadClosureArtifact(decodedArtifact)}
+                            icon={<DownloadOutlined />}
+                          >
+                            {artifactRole === 'closure_report_xlsx'
+                              ? t(
+                                  'pages.dataProcessing.action.downloadClosureReport',
+                                  'Download issue report',
+                                )
+                              : t(
+                                  'pages.dataProcessing.action.downloadClosureMachineResult',
+                                  'Download machine result manifest',
+                                )}
+                          </Button>
+                        ) : lifecycleState === 'expired' || lifecycleState === 'failed' ? (
+                          <Button
+                            disabled={recoveryLoading}
+                            loading={recoveryLoading}
+                            onClick={handleRecoverClosureCheck}
+                          >
+                            {t('pages.dataProcessing.action.rerunClosureCheck', 'Run check again')}
+                          </Button>
+                        ) : null}
+                      </section>
+                    );
+                  })}
+                </div>
+              ) : null}
               <Space wrap>
                 <Button
-                  loading={submittingAction === 'createClosureCheck'}
-                  onClick={handleCreateClosureCheck}
+                  disabled={recoveryLoading}
+                  loading={recoveryLoading || submittingAction === 'createClosureCheck'}
+                  onClick={handleRecoverClosureCheck}
                 >
                   {t('pages.dataProcessing.action.checkCompleteness', 'Check data completeness')}
                 </Button>
-                {closureCheck && ['passed', 'blocked'].includes(closureCheck.runStatus) ? (
-                  <Button onClick={handleDownloadClosureReport} icon={<DownloadOutlined />}>
-                    {t(
-                      'pages.dataProcessing.action.downloadClosureReport',
-                      'Download issue report',
-                    )}
-                  </Button>
-                ) : null}
               </Space>
             </Space>
           </Card>
