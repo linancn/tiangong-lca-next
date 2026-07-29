@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - package.json
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
-lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: focused service/data-workflow tests and full managed coverage are sufficient without expanding browser scope before the matching deployed-revision smoke.'
+lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
+lastReviewedNote: 'Reviewed for Issue #704: repository-owned formatting closes the writer-boundary defect without expanding browser scope or changing the testing strategy.'
 ---
 
 # Testing Strategy
@@ -55,7 +55,7 @@ lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and 
 - gate ownership should prevent duplicate work: a normal delivery uses the push hook as the single full-gate owner, while a no-push handoff may run it manually instead
 - release-risk gates should shift left without weakening the final boundary: main-semantic local pushes and main-target PR CI both run the credential-free production preflight, while the post-merge workflow still validates the exact release SHA
 - each production release workflow should also have one full-suite owner: `prepush:gate`, which executes the complete test inventory once with at most one coverage worker active at a time, while the reusable browser semantic E2E matrix runs in parallel as a separate exact-release-SHA prerequisite without duplicating Jest coverage; immutable tag publication follows both successful jobs
-- generated localization evidence should be canonical and idempotent at its source: the reporter writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
+- generated localization evidence should be canonical and idempotent at its source: the reporter resolves the repository-owned formatting policy independently of its output destination and writes final repository JSON directly, one dependency-ordered invocation produces every locale summary, and a double-generation check proves the second run leaves the exact Git diff unchanged; the isolated clone must reproduce every remote ref the generator reads so detached CI and ordinary developer checkouts prove the same contract
 - agent and CI consoles should remain bounded to stages, failures, and final summaries while complete Jest stdout/stderr and structured results remain available under `.local/test-logs/**` and as short-lived Release Gate artifacts
 - semantic evidence invalidation should follow behavior boundaries rather than monolithic-file boundaries: exact reviewed digest compatibility may preserve existing browser evidence for non-browser-semantic harness-only changes, and an explicit release-owner decision may cover one promotion candidate only when its complete config/package/source/unit-test identity is pinned and the full gate passes; any future digest or tree drift must fail closed
 

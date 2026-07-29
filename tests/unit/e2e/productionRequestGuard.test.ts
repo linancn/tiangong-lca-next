@@ -914,6 +914,17 @@ describe('production browser request guard', () => {
     expect(auditedCalls).toHaveLength(fulfillCalls.length);
   });
 
+  it('keeps the standard-user route fixture behind the audited fulfill classifier', () => {
+    const source = readFileSync(
+      path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/route-inventory.spec.ts'),
+      'utf8',
+    );
+    const fulfillCalls = source.match(/await route[.]fulfill[(]/gu) ?? [];
+    const auditedCalls = source.match(/assertAuditedSyntheticReadRequest[(]/gu) ?? [];
+    expect(fulfillCalls).toHaveLength(1);
+    expect(auditedCalls).toHaveLength(fulfillCalls.length);
+  });
+
   it('records blocked requests as method and pathname only', async () => {
     const { guard, routeHandler } = await makeInstalledGuard({});
     const abort = jest.fn(async () => undefined);

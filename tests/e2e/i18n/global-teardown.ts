@@ -5,6 +5,7 @@ import { cleanupCodexE2EProcess, readProductionDataLedger } from './production-d
 
 export default async function globalTeardown(): Promise<void> {
   try {
+    if (process.env.E2E_QUALIFICATION === 'true') return;
     const ledger = await readProductionDataLedger();
     if (ledger) {
       const result = await cleanupCodexE2EProcess();

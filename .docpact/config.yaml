@@ -1,8 +1,8 @@
 version: 1
 layout: repo
-lastReviewedAt: '2026-07-29'
-lastReviewedCommit: '08f1ab2ca342ce65783a38b58f3d001c0a5ed300'
-lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713 Process search cutover: existing routes cover indexed Database v2 search, strict owner-draft behavior, canonical locale artifacts, and matching non-production validation without changing repository ownership.'
+lastReviewedAt: "2026-07-29"
+lastReviewedCommit: "bd5e7497fc7c0d32a8f7582fd6616650600eafa9"
+lastReviewedNote: 'Reviewed for Issue #704: repository-owned semantic-evidence formatting preserves the existing i18n/testing ownership and routing contract.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

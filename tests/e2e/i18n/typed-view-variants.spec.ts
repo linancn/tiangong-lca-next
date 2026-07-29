@@ -21,6 +21,8 @@ import {
   PROCESS_SAVE_DRAFT_ROUTE_PATTERN,
 } from './typed-view-readonly-fixture';
 
+test.use({ semanticPersona: 'data_product_manager' });
+
 const dataProcessingAssertion = findRouteAssertion('/data-processing');
 const processAssertion = findRouteAssertion('/mydata/processes');
 const productionBackendTarget = readVerifiedProductionBackendTarget();
@@ -452,7 +454,8 @@ test('Process edit and view deep links survive locale switches and reloads', asy
   test.skip(
     browserName !== PLAYWRIGHT_BROWSER_PROJECTS[0] ||
       process.env.E2E_AUTHENTICATED !== 'true' ||
-      process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+      (process.env.E2E_QUALIFICATION !== 'true' &&
+        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
     'Process typed drawer modes require the exact read-only global production ledger.',
   );
   test.setTimeout(10 * 60_000);
@@ -496,7 +499,8 @@ PROCESS_REQUIRED_VARIANTS.forEach(({ assertionId, required }) => {
     test.skip(
       browserName !== PLAYWRIGHT_BROWSER_PROJECTS[0] ||
         process.env.E2E_AUTHENTICATED !== 'true' ||
-        process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true',
+        (process.env.E2E_QUALIFICATION !== 'true' &&
+          process.env.E2E_ALLOW_PRODUCTION_DATA !== 'true'),
       'Process required-state variants require the exact read-only global production ledger.',
     );
     test.setTimeout(10 * 60_000);

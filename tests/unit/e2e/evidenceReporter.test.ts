@@ -45,10 +45,12 @@ describe('i18n evidence reporter', () => {
       path.join(REPOSITORY_ROOT, 'tests/e2e/i18n/evidence-reporter.ts'),
       'utf8',
     );
-    expect(reporterSource).toContain('prettier.format(JSON.stringify(value, null, 2)');
-    expect(reporterSource).toContain(
-      'await formatCanonicalEvidenceJson(E2E_EVIDENCE_PATH, evidence)',
+    const formatterSource = readFileSync(
+      path.join(REPOSITORY_ROOT, 'scripts/i18n/semantic-evidence-format.ts'),
+      'utf8',
     );
+    expect(formatterSource).toContain('prettier.format(JSON.stringify(value, null, 2)');
+    expect(reporterSource).toContain('await formatCanonicalEvidenceJson(evidence)');
     expect(
       execFileSync(
         process.execPath,
@@ -59,6 +61,74 @@ describe('i18n evidence reporter', () => {
         },
       ),
     ).toBe('Semantic E2E evidence is canonical.\n');
+  });
+
+  it('renders an external container evidence path with the repository canonical config', () => {
+    const directory = mkdtempSync(path.join(os.tmpdir(), 'e2e-output-'));
+    const evidencePath = path.join(directory, 'semantic-e2e-evidence.json');
+    const inputPath = path.join(directory, 'evidence-input.json');
+    try {
+      writeFileSync(
+        inputPath,
+        JSON.stringify({
+          browsers: ['chromium', 'firefox', 'webkit'],
+          scenarios: [
+            'anonymous-protection',
+            'responsive-surface-matrix',
+            'typed-data-processing-tabs',
+          ],
+        }),
+      );
+      execFileSync(
+        process.execPath,
+        [
+          '--import',
+          'tsx',
+          '--input-type=module',
+          '--eval',
+          [
+            "import fs from 'node:fs';",
+            "import { formatCanonicalSemanticEvidence } from './scripts/i18n/semantic-evidence-format.ts';",
+            "const value = JSON.parse(fs.readFileSync(process.env.E2E_TEST_INPUT_PATH, 'utf8'));",
+            'fs.writeFileSync(',
+            '  process.env.E2E_TEST_OUTPUT_PATH,',
+            '  await formatCanonicalSemanticEvidence(value, process.cwd()),',
+            ');',
+          ].join('\n'),
+        ],
+        {
+          cwd: REPOSITORY_ROOT,
+          env: {
+            ...process.env,
+            E2E_TEST_INPUT_PATH: inputPath,
+            E2E_TEST_OUTPUT_PATH: evidencePath,
+          },
+          encoding: 'utf8',
+        },
+      );
+
+      expect(
+        execFileSync(
+          process.execPath,
+          [
+            '--import',
+            'tsx',
+            'scripts/i18n/check-semantic-evidence-format.mjs',
+            '--path',
+            evidencePath,
+          ],
+          {
+            cwd: REPOSITORY_ROOT,
+            encoding: 'utf8',
+          },
+        ),
+      ).toBe('Semantic E2E evidence is canonical.\n');
+      expect(readFileSync(evidencePath, 'utf8')).toContain(
+        '"scenarios": ["anonymous-protection", "responsive-surface-matrix",',
+      );
+    } finally {
+      rmSync(directory, { force: true, recursive: true });
+    }
   });
 
   it('reads exact candidate identity from the host manifest when container Git is absent', () => {

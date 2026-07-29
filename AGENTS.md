@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: 08f1ab2ca342ce65783a38b58f3d001c0a5ed300
-lastReviewedNote: 'Reviewed the merged latest-dev closure-artifact delivery and Issue #713: repo ownership, dev-to-main delivery, production-write guards, generated-mirror boundaries, managed-push rules, and later workspace integration remain unchanged.'
+lastReviewedCommit: bd5e7497fc7c0d32a8f7582fd6616650600eafa9
+lastReviewedNote: 'Reviewed for Issue #704: the canonical evidence writer fix preserves repo ownership, dev-to-main delivery, production-write guards, managed-push rules, and workspace integration.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

@@ -169,6 +169,15 @@ describe('reference refresh semantic E2E contract', () => {
     const raceSource = source.slice(raceStart, raceEnd);
     const timeoutBudget = raceSource.indexOf('test.setTimeout(');
     const navigationReady = raceSource.indexOf('await gotoCandidateDocument(');
+    const neutralBoundary = raceSource.indexOf(
+      "const raceStagingUrl = new URL('/privacy_notice.html', baseURL!);",
+    );
+    const storedStaleLocale = raceSource.indexOf(
+      'await setStoredAppLocale(page, staleDefinition.appLocale);',
+      neutralBoundary,
+    );
+    const cacheClear = raceSource.indexOf('await clearBrowserCache(page, fixture);');
+    const requestPhase = raceSource.indexOf('await staleRequestPhase.started;', navigationReady);
     const staleConsumersDefined = raceSource.indexOf('const staleConsumers =', navigationReady);
     const navigationCall = raceSource.slice(navigationReady, staleConsumersDefined);
     const staleConsumerPending = raceSource.indexOf('.toBeGreaterThan(0);', staleConsumersDefined);
@@ -191,8 +200,14 @@ describe('reference refresh semantic E2E contract', () => {
     expect(raceStart).toBeGreaterThan(-1);
     expect(raceEnd).toBeGreaterThan(raceStart);
     expect(timeoutBudget).toBeGreaterThan(-1);
+    expect(neutralBoundary).toBeGreaterThan(timeoutBudget);
+    expect(storedStaleLocale).toBeGreaterThan(neutralBoundary);
+    expect(cacheClear).toBeGreaterThan(storedStaleLocale);
     expect(navigationReady).toBeGreaterThan(timeoutBudget);
+    expect(navigationReady).toBeGreaterThan(cacheClear);
+    expect(requestPhase).toBeGreaterThan(navigationReady);
     expect(staleConsumersDefined).toBeGreaterThan(navigationReady);
+    expect(staleConsumersDefined).toBeGreaterThan(requestPhase);
     expect(navigationCall).toContain('waitForDrawerIdle: false');
     expect(staleConsumerPending).toBeGreaterThan(staleConsumersDefined);
     expect(staleRequestStarted).toBeGreaterThan(staleConsumerPending);
@@ -212,6 +227,7 @@ describe('reference refresh semantic E2E contract', () => {
     expect(raceSource).toContain('staleRequestsStarted > 0');
     expect(raceSource).toContain('data-reference-pending="true"');
     expect(raceSource).toContain('expect(staleTextSeen).toBe(false)');
+    expect(raceSource).not.toContain("page.goto('about:blank'");
     expect(raceSource).not.toContain('currentRequestsStarted');
     expect(raceSource).not.toContain('currentResponsesFinished');
     const localeSwitch = raceSource.indexOf(
@@ -263,7 +279,7 @@ describe('reference refresh semantic E2E contract', () => {
     expect(cacheSource).not.toMatch(/catch[\s\S]*forceTrigger/gu);
   });
 
-  it('makes the same mounted-surface choice explicit in the other repeated drawer scenarios', () => {
+  it('unmounts race consumers before staging locale while preserving real form interactions', () => {
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, SPEC_PATH), 'utf8');
     const raceStart = source.indexOf(
       "test('delayed old-locale classification and location responses never overwrite the mounted locale'",
@@ -283,10 +299,13 @@ describe('reference refresh semantic E2E contract', () => {
       'const expectsMountedProcessDrawer = fixtureIndex > 0 || localePairIndex > 0;',
     );
     expect(raceSource).toContain('if (expectsMountedProcessDrawer)');
-    expect(raceSource).toContain('await selectLocaleThroughHeader(page, staleDefinition);');
-    expect(raceSource).toContain(
-      'await selectLocaleThroughHeader(page, staleDefinition, { forceTrigger: true });',
+    expect(raceSource).toContain('await setStoredAppLocale(page, staleDefinition.appLocale);');
+    expect(
+      raceSource.indexOf('await gotoCandidateUrl(page, browserName, raceStagingUrl'),
+    ).toBeLessThan(
+      raceSource.indexOf('await setStoredAppLocale(page, staleDefinition.appLocale);'),
     );
+    expect(raceSource).not.toContain('selectLocaleThroughHeader(page, staleDefinition');
     expect(formSource).toContain('const expectsMountedProcessDrawer = index > 0;');
     expect(formSource).toContain('if (expectsMountedProcessDrawer)');
     expect(formSource).toContain('await selectLocaleThroughHeader(page, definition);');

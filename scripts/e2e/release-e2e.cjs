@@ -15,6 +15,10 @@ const RECEIPT_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.json');
 const RECEIPT_KEY_PATH = path.join(RUNTIME_ROOT, 'continuation-receipt.key');
 const INVOCATION_LOCK_PATH = path.join(RUNTIME_ROOT, 'invocation.lock');
 const ENVIRONMENT_MANIFEST_PATH = path.join(RUNTIME_ROOT, 'environment-manifest.json');
+const QUALIFICATION_RECEIPT_PATH = path.join(
+  REPOSITORY_ROOT,
+  'docs/plans/i18n/semantic-harness-qualification-receipt.json',
+);
 const ENVIRONMENT_CONTRACT_RELATIVE_PATH = 'docker/e2e/environment.json';
 const DOCKERFILE_RELATIVE_PATH = 'docker/e2e/Dockerfile';
 const RECEIPT_TTL_MS = 60 * 60 * 1000;
@@ -105,7 +109,9 @@ function processIsRunning(pid) {
 function lockRetryCommand(command) {
   return {
     clean: 'npm run e2e:env:clean',
+    'check-qualification': 'npm run e2e:qualification:check',
     install: 'npm run e2e:env:install',
+    qualify: 'npm run e2e:qualify',
     resume: 'npm run e2e:release:resume',
     run: 'npm run e2e:release',
   }[command];
@@ -256,6 +262,8 @@ function commandHelp() {
     '  npm run e2e:env:install -- [--format json] [--output <path>]',
     '  npm run e2e:env:doctor -- [--format json] [--output <path>]',
     '  npm run e2e:release -- [options]',
+    '  npm run e2e:qualify -- [--offline] [--format human|json] [--output <path>]',
+    '  npm run e2e:qualification:check',
     '  npm run e2e:release:resume',
     '  npm run e2e:env:clean -- [--purge-images]',
     '  npm run e2e:dev -- [Playwright arguments]',
@@ -325,8 +333,10 @@ function parseOptions(command, argv) {
   };
   const allowedFlags = {
     clean: new Set(['format', 'help', 'output', 'purge-images']),
+    'check-qualification': new Set(['format', 'help', 'output']),
     doctor: new Set(['format', 'help', 'output']),
     install: new Set(['format', 'help', 'offline', 'output']),
+    qualify: new Set(['format', 'help', 'offline', 'output']),
     run: new Set([
       'allow-production-data',
       'authenticated',
@@ -993,12 +1003,92 @@ function assertProtectedCredentialFile(filePath) {
 }
 
 function playwrightArguments(options) {
+  if (options.qualification) {
+    return ['tests/e2e/i18n'];
+  }
   const args = [];
   if (options.spec) args.push(options.spec);
   if (options.project) args.push(`--project=${options.project}`);
   if (options.grep) args.push(`--grep=${options.grep}`);
   if (options.repeatEach) args.push(`--repeat-each=${options.repeatEach}`);
   return args;
+}
+
+function qualificationInputSha256() {
+  const pathPrefixes = [
+    'src',
+    'tests/e2e/i18n',
+    'scripts/e2e',
+    'docker/e2e',
+    'playwright.config.ts',
+    'docs/plans/i18n/route-view-coverage.json',
+    'docs/plans/i18n/semantic-e2e-evidence.schema.json',
+  ];
+  const files = git(['ls-files', '--', ...pathPrefixes])
+    .split(/\r?\n/u)
+    .filter((file) => file && file !== path.relative(REPOSITORY_ROOT, QUALIFICATION_RECEIPT_PATH))
+    .sort();
+  const packageJson = JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, 'package.json')));
+  const packageLock = JSON.parse(fs.readFileSync(path.join(REPOSITORY_ROOT, 'package-lock.json')));
+  delete packageJson.version;
+  delete packageLock.version;
+  if (packageLock.packages?.['']) delete packageLock.packages[''].version;
+  const entries = files.map((file) => ({
+    path: file,
+    sha256: sha256(fs.readFileSync(path.join(REPOSITORY_ROOT, file))),
+  }));
+  entries.push(
+    { path: 'package.json#without-version', sha256: sha256(jsonText(packageJson)) },
+    { path: 'package-lock.json#without-root-version', sha256: sha256(jsonText(packageLock)) },
+  );
+  return sha256(jsonText(entries));
+}
+
+function validateQualificationReceipt(receipt, expectedInput) {
+  if (
+    receipt?.schemaVersion !== 'tiangong.semantic-harness-qualification.v1' ||
+    receipt.status !== 'qualified' ||
+    receipt.coverage?.discoveredCases !== 72 ||
+    receipt.coverage?.contractAssertionCount !== 49 ||
+    receipt.coverage?.liveAssertionCount !== 49 ||
+    receipt.coverage?.executedCases !== 48 ||
+    receipt.coverage?.skippedCases !== 24 ||
+    receipt.coverage?.harnessControlCases !== 12 ||
+    receipt.coverage?.qualificationDiscoveredCases !== 84 ||
+    receipt.productionWrites !== 0 ||
+    receipt.externalRequests !== 0 ||
+    receipt.cleanup?.created !== 0 ||
+    receipt.cleanup?.cleaned !== 0 ||
+    receipt.cleanup?.leaked !== 0 ||
+    receipt.qualificationInputSha256 !== expectedInput ||
+    JSON.stringify(receipt.browsers?.map(({ name }) => name)) !==
+      JSON.stringify(['chromium', 'firefox', 'webkit']) ||
+    receipt.browsers.some(({ version }) => typeof version !== 'string' || version.length === 0)
+  ) {
+    throw new ReleaseE2EError(
+      'The semantic harness qualification receipt is missing, stale, or incomplete.',
+      {
+        exitCode: EXIT.CANDIDATE,
+        failureCode: 'E2E_QUALIFICATION_RECEIPT_INVALID',
+        phase: 'candidate',
+        nextCommand: 'npm run e2e:qualify',
+      },
+    );
+  }
+  return receipt;
+}
+
+function readQualificationReceipt() {
+  if (!fs.existsSync(QUALIFICATION_RECEIPT_PATH)) {
+    throw new ReleaseE2EError('A current semantic harness qualification receipt is required.', {
+      exitCode: EXIT.CANDIDATE,
+      failureCode: 'E2E_QUALIFICATION_RECEIPT_MISSING',
+      phase: 'candidate',
+      nextCommand: 'npm run e2e:qualify',
+    });
+  }
+  const receipt = readJson(QUALIFICATION_RECEIPT_PATH);
+  return validateQualificationReceipt(receipt, qualificationInputSha256());
 }
 
 function receiptOptions(options) {
@@ -1221,7 +1311,7 @@ function dockerRunArguments(context, options, runDirectory, runtimeInputs) {
   const environment = {
     ...(options.allowProductionData ? { CI: '', GITHUB_ACTIONS: '' } : {}),
     E2E_ALLOW_PRODUCTION_DATA: String(options.allowProductionData),
-    E2E_AUTHENTICATED: String(options.authenticated),
+    E2E_AUTHENTICATED: String(options.authenticated || options.qualification),
     E2E_AUTH_ROLE: options.role,
     E2E_BACKEND_TARGET: 'production',
     E2E_BASE_URL: 'http://127.0.0.1:8000',
@@ -1230,6 +1320,8 @@ function dockerRunArguments(context, options, runDirectory, runtimeInputs) {
     E2E_EVIDENCE_PATH: '/e2e-output/semantic-e2e-evidence.json',
     E2E_EXTERNAL_SERVER: 'true',
     E2E_PLAYWRIGHT_ARGS_JSON: JSON.stringify(playwrightArguments(options)),
+    E2E_QUALIFICATION: String(Boolean(options.qualification)),
+    E2E_QUALIFICATION_RESULT_PATH: '/e2e-output/semantic-harness-qualification.json',
     E2E_PRODUCTION_WRITE_CONFIRMATION: options.allowProductionData
       ? 'I_AUTHORIZE_ONE_CODEX_E2E_PRODUCTION_PROCESS'
       : '',
@@ -1280,6 +1372,7 @@ function runRelease(options, state = {}) {
   const prerequisites = assertHostPrerequisites();
   const environment = loadEnvironmentContractFromWorkingTree();
   const candidate = requireCleanCommittedCandidate();
+  if (!state.qualificationBootstrap) readQualificationReceipt();
   if (state.receipt) {
     if (
       candidate.commit !== state.receipt.candidate.commit ||
@@ -1439,6 +1532,92 @@ function runRelease(options, state = {}) {
   } finally {
     fs.rmSync(context.directory, { recursive: true, force: true });
   }
+}
+
+function runQualification(options) {
+  const result = runRelease(
+    {
+      ...options,
+      allowProductionData: false,
+      authenticated: false,
+      qualification: true,
+      recoveryLedger: path.join(RUNTIME_ROOT, 'qualification-recovery-ledger.json'),
+      role: 'user',
+      writeVerifiedEvidence: false,
+    },
+    { qualificationBootstrap: true },
+  );
+  const preflight = readJson(result.artifacts.preflightReport);
+  const discovery = preflight.checks.find(
+    ({ id }) => id === 'environment.playwright-discovery',
+  )?.summary;
+  const coverage = readJson(path.join(REPOSITORY_ROOT, 'docs/plans/i18n/route-view-coverage.json'));
+  const assertionCount = Object.keys(coverage.executableTargets ?? {}).length;
+  const containerResult = readJson(result.artifacts.containerResult);
+  const cleanup = containerResult.cleanup;
+  const qualification = containerResult.qualification;
+  const totalCounts = (browserCounts) =>
+    Object.values(browserCounts ?? {}).reduce(
+      (total, counts) => ({
+        executed: total.executed + Number(counts?.executed ?? 0),
+        skipped: total.skipped + Number(counts?.skipped ?? 0),
+      }),
+      { executed: 0, skipped: 0 },
+    );
+  const canonicalCounts = totalCounts(qualification?.canonicalBrowsers);
+  const harnessCounts = totalCounts(qualification?.harnessBrowsers);
+  if (
+    discovery?.fullListedTests !== 72 ||
+    discovery?.listedTests !== 84 ||
+    assertionCount !== 49 ||
+    qualification?.assertionIds?.length !== 49 ||
+    canonicalCounts.executed !== 48 ||
+    canonicalCounts.skipped !== 24 ||
+    harnessCounts.executed !== 12 ||
+    harnessCounts.skipped !== 0 ||
+    qualification?.externalRequests !== 0 ||
+    qualification?.productionWrites !== 0 ||
+    cleanup?.created !== 0 ||
+    cleanup?.cleaned !== 0 ||
+    cleanup?.leaked !== 0
+  ) {
+    throw new ReleaseE2EError('Semantic harness qualification closure is incomplete.', {
+      exitCode: EXIT.FINALIZATION,
+      failureCode: 'E2E_QUALIFICATION_INCOMPLETE',
+      phase: 'finalization',
+    });
+  }
+  const receipt = {
+    schemaVersion: 'tiangong.semantic-harness-qualification.v1',
+    status: 'qualified',
+    generatedAt: new Date().toISOString(),
+    qualifiedCommit: result.candidate.commit,
+    qualifiedTree: result.candidate.tree,
+    qualificationInputSha256: qualificationInputSha256(),
+    environmentManifestSha256: result.environment.manifestSha256,
+    browsers: ['chromium', 'firefox', 'webkit'].map((name) => ({
+      name,
+      version: result.environment.environmentBrowsers[name],
+    })),
+    coverage: {
+      contractAssertionCount: assertionCount,
+      discoveredCases: discovery.fullListedTests,
+      executedCases: canonicalCounts.executed,
+      harnessControlCases: harnessCounts.executed,
+      liveAssertionCount: qualification.assertionIds.length,
+      qualificationDiscoveredCases: discovery.listedTests,
+      skippedCases: canonicalCounts.skipped,
+    },
+    cleanup,
+    externalRequests: qualification.externalRequests,
+    productionWrites: qualification.productionWrites,
+    diagnostics: {
+      retainedOutsideGit: true,
+      runResultSha256: sha256(fs.readFileSync(result.artifacts.containerResult)),
+    },
+  };
+  fs.writeFileSync(QUALIFICATION_RECEIPT_PATH, jsonText(receipt), 'utf8');
+  return { ...result, qualificationReceipt: QUALIFICATION_RECEIPT_PATH };
 }
 
 function runDoctor(options) {
@@ -1659,9 +1838,11 @@ function emitReport(report, options) {
 
 function execute(command, options) {
   if (command === 'doctor') return runDoctor(options);
+  if (command === 'check-qualification') return readQualificationReceipt();
   const releaseLock = acquireInvocationLock(command);
   try {
     if (command === 'install') return runInstall(options);
+    if (command === 'qualify') return runQualification(options);
     if (command === 'run') return runRelease(options);
     if (command === 'resume') return resumeRelease();
     if (command === 'clean') return runClean(options);
@@ -1755,6 +1936,7 @@ module.exports = {
   stableJson,
   receiptHmac,
   validateReceipt,
+  validateQualificationReceipt,
   validateRunOptions,
 };
 
