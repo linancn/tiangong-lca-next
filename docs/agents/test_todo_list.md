@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
-lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after the refreshed qualification receipt; no new testing backlog item is required.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: the coverage queue remains empty after removing superseded digest compatibility entries; no new testing backlog item is required.'
 ---
 
 # Testing Execution State

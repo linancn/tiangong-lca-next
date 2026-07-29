@@ -29,8 +29,8 @@ checkPaths:
   - .github/workflows/release-readiness.yml
   - .nvmrc
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
-lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt follows the existing clean-candidate, three-browser qualify, and managed-push sequence.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: retiring superseded digest compatibility entries follows the existing canonical-evidence, focused-contract-test, and managed-push sequence.'
 ---
 
 # Development Bootstrap

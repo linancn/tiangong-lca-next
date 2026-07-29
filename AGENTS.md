@@ -32,8 +32,8 @@ checkPaths:
   - .husky/pre-push
   - .github/workflows/**
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
-lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: retiring superseded semantic-evidence compatibility entries remains within the existing repository ownership, release-evidence, and managed-push boundaries.'
 related:
   - .docpact/config.yaml
   - docs/agents/repo-validation.md

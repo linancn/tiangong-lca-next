@@ -30,8 +30,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
-lastReviewedNote: 'Reviewed for Issue #724: refreshing the qualification receipt after a governed input-hash change follows the existing clean-candidate proof pattern.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: compatibility entries sunset when verified evidence directly matches the current input hash, following the existing exact-digest proof pattern.'
 ---
 
 # Testing Patterns Reference

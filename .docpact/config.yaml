@@ -1,8 +1,8 @@
 version: 1
 layout: repo
 lastReviewedAt: '2026-07-29'
-lastReviewedCommit: 'd6e1c29e8e7b5e2434391d1f6c96b029abd10765'
-lastReviewedNote: 'Reviewed for Issue #724: the refreshed qualification receipt for the production-evidence commit remains governed by the existing testing contract; required-doc and ownership sets remain correct.'
+lastReviewedCommit: 'af58e108e6bd350fca71f070c245f2ee0a26b527'
+lastReviewedNote: 'Reviewed for Issue #724: obsolete semantic-evidence digest compatibility entries are removed after exact production evidence supersedes them; required-doc and ownership sets remain correct.'
 
 # Keep path-level ownership, routing intents, and governed-doc rules here.
 # AGENTS.md keeps the entry-level repo contract and minimal execution summary.

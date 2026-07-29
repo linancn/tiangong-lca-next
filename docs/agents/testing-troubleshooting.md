@@ -27,8 +27,8 @@ checkPaths:
   - .github/workflows/release-gate.yml
   - .github/workflows/release-readiness.yml
 lastReviewedAt: 2026-07-29
-lastReviewedCommit: d6e1c29e8e7b5e2434391d1f6c96b029abd10765
-lastReviewedNote: 'Reviewed for Issue #724: a stale qualification input hash correctly fails closed and is resolved by rerunning the three-browser qualifier on the committed candidate.'
+lastReviewedCommit: af58e108e6bd350fca71f070c245f2ee0a26b527
+lastReviewedNote: 'Reviewed for Issue #724: a compatibility entry whose evidence hash already equals the current file correctly fails closed and is resolved by retiring the obsolete entry.'
 ---
 
 # Testing Troubleshooting
